@@ -221,8 +221,8 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		assertFalse(gm.isIdentityInLearningArea(id3, a3.getName()));
 
 		DBFactory.getInstance().closeSession();
-		Assert.assertEquals(2, gm.getLearningAreasOfGroupFromAllContexts(g1.getName()).size());
-		Assert.assertEquals(2, gm.getLearningAreasOfGroupFromAllContexts(g2.getName()).size());
+		Assert.assertEquals(2, gm.getAreasOfBusinessGroup(g1.getName()).size());
+		Assert.assertEquals(2, gm.getAreasOfBusinessGroup(g2.getName()).size());
 
 		// test rights
 		DBFactory.getInstance().closeSession();

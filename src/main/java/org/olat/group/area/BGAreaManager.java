@@ -230,6 +230,13 @@ public interface BGAreaManager {
 	 */
 	public boolean existArea(String nameOrKey, OLATResource resource);
 	
+	/**
+	 * Retrieve the area's primary keys from the name
+	 * @param areaNames
+	 * @return
+	 */
+	public List<Long> toAreaKeys(String areaNames, OLATResource resource);
+	
 	
 	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType, Locale locale, String charset);
 }

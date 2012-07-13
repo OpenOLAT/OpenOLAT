@@ -60,7 +60,6 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfigurat
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -264,26 +263,17 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		Project testProjectA = createProject("thema A", id1, idProjectBrokerD, resourceableId );
 		List<Identity> projectManagerList = new ArrayList<Identity>();
 		projectManagerList.add(id1);
-		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 		Project testProjectB = createProject("thema B", id2, idProjectBrokerD, resourceableId );
 		// check project leader in ProjectA
 		assertTrue("Must be project-leader of project A", ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectA));
 		assertFalse("Can not be project leader of project B",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectB));
 		assertTrue("Must be project-leader of project A", ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id2, testProjectB));
 
-		CoreSpringFactory.getImpl(BusinessGroupService.class).removeOwners(id1, projectManagerList, testProjectA.getProjectGroup(),flags);
+		CoreSpringFactory.getImpl(BusinessGroupService.class).removeOwners(id1, projectManagerList, testProjectA.getProjectGroup());
 		// check no project leader anymore
 		assertFalse("Can not be project leader of project A",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectA));
 		assertFalse("Can not be project leader of project B",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectB));
 		// cleanup
-	}
-	
-	@Test public void testAcceptManuall() throws Exception {
-//		
-	}
-	
-	@Test public void testAcceptAutomaticly() throws Exception {
-	//	
 	}
 
 	@Test public void testExistsProject() throws Exception {

@@ -158,7 +158,7 @@ public class GroupSearchResultProvider implements ResultMapProvider {
 		
 		for (RepositoryEntry repositoryEntry : allRepoEntries) {
 			ICourse course = CourseFactory.loadCourse(repositoryEntry.getOlatResource());
-			List<BusinessGroup> allCourseGroups = course.getCourseEnvironment().getCourseGroupManager().getAllLearningGroupsFromAllContexts();
+			List<BusinessGroup> allCourseGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
 			for (BusinessGroup group : allCourseGroups) {
 				if (!tempResult.containsKey(group.getKey())) {
 					tempResult.put(group.getKey(), getCombinedRepoName(group, repositoryEntry));

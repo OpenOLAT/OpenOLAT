@@ -335,7 +335,7 @@ public class SecurityGroupsRepositoryMainController extends MainLayoutBasicContr
 		if("CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
 			CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
-			List<BusinessGroup> groups = gm.getAllLearningGroupsFromAllContexts();
+			List<BusinessGroup> groups = gm.getAllBusinessGroups();
 			return groups;
 		}
 		return Collections.emptyList();

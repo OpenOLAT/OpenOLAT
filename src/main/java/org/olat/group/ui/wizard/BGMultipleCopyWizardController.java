@@ -39,12 +39,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContext;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -63,7 +59,6 @@ public class BGMultipleCopyWizardController extends WizardController {
 
 	private BGCopyWizardCopyForm copyForm;
 	private Translator trans;
-	private BGConfigFlags flags;
 	private BusinessGroup originalGroup;
 	private GroupNamesForm groupNamesForm;
 
@@ -75,10 +70,9 @@ public class BGMultipleCopyWizardController extends WizardController {
 	 * @param originalGroup original business group: master that should be copied
 	 * @param flags
 	 */
-	public BGMultipleCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup, BGConfigFlags flags) {
+	public BGMultipleCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup) {
 		super(ureq, wControl, 2);
 		this.trans = BGTranslatorFactory.createBGPackageTranslator(PACKAGE, originalGroup.getType(), ureq.getLocale());
-		this.flags = flags;
 		this.originalGroup = originalGroup;
 		// init wizard step 1
 		this.copyForm = new BGCopyWizardCopyForm(ureq, wControl);
@@ -142,9 +136,8 @@ public class BGMultipleCopyWizardController extends WizardController {
 	private BusinessGroup doCopyGroup(String newGroupName, Integer max) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		// reload original group to prevent context proxy problems
-		this.originalGroup = bgs.loadBusinessGroup(this.originalGroup);
-		//BGContext bgContext = this.originalGroup.getGroupContext();
-		boolean copyAreas = (flags.isEnabled(BGConfigFlags.AREAS) && copyForm.isCopyAreas());
+		originalGroup = bgs.loadBusinessGroup(this.originalGroup);
+		boolean copyAreas = copyForm.isCopyAreas();
 		//TODO gm copy relations to resources 
 
 		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, newGroupName, originalGroup.getDescription(), null, max, null, null, copyAreas,

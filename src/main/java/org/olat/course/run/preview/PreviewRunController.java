@@ -120,8 +120,8 @@ public class PreviewRunController extends MainLayoutBasicController {
 		detail.contextPut("time", DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale())
 				.format(new Date(uce.getCourseEnvironment().getCurrentTimeMillis())));
 		CourseGroupManager cgm = uce.getCourseEnvironment().getCourseGroupManager();
-		detail.contextPut("groups", assembleNamesFromGroupList(cgm.getAllLearningGroupsFromAllContexts()));
-		detail.contextPut("areas", assembleNamesFromAreaList(cgm.getAllAreasFromAllContexts()));
+		detail.contextPut("groups", assembleNamesFromGroupList(cgm.getAllBusinessGroups()));
+		detail.contextPut("areas", assembleNamesFromAreaList(cgm.getAllAreas()));
 		detail.contextPut("asRole",role);
 		previewLayoutCtr.setCol3(detail);
 	}

@@ -100,9 +100,9 @@ public class CourseCalendarController extends BasicController {
 		// add course group calendars
 		
 		// learning groups
-		List<BusinessGroup> ownerGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
+		List<BusinessGroup> ownerGroups = cgm.getOwnedBusinessGroups(identity);
 		addCalendars(ureq, ownerGroups, true, clpc, calendars);
-		List<BusinessGroup> attendedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
+		List<BusinessGroup> attendedGroups = cgm.getParticipatingBusinessGroups(identity);
 		for (Iterator<BusinessGroup> ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
 			BusinessGroup ownerGroup = (BusinessGroup) ownerGroupsIterator.next();
 			if (attendedGroups.contains(ownerGroup))

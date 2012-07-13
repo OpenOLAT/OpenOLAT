@@ -40,14 +40,14 @@ import org.olat.group.BusinessGroup;
  * @author patrick
  */
 
-public class BusinessGroupTableModel extends DefaultTableDataModel {
+public class BusinessGroupTableModel extends DefaultTableDataModel<BusinessGroup> {
 	private static final int COLUMN_COUNT = 3;
 
 	/**
 	 * @param owned list of business groups
 	 */
-	public BusinessGroupTableModel(List owned) {
-		super(owned);
+	public BusinessGroupTableModel(List<BusinessGroup> groups) {
+		super(groups);
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class BusinessGroupTableModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		BusinessGroup businessGroup = (BusinessGroup) objects.get(row);
+		BusinessGroup businessGroup = objects.get(row);
 		switch (col) {
 			case 0:
 				String name = businessGroup.getName();
@@ -77,19 +77,13 @@ public class BusinessGroupTableModel extends DefaultTableDataModel {
 		}
 	}
 
-	/**
-	 * @param owned
-	 */
-	public void setEntries(List owned) {
-		this.objects = owned;
-	}
 
 	/**
 	 * @param row
 	 * @return the business group at the given row
 	 */
 	public BusinessGroup getBusinessGroupAt(int row) {
-		return (BusinessGroup) objects.get(row);
+		return objects.get(row);
 	}
 	
 	public void removeBusinessGroup(BusinessGroup businessGroup) {

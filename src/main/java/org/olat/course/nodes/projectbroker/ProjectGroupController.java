@@ -54,7 +54,6 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.ui.BGConfigFlags;
 
 /**
  * 
@@ -181,34 +180,32 @@ public class ProjectGroupController extends BasicController {
 	}
 
 	private void handleProjectMemberGroupEvent(UserRequest urequest, Event event) {
-		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-			BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), flags);
+			BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup());
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 			getLogger().info("Add users as project-members");
 			fireEvent(urequest, Event.CHANGED_EVENT );			
 		} else if (event instanceof IdentitiesRemoveEvent) {
-			businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup(), flags);
+			businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup());
 			getLogger().info("Remove users as account-managers");
 			fireEvent(urequest, Event.CHANGED_EVENT );
 		}
 	}
 
 	private void handleProjectLeaderGroupEvent(UserRequest urequest, Event event) {
-		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-			BusinessGroupAddResponse response = businessGroupService.addOwners(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), flags);
+			BusinessGroupAddResponse response = businessGroupService.addOwners(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup());
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 			getLogger().info("Add users as project-leader");
 			fireEvent(urequest, Event.CHANGED_EVENT );			
 		} else if (event instanceof IdentitiesRemoveEvent) {
-			businessGroupService.removeOwners(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup(), flags);
+			businessGroupService.removeOwners(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup());
 			getLogger().info("Remove users as account-managers");
 			fireEvent(urequest, Event.CHANGED_EVENT );
 		}

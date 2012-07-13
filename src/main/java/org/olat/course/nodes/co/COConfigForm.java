@@ -56,7 +56,6 @@ import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
@@ -443,10 +442,10 @@ public class COConfigForm extends FormBasicController {
 		List<Long> groupKeys = (List<Long>)config.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
 		if(groupKeys == null) {
 			groupInitVal = (String)config.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-			groupKeys = getGroupKeys(groupInitVal);
-		} else {
-			groupInitVal = getGroupNames(groupKeys);
+			groupKeys = businessGroupService.toGroupKeys(groupInitVal, cev.getCourseGroupManager().getCourseResource());
 		}
+		groupInitVal = getGroupNames(groupKeys);
+
 		easyGroupList = uifactory.addStaticTextElement("group", null, groupInitVal, groupChooseSubContainer);
 		easyGroupList.setUserObject(groupKeys);
 		
@@ -469,11 +468,11 @@ public class COConfigForm extends FormBasicController {
 		@SuppressWarnings("unchecked")
 		List<Long> areaKeys = (List<Long>)config.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
 		if(areaKeys == null) {
-			areaInitVal = (String) config.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
-			areaKeys = getAreaKeys(areaInitVal);
-		} else {
-			areaInitVal = getAreaNames(areaKeys);
+			areaInitVal = (String)config.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
+			areaKeys = areaManager.toAreaKeys(areaInitVal, cev.getCourseGroupManager().getCourseResource());
 		}
+		areaInitVal = getAreaNames(areaKeys);
+
 		easyAreaList = uifactory.addStaticTextElement("area", null, areaInitVal, areaChooseSubContainer);
 		easyAreaList.setUserObject(areaKeys);
 		
@@ -582,7 +581,7 @@ public class COConfigForm extends FormBasicController {
 			
 			// no groups in group management -> directly show group create dialog
 			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
-			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), true, courseResource, true, null);
+			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseResource, true, null);
 			listenTo(groupCreateCntrllr);
 			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCntrllr.getInitialComponent());
 			listenTo(cmc);
@@ -619,9 +618,7 @@ public class COConfigForm extends FormBasicController {
 			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
 			easyGroupList.setEnabled(false);
 			removeAsListenerAndDispose(groupCreateCntrllr);
-			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
-					ureq, getWindowControl(), true, courseResource, true, csvGroupName[0]
-			);
+			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseResource, true, csvGroupName[0]);
 			listenTo(groupCreateCntrllr);
 
 			removeAsListenerAndDispose(cmc);
@@ -762,53 +759,11 @@ public class COConfigForm extends FormBasicController {
 	
 	private String getAreaNames(List<Long> keys) {
 		StringBuilder sb = new StringBuilder();
-		for(Long key:keys) {
-			BGArea area = areaManager.loadArea(key);
-			if(area != null) {
-				if(sb.length() > 0) sb.append(", ");
-				sb.append(area.getName());
-			}
+		List<BGArea> areas = areaManager.loadAreas(keys);
+		for(BGArea area:areas) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(area.getName());
 		}
 		return sb.toString();
-	}
-	
-	private List<Long> getGroupKeys(String groupNames) {
-		List<Long> groupKeys = new ArrayList<Long>();
-		if(StringHelper.containsNonWhitespace(groupNames)) {
-			String[] groupNameArr = groupNames.split(",");
-			List<BusinessGroup> groups = cev.getCourseGroupManager().getAllLearningGroupsFromAllContexts();
-			for(String groupName:groupNameArr) {
-				groupName = groupName.trim();
-				for(BusinessGroup group:groups) {
-					if(groupName.equalsIgnoreCase(group.getName())) {
-						groupKeys.add(group.getKey());
-						break;
-					}
-				}
-			}
-		}
-		return groupKeys;
-	}
-	
-	private List<Long> getAreaKeys(String areaNames) {
-		List<Long> areaKeys = new ArrayList<Long>();
-		if(StringHelper.containsNonWhitespace(areaNames)) {
-			List<BGArea> areas = cev.getCourseGroupManager().getAllAreasFromAllContexts();
-			String[] areaNameArr = areaNames.split(",");
-			StringBuilder sb = new StringBuilder();
-			for(String areaName:areaNameArr) {
-				areaName = areaName.trim();
-				for(BGArea area:areas) {
-					if(areaName.equalsIgnoreCase(area.getName())) {
-						if(sb.length() > 0) {
-							sb.append(',');
-						}
-						sb.append(area.getKey());
-						break;
-					}
-				}
-			}
-		}
-		return areaKeys;
 	}
 }

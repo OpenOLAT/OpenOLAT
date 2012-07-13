@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -82,7 +83,6 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRights;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.BusinessGroupFormController;
@@ -133,7 +133,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	//fxdiff VCRP-1,2: access control of resources
 	private int tabAccessIndex;
 	private BusinessGroupEditAccessController tabAccessCtrl;
-	private BGConfigFlags flags;
 	private DisplayMemberSwitchForm dmsForm;
 
 	private LockResult lockEntry;
@@ -152,8 +151,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 *          controller does no type specific stuff implicit just by looking at
 	 *          the group type. Type specifig features must be flagged.
 	 */
-	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup,
-			BGConfigFlags configurationFlags) {
+	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
@@ -167,8 +165,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		// Initialize other members
 
-		// group
-		flags = configurationFlags;
 		// Initialize translator:
 		// package translator with default group fallback translators and type
 		// translator
@@ -199,29 +195,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			//fxdiff VCRP-1,2: access control of resources
 			tabbedPane = new TabbedPane("bgTabbs", ureq.getLocale());
 			tabbedPane.addListener(this);
-			vc_tab_bgDetails = createTabDetails(ureq, currBusinessGroup);// modifies vc_tab_bgDetails
-			tabbedPane.addTab(translate("group.edit.tab.details"), vc_tab_bgDetails);
-
-			vc_tab_bgCTools = createTabCollabTools(ureq, flags);
-			tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
-
-			vc_tab_bgAreas = createTabAreas();
-			tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
-
-			vc_tab_bgRights = createTabRights();
-			tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
-
-			vc_tab_grpmanagement = createTabGroupManagement(ureq);
-			tabbedPane.addTab(translate("group.edit.tab.members"), vc_tab_grpmanagement);
-
-			resourceController = new BusinessGroupEditResourceController(ureq, getWindowControl(), currBusinessGroup);
-			listenTo(resourceController);
-	  	tabbedPane.addTab(translate("group.edit.tab.resources"), resourceController.getInitialComponent());
-			
-			tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
-		  listenTo(tabAccessCtrl);
-		  tabAccessIndex = tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
-
+			setAllTabs(ureq);
 			vc_edit = createVelocityContainer("edit");
 			vc_edit.put("tabbedpane", tabbedPane);
 			String[] title = new String[] { StringEscapeUtils.escapeHtml(currBusinessGroup.getName()) };
@@ -240,6 +214,46 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			tabbedPane.activate(ureq, Collections.singletonList(ce), null);
 			tabbedPane.addToHistory(ureq, wControl);
 		}
+	}
+	
+	private void setAllTabs(UserRequest ureq) {
+		vc_tab_bgDetails = createTabDetails(ureq, currBusinessGroup);// modifies vc_tab_bgDetails
+		tabbedPane.addTab(translate("group.edit.tab.details"), vc_tab_bgDetails);
+
+		vc_tab_bgCTools = createTabCollabTools(ureq);
+		tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
+
+		vc_tab_bgAreas = createTabAreas();
+		tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
+
+		vc_tab_bgRights = createTabRights();
+		tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
+
+		vc_tab_grpmanagement = createTabGroupManagement(ureq);
+		tabbedPane.addTab(translate("group.edit.tab.members"), vc_tab_grpmanagement);
+
+		resourceController = new BusinessGroupEditResourceController(ureq, getWindowControl(), currBusinessGroup);
+		listenTo(resourceController);
+  	tabbedPane.addTab(translate("group.edit.tab.resources"), resourceController.getInitialComponent());
+		
+		tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
+	  listenTo(tabAccessCtrl);
+	  tabAccessIndex = tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
+	}
+	
+	/**
+	 * Refresh Member-tab when waiting-list configuration change.
+	 * @param ureq
+	 */
+	private void refreshAllTabs(UserRequest ureq) {
+	  tabbedPane.removeAll();
+		tabbedPane.addTab(translate("group.edit.tab.details"), vc_tab_bgDetails);
+		tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
+		tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
+		tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
+		tabbedPane.addTab(translate("group.edit.tab.members"), createTabGroupManagement(ureq));
+		tabbedPane.addTab(translate("group.edit.tab.resources"), resourceController.getInitialComponent());
+		tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
 	}
 
 	/**
@@ -311,11 +325,11 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			BusinessGroupAddResponse response = null;
 			addLoggingResourceable(LoggingResourceable.wrap(currBusinessGroup));
 			if (source == ownerGrpCntrllr) {
-			  response = businessGroupService.addOwners(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);
+			  response = businessGroupService.addOwners(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup);
 			} else if (source == partipGrpCntrllr) {
-				response = businessGroupService.addParticipants(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);					
+				response = businessGroupService.addParticipants(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup);					
 			} else if (source == waitingGruppeController) {
-				response = businessGroupService.addToWaitingList(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);									
+				response = businessGroupService.addToWaitingList(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup);									
 			}
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
@@ -324,22 +338,22 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	  }	else if (event instanceof IdentitiesRemoveEvent) {
 	  	List<Identity> identities = ((IdentitiesRemoveEvent) event).getRemovedIdentities();
 			if (source == ownerGrpCntrllr) {
-			  businessGroupService.removeOwners(ureq.getIdentity(), identities, currBusinessGroup, flags);
+			  businessGroupService.removeOwners(ureq.getIdentity(), identities, currBusinessGroup);
 			} else if (source == partipGrpCntrllr) {
-			  businessGroupService.removeParticipants(ureq.getIdentity(), identities, currBusinessGroup, flags);
+			  businessGroupService.removeParticipants(ureq.getIdentity(), identities, currBusinessGroup);
 			  if (currBusinessGroup.getWaitingListEnabled().booleanValue()) {
           // It is possible that a user is transfered from waiting-list to participants => reload data to see transfered user in right group.
 			  	partipGrpCntrllr.reloadData();
 			    waitingGruppeController.reloadData();
 			  }
 			} else if (source == waitingGruppeController) {
-			  businessGroupService.removeFromWaitingList(ureq.getIdentity(), identities, currBusinessGroup, flags);
+			  businessGroupService.removeFromWaitingList(ureq.getIdentity(), identities, currBusinessGroup);
 			}
 	  	fireEvent(ureq, Event.CHANGED_EVENT );
 		} else if (source == waitingGruppeController) {
 			if (event instanceof IdentitiesMoveEvent) {
 				IdentitiesMoveEvent identitiesMoveEvent = (IdentitiesMoveEvent) event;
-				BusinessGroupAddResponse response = businessGroupService.moveIdentityFromWaitingListToParticipant(identitiesMoveEvent.getChosenIdentities(), ureq.getIdentity(), currBusinessGroup, flags);
+				BusinessGroupAddResponse response = businessGroupService.moveIdentityFromWaitingListToParticipant(identitiesMoveEvent.getChosenIdentities(), ureq.getIdentity(), currBusinessGroup);
 				identitiesMoveEvent.setNotMovedIdentities(response.getIdentitiesAlreadyInGroup());
 				identitiesMoveEvent.setMovedIdentities(response.getAddedIdentities());
 				// Participant and waiting-list were changed => reload both
@@ -368,12 +382,12 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				BusinessGroupModifiedEvent
 						.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, this.currBusinessGroup, null);
 				// rename the group also in the IM servers group list
-				if (this.flags.isEnabled(BGConfigFlags.BUDDYLIST)) {
-					if (InstantMessagingModule.isEnabled()) {
-						String groupID = InstantMessagingModule.getAdapter().createChatRoomString(this.currBusinessGroup);
-						InstantMessagingModule.getAdapter().renameRosterGroup(groupID, this.modifyBusinessGroupController.getGroupName());
-					}
+
+				if (InstantMessagingModule.isEnabled()) {
+					String groupID = InstantMessagingModule.getAdapter().createChatRoomString(this.currBusinessGroup);
+					InstantMessagingModule.getAdapter().renameRosterGroup(groupID, this.modifyBusinessGroupController.getGroupName());
 				}
+
 				// do logging
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
 				//fxdiff VCRP-1,2: access control of resources
@@ -388,7 +402,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				if (this.modifyBusinessGroupController != null) {
 					removeAsListenerAndDispose(this.modifyBusinessGroupController);
 				}
-				modifyBusinessGroupController = new BusinessGroupFormController(ureq, getWindowControl(), currBusinessGroup, flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
+				modifyBusinessGroupController = new BusinessGroupFormController(ureq, getWindowControl(), currBusinessGroup);
 				listenTo(modifyBusinessGroupController);
 				vc_tab_bgDetails.put("businessGroupForm", this.modifyBusinessGroupController.getInitialComponent());
 
@@ -404,8 +418,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		String bgDesc = modifyBusinessGroupController.getGroupDescription();
 		Integer bgMax = modifyBusinessGroupController.getGroupMax();
 		Integer bgMin = modifyBusinessGroupController.getGroupMin();
-		Boolean waitingListEnabled = modifyBusinessGroupController.isWaitingListEnabled();
-		Boolean autoCloseRanksEnabled = modifyBusinessGroupController.isAutoCloseRanksEnabled();
+		boolean waitingListEnabled = modifyBusinessGroupController.isWaitingListEnabled();
+		boolean autoCloseRanksEnabled = modifyBusinessGroupController.isAutoCloseRanksEnabled();
 		vc_tab_grpmanagement.contextPut("hasWaitingGrp", waitingListEnabled);
 		return businessGroupService.updateBusinessGroup(currBusinessGroup, bgName, bgDesc,
 				bgMin, bgMax, waitingListEnabled, autoCloseRanksEnabled);
@@ -462,10 +476,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 * 
 	 * @param ureq
 	 */
-	private VelocityContainer createTabCollabTools(UserRequest ureq, BGConfigFlags flags) {
+	private VelocityContainer createTabCollabTools(UserRequest ureq) {
 		VelocityContainer tmp = createVelocityContainer("tab_bgCollabTools");
 		CollaborationTools ctsm = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(currBusinessGroup);
-		ctc = ctsm.createCollaborationToolsSettingsController(ureq, getWindowControl(), flags);
+		ctc = ctsm.createCollaborationToolsSettingsController(ureq, getWindowControl());
 		// we are listening on CollaborationToolsSettingsController events
 		// which are just propagated to our attached controllerlistener...
 		// e.g. the BusinessGroupMainRunController, updating the MenuTree
@@ -493,7 +507,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		areasChoice.addListener(this);
 		tmp.put("areasChoice", areasChoice);
 		tmp.contextPut("noAreasFound", (allAreas.size() > 0 ? Boolean.FALSE : Boolean.TRUE));
-		tmp.contextPut("isGmAdmin", Boolean.valueOf(flags.isEnabled(BGConfigFlags.IS_GM_ADMIN)));
+		tmp.contextPut("isGmAdmin", Boolean.TRUE);
 		tmp.contextPut("type", currBusinessGroup.getType());
 		return tmp;
 	}
@@ -523,8 +537,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		VelocityContainer tmp = createVelocityContainer("tab_bgDetail");
 		
 		removeAsListenerAndDispose(modifyBusinessGroupController);
-		modifyBusinessGroupController = new BusinessGroupFormController(ureq, getWindowControl(), businessGroup, this.flags
-				.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
+		modifyBusinessGroupController = new BusinessGroupFormController(ureq, getWindowControl(), businessGroup);
 		listenTo(this.modifyBusinessGroupController);
 		
 		tmp.put("businessGroupForm", modifyBusinessGroupController.getInitialComponent());
@@ -538,8 +551,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 * @param ureq
 	 */
 	private VelocityContainer createTabGroupManagement(UserRequest ureq) {
-		boolean hasOwners = flags.isEnabled(BGConfigFlags.GROUP_OWNERS);
-		boolean hasPartips = true;//
+
 		boolean hasWaitingList = currBusinessGroup.getWaitingListEnabled().booleanValue();
 		//
 		VelocityContainer tmp = createVelocityContainer("tab_bgGrpMngmnt");
@@ -550,34 +562,31 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		// configure the form with checkboxes for owners and/or partips according
 		// the booleans
 		removeAsListenerAndDispose(dmsForm);
-		dmsForm = new DisplayMemberSwitchForm(ureq, getWindowControl(), hasOwners, hasPartips, hasWaitingList);
+		dmsForm = new DisplayMemberSwitchForm(ureq, getWindowControl(), true, true, hasWaitingList);
 		listenTo(dmsForm);
 		// set if the checkboxes are checked or not.
-		if (hasOwners) dmsForm.setShowOwnersChecked(displayMembers.isShowOwners());
-		if (hasPartips) dmsForm.setShowPartipsChecked(displayMembers.isShowParticipants());
+		dmsForm.setShowOwnersChecked(displayMembers.isShowOwners());
+		dmsForm.setShowPartipsChecked(displayMembers.isShowParticipants());
 		if (hasWaitingList) dmsForm.setShowWaitingListChecked(displayMembers.isShowWaitingList());
 		
 		tmp.put("displayMembers", dmsForm.getInitialComponent());
-		boolean enableTablePreferences = flags.isEnabled(BGConfigFlags.ADMIN_SEE_ALL_USER_DATA);
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean enableTablePreferences = roles.isOLATAdmin() || roles.isGroupManager();
+		boolean requiresOwner = true;
+		// groupcontroller which allows to remove all members depending on
+		// configuration.
+		removeAsListenerAndDispose(ownerGrpCntrllr);
+		ownerGrpCntrllr = new GroupController(ureq, getWindowControl(), true, requiresOwner, enableTablePreferences, currBusinessGroup.getOwnerGroup());
+		listenTo(ownerGrpCntrllr);
+		// add mail templates used when adding and removing users
+		MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(currBusinessGroup, ureq.getIdentity());
+		ownerGrpCntrllr.setAddUserMailTempl(ownerAddUserMailTempl,true);
+		MailTemplate ownerAremoveUserMailTempl = BGMailHelper.createRemoveParticipantMailTemplate(currBusinessGroup, ureq.getIdentity());
+		ownerGrpCntrllr.setRemoveUserMailTempl(ownerAremoveUserMailTempl,true);
+		// expose to velocity
+		tmp.put("ownerGrpMngmnt", ownerGrpCntrllr.getInitialComponent());
+		tmp.contextPut("hasOwnerGrp", Boolean.TRUE);
 
-		if (hasOwners) {
-			boolean requiresOwner = flags.isEnabled(BGConfigFlags.GROUP_OWNER_REQURED);
-			// groupcontroller which allows to remove all members depending on
-			// configuration.
-			removeAsListenerAndDispose(ownerGrpCntrllr);
-			ownerGrpCntrllr = new GroupController(ureq, getWindowControl(), true, requiresOwner, enableTablePreferences, currBusinessGroup.getOwnerGroup());
-			listenTo(ownerGrpCntrllr);
-			// add mail templates used when adding and removing users
-			MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(currBusinessGroup, ureq.getIdentity());
-			ownerGrpCntrllr.setAddUserMailTempl(ownerAddUserMailTempl,true);
-			MailTemplate ownerAremoveUserMailTempl = BGMailHelper.createRemoveParticipantMailTemplate(currBusinessGroup, ureq.getIdentity());
-			ownerGrpCntrllr.setRemoveUserMailTempl(ownerAremoveUserMailTempl,true);
-			// expose to velocity
-			tmp.put("ownerGrpMngmnt", ownerGrpCntrllr.getInitialComponent());
-			tmp.contextPut("hasOwnerGrp", Boolean.TRUE);
-		} else {
-			tmp.contextPut("hasOwnerGrp", Boolean.FALSE);
-		}
 		// groupcontroller which allows to remove all members
 		removeAsListenerAndDispose(partipGrpCntrllr);
 		partipGrpCntrllr = new GroupController(ureq, getWindowControl(), true, false, enableTablePreferences, currBusinessGroup.getPartipiciantGroup());
@@ -663,21 +672,4 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			alreadyLockedDialogController.dispose();
 		}
 	}
-
-	/**
-	 * Refresh Member-tab when waiting-list configuration change.
-	 * @param ureq
-	 */
-	private void refreshAllTabs(UserRequest ureq) {
-	  tabbedPane.removeAll();
-		tabbedPane.addTab(translate("group.edit.tab.details"), vc_tab_bgDetails);
-		tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
-		tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
-		tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
-		tabbedPane.addTab(translate("group.edit.tab.members"), createTabGroupManagement(ureq));
-		if(tabAccessCtrl != null) {
-			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
-		}
-	}
-
 }

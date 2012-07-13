@@ -364,7 +364,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		// export configuration file
 		FileUtils.copyFileToDir(new File(fCourseBase, CourseConfigManager.COURSECONFIG_XML), exportDirectory, "course export configuration and repo info");
 		// export learning groups
-		PersistingCourseGroupManager.getInstance(this).exportCourseLeaningGroups(fExportedDataDir);
+		PersistingCourseGroupManager.getInstance(this).exportCourseBusinessGroups(fExportedDataDir);
 		// export right groups
 		//PersistingCourseGroupManager.getInstance(this).exportCourseRightGroups(fExportedDataDir);
 		// export repo metadata

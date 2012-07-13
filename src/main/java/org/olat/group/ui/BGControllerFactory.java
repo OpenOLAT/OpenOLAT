@@ -87,20 +87,7 @@ public class BGControllerFactory {
 	 * @return an edit controller for this busines group
 	 */
 	public BusinessGroupEditController createEditControllerFor(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
-		//String bgTyp = businessGroup.getType();
-		/*if (BusinessGroup.TYPE_BUDDYGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
-			return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
-		} else if (BusinessGroup.TYPE_LEARNINGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-			return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
-		} else if (BusinessGroup.TYPE_RIGHTGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
-			return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
-		} else {*/
-		BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
-		return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
-		//}
+		return new BusinessGroupEditController(ureq, wControl, businessGroup);
 	}
 
 	//
@@ -120,7 +107,6 @@ public class BGControllerFactory {
 	public BusinessGroupMainRunController createRunControllerFor(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup,
 			boolean isGMAdmin, String initialViewIdentifier) {
 
-		
 		// build up the context path
 		WindowControl bwControl;
 		OLATResourceable businessOres = businessGroup;
@@ -131,26 +117,7 @@ public class BGControllerFactory {
 		} else {
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 		}
-		
-		
-		/*String bgTyp = businessGroup.getType();
-		if (BusinessGroup.TYPE_BUDDYGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
-			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, false);
-			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
-		} else if (BusinessGroup.TYPE_LEARNINGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
-			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
-			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
-		} else if (BusinessGroup.TYPE_RIGHTGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
-			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
-			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
-		} else {*/
-		BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
-		flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
-		return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
-
+		return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, initialViewIdentifier);
 	}
 
 	/**
@@ -238,8 +205,8 @@ public class BGControllerFactory {
 	 * @param groupManager
 	 * @return
 	 */
-	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource){
-		return createNewBGController(ureq, wControl, minMaxEnabled, resource, true, null);
+	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource){
+		return createNewBGController(ureq, wControl, resource, true, null);
 	}
 	/**
 	 * create controller for (mass) creation of business groups (bulkmode) with
@@ -253,26 +220,16 @@ public class BGControllerFactory {
 	 * @param csvGroupNames
 	 * @return
 	 */
-	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource, boolean bulkMode, String csvGroupNames){
+	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvGroupNames){
 		if (resource == null) throw new AssertException("Group context must not be null");
-		NewBGController retVal = new NewBGController(ureq, wControl, minMaxEnabled, resource, bulkMode, csvGroupNames);
+		NewBGController retVal = new NewBGController(ureq, wControl, resource, bulkMode, csvGroupNames);
 		return retVal;
 	}
 	
-
 	private BGManagementController createLearningGroupManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			boolean useBackLink) {
 		// controller configuration
-		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-		flags.setEnabled(BGConfigFlags.BACK_SWITCH, useBackLink);
-		return new BGManagementController(ureq, wControl, resource, flags);
-	}
-
-	private BGManagementController createRightGroupManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource,
-			boolean useBackLink) {
-		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
-		flags.setEnabled(BGConfigFlags.BACK_SWITCH, useBackLink);
-		return new BGManagementController(ureq, wControl, resource, flags);
+		return new BGManagementController(ureq, wControl, resource, useBackLink);
 	}
 
 	/**

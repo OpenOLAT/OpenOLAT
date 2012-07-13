@@ -108,9 +108,9 @@ public class CourseCalendars {
 		calendars.add(courseKalendarWrapper);
 
 		// learning groups
-		List<BusinessGroup> ownerGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
+		List<BusinessGroup> ownerGroups = cgm.getOwnedBusinessGroups(identity);
 		addCalendars(ureq, ownerGroups, true, clpc, calendars);
-		List<BusinessGroup> attendedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
+		List<BusinessGroup> attendedGroups = cgm.getParticipatingBusinessGroups(identity);
 		for (BusinessGroup ownerGroup : ownerGroups) {
 			if (attendedGroups.contains(ownerGroup)) attendedGroups.remove(ownerGroup);
 		}

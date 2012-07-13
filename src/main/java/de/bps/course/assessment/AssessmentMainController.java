@@ -813,9 +813,9 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
 		if (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments()) {
-			return gm.getAllLearningGroupsFromAllContexts();
+			return gm.getAllBusinessGroups();
 		} else if (callback.mayAssessCoachedUsers()) {
-			return  gm.getOwnedLearningGroupsFromAllContexts(identity);
+			return  gm.getOwnedBusinessGroups(identity);
 		} else {
 			throw new OLATSecurityException("No rights to assess or even view any groups");
 		}

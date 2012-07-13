@@ -46,7 +46,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * and not org.olat.user.User to build the list!
  * </pre>
  */
-public class UserTableDataModel extends DefaultTableDataModel {
+public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
@@ -54,7 +54,7 @@ public class UserTableDataModel extends DefaultTableDataModel {
 	/**
 	 * @param objects
 	 */
-	public UserTableDataModel(List objects, Locale locale, boolean isAdministrativeUser) {
+	public UserTableDataModel(List<Identity> objects, Locale locale, boolean isAdministrativeUser) {
 		super(objects);
 		setLocale(locale);
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
@@ -82,7 +82,7 @@ public class UserTableDataModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public final Object getValueAt(int row, int col) {
-		Identity identity = (Identity) getObject(row);
+		Identity identity = getObject(row);
 		User user = identity.getUser();
 		if (col == 0) {
 			return identity.getName();			
@@ -110,7 +110,7 @@ public class UserTableDataModel extends DefaultTableDataModel {
 	 * @return
 	 */
 	public Identity getIdentityAt(int rowid) {
-		return (Identity) getObject(rowid);
+		return getObject(rowid);
 	}
 
 }

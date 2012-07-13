@@ -48,7 +48,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.group.ui.BGConfigFlags;
 
 /**
  * Description: <BR>
@@ -74,14 +73,14 @@ public class CollaborationToolsSettingsController extends BasicController {
 	 * @param ureq
 	 * @param tools
 	 */
-	public CollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl, OLATResourceable businessGroup, BGConfigFlags flags) {
+	public CollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl, OLATResourceable businessGroup) {
 		super(ureq, wControl);
 		this.businessGroup = businessGroup;
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 		
 		vc_collabtools = createVelocityContainer ("collaborationtools");
 
-		cots = new ChoiceOfToolsForm (ureq, wControl, collabTools, flags);
+		cots = new ChoiceOfToolsForm (ureq, wControl, collabTools);
 		listenTo(cots);
 		vc_collabtools.put("choiceOfTools", cots.getInitialComponent());
 		
@@ -262,13 +261,13 @@ class ChoiceOfToolsForm extends FormBasicController {
 	List <String>theKeys   = new ArrayList<String>();
 	List <String>theValues = new ArrayList<String>();
 	
-	public ChoiceOfToolsForm(UserRequest ureq, WindowControl wControl, CollaborationTools cts, BGConfigFlags flags) {
+	public ChoiceOfToolsForm(UserRequest ureq, WindowControl wControl, CollaborationTools cts) {
 		super(ureq, wControl);
 		this.cts = cts;
 		
-		for (int i=0, j=0; i<CollaborationTools.TOOLS.length; i++) {
+		for (int i=0; i<CollaborationTools.TOOLS.length; i++) {
 			String k = CollaborationTools.TOOLS[i];
-			if (k.equals(CollaborationTools.TOOL_CHAT) &&  !flags.isEnabled(BGConfigFlags.BUDDYLIST)) {
+			if (k.equals(CollaborationTools.TOOL_CHAT)) {
 				continue;
 			}
 			theKeys.add(""+i);

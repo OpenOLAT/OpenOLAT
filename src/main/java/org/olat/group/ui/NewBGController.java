@@ -71,8 +71,8 @@ public class NewBGController extends BasicController {
 	 * @param bgContext
 	 * @param bulkMode
 	 */
-	NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource){
-		this(ureq,wControl,minMaxEnabled,resource,true,null);
+	public NewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
+		this(ureq, wControl, resource, true, null);
 	}
 	/**
 	 * 
@@ -83,7 +83,7 @@ public class NewBGController extends BasicController {
 	 * @param bulkMode
 	 * @param csvGroupNames
 	 */
-	public NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource, boolean bulkMode, String csvGroupNames) {
+	public NewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvGroupNames) {
 		super(ureq, wControl);
 		this.resource = resource;
 		this.bulkMode = bulkMode;
@@ -92,7 +92,7 @@ public class NewBGController extends BasicController {
 		contentVC = createVelocityContainer("bgform");
 		contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
 		
-		groupCreateController = new BusinessGroupFormController(ureq, wControl, null, minMaxEnabled, bulkMode);
+		groupCreateController = new BusinessGroupFormController(ureq, wControl, null, bulkMode);
 		listenTo(groupCreateController);
 		contentVC.put("groupForm", groupCreateController.getInitialComponent());
 		if (csvGroupNames != null) {
@@ -119,8 +119,8 @@ public class NewBGController extends BasicController {
 				String bgDesc = groupCreateController.getGroupDescription();
 				Integer bgMax = groupCreateController.getGroupMax();
 				Integer bgMin = groupCreateController.getGroupMin();
-				Boolean enableWaitingList = groupCreateController.isWaitingListEnabled();
-				Boolean enableAutoCloseRanks = groupCreateController.isAutoCloseRanksEnabled();
+				boolean enableWaitingList = groupCreateController.isWaitingListEnabled();
+				boolean enableAutoCloseRanks = groupCreateController.isAutoCloseRanksEnabled();
 				
 				Set<String> allNames = new HashSet<String>();
 				if (bulkMode) {

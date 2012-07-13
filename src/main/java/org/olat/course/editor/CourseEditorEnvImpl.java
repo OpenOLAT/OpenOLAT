@@ -177,7 +177,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 
 	@Override
 	public List<String> validateAreas(List<String> areanames) {
-		List<BGArea> cnt = cgm.getAllAreasFromAllContexts();
+		List<BGArea> cnt = cgm.getAllAreas();
 		List<String> invalidNames = new ArrayList<String>();
 		
 		a_a:

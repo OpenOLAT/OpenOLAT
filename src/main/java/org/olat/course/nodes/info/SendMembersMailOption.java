@@ -72,11 +72,11 @@ public class SendMembersMailOption implements SendMailOption {
 	public List<Identity> getSelectedIdentities() {
 		Set<Identity> identities = new HashSet<Identity>();
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		List<BusinessGroup> learningGroups = cgm.getAllLearningGroupsFromAllContexts();
+		List<BusinessGroup> learningGroups = cgm.getAllBusinessGroups();
 		for(BusinessGroup bg:learningGroups) {
-			List<Identity> participants = cgm.getParticipantsFromLearningGroup(bg.getName());
+			List<Identity> participants = cgm.getParticipantsFromBusinessGroup(bg.getName());
 			identities.addAll(participants);
-			List<Identity> coaches = cgm.getCoachesFromLearningGroup(bg.getName());
+			List<Identity> coaches = cgm.getCoachesFromBusinessGroup(bg.getName());
 			identities.addAll(coaches);
 		}
 		//fxdiff VCRP-1,2: access control of resources

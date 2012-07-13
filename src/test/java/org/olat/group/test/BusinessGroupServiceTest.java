@@ -51,7 +51,6 @@ import org.olat.core.util.Encoder;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -457,18 +456,17 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	public void testAddToWaitingListAndFireEvent() throws Exception {
 		System.out.println("testAddToWaitingListAndFireEvent: start...");
 		// Add wg2
-		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		List<Identity> identities = new ArrayList<Identity>();
 		identities.add(wg2);
-		businessGroupService.addToWaitingList(wg2, identities, bgWithWaitingList, flags);
+		businessGroupService.addToWaitingList(wg2, identities, bgWithWaitingList);
 		// Add wg3
 		identities = new ArrayList<Identity>();
 		identities.add(wg3);
-		businessGroupService.addToWaitingList(wg3, identities, bgWithWaitingList, flags);
+		businessGroupService.addToWaitingList(wg3, identities, bgWithWaitingList);
 		// Add wg4
 		identities = new ArrayList<Identity>();
 		identities.add(wg4);
-		businessGroupService.addToWaitingList(wg4, identities, bgWithWaitingList, flags);
+		businessGroupService.addToWaitingList(wg4, identities, bgWithWaitingList);
 		System.out.println("testAddToWaitingListAndFireEvent: 3 user added to waiting list");
 
 		// Check position of 'wg2'
@@ -494,10 +492,9 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	public void testRemoveFromWaitingListAndFireEvent() throws Exception {
 		System.out.println("testRemoveFromWaitingListAndFireEvent: start...");
 		// Remove wg3
-		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		List<Identity> identities = new ArrayList<Identity>();
 		identities.add(wg3);
-		businessGroupService.removeFromWaitingList(wg1, identities, bgWithWaitingList, flags);
+		businessGroupService.removeFromWaitingList(wg1, identities, bgWithWaitingList);
 		// Check position of 'wg2'
 		int pos = businessGroupService.getPositionInWaitingListFor(wg2, bgWithWaitingList);
 		System.out.println("testRemoveFromWaitingListAndFireEvent: wg2 pos=" + pos);
@@ -523,10 +520,9 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 				.isIdentityInBusinessGroup(wg4, bgWithWaitingList));
 
 		// Move wg4 from waiting-list to participant
-		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		List<Identity> identities = new ArrayList<Identity>();
 		identities.add(wg4);
-		businessGroupService.moveIdentityFromWaitingListToParticipant(identities, wg1, bgWithWaitingList, flags);
+		businessGroupService.moveIdentityFromWaitingListToParticipant(identities, wg1, bgWithWaitingList);
 		// Check position of 'wg2'
 		int pos = businessGroupService.getPositionInWaitingListFor(wg2, bgWithWaitingList);
 		System.out.println("testMoveIdenityFromWaitingListToParticipant: wg2 pos=" + pos);
@@ -541,13 +537,12 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		// Add a user to waiting-list which is already in participant-list and try
 		// and try to move this user => user will be removed from waiting-list
 		// Add again wg2
-		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		List<Identity> identities = new ArrayList<Identity>();
 		identities.add(wg1);
-		businessGroupService.addToWaitingList(wg4, identities, bgWithWaitingList, flags);
+		businessGroupService.addToWaitingList(wg4, identities, bgWithWaitingList);
 		identities = new ArrayList<Identity>();
 		identities.add(wg4);
-		businessGroupService.moveIdentityFromWaitingListToParticipant(identities, wg1, bgWithWaitingList, flags);
+		businessGroupService.moveIdentityFromWaitingListToParticipant(identities, wg1, bgWithWaitingList);
 		// Check position of 'wg4'
 		int pos = businessGroupService.getPositionInWaitingListFor(wg4, bgWithWaitingList);
 		System.out.println("testMoveIdenityFromWaitingListToParticipant: wg4 pos=" + pos);

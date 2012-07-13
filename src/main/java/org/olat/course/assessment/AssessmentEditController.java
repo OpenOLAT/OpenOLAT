@@ -150,7 +150,7 @@ public class AssessmentEditController extends BasicController {
 			detailView.contextPut("courseNodeCss", CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 
 			// push infos about users groups
-			List<BusinessGroup> participantGroups = course.getCourseEnvironment().getCourseGroupManager().getParticipatingLearningGroupsFromAllContexts(
+			List<BusinessGroup> participantGroups = course.getCourseEnvironment().getCourseGroupManager().getParticipatingBusinessGroups(
 					assessedIdentity);
 			final Collator collator = Collator.getInstance(ureq.getLocale());
 			Collections.sort(participantGroups, new Comparator<BusinessGroup>() {

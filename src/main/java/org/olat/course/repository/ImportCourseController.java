@@ -125,8 +125,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 		// create group management
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// import groups
-		cgm.importCourseLearningGroups(getExportDataDir(course));
-		cgm.importCourseRightGroups(getExportDataDir(course));
+		cgm.importCourseBusinessGroups(getExportDataDir(course));
 		return true;
 	}
 

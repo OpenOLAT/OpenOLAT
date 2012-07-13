@@ -77,7 +77,7 @@ public class BusinessGroupDAO {
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	
 	public BusinessGroup createAndPersist(Identity creator, String name, String description,
-			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
+			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			boolean showOwners, boolean showParticipants, boolean showWaitingList) {
 
 		BusinessGroupImpl businessgroup = null;
@@ -87,10 +87,10 @@ public class BusinessGroupDAO {
 		SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
 		
 		businessgroup = new BusinessGroupImpl(name, description, ownerGroup, participantGroup, waitingGroup);
-		if(minParticipants >= 0) {
+		if(minParticipants != null && minParticipants.intValue() >= 0) {
 			businessgroup.setMinParticipants(minParticipants);
 		}
-		if(maxParticipants > 0) {
+		if(maxParticipants != null && maxParticipants.intValue() > 0) {
 			businessgroup.setMaxParticipants(maxParticipants);
 		}
 		
@@ -343,7 +343,7 @@ public class BusinessGroupDAO {
 		return res.get(0);
 	}
 	
-	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity,  OLATResource resource) {
+	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		if(resource == null) {
 			sb.append("select bgs from ").append(BusinessGroupImpl.class.getName()).append(" as bgs ")
@@ -372,6 +372,29 @@ public class BusinessGroupDAO {
 		}
 		List<BusinessGroup> groups = query.getResultList();
 		return groups;
+	}
+	
+	public List<Long> toGroupKeys(String groupNames, OLATResource resource) {
+		if(!StringHelper.containsNonWhitespace(groupNames)) return Collections.emptyList();
+		
+		String[] groupNameArr = groupNames.split(",");
+		List<String> names = new ArrayList<String>();
+		for(String name:groupNameArr) {
+			names.add(name.trim());
+		}
+		
+		if(names.isEmpty()) return Collections.emptyList();
+			
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgs.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgs ")
+		  .append(" where bgs.resource.key =:resourceKey and bgs.name in (:names)");
+
+		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("names", names)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return keys;
 	}
 	
 	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource) {

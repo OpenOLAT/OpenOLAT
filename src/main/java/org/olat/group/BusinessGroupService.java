@@ -36,7 +36,6 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -73,7 +72,7 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
-			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
+			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource);
 	
 	/**
@@ -88,7 +87,7 @@ public interface BusinessGroupService {
 	 * @param resource
 	 * @return
 	 */
-	public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, String description, int minParticipants, int maxParticipants,
+	public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, String description, Integer minParticipants, Integer maxParticipants,
 			boolean waitingListEnabled, boolean autoCloseRanksEnabled, OLATResource resource);
 	
 	/**
@@ -254,6 +253,8 @@ public interface BusinessGroupService {
 	
 	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults);
 	
+	public List<Long> toGroupKeys(String groupNames, OLATResource resource);
+	
 	//check
 	public boolean checkIfOneOrMoreNameExists(Set<String> names, OLATResource resource); 
 	
@@ -301,7 +302,7 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group, BGConfigFlags flags);
+	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group);
 	
 	/**
 	 * Remove a list of users from a group as owner and does all the magic that needs to be
@@ -312,7 +313,7 @@ public interface BusinessGroupService {
 	 * @param group
 	 * @param flags
 	 */
-	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup group, BGConfigFlags flags);
+	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup group);
 
 	/**
 	 * Adds a user to a group as participant and does all the magic that needs to
@@ -323,7 +324,7 @@ public interface BusinessGroupService {
 	 * @param group
 	 * @param flags
 	 */
-	public void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group, BGConfigFlags flags);
+	public void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group);
 	
 	/**
 	 * Adds a list of users to a group as participant and does all the magic that needs to
@@ -335,7 +336,7 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup);
 
 	/**
 	 * Remove a user from a group as participant and does all the magic that needs
@@ -346,7 +347,7 @@ public interface BusinessGroupService {
 	 * @param group
 	 * @param flags
 	 */
-	public void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags);
+	public void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group);
 	
 	/**
 	 * Remove a list of users from a group as participant and does all the magic that needs
@@ -357,7 +358,7 @@ public interface BusinessGroupService {
 	 * @param group
 	 * @param flags
 	 */
-	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, BGConfigFlags flags);
+	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group);
 
 	/**
 	 * Adds a user to a waiting-list of a group and does all the magic that needs to
@@ -379,7 +380,7 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse addToWaitingList(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	public BusinessGroupAddResponse addToWaitingList(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup);
 
 	
 	
@@ -406,7 +407,7 @@ public interface BusinessGroupService {
 	 * @param currBusinessGroup
 	 * @param flags
 	 */
-	public void removeFromWaitingList(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	public void removeFromWaitingList(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup);
 
 	/**
 	 * Move users from a waiting-list to participant-list.
@@ -416,7 +417,7 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(List<Identity> identities, Identity ureqIdentity, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(List<Identity> identities, Identity ureqIdentity, BusinessGroup currBusinessGroup);
 
 	
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);

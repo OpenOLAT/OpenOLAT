@@ -58,7 +58,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
@@ -209,12 +208,11 @@ public class BusinessGroupListController extends BasicController {
 	 * @param ureq
 	 */
 	private void doGroupLeave(UserRequest ureq, BusinessGroup group) {
-		BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
 		// 1) remove as owner
 		if (securityManager.isIdentityInSecurityGroup(getIdentity(), group.getOwnerGroup())) {
 			List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
 			if (ownerList.size() > 1) {
-				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(getIdentity()), group, flags);
+				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(getIdentity()), group);
 			} else {
 				// he is the last owner, but there must be at least one oner
 				// give him a warning, as long as he tries to leave, he gets
@@ -227,7 +225,7 @@ public class BusinessGroupListController extends BasicController {
 		// now remove the identity also as participant.
 		// 2) remove as participant
 		List<Identity> identities = Collections.singletonList(getIdentity());
-		businessGroupService.removeParticipants(ureq.getIdentity(), identities, group, flags);
+		businessGroupService.removeParticipants(ureq.getIdentity(), identities, group);
 	}
 	
 	/**

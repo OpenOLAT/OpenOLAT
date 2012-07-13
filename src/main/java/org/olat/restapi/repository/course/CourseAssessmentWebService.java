@@ -579,7 +579,7 @@ public class CourseAssessmentWebService {
 	private List<Identity> loadUsers(ICourse course) {
 		List<Identity> identites = new ArrayList<Identity>();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getAllLearningGroupsFromAllContexts();
+		List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
 
 		Set<Long> check = new HashSet<Long>();
 		for(BusinessGroup group:groups) {

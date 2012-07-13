@@ -52,11 +52,6 @@ public interface CourseGroupManager {
 
 	
 	public OLATResource getCourseResource();
-	
-	/**
-	 * Initialize the group contexts list.
-	 */
-	public void initGroupContextsList();
 
 	/**
 	 * Checks users course rights in any of the available right group context of
@@ -130,7 +125,7 @@ public interface CourseGroupManager {
 	 * @return A list of all learning group from all learning group contexts of
 	 *         this course
 	 */
-	public List<BusinessGroup> getAllLearningGroupsFromAllContexts();
+	public List<BusinessGroup> getAllBusinessGroups();
 
 	/**
 	 * @param groupName
@@ -138,7 +133,7 @@ public interface CourseGroupManager {
 	 *         contexts of this course
 	 */
 	//TODO gm why is it needed?
-	public List<BusinessGroup> getLearningGroupsFromAllContexts(String groupName);
+	public List<BusinessGroup> getBusinessGroups(String groupName);
 	
 	public boolean existGroup(String nameOrKey);
 
@@ -147,14 +142,14 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups from all contexts from this course
 	 *         that are in the given group area
 	 */
-	public List<BusinessGroup> getLearningGroupsInAreaFromAllContexts(String areaName);
+	public List<BusinessGroup> getBusinessGroupsInArea(String areaName);
 
 	/**
 	 * @param groupName
 	 * @return A list of all learning areas where the given group takes part. All
 	 *         course group contexts are considered in this search.
 	 */
-	public List<BGArea> getLearningAreasOfGroupFromAllContexts(String groupName);
+	public List<BGArea> getAreasOfBusinessGroup(String groupName);
 
 	/**
 	 * @param identity
@@ -162,7 +157,7 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups with the given name where this
 	 *         identity is participant
 	 */
-	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity, String groupName);
+	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity, String groupName);
 
 	/**
 	 * @param identity
@@ -170,26 +165,26 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups within the given group area where
 	 *         this identity is participant
 	 */
-	public List<BusinessGroup> getParticipatingLearningGroupsInAreaFromAllContexts(Identity identity, String araName);
+	public List<BusinessGroup> getParticipatingBusinessGroupsInArea(Identity identity, String araName);
 
 	/**
 	 * @param identity
 	 * @return A list of all learning groups where this identity is owner
 	 */
-	public List<BusinessGroup> getOwnedLearningGroupsFromAllContexts(Identity identity);
+	public List<BusinessGroup> getOwnedBusinessGroups(Identity identity);
 
 	/**
 	 * @param identity
 	 * @return A list of all learning groups where this identity is participant
 	 */
-	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity);
+	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity);
 
 	/**
 	 * @return A list of all group areas from this course
 	 */
-	public List<BGArea> getAllAreasFromAllContexts();
+	public List<BGArea> getAllAreas();
 	
-	public List<BGArea> getAreasFromContext(String areaname);
+	public List<BGArea> getAreas(String areaname);
 	
 	public boolean existArea(String nameOrKey);
 
@@ -217,35 +212,28 @@ public interface CourseGroupManager {
 	 *         a group red is in more than one contexts, red will be only once in
 	 *         the list
 	 */
-	public List<String> getUniqueLearningGroupNamesFromAllContexts();
+	public List<String> getUniqueBusinessGroupNames();
 
 	/**
 	 * @return A list with all area names used in all learning group contexts. If
 	 *         an area red is in more than one contexts, red will be only once in
 	 *         the list
 	 */
-	public List<String> getUniqueAreaNamesFromAllContexts();
+	public List<String> getUniqueAreaNames();
 
 	/**
 	 * Export all groups which are course internal to a file for later import.
 	 * 
 	 * @param fExportDirectory
 	 */
-	public void exportCourseLeaningGroups(File fExportDirectory);
+	public void exportCourseBusinessGroups(File fExportDirectory);
 
 	/**
 	 * Import course internal groups fa previous export.
 	 * 
 	 * @param fImportDirectory
 	 */
-	public void importCourseLearningGroups(File fImportDirectory);
-
-	/**
-	 * Import course internal groups fa previous export.
-	 * 
-	 * @param fImportDirectory
-	 */
-	public void importCourseRightGroups(File fImportDirectory);
+	public void importCourseBusinessGroups(File fImportDirectory);
 
 	/**
 	 * List with identities being coaches in learning groups of this course. If
@@ -254,9 +242,9 @@ public interface CourseGroupManager {
 	 * @param groupName
 	 * @return a list with all coaches of this course
 	 */
-	public List<Identity> getCoachesFromLearningGroup(String groupName);
+	public List<Identity> getCoachesFromBusinessGroup(String groupName);
 	
-	public List<Identity> getCoachesFromLearningGroups(List<Long> groupKeys);
+	public List<Identity> getCoachesFromBusinessGroups(List<Long> groupKeys);
 	
 	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getCoaches();
@@ -279,9 +267,9 @@ public interface CourseGroupManager {
 	 * @param groupName
 	 * @return a list with all participants of this course
 	 */
-	public List<Identity> getParticipantsFromLearningGroup(String groupName);
+	public List<Identity> getParticipantsFromBusinessGroup(String groupName);
 	
-	public List<Identity> getParticipantsFromLearningGroups(List<Long> groupKeys);
+	public List<Identity> getParticipantsFromBusinessGroups(List<Long> groupKeys);
 	
 	
 	
@@ -303,5 +291,5 @@ public interface CourseGroupManager {
 	 * @param identity
 	 * @return A list of all waiting-list groups where this identity is in
 	 */
-	public List<BusinessGroup> getWaitingListGroupsFromAllContexts(Identity identity);
+	public List<BusinessGroup> getWaitingListGroups(Identity identity);
 }

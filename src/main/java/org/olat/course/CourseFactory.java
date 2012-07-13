@@ -425,7 +425,7 @@ public class CourseFactory extends BasicManager {
 		CalendarManager calMan = CalendarManagerFactory.getInstance().getCalendarManager();
 		NotificationsManager nfm = NotificationsManager.getInstance();
 		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);
-		List<BusinessGroup> learningGroups = courseGroupManager.getAllLearningGroupsFromAllContexts();
+		List<BusinessGroup> learningGroups = courseGroupManager.getAllBusinessGroups();
 		//all learning and right group calendars
 		for (BusinessGroup bg : learningGroups) {
 			KalendarRenderWrapper calRenderWrapper = calMan.getGroupCalendar(bg);
@@ -622,8 +622,7 @@ public class CourseFactory extends BasicManager {
 		// create group management
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// import groups
-		cgm.importCourseLearningGroups(courseExportData);
-		cgm.importCourseRightGroups(courseExportData);
+		cgm.importCourseBusinessGroups(courseExportData);
 
 		// create security group
 		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();

@@ -68,7 +68,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.modules.wiki.restapi.GroupWikiWebService;
@@ -483,9 +482,8 @@ public class LearningGroupWebService {
 		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
-					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 					List<Identity> identityToAdd = Collections.singletonList(identity);
-					bgs.addOwners(ureq.getIdentity(), identityToAdd, group, flags);
+					bgs.addOwners(ureq.getIdentity(), identityToAdd, group);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -543,8 +541,7 @@ public class LearningGroupWebService {
 		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
-					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgs.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group, flags);
+					bgs.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -600,8 +597,7 @@ public class LearningGroupWebService {
 		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
-					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgs.addParticipant(ureq.getIdentity(), identity, group, flags);
+					bgs.addParticipant(ureq.getIdentity(), identity, group);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -657,8 +653,7 @@ public class LearningGroupWebService {
 			//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 				public void execute() {
-					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgs.removeParticipant(ureq.getIdentity(), identity, group, flags);
+					bgs.removeParticipant(ureq.getIdentity(), identity, group);
 				}
 			});
 

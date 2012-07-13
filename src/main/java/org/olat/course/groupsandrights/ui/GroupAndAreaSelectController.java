@@ -85,12 +85,12 @@ public class GroupAndAreaSelectController extends DefaultController {
         // initialize some type specific stuff
         switch (type) {
         case 1:
-            namesList = cgm.getUniqueLearningGroupNamesFromAllContexts();            
+            namesList = cgm.getUniqueBusinessGroupNames();            
             main.contextPut("title", trans.translate("groupandareaselect.groups.title"));
             main.contextPut("noChoicesText", trans.translate("groupandareaselect.groups.nodata"));
             break;
         case 2:
-            namesList = cgm.getUniqueAreaNamesFromAllContexts();            
+            namesList = cgm.getUniqueAreaNames();            
             main.contextPut("title", trans.translate("groupandareaselect.areas.title"));
             main.contextPut("noChoicesText", trans.translate("groupandareaselect.areas.nodata"));
             break;

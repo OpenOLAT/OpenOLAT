@@ -191,7 +191,7 @@ public class CORunController extends BasicController {
 	}
 	
 	private ContactList retrieveCoachesFromGroups(List<Long> groupKeys) {
-		List<Identity> coaches = cgm.getCoachesFromLearningGroups(groupKeys);
+		List<Identity> coaches = cgm.getCoachesFromBusinessGroups(groupKeys);
 		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
 		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
@@ -200,7 +200,7 @@ public class CORunController extends BasicController {
 	}
 
 	private ContactList retrieveCoachesFromGroup(String grpName) {
-		List<Identity> coaches = cgm.getCoachesFromLearningGroup(grpName);
+		List<Identity> coaches = cgm.getCoachesFromBusinessGroup(grpName);
 		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
 		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
@@ -227,14 +227,14 @@ public class CORunController extends BasicController {
 	}
 	
 	private ContactList retrieveParticipantsFromGroup(String grpName) {
-		List<Identity> participiants = cgm.getParticipantsFromLearningGroup(grpName);
+		List<Identity> participiants = cgm.getParticipantsFromBusinessGroup(grpName);
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(participiants);
 		return cl;
 	}
 	
 	private ContactList retrieveParticipantsFromGroups(List<Long> groupKeys) {
-		List<Identity> participiants = cgm.getParticipantsFromLearningGroups(groupKeys);
+		List<Identity> participiants = cgm.getParticipantsFromBusinessGroups(groupKeys);
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(participiants);
 		return cl;

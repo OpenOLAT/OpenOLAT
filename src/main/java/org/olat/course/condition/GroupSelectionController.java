@@ -43,7 +43,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewBGController;
 
 /**
@@ -70,8 +69,16 @@ public class GroupSelectionController extends FormBasicController {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
 		// unique names from list to array
-		List<BusinessGroup> groups = courseGrpMngr.getAllLearningGroupsFromAllContexts();
-
+		loadNamesAndKeys();
+		initForm(ureq);
+		// after initialising the element, select the entries
+		for (Long selectionKey :selectionKeys) {
+			entrySelector.select(selectionKey.toString(), true);
+		}
+	}
+	
+	private void loadNamesAndKeys() {
+		List<BusinessGroup> groups = courseGrpMngr.getAllBusinessGroups();
 		groupNames = new String[groups.size()];
 		groupKeys = new String[groups.size()];
 		for(int i=groups.size(); i-->0; ) {
@@ -79,11 +86,6 @@ public class GroupSelectionController extends FormBasicController {
 			groupKeys[i] = groups.get(i).getKey().toString();
 		}
 
-		initForm(ureq);
-		// after initialising the element, select the entries
-		for (Long selectionKey :selectionKeys) {
-			entrySelector.select(selectionKey.toString(), true);
-		}
 	}
 
 	@Override
@@ -92,9 +94,7 @@ public class GroupSelectionController extends FormBasicController {
 		if (source == createNew) {
 			// user wants to create a new group -> show group create form
 			removeAsListenerAndDispose(groupCreateCntrllr);
-			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
-					ureq, getWindowControl(), true, courseGrpMngr.getCourseResource(), true, null
-			);
+			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseGrpMngr.getCourseResource(), true, null);
 			listenTo(groupCreateCntrllr);
 			
 			removeAsListenerAndDispose(cmc);
@@ -111,13 +111,7 @@ public class GroupSelectionController extends FormBasicController {
 		if (source == groupCreateCntrllr) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
-				List<BusinessGroup> groups = courseGrpMngr.getAllLearningGroupsFromAllContexts();
-				groupNames = new String[groups.size()];
-				groupKeys = new String[groups.size()];
-				for(int i=groups.size(); i-->0; ) {
-					groupNames[i] = groups.get(i).getName();
-					groupKeys[i] = groups.get(i).getKey().toString();
-				}
+				loadNamesAndKeys();
 				// select new value
 				entrySelector.setKeysAndValues(groupKeys, groupNames, null);
 				entrySelector.select(groupCreateCntrllr.getCreatedGroup().getKey().toString(), true);

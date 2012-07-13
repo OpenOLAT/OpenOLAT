@@ -79,7 +79,6 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -182,7 +181,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
-			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
+			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource) {
 		
 		if(resource != null) {
@@ -208,7 +207,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	
 	@Override
 	public Set<BusinessGroup> createUniqueBusinessGroupsFor(final Set<String> allNames, final String description,
-			final int minParticipants, final int maxParticipants, final boolean waitingListEnabled, final boolean autoCloseRanksEnabled,
+			final Integer minParticipants, final Integer maxParticipants, final boolean waitingListEnabled, final boolean autoCloseRanksEnabled,
 			final OLATResource resource) {
 
 	   //o_clusterOK by:cg
@@ -264,7 +263,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				bg.setMaxParticipants(new Integer(minParticipants));
 				bg.setMinParticipants(new Integer(maxParticipants));
 				bg.setWaitingListEnabled(waitingList);
-				if (waitingList.booleanValue() && (bg.getWaitingGroup() == null) ) {
+				if (waitingList != null && waitingList.booleanValue() && bg.getWaitingGroup() == null) {
 					// Waitinglist is enabled but not created => Create waitingGroup
 					SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
 					bg.setWaitingGroup(waitingGroup);
@@ -481,6 +480,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional(readOnly=true)
+	public List<Long> toGroupKeys(String groupNames, OLATResource resource) {
+		return businessGroupDAO.toGroupKeys(groupNames, resource);
+	}
+
+	@Override
+	@Transactional(readOnly=true)
 	public int countContacts(Identity identity) {
 		return businessGroupDAO.countContacts(identity);
 	}
@@ -678,7 +683,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group, BGConfigFlags flags) {
+	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group) {
 		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		for (Identity identity : addIdentities) {
 			group = loadBusinessGroup(group); // reload business group
@@ -692,7 +697,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				response.getIdentitiesAlreadyInGroup().add(identity);
 			} else {
 	      // identity has permission and is not already in group => add it
-				addOwner(ureqIdentity, identity, group, flags);
+				addOwner(ureqIdentity, identity, group);
 				response.getAddedIdentities().add(identity);
 				log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + group.getOwnerGroup().getKey());
 			}
@@ -700,7 +705,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return response;
 	}
 	
-	private void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags) {
+	private void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group) {
 		//fxdiff VCRP-1,2: access control of resources
 		List<RepositoryEntry> res = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(group), 0, 1);
 		for(RepositoryEntry re:res) {
@@ -715,7 +720,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
 		
 		// add user to buddies rosters
-		addToRoster(ureqIdentity, identity, group, flags);
+		addToRoster(ureqIdentity, identity, group);
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
 		// do logging
@@ -724,7 +729,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	public void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group, BGConfigFlags flags) {
+	public void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 
 		//fxdiff VCRP-1,2: access control of resources
@@ -741,7 +746,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		securityManager.addIdentityToSecurityGroup(identityToAdd, group.getPartipiciantGroup());
 
 		// add user to buddies rosters
-		addToRoster(ureqIdentity, identityToAdd, group, flags);
+		addToRoster(ureqIdentity, identityToAdd, group);
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identityToAdd);
 		// do logging
@@ -751,7 +756,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public BusinessGroupAddResponse addParticipants(final Identity ureqIdentity, final List<Identity> addIdentities,
-			final BusinessGroup group, final BGConfigFlags flags) {
+			final BusinessGroup group) {
 		
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
@@ -768,7 +773,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 						response.getIdentitiesAlreadyInGroup().add(identity);
 					} else {
 						// identity has permission and is not already in group => add it
-						addParticipant(ureqIdentity, identity, currBusinessGroup, flags);
+						addParticipant(ureqIdentity, identity, currBusinessGroup);
 						response.getAddedIdentities().add(identity);
 						log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey());
 					}
@@ -778,7 +783,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags) {
+	public void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		
 		//fxdiff VCRP-2: access control
@@ -791,7 +796,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		securityManager.removeIdentityFromSecurityGroup(identity, group.getPartipiciantGroup());
 
 		// remove user from buddies rosters
-		removeFromRoster(identity, group, flags);
+		removeFromRoster(identity, group);
 		
 		//remove subsciptions if user gets removed
 		removeSubscriptions(identity, group);
@@ -803,18 +808,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		// Check if a waiting-list with auto-close-ranks is configurated
 		if ( group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue() ) {
 			// even when doOnlyPostRemovingStuff is set to true we really transfer the first Identity here
-			transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, flags);
+			transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group);
 		}	
 		// send notification mail in your controller!
 		
 	}
 	
 	@Override
-	public void removeParticipants(final Identity ureqIdentity, final List<Identity> identities, final BusinessGroup group, final BGConfigFlags flags) {
+	public void removeParticipants(final Identity ureqIdentity, final List<Identity> identities, final BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 			public void execute() {
 				for (Identity identity : identities) {
-				  removeParticipant(ureqIdentity, identity, group, flags);
+				  removeParticipant(ureqIdentity, identity, group);
 				  log.audit("removed identiy '" + identity.getName() + "' from securitygroup with key " + group.getPartipiciantGroup().getKey());
 				}
 			}
@@ -835,7 +840,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	
 	@Override
 	public BusinessGroupAddResponse addToWaitingList(final Identity ureqIdentity, final List<Identity> addIdentities,
-			final BusinessGroup group, final BGConfigFlags flags) {
+			final BusinessGroup group) {
 		
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroup currBusinessGroup = loadBusinessGroup(group); // reload business group
@@ -873,8 +878,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	public void removeFromWaitingList(final Identity ureqIdentity, final List<Identity> identities, final BusinessGroup currBusinessGroup,
-			final BGConfigFlags flags) {
+	public void removeFromWaitingList(final Identity ureqIdentity, final List<Identity> identities, final BusinessGroup currBusinessGroup) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor(){
 			public void execute() {
 				for (Identity identity : identities) {
@@ -902,7 +906,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(final List<Identity> identities, final Identity ureqIdentity,
-			final BusinessGroup currBusinessGroup, final BGConfigFlags flags) {
+			final BusinessGroup currBusinessGroup) {
 		
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup,new SyncerExecutor(){
@@ -911,7 +915,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					// check if idenity is allready in participant
 					if (!securityManager.isIdentityInSecurityGroup(identity,currBusinessGroup.getPartipiciantGroup()) ) {
 						// Idenity is not in participant-list => move idenity from waiting-list to participant-list
-						addParticipant(ureqIdentity, identity, currBusinessGroup, flags);
+						addParticipant(ureqIdentity, identity, currBusinessGroup);
 						removeFromWaitingList(ureqIdentity, identity, currBusinessGroup);
 						response.getAddedIdentities().add(identity);
 						// notification mail is handled in controller
@@ -957,7 +961,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public String[] addIdentityToGroups(final AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity) {
-		final BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
 		String[] resultTextArgs = new String[2];
 		boolean addToAnyGroup = false;
 
@@ -974,7 +977,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getOwnerGroup())){
 //				seems not to work, but would be the way to go!
 //				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
-				addOwner(addingIdentity, ident, group, flags);
+				addOwner(addingIdentity, ident, group);
 				ownerGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
 				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
@@ -993,7 +996,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 //				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
 				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 					public void execute() {
-						addParticipant(addingIdentity, ident, toAddGroup, flags);
+						addParticipant(addingIdentity, ident, toAddGroup);
 					}});
 				participantGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
@@ -1023,7 +1026,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 
-	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group, BGConfigFlags flags) {
+	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		// Check if waiting-list is enabled and auto-rank-up
 		if (group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue()) {
@@ -1051,7 +1054,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 							//            that get triggered in the next two methods to be of ActionType admin
 							//            This is needed to make sure the targetIdentity ends up in the o_loggingtable
 							ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-							addParticipant(ureqIdentity, firstWaitingListIdentity, group, flags);
+							addParticipant(ureqIdentity, firstWaitingListIdentity, group);
 							removeFromWaitingList(ureqIdentity, firstWaitingListIdentity, group);
 						} finally {
 							ThreadLocalUserActivityLogger.setStickyActionType(formerStickyActionType);
@@ -1075,8 +1078,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		}
 	}
 
-	private void addToRoster(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags) {
-		if (flags.isEnabled(BGConfigFlags.BUDDYLIST) && InstantMessagingModule.isEnabled()) {
+	private void addToRoster(Identity ureqIdentity, Identity identity, BusinessGroup group) {
+		if (InstantMessagingModule.isEnabled()) {
 			//evaluate whether to sync or not
 			boolean syncGroup = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
 			//only sync when a group is a certain type and this type is configured that you want to sync it
@@ -1090,7 +1093,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup group, BGConfigFlags flags) {
+	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup group) {
 		//fxdiff VCRP-2: access control
 		List<RepositoryEntry> entries = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		for(RepositoryEntry entry:entries) {
@@ -1106,7 +1109,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		for(Identity identity:identitiesToRemove) {
 			securityManager.removeIdentityFromSecurityGroup(identity, group.getOwnerGroup());
 			// remove user from buddies rosters
-			removeFromRoster(identity, group, flags);
+			removeFromRoster(identity, group);
 			
 			//remove subsciptions if user gets removed
 			removeSubscriptions(identity, group);
@@ -1136,8 +1139,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		}
 	}
 
-	private void removeFromRoster(Identity identity, BusinessGroup group, BGConfigFlags flags) {
-		if (flags.isEnabled(BGConfigFlags.BUDDYLIST) && InstantMessagingModule.isEnabled()) {
+	private void removeFromRoster(Identity identity, BusinessGroup group) {
+		if (InstantMessagingModule.isEnabled()) {
 			// only remove user from roster if not in other security group
 			if (!isIdentityInBusinessGroup(identity, group)) {
 				String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);

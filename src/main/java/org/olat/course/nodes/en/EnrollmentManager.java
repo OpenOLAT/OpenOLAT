@@ -48,7 +48,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.properties.Property;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -138,13 +137,12 @@ public class EnrollmentManager extends BasicManager {
 			final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
 		if (isLogDebugEnabled()) logDebug("doCancelEnrollment");
 		// 1. Remove group membership, fire events, do loggin etc.
-		final BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 	//TODO gsync
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(enrolledGroup, new SyncerExecutor(){
 			public void execute() {
 				// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
 				// and move the users accordingly
-				businessGroupService.removeParticipant(identity, identity, enrolledGroup, flags);
+				businessGroupService.removeParticipant(identity, identity, enrolledGroup);
 				logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
 				// 2. Remove enrollmentdate property
 				// only remove last time date, not firsttime
@@ -221,7 +219,7 @@ public class EnrollmentManager extends BasicManager {
 		if(areaKeys != null && !areaKeys.isEmpty()) {
 			for (Long areaKey:areaKeys) {
 				String areaName = areaKey.toString();//TODO gm
-				List<BusinessGroup> groups = cgm.getParticipatingLearningGroupsInAreaFromAllContexts(identity, areaName);
+				List<BusinessGroup> groups = cgm.getParticipatingBusinessGroupsInArea(identity, areaName);
 				if (groups.size() > 0) {
 					// Usually it is only possible to be in one group. However,
 					// theoretically the
@@ -295,8 +293,7 @@ public class EnrollmentManager extends BasicManager {
 			CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		// 1. Add user to group, fire events, do loggin etc.
-		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-		businessGroupService.addParticipant(identity, identity, group, flags);
+		businessGroupService.addParticipant(identity, identity, group);
 		// 2. Set first enrollment date
 		String nowString = Long.toString(System.currentTimeMillis());
 		Property firstTime = coursePropertyManager

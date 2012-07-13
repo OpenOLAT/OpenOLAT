@@ -51,7 +51,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -267,8 +266,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 				for (final Identity identity : identities) {
 					if (!BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, reloadedProject.getProjectGroup().getPartipiciantGroup())) {
 						BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-						final BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
-						bgs.addParticipant(actionIdentity, identity, reloadedProject.getProjectGroup(), flags);
+						bgs.addParticipant(actionIdentity, identity, reloadedProject.getProjectGroup());
 						logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
 						response.getAddedIdentities().add(identity);
 					} else {

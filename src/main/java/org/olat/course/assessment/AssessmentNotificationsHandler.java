@@ -330,7 +330,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					final List<Identity> coachedUsers = new ArrayList<Identity>();
 					if (!hasFullAccess) {
 						// initialize list of users, only when user has not full access
-						List<BusinessGroup> coachedGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
+						List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(identity);
 						BaseSecurity securityManager = BaseSecurityManager.getInstance();
 						for (Iterator<BusinessGroup> iter = coachedGroups.iterator(); iter.hasNext();) {
 							BusinessGroup group = iter.next();

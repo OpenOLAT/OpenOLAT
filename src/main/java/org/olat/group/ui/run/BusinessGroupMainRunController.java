@@ -85,7 +85,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.DisplayMembers;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.edit.BusinessGroupEditController;
@@ -197,8 +196,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private boolean isAdmin;
 
-	private BGConfigFlags flags;
-
+	private final BaseSecurity securityManager;
 	private final BusinessGroupService businessGroupService;
 	private UserSession userSession;
 	private String adminNodeId; // reference to admin menu item
@@ -231,15 +229,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 * @param flags
 	 * @param initialViewIdentifier supported are null, "toolforum", "toolfolder"
 	 */
-	public BusinessGroupMainRunController(UserRequest ureq, WindowControl control, BusinessGroup bGroup, BGConfigFlags flags,
+	public BusinessGroupMainRunController(UserRequest ureq, WindowControl control, BusinessGroup bGroup,
 			String initialViewIdentifier) {
 		super(ureq, control);
-		this.flags = flags;
+
 		/*
 		 * lastUsage, update lastUsage if group is run if you can acquire the lock
 		 * on the group for a very short time. If this is not possible, then the
 		 * lastUsage is already up to date within one-day-precision.
 		 */
+		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		businessGroup = businessGroupService.setLastUsageFor(bGroup);
 		if(businessGroup == null) {
@@ -257,8 +256,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		this.userSession = ureq.getUserSession();
 		this.assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 
-		boolean isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(getIdentity(), Constants.PERMISSION_ACCESS, businessGroup);
-		this.isAdmin = isOwner || flags.isEnabled(BGConfigFlags.IS_GM_ADMIN);
+		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin()
+				|| ureq.getUserSession().getRoles().isGroupManager()
+				|| securityManager.isIdentityPermittedOnResourceable(getIdentity(), Constants.PERMISSION_ACCESS, businessGroup);
 
 		// Initialize translator:
 		// package translator with default group fallback translators and type
@@ -438,7 +438,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private void exposeGroupDetailsToVC(BusinessGroup currBusinessGroup) {
 		main.contextPut("BuddyGroup", currBusinessGroup);
-		main.contextPut("hasOwners", new Boolean(flags.isEnabled(BGConfigFlags.GROUP_OWNERS)));
+		main.contextPut("hasOwners", Boolean.TRUE);
 	}
 
 	/**
@@ -563,36 +563,36 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		ContactList ownerCntctLst;// = new ContactList(translate("sendtochooser.form.chckbx.owners"));
 		ContactList partipCntctLst;// = new ContactList(translate("sendtochooser.form.chckbx.partip"));
 		ContactList waitingListContactList;// = new ContactList(translate("sendtochooser.form.chckbx.waitingList"));
-		if (flags.isEnabled(BGConfigFlags.GROUP_OWNERS)) {
-			if (sendToChooserForm.ownerChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_ALL)) {
-				ownerCntctLst = new ContactList(translate("sendtochooser.form.radio.owners.all"));
+
+		if (sendToChooserForm.ownerChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_ALL)) {
+			ownerCntctLst = new ContactList(translate("sendtochooser.form.radio.owners.all"));
+			SecurityGroup owners = businessGroup.getOwnerGroup();
+			List<Identity> ownerList = scrtMngr.getIdentitiesOfSecurityGroup(owners);
+			ownerCntctLst.addAllIdentites(ownerList);
+			cmsg.addEmailTo(ownerCntctLst);
+		} else {
+			if (sendToChooserForm.ownerChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_CHOOSE)) {
+				ownerCntctLst = new ContactList(translate("sendtochooser.form.radio.owners.choose"));
 				SecurityGroup owners = businessGroup.getOwnerGroup();
 				List<Identity> ownerList = scrtMngr.getIdentitiesOfSecurityGroup(owners);
-				ownerCntctLst.addAllIdentites(ownerList);
-				cmsg.addEmailTo(ownerCntctLst);
-			} else {
-				if (sendToChooserForm.ownerChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_CHOOSE)) {
-					ownerCntctLst = new ContactList(translate("sendtochooser.form.radio.owners.choose"));
-					SecurityGroup owners = businessGroup.getOwnerGroup();
-					List<Identity> ownerList = scrtMngr.getIdentitiesOfSecurityGroup(owners);
-					List<Identity> changeableOwnerList = scrtMngr.getIdentitiesOfSecurityGroup(owners);
-					for (Identity identity : ownerList) {
-						boolean keyIsSelected = false;
-						for (Long key : sendToChooserForm.getSelectedOwnerKeys()) {
-							if (key.equals(identity.getKey())) {
-								keyIsSelected = true;
-								break;
-							}
-						}
-						if (!keyIsSelected) {
-							changeableOwnerList.remove(changeableOwnerList.indexOf(identity));
+				List<Identity> changeableOwnerList = scrtMngr.getIdentitiesOfSecurityGroup(owners);
+				for (Identity identity : ownerList) {
+					boolean keyIsSelected = false;
+					for (Long key : sendToChooserForm.getSelectedOwnerKeys()) {
+						if (key.equals(identity.getKey())) {
+							keyIsSelected = true;
+							break;
 						}
 					}
-					ownerCntctLst.addAllIdentites(changeableOwnerList);
-					cmsg.addEmailTo(ownerCntctLst);
+					if (!keyIsSelected) {
+						changeableOwnerList.remove(changeableOwnerList.indexOf(identity));
+					}
 				}
+				ownerCntctLst.addAllIdentites(changeableOwnerList);
+				cmsg.addEmailTo(ownerCntctLst);
 			}
 		}
+
 		if (sendToChooserForm != null) {
 			if  (sendToChooserForm.participantChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_ALL)) {
 				partipCntctLst  = new ContactList(translate("sendtochooser.form.radio.partip.all"));
@@ -821,7 +821,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		VelocityContainer membersVc = createVelocityContainer("ownersandmembers");
 		// 1. show owners if configured with Owners
 		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
-		if (flags.isEnabled(BGConfigFlags.GROUP_OWNERS) && displayMembers.isShowOwners()) {
+		if (displayMembers.isShowOwners()) {
 			removeAsListenerAndDispose(gownersC);
 			gownersC = new GroupController(ureq, getWindowControl(), false, true, false, businessGroup.getOwnerGroup());
 			listenTo(gownersC);
@@ -1093,19 +1093,17 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			nodeCal = gtnChild;
 		}
 
-		if (flags.isEnabled(BGConfigFlags.SHOW_RESOURCES)) {
-			gtnChild = new GenericTreeNode();
-			gtnChild.setTitle(translate("menutree.resources"));
-			gtnChild.setUserObject(ACTIVITY_MENUSELECT_SHOW_RESOURCES);
-			gtnChild.setAltText(translate("menutree.resources.alt"));
-			gtnChild.setIconCssClass("o_course_icon");
-			root.addChild(gtnChild);
-			//fxdiff BAKS-7 Resume function
-			nodeResources = gtnChild;
-		}
-		
+		gtnChild = new GenericTreeNode();
+		gtnChild.setTitle(translate("menutree.resources"));
+		gtnChild.setUserObject(ACTIVITY_MENUSELECT_SHOW_RESOURCES);
+		gtnChild.setAltText(translate("menutree.resources.alt"));
+		gtnChild.setIconCssClass("o_course_icon");
+		root.addChild(gtnChild);
+		//fxdiff BAKS-7 Resume function
+		nodeResources = gtnChild;
+
 		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
-		if ((flags.isEnabled(BGConfigFlags.GROUP_OWNERS) && displayMembers.isShowOwners()) || displayMembers.isShowParticipants()) {
+		if (displayMembers.isShowOwners() || displayMembers.isShowParticipants()) {
 			// either owners or participants, or both are visible
 			// otherwise the node is not visible
 			gtnChild = new GenericTreeNode();

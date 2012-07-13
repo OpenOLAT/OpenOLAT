@@ -73,7 +73,6 @@ public class BusinessGroupFormController extends FormBasicController {
 	/**
 	 * Decides whether minimum and maximum number of group members can be applied.
 	 */
-	private boolean minMaxEnabled = false;
 	private MultipleSelectionElement enableWaitingList;
 	private MultipleSelectionElement enableAutoCloseRanks;
 
@@ -108,10 +107,9 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @param businessGroup The group object which will be modified by this dialog.
 	 * @param minMaxEnabled Decides whether to limit the number of people that can enrol to a group or not
 	 */
-	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean minMaxEnabled) {
+	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
-		this.minMaxEnabled = minMaxEnabled;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq);
 	}
@@ -124,10 +122,9 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @param minMaxEnabled Decides whether to limit the number of people that can enrol to a group or not
 	 * @param bulkMode when passing group names as CSV you have to set this to true and all groups will be created at once
 	 */
-	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean minMaxEnabled, boolean bulkMode) {
+	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean bulkMode) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
-		this.minMaxEnabled = minMaxEnabled;
 		this.bulkMode = bulkMode;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq); // depends on bulkMode flag
@@ -179,17 +176,10 @@ public class BusinessGroupFormController extends FormBasicController {
 				autoCloseValues, null);
 
 		// Enable only if specification of min and max members is possible
-		if (minMaxEnabled) {
-			businessGroupMinimumMembers.setVisible(false); // currently the minimum feature is not enabled
-			businessGroupMaximumMembers.setVisible(true);
-			enableWaitingList.setVisible(true);
-			enableAutoCloseRanks.setVisible(true);
-		} else {
-			businessGroupMinimumMembers.setVisible(false);
-			businessGroupMaximumMembers.setVisible(false);
-			enableWaitingList.setVisible(false);
-			enableAutoCloseRanks.setVisible(false);
-		}
+		businessGroupMinimumMembers.setVisible(false); // currently the minimum feature is not enabled
+		businessGroupMaximumMembers.setVisible(true);
+		enableWaitingList.setVisible(true);
+		enableAutoCloseRanks.setVisible(true);
 
 		if ((businessGroup != null) && (!bulkMode)) {
 			businessGroupName.setValue(businessGroup.getName());
@@ -285,14 +275,16 @@ public class BusinessGroupFormController extends FormBasicController {
 		}
 		enableAutoCloseRanks.clearError();
 		
-		if (minMaxEnabled && disableWaitingListOk) {
+		if (disableWaitingListOk) {
 			// 4) Check min / max settings
 			String maxValue = null;
-			if (StringHelper.containsNonWhitespace(businessGroupMaximumMembers.getValue())) maxValue = businessGroupMaximumMembers
-					.getValue();
+			if (StringHelper.containsNonWhitespace(businessGroupMaximumMembers.getValue())) {
+				maxValue = businessGroupMaximumMembers.getValue();
+			}
 			String minValue = null;
-			if (StringHelper.containsNonWhitespace(businessGroupMinimumMembers.getValue())) minValue = businessGroupMinimumMembers
-					.getValue();
+			if (StringHelper.containsNonWhitespace(businessGroupMinimumMembers.getValue())){
+				minValue = businessGroupMinimumMembers.getValue();
+			}
 			if (isWaitingListEnabled() && (maxValue == null || minValue == "")) {
 				enableWaitingList.setErrorKey("create.form.error.enableWaitinglist", new String[] {});
 				return false;
@@ -378,26 +370,26 @@ public class BusinessGroupFormController extends FormBasicController {
 	/**
 	 * @return
 	 */
-	public int getGroupMax() {
+	public Integer getGroupMax() {
 		String result = businessGroupMaximumMembers.getValue();
 		if (StringHelper.containsNonWhitespace(result)) {
 			result = result.replaceAll(" ", "");
 			return Integer.parseInt(result);
 		} else {
-			return -1;
+			return null;
 		}
 	}
 
 	/**
 	 * @return
 	 */
-	public int getGroupMin() {
+	public Integer getGroupMin() {
 		String result = businessGroupMinimumMembers.getValue();
 		if (StringHelper.containsNonWhitespace(result)) {
 			result = result.replaceAll(" ", "");
 			return Integer.parseInt(result);
 		} else {
-			return -1;
+			return null;
 		}
 	}
 
@@ -424,7 +416,9 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @param enableAutoCloseRanks
 	 */
 	public void setEnableAutoCloseRanks(Boolean enableAutoCloseRanks) {
-		this.enableAutoCloseRanks.select("create.form.enableAutoCloseRanks", enableAutoCloseRanks);
+		if(enableAutoCloseRanks != null) {
+			this.enableAutoCloseRanks.select("create.form.enableAutoCloseRanks", enableAutoCloseRanks.booleanValue());
+		}
 	}
 
 	/**
@@ -438,7 +432,9 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @param enableWaitingList
 	 */
 	public void setEnableWaitingList(Boolean enableWaitingList) {
-		this.enableWaitingList.select("create.form.enableWaitinglist", enableWaitingList);
+		if(enableWaitingList != null) {
+			this.enableWaitingList.select("create.form.enableWaitinglist", enableWaitingList.booleanValue());
+		}
 	}
 
 	/**

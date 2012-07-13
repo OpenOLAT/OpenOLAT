@@ -182,7 +182,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 		String[] groupeNameArr = groupeNames.split(",");
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		for(String groupeName:groupeNameArr) {
-			List<BusinessGroup> groups = cgm.getLearningGroupsFromAllContexts(groupeName);
+			List<BusinessGroup> groups = cgm.getBusinessGroups(groupeName);
 			for(BusinessGroup group:groups) {
 				voes.add(get(group));
 			}

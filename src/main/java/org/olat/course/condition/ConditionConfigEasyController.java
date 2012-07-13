@@ -338,7 +338,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			removeAsListenerAndDispose(groupCreateCtlr);
 			
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-			groupCreateCtlr = new NewBGController(ureq, getWindowControl(),  true, courseResource, true, null);
+			groupCreateCtlr = new NewBGController(ureq, getWindowControl(), courseResource, true, null);
 			listenTo(groupCreateCtlr);
 			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCtlr.getInitialComponent());
 			listenTo(cmc);
@@ -373,7 +373,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
 			removeAsListenerAndDispose(groupCreateCtlr);
-			groupCreateCtlr = new NewBGController(ureq, getWindowControl(), true, courseResource, true, csvGroupName[0]);
+			groupCreateCtlr = new NewBGController(ureq, getWindowControl(), courseResource, true, csvGroupName[0]);
 			listenTo(groupCreateCtlr);
 			
 			removeAsListenerAndDispose(cmc);

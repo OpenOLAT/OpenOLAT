@@ -38,7 +38,6 @@ import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.BusinessGroupFormController;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -60,7 +59,6 @@ public class BGCopyWizardController extends WizardController {
 	private BGCopyWizardCopyForm copyForm;
 	private BusinessGroupFormController groupController;
 	private Translator trans;
-	private BGConfigFlags flags;
 	private BusinessGroup originalGroup, copiedGroup;
 
 	/**
@@ -71,11 +69,10 @@ public class BGCopyWizardController extends WizardController {
 	 * @param originalGroup original business group: master that should be copied
 	 * @param flags
 	 */
-	public BGCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup, BGConfigFlags flags) {
+	public BGCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup) {
 		super(ureq, wControl, 2);
 		setBasePackage(BGCopyWizardController.class);
 		this.trans = BGTranslatorFactory.createBGPackageTranslator(PACKAGE, originalGroup.getType(), ureq.getLocale());
-		this.flags = flags;
 		this.originalGroup = originalGroup;
 		// init wizard step 1
 		copyForm = new BGCopyWizardCopyForm(ureq, wControl);
@@ -105,10 +102,10 @@ public class BGCopyWizardController extends WizardController {
 		else if (source == copyForm) {
 			if (event == Event.DONE_EVENT) {
 				removeAsListenerAndDispose(groupController);
-				groupController = new BusinessGroupFormController(ureq, getWindowControl(), this.originalGroup, this.flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
+				groupController = new BusinessGroupFormController(ureq, getWindowControl(), originalGroup);
 				listenTo(groupController);
 				
-				groupController.setGroupName(this.originalGroup.getName() + " " + this.trans.translate("bgcopywizard.copyform.name.copy"));
+				groupController.setGroupName(originalGroup.getName() + " " + trans.translate("bgcopywizard.copyform.name.copy"));
 				
 				setNextWizardStep(this.trans.translate("bgcopywizard.detailsform.title"), this.groupController.getInitialComponent());
 			}
@@ -132,11 +129,11 @@ public class BGCopyWizardController extends WizardController {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.originalGroup = bgs.loadBusinessGroup(originalGroup);
 		//OLATResource resource = originalGroup.get();
-		String bgName = this.groupController.getGroupName();
-		String bgDesc = this.groupController.getGroupDescription();
-		Integer bgMax = this.groupController.getGroupMax();
-		Integer bgMin = this.groupController.getGroupMin();
-		boolean copyAreas = (this.flags.isEnabled(BGConfigFlags.AREAS) && this.copyForm.isCopyAreas());
+		String bgName = groupController.getGroupName();
+		String bgDesc = groupController.getGroupDescription();
+		Integer bgMax = groupController.getGroupMax();
+		Integer bgMin = groupController.getGroupMin();
+		boolean copyAreas = copyForm.isCopyAreas();
 		
 		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, bgName, bgDesc, bgMin, bgMax, null, null, copyAreas,
 				copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(), copyForm.isCopyParticipants(), copyForm

@@ -136,8 +136,9 @@ public class BusinessGroupRelationDAO {
 	
 	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee) {
 		if(!owner && !attendee) return 0;
-		TypedQuery<Number> query = createMembersDBQuery(resource, owner, attendee, Number.class);
-		Number count = query.getSingleResult();
+		Number count = createMembersDBQuery(resource, owner, attendee, Number.class)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getSingleResult();
 		return count.intValue();
 	}
 
@@ -223,6 +224,7 @@ public class BusinessGroupRelationDAO {
 		
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("groupKey", group.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getSingleResult();
 		return count.intValue();
 	}

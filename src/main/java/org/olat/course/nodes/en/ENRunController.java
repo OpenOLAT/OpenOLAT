@@ -25,7 +25,6 @@
 
 package org.olat.course.nodes.en;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -45,7 +44,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
@@ -55,7 +53,8 @@ import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.area.BGArea;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.BusinessGroupTableModelWithMaxSize;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -89,8 +88,10 @@ public class ENRunController extends BasicController implements GenericEventList
 	private TableController tableCtr;
 
 	// Managers
+	private final BGAreaManager areaManager;
 	private final EnrollmentManager enrollmentManager;
 	private final CourseGroupManager courseGroupManager;
+	private final BusinessGroupService businessGroupService;
 	private final CoursePropertyManager coursePropertyManager;
 
 	// workflow variables
@@ -114,9 +115,10 @@ public class ENRunController extends BasicController implements GenericEventList
 		this.enNode = enNode;
 		addLoggingResourceable(LoggingResourceable.wrap(enNode));
 
-		//this.trans = new PackageTranslator(PACKAGE, ureq.getLocale());
 		// init managers
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		enrollmentManager = CoreSpringFactory.getImpl(EnrollmentManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 
@@ -124,21 +126,13 @@ public class ENRunController extends BasicController implements GenericEventList
 		enrollableGroupKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_GROUP_IDS);
 		if(enrollableGroupKeys == null) {
 			String groupNamesConfig = (String)moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
-			if(StringHelper.containsNonWhitespace(groupNamesConfig)) {
-				enrollableGroupKeys = getGroupKeys(groupNamesConfig);
-			} else {
-				enrollableGroupKeys = new ArrayList<Long>();
-			}
+			enrollableGroupKeys = businessGroupService.toGroupKeys(groupNamesConfig, courseGroupManager.getCourseResource());
 		}
 
 		enrollableAreaKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_AREA_IDS);
 		if(enrollableAreaKeys != null) {
 			String areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
-			if(StringHelper.containsNonWhitespace(areaInitVal)) {
-				enrollableAreaKeys = getAreaKeys(areaInitVal);
-			} else {
-				enrollableAreaKeys = new ArrayList<Long>();
-			}
+			enrollableAreaKeys = areaManager.toAreaKeys(areaInitVal, courseGroupManager.getCourseResource());
 		}
 
 		cancelEnrollEnabled = ((Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED)).booleanValue();
@@ -310,49 +304,4 @@ public class ENRunController extends BasicController implements GenericEventList
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, group);
 		}
 	}
-	
-
-	//////////////////
-	// Helper Methods
-	//////////////////
-	private List<Long> getGroupKeys(String groupNames) {
-		List<Long> groupKeys = new ArrayList<Long>();
-		if(StringHelper.containsNonWhitespace(groupNames)) {
-			String[] groupNameArr = groupNames.split(",");
-			List<BusinessGroup> groups = courseGroupManager.getAllLearningGroupsFromAllContexts();
-			for(String groupName:groupNameArr) {
-				groupName = groupName.trim();
-				for(BusinessGroup group:groups) {
-					if(groupName.equalsIgnoreCase(group.getName())) {
-						groupKeys.add(group.getKey());
-						break;
-					}
-				}
-			}
-		}
-		return groupKeys;
-	}
-	
-	private List<Long> getAreaKeys(String areaNames) {
-		List<Long> areaKeys = new ArrayList<Long>();
-		if(StringHelper.containsNonWhitespace(areaNames)) {
-			List<BGArea> areas = courseGroupManager.getAllAreasFromAllContexts();
-			String[] areaNameArr = areaNames.split(",");
-			StringBuilder sb = new StringBuilder();
-			for(String areaName:areaNameArr) {
-				areaName = areaName.trim();
-				for(BGArea area:areas) {
-					if(areaName.equalsIgnoreCase(area.getName())) {
-						if(sb.length() > 0) {
-							sb.append(',');
-						}
-						sb.append(area.getKey());
-						break;
-					}
-				}
-			}
-		}
-		return areaKeys;
-	}
-
 }

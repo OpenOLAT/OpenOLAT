@@ -60,7 +60,6 @@ import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.AddToGroupsEvent;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.BusinessGroupTableModel;
@@ -277,7 +276,6 @@ public class GroupOverviewController extends BasicController {
 		BusinessGroup currBusinessGroup = (BusinessGroup) removeFromGrpDlg.getUserObject();
 		String groupName = currBusinessGroup.getName();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		final BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
 		SecurityGroup owners = currBusinessGroup.getOwnerGroup();
 		List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(owners);
 		List<Identity> partList = securityManager.getIdentitiesOfSecurityGroup(currBusinessGroup.getPartipiciantGroup());
@@ -293,7 +291,7 @@ public class GroupOverviewController extends BasicController {
 		} else {
 			// 1) remove as owner
 			if (securityManager.isIdentityInSecurityGroup(identity, owners)) {
-				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), currBusinessGroup, flags);
+				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), currBusinessGroup);
 			}
 
 			// 2) remove as participant
@@ -301,7 +299,7 @@ public class GroupOverviewController extends BasicController {
 			//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor() {
 				public void execute() {
-					businessGroupService.removeParticipant(getIdentity(), identity, toRemFromGroup, flags);
+					businessGroupService.removeParticipant(getIdentity(), identity, toRemFromGroup);
 				}
 			});
 

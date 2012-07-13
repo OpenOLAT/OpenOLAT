@@ -80,7 +80,6 @@ import org.olat.course.ICourse;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
 import org.olat.modules.co.ContactFormController;
@@ -715,8 +714,8 @@ public class CollaborationTools implements Serializable {
 	 * @param ureq
 	 * @return a collaboration tools settings controller
 	 */
-	public CollaborationToolsSettingsController createCollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl, BGConfigFlags flags) {
-		return new CollaborationToolsSettingsController(ureq, wControl, ores, flags);
+	public CollaborationToolsSettingsController createCollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl) {
+		return new CollaborationToolsSettingsController(ureq, wControl, ores);
 	}
 
 	/**

@@ -1278,9 +1278,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	private void initGroupMemberships(Identity identity) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		ownedGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
-		participatedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
-		waitingListGroups = cgm.getWaitingListGroupsFromAllContexts(identity);
+		ownedGroups = cgm.getOwnedBusinessGroups(identity);
+		participatedGroups = cgm.getParticipatingBusinessGroups(identity);
+		waitingListGroups = cgm.getWaitingListGroups(identity);
 	}
 
 	/**

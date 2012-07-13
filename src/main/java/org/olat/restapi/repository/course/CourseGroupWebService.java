@@ -173,7 +173,7 @@ public class CourseGroupWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList(@Context HttpServletRequest request) {
 		CourseGroupManager groupManager = PersistingCourseGroupManager.getInstance(course);
-		List<BusinessGroup> groups = groupManager.getAllLearningGroupsFromAllContexts();
+		List<BusinessGroup> groups = groupManager.getAllBusinessGroups();
 			
 		int count = 0;
 		GroupVO[] vos = new GroupVO[groups.size()];

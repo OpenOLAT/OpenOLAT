@@ -422,6 +422,32 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 				.getSingleResult();
 		return count.intValue() > 0;
 	}
+	
+	
+
+	@Override
+	public List<Long> toAreaKeys(String areaNames, OLATResource resource) {
+		if(!StringHelper.containsNonWhitespace(areaNames)) return Collections.emptyList();
+		
+		String[] areaNameArr = areaNames.split(",");
+		List<String> areaNameList = new ArrayList<String>();
+		for(String areaName:areaNameArr) {
+			areaNameList.add(areaName.trim());
+		}
+		
+		if(areaNameList.isEmpty()) return Collections.emptyList();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select area.key from ").append(BGAreaImpl.class.getName()).append(" area")
+		  .append(" where area.resource.key=:resourceKey and area.name in (:names)");
+
+		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("names", areaNameList)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return keys;
+	}
 
 	/**
 	 * Creates an area object and persists the object in the database

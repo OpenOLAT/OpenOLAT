@@ -125,7 +125,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			
 			// collect all identities in learning groups
 			HashSet<Identity> identitiesInGroups = new HashSet<Identity>();
-			identitiesInGroups.addAll(cgm.getParticipantsFromLearningGroup(null));
+			identitiesInGroups.addAll(cgm.getParticipantsFromBusinessGroup(null));
 			//fxdiff VCRP-1,2: access control of resources
 			identitiesInGroups.addAll(cgm.getParticipants());
 			
@@ -142,24 +142,24 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			notInGroupIdentities.addAll(identitiesNotInGroups);
 			
 			// collect all learning groups
-			lstGroups.addAll(cgm.getAllLearningGroupsFromAllContexts());
+			lstGroups.addAll(cgm.getAllBusinessGroups());
 		} else if(cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT)) {
 			// collect all identities in learning groups
 			HashSet<Identity> identitiesInGroups = new HashSet<Identity>();
-			identitiesInGroups.addAll(cgm.getParticipantsFromLearningGroup(null));
+			identitiesInGroups.addAll(cgm.getParticipantsFromBusinessGroup(null));
 			//fxdiff VCRP-1,2: access control of resources
 			identitiesInGroups.addAll(cgm.getParticipants());
 			allIdentities.addAll(identitiesInGroups);
 			
 			// collect all learning groups
-			lstGroups.addAll(cgm.getAllLearningGroupsFromAllContexts());
+			lstGroups.addAll(cgm.getAllBusinessGroups());
 		} else if(cgm.isIdentityCourseCoach(identity)) {
 			HashSet<Identity> identitiesInGroups = new HashSet<Identity>();
-			for( Object obj : cgm.getAllLearningGroupsFromAllContexts() ) {
+			for( Object obj : cgm.getAllBusinessGroups() ) {
 				BusinessGroup group = (BusinessGroup) obj;
-				if(cgm.getCoachesFromLearningGroup(group.getName()).contains(identity)) {
+				if(cgm.getCoachesFromBusinessGroup(group.getName()).contains(identity)) {
 					lstGroups.add(group);
-					identitiesInGroups.addAll(cgm.getParticipantsFromLearningGroup(group.getName()));
+					identitiesInGroups.addAll(cgm.getParticipantsFromBusinessGroup(group.getName()));
 				}
 			}
 			allIdentities.addAll(identitiesInGroups);
@@ -202,7 +202,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		} else if(groupForm.getSelection().equals(GroupChoiceForm.CHOICE_OTHERS)) {
 			lstIdents.addAll(notInGroupIdentities);
 		} else {
-			lstIdents.addAll(cgm.getParticipantsFromLearningGroup(groupForm.getSelection()));
+			lstIdents.addAll(cgm.getParticipantsFromBusinessGroup(groupForm.getSelection()));
 		}
 		
 		// prepare table for run view

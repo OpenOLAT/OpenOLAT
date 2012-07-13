@@ -83,19 +83,11 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
 		securityManager = BaseSecurityManager.getInstance();
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		initGroupContextsList();
 	}
 
 	@Override
 	public OLATResource getCourseResource() {
 		return courseResource;
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#initGroupContextsList()
-	 */
-	public void initGroupContextsList() {
-		//
 	}
 
 	/**
@@ -141,7 +133,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public boolean isLearningGroupFull(String groupName){
 		OLog logger = Tracing.createLoggerFor(getClass());
-		List<BusinessGroup> groups = getLearningGroupsFromAllContexts(groupName);
+		List<BusinessGroup> groups = getBusinessGroups(groupName);
 		
 		if (groups == null){
 			logger.warn("no groups available");
@@ -193,15 +185,16 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllLearningGroupsFromAllContexts()
 	 */
-	public List<BusinessGroup> getAllLearningGroupsFromAllContexts() {
+	@Override
+	public List<BusinessGroup> getAllBusinessGroups() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		return businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getLearningGroupsFromAllContexts(java.lang.String)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getBusinessGroups(java.lang.String)
 	 */
-	public List<BusinessGroup> getLearningGroupsFromAllContexts(String groupName) {
+	public List<BusinessGroup> getBusinessGroups(String groupName) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setExactName(groupName);
 		return businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
@@ -221,13 +214,14 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllAreasFromAllContexts()
 	 */
-	public List<BGArea> getAllAreasFromAllContexts() {
+	@Override
+	public List<BGArea> getAllAreas() {
 		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
 		return areas;
 	}
 
 	@Override
-	public List<BGArea> getAreasFromContext(String areaname) {
+	public List<BGArea> getAreas(String areaname) {
 		BGArea area = areaManager.findBGArea(areaname, courseResource);
 		if(area == null) {
 			return Collections.emptyList();
@@ -238,19 +232,19 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getLearningGroupsInAreaFromAllContexts(java.lang.String)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getBusinessGroupsInArea(java.lang.String)
 	 */
-	public List<BusinessGroup> getLearningGroupsInAreaFromAllContexts(String areaName) {
+	public List<BusinessGroup> getBusinessGroupsInArea(String areaName) {
 		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
 		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
 		return groups;
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getLearningAreasOfGroupFromAllContexts(java.lang.String)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAreasOfBusinessGroup(java.lang.String)
 	 */
-	public List<BGArea> getLearningAreasOfGroupFromAllContexts(String groupName) {
-		List<BusinessGroup> learningGroups = getLearningGroupsFromAllContexts(groupName);
+	public List<BGArea> getAreasOfBusinessGroup(String groupName) {
+		List<BusinessGroup> learningGroups = getBusinessGroups(groupName);
 		List<BGArea> areas = areaManager.findBGAreasOfBusinessGroups(learningGroups);
 		return areas;
 	}
@@ -261,28 +255,28 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingLearningGroupsFromAllContexts(org.olat.core.id.Identity,
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingBusinessGroups(org.olat.core.id.Identity,
 	 *      java.lang.String)
 	 */
-	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity, String groupName) {
+	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity, String groupName) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
 		return businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingLearningGroupsInAreaFromAllContexts(org.olat.core.id.Identity,
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingBusinessGroupsInArea(org.olat.core.id.Identity,
 	 *      java.lang.String)
 	 */
-	public List<BusinessGroup> getParticipatingLearningGroupsInAreaFromAllContexts(Identity identity, String areaName) {
+	public List<BusinessGroup> getParticipatingBusinessGroupsInArea(Identity identity, String areaName) {
 		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreaAttendedBy(identity, areaName, courseResource);
 		return groups;
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getOwnedLearningGroupsFromAllContexts(org.olat.core.id.Identity)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getOwnedBusinessGroups(org.olat.core.id.Identity)
 	 */
 	@Override
-	public List<BusinessGroup> getOwnedLearningGroupsFromAllContexts(Identity identity) {
+	public List<BusinessGroup> getOwnedBusinessGroups(Identity identity) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
 		List<BusinessGroup> allGroups =
 				businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
@@ -290,10 +284,10 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingLearningGroupsFromAllContexts(org.olat.core.id.Identity)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingBusinessGroups(org.olat.core.id.Identity)
 	 */
 	@Override
-	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity) {
+	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
 		List<BusinessGroup> allGroups =
 				businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
@@ -379,10 +373,10 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getUniqueAreaNamesFromAllContexts()
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getUniqueAreaNames()
 	 */
-	public List<String> getUniqueAreaNamesFromAllContexts() {
-		List<BGArea> areas = getAllAreasFromAllContexts();
+	public List<String> getUniqueAreaNames() {
+		List<BGArea> areas = getAllAreas();
 		List<String> areaNames = new ArrayList<String>();
 		for (BGArea area:areas) {
 			if (!areaNames.contains(area.getName())) {
@@ -394,10 +388,10 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getUniqueLearningGroupNamesFromAllContexts()
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getUniqueBusinessGroupNames()
 	 */
-	public List<String> getUniqueLearningGroupNamesFromAllContexts() {
-		List<BusinessGroup> groups = getAllLearningGroupsFromAllContexts();
+	public List<String> getUniqueBusinessGroupNames() {
+		List<BusinessGroup> groups = getAllBusinessGroups();
 		List<String> groupNames = new ArrayList<String>();
 		for (BusinessGroup group:groups) {
 			if (!groupNames.contains(group.getName())) {
@@ -409,18 +403,18 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#exportCourseLeaningGroups(java.io.File)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#exportCourseBusinessGroups(java.io.File)
 	 */
-	public void exportCourseLeaningGroups(File fExportDirectory) {
+	public void exportCourseBusinessGroups(File fExportDirectory) {
 		File fExportFile = new File(fExportDirectory, LEARNINGGROUPEXPORT_XML);
-		List<BusinessGroup> learningGroups = this.getAllLearningGroupsFromAllContexts();
-		businessGroupService.exportGroups(learningGroups, fExportFile);
+		List<BusinessGroup> groups = getAllBusinessGroups();
+		businessGroupService.exportGroups(groups, fExportFile);
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#importCourseLearningGroups(java.io.File)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#importCourseBusinessGroups(java.io.File)
 	 */
-	public void importCourseLearningGroups(File fImportDirectory) {
+	public void importCourseBusinessGroups(File fImportDirectory) {
 		File fGroupExportXML = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
 		businessGroupService.importGroups(courseResource, fGroupExportXML);
 	}
@@ -434,16 +428,16 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getCoachesFromLearningGroups(String)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getCoachesFromBusinessGroups(String)
 	 */
-	public List<Identity> getCoachesFromLearningGroup(String groupName) {
+	public List<Identity> getCoachesFromBusinessGroup(String groupName) {
 		List<BusinessGroup> bgs = null;
 		if (groupName != null) {
 			// filtered by name
-			bgs = getLearningGroupsFromAllContexts(groupName);
+			bgs = getBusinessGroups(groupName);
 		} else {
 			// no filter
-			bgs = getAllLearningGroupsFromAllContexts();
+			bgs = getAllBusinessGroups();
 		}
 		
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
@@ -454,16 +448,16 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipantsFromLearningGroups(String)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipantsFromBusinessGroups(String)
 	 */
-	public List<Identity> getParticipantsFromLearningGroup(String groupName) {
+	public List<Identity> getParticipantsFromBusinessGroup(String groupName) {
 		List<BusinessGroup> bgs = null;
 		if (groupName != null) {
 			// filtered by name
-			bgs = getLearningGroupsFromAllContexts(groupName);
+			bgs = getBusinessGroups(groupName);
 		} else {
 			// no filter
-			bgs = getAllLearningGroupsFromAllContexts();
+			bgs = getAllBusinessGroups();
 		}
 		
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
@@ -474,7 +468,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 	
 	@Override
-	public List<Identity> getCoachesFromLearningGroups(List<Long> groupKeys) {
+	public List<Identity> getCoachesFromBusinessGroups(List<Long> groupKeys) {
 		List<BusinessGroup> bgs = businessGroupService.loadBusinessGroups(groupKeys);
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		for(BusinessGroup group:bgs) {
@@ -484,7 +478,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 	
 	@Override
-	public List<Identity> getParticipantsFromLearningGroups(List<Long> groupKeys) {
+	public List<Identity> getParticipantsFromBusinessGroups(List<Long> groupKeys) {
 		List<BusinessGroup> bgs = businessGroupService.loadBusinessGroups(groupKeys);
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		for(BusinessGroup group:bgs) {
@@ -521,9 +515,9 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public List<Identity> getCoachesFromArea(String areaName) {
 		List<BusinessGroup> bgs = null;
 		if (StringHelper.containsNonWhitespace(areaName)) {
-			bgs = getLearningGroupsInAreaFromAllContexts(areaName);
+			bgs = getBusinessGroupsInArea(areaName);
 		} else {
-			bgs = getAllLearningGroupsFromAllContexts();
+			bgs = getAllBusinessGroups();
 		}
 		
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
@@ -550,9 +544,9 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public List<Identity> getParticipantsFromArea(String areaName) {
 		List<BusinessGroup> bgs;
 		if (StringHelper.containsNonWhitespace(areaName)) {
-			bgs = getLearningGroupsInAreaFromAllContexts(areaName);
+			bgs = getBusinessGroupsInArea(areaName);
 		} else {
-			bgs = getAllLearningGroupsFromAllContexts();
+			bgs = getAllBusinessGroups();
 		}
 		
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
@@ -575,9 +569,9 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 
 	/**
 	 * 
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getWaitingListGroupsFromAllContexts(org.olat.core.id.Identity)
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#getWaitingListGroups(org.olat.core.id.Identity)
 	 */
-	public List<BusinessGroup> getWaitingListGroupsFromAllContexts(Identity identity) {
+	public List<BusinessGroup> getWaitingListGroups(Identity identity) {
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(identity, courseResource);
 		return groups;
 	}
@@ -588,6 +582,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public void archiveCourseGroups(File exportDirectory) {
 		File exportLearningGroupFile = new File(exportDirectory, "default_" + LEARNINGGROUPARCHIVE_XLS);
-		businessGroupService.archiveGroups(getAllLearningGroupsFromAllContexts(), exportLearningGroupFile);
+		businessGroupService.archiveGroups(getAllBusinessGroups(), exportLearningGroupFile);
 	}
 }

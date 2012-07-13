@@ -1582,9 +1582,10 @@ public class RepositoryManager extends BasicManager {
 	 */
 	private List<BusinessGroup> getCourseGroups(RepositoryEntry repoEntry) {
 		if("CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName())) {
+			//TODO gm
 			ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
 			CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
-			List<BusinessGroup> groups = gm.getAllLearningGroupsFromAllContexts();
+			List<BusinessGroup> groups = gm.getAllBusinessGroups();
 			return groups;
 		}
 		return Collections.emptyList();

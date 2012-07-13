@@ -87,11 +87,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.BusinessGroupShort;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.delete.TabbedPaneController;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.BusinessGroupFormController;
@@ -433,10 +431,8 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 * 
 	 */
 	private void initAddGroupWorkflow(UserRequest ureq) {
-		BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
-
 		removeAsListenerAndDispose(createBuddyGroupController);
-		createBuddyGroupController = new BusinessGroupFormController(ureq, getWindowControl(), null, flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
+		createBuddyGroupController = new BusinessGroupFormController(ureq, getWindowControl(), null);
 		listenTo(createBuddyGroupController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), this.createBuddyGroupController.getInitialComponent(), true, translate("create.form.title"));
 		cmc.activate();
@@ -480,13 +476,12 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 */
 	private void doBuddyGroupLeave(UserRequest ureq) {
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
 		// 1) remove as owner
 		SecurityGroup owners = currBusinessGroup.getOwnerGroup();
 		if (securityManager.isIdentityInSecurityGroup(identity, owners)) {
 			List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(owners);
 			if (ownerList.size() > 1) {
-				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(ureq.getIdentity()), currBusinessGroup, flags);
+				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(ureq.getIdentity()), currBusinessGroup);
 				// update model
 				updateGroupList();
 			} else {
@@ -502,7 +497,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		// 2) remove as participant
 		List<Identity> identities = new ArrayList<Identity>(1);
 		identities.add(ureq.getIdentity());
-		businessGroupService.removeParticipants(ureq.getIdentity(), identities, currBusinessGroup, flags);
+		businessGroupService.removeParticipants(ureq.getIdentity(), identities, currBusinessGroup);
 		
 		// update Tables
 		doGroupList(ureq, getWindowControl());
@@ -517,8 +512,8 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	private BusinessGroup createGroup(UserRequest ureq) {
 		String bgName = createBuddyGroupController.getGroupName();
 		String bgDesc = createBuddyGroupController.getGroupDescription();
-		int bgMin = createBuddyGroupController.getGroupMin();
-		int bgMax = createBuddyGroupController.getGroupMax();
+		Integer bgMin = createBuddyGroupController.getGroupMin();
+		Integer bgMax = createBuddyGroupController.getGroupMax();
 		/*
 		 * this creates a BusinessGroup as BuddyGroup with the specified name and
 		 * description and also the CollaborationTools are enabled during creation.

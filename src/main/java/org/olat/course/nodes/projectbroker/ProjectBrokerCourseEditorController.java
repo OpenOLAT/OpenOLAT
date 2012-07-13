@@ -75,7 +75,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.modules.ModuleConfiguration;
 
@@ -299,17 +298,16 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			return;		
 		} else if (source == accountManagerGroupController) {
-			BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 			if (event instanceof IdentitiesAddEvent) {
 				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), accountManagerGroup, flags);
+				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), accountManagerGroup);
 				identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 				identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 				identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 				getLogger().info("Add users as account-managers");
 				fireEvent(urequest, Event.CHANGED_EVENT );			
 			} else if (event instanceof IdentitiesRemoveEvent) {
-				businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), accountManagerGroup, flags);
+				businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), accountManagerGroup);
 				getLogger().info("Remove users as account-managers");
 				fireEvent(urequest, Event.CHANGED_EVENT );
 			}

@@ -73,19 +73,21 @@ public class AreaSelectionController extends FormBasicController {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
 
-		// unique names from list to arry
-		List<BGArea> areas = courseGrpMngr.getAllAreasFromAllContexts();
+		loadNamesAndKeys();
+		initForm(ureq);
+		
+		for (Long selectionKey: selectionKeys) {
+			entrySelector.select(selectionKey.toString(), true);
+		}
+	}
+	
+	private void loadNamesAndKeys() {
+		List<BGArea> areas = courseGrpMngr.getAllAreas();
 		areaNames = new String[areas.size()];
 		areaKeys = new String[areas.size()];
 		for(int i=areas.size(); i-->0; ) {
 			areaNames[i] = areas.get(i).getName();
 			areaKeys[i] = areas.get(i).getKey().toString();
-		}
-		
-		initForm(ureq);
-		
-		for (Long selectionKey: selectionKeys) {
-			entrySelector.select(selectionKey.toString(), true);
 		}
 	}
 
@@ -109,14 +111,7 @@ public class AreaSelectionController extends FormBasicController {
 		if(source == areaCreateCntrllr) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
-				List<BGArea> areas = courseGrpMngr.getAllAreasFromAllContexts();
-				areaNames = new String[areas.size()];
-				areaKeys = new String[areas.size()];
-				for(int i=areas.size(); i-->0; ) {
-					areaNames[i] = areas.get(i).getName();
-					areaKeys[i] = areas.get(i).getKey().toString();
-				}
-				
+				loadNamesAndKeys();
 				// select new value
 				entrySelector.setKeysAndValues(areaKeys, areaNames, null);
 				entrySelector.select(areaCreateCntrllr.getCreatedArea().getKey().toString(), true);
@@ -160,10 +155,6 @@ public class AreaSelectionController extends FormBasicController {
 	protected void formResetted(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-
-	public Set<String> getSelectedEntries() {
-		return entrySelector.getSelectedKeys();
-	}
 	
 	public List<String> getSelectedNames() {
 		List<String> selectedNames = new ArrayList<String>();
@@ -183,5 +174,4 @@ public class AreaSelectionController extends FormBasicController {
 		}
 		return groupKeys;
 	}
-
 }
