@@ -65,6 +65,10 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_EMAILTOGROUPS = "emailToGroups";
 	/** config key: to email addresses to be extracted from specified learn areas */
 	public static final String CONFIG_KEY_EMAILTOAREAS = "emailToAreas";
+	/** config key: to email addresses to be extracted from specified groups */
+	public static final String CONFIG_KEY_EMAILTOGROUP_IDS = "emailToGroupIds";
+	/** config key: to email addresses to be extracted from specified learn areas */
+	public static final String CONFIG_KEY_EMAILTOAREA_IDS = "emailToAreaIds";
 	/** config key: email goes to partipiciants */
 	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS = "emailtToPartips";
 	/** config key: email goes to coaches */
@@ -150,6 +154,8 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 			} else if (event == Event.DONE_EVENT) {
 				moduleConfiguration.set(CONFIG_KEY_EMAILTOGROUPS, configForm.getEmailGroups());
 				moduleConfiguration.set(CONFIG_KEY_EMAILTOAREAS, configForm.getEmailAreas());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOGROUP_IDS, configForm.getEmailGroupIds());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOAREA_IDS, configForm.getEmailAreaIds());
 				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES, configForm.sendToCoaches());
 				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS, configForm.sendToPartips());
 				moduleConfiguration.set(CONFIG_KEY_EMAILTOADRESSES, configForm.getEmailList());

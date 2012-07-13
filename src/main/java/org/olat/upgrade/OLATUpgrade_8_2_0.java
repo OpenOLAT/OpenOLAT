@@ -127,7 +127,6 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 	
 	private boolean upgradeGroups(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		if (!uhd.getBooleanDataValue(TASK_CONTEXTS)) {
-
 			int counter = 0;
 			List<BusinessGroup> groups;
 			do {
@@ -141,14 +140,12 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			
 			uhd.setBooleanDataValue(TASK_CONTEXTS, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
-			return false;
 		}
-		return false;
+		return true;
 	}
 	
 	private boolean upgradeAreas(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		if (!uhd.getBooleanDataValue(TASK_AREAS)) {
-
 			int counter = 0;
 			List<BGAreaImpl> areas;
 			do {
@@ -162,9 +159,8 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			
 			uhd.setBooleanDataValue(TASK_AREAS, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
-			return false;
 		}
-		return false;
+		return true;
 	}
 	
 	private boolean upgradeCourseConditions(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
@@ -185,9 +181,8 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			
 			uhd.setBooleanDataValue(TASK_CONDITIONS, false);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
-			return false;
 		}
-		return false;
+		return true;
 	}
 	
 	private void processCourse(RepositoryEntry entry) {
@@ -324,7 +319,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		for(String groupName:groupNameArr) {
 			groupName = groupName.trim();
 			for(BusinessGroup group:groups) {
-				if(groupName.equals(group.getName())) {
+				if(groupName.equalsIgnoreCase(group.getName())) {
 					if(sb.length() > 0) {
 						sb.append(',');
 					}
@@ -343,7 +338,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		for(String areaName:areaNameArr) {
 			areaName = areaName.trim();
 			for(BGArea area:areas) {
-				if(areaName.equals(area.getName())) {
+				if(areaName.equalsIgnoreCase(area.getName())) {
 					if(sb.length() > 0) {
 						sb.append(',');
 					}

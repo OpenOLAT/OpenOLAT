@@ -137,6 +137,7 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups with the given group name from all
 	 *         contexts of this course
 	 */
+	//TODO gm why is it needed?
 	public List<BusinessGroup> getLearningGroupsFromAllContexts(String groupName);
 	
 	public boolean existGroup(String nameOrKey);
@@ -255,6 +256,8 @@ public interface CourseGroupManager {
 	 */
 	public List<Identity> getCoachesFromLearningGroup(String groupName);
 	
+	public List<Identity> getCoachesFromLearningGroups(List<Long> groupKeys);
+	
 	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getCoaches();
 
@@ -266,6 +269,8 @@ public interface CourseGroupManager {
 	 * @return a list with all coaches of this course
 	 */
 	public List<Identity> getCoachesFromArea(String areaName);
+	
+	public List<Identity> getCoachesFromAreas(List<Long> areaKeys);
 
 	/**
 	 * List with identities being participants in the learning groups of this course. If
@@ -275,6 +280,10 @@ public interface CourseGroupManager {
 	 * @return a list with all participants of this course
 	 */
 	public List<Identity> getParticipantsFromLearningGroup(String groupName);
+	
+	public List<Identity> getParticipantsFromLearningGroups(List<Long> groupKeys);
+	
+	
 	
 	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getParticipants();
@@ -287,6 +296,8 @@ public interface CourseGroupManager {
 	 * @return a list with participants of this course
 	 */
 	public List<Identity> getParticipantsFromArea(String areaName);
+	
+	public List<Identity> getParticipantsFromAreas(List<Long> areaKeys);
 
 	/**
 	 * @param identity

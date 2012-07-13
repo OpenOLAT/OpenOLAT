@@ -388,6 +388,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("resourceKey", resource.getKey())
 				.setParameter("names", allNames)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getSingleResult();
 		return count.intValue() > 0;
 	}
@@ -412,6 +413,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("resourceKey", resource.getKey())
 				.setParameter("nameOrKey", key == null ? nameOrKey : key)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getSingleResult();
 		return count.intValue() > 0;
 	}
@@ -436,7 +438,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	
 	/**
 	 * Remove a business group from a business group area. If no such relation
-	 * exists, the mehthod does nothing.
+	 * exists, the method does nothing.
 	 * 
 	 * @param businessGroupKey
 	 * @param bgAreaKey

@@ -27,16 +27,19 @@ package org.olat.course.nodes.co;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -53,6 +56,11 @@ import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
+import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
@@ -78,14 +86,14 @@ public class COConfigForm extends FormBasicController {
 	private SelectionElement partips;
 	private FormLayoutContainer coachesAndPartips;
 	
-	private SpacerElement s1, s2, s3, s4;
+	private SpacerElement s1, s2, s3;
 	
 	
-	private TextElement easyGroupTE;
+	private StaticTextElement easyGroupList;
 	private FormLink chooseGroupsLink;
 	private FormLink createGroupsLink;
 	
-	private TextElement easyAreaTE;
+	private StaticTextElement easyAreaList;
 	private FormLink chooseAreasLink;
 	private FormLink createAreasLink;
 	
@@ -109,11 +117,13 @@ public class COConfigForm extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	
-	private List eList;
+	private List<String> eList;
 	private ModuleConfiguration config;
 	private CourseEditorEnv cev;
 	
-	
+	private final BGAreaManager areaManager;
+	private final BusinessGroupService businessGroupService;
+
 	/**
 	 * Form constructor
 	 * 
@@ -125,6 +135,8 @@ public class COConfigForm extends FormBasicController {
 		super(ureq, wControl);
 		this.config = config;
 		this.cev = uce.getCourseEditorEnv();
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq);
 	}
 
@@ -156,9 +168,6 @@ public class COConfigForm extends FormBasicController {
 		 * The case that the specified groups can contain zero members must be
 		 * handled by the e-mail controller!
 		 */
-		
-		
-		
 		String emailToAdresses = teArElEmailToAdresses.getValue();
 		String[] emailAdress = emailToAdresses.split("\\s*\\r?\\n\\s*");
 		
@@ -170,12 +179,9 @@ public class COConfigForm extends FormBasicController {
 			return false;
 		}
 		
-		/*
-		 * check validity of manually provided e-mails
-		 */
-		
+		//check validity of manually provided e-mails
 		if ((emailAdress != null) && (emailAdress.length > 0) && (!"".equals(emailAdress[0]))) {
-			this.eList = new ArrayList();
+			this.eList = new ArrayList<String>();
 			for (int i = 0; i < emailAdress.length; i++) {
 				String eAd = emailAdress[i].trim();
 				boolean emailok = MailHelper.isValidEmailAddress(eAd);
@@ -191,57 +197,56 @@ public class COConfigForm extends FormBasicController {
 	
 	private boolean validateGroupFields () {
 		boolean retVal = true;
-		String[] activeGroupSelection = new String[0];
-		String[] activeAreaSelection = new String[0];
+		List<Long> activeGroupSelection = null;
+		List<Long> activeAreaSelection = null;
 
-		if (!easyGroupTE.isEmpty()) {
+		if (!isEmpty(easyGroupList)) {
 			// check whether groups exist
-			activeGroupSelection = easyGroupTE.getValue().split(",");
-			boolean exists = false;
-			Set<String> missingGroups = new HashSet<String>();
+			activeGroupSelection = getKeys(easyGroupList);
 			
-			for (int i = 0; i < activeGroupSelection.length; i++) {
-				String trimmed = activeGroupSelection[i].trim();
-				exists = cev.existsGroup(trimmed);
-				if (!exists && trimmed.length() > 0 && !missingGroups.contains(trimmed)) {
-					missingGroups.add(trimmed);
+			Set<Long> missingGroups = new HashSet<Long>();
+			List<BusinessGroupShort> existingGroups =  businessGroupService.loadShortBusinessGroups(activeGroupSelection);
+			a_a:
+			for(Long activeGroupKey:activeGroupSelection) {
+				for(BusinessGroupShort group:existingGroups) {
+					if(group.getKey().equals(activeGroupKey)) {
+						continue a_a;
+					}
 				}
+				missingGroups.add(activeGroupKey);
 			}
 			
-			if (missingGroups.size() > 0) {
+			if (!missingGroups.isEmpty()) {
 				retVal = false;
 				String labelKey = missingGroups.size() == 1 ? "error.notfound.name" : "error.notfound.names";
-				String csvMissGrps = StringHelper.formatAsCSVString(missingGroups);
+				String csvMissGrps = toString(missingGroups);
 				String[] params = new String[] { "-", csvMissGrps };
 
-				/*
-				 * create error with link to fix it
-				 */
+				// create error with link to fix it
 				String vc_errorPage = velocity_root + "/erroritem.html";
 				FormLayoutContainer errorGroupItemLayout = FormLayoutContainer.createCustomFormLayout(
-						"errorgroupitem", getTranslator(), vc_errorPage
-				);
+						"errorgroupitem", getTranslator(), vc_errorPage);
 
-					groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
-					// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
-					fixGroupError = new FormLinkImpl("error.fix", "create");
-					// link
-					fixGroupError.setCustomEnabledLinkCSS("b_button");
-					errorGroupItemLayout.add(fixGroupError);
+				groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
+				// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
+				fixGroupError = new FormLinkImpl("error.fix", "create");
+				// link
+				fixGroupError.setCustomEnabledLinkCSS("b_button");
+				errorGroupItemLayout.add(fixGroupError);
 
-					fixGroupError.setErrorKey(labelKey, params);
-					fixGroupError.showError(true);
-					fixGroupError.showLabel(false);
-					// hinty to pass the information if one group is
-					// missing or if 2 or more groups are missing
-					// (see fixGroupErrer.getUserObject to understand)
-					// e.g. if userobject String[].lenght == 1 -> one group only
-					// String[].lenght > 1 -> show bulkmode creation group
-					if (missingGroups.size() > 1) {
-						fixGroupError.setUserObject(new String[] { csvMissGrps, "dummy" });
-					} else {
-						fixGroupError.setUserObject(new String[] { csvMissGrps });
-					}
+				fixGroupError.setErrorKey(labelKey, params);
+				fixGroupError.showError(true);
+				fixGroupError.showLabel(false);
+				// hinty to pass the information if one group is
+				// missing or if 2 or more groups are missing
+				// (see fixGroupErrer.getUserObject to understand)
+				// e.g. if userobject String[].lenght == 1 -> one group only
+				// String[].lenght > 1 -> show bulkmode creation group
+				if (missingGroups.size() > 1) {
+					fixGroupError.setUserObject(new String[] { csvMissGrps, "dummy" });
+				} else {
+					fixGroupError.setUserObject(new String[] { csvMissGrps });
+				}
 
 				groupChooseSubContainer.showError(true);
 			} else {
@@ -249,50 +254,55 @@ public class COConfigForm extends FormBasicController {
 				groupChooseSubContainer.clearError();
 			}
 		}
-		if (!easyAreaTE.isEmpty()) {
+		if (!isEmpty(easyAreaList)) {
 			// check whether areas exist
-			activeAreaSelection = easyAreaTE.getValue().split(",");
+			activeAreaSelection = getKeys(easyAreaList);
 
-			List<String> activeAreaList = new ArrayList<String>();
-			for (int i=activeAreaSelection.length; i-->0; ) {
-				activeAreaList.add(activeAreaSelection[i].trim());
+			List<Long> missingAreas = new ArrayList<Long>();
+			List<BGArea> cnt = areaManager.loadAreas(activeAreaSelection);
+			a_a:
+			for(Long activeAreaKey:activeAreaSelection) {
+				for (BGArea element : cnt) {
+					if (element.getKey().equals(activeAreaKey)) { 
+						continue a_a;
+					}
+				}
+				missingAreas.add(activeAreaKey);
 			}
-			List<String> missingAreas = cev.validateAreas(activeAreaList);
-			if (missingAreas.size() > 0) {
+
+			if (!missingAreas.isEmpty()) {
 				retVal = false;
 				String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
-				String csvMissAreas = StringHelper.formatAsCSVString(missingAreas);
+				String csvMissAreas = toString(missingAreas);
 				String[] params = new String[] { "-", csvMissAreas };
 
-				/*
-				 * create error with link to fix it
-				 */
+				// create error with link to fix it
 				String vc_errorPage = velocity_root + "/erroritem.html";
 				FormLayoutContainer errorAreaItemLayout = FormLayoutContainer.createCustomFormLayout(
 						"errorareaitem", getTranslator(), vc_errorPage
 				);
 				
-					areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
-					// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
-					fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
-					// link
-					fixAreaError.setCustomEnabledLinkCSS("b_button");
-					errorAreaItemLayout.add(fixAreaError);
+				areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
+				// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
+				fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
+				// link
+				fixAreaError.setCustomEnabledLinkCSS("b_button");
+				errorAreaItemLayout.add(fixAreaError);
 
-					fixAreaError.setErrorKey(labelKey, params);
-					fixAreaError.showError(true);
-					fixAreaError.showLabel(false);
-					
-					// hint to pass the information if one area is
-					// missing or if 2 or more areas are missing
-					// (see fixGroupErrer.getUserObject to understand)
-					// e.g. if userobject String[].lenght == 1 -> one group only
-					// String[].lenght > 1 -> show bulkmode creation group
-					if (missingAreas.size() > 1) {
-						fixAreaError.setUserObject(new String[] { csvMissAreas, "dummy" });
-					} else {
-						fixAreaError.setUserObject(new String[] { csvMissAreas });
-					}
+				fixAreaError.setErrorKey(labelKey, params);
+				fixAreaError.showError(true);
+				fixAreaError.showLabel(false);
+				
+				// hint to pass the information if one area is
+				// missing or if 2 or more areas are missing
+				// (see fixGroupErrer.getUserObject to understand)
+				// e.g. if userobject String[].lenght == 1 -> one group only
+				// String[].lenght > 1 -> show bulkmode creation group
+				if (missingAreas.size() > 1) {
+					fixAreaError.setUserObject(new String[] { csvMissAreas, "dummy" });
+				} else {
+					fixAreaError.setUserObject(new String[] { csvMissAreas });
+				}
 			
 				areaChooseSubContainer.showError(true);
 			} else {
@@ -300,14 +310,14 @@ public class COConfigForm extends FormBasicController {
 			}	
 		}
 
-		boolean easyGroupOK = (!easyGroupTE.isEmpty() && activeGroupSelection.length != 0);
-		boolean easyAreaOK = (!easyAreaTE.isEmpty() && activeAreaSelection.length != 0);
+		boolean easyGroupOK = !activeGroupSelection.isEmpty();
+		boolean easyAreaOK = !activeAreaSelection.isEmpty();
 		if (easyGroupOK || easyAreaOK) {
 			// clear general error
-			this.flc.clearError();
+			flc.clearError();
 		} else {
 			// error concerns both fields -> set it as switch error
-			this.groupsAndAreasSubContainer.setErrorKey("form.noGroupsOrAreas", null);
+			groupsAndAreasSubContainer.setErrorKey("form.noGroupsOrAreas", null);
 			retVal = false;
 		}
 		
@@ -346,7 +356,7 @@ public class COConfigForm extends FormBasicController {
 	/**
 	 * @return the email list
 	 */
-	protected List getEmailList() {
+	protected List<String> getEmailList() {
 		return eList;
 	}
 
@@ -356,7 +366,16 @@ public class COConfigForm extends FormBasicController {
 	 * @return
 	 */
 	protected String getEmailGroups() {
-		if (StringHelper.containsNonWhitespace(easyGroupTE.getValue())) return easyGroupTE.getValue();
+		if (!isEmpty(easyGroupList)) {
+			return easyGroupList.getValue();
+		}
+		return null;
+	}
+	
+	protected List<Long> getEmailGroupIds() {
+		if (!isEmpty(easyGroupList)) {
+			return getKeys(easyGroupList);
+		}
 		return null;
 	}
 
@@ -364,7 +383,16 @@ public class COConfigForm extends FormBasicController {
 	 * returns the choosen learning areas, or null if no ares were choosen.
 	 */
 	protected String getEmailAreas() {
-		if (StringHelper.containsNonWhitespace(easyAreaTE.getValue())) return easyAreaTE.getValue();
+		if(!isEmpty(easyAreaList)) {
+			return easyAreaList.getValue();
+		}
+		return null;
+	}
+	
+	protected List<Long> getEmailAreaIds() {
+		if(!isEmpty(easyAreaList)) {
+			return getKeys(easyAreaList);
+		}
 		return null;
 	}
 
@@ -408,16 +436,24 @@ public class COConfigForm extends FormBasicController {
 		);
 		groupChooseSubContainer.setLabel("form.message.group", null);
 		
-		formLayout.add(groupChooseSubContainer);		
-		String groupInitVal = (String) config.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-		easyGroupTE = uifactory.addTextElement("group", null, 1024, groupInitVal, groupChooseSubContainer);
-		easyGroupTE.setDisplaySize(24);
-		easyGroupTE.setExampleKey("form.message.example.group", null);
+		formLayout.add(groupChooseSubContainer);
+		
+		String groupInitVal;
+		@SuppressWarnings("unchecked")
+		List<Long> groupKeys = (List<Long>)config.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
+		if(groupKeys == null) {
+			groupInitVal = (String)config.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
+			groupKeys = getGroupKeys(groupInitVal);
+		} else {
+			groupInitVal = getGroupNames(groupKeys);
+		}
+		easyGroupList = uifactory.addStaticTextElement("group", null, groupInitVal, groupChooseSubContainer);
+		easyGroupList.setUserObject(groupKeys);
 		
 		chooseGroupsLink = uifactory.addFormLink("choose", groupChooseSubContainer,"b_form_groupchooser");
 		createGroupsLink = uifactory.addFormLink("create", groupChooseSubContainer,"b_form_groupchooser");	
 
-		hasGroups = cev.getCourseGroupManager().getAllLearningGroupsFromAllContexts().size() > 0;
+		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
 		
 		// areas
 		areaChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout(
@@ -429,15 +465,22 @@ public class COConfigForm extends FormBasicController {
 		groupsAndAreasSubContainer = FormLayoutContainer.createHorizontalFormLayout("groupSubContainer", getTranslator());
 		formLayout.add(groupsAndAreasSubContainer);
 		
-		String areaInitVal = (String) config.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
-		easyAreaTE = uifactory.addTextElement("area", null, 1024, areaInitVal, areaChooseSubContainer);
-		easyAreaTE.setDisplaySize(24);
-		easyAreaTE.setExampleKey("form.message.example.area", null);
+		String areaInitVal;
+		@SuppressWarnings("unchecked")
+		List<Long> areaKeys = (List<Long>)config.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
+		if(areaKeys == null) {
+			areaInitVal = (String) config.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
+			areaKeys = getAreaKeys(areaInitVal);
+		} else {
+			areaInitVal = getAreaNames(areaKeys);
+		}
+		easyAreaList = uifactory.addStaticTextElement("area", null, areaInitVal, areaChooseSubContainer);
+		easyAreaList.setUserObject(areaKeys);
 		
 		chooseAreasLink = uifactory.addFormLink("choose", areaChooseSubContainer,"b_form_groupchooser");
 		createAreasLink = uifactory.addFormLink("create", areaChooseSubContainer,"b_form_groupchooser");
 		
-		hasAreas = cev.getCourseGroupManager().getAllAreasFromAllContexts().size() > 0;
+		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		
 		s2 = uifactory.addSpacerElement("s2", formLayout, false);
 		
@@ -445,7 +488,7 @@ public class COConfigForm extends FormBasicController {
 		wantEmail.addActionListener(this, FormEvent.ONCLICK);
 		
 		//recipients
-		this.eList = (List) config.get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
+		eList = (List<String>) config.get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
 		String emailToAdresses = "";
 		if (eList != null) {
 			emailToAdresses = StringHelper.formatIdentitesAsEmailToString(eList, "\n");
@@ -462,7 +505,7 @@ public class COConfigForm extends FormBasicController {
 		);
 		formLayout.add(recipentsContainer);
 		
-		s4 = uifactory.addSpacerElement("s4", formLayout, false);
+		uifactory.addSpacerElement("s4", formLayout, false);
 				
 		//subject
 		String mS = (String) config.get(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT);
@@ -495,15 +538,17 @@ public class COConfigForm extends FormBasicController {
 		if (!wg) {
 			coaches.select("xx", false);
 			partips.select("xx", false);
-			easyAreaTE.setValue("");
-			easyGroupTE.setValue("");
+			easyAreaList.setValue("");
+			easyAreaList.setUserObject(null);
+			easyGroupList.setValue("");
+			easyGroupList.setUserObject(null);
 		}
 		
-		hasGroups = cev.getCourseGroupManager().getAllLearningGroupsFromAllContexts().size() > 0;	
+		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseResource()) > 0;
 		chooseGroupsLink.setVisible(wg &&  hasGroups);
 		createGroupsLink.setVisible(wg && !hasGroups);
 		
-		hasAreas = cev.getCourseGroupManager().getAllAreasFromAllContexts().size() > 0;
+		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		chooseAreasLink.setVisible(wg &&  hasAreas);
 		createAreasLink.setVisible(wg && !hasAreas);	
 		
@@ -519,94 +564,60 @@ public class COConfigForm extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-
 		if (source == chooseGroupsLink) {
-			
+			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(groupChooseC);
+			
 			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
-					cev.getCourseGroupManager(), null /* easyGroupTE.getValue() */); //TODO gm
+					cev.getCourseGroupManager(), getKeys(easyGroupList));
 			listenTo(groupChooseC);
 
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					groupChooseC.getInitialComponent()
-			);
+			cmc = new CloseableModalController(getWindowControl(), "close", groupChooseC.getInitialComponent());
 			listenTo(cmc);
-			
 			cmc.activate();
 			subm.setEnabled(false);
-
 		} else if (source == createGroupsLink) {
-			// no groups in group management -> directly show group create dialog
-			String[] csvGroupName = easyGroupTE.isEmpty() ? new String[0] : easyGroupTE.getValue().split(",");
-			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
+			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(groupCreateCntrllr);
-			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
-					ureq, getWindowControl(), 
-					true, courseResource,
-					true, easyGroupTE.getValue()
-			);
-			listenTo(groupCreateCntrllr);
-
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					groupCreateCntrllr.getInitialComponent()
-			);
-			listenTo(cmc);
 			
-			cmc.activate();
-			subm.setEnabled(false);
-			
-		} else if (source == chooseAreasLink) {
-
-			// already areas -> choose areas
-			removeAsListenerAndDispose(areaChooseC);
-			areaChooseC = new AreaSelectionController (ureq, getWindowControl(), "area",
-					cev.getCourseGroupManager(), null /* easyAreaTE.getValue() */);//TODO gm
-			listenTo(areaChooseC);
-			
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					areaChooseC.getInitialComponent()
-			);
-			listenTo(cmc);
-			
-			cmc.activate();
-			subm.setEnabled(false);
-			
-		} else if (source == createAreasLink) {
-			// no areas -> directly show creation dialog
-
+			// no groups in group management -> directly show group create dialog
 			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
-			removeAsListenerAndDispose(areaCreateCntrllr);
-			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), courseResource, true, easyAreaTE.getValue()
-			);
-			listenTo(areaCreateCntrllr);
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					areaCreateCntrllr.getInitialComponent()
-			);
+			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), true, courseResource, true, null);
+			listenTo(groupCreateCntrllr);
+			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCntrllr.getInitialComponent());
 			listenTo(cmc);
-			
 			cmc.activate();
 			subm.setEnabled(false);
+		} else if (source == chooseAreasLink) {
+			// already areas -> choose areas
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(areaChooseC);
 			
+			areaChooseC = new AreaSelectionController (ureq, getWindowControl(), "area",
+					cev.getCourseGroupManager(), getKeys(easyAreaList));
+			listenTo(areaChooseC);
+
+			cmc = new CloseableModalController(getWindowControl(), "close", areaChooseC.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
+			subm.setEnabled(false);
+		} else if (source == createAreasLink) {
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(areaCreateCntrllr);
+			
+			// no areas -> directly show creation dialog
+			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
+			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseResource, true, null);
+			listenTo(areaCreateCntrllr);
+			cmc = new CloseableModalController(getWindowControl(), "close", areaCreateCntrllr.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
+			subm.setEnabled(false);
 		} else if (source == fixGroupError) {
-			/*
-			 * user wants to fix problem with fixing group error link e.g. create one
-			 * or more group at once.
-			 */
-			
+			// user wants to fix problem with fixing group error link e.g. create one or more group at once.
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
 			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
-			easyGroupTE.setEnabled(false);
+			easyGroupList.setEnabled(false);
 			removeAsListenerAndDispose(groupCreateCntrllr);
 			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
 					ureq, getWindowControl(), true, courseResource, true, csvGroupName[0]
@@ -624,124 +635,180 @@ public class COConfigForm extends FormBasicController {
 			subm.setEnabled(false);
 			
 		} else if (source == fixAreaError) {
-			/*
-			 * user wants to fix problem with fixing area error link e.g. create one
-			 * or more areas at once.
-			 */
+			// user wants to fix problem with fixing area error link e.g. create one or more areas at once.
 			String[] csvAreaName = (String[]) fixAreaError.getUserObject();
 			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
-			easyAreaTE.setEnabled(false);
+			easyAreaList.setEnabled(false);
 			removeAsListenerAndDispose(areaCreateCntrllr);
 			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), courseResource, true, csvAreaName[0]
-			);
+					ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
 			listenTo(areaCreateCntrllr);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					areaCreateCntrllr.getInitialComponent()
-			);
+			cmc = new CloseableModalController(getWindowControl(), "close", areaCreateCntrllr.getInitialComponent());
 			listenTo(cmc);
 			
 			cmc.activate();
 			subm.setEnabled(false);
-			
 		}
-		
 		update();
 	}
 	
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		
 		subm.setEnabled(true);
-		
 		if (source == groupChooseC) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				easyGroupTE.setValue(StringHelper.formatAsSortUniqCSVString(groupChooseC.getSelectedEntries()));
-				easyGroupTE.getRootForm().submit(ureq);
-	
+				easyGroupList.setValue(StringHelper.formatAsSortUniqCSVString(groupChooseC.getSelectedNames()));
+				easyGroupList.setUserObject(groupChooseC.getSelectedKeys());
+				easyGroupList.getRootForm().submit(ureq);
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
-				return;
-				
-			} else if (event == Event.CHANGED_EVENT && !hasGroups){
-				//singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
-				//why? fireEvent(ureq, new BGContextEvent(BGContextEvent.RESOURCE_ADDED,getDefaultBGContext()));
 			}
-			
 		} else if (source == areaChooseC) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				easyAreaTE.setValue(StringHelper.formatAsSortUniqCSVString(areaChooseC.getSelectedEntries()));
-				easyAreaTE.getRootForm().submit(ureq);
-				
+				easyAreaList.setValue(StringHelper.formatAsSortUniqCSVString(areaChooseC.getSelectedNames()));
+				easyAreaList.setUserObject(areaChooseC.getSelectedKeys());
+				easyAreaList.getRootForm().submit(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
-				return;
-				
-			} else if (event == Event.CHANGED_EVENT && !hasAreas) {
-				//singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
-				//why? fireEvent(ureq, new BGContextEvent(BGContextEvent.RESOURCE_ADDED,getDefaultBGContext()));
 			}
-			
 		} else if (source == groupCreateCntrllr) {
-			
-			easyGroupTE.setEnabled(true);
+			easyGroupList.setEnabled(true);
 			cmc.deactivate();
-
 			if (event == Event.DONE_EVENT) {
-				
-				List <String>c = new ArrayList<String>();
-				c.addAll(Arrays.asList(easyGroupTE.getValue().split(",")));
+				List<Long> c = new ArrayList<Long>();
+				c.addAll(getKeys(easyGroupList));
 				if (fixGroupError != null && fixGroupError.getUserObject() != null) {
 					c.removeAll(Arrays.asList((String[])fixGroupError.getUserObject()));
 				}
-				c.addAll (groupCreateCntrllr.getCreatedGroupNames());
-				
-				easyGroupTE.setValue(StringHelper.formatAsSortUniqCSVString(c));
+				c.addAll(groupCreateCntrllr.getCreatedGroupKeys());
+				easyGroupList.setValue(getGroupNames(c));
+				easyGroupList.setUserObject(c);
 				
 				if (groupCreateCntrllr.getCreatedGroupNames().size() > 0 && !hasGroups) {
 					chooseGroupsLink.setVisible(true);
 					createGroupsLink.setVisible(false);
-					//singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
-				
-				easyGroupTE.getRootForm().submit(ureq);
+				easyGroupList.getRootForm().submit(ureq);
 			}
-			
 		} else if (source == areaCreateCntrllr) {
-			
-			easyAreaTE.setEnabled(true);
+			easyAreaList.setEnabled(true);
 			cmc.deactivate();
 			
 			if (event == Event.DONE_EVENT) {
-				List <String>c = new ArrayList<String>();
-				c.addAll(Arrays.asList(easyAreaTE.getValue().split(",")));
+				List<Long> c = new ArrayList<Long>();
+				c.addAll(getKeys(easyAreaList));
 				if (fixAreaError != null && fixAreaError.getUserObject() != null) {
 					c.removeAll(Arrays.asList((String[])fixAreaError.getUserObject()));
 				}
-				c.addAll (areaCreateCntrllr.getCreatedAreaNames());
+				c.addAll(areaCreateCntrllr.getCreatedAreaKeys());
 				
-				easyAreaTE.setValue(StringHelper.formatAsSortUniqCSVString(c));
+				easyAreaList.setValue(getAreaNames(c));
+				easyAreaList.setUserObject(c);
 				
 				if (areaCreateCntrllr.getCreatedAreaNames().size() > 0 && !hasAreas) {
 					chooseAreasLink.setVisible(true);
 					createAreasLink.setVisible(false);
-					//singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
-				easyAreaTE.getRootForm().submit(ureq);
+				easyAreaList.getRootForm().submit(ureq);
 			} 
 		}
 	}
 
-	
-	
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private boolean isEmpty(StaticTextElement element) {
+		List<Long> keys = getKeys(element);
+		if(keys == null || keys.isEmpty()) {
+			return true;
+		}
+		return false;
+	}
+	
+	private List<Long> getKeys(StaticTextElement element) {
+		@SuppressWarnings("unchecked")
+		List<Long> keys = (List<Long>)element.getUserObject();
+		if(keys == null) {
+			keys = new ArrayList<Long>();
+			element.setUserObject(keys);
+		}
+		return keys;
+	}
+	
+	private String toString(Collection<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		for(Long key:keys) {
+			if(sb.length() > 0) sb.append(',');
+			sb.append(key);
+		}
+		return sb.toString();
+	}
+	
+	private String getGroupNames(List<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
+		for(BusinessGroupShort group:groups) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(group.getName());
+		}
+		return sb.toString();
+	}
+	
+	private String getAreaNames(List<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		for(Long key:keys) {
+			BGArea area = areaManager.loadArea(key);
+			if(area != null) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(area.getName());
+			}
+		}
+		return sb.toString();
+	}
+	
+	private List<Long> getGroupKeys(String groupNames) {
+		List<Long> groupKeys = new ArrayList<Long>();
+		if(StringHelper.containsNonWhitespace(groupNames)) {
+			String[] groupNameArr = groupNames.split(",");
+			List<BusinessGroup> groups = cev.getCourseGroupManager().getAllLearningGroupsFromAllContexts();
+			for(String groupName:groupNameArr) {
+				groupName = groupName.trim();
+				for(BusinessGroup group:groups) {
+					if(groupName.equalsIgnoreCase(group.getName())) {
+						groupKeys.add(group.getKey());
+						break;
+					}
+				}
+			}
+		}
+		return groupKeys;
+	}
+	
+	private List<Long> getAreaKeys(String areaNames) {
+		List<Long> areaKeys = new ArrayList<Long>();
+		if(StringHelper.containsNonWhitespace(areaNames)) {
+			List<BGArea> areas = cev.getCourseGroupManager().getAllAreasFromAllContexts();
+			String[] areaNameArr = areaNames.split(",");
+			StringBuilder sb = new StringBuilder();
+			for(String areaName:areaNameArr) {
+				areaName = areaName.trim();
+				for(BGArea area:areas) {
+					if(areaName.equalsIgnoreCase(area.getName())) {
+						if(sb.length() > 0) {
+							sb.append(',');
+						}
+						sb.append(area.getKey());
+						break;
+					}
+				}
+			}
+		}
+		return areaKeys;
 	}
 }

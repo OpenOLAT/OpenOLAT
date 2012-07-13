@@ -240,7 +240,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
 			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
 			RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
-			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, repo.getResourceableId());
+			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, repo);
 			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
 					courseCloser.getInitialComponent(), "disposed course" + course.getResourceableId());
 			setDisposedMsgController(disposedRestartController);

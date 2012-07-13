@@ -489,9 +489,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			}
 		}
 	}
-	
-	//TODO gm
-	
+
 	private void removeFromRepositoryEntrySecurityGroup(BusinessGroup group) {
 		*//*
 		BGContext context = group.getGroupContext();

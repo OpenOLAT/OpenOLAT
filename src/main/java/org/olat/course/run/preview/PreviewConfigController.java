@@ -26,17 +26,14 @@
 package org.olat.course.run.preview;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -54,7 +51,10 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 
 /**
  * Description: <br>
@@ -78,7 +78,10 @@ public class PreviewConfigController extends MainLayoutBasicController {
 	private boolean isCourseAdmin = false;
 	private String role = PreviewSettingsForm.ROLE_STUDENT;
 	private LayoutMain3ColsPreviewController previewLayoutCtr;
-	OLATResourceable ores;
+	private final OLATResourceable ores;
+	
+	private final BGAreaManager areaManager;
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor for the run main controller
@@ -91,6 +94,9 @@ public class PreviewConfigController extends MainLayoutBasicController {
 	public PreviewConfigController(UserRequest ureq, WindowControl wControl, ICourse course) { 
 		super(ureq, wControl);
 		this.ores = course;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		
 		psf = new PreviewSettingsForm(ureq, wControl, course);
 		listenTo(psf);
 		
@@ -142,33 +148,16 @@ public class PreviewConfigController extends MainLayoutBasicController {
 	}
 
 	private void generateEnvironment() {
-		String sGroups = psf.getGroup();
-		List groups;
-		// only do a split if we really have something to split, otherwise we'll get
-		// an empty object
-		if (sGroups.length() == 0) groups = new ArrayList();
-		else groups = Arrays.asList(psf.getGroup().split(","));
-
-		String sAreas = psf.getArea();
-		List tmpAreas;
-		// only do a split if we really have something to split, otherwise we'll get
-		// an empty object
-		if (sAreas.length() == 0) tmpAreas = new ArrayList();
-		else tmpAreas = Arrays.asList(psf.getArea().split(","));
-
+		List<BGArea> tmpAreas = areaManager.loadAreas(psf.getAreaKeys());
+		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(psf.getGroupKeys());
 		// get learning areas for groups
-		Set areas = new HashSet();
+		Set<BGArea> areas = new HashSet<BGArea>();
 		areas.addAll(tmpAreas);
-		ICourse course = CourseFactory.loadCourse(ores);
-		for (Iterator iter = groups.iterator(); iter.hasNext();) {
-			String groupName = (String) iter.next();
-			List newAreas = course.getCourseEnvironment().getCourseGroupManager().getLearningAreasOfGroupFromAllContexts(groupName);
-			for (Iterator iterator = newAreas.iterator(); iterator.hasNext();) {
-				BGArea newArea = (BGArea) iterator.next();
-				areas.add(newArea.getName());
-			}
-		}
+		List<BGArea> areaByGroups = areaManager.findBGAreasOfBusinessGroups(groups);
+		areas.addAll(areaByGroups);
+		
 		role = psf.getRole();
+		ICourse course = CourseFactory.loadCourse(ores);
 		// default is student
 		isGlobalAuthor = false;
 		isGuestOnly = false;
@@ -187,7 +176,7 @@ public class PreviewConfigController extends MainLayoutBasicController {
 			isGlobalAuthor = true;
 		}
 
-		final CourseGroupManager cgm = new PreviewCourseGroupManager(groups, new ArrayList(areas), isCoach, isCourseAdmin);
+		final CourseGroupManager cgm = new PreviewCourseGroupManager(groups, new ArrayList<BGArea>(areas), isCoach, isCourseAdmin);
 		final UserNodeAuditManager auditman = new PreviewAuditManager();
 		final AssessmentManager am = new PreviewAssessmentManager();
 		final CoursePropertyManager cpm = new PreviewCoursePropertyManager();

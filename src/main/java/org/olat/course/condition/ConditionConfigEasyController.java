@@ -338,8 +338,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			removeAsListenerAndDispose(groupCreateCtlr);
 			
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-			String csvGroupName = isEmpty(easyGroupList) ? null : getGroupNames(getKeys(easyGroupList));
-			groupCreateCtlr = new NewBGController(ureq, getWindowControl(),  true, courseResource, true, csvGroupName);
+			groupCreateCtlr = new NewBGController(ureq, getWindowControl(),  true, courseResource, true, null);
 			listenTo(groupCreateCtlr);
 			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCtlr.getInitialComponent());
 			listenTo(cmc);
@@ -361,9 +360,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(areaCreateCtlr);
 
-			String csvAreaName = isEmpty(easyAreaList) ? null : getAreaNames(getKeys(easyAreaList));
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-			areaCreateCtlr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName);
+			areaCreateCtlr = new NewAreaController(ureq, getWindowControl(), courseResource, true, null);
 			listenTo(areaCreateCtlr);
 
 			cmc = new CloseableModalController(getWindowControl(), "close",areaCreateCtlr.getInitialComponent());
@@ -1211,28 +1209,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		
 		updateGroupsAndAreasCheck();
 	}
-	
-	private String getGroupNames(List<Long> keys) {
-		StringBuilder sb = new StringBuilder();
-		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
-		for(BusinessGroupShort group:groups) {
-			if(sb.length() > 0) sb.append(", ");
-			sb.append(group.getName());
-		}
-		return sb.toString();
-	}
-	
-	private String getAreaNames(List<Long> keys) {
-		StringBuilder sb = new StringBuilder();
-		for(Long key:keys) {
-			BGArea area = areaManager.loadArea(key);
-			if(area != null) {
-				if(sb.length() > 0) sb.append(", ");
-				sb.append(area.getName());
-			}
-		}
-		return sb.toString();
-	}
 
 	private void addAssessmentSwitch(FormItemContainer formLayout, Controller listener) {
 
@@ -1408,6 +1384,28 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		for(Long key:keys) {
 			if(sb.length() > 0) sb.append(',');
 			sb.append(key);
+		}
+		return sb.toString();
+	}
+	
+	private String getGroupNames(List<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
+		for(BusinessGroupShort group:groups) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(group.getName());
+		}
+		return sb.toString();
+	}
+	
+	private String getAreaNames(List<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		for(Long key:keys) {
+			BGArea area = areaManager.loadArea(key);
+			if(area != null) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(area.getName());
+			}
 		}
 		return sb.toString();
 	}

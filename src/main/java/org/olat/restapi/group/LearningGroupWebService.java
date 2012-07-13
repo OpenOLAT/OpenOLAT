@@ -480,7 +480,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-		//TODO gm sync
+		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
@@ -540,7 +540,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-		//TODO gm sync
+		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
@@ -597,7 +597,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-		//TODO gm sync
+		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
@@ -654,7 +654,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			//TODO gm sync
+			//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 				public void execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();

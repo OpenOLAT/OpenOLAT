@@ -87,7 +87,12 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityInLearningGroup(org.olat.core.id.Identity, java.lang.String)
 	 */
 	public boolean isIdentityInGroup(Identity identity, String groupName) {
-		return groups.contains(groupName);
+		for(BusinessGroup group:groups) {
+			if(groupName.equals(group.getName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override
@@ -104,14 +109,24 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isLearningGroupFull(java.lang.String)
 	 */
 	public boolean isLearningGroupFull(String groupName){
-		return groups.contains(groupName);
+		for(BusinessGroup group:groups) {
+			if(groupName.equals(group.getName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityInLearningArea(org.olat.core.id.Identity, java.lang.String)
 	 */
 	public boolean isIdentityInLearningArea(Identity identity, String areaName) {
-		return areas.contains(areaName);
+		for(BGArea area:areas) {
+			if(areaName.equals(area.getName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -126,11 +141,21 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	@Override
 	public boolean existGroup(String nameOrKey) {
+		for(BusinessGroup group:groups) {
+			if(nameOrKey.equals(group.getName()) || nameOrKey.equals(group.getKey().toString())) {
+				return true;
+			}
+		}
 		return false;
 	}
 
 	@Override
 	public boolean existArea(String nameOrKey) {
+		for(BGArea area:areas) {
+			if(nameOrKey.equals(area.getName()) || nameOrKey.equals(area.getKey().toString())) {
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -213,7 +238,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllRightGroupsFromAllContexts()
 	 */
 	public List<BusinessGroup> getAllRightGroupsFromAllContexts() {
-		throw new AssertException("unsupported");
+		return groups;
 	}
 
 	/**
@@ -225,7 +250,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	@Override
 	public List<BGArea> getAreasFromContext(String areaname) {
-		return null;
+		return areas;
 	}
 
 	/**
@@ -272,6 +297,26 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	}
 
 	public List<Identity> getParticipantsFromLearningGroup(String groupName) {
+		throw new AssertException("unsupported");
+	}
+
+	@Override
+	public List<Identity> getCoachesFromLearningGroups(List<Long> groupKeys) {
+		throw new AssertException("unsupported");
+	}
+
+	@Override
+	public List<Identity> getCoachesFromAreas(List<Long> areaKeys) {
+		throw new AssertException("unsupported");
+	}
+
+	@Override
+	public List<Identity> getParticipantsFromLearningGroups(List<Long> groupKeys) {
+		throw new AssertException("unsupported");
+	}
+
+	@Override
+	public List<Identity> getParticipantsFromAreas(List<Long> areaKeys) {
 		throw new AssertException("unsupported");
 	}
 

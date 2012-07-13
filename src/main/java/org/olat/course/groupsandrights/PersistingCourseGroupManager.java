@@ -474,6 +474,26 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 	
 	@Override
+	public List<Identity> getCoachesFromLearningGroups(List<Long> groupKeys) {
+		List<BusinessGroup> bgs = businessGroupService.loadBusinessGroups(groupKeys);
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		for(BusinessGroup group:bgs) {
+			secGroups.add(group.getOwnerGroup());
+		}
+		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+	}
+	
+	@Override
+	public List<Identity> getParticipantsFromLearningGroups(List<Long> groupKeys) {
+		List<BusinessGroup> bgs = businessGroupService.loadBusinessGroups(groupKeys);
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		for(BusinessGroup group:bgs) {
+			secGroups.add(group.getPartipiciantGroup());
+		}
+		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+	}
+
+	@Override
 	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getCoaches() {
 		BaseSecurity secManager = BaseSecurityManager.getInstance();
@@ -512,6 +532,17 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}
 		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
 	}
+	
+	@Override
+	public List<Identity> getCoachesFromAreas(List<Long> areaKeys) {
+		List<BGArea> areas = areaManager.loadAreas(areaKeys);
+		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		for(BusinessGroup group:groups) {
+			secGroups.add(group.getOwnerGroup());
+		}
+		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipantsFromArea(java.lang.String)
@@ -526,6 +557,17 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		for(BusinessGroup group:bgs) {
+			secGroups.add(group.getPartipiciantGroup());
+		}
+		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+	}
+
+	@Override
+	public List<Identity> getParticipantsFromAreas(List<Long> areaKeys) {
+		List<BGArea> areas = areaManager.loadAreas(areaKeys);
+		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		for(BusinessGroup group:groups) {
 			secGroups.add(group.getPartipiciantGroup());
 		}
 		return securityManager.getIdentitiesOfSecurityGroups(secGroups);

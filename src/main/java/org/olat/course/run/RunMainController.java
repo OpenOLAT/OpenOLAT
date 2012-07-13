@@ -418,8 +418,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// disposed message controller
 			// must be created beforehand
 			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
-			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl,
-					courseRepositoryEntry.getResourceableId());
+			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, courseRepositoryEntry);
 			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
 					courseCloser.getInitialComponent(), "disposed course" + this.course.getResourceableId());
 			setDisposedMsgController(disposedRestartController);

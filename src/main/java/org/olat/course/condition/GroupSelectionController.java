@@ -168,6 +168,16 @@ public class GroupSelectionController extends FormBasicController {
 		return entrySelector.getSelectedKeys();
 	}
 	
+	public List<String> getSelectedNames() {
+		List<String> selectedNames = new ArrayList<String>();
+		for(int i=0; i<groupKeys.length; i++) {
+			if(entrySelector.isSelected(i)) {
+				selectedNames.add(groupNames[i]);
+			}
+		}
+		return selectedNames;
+	}
+	
 	public List<Long> getSelectedKeys() {
 		Set<String> selectedKeys = entrySelector.getSelectedKeys();
 		List<Long> groupKeys = new ArrayList<Long>();

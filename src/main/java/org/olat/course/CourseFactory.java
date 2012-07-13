@@ -1030,10 +1030,9 @@ public class CourseFactory extends BasicManager {
 		//close courseEditSession if not already closed
 		closeCourseEditSession(resourceableId, false);
 	}
-
-	public static Controller createDisposedCourseRestartController(UserRequest ureq, WindowControl wControl, long resId) {
-		RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resId);
-		return new DisposedCourseRestartController(ureq, wControl, courseRepositoryEntry);
+	
+	public static Controller createDisposedCourseRestartController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
+		return new DisposedCourseRestartController(ureq, wControl, re);
 	}
 
 	/**

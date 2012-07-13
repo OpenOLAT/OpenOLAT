@@ -220,7 +220,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 
 	public List<Identity> addCandidates(final List<Identity> addIdentities, final Project project) {
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
-	//TODO gm sync
+	//TODO gsync
 		List<Identity> addedIdentities = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<List<Identity>>(){
 			public List<Identity> execute() {
 				List<Identity> addedIdentities = new ArrayList<Identity>();
@@ -241,7 +241,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 
 	public void removeCandidates(final List<Identity> addIdentities, final Project project) {
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
-	//TODO gm sync
+	//TODO gsync
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);
@@ -261,7 +261,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		final Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-	//TODO gm sync
+	//TODO gsync
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				for (final Identity identity : identities) {

@@ -90,7 +90,7 @@ public class EnrollmentManager extends BasicManager {
 			// the group was chosen, so why do we need the groupNames and areaNames here???
 
 			Codepoint.codepoint(EnrollmentManager.class, "beforeDoInSync");
-		//TODO gm sync
+		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 				public void execute() {
 					Tracing.logInfo("doEnroll start: group="+OresHelper.createStringRepresenting(group), identity.getName(), EnrollmentManager.class);
@@ -138,7 +138,7 @@ public class EnrollmentManager extends BasicManager {
 		if (Tracing.isDebugEnabled(this.getClass())) Tracing.logDebug("doCancelEnrollment", this.getClass());
 		// 1. Remove group membership, fire events, do loggin etc.
 		final BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-	//TODO gm sync
+	//TODO gsync
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(enrolledGroup, new SyncerExecutor(){
 			public void execute() {
 				// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
@@ -167,7 +167,7 @@ public class EnrollmentManager extends BasicManager {
 	public void doCancelEnrollmentInWaitingList(final Identity identity, final BusinessGroup enrolledWaitingListGroup, final ENCourseNode enNode,
 			final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
 		// 1. Remove group membership, fire events, do loggin etc.
-		//TODO gm sync
+		//TODO gsync
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(enrolledWaitingListGroup, new SyncerExecutor(){
 			public void execute() {
 				businessGroupService.removeFromWaitingList(identity, identity, enrolledWaitingListGroup);

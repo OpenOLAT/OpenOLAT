@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -47,6 +48,10 @@ import org.olat.course.nodes.co.CORunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
+import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -118,7 +123,8 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 		 * expensive operation to fetch the e-mail adresses for tutors,
 		 * participants, group and area members. simple config here!
 		 */
-		List emailList = (List) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
+		@SuppressWarnings("unchecked")
+		List<String> emailList = (List<String>) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
 		boolean isValid = (emailList != null && emailList.size() > 0);
 		Boolean email2coaches = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES);
 		Boolean email2partips = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS);
@@ -151,36 +157,80 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 		// only here we know which translator to take for translating condition
 		// error messages
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
-		List condErrs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
-		List missingNames = new ArrayList();
+		List<StatusDescription> condErrs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> missingNames = new ArrayList<StatusDescription>();
 		/*
 		 * check group and area names for existence
 		 */
-		ModuleConfiguration mc = getModuleConfiguration();
-		String areaStr = (String) mc.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
 		String nodeId = getIdent();
-		if (areaStr != null) {
-			String[] areas = areaStr.split(",");
-			for (int i = 0; i < areas.length; i++) {
-				String trimmed = areas[i] != null ? areas[i].trim() : areas[i];
-				if (!trimmed.equals("") && !cev.existsArea(trimmed)) {
-					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
-							new String[] { "NONE", trimmed }, translatorStr);
-					sd.setDescriptionForUnit(nodeId);
-					missingNames.add(sd);
+		ModuleConfiguration mc = getModuleConfiguration();
+
+		@SuppressWarnings("unchecked")
+		List<Long> areaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
+		if(areaKeys != null) {
+			BGAreaManager areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+			List<BGArea> areas = areaManager.loadAreas(areaKeys);
+
+			a_a:
+			for(Long areaKey:areaKeys) {
+				for(BGArea area:areas) {
+					if(area.getKey().equals(areaKey)) {
+						continue a_a;
+					}
+				}
+				
+				StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
+						new String[] { "NONE", areaKey.toString() }, translatorStr);
+				sd.setDescriptionForUnit(nodeId);
+				missingNames.add(sd);
+			}
+		} else {
+			String areaStr = (String) mc.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
+			if (areaStr != null) {
+				String[] areas = areaStr.split(",");
+				for (int i = 0; i < areas.length; i++) {
+					String trimmed = areas[i] != null ? areas[i].trim() : areas[i];
+					if (!trimmed.equals("") && !cev.existsArea(trimmed)) {
+						StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
+								new String[] { "NONE", trimmed }, translatorStr);
+						sd.setDescriptionForUnit(nodeId);
+						missingNames.add(sd);
+					}
 				}
 			}
 		}
-		String groupStr = (String) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-		if (groupStr != null) {
-			String[] groups = groupStr.split(",");
-			for (int i = 0; i < groups.length; i++) {
-				String trimmed = groups[i] != null ? groups[i].trim() : groups[i];
-				if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
-					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
-							new String[] { "NONE", trimmed }, translatorStr);
-					sd.setDescriptionForUnit(nodeId);
-					missingNames.add(sd);
+
+		@SuppressWarnings("unchecked")
+		List<Long> groupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
+		if(groupKeys != null) {
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			List<BusinessGroupShort> groups = bgs.loadShortBusinessGroups(groupKeys);
+			
+			a_a:
+			for(Long activeGroupKey:groupKeys) {
+				for(BusinessGroupShort group:groups) {
+					if(group.getKey().equals(activeGroupKey)) {
+						continue a_a;
+					}
+				}
+				
+				StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
+						new String[] { "NONE", activeGroupKey.toString() }, translatorStr);
+				sd.setDescriptionForUnit(nodeId);
+				missingNames.add(sd);
+			}
+		} else {
+			String groupStr = (String) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
+			if (groupStr != null) {
+				String[] groups = groupStr.split(",");
+				for (int i = 0; i < groups.length; i++) {
+					String trimmed = groups[i] != null ? groups[i].trim() : groups[i];
+					if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
+						StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
+								new String[] { "NONE", trimmed }, translatorStr);
+						sd.setDescriptionForUnit(nodeId);
+						missingNames.add(sd);
+					}
 				}
 			}
 		}

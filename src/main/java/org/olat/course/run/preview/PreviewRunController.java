@@ -27,7 +27,6 @@ package org.olat.course.run.preview;
 
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
@@ -55,6 +54,8 @@ import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.group.BusinessGroup;
+import org.olat.group.area.BGArea;
 
 /**
  * Description: <br>
@@ -119,21 +120,28 @@ public class PreviewRunController extends MainLayoutBasicController {
 		detail.contextPut("time", DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale())
 				.format(new Date(uce.getCourseEnvironment().getCurrentTimeMillis())));
 		CourseGroupManager cgm = uce.getCourseEnvironment().getCourseGroupManager();
-		detail.contextPut("groups", assembleNamesFromList(cgm.getAllLearningGroupsFromAllContexts()));
-		detail.contextPut("areas", assembleNamesFromList(cgm.getAllAreasFromAllContexts()));
+		detail.contextPut("groups", assembleNamesFromGroupList(cgm.getAllLearningGroupsFromAllContexts()));
+		detail.contextPut("areas", assembleNamesFromAreaList(cgm.getAllAreasFromAllContexts()));
 		detail.contextPut("asRole",role);
 		previewLayoutCtr.setCol3(detail);
-		
 	}
 
-	private String assembleNamesFromList(List nameList) {
+	private String assembleNamesFromGroupList(List<BusinessGroup> groups) {
 		StringBuilder sb = new StringBuilder();
-		for (Iterator iter = nameList.iterator(); iter.hasNext();) {
-			sb.append((String)iter.next());
-			sb.append(',');
+		for (BusinessGroup group:groups) {
+			if(sb.length() > 0) sb.append(',');
+			sb.append(group.getName());
 		}
-		if (sb.length() == 0) return new String();
-		else return sb.substring(0, sb.length() -1); // truncate last colon
+		return sb.toString();
+	}
+	
+	private String assembleNamesFromAreaList(List<BGArea> areas) {
+		StringBuilder sb = new StringBuilder();
+		for (BGArea area:areas) {
+			if(sb.length() > 0) sb.append(',');
+			sb.append(area.getName());
+		}
+		return sb.toString();
 	}
 	
 	/**
