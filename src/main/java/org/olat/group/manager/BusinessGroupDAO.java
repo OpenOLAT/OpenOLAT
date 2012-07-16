@@ -459,7 +459,7 @@ public class BusinessGroupDAO {
 			query.append(")");
 		}
 		
-		if(params.getKeys() != null && !params.getKeys().isEmpty()) {
+		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
 			where = where(query, where);
 			query.append("bgi.key in (:groupKeys)");
 		}
@@ -553,8 +553,8 @@ public class BusinessGroupDAO {
 		if(params.isPublicGroup()) {
 			dbq.setParameter("atDate", new Date(), TemporalType.TIMESTAMP);
 		}
-		if(params.getKeys() != null && !params.getKeys().isEmpty()) {
-			dbq.setParameter("groupKeys", params.getKeys());
+		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
+			dbq.setParameter("groupKeys", params.getGroupKeys());
 		}
 		
 		if (resource != null) {

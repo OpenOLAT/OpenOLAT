@@ -152,7 +152,7 @@ public interface BGAreaManager {
 	 * @param context
 	 * @return A list of business groups
 	 */
-	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, String areaName, OLATResource resource);
+	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, List<Long> areaKeys, OLATResource resource);
 
 	/**
 	 * Searches for all business group areas associated with the given business

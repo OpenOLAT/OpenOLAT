@@ -46,11 +46,11 @@ import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.properties.Property;
+import org.olat.resource.OLATResource;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -82,7 +82,7 @@ public class EnrollmentManager extends BasicManager {
 		final EnrollStatus enrollStatus = new EnrollStatus();
 		if (isLogDebugEnabled()) logDebug("doEnroll");
 		// check if the user is already enrolled (user can be enrooled only in one group)
-		if ( ( getBusinessGroupWhereEnrolled( identity, groupKeys, areaKeys, cgm) == null)
+		if ( ( getBusinessGroupWhereEnrolled( identity, groupKeys, areaKeys, cgm.getCourseResource()) == null)
 			  && ( getBusinessGroupWhereInWaitingList( identity, groupKeys, areaKeys, cgm) == null) ) {
 			if (isLogDebugEnabled()) logDebug("Identity is not enrolled identity=" + identity.getName() + "  group=" + group.getName());
 			// 1. Check if group has max size defined. If so check if group is full
@@ -198,14 +198,14 @@ public class EnrollmentManager extends BasicManager {
 	 * @return BusinessGroup in which the identity is enrolled, null if identity
 	 *         is nowhere enrolled.
 	 */
-	protected BusinessGroup getBusinessGroupWhereEnrolled(Identity identity, List<Long> groupKeys, List<Long> areaKeys, CourseGroupManager cgm) {
+	protected BusinessGroup getBusinessGroupWhereEnrolled(Identity identity, List<Long> groupKeys, List<Long> areaKeys, OLATResource courseResource) {
 		// 1. check in groups
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 			params.setAttendee(true);
 			params.setIdentity(identity);
-			params.setKeys(groupKeys);
-			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, cgm.getCourseResource(), 0, 1);
+			params.setGroupKeys(groupKeys);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, courseResource, 0, 1);
 			if (groups.size() > 0) {
 					// Usually it is only possible to be in one group. However,
 					// theoretically the
@@ -218,18 +218,15 @@ public class EnrollmentManager extends BasicManager {
 		}
 		// 2. check in areas
 		if(areaKeys != null && !areaKeys.isEmpty()) {
-			List<BGArea> areas = areaManager.loadAreas(areaKeys);
-			for (BGArea area:areas) {
-				List<BusinessGroup> groups = areaManager.findBusinessGroupsOfArea(area);
-				if (groups.size() > 0) {
-					// Usually it is only possible to be in one group. However,
-					// theoretically the
-					// admin can put the user in a second enrollment group or the user could
-					// theoretically be in a second group context. For now, we only look for
-					// the first
-					// group. All groups found after the first one are discarded.
-					return groups.get(0);
-				}
+			List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreaAttendedBy(identity, areaKeys, courseResource);
+			if (groups.size() > 0) {
+				// Usually it is only possible to be in one group. However,
+				// theoretically the
+				// admin can put the user in a second enrollment group or the user could
+				// theoretically be in a second group context. For now, we only look for
+				// the first
+				// group. All groups found after the first one are discarded.
+				return groups.get(0);
 			}
 		}
 		return null; 

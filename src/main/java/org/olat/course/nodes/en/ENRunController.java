@@ -130,7 +130,7 @@ public class ENRunController extends BasicController implements GenericEventList
 		}
 
 		enrollableAreaKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_AREA_IDS);
-		if(enrollableAreaKeys != null) {
+		if(enrollableAreaKeys == null) {
 			String areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
 			enrollableAreaKeys = areaManager.toAreaKeys(areaInitVal, courseGroupManager.getCourseResource());
 		}
@@ -138,7 +138,7 @@ public class ENRunController extends BasicController implements GenericEventList
 		cancelEnrollEnabled = ((Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED)).booleanValue();
 
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		enrolledGroup = enrollmentManager.getBusinessGroupWhereEnrolled(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		enrolledGroup = enrollmentManager.getBusinessGroupWhereEnrolled(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager.getCourseResource());
 		waitingListGroup = enrollmentManager.getBusinessGroupWhereInWaitingList(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
 		registerGroupChangedEvents(enrollableGroupKeys, enrollableAreaKeys, ureq.getIdentity());
 		// Set correct view
@@ -231,9 +231,8 @@ public class ENRunController extends BasicController implements GenericEventList
     if (enrolledGroup != null) {
     	enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
     	enrollVC.contextPut("isWaitingList", Boolean.FALSE);
-  		String desc = this.enrolledGroup.getDescription();
-  		enrollVC.contextPut("groupName", this.enrolledGroup.getName());
-  		enrollVC.contextPut("groupDesc", (desc == null) ? "" : this.enrolledGroup.getDescription());    	
+  		enrollVC.contextPut("groupName", enrolledGroup.getName());
+  		enrollVC.contextPut("groupDesc", (enrolledGroup.getDescription() == null) ? "" : enrolledGroup.getDescription());    	
     } else if (waitingListGroup != null){
     	enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
     	enrollVC.contextPut("isWaitingList", Boolean.TRUE);
@@ -291,15 +290,15 @@ public class ENRunController extends BasicController implements GenericEventList
 	/*
 	 * Add as listener to BusinessGroups so we are being notified about changes.
 	 */
-	private void registerGroupChangedEvents(List<Long> enrollableGroupNames, List<Long> enrollableAreaNames, Identity identity) {
-		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupNames, enrollableAreaNames, courseGroupManager);
+	private void registerGroupChangedEvents(List<Long> enrollableGroupKeys, List<Long> enrollableAreaKeys, Identity identity) {
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
 		for (BusinessGroup group: groups) {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, identity, group);
 		}
 	}
 	
-	private void deregisterGroupChangedEvents(List<Long> enrollableGroupNames, List<Long> enrollableAreaNames) {
-		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupNames, enrollableAreaNames, courseGroupManager);
+	private void deregisterGroupChangedEvents(List<Long> enrollableGroupKeys, List<Long> enrollableAreaKeys) {
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
 		for (BusinessGroup group:groups) {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, group);
 		}

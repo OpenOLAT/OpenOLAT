@@ -720,7 +720,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 			if(id != null) {
-				params.setKeys(Collections.singletonList(id));
+				params.setGroupKeys(Collections.singletonList(id));
 			}
 			params.setName(name);
 			params.setDescription(description);

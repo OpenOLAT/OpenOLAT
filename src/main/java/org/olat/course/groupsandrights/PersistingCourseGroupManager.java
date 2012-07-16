@@ -164,7 +164,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public boolean existGroup(String nameOrKey) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		if(StringHelper.isLong(nameOrKey)) {
-			params.setKeys(Collections.singletonList(new Long(nameOrKey)));
+			params.setGroupKeys(Collections.singletonList(new Long(nameOrKey)));
 		}else {
 			params.setExactName(nameOrKey);
 		}
@@ -178,15 +178,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public List<BGArea> getAllAreas() {
 		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
 		return areas;
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getBusinessGroupsInArea(java.lang.String)
-	 */
-	public List<BusinessGroup> getBusinessGroupsInArea(String areaName) {
-		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
-		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
-		return groups;
 	}
 
 	@Override

@@ -229,7 +229,12 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		if(areaKeys == null || areaKeys.isEmpty()) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct bgarel.businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		sb.append("select distinct businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		  .append(" inner join bgarel.businessGroup businessGroup ")
+			.append(" left join fetch businessGroup.ownerGroup ownerGroup")
+			.append(" left join fetch businessGroup.partipiciantGroup participantGroup")
+			.append(" left join fetch businessGroup.waitingGroup waitingGroup")
+			.append(" left join fetch businessGroup.resource resource")
 		  .append(" where  bgarel.groupArea.key in (:areaKeys)");
 
 		List<BusinessGroup> result = DBFactory.getInstance().getCurrentEntityManager()
@@ -243,7 +248,8 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * @see org.olat.group.area.BGAreaManager#findBusinessGroupsOfAreaAttendedBy(org.olat.core.id.Identity,
 	 *      java.lang.String, org.olat.group.context.BGContext)
 	 */
-	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, String areaName, OLATResource resource) {
+	@Override
+	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, List<Long> areaKeys, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
 		  .append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi")
@@ -252,8 +258,8 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 			.append(" where bgarel.groupArea=area and bgi.partipiciantGroup=sgmi.securityGroup and bgarel.businessGroup=bgi")
 			.append(" and sgmi.identity.key=:identityKey");
 		
-		if(StringHelper.containsNonWhitespace(areaName)) {
-			sb.append(" and area.name=:name");
+		if(areaKeys != null && !areaKeys.isEmpty()) {
+			sb.append(" and area.key in (:areaKeys)");
 		}
 		if(resource != null) {
 			sb.append(" and area.resource.key=:resourceKey");
@@ -261,8 +267,8 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 
 		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("identityKey", identity.getKey());
-		if(StringHelper.containsNonWhitespace(areaName)) {
-			query.setParameter("name", areaName);
+		if(areaKeys != null && !areaKeys.isEmpty()) {
+			query.setParameter("areaKeys", areaKeys);
 		}
 		if(resource != null) {
 			query.setParameter("resourceKey", resource.getKey());

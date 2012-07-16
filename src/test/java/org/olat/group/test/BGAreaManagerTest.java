@@ -570,12 +570,14 @@ public class BGAreaManagerTest extends OlatTestCase {
 		Assert.assertTrue(groupId1.contains(group1));
 		
 		//find nothing with name and resource
-		List<BusinessGroup> groupId1Area2 = areaManager.findBusinessGroupsOfAreaAttendedBy(id1, "area-2-" + areaName, resource);
+		List<Long> area2Keys = Collections.singletonList(area2.getKey());
+		List<BusinessGroup> groupId1Area2 = areaManager.findBusinessGroupsOfAreaAttendedBy(id1, area2Keys, resource);
 		Assert.assertNotNull(groupId1Area2);
 		Assert.assertEquals(0, groupId1Area2.size());
 		
 		//find groups id 2 with name and resource
-		List<BusinessGroup> groupId2Area1 = areaManager.findBusinessGroupsOfAreaAttendedBy(id2, "area-1-" + areaName, resource);
+		List<Long> area1Keys = Collections.singletonList(area1.getKey());
+		List<BusinessGroup> groupId2Area1 = areaManager.findBusinessGroupsOfAreaAttendedBy(id2, area1Keys, resource);
 		Assert.assertNotNull(groupId2Area1);
 		Assert.assertEquals(2, groupId2Area1.size());
 		Assert.assertTrue(groupId2Area1.contains(group2));

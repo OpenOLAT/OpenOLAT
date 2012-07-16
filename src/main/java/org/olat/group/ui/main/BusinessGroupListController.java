@@ -276,7 +276,7 @@ public class BusinessGroupListController extends BasicController {
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		if(id != null) {
-			params.setKeys(Collections.singletonList(id));
+			params.setGroupKeys(Collections.singletonList(id));
 		}
 		params.setName(StringHelper.containsNonWhitespace(name) ? name : null);
 		params.setDescription(StringHelper.containsNonWhitespace(description) ? description : null);

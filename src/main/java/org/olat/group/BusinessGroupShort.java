@@ -1,6 +1,8 @@
 package org.olat.group;
 
-public interface BusinessGroupShort {
+import org.olat.core.id.OLATResourceable;
+
+public interface BusinessGroupShort extends OLATResourceable {
 	
 	public Long getKey();
 	

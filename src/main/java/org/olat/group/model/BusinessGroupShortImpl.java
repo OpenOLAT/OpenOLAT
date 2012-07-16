@@ -1,6 +1,8 @@
 package org.olat.group.model;
 
 import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupShort;
 
 /**
@@ -25,6 +27,18 @@ public class BusinessGroupShortImpl extends PersistentObject implements Business
 		this.name = name;
 	}
 	
+	
+	
+	@Override
+	public String getResourceableTypeName() {
+		return OresHelper.calculateTypeName(BusinessGroup.class);
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return getKey();
+	}
+
 	/**
 	 * Compares the keys.
 	 * @see java.lang.Object#equals(java.lang.Object)
