@@ -25,8 +25,6 @@
 
 package org.olat.course.nodes.co;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -36,15 +34,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.ui.GroupAndAreaSelectController;
 import org.olat.course.nodes.COCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -80,17 +75,12 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	/** config key: default body text */
 	public static final String CONFIG_KEY_MBODY_DEFAULT = "mBodyDefault";
 	
-	private static final String JSELEMENTID = "bel_";
-	
 	private ModuleConfiguration moduleConfiguration;
-	private VelocityContainer myContent;
+	private final VelocityContainer myContent;
 	private Panel main;
 	private COConfigForm configForm;	
 	private COCourseNode courseNode;
 	private ConditionEditController accessibilityCondContr;
-	private ICourse course;
-	private GroupAndAreaSelectController selectGroupsCtr;
-	private GroupAndAreaSelectController selectAreasCtr;
 	private TabbedPane myTabbedPane;
 
 	/**
@@ -106,11 +96,10 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 		this.moduleConfiguration = config;
 		resolveModuleConfigurationIssues(moduleConfiguration);
 		this.courseNode = coCourseNode;
-		this.course = course;
 
 		main = new Panel("coeditpanel");
 
-		myContent = this.createVelocityContainer("edit");
+		myContent = createVelocityContainer("edit");
 
 		configForm = new COConfigForm(ureq, wControl, config, euce);
 		configForm.addControllerListener(this);
@@ -120,10 +109,10 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 		// not needed: setInitialComponent(myContent);
 		// Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager(),
-				accessCondition, "accessabilityConditionForm", AssessmentHelper.getAssessableNodes(course
-						.getEditorTreeModel(), coCourseNode),euce);		
-		this.listenTo(accessibilityCondContr);
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce.getCourseEnvironment().getCourseGroupManager(),
+				accessCondition, "accessabilityConditionForm", 
+				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), coCourseNode), euce);		
+		listenTo(accessibilityCondContr);
 
 		main.setContent(myContent);
 	}
@@ -164,51 +153,6 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				return;
-			} else if (event.getCommand().equals("popupchoosegroups")) {
-				// open a controller in a new window which only results in sending back
-				// javascript
-				// get preselected groups
-				final String groups = (String) moduleConfiguration.get(CONFIG_KEY_EMAILTOGROUPS);
-				// get group select controller
-				ControllerCreator ctrlCreator = new ControllerCreator() {
-					public Controller createController(UserRequest lureq, WindowControl lwControl) {
-						selectGroupsCtr = new GroupAndAreaSelectController(lureq,lwControl,course.getCourseEnvironment().getCourseGroupManager(), 
-				        GroupAndAreaSelectController.TYPE_GROUP, groups, 
-				        JSELEMENTID + "popupchoosegroups"+configForm.hashCode());
-						// use a one-column main layout
-						// disposed in dispose method of COEditController!
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, selectGroupsCtr.getInitialComponent(), "null");
-						return layoutCtr;
-					}					
-				};
-				//wrap the content controller into a full header layout
-				ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
-				//open in new browser window
-				PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
-				pbw.open(ureq);
-				//
-			} else if (event.getCommand().equals("popupchooseareas")) {
-				// open a controller in a new window which only results in sending back
-				// javascript
-				// get preselected areas
-				final String areas = (String) moduleConfiguration.get(CONFIG_KEY_EMAILTOAREAS);
-				// get area select controller
-				ControllerCreator ctrlCreator = new ControllerCreator() {
-					public Controller createController(UserRequest lureq, WindowControl lwControl) {
-						selectAreasCtr = new GroupAndAreaSelectController(lureq, lwControl, course.getCourseEnvironment().getCourseGroupManager(),
-								GroupAndAreaSelectController.TYPE_AREA, areas, JSELEMENTID + "popupchooseareas" + configForm.hashCode());
-						// use a one-column main layout
-						// disposed in dispose method of COEditController!
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, selectAreasCtr.getInitialComponent(), null);
-						return layoutCtr;
-					}					
-				};
-				//wrap the content controller into a full header layout
-				ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
-				//open in new browser window
-				PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
-				pbw.open(ureq);
-				//
 			}
 		}
 	}
@@ -227,13 +171,7 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-    //	child controllers registered with listenTo() get disposed in BasicController
-		if (selectGroupsCtr != null) {
-			selectGroupsCtr.dispose();
-		}
-		if (selectAreasCtr != null) {
-			selectAreasCtr.dispose();
-		}
+    //nothing to do
 	}
 
 	/**

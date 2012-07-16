@@ -363,7 +363,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public BusinessGroup copyBusinessGroup(BusinessGroup sourceBusinessGroup, String targetName, String targetDescription, Integer targetMin,
 			Integer targetMax, OLATResource targetResource, Map<BGArea, BGArea> areaLookupMap, boolean copyAreas, boolean copyCollabToolConfig,
-			boolean copyRights, boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList) {
+			boolean copyRights, boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList,
+			boolean copyRelations) {
 
 		// 1. create group, set waitingListEnabled, enableAutoCloseRanks like source business-group
 		BusinessGroup newGroup = createBusinessGroup(null, targetName, targetDescription, targetMin, targetMax, 
@@ -431,6 +432,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			for (Identity identity:waitingList) {
 				securityManager.addIdentityToSecurityGroup(identity, newGroup.getWaitingGroup());
 			}
+		}
+		//9. copy relations
+		if(copyRelations) {
+			List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(sourceBusinessGroup), 0, -1);
+			for(OLATResource resource:resources) {
+				businessGroupRelationDAO.addRelationToResource(newGroup, resource);
+			}	
 		}
 		return newGroup;
 	}

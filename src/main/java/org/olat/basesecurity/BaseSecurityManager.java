@@ -958,6 +958,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		String q = "select count(sgm) from org.olat.basesecurity.SecurityGroupMembershipImpl sgm where sgm.securityGroup = :group";
 		DBQuery query = db.createQuery(q);
 		query.setEntity("group", secGroup);
+		query.setCacheable(true);
 		int result = ((Long) query.list().get(0)).intValue();
 		return result;
 	}

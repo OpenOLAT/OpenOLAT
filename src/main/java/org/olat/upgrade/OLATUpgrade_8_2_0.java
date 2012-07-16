@@ -33,8 +33,20 @@ import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.condition.Condition;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
+import org.olat.course.nodes.AbstractFeedCourseNode;
+import org.olat.course.nodes.BCCourseNode;
+import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.DialogCourseNode;
+import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.GenericCourseNode;
+import org.olat.course.nodes.InfoCourseNode;
+import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.course.nodes.ProjectBrokerCourseNode;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.WikiCourseNode;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.group.BusinessGroup;
@@ -190,21 +202,20 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		try {
 			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, entry.getOlatResource(), 0, -1);
 			List<BGArea> areas = areaManager.findBGAreasInContext(entry.getOlatResource());
-			
-			
+
 			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 			ProcessingOccured processingFlag = new ProcessingOccured();
-			System.out.println("Start: " + course.getCourseTitle());
+			log.info("Start: " + course.getCourseTitle());
 			Structure structure = course.getRunStructure();
 			processCourseRec(processingFlag, structure.getRootNode(), groups, areas);
 			CourseEditorTreeModel editorTree = course.getEditorTreeModel();
 			processEditorCourseRec(processingFlag, editorTree.getRootNode(), groups, areas);
 			if(processingFlag.isProcessed()) {
 				opendedCourse = CourseFactory.openCourseEditSession(course.getResourceableId());
-				System.out.println("Save of:" + course.getCourseTitle() + " (" + course.getResourceableId() + ")");
+				log.info("Save of:" + course.getCourseTitle() + " (" + course.getResourceableId() + ")");
 				CourseFactory.saveCourse(opendedCourse.getResourceableId());
 			} else {
-				System.out.println("No change for: " + course.getCourseTitle() + " (" + course.getResourceableId() + ")");
+				log.info("No change for: " + course.getCourseTitle() + " (" + course.getResourceableId() + ")");
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -237,6 +248,13 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		}
 	}
 	
+	/**
+	 * Update all the conditions in every type of course node
+	 * @param processingFlag
+	 * @param node
+	 * @param groups
+	 * @param areas
+	 */
 	private void processCourseNode(ProcessingOccured processingFlag, CourseNode node,
 			List<BusinessGroup> groups, List<BGArea> areas) {
 		if(node instanceof GenericCourseNode) {
@@ -244,8 +262,81 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			processCondition(processingFlag, genericNode.getPreConditionAccess(), groups, areas);
 			processCondition(processingFlag, genericNode.getPreConditionVisibility(), groups, areas);
 			if(node instanceof AbstractAccessableCourseNode) {
-				//nothing
+				//nothing self but
 				
+				if(node instanceof WikiCourseNode) {
+					WikiCourseNode wikiNode = (WikiCourseNode)node;
+					processCondition(processingFlag, wikiNode.getPreConditionEdit(), groups, areas);
+				} else if(node instanceof STCourseNode) {
+					STCourseNode structureNode = (STCourseNode)node;
+					ScoreCalculator calculator = structureNode.getScoreCalculator();
+					String score = calculator.getScoreExpression();
+					String passed = calculator.getPassedExpression();
+					
+					boolean stProcessed = false;
+					if(StringHelper.containsNonWhitespace(score)) {
+						String processedExpression = processExpression(processingFlag, score, groups, areas);
+						if(!processedExpression.equals(score)) {
+							calculator.setScoreExpression(processedExpression);
+							stProcessed = true;
+						}	
+					}
+					
+					if(StringHelper.containsNonWhitespace(passed)) {
+						String processedExpression = processExpression(processingFlag, passed, groups, areas);
+						if(!processedExpression.equals(score)) {
+							calculator.setScoreExpression(processedExpression);
+							stProcessed = true;
+						}	
+					}
+					
+					if(stProcessed) {
+						structureNode.setScoreCalculator(calculator);
+					}
+				} else if (node instanceof PortfolioCourseNode) {
+					PortfolioCourseNode portfolioNode = (PortfolioCourseNode)node;
+					processCondition(processingFlag, portfolioNode.getPreConditionEdit(), groups, areas);
+				} else if (node instanceof InfoCourseNode) {
+					InfoCourseNode infoNode = (InfoCourseNode)node;
+					processCondition(processingFlag, infoNode.getPreConditionEdit(), groups, areas);
+					processCondition(processingFlag, infoNode.getPreConditionAdmin(), groups, areas);
+				} else if (node instanceof DialogCourseNode) {
+					DialogCourseNode dialogNode = (DialogCourseNode)node;
+					processCondition(processingFlag, dialogNode.getPreConditionModerator(), groups, areas);
+					processCondition(processingFlag, dialogNode.getPreConditionPoster(), groups, areas);
+					processCondition(processingFlag, dialogNode.getPreConditionReader(), groups, areas);
+				} else if (node instanceof CalCourseNode) {
+					CalCourseNode calNode = (CalCourseNode)node;
+					processCondition(processingFlag, calNode.getPreConditionEdit(), groups, areas);
+				}	
+			} 
+			if(node instanceof TACourseNode) {
+				TACourseNode taskNode = (TACourseNode)node;
+				processCondition(processingFlag, taskNode.getConditionDrop(), groups, areas);
+				processCondition(processingFlag, taskNode.getConditionReturnbox(), groups, areas);
+				processCondition(processingFlag, taskNode.getConditionScoring(), groups, areas);
+				processCondition(processingFlag, taskNode.getConditionSolution(), groups, areas);
+				processCondition(processingFlag, taskNode.getConditionTask(), groups, areas);
+			} else if(node instanceof ProjectBrokerCourseNode) {
+				ProjectBrokerCourseNode brokerNode = (ProjectBrokerCourseNode)node;
+				processCondition(processingFlag, brokerNode.getConditionDrop(), groups, areas);
+				processCondition(processingFlag, brokerNode.getConditionReturnbox(), groups, areas);
+				processCondition(processingFlag, brokerNode.getConditionScoring(), groups, areas);
+				processCondition(processingFlag, brokerNode.getConditionProjectBroker(), groups, areas);
+			} else if (node instanceof FOCourseNode) {
+				FOCourseNode forumNode = (FOCourseNode)node;
+				processCondition(processingFlag, forumNode.getPreConditionModerator(), groups, areas);
+				processCondition(processingFlag, forumNode.getPreConditionPoster(), groups, areas);
+				processCondition(processingFlag, forumNode.getPreConditionReader(), groups, areas);
+			} else if (node instanceof BCCourseNode) {
+				BCCourseNode bcNode = (BCCourseNode)node;
+				processCondition(processingFlag, bcNode.getPreConditionDownloaders(), groups, areas);
+				processCondition(processingFlag, bcNode.getPreConditionUploaders(), groups, areas);
+			} else if (node instanceof AbstractFeedCourseNode) {
+				AbstractFeedCourseNode feedNode = (AbstractFeedCourseNode)node;
+				processCondition(processingFlag, feedNode.getPreConditionModerator(), groups, areas);
+				processCondition(processingFlag, feedNode.getPreConditionPoster(), groups, areas);
+				processCondition(processingFlag, feedNode.getPreConditionReader(), groups, areas);
 			}
 		}
 	}
@@ -273,23 +364,30 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			String expression = condition.getConditionExpression();
 			if(StringHelper.containsNonWhitespace(expression)) {
 				String reference = condition.getConditionExpression();
-				for(BusinessGroup group:groups) {
-					String strToMatch = "\"" + group.getName() + "\"";
-					String replacement = "\"" + group.getKey() + "\"";
-					expression = replaceAllCaseInsensitive(expression, strToMatch, replacement);
-				}
-				for(BGArea area:areas) {
-					String strToMatch = "\"" + area.getName() + "\"";
-					String replacement = "\"" + area.getKey() + "\"";
-					expression = replaceAllCaseInsensitive(expression, strToMatch, replacement);
-				}
-				
-				if(!reference.equals(expression)) {
-					condition.setConditionUpgraded(expression);
+				String processExpression = processExpression(processingFlag, expression, groups, areas);
+				if(!reference.equals(processExpression)) {
+					condition.setConditionUpgraded(processExpression);
 					processingFlag.processed();
 				}
 			}
 		}
+	}
+	
+	private String processExpression(ProcessingOccured processingFlag, String expression,
+			List<BusinessGroup> groups, List<BGArea> areas) {
+
+		for(BusinessGroup group:groups) {
+			String strToMatch = "\"" + group.getName() + "\"";
+			String replacement = "\"" + group.getKey() + "\"";
+			expression = replaceAllCaseInsensitive(expression, strToMatch, replacement);
+		}
+		for(BGArea area:areas) {
+			String strToMatch = "\"" + area.getName() + "\"";
+			String replacement = "\"" + area.getKey() + "\"";
+			expression = replaceAllCaseInsensitive(expression, strToMatch, replacement);
+		}
+		
+		return expression;
 	}
 	
 	private String replaceAllCaseInsensitive(String expression, String name, String replacement) {

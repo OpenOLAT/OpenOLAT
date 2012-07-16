@@ -60,6 +60,8 @@ public class BGCopyWizardController extends WizardController {
 	private BusinessGroupFormController groupController;
 	private Translator trans;
 	private BusinessGroup originalGroup, copiedGroup;
+	
+	private final BusinessGroupService bgs;
 
 	/**
 	 * Constructor fot the business group copy wizard
@@ -72,6 +74,7 @@ public class BGCopyWizardController extends WizardController {
 	public BGCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup) {
 		super(ureq, wControl, 2);
 		setBasePackage(BGCopyWizardController.class);
+		bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.trans = BGTranslatorFactory.createBGPackageTranslator(PACKAGE, originalGroup.getType(), ureq.getLocale());
 		this.originalGroup = originalGroup;
 		// init wizard step 1
@@ -125,19 +128,17 @@ public class BGCopyWizardController extends WizardController {
 	}
 
 	private BusinessGroup doCopyGroup() {
-		// reload original group to prevent context proxy problems
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		this.originalGroup = bgs.loadBusinessGroup(originalGroup);
-		//OLATResource resource = originalGroup.get();
+		originalGroup = bgs.loadBusinessGroup(originalGroup);
 		String bgName = groupController.getGroupName();
 		String bgDesc = groupController.getGroupDescription();
 		Integer bgMax = groupController.getGroupMax();
 		Integer bgMin = groupController.getGroupMin();
-		boolean copyAreas = copyForm.isCopyAreas();
-		
-		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, bgName, bgDesc, bgMin, bgMax, null, null, copyAreas,
-				copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(), copyForm.isCopyParticipants(), copyForm
-						.isCopyMembersVisibility(), copyForm.isCopyWaitingList());
+
+		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, bgName, bgDesc,
+				bgMin, bgMax, null, null,
+				copyForm.isCopyAreas(), copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(),
+				copyForm.isCopyParticipants(), copyForm.isCopyMembersVisibility(), copyForm.isCopyWaitingList(),
+				true /*copy resources */ );
 		return newGroup;
 	}
 
@@ -146,14 +147,6 @@ public class BGCopyWizardController extends WizardController {
 	 *         group
 	 */
 	public BusinessGroup getNewGroup() {
-		return this.copiedGroup;
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.WizardController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		super.doDispose();
+		return copiedGroup;
 	}
 }

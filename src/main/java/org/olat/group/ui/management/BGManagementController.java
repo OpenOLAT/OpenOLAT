@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.UserControllerFactory;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
@@ -179,8 +178,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private ContactFormController contactCtr;
 	private BGCopyWizardController bgCopyWizardCtr;
 	private BGMultipleCopyWizardController bgMultipleCopyWizardCtr;
-	private TableController resourcesCtr;
-	private GroupController contextOwnersCtr;
 	
 	private final boolean backLink;
 

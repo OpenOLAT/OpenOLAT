@@ -36,7 +36,7 @@ import org.olat.resource.OLATResource;
  */
 public class BGContext2Resource extends PersistentObject {
 
-	private BGContext groupContext;
+	private BGContextImpl groupContext;
 	private OLATResource resource;
 
 	/**
@@ -53,7 +53,7 @@ public class BGContext2Resource extends PersistentObject {
 	 * @param resource
 	 * @param groupContext
 	 */
-	BGContext2Resource(OLATResource resource, BGContext groupContext) {
+	BGContext2Resource(OLATResource resource, BGContextImpl groupContext) {
 		setResource(resource);
 		setGroupContext(groupContext);
 	}
@@ -75,14 +75,14 @@ public class BGContext2Resource extends PersistentObject {
 	/**
 	 * @return The group context
 	 */
-	public BGContext getGroupContext() {
+	public BGContextImpl getGroupContext() {
 		return groupContext;
 	}
 
 	/**
 	 * @param groupContext The group context
 	 */
-	public void setGroupContext(BGContext groupContext) {
+	public void setGroupContext(BGContextImpl groupContext) {
 		this.groupContext = groupContext;
 	}
 }

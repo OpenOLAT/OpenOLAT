@@ -340,21 +340,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#deleteCourseGroupmanagement()
 	 */
 	public void deleteCourseGroupmanagement() {
-		// contextManager.removeAllBGContextsFromResource(courseResource);
 		//TODO gm
-		/*
-		List allContexts = contextManager.findBGContextsForResource(courseResource, true, true);
-		Iterator iter = allContexts.iterator();
-		while (iter.hasNext()) {
-			BGContext context = (BGContext) iter.next();
-			if (context.isDefaultContext()) {
-				contextManager.deleteBGContext(context);
-			} else {
-				// not a default context, only unlink from this course
-				contextManager.removeBGContextFromResource(context, courseResource);
-			}
-		}
-		*/
+		//delete something???
 		logAudit("Deleting course groupmanagement for " + courseResource.toString());
 	}
 

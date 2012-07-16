@@ -28,7 +28,6 @@ package org.olat.group.area;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.id.Identity;
@@ -53,17 +52,6 @@ public interface BGAreaManager {
 	 * @return The new area or null if no area has been created
 	 */
 	public abstract BGArea createAndPersistBGAreaIfNotExists(String areaName, String description, OLATResource resource);
-
-	/**
-	 * Copies all group areas from the original context to the target context. The
-	 * method returns a hash map with all original areas as key and the newly
-	 * created areas as value.
-	 * 
-	 * @param origBgContext Context containing the orignial areas
-	 * @param targetBgContext Context where the areas should be created
-	 * @return Map mapping the original to the new areas
-	 */
-	public abstract Map<BGArea,BGArea> copyBGAreasOfBGContext(OLATResource sourceResource, OLATResource targetResource);
 
 	/**
 	 * Finds an area in the given context
@@ -145,6 +133,14 @@ public interface BGAreaManager {
 	 * @return A list of business groups
 	 */
 	public List<BusinessGroup> findBusinessGroupsOfAreas(List<BGArea> areas);
+	
+	/**
+	 * Searches for all business groups that are associated with the given
+	 * business group areas primary keys
+	 * 
+	 * @param area
+	 * @return A list of business groups
+	 */
 	public List<BusinessGroup> findBusinessGroupsOfAreaKeys(List<Long> areaKeys);
 
 	/**
@@ -237,6 +233,16 @@ public interface BGAreaManager {
 	 */
 	public List<Long> toAreaKeys(String areaNames, OLATResource resource);
 	
-	
-	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType, Locale locale, String charset);
+	/**
+	 * 
+	 * @param resource
+	 * @param columnList
+	 * @param areaList
+	 * @param archiveType
+	 * @param locale
+	 * @param charset
+	 * @return
+	 */
+	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList,
+			String archiveType, Locale locale, String charset);
 }

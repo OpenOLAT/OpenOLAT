@@ -46,6 +46,7 @@ import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGMailHelper;
@@ -217,9 +218,9 @@ public class EnrollmentManager extends BasicManager {
 		}
 		// 2. check in areas
 		if(areaKeys != null && !areaKeys.isEmpty()) {
-			for (Long areaKey:areaKeys) {
-				String areaName = areaKey.toString();//TODO gm
-				List<BusinessGroup> groups = cgm.getParticipatingBusinessGroupsInArea(identity, areaName);
+			List<BGArea> areas = areaManager.loadAreas(areaKeys);
+			for (BGArea area:areas) {
+				List<BusinessGroup> groups = areaManager.findBusinessGroupsOfArea(area);
 				if (groups.size() > 0) {
 					// Usually it is only possible to be in one group. However,
 					// theoretically the

@@ -41,11 +41,9 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
@@ -92,8 +90,6 @@ public class LoggingResourceable implements ILoggingResourceable {
 
 	/** the logging object used in this class **/
 	private static final OLog log_ = Tracing.createLoggerFor(LoggingResourceable.class);
-
-	private static final String DEFAULT_COURSE_GROUP_CONTEXT_NAME = "Default Course Group Context";
 
 	/** the maximum number of bytes for the name field **/
 	public static final int MAX_NAME_LEN = 240;
@@ -428,20 +424,6 @@ public class LoggingResourceable implements ILoggingResourceable {
 			if (title.length() > 230) title = title.substring(0, 229);
 			return wrapNonOlatResource(StringResourceableType.feedItem, item.getGuid(), title);			
 		}
-	}
-
-	/**
-	 * Wraps a BGContext into a LoggingResourceable - setting type/id/name accordingly 
-	 * @param bgContext the bgContext to be wrapped
-	 * @return a LoggingResourceable wrapping the given BGContext
-	 */
-	public static LoggingResourceable wrap(BGContext bgContext) {
-		String name = bgContext.getName();
-		if (name.startsWith(CourseGroupManager.DEFAULT_NAME_LC_PREFIX)) {
-			name = DEFAULT_COURSE_GROUP_CONTEXT_NAME;
-		}
-		return new LoggingResourceable(bgContext, OlatResourceableType.bgContext, bgContext.getGroupType(),
-				String.valueOf(bgContext.getResourceableId()), name, false);
 	}
 
 	/**

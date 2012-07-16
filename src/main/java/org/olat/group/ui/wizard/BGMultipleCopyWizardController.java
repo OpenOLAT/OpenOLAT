@@ -25,7 +25,6 @@
 
 package org.olat.group.ui.wizard;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -61,6 +60,8 @@ public class BGMultipleCopyWizardController extends WizardController {
 	private Translator trans;
 	private BusinessGroup originalGroup;
 	private GroupNamesForm groupNamesForm;
+	
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor fot the business group multiple copy wizard
@@ -72,6 +73,7 @@ public class BGMultipleCopyWizardController extends WizardController {
 	 */
 	public BGMultipleCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup) {
 		super(ureq, wControl, 2);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.trans = BGTranslatorFactory.createBGPackageTranslator(PACKAGE, originalGroup.getType(), ureq.getLocale());
 		this.originalGroup = originalGroup;
 		// init wizard step 1
@@ -101,13 +103,11 @@ public class BGMultipleCopyWizardController extends WizardController {
 		}
 		else if (source == groupNamesForm) {
 			if (event == Event.DONE_EVENT) {
-				List groupNames = this.groupNamesForm.getGroupNamesList();
+				List<String> groupNames = groupNamesForm.getGroupNamesList();
 				StringBuilder okGroups = new StringBuilder();
 				StringBuilder nokGroups = new StringBuilder();
-				Integer max = this.groupNamesForm.getGroupMax();
-				Iterator iter = groupNames.iterator();
-				while (iter.hasNext()) {
-					String groupName = (String) iter.next();
+				Integer max = groupNamesForm.getGroupMax();
+				for (String groupName: groupNames) {
 					BusinessGroup newGroup = doCopyGroup(groupName, max);
 					if (newGroup == null) {
 						nokGroups.append("<li>");
@@ -134,15 +134,17 @@ public class BGMultipleCopyWizardController extends WizardController {
 	}
 	
 	private BusinessGroup doCopyGroup(String newGroupName, Integer max) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		
 		// reload original group to prevent context proxy problems
-		originalGroup = bgs.loadBusinessGroup(this.originalGroup);
-		boolean copyAreas = copyForm.isCopyAreas();
-		//TODO gm copy relations to resources 
+		originalGroup = businessGroupService.loadBusinessGroup(originalGroup);
 
-		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, newGroupName, originalGroup.getDescription(), null, max, null, null, copyAreas,
-				copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(), copyForm.isCopyParticipants(), copyForm
-						.isCopyMembersVisibility(), copyForm.isCopyWaitingList());
+		BusinessGroup newGroup = businessGroupService.copyBusinessGroup(originalGroup, newGroupName, originalGroup.getDescription(),
+				null, max, null, null /* areas map */,
+				copyForm.isCopyAreas(), copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(),
+				copyForm.isCopyParticipants(), copyForm.isCopyMembersVisibility(), copyForm.isCopyWaitingList(),
+				true /*copy relations*/);
+		
+		
 		return newGroup;
 	}
 

@@ -51,7 +51,7 @@ public class GroupNamesForm extends FormBasicController {
 
 	private TextElement groupNames;
 	private TextElement bgMax;
-	private List groupNamesList;
+	private List<String> groupNamesList;
 	
 	private Integer defaultMaxValue;
 
@@ -62,7 +62,7 @@ public class GroupNamesForm extends FormBasicController {
 	}
 
 	protected boolean validateFormLogic(UserRequest ureq) {
-		List namesList = new ArrayList();
+		List<String> namesList = new ArrayList<String>();
 		String groupNamesString = groupNames.getValue();
 		String[] groups = groupNamesString.split("[\t\n\f\r]");
 		
@@ -82,9 +82,9 @@ public class GroupNamesForm extends FormBasicController {
 			}
 		}
 		// list seems to be valid. store for later retrival
-		this.groupNamesList = namesList;
+		groupNamesList = namesList;
 		
-		if (namesList.size()==0) {
+		if (namesList.isEmpty()) {
 			groupNames.setErrorKey("create.form.error.emptylist", null);
 			return false;
 		}
@@ -96,9 +96,11 @@ public class GroupNamesForm extends FormBasicController {
 	 * @return A valid list of groupnames. The list is only valid if the form
 	 *         returned the validation ok event!
 	 */
-	public List getGroupNamesList() {
-		if (this.groupNamesList == null) { throw new AssertException("getGroupNamesList() called prior to form EVENT_VALIDATION_OK event"); }
-		return this.groupNamesList;
+	public List<String> getGroupNamesList() {
+		if (groupNamesList == null) { 
+			throw new AssertException("getGroupNamesList() called prior to form EVENT_VALIDATION_OK event");
+		}
+		return groupNamesList;
 	}
 
 	/**

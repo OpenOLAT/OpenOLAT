@@ -26,7 +26,6 @@
 package org.olat.group.area;
 
 import org.olat.core.commons.persistence.PersistentObject;
-import org.olat.group.context.BGContext;
 import org.olat.resource.OLATResource;
 
 /**
@@ -47,12 +46,6 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 	 */
 	protected BGAreaImpl() {
 	// nothing to do
-	}
-
-	BGAreaImpl(String name, String description, BGContext context) {
-		setName(name);
-		setGroupContextKey(context.getKey());
-		setDescription(description);
 	}
 	
 	BGAreaImpl(String name, String description, OLATResource resource) {

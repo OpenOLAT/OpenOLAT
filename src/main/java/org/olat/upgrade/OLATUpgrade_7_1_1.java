@@ -38,7 +38,7 @@ import org.olat.core.commons.services.commentAndRating.UserCommentsManager;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
+import org.olat.group.context.BGContextImpl;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -459,8 +459,8 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 	private void migrateRepoEntrySecurityGroups(RepositoryEntry entry) {
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 
-		List<BGContext> contexts = findBGContextsForResource(entry.getOlatResource(), true, true);
-		for(BGContext context:contexts) {
+		List<BGContextImpl> contexts = findBGContextsForResource(entry.getOlatResource(), true, true);
+		for(BGContextImpl context:contexts) {
 			List<BusinessGroup> groups = getGroupsOfBGContext(context);
 			for(BusinessGroup group:groups) {
 				//migrate tutors
@@ -501,10 +501,10 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 		}
 	}
 	
-	private List<BusinessGroup> getGroupsOfBGContext(BGContext bgContext) {
-		String q = "select bg from org.olat.group.BusinessGroupImpl bg where bg.groupContext = :context";
+	private List<BusinessGroup> getGroupsOfBGContext(BGContextImpl bgContext) {
+		String q = "select bg from org.olat.group.BusinessGroupImpl bg where bg.groupContextKey = :contextKey";
 		DBQuery query = DBFactory.getInstance().createQuery(q);
-		query.setEntity("context", bgContext);
+		query.setLong("contextKey", bgContext.getKey());
 		@SuppressWarnings("unchecked")
 		List<BusinessGroup> groups = query.list();
 		return groups;
@@ -521,7 +521,7 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 		return entries;
 	}
 	
-	private List<BGContext> findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts) {
+	private List<BGContextImpl> findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts) {
 		DB db = DBFactory.getInstance();
 		StringBuilder q = new StringBuilder();
 		q.append(" select context from org.olat.group.context.BGContextImpl as context,");
@@ -539,7 +539,7 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 			query.setBoolean("isDefault", defaultContexts ? true : false);
 		}
 		@SuppressWarnings("unchecked")
-		List<BGContext> contexts = query.list();
+		List<BGContextImpl> contexts = query.list();
 		return contexts;
 	}
 

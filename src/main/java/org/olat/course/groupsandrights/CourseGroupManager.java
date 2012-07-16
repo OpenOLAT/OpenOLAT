@@ -132,7 +132,6 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups with the given group name from all
 	 *         contexts of this course
 	 */
-	//TODO gm why is it needed?
 	public List<BusinessGroup> getBusinessGroups(String groupName);
 	
 	public boolean existGroup(String nameOrKey);

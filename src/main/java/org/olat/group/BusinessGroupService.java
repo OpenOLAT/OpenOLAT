@@ -214,7 +214,7 @@ public interface BusinessGroupService {
 	 */
 	public BusinessGroup copyBusinessGroup(BusinessGroup sourceBusinessGroup, String targetName, String targetDescription, Integer targetMin,
 			Integer targetMax, OLATResource targetResource, Map<BGArea,BGArea> areaLookupMap, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
-			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList);
+			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations);
 
 	//search methods
 	/**

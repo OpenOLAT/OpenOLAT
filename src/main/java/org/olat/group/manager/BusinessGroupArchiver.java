@@ -300,8 +300,6 @@ public class BusinessGroupArchiver {
 	 * @param archiveType
 	 * @param userLocale
 	 * @return the output file which could be an CSV or a zip file depending on the input archiveType.
-	 * @see BGContext
-	 * @see BusinessGroup
 	 */
 	public File archiveGroupMembers(OLATResource resource, List<String> columnList, List<BusinessGroup> groupList, String archiveType, Locale locale, String charset) {
     

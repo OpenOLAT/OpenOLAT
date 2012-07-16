@@ -28,11 +28,8 @@ package org.olat.group.area;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.TypedQuery;
@@ -84,23 +81,6 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 			}
 		});
 		return createdBGArea;
-	}
-
-	/**
-	 * @see org.olat.group.area.BGAreaManager#copyBGAreasOfBGContext(org.olat.group.context.BGContext,
-	 *      org.olat.group.context.BGContext)
-	 */
-	// o_clusterOK by:cg ; must be synchronized too ? => not 100% sure, 
-	public Map<BGArea,BGArea> copyBGAreasOfBGContext(OLATResource origBgContext, final OLATResource targetBgContext) {
-		List<BGArea> origAreas = findBGAreasInContext(origBgContext);
-		Map<BGArea,BGArea> areas = new HashMap<BGArea,BGArea>();
-		Iterator<BGArea> iterator = origAreas.iterator();
-		while (iterator.hasNext()) {
-			BGArea origArea = (BGArea) iterator.next();
-			BGArea targetArea = createAndPersistBGArea(origArea.getName(), origArea.getDescription(), targetBgContext);
-			areas.put(origArea, targetArea);
-		}
-		return areas;
 	}
 	
 	@Override

@@ -68,11 +68,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.async.BackgroundTaskQueueManager;
@@ -106,6 +104,7 @@ public class RepositoryManager extends BasicManager {
 	private ImageHelper imageHelper;
 	private static BackgroundTaskQueueManager taskQueueManager;
 	private UserCourseInformationsManager userCourseInformationsManager;
+	private BusinessGroupService businessGroupService;
 	private DB dbInstance;
 
 	/**
@@ -124,7 +123,15 @@ public class RepositoryManager extends BasicManager {
 	public void setUserCourseInformationsManager(UserCourseInformationsManager userCourseInformationsManager) {
 		this.userCourseInformationsManager = userCourseInformationsManager;
 	}
-	
+
+	/**
+	 * [used by Spring]
+	 * @param businessGroupService
+	 */
+	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
+		this.businessGroupService = businessGroupService;
+	}
+
 	/**
 	 * [used by Spring]
 	 * @param userCourseInformationsManager
@@ -1553,7 +1560,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param logger
 	 */
 	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
-    List<BusinessGroup> groups = getCourseGroups(re);
+		List<BusinessGroup> groups = getCourseGroups(re);
 		for (Identity identity : removeIdentities) {
     	securityManager.removeIdentityFromSecurityGroup(identity, re.getParticipantGroup());
     	for(BusinessGroup group:groups) {
@@ -1582,11 +1589,7 @@ public class RepositoryManager extends BasicManager {
 	 */
 	private List<BusinessGroup> getCourseGroups(RepositoryEntry repoEntry) {
 		if("CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName())) {
-			//TODO gm
-			ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
-			CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
-			List<BusinessGroup> groups = gm.getAllBusinessGroups();
-			return groups;
+			return businessGroupService.findBusinessGroups(null, repoEntry.getOlatResource(), 0, -1);
 		}
 		return Collections.emptyList();
 	}
