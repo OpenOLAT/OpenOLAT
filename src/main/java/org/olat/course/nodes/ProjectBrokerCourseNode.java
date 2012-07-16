@@ -673,17 +673,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	}
 
 	/**
-	 * @see org.olat.course.nodes.CourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
-	@Override
-	public void exportNode(File fExportDirectory, ICourse course) {
-		// nothing to export 
-		//		File fNodeExportDir = new File(fExportDirectory, this.getIdent());
-		//		fNodeExportDir.mkdirs();
-	}
-
-	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
 	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)

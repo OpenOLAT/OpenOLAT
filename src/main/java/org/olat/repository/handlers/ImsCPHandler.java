@@ -77,7 +77,7 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 	private static final boolean DOWNLOADEABLE = true;
 	private static final boolean EDITABLE = true;
 	private static final boolean WIZARD_SUPPORT = false;
-	private static final List supportedTypes;
+	private static final List<String> supportedTypes;
 	
 	/**
 	 * 
@@ -87,14 +87,14 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 	}
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(1);
+		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(ImsCPFileResource.TYPE_NAME);
 	}
 	
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 

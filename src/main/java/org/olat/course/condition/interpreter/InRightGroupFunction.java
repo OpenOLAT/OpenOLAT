@@ -25,10 +25,15 @@
 
 package org.olat.course.condition.interpreter;
 
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
 
 /**
  * Description:<BR/>
@@ -86,8 +91,16 @@ public class InRightGroupFunction extends AbstractFunction {
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 		
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
-		
-		return cgm.isIdentityInGroup(ident,groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		if(StringHelper.isLong(groupName)) {
+			Long groupKey = new Long(groupName);
+			return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		//TODO gm
+		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseResource());
+		if(!groupKeys.isEmpty()) {
+			return cgm.isIdentityInGroup(ident, groupKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		return ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {

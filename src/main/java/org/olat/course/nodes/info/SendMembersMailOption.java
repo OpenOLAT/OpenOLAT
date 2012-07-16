@@ -32,11 +32,10 @@ import org.olat.commons.info.ui.SendMailOption;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -49,12 +48,14 @@ import org.olat.repository.RepositoryManager;
  */
 public class SendMembersMailOption implements SendMailOption {
 	
-	private final ICourse course;
+	private final OLATResource courseResource;
 	private final RepositoryManager rm;
+	private final BusinessGroupService businessGroupService;
 	
-	public SendMembersMailOption(ICourse course, RepositoryManager rm) {
-		this.course = course;
+	public SendMembersMailOption(OLATResource courseResource, RepositoryManager rm, BusinessGroupService businessGroupService) {
+		this.courseResource = courseResource;
 		this.rm = rm;
+		this.businessGroupService = businessGroupService;
 	}
 
 	@Override
@@ -70,17 +71,11 @@ public class SendMembersMailOption implements SendMailOption {
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		Set<Identity> identities = new HashSet<Identity>();
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		List<BusinessGroup> learningGroups = cgm.getAllBusinessGroups();
-		for(BusinessGroup bg:learningGroups) {
-			List<Identity> participants = cgm.getParticipantsFromBusinessGroup(bg.getName());
-			identities.addAll(participants);
-			List<Identity> coaches = cgm.getCoachesFromBusinessGroup(bg.getName());
-			identities.addAll(coaches);
-		}
+		List<Identity> members = businessGroupService.getMembersOf(courseResource, true, true);
+		Set<Identity> identities = new HashSet<Identity>(members);
+
 		//fxdiff VCRP-1,2: access control of resources
-		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
+		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(courseResource, true);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		if(repositoryEntry.getParticipantGroup() != null) {
 			identities.addAll(securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getParticipantGroup()));

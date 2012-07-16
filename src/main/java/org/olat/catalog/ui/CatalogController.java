@@ -356,7 +356,7 @@ public class CatalogController extends BasicController implements Activateable, 
 				} else if (repoEntry.getCanDownload()) {
 					// else not launchable in olat, but downloadable -> send the document
 					// directly to browser but "downloadable" (pdf, word, excel)
-					MediaResource mr = handler.getAsMediaResource(ores);
+					MediaResource mr = handler.getAsMediaResource(ores, false);
 					RepositoryManager.getInstance().incrementDownloadCounter(repoEntry);
 					ureq.getDispatchResult().setResultingMediaResource(mr);
 					return;

@@ -155,14 +155,6 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
-	public void exportNode(File exportDirectory, ICourse course) {
-	//
-	}
-
-	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
 	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)

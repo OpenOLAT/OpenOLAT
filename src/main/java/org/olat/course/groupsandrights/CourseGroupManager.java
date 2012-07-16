@@ -59,7 +59,7 @@ public interface CourseGroupManager {
 	 * 
 	 * @param identity
 	 * @param courseRight
-	 * @return true if user has course right, false otherwhise
+	 * @return true if user has course right, false otherwise
 	 */
 	public boolean hasRight(Identity identity, String courseRight);
 
@@ -68,21 +68,19 @@ public interface CourseGroupManager {
 	 * contexts of this course, either as owner or as participant
 	 * 
 	 * @param identity
-	 * @param groupName
-	 * @return true if user is in learning group, false otherwhise
+	 * @param groupKey
+	 * @return true if user is in learning group, false otherwise
 	 */
-	public boolean isIdentityInGroup(Identity identity, String groupName);
-	
 	public boolean isIdentityInGroup(Identity identity, Long groupKey);
 
 	/**
 	 * Checks whether a set of learning groups with an identical name are full or not.
 	 * 
-	 * @param groupName the name of groups
+	 * @param groupKey the name of groups
 	 * 
 	 * @return true means all learning groups are full
 	 */
-	public boolean isLearningGroupFull(String groupName);
+	public boolean isBusinessGroupFull(Long groupKey);
 
 
 	/**
@@ -90,11 +88,9 @@ public interface CourseGroupManager {
 	 * of the courses group contexts
 	 * 
 	 * @param identity
-	 * @param areaName
-	 * @return true if user is in such an area, false otherwhise
+	 * @param areaKey
+	 * @return true if user is in such an area, false otherwise
 	 */
-	public boolean isIdentityInLearningArea(Identity identity, String areaName);
-	
 	public boolean isIdentityInLearningArea(Identity identity, Long areaKey);
 
 	/**
@@ -127,44 +123,7 @@ public interface CourseGroupManager {
 	 */
 	public List<BusinessGroup> getAllBusinessGroups();
 
-	/**
-	 * @param groupName
-	 * @return A list of all learning groups with the given group name from all
-	 *         contexts of this course
-	 */
-	public List<BusinessGroup> getBusinessGroups(String groupName);
-	
 	public boolean existGroup(String nameOrKey);
-
-	/**
-	 * @param areaName
-	 * @return A list of all learning groups from all contexts from this course
-	 *         that are in the given group area
-	 */
-	public List<BusinessGroup> getBusinessGroupsInArea(String areaName);
-
-	/**
-	 * @param groupName
-	 * @return A list of all learning areas where the given group takes part. All
-	 *         course group contexts are considered in this search.
-	 */
-	public List<BGArea> getAreasOfBusinessGroup(String groupName);
-
-	/**
-	 * @param identity
-	 * @param groupName
-	 * @return A list of all learning groups with the given name where this
-	 *         identity is participant
-	 */
-	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity, String groupName);
-
-	/**
-	 * @param identity
-	 * @param araName
-	 * @return A list of all learning groups within the given group area where
-	 *         this identity is participant
-	 */
-	public List<BusinessGroup> getParticipatingBusinessGroupsInArea(Identity identity, String araName);
 
 	/**
 	 * @param identity
@@ -182,9 +141,7 @@ public interface CourseGroupManager {
 	 * @return A list of all group areas from this course
 	 */
 	public List<BGArea> getAllAreas();
-	
-	public List<BGArea> getAreas(String areaname);
-	
+
 	public boolean existArea(String nameOrKey);
 
 	/**
@@ -241,7 +198,7 @@ public interface CourseGroupManager {
 	 * @param groupName
 	 * @return a list with all coaches of this course
 	 */
-	public List<Identity> getCoachesFromBusinessGroup(String groupName);
+	public List<Identity> getCoachesFromBusinessGroups();
 	
 	public List<Identity> getCoachesFromBusinessGroups(List<Long> groupKeys);
 	
@@ -255,7 +212,7 @@ public interface CourseGroupManager {
 	 * @param areaName
 	 * @return a list with all coaches of this course
 	 */
-	public List<Identity> getCoachesFromArea(String areaName);
+	public List<Identity> getCoachesFromAreas();
 	
 	public List<Identity> getCoachesFromAreas(List<Long> areaKeys);
 
@@ -266,7 +223,7 @@ public interface CourseGroupManager {
 	 * @param groupName
 	 * @return a list with all participants of this course
 	 */
-	public List<Identity> getParticipantsFromBusinessGroup(String groupName);
+	public List<Identity> getParticipantsFromBusinessGroups();
 	
 	public List<Identity> getParticipantsFromBusinessGroups(List<Long> groupKeys);
 	
@@ -282,7 +239,7 @@ public interface CourseGroupManager {
 	 * @param areaName
 	 * @return a list with participants of this course
 	 */
-	public List<Identity> getParticipantsFromArea(String areaName);
+	public List<Identity> getParticipantsFromAreas();
 	
 	public List<Identity> getParticipantsFromAreas(List<Long> areaKeys);
 

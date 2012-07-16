@@ -233,7 +233,8 @@ public class PortfolioHandler implements RepositoryHandler {
 	 * Transform the map in a XML file and zip it (Repository export want a zip)
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable)
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	@Override
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		MediaResource mr = null;
 
 		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");

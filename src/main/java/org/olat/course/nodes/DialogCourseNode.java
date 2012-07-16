@@ -251,14 +251,6 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	/**
-	 * @see org.olat.course.nodes.CourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
-	public void exportNode(File exportDirectory, ICourse course) {
-	// nothing to do in default implementation
-	}
-
-	/**
 	 * @see org.olat.course.nodes.CourseNode#importNode(java.io.File,
 	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)

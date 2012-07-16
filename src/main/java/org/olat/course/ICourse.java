@@ -62,7 +62,7 @@ public interface ICourse extends OLATResourceable {
 	 * Export course to file system.
 	 * @param exportDirecotry The directory to export files to.
 	 */
-	public void exportToFilesystem(File exportDirecotry);
+	public void exportToFilesystem(File exportDirecotry, boolean backwardsCompatible);
 	
 	/**
 	 * Return the container to files for this course.

@@ -66,7 +66,7 @@ public class QTITestHandler extends QTIHandler {
 	private static final boolean EDITABLE = true;
 	private static final boolean WIZARD_SUPPORT = false;
 
-	static List supportedTypes;
+	static List<String> supportedTypes;
 
 	/**
 	 * Default construcotr.
@@ -76,12 +76,12 @@ public class QTITestHandler extends QTIHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(1);
+		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(TestFileResource.TYPE_NAME);
 	}
 	

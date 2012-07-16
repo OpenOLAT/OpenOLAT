@@ -172,7 +172,7 @@ public class RepositoryEntryResource {
     try {
       lockResult = typeToDownload.acquireLock(ores, identity);
       if(lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
-        MediaResource mr = typeToDownload.getAsMediaResource(ores);
+        MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
         if(mr != null) {
           RepositoryManager.getInstance().incrementDownloadCounter(re);
           return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success

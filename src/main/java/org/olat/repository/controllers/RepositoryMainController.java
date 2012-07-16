@@ -580,7 +580,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 						mainPanel.setContent(detailsController.getInitialComponent());
 					}
 				} else if (selectedEntry.getCanDownload()) {
-					detailsController.doDownload(urequest);
+					detailsController.doDownload(urequest, false);
 				} else { // offer details view
 					Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 					columnsLayoutCtr.setCol2(toolComp);

@@ -31,6 +31,7 @@ import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.commons.info.ui.InfoDisplayController;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.commons.info.ui.SendSubscriberMailOption;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -51,6 +52,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryManager;
 
@@ -122,7 +124,8 @@ public class InfoRunController extends BasicController {
 		
 		infoDisplayController = new InfoDisplayController(ureq, wControl, config, secCallback, infoResourceable, resSubPath, businessPath);
 		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, InfoMessageFrontendManager.getInstance()));
-		infoDisplayController.addSendMailOptions(new SendMembersMailOption(course, RepositoryManager.getInstance()));
+		infoDisplayController.addSendMailOptions(new SendMembersMailOption(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(),
+				RepositoryManager.getInstance(), CoreSpringFactory.getImpl(BusinessGroupService.class)));
 		MailFormatter mailFormatter = new SendMailFormatterForCourse(course.getCourseTitle(), businessPath, getTranslator());
 		infoDisplayController.setSendMailFormatter(mailFormatter);
 		listenTo(infoDisplayController);

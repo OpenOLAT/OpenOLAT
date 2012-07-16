@@ -25,11 +25,15 @@
 
 package org.olat.course.condition.interpreter;
 
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.area.BGAreaManager;
 
 /**
  * Initial Date:  Jun 16, 2004
@@ -87,7 +91,12 @@ public class InLearningAreaFunction extends AbstractFunction {
 			Long areaKey = new Long(areaName);
 			return cgm.isIdentityInLearningArea(ident,areaKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}
-		return cgm.isIdentityInLearningArea(ident,areaName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		
+		List<Long> areaKeys = CoreSpringFactory.getImpl(BGAreaManager.class).toAreaKeys(areaName, cgm.getCourseResource());
+		if(!areaKeys.isEmpty()) {
+			return cgm.isIdentityInLearningArea(ident, areaKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		return ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {

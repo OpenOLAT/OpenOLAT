@@ -122,7 +122,7 @@ public interface RepositoryHandler {
 	 * @param res
 	 * @return MediaResource delivering resourceable.
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res);
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible);
 	
 	/**
 	 * Called if the repository entry referencing the given Resourceable will be deleted

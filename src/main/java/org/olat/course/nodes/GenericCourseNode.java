@@ -367,7 +367,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * @see org.olat.course.nodes.CourseNode#exportNode(java.io.File,
 	 *      org.olat.course.ICourse)
 	 */
-	@SuppressWarnings("unused")//implemented by specialized node
+	//implemented by specialized node
 	public void exportNode(File exportDirectory, ICourse course) {
 	// nothing to do in default implementation
 	}

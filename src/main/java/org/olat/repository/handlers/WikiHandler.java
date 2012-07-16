@@ -204,7 +204,8 @@ public class WikiHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.resource.OLATResourceable)
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	@Override
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		VFSContainer rootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(res);
 		VFSLeaf wikiZip = WikiToZipUtils.getWikiAsZip(rootContainer);
 		return new VFSMediaResource(wikiZip);

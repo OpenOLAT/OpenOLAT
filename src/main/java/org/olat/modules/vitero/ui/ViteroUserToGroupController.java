@@ -240,10 +240,10 @@ public class ViteroUserToGroupController extends BasicController {
 					ICourse course = CourseFactory.loadCourse(ores);
 					courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
 				}
-				coaches.addAll(courseGroupManager.getCoachesFromArea(null));
-				coaches.addAll(courseGroupManager.getCoachesFromBusinessGroup(null));
-				participants.addAll(courseGroupManager.getParticipantsFromArea(null));
-				participants.addAll(courseGroupManager.getParticipantsFromBusinessGroup(null));
+				coaches.addAll(courseGroupManager.getCoachesFromAreas());
+				coaches.addAll(courseGroupManager.getCoachesFromBusinessGroups());
+				participants.addAll(courseGroupManager.getParticipantsFromAreas());
+				participants.addAll(courseGroupManager.getParticipantsFromBusinessGroups());
 			}
 			
 			List<Identity> repoOwners = securityManager.getIdentitiesOfSecurityGroup(repoEntry.getOwnerGroup());

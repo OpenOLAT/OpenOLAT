@@ -45,7 +45,6 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.group.BusinessGroup;
@@ -170,24 +169,27 @@ public class ENWebService extends AbstractCourseNodeWebService {
 		} else if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		CourseNode node = getParentNode(course, nodeId);
 		ModuleConfiguration config = node.getModuleConfiguration();
-		String groupeNames = (String)config.get(ENCourseNode.CONFIG_GROUPNAME);
-		if(!StringHelper.containsNonWhitespace(groupeNames)) {
+		String groupNames = (String)config.get(ENCourseNode.CONFIG_GROUPNAME);
+		@SuppressWarnings("unchecked")
+		List<Long> groupKeys = (List<Long>)config.get(ENCourseNode.CONFIG_GROUP_IDS);
+		if(groupKeys == null && StringHelper.containsNonWhitespace(groupNames)) {
+			groupKeys = bgs.toGroupKeys(groupNames, course.getCourseEnvironment().getCourseGroupManager().getCourseResource()); 
+		}
+		
+		if(groupKeys == null || groupKeys.isEmpty()) {
 			return Response.ok(new GroupVO[0]).build();
 		}
 
 		List<GroupVO> voes = new ArrayList<GroupVO>();
-		String[] groupeNameArr = groupeNames.split(",");
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		for(String groupeName:groupeNameArr) {
-			List<BusinessGroup> groups = cgm.getBusinessGroups(groupeName);
-			for(BusinessGroup group:groups) {
-				voes.add(get(group));
-			}
+		List<BusinessGroup> groups = bgs.loadBusinessGroups(groupKeys);
+		for(BusinessGroup group:groups) {
+			voes.add(get(group));
 		}
-		
 		GroupVO[] voArr = new GroupVO[voes.size()];
 		voes.toArray(voArr);
 		return Response.ok(voArr).build();

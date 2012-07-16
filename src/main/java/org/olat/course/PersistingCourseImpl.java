@@ -289,7 +289,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 * See OLAT-5368: Course Export can take longer than say 2min.
 	 * <p>
 	 */
-	public void exportToFilesystem(File exportDirectory) {
+	public void exportToFilesystem(File exportDirectory, boolean backwardsCompatible) {
 		long s = System.currentTimeMillis();
 		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+"...");
 		File fCourseBase = getCourseBaseContainer().getBasefile();

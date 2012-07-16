@@ -34,14 +34,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.controller.OLATResourceableListeningWrapperController;
 import org.olat.ims.qti.editor.AddNewQTIDocumentController;
 import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.qti.process.Resolver;
-import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
@@ -68,7 +66,7 @@ public class QTISurveyHandler extends QTIHandler {
 	private static final boolean EDITABLE = true;
 	private static final boolean WIZARD_SUPPORT = false;
 
-	static List supportedTypes;
+	static List<String> supportedTypes;
 
 	/**
 	 * Default constructor.
@@ -80,12 +78,12 @@ public class QTISurveyHandler extends QTIHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(1);
+		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(SurveyFileResource.TYPE_NAME);
 	}
 	

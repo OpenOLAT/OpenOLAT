@@ -51,7 +51,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.CourseFactory;
@@ -116,10 +115,10 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		ICourse course = CourseFactory.loadCourse(courseResId);
 		RepositoryEntry courseRepositoryEntry = rm.lookupRepositoryEntry(course, true);
 		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(courseRepositoryEntry.getOwnerGroup());
-		List<Identity> coaches = cgm.getCoachesFromBusinessGroup(null);
+		List<Identity> coaches = cgm.getCoachesFromBusinessGroups();
 		//fxdiff VCRP-1,2: access control of resources
 		coaches.addAll(cgm.getCoaches());
-		List<Identity> participants = cgm.getParticipantsFromBusinessGroup(null);
+		List<Identity> participants = cgm.getParticipantsFromBusinessGroups();
 		participants.addAll(cgm.getParticipants());
 		Comparator<Identity> idComparator = new IdentityComparator();
 		Collections.sort(owners, idComparator);

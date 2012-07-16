@@ -170,7 +170,8 @@ public class GlossaryHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	@Override
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		return GlossaryManager.getInstance().getAsMediaResource(res);
 	}
 
