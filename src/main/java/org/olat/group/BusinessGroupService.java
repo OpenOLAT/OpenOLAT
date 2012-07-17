@@ -476,7 +476,7 @@ public interface BusinessGroupService {
 	 * @param groups
 	 * @param fExportFile
 	 */
-	public void exportGroups(List<BusinessGroup> groups, File fExportFile);
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile);
 
 	/**
 	 * Import previously exported group definitions.

@@ -307,16 +307,23 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public void exportCourseBusinessGroups(File fExportDirectory) {
 		File fExportFile = new File(fExportDirectory, LEARNINGGROUPEXPORT_XML);
+		List<BGArea> areas = getAllAreas();
 		List<BusinessGroup> groups = getAllBusinessGroups();
-		businessGroupService.exportGroups(groups, fExportFile);
+		businessGroupService.exportGroups(groups, areas, fExportFile);
 	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#importCourseBusinessGroups(java.io.File)
 	 */
 	public void importCourseBusinessGroups(File fImportDirectory) {
-		File fGroupExportXML = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
-		businessGroupService.importGroups(courseResource, fGroupExportXML);
+		File fGroupXML1 = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
+		if(fGroupXML1.exists()) {
+			businessGroupService.importGroups(courseResource, fGroupXML1);
+		}
+		File fGroupXML2 = new File(fImportDirectory, RIGHTGROUPEXPORT_XML);
+		if(fGroupXML2.exists()) {
+			businessGroupService.importGroups(courseResource, fGroupXML2);
+		}
 	}
 
 

@@ -39,7 +39,7 @@ import org.olat.course.nodes.CourseNode;
 public class Structure implements Serializable {
 
 	private CourseNode rootNode = null;
-	transient private final static int CURRENTVERSION = 2;
+	transient private final static int CURRENTVERSION = 3;
 	private int version;
 	
 

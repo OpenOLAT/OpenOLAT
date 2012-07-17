@@ -48,7 +48,7 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 															// zero -> meaning we read from an old
 															// xml-structure which set it to zero, since it
 															// did not exist
-	transient private final static int CURRENTVERSION = 2;
+	transient private final static int CURRENTVERSION = 3;
 	private int version;
 	private static OLog log = Tracing.createLoggerFor(CourseEditorTreeModel.class);
 

@@ -48,6 +48,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.area.BGArea;
 import org.olat.repository.delete.service.DeletionModule;
 
 
@@ -201,7 +202,7 @@ public class BusinessGroupDeletionManager extends BasicManager {
 		}
 		businessGroupService.archiveGroups(Collections.singletonList(businessGroup), new File(archiveFilePath, GROUPARCHIVE_XLS));
 		File exportFile = new File(archiveFilePath, GROUPEXPORT_XML);
-		businessGroupService.exportGroups(Collections.singletonList(businessGroup), exportFile);			
+		businessGroupService.exportGroups(Collections.singletonList(businessGroup), Collections.<BGArea>emptyList(), exportFile);			
 
 		return GROUPEXPORT_XML;
 	}

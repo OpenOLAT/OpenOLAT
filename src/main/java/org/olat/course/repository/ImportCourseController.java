@@ -35,6 +35,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.commons.file.filechooser.FileChooserController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -52,6 +53,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemFileTypeFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
+import org.olat.course.CourseUpgrade;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
@@ -83,10 +85,12 @@ public class ImportCourseController extends BasicController implements IAddContr
 	private Controller activeImportController;
 	private ImportSharedfolderReferencesController sharedFolderImportController;
 	private ImportGlossaryReferencesController glossaryImportController;
-	private List nodeList = new ArrayList();
+	private List<CourseEditorTreeNode> nodeList = new ArrayList<CourseEditorTreeNode>();
 	private int nodeListPos = 0;
 	private Panel myPanel;
 	private static final VFSItemFileTypeFilter zipTypeFilter = new VFSItemFileTypeFilter(new String[] { "zip" });
+	
+	private final CourseUpgrade courseUpgrade;
 
 	/**
 	 * Import a course from a previous export.
@@ -98,6 +102,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	public ImportCourseController(RepositoryAddCallback callback, UserRequest ureq, WindowControl wControl) { 
 		super(ureq,wControl);
 		this.callback = callback;
+		courseUpgrade = CoreSpringFactory.getImpl(CourseUpgrade.class);
 		myPanel = new Panel("importPanel");
 		myPanel.addListener(this);
 		
@@ -126,6 +131,8 @@ public class ImportCourseController extends BasicController implements IAddContr
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// import groups
 		cgm.importCourseBusinessGroups(getExportDataDir(course));
+		//upgrade to the current version of the course
+		courseUpgrade.processCourse(cgm.getCourseResource(), false);
 		return true;
 	}
 
@@ -368,7 +375,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	 * @param rootNode
 	 * @param nl
 	 */
-	public static void collectNodesAsList(CourseEditorTreeNode rootNode, List nl) {
+	private void collectNodesAsList(CourseEditorTreeNode rootNode, List<CourseEditorTreeNode> nl) {
 		nl.add(rootNode);
 		for (int i = 0; i < rootNode.getChildCount(); i++) {
 			collectNodesAsList((CourseEditorTreeNode)rootNode.getChildAt(i), nl);

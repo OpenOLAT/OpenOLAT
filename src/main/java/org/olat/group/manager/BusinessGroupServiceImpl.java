@@ -1228,8 +1228,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	public void exportGroups(List<BusinessGroup> groups, File fExportFile) {
-		businessGroupImportExport.exportGroups(groups, fExportFile);
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile) {
+		businessGroupImportExport.exportGroups(groups, areas, fExportFile);
 	}
 
 	@Override

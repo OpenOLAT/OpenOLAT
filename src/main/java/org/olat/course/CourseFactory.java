@@ -573,6 +573,10 @@ public class CourseFactory extends BasicManager {
 		FileUtils.deleteDirsAndFiles(fCanonicalCourseBasePath, true, true);
 		return null;
 	}
+	
+	private void upgrade() {
+		
+	}
 
 	/**
 	 * Deploys a course from an exported course ZIP file. This process is unatended and

@@ -118,4 +118,10 @@
 	</property>
 </bean>
 
+
+<bean id="courseUpgrade" class="org.olat.course.CourseUpgrade">
+	<property name="areaManager" ref="areaManager"/>
+	<property name="businessGroupService" ref="businessGroupService"/>
+</bean>
+
 </beans>

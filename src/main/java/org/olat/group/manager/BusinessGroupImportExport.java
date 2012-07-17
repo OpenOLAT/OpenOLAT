@@ -64,7 +64,7 @@ public class BusinessGroupImportExport {
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	
 	
-	public void exportGroups(List<BusinessGroup> groups, File fExportFile) {
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile) {
 		if (groups == null || groups.isEmpty())
 			return; // nothing to do... says Florian.
 
@@ -72,6 +72,12 @@ public class BusinessGroupImportExport {
 		// export areas
 		root.setAreas(new AreaCollection());
 		root.getAreas().setGroups(new ArrayList<Area>());
+		for (BGArea area : areas) {
+			Area newArea = new Area();
+			newArea.name = area.getName();
+			newArea.description = Collections.singletonList(area.getDescription());
+			root.getAreas().getGroups().add(newArea);
+		}
 
 		// export groups
 		root.setGroups(new GroupCollection());
