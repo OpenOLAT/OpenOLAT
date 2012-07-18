@@ -185,49 +185,6 @@ public class BGControllerFactory {
 	 */
 	public BGManagementController createManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			boolean useBackLink) {
-
-		return createLearningGroupManagementController(ureq, wControl, resource, useBackLink);
-		/*
-		} else if (BusinessGroup.TYPE_RIGHTGROUP.equals(bgContext.getGroupType())) {
-			return createRightGroupManagementController(ureq, wControl, bgContext, useBackLink);
-		} else {
-			throw new AssertException("Can't handle group type ::" + bgContext.getGroupType());
-		}*/
-	}
-	
-	/**
-	 * create Controller for new business group creation
-	 * @param ureq
-	 * @param wControl
-	 * @param ual
-	 * @param flags
-	 * @param bgContext
-	 * @param groupManager
-	 * @return
-	 */
-	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource){
-		return createNewBGController(ureq, wControl, resource, true, null);
-	}
-	/**
-	 * create controller for (mass) creation of business groups (bulkmode) with
-	 * a group name(s) proposition.
-	 * @param ureq
-	 * @param wControl
-	 * @param ual
-	 * @param minMaxEnabled
-	 * @param bgContext
-	 * @param bulkMode 
-	 * @param csvGroupNames
-	 * @return
-	 */
-	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvGroupNames){
-		if (resource == null) throw new AssertException("Group context must not be null");
-		NewBGController retVal = new NewBGController(ureq, wControl, resource, bulkMode, csvGroupNames);
-		return retVal;
-	}
-	
-	private BGManagementController createLearningGroupManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource,
-			boolean useBackLink) {
 		// controller configuration
 		return new BGManagementController(ureq, wControl, resource, useBackLink);
 	}

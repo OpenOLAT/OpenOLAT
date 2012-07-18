@@ -84,7 +84,6 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 	
 	private static final String FG_TYPE = UUID.randomUUID().toString().replace("_", "");
 	private static final String CG_TYPE = UUID.randomUUID().toString().replace("-", "");
-
 	
 	@Before
 	public void setup() {
@@ -168,7 +167,6 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 		
 		// inserting must take longer than searching, otherwhise most certainly we have a problem somewhere in the query
 		assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
-		
 	}
 
 

@@ -482,7 +482,7 @@ public class CatalogController extends BasicController implements Activateable, 
 				// an Author gets the list of his repository
 				else {
 					// admin is responsible for not inserting wrong visibility entries!!
-					rsc.doSearchByOwnerLimitAccess(ureq.getIdentity(), RepositoryEntry.ACC_USERS);
+					rsc.doSearchByOwnerLimitAccess(ureq.getIdentity());
 				}
 				// open form in dialog
 				removeAsListenerAndDispose(cmc);

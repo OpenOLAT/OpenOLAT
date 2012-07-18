@@ -86,7 +86,6 @@ import org.olat.instantMessaging.syncservice.SyncSingleUserTask;
 import org.olat.notifications.NotificationsManagerImpl;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -119,8 +118,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupImportExport businessGroupImportExport;
 	@Autowired
 	private BusinessGroupArchiver businessGroupArchiver;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupDeletionManager businessGroupDeletionManager;
 	@Autowired
@@ -714,19 +711,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	private void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group) {
-		//fxdiff VCRP-1,2: access control of resources
-		List<RepositoryEntry> res = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(group), 0, 1);
-		for(RepositoryEntry re:res) {
-			if(re.getTutorGroup() == null) {
-				repositoryManager.createTutorSecurityGroup(re);
-				repositoryManager.updateRepositoryEntry(re);
-			}
-			if(re.getTutorGroup() != null && !securityManager.isIdentityInSecurityGroup(identity, re.getTutorGroup())) {
-				securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
-			}
-		}
 		securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
-		
 		// add user to buddies rosters
 		addToRoster(ureqIdentity, identity, group);
 		// notify currently active users of this business group
@@ -740,17 +725,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 
-		//fxdiff VCRP-1,2: access control of resources
-		List<RepositoryEntry> res = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(group), 0, -1);
-		for(RepositoryEntry re:res) {
-			if(re.getParticipantGroup() == null) {
-				repositoryManager.createParticipantSecurityGroup(re);
-				repositoryManager.updateRepositoryEntry(re);
-			}
-			if(re.getParticipantGroup() != null && !securityManager.isIdentityInSecurityGroup(identityToAdd, re.getParticipantGroup())) {
-				securityManager.addIdentityToSecurityGroup(identityToAdd, re.getParticipantGroup());
-			}
-		}
 		securityManager.addIdentityToSecurityGroup(identityToAdd, group.getPartipiciantGroup());
 
 		// add user to buddies rosters
@@ -793,20 +767,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
-		
-		//fxdiff VCRP-2: access control
-		List<RepositoryEntry> entries = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(group), 0, -1);
-		for(RepositoryEntry entry:entries) {
-			if(entry.getParticipantGroup() != null && securityManager.isIdentityInSecurityGroup(identity, entry.getParticipantGroup())) {
-				securityManager.removeIdentityFromSecurityGroup(identity, entry.getParticipantGroup());
-			}
-		}
-		securityManager.removeIdentityFromSecurityGroup(identity, group.getPartipiciantGroup());
 
+		securityManager.removeIdentityFromSecurityGroup(identity, group.getPartipiciantGroup());
 		// remove user from buddies rosters
 		removeFromRoster(identity, group);
-		
-		//remove subsciptions if user gets removed
+		//remove subscriptions if user gets removed
 		removeSubscriptions(identity, group);
 		
 		// notify currently active users of this business group
@@ -1103,17 +1068,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup group) {
 		//fxdiff VCRP-2: access control
-		List<RepositoryEntry> entries = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(group), 0, -1);
-		for(RepositoryEntry entry:entries) {
-			if(entry.getTutorGroup() != null) {
-				for(Identity identity:identitiesToRemove) {
-					if(securityManager.isIdentityInSecurityGroup(identity, entry.getTutorGroup())) {
-						securityManager.removeIdentityFromSecurityGroup(identity, entry.getTutorGroup());
-					}
-				}
-			}
-		}
-
 		for(Identity identity:identitiesToRemove) {
 			securityManager.removeIdentityFromSecurityGroup(identity, group.getOwnerGroup());
 			// remove user from buddies rosters

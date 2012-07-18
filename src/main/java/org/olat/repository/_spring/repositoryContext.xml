@@ -27,7 +27,6 @@
 	<property name="userCourseInformationsManager" ref="userCourseInformationsManager"/>
 	<property name="imageHelper" ref="imageHelper"/>
 	<property name="dbInstance" ref="database"/>
-	<property name="businessGroupService" ref="businessGroupService"/>
 </bean>
 
 <!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->

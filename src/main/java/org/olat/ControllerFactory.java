@@ -93,11 +93,11 @@ public class ControllerFactory {
 			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BusinessGroup, but is in guest group " + roles);
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			BusinessGroup bg = bgs.loadBusinessGroup(olatResourceable.getResourceableId());
-			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+			boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
 			// check if allowed to start (must be member or admin)
-			if (isOlatAdmin || bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
+			if (isAdmin || bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
 				// only olatadmins or admins of this group can administer this group
-				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg, isOlatAdmin,
+				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg, isAdmin,
 						initialViewIdentifier);
 			}
 			// else skip

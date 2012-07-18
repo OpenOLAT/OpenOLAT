@@ -136,6 +136,10 @@ public class JunitTestHelper {
 	}
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry() {
+		return createAndPersistRepositoryEntry(false); 
+	}
+	
+	public static final RepositoryEntry createAndPersistRepositoryEntry(boolean membersOnly) {
 		OLATResourceManager resourceManager = OLATResourceManager.getInstance();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), CodeHelper.getForeverUniqueID());
 		OLATResource r =  resourceManager.createOLATResourceInstance(ores);
@@ -144,6 +148,12 @@ public class JunitTestHelper {
 		RepositoryManager repositoryManager = RepositoryManager.getInstance();
 		RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("Florian Gnägi");
 		re.setOlatResource(r);
+		if(membersOnly) {
+			re.setAccess(RepositoryEntry.ACC_OWNERS);
+			re.setMembersOnly(true);
+		} else {
+			re.setAccess(RepositoryEntry.ACC_USERS);
+		}
 		re.setResourcename("Lernen mit OLAT");
 		re.setDisplayname(ores.getResourceableTypeName());
 		repositoryManager.createOwnerSecurityGroup(re);
