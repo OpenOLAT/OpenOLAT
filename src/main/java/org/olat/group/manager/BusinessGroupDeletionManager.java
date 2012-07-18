@@ -202,7 +202,7 @@ public class BusinessGroupDeletionManager extends BasicManager {
 		}
 		businessGroupService.archiveGroups(Collections.singletonList(businessGroup), new File(archiveFilePath, GROUPARCHIVE_XLS));
 		File exportFile = new File(archiveFilePath, GROUPEXPORT_XML);
-		businessGroupService.exportGroups(Collections.singletonList(businessGroup), Collections.<BGArea>emptyList(), exportFile);			
+		businessGroupService.exportGroups(Collections.singletonList(businessGroup), Collections.<BGArea>emptyList(), exportFile, false);			
 
 		return GROUPEXPORT_XML;
 	}

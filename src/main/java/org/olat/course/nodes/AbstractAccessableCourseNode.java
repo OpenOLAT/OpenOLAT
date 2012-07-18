@@ -35,6 +35,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -96,6 +97,18 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		}
 		precondition_accessor.setConditionId("accessability");
 		this.preConditionAccess = precondition_accessor;
+	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		postImportCondition(preConditionAccess, envMapper);
+	}
+	
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		postExportCondition(preConditionAccess, envMapper, backwardsCompatible);
 	}
 
 	/**

@@ -43,6 +43,7 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.co.COEditController;
 import org.olat.course.nodes.co.CORunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -106,6 +107,57 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_co_icon");
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		
+		ModuleConfiguration mc = getModuleConfiguration();
+		String groupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
+		@SuppressWarnings("unchecked")
+		List<Long> groupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
+		if(groupKeys == null) {
+			groupKeys = envMapper.toGroupKeyFromOriginalNames(groupNames);
+		} else {
+			groupKeys = envMapper.toGroupKeyFromOriginalKeys(groupKeys);
+		}
+		mc.set(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, groupKeys);
+
+		String areaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
+		@SuppressWarnings("unchecked")
+		List<Long> areaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
+		if(areaKeys == null) {
+			areaKeys = envMapper.toAreaKeyFromOriginalNames(areaNames);
+		} else {
+			areaKeys = envMapper.toAreaKeyFromOriginalKeys(areaKeys);
+		}
+		mc.set(COEditController.CONFIG_KEY_EMAILTOAREA_IDS, areaKeys);
+	}
+
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		
+		ModuleConfiguration mc = getModuleConfiguration();
+		@SuppressWarnings("unchecked")
+		List<Long> groupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
+		if(groupKeys != null) {
+			String groupNames = envMapper.toOriginalGroupNames(groupKeys);
+			mc.set(COEditController.CONFIG_KEY_EMAILTOGROUPS, groupNames);
+		}
+
+		@SuppressWarnings("unchecked")
+		List<Long> areaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
+		if(areaKeys != null) {
+			String areaNames = envMapper.toOriginalAreaNames(areaKeys);	
+			mc.set(COEditController.CONFIG_KEY_EMAILTOAREAS, areaNames);
+		}
+		
+		if(backwardsCompatible) {
+			mc.remove(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
+			mc.remove(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
+		}
 	}
 
 	/**

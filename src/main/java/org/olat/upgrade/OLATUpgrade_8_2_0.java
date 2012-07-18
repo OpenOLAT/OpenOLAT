@@ -26,7 +26,9 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Roles;
-import org.olat.course.CourseUpgrade;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
@@ -35,7 +37,9 @@ import org.olat.group.area.BGAreaImpl;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGtoAreaRelationImpl;
 import org.olat.group.context.BGContext2Resource;
+import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BGResourceRelation;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
@@ -74,8 +78,6 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 	private OLATResourceManager resourceManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	private CourseUpgrade courseUpgrade;
 
 	public OLATUpgrade_8_2_0() {
 		super();
@@ -165,7 +167,9 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			do {
 				entries = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, REPO_ENTRIES_BATCH_SIZE, true);
 				for(RepositoryEntry entry:entries) {
-					courseUpgrade.processCourse(entry.getOlatResource(), true);
+					ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+					CourseEnvironmentMapper envMapper = getCourseEnvironmentMapper(entry.getOlatResource());
+					course.postImport(envMapper);
 				}
 				counter += entries.size();
 				log.audit("Processed repository entries: " + entries.size());
@@ -175,6 +179,19 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return true;
+	}
+	
+	private CourseEnvironmentMapper getCourseEnvironmentMapper(OLATResource courseResource) {
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, courseResource, 0, -1);
+		for(BusinessGroup group:groups) {
+			envMapper.getGroups().add(new BusinessGroupReference(group));
+		}
+		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
+		for(BGArea area:areas) {
+			envMapper.getAreas().add(new BGAreaReference(area));
+		}
+		return envMapper;
 	}
 	
 	private void processBusinessGroup(BusinessGroup group) {

@@ -61,6 +61,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.projectbroker.ProjectBrokerControllerFactory;
@@ -862,6 +863,24 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 				config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 			}
 		}
+	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		postImportCondition(conditionDrop, envMapper);
+		postImportCondition(conditionScoring, envMapper);
+		postImportCondition(conditionReturnbox, envMapper);
+		postImportCondition(conditionProjectBroker, envMapper);
+	}
+
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		postExportCondition(conditionDrop, envMapper, backwardsCompatible);
+		postExportCondition(conditionScoring, envMapper, backwardsCompatible);
+		postExportCondition(conditionReturnbox, envMapper, backwardsCompatible);
+		postExportCondition(conditionProjectBroker, envMapper, backwardsCompatible);
 	}
 
 	/**

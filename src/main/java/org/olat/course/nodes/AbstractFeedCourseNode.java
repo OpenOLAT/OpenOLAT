@@ -40,6 +40,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -91,6 +92,22 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 			preConditionPoster.setConditionExpression(preConditionPoster.getConditionFromEasyModeConfiguration());
 			preConditionPoster.setExpertMode(false);
 		}
+	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		postImportCondition(preConditionReader, envMapper);
+		postImportCondition(preConditionPoster, envMapper);
+		postImportCondition(preConditionModerator, envMapper);
+	}
+
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		postExportCondition(preConditionReader, envMapper, backwardsCompatible);
+		postExportCondition(preConditionPoster, envMapper, backwardsCompatible);
+		postExportCondition(preConditionModerator, envMapper, backwardsCompatible);
 	}
 
 	/**

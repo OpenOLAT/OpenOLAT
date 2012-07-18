@@ -35,7 +35,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.commons.file.filechooser.FileChooserController;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -53,11 +52,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemFileTypeFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
-import org.olat.course.CourseUpgrade;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManagerImpl;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.glossary.GlossaryManager;
@@ -90,7 +89,6 @@ public class ImportCourseController extends BasicController implements IAddContr
 	private Panel myPanel;
 	private static final VFSItemFileTypeFilter zipTypeFilter = new VFSItemFileTypeFilter(new String[] { "zip" });
 	
-	private final CourseUpgrade courseUpgrade;
 
 	/**
 	 * Import a course from a previous export.
@@ -102,7 +100,6 @@ public class ImportCourseController extends BasicController implements IAddContr
 	public ImportCourseController(RepositoryAddCallback callback, UserRequest ureq, WindowControl wControl) { 
 		super(ureq,wControl);
 		this.callback = callback;
-		courseUpgrade = CoreSpringFactory.getImpl(CourseUpgrade.class);
 		myPanel = new Panel("importPanel");
 		myPanel.addListener(this);
 		
@@ -130,9 +127,10 @@ public class ImportCourseController extends BasicController implements IAddContr
 		// create group management
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// import groups
-		cgm.importCourseBusinessGroups(getExportDataDir(course));
+		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(getExportDataDir(course));
 		//upgrade to the current version of the course
-		courseUpgrade.processCourse(cgm.getCourseResource(), false);
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseResource());
+		course.postImport(envMapper);
 		return true;
 	}
 

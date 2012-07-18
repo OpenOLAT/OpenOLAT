@@ -5,6 +5,8 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
+	
+
 <bean id="courseModule" class="org.olat.course.CourseModule" 
 	depends-on="userModule, triggerUserModuleInit, org.olat.core.util.WebappHelper, metaInfoFactory, fileresourceManager">
 		
@@ -116,12 +118,6 @@
 		
 		</value>
 	</property>
-</bean>
-
-
-<bean id="courseUpgrade" class="org.olat.course.CourseUpgrade">
-	<property name="areaManager" ref="areaManager"/>
-	<property name="businessGroupService" ref="businessGroupService"/>
 </bean>
 
 </beans>

@@ -41,10 +41,14 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.model.BGAreaReference;
+import org.olat.group.model.BusinessGroupEnvironment;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
 import org.olat.repository.RepositoryEntry;
@@ -305,27 +309,50 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#exportCourseBusinessGroups(java.io.File)
 	 */
-	public void exportCourseBusinessGroups(File fExportDirectory) {
+	public void exportCourseBusinessGroups(File fExportDirectory, boolean backwardsCompatible) {
 		File fExportFile = new File(fExportDirectory, LEARNINGGROUPEXPORT_XML);
 		List<BGArea> areas = getAllAreas();
 		List<BusinessGroup> groups = getAllBusinessGroups();
-		businessGroupService.exportGroups(groups, areas, fExportFile);
+		businessGroupService.exportGroups(groups, areas, fExportFile, backwardsCompatible);
+	}
+	
+	/**
+	 * This operation load all business groups and areas. Use with caution, costly!
+	 * @param resource
+	 * @param fGroupExportXML
+	 * @return
+	 */
+	public CourseEnvironmentMapper getBusinessGroupEnvironment() {
+		CourseEnvironmentMapper env = new CourseEnvironmentMapper();
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, courseResource, 0, -1);
+		for(BusinessGroup group:groups) {
+			env.getGroups().add(new BusinessGroupReference(group));
+		}
+		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
+		for(BGArea area:areas) {
+			env.getAreas().add(new BGAreaReference(area));
+		}
+		return env;
 	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#importCourseBusinessGroups(java.io.File)
 	 */
-	public void importCourseBusinessGroups(File fImportDirectory) {
+	@Override
+	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory) {
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
 		File fGroupXML1 = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
 		if(fGroupXML1.exists()) {
-			businessGroupService.importGroups(courseResource, fGroupXML1);
+			BusinessGroupEnvironment env = businessGroupService.importGroups(courseResource, fGroupXML1);
+			envMapper.addBusinessGroupEnvironment(env);
 		}
 		File fGroupXML2 = new File(fImportDirectory, RIGHTGROUPEXPORT_XML);
 		if(fGroupXML2.exists()) {
-			businessGroupService.importGroups(courseResource, fGroupXML2);
+			BusinessGroupEnvironment env = businessGroupService.importGroups(courseResource, fGroupXML2);
+			envMapper.addBusinessGroupEnvironment(env);	
 		}
+		return envMapper;
 	}
-
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getCoachesFromBusinessGroups(String)

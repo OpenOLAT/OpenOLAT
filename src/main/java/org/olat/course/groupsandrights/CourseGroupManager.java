@@ -29,8 +29,10 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
+import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.resource.OLATResource;
 
 /**
@@ -182,14 +184,14 @@ public interface CourseGroupManager {
 	 * 
 	 * @param fExportDirectory
 	 */
-	public void exportCourseBusinessGroups(File fExportDirectory);
+	public void exportCourseBusinessGroups(File fExportDirectory, boolean backwardsCompatible);
 
 	/**
 	 * Import course internal groups fa previous export.
 	 * 
 	 * @param fImportDirectory
 	 */
-	public void importCourseBusinessGroups(File fImportDirectory);
+	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory);
 
 	/**
 	 * List with identities being coaches in learning groups of this course. If

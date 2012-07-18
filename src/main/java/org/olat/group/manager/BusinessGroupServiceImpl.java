@@ -76,6 +76,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
@@ -1182,13 +1183,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile) {
-		businessGroupImportExport.exportGroups(groups, areas, fExportFile);
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, boolean backwardsCompatible) {
+		businessGroupImportExport.exportGroups(groups, areas, fExportFile, backwardsCompatible);
 	}
 
 	@Override
-	public void importGroups(OLATResource resource, File fGroupExportXML) {
-		businessGroupImportExport.importGroups(resource, fGroupExportXML);
+	public BusinessGroupEnvironment importGroups(OLATResource resource, File fGroupExportXML) {
+		return businessGroupImportExport.importGroups(resource, fGroupExportXML);
 	}
 
 	@Override

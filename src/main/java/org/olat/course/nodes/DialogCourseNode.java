@@ -53,6 +53,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.dialog.DialogConfigForm;
 import org.olat.course.nodes.dialog.DialogCourseNodeEditController;
 import org.olat.course.nodes.dialog.DialogCourseNodeRunController;
@@ -170,6 +171,22 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 			config.setConfigurationVersion(1);
 			config.set(DialogConfigForm.DIALOG_CONFIG_INTEGRATION, DialogConfigForm.CONFIG_INTEGRATION_VALUE_INLINE);
 		}
+	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		postImportCondition(preConditionModerator, envMapper);
+		postImportCondition(preConditionPoster, envMapper);
+		postImportCondition(preConditionReader, envMapper);
+	}
+
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		postExportCondition(preConditionModerator, envMapper, backwardsCompatible);
+		postExportCondition(preConditionPoster, envMapper, backwardsCompatible);
+		postExportCondition(preConditionReader, envMapper, backwardsCompatible);
 	}
 
 	public String informOnDelete(Locale locale, ICourse course) {

@@ -17,20 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group;
+package org.olat.group.model;
 
-import org.olat.core.id.OLATResourceable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
- * Very short version of business group.
- * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface BusinessGroupShort extends OLATResourceable {
-	
-	public Long getKey();
-	
-	public String getName();
+public class BusinessGroupEnvironment {
 
+	private final List<BGAreaReference> areas = new ArrayList<BGAreaReference>();
+	private final List<BusinessGroupReference> groups = new ArrayList<BusinessGroupReference>();
+	
+	public List<BGAreaReference> getAreas() {
+		return areas;
+	}
+	
+	public List<BusinessGroupReference> getGroups() {
+		return groups;
+	}
 }

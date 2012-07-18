@@ -31,6 +31,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
@@ -69,6 +70,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#hasRight(org.olat.core.id.Identity, java.lang.String)
 	 */
+	@Override
 	public boolean hasRight(Identity identity, String courseRight) {
 		if (courseRight.equals(CourseRights.RIGHT_COURSEEDITOR)) {
 			return false;
@@ -131,6 +133,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
 	 */
+	@Override
 	public boolean isIdentityCourseCoach(Identity identity) {
 		return isCoach;
 	}
@@ -143,6 +146,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseAdministrator(org.olat.core.id.Identity)
 	 */
+	@Override
 	public boolean isIdentityCourseAdministrator(Identity identity) {
 		return isCourseAdmin;
 	}
@@ -150,6 +154,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllLearningGroupsFromAllContexts()
 	 */
+	@Override
 	public List<BusinessGroup> getAllBusinessGroups() {
 		return groups;
 	}
@@ -157,6 +162,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getOwnedBusinessGroups(org.olat.core.id.Identity)
 	 */
+	@Override
 	public List<BusinessGroup> getOwnedBusinessGroups(Identity identity) {
 		throw new AssertException("unsupported");
 	}
@@ -164,6 +170,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingBusinessGroups(org.olat.core.id.Identity)
 	 */
+	@Override
 	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity) {
 		throw new AssertException("unsupported");
 	}
@@ -179,6 +186,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#deleteCourseGroupmanagement()
 	 */
+	@Override
 	public void deleteCourseGroupmanagement() {
 		throw new AssertException("unsupported");
 	}
@@ -186,6 +194,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getNumberOfMembersFromGroups(java.util.List)
 	 */
+	@Override
 	public List<Integer> getNumberOfMembersFromGroups(List<BusinessGroup> groupList) {
 		throw new AssertException("unsupported");
 	}
@@ -193,6 +202,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getUniqueBusinessGroupNames()
 	 */
+	@Override
 	public List<String> getUniqueBusinessGroupNames() {
 		throw new AssertException("unsupported");
 	}
@@ -200,18 +210,22 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getUniqueAreaNames()
 	 */
+	@Override
 	public List<String> getUniqueAreaNames() {
 		throw new AssertException("unsupported");
 	}
 
+	@Override
 	public List<Identity> getCoachesFromBusinessGroups() {
 		throw new AssertException("unsupported");
 	}
 
+	@Override
 	public List<Identity> getCoachesFromAreas() {
 		throw new AssertException("unsupported");
 	}
 
+	@Override
 	public List<Identity> getParticipantsFromBusinessGroups() {
 		throw new AssertException("unsupported");
 	}
@@ -236,6 +250,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		throw new AssertException("unsupported");
 	}
 
+	@Override
 	public List<Identity> getParticipantsFromAreas() {
 		throw new AssertException("unsupported");
 	}
@@ -251,14 +266,17 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		throw new AssertException("unsupported");
 	}
 
-	public void exportCourseBusinessGroups(File fExportDirectory) {
+	@Override
+	public void exportCourseBusinessGroups(File fExportDirectory, boolean backwardsCompatible) {
 		throw new AssertException("unsupported");
 	}
 
-	public void importCourseBusinessGroups(File fImportDirectory) {
+	@Override
+	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory) {
 		throw new AssertException("unsupported");
 	}
 
+	@Override
 	public List<BusinessGroup> getWaitingListGroups(Identity identity) {
 		throw new AssertException("unsupported");
 	}

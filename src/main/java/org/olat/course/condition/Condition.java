@@ -217,6 +217,7 @@ public class Condition implements Serializable, Cloneable {
 	}
 	
 	private final String getAccessIdList(List<Long> keys) {
+		if(keys == null || keys.isEmpty()) return null;
 		StringBuilder sb = new StringBuilder();
 		for(Long key:keys) {
 			if(sb.length() > 0) sb.append(",");

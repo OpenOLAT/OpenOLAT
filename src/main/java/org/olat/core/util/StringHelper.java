@@ -340,6 +340,26 @@ public class StringHelper {
 		}
 		return true;
 	}
+	
+	public static String replaceAllCaseInsensitive(String expression, String name, String replacement) {
+		String lcExpresion = expression.toLowerCase();
+		String lcName = name.toLowerCase();
+
+		int index = 0;
+		while((index = lcExpresion.indexOf(lcName, index)) > 0) {
+			int startIndex = index;
+			int stopIndex = index + lcName.length();
+			
+			String newExpression = expression.substring(0, startIndex);
+			newExpression += replacement;
+			newExpression += expression.substring(stopIndex);
+			
+			expression = newExpression;
+			lcExpresion = expression.toLowerCase();
+			index = startIndex + replacement.length();	
+		}
+		return expression;
+	}
 
 	/**
 	 * @param extractedCharset

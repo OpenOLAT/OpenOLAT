@@ -55,6 +55,7 @@ public class GroupXStream {
 
 		xstream.alias("Area", Area.class);
 		xstream.aliasAttribute(Area.class, "name", "name");
+		xstream.aliasAttribute(Area.class, "key", "key");
 		xstream.addImplicitCollection(Area.class, "description", "Description", String.class);
 		xstream.aliasAttribute(Area.class, "description", "description");
 
@@ -62,6 +63,7 @@ public class GroupXStream {
 		xstream.alias("CollabTools", CollabTools.class);
 		xstream.addImplicitCollection(Group.class, "areaRelations", "AreaRelation", String.class);
 		xstream.addImplicitCollection(Group.class, "description", "Description", String.class);
+		xstream.aliasAttribute(Group.class, "key", "key");
 		xstream.aliasAttribute(Group.class, "name", "name");
 		xstream.aliasAttribute(Group.class, "maxParticipants", "maxParticipants");
 		xstream.aliasAttribute(Group.class, "minParticipants", "minParticipants");
@@ -149,11 +151,13 @@ class GroupCollection {
 }
 
 class Area {
+	public Long key;
 	public String name;
 	public List<String> description;
 }
 
 class Group {
+	public Long key;
 	public String name;
 	public Integer minParticipants;
 	public Integer maxParticipants;

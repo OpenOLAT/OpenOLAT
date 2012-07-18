@@ -25,7 +25,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -39,6 +41,9 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.model.BGAreaReference;
+import org.olat.group.model.BusinessGroupEnvironment;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +69,7 @@ public class BusinessGroupImportExport {
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	
 	
-	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile) {
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, boolean backwardsCompatible) {
 		if (groups == null || groups.isEmpty())
 			return; // nothing to do... says Florian.
 
@@ -74,6 +79,7 @@ public class BusinessGroupImportExport {
 		root.getAreas().setGroups(new ArrayList<Area>());
 		for (BGArea area : areas) {
 			Area newArea = new Area();
+			newArea.key = backwardsCompatible ? null : area.getKey();
 			newArea.name = area.getName();
 			newArea.description = Collections.singletonList(area.getDescription());
 			root.getAreas().getGroups().add(newArea);
@@ -83,23 +89,24 @@ public class BusinessGroupImportExport {
 		root.setGroups(new GroupCollection());
 		root.getGroups().setGroups(new ArrayList<Group>());
 		for (BusinessGroup group : groups) {
-			Group newGroup = exportGroup(fExportFile, group);
+			Group newGroup = exportGroup(fExportFile, group, backwardsCompatible);
 			root.getGroups().getGroups().add(newGroup);
 		}
 		saveGroupConfiguration(fExportFile, root);
 	}
 	
-	public void exportGroup(BusinessGroup group, File fExportFile) {
+	public void exportGroup(BusinessGroup group, File fExportFile, boolean backwardsCompatible) {
 		OLATGroupExport root = new OLATGroupExport();
-		Group newGroup = exportGroup(fExportFile, group);
+		Group newGroup = exportGroup(fExportFile, group, backwardsCompatible);
 		root.setGroups(new GroupCollection());
 		root.getGroups().setGroups(new ArrayList<Group>());
 		root.getGroups().getGroups().add(newGroup);
 		saveGroupConfiguration(fExportFile, root);
 	}
 	
-	private Group exportGroup(File fExportFile, BusinessGroup group) {
+	private Group exportGroup(File fExportFile, BusinessGroup group, boolean backwardsCompatible) {
 		Group newGroup = new Group();
+		newGroup.key = backwardsCompatible ? null : group.getKey();
 		newGroup.name = group.getName();
 		if (group.getMinParticipants() != null) {
 			newGroup.minParticipants = group.getMinParticipants();
@@ -182,9 +189,9 @@ public class BusinessGroupImportExport {
 		}
 	}
 
-	public void importGroups(OLATResource resource, File fGroupExportXML) {
+	public BusinessGroupEnvironment importGroups(OLATResource resource, File fGroupExportXML) {
 		if (!fGroupExportXML.exists())
-			return;
+			return new BusinessGroupEnvironment();
 
 		OLATGroupExport groupConfig = null;
 		try {
@@ -196,13 +203,18 @@ public class BusinessGroupImportExport {
 			throw new AssertException(
 					"Invalid group export file. Root does not match.");
 		}
-
+		
+		BusinessGroupEnvironment env = new BusinessGroupEnvironment();
+		Set<BGArea> areaSet = new HashSet<BGArea>();
 		// get areas
 		if (groupConfig.getAreas() != null && groupConfig.getAreas().getGroups() != null) {
 			for (Area area : groupConfig.getAreas().getGroups()) {
 				String areaName = area.name;
 				String areaDesc = (area.description != null && !area.description.isEmpty()) ? area.description.get(0) : "";
-				areaManager.createAndPersistBGAreaIfNotExists(areaName, areaDesc, resource);
+				BGArea newArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, areaDesc, resource);
+				if(areaSet.add(newArea)) {
+					env.getAreas().add(new BGAreaReference(newArea, area.key, area.name));
+				}
 			}
 		}
 
@@ -228,7 +240,8 @@ public class BusinessGroupImportExport {
 				}
 				
 				BusinessGroup newGroup = businessGroupService.createBusinessGroup(null, groupName, groupDesc, groupMinParticipants, groupMaxParticipants, waitingList, enableAutoCloseRanks, resource);
-
+				//map the group
+				env.getGroups().add(new BusinessGroupReference(newGroup, group.key, group.name));
 				// get tools config
 				CollabTools toolsConfig = group.tools;
 				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(newGroup);
@@ -283,6 +296,7 @@ public class BusinessGroupImportExport {
 				businessGroupPropertyManager.updateDisplayMembers(newGroup, showOwners, showParticipants, showWaitingList);
 			}
 		}
+		return env;
 	}
 
 }

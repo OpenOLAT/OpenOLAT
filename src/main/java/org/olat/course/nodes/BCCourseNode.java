@@ -53,6 +53,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.bc.BCCourseNodeEditController;
 import org.olat.course.nodes.bc.BCCourseNodeRunController;
 import org.olat.course.nodes.bc.BCPeekviewController;
@@ -344,17 +345,31 @@ public class BCCourseNode extends GenericCourseNode {
 		File fFolderRoot = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
 		if (fFolderRoot.exists()) FileUtils.deleteDirsAndFiles(fFolderRoot, true, true);
 	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		postImportCondition(preConditionUploaders, envMapper);
+		postImportCondition(preConditionDownloaders, envMapper);
+	}
+
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		postExportCondition(preConditionUploaders, envMapper, backwardsCompatible);
+		postExportCondition(preConditionDownloaders, envMapper, backwardsCompatible);
+	}
 
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpressions()
 	 */
-	public List getConditionExpressions() {
-		ArrayList retVal;
-		List parentsConditions = super.getConditionExpressions();
+	public List<ConditionExpression> getConditionExpressions() {
+		List<ConditionExpression> retVal;
+		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList(parentsConditions);
+			retVal = new ArrayList<ConditionExpression>(parentsConditions);
 		}else {
-			retVal = new ArrayList();
+			retVal = new ArrayList<ConditionExpression>();
 		}
 		//
 		String coS = getPreConditionDownloaders().getConditionExpression();

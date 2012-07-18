@@ -528,7 +528,8 @@ public class CourseFactory extends BasicManager {
 		File fExportDir = new File(System.getProperty("java.io.tmpdir")+File.separator+CodeHelper.getRAMUniqueID());
 		fExportDir.mkdirs();
 		synchronized (sourceCourse) { //o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
-			sourceCourse.exportToFilesystem(fExportDir, backwardsCompatible);
+			OLATResource courseResource = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+			sourceCourse.exportToFilesystem(courseResource, fExportDir, backwardsCompatible);
 			Codepoint.codepoint(CourseFactory.class, "longExportCourseToZIP");
 			Set<String> fileSet = new HashSet<String>();
 			String[] files = fExportDir.list();

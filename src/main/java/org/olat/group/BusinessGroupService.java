@@ -34,6 +34,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
@@ -476,14 +477,14 @@ public interface BusinessGroupService {
 	 * @param groups
 	 * @param fExportFile
 	 */
-	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile);
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, boolean backwardsCompatible);
 
 	/**
 	 * Import previously exported group definitions.
 	 * @param resource
 	 * @param fGroupExportXML
 	 */
-	public void importGroups(OLATResource resource, File fGroupExportXML);
+	public BusinessGroupEnvironment importGroups(OLATResource resource, File fGroupExportXML);
 	
 	public void archiveGroups(List<BusinessGroup> groups, File exportFile);
 

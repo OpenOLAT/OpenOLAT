@@ -41,6 +41,7 @@ import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
@@ -328,6 +329,16 @@ public interface CourseNode extends INode, ShortName {
 	 *         have finished.
 	 */
 	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl);
+	
+	/**
+	 * Remap the node to the context of the course after import.
+	 */
+	public void postImport(CourseEnvironmentMapper envMapper);
+	
+	/**
+	 * 
+	 */
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible);
 
 	/**
 	 * Create an instance for the copy process. The copy must have a different
