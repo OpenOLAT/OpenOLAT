@@ -1069,6 +1069,73 @@ create or replace view o_gp_business_to_repository_v as (
 );
 
 
+create or replace view o_re_member_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re.membersonly as re_membersonly,
+      re.accesscode as re_accesscode,
+      re_part_member.identity_id as re_part_member_id,
+      re_tutor_member.identity_id as re_tutor_member_id,
+      re_owner_member.identity_id as re_owner_member_id,
+      bg_part_member.identity_id as bg_part_member_id,
+      bg_owner_member.identity_id as bg_owner_member_id
+   from o_repositoryentry as re
+   left join o_bs_membership as re_part_member on (re_part_member.secgroup_id = re.fk_participantgroup)
+   left join o_bs_membership as re_tutor_member on (re_tutor_member.secgroup_id = re.fk_tutorgroup)
+   left join o_bs_membership as re_owner_member on (re_owner_member.secgroup_id = re.fk_ownergroup)
+   left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   left join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
+   left join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
+);
+
+create or replace view o_re_strict_member_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re_part_member.identity_id as re_part_member_id,
+      re_tutor_member.identity_id as re_tutor_member_id,
+      re_owner_member.identity_id as re_owner_member_id,
+      bg_part_member.identity_id as bg_part_member_id,
+      bg_owner_member.identity_id as bg_owner_member_id
+   from o_repositoryentry as re
+   left join o_bs_membership as re_part_member on (re_part_member.secgroup_id = re.fk_participantgroup)
+   left join o_bs_membership as re_tutor_member on (re_tutor_member.secgroup_id = re.fk_tutorgroup)
+   left join o_bs_membership as re_owner_member on (re_owner_member.secgroup_id = re.fk_ownergroup)
+   left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   left join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
+   left join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
+   where re.membersonly=1 and re.accesscode=1
+);
+
+create or replace view o_re_strict_participant_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re_part_member.identity_id as re_part_member_id,
+      bg_part_member.identity_id as bg_part_member_id
+   from o_repositoryentry as re
+   left join o_bs_membership as re_part_member on (re_part_member.secgroup_id = re.fk_participantgroup)
+   left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   left join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
+   where re.membersonly=1 and re.accesscode=1
+);
+
+create or replace view o_re_strict_tutor_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re_tutor_member.identity_id as re_tutor_member_id,
+      re_owner_member.identity_id as re_owner_member_id,
+      bg_owner_member.identity_id as bg_owner_member_id
+   from o_repositoryentry as re
+   left join o_bs_membership as re_tutor_member on (re_tutor_member.secgroup_id = re.fk_tutorgroup)
+   left join o_bs_membership as re_owner_member on (re_owner_member.secgroup_id = re.fk_ownergroup)
+   left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   left join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
+   where re.membersonly=1 and re.accesscode=1
+);
+
 create index  ocl_asset_idx on oc_lock (asset);
 alter table oc_lock add index FK9E30F4B66115906D (identity_fk), add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity (id);
 
