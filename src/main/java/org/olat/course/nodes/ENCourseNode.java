@@ -294,14 +294,14 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		@SuppressWarnings("unchecked")
 		List<Long> groupKeys = (List<Long>) mc.get(ENCourseNode.CONFIG_GROUP_IDS);
 		if(groupKeys != null) {
-			String groupNames = envMapper.toOriginalGroupNames(groupKeys);
+			String groupNames = envMapper.toGroupNames(groupKeys);
 			mc.set(ENCourseNode.CONFIG_GROUPNAME, groupNames);
 		}
 
 		@SuppressWarnings("unchecked")
 		List<Long> areaKeys = (List<Long>) mc.get(ENCourseNode.CONFIG_AREA_IDS);
 		if(areaKeys != null ) {
-			String areaNames = envMapper.toOriginalAreaNames(areaKeys);
+			String areaNames = envMapper.toAreaNames(areaKeys);
 			mc.set(ENCourseNode.CONFIG_AREANAME, areaNames);
 		}
 		

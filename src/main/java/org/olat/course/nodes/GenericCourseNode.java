@@ -398,22 +398,24 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		boolean easy = StringHelper.containsNonWhitespace(condition.getConditionFromEasyModeConfiguration());
 		if(easy) {
 			List<Long> groupKeys = condition.getEasyModeGroupAccessIdList();
-			if(groupKeys == null) {
+			if(groupKeys == null || groupKeys.isEmpty()) {
 				//this is an old course -> get group keys from original names
 				groupKeys = envMapper.toGroupKeyFromOriginalNames(condition.getEasyModeGroupAccess());
 			} else {
 				//map the original exported group key to the newly created one
 				groupKeys = envMapper.toGroupKeyFromOriginalKeys(groupKeys);
 			}
-			condition.setEasyModeGroupAccessIdList(groupKeys);
+			condition.setEasyModeGroupAccessIdList(groupKeys);//update keys
+			condition.setEasyModeGroupAccess(envMapper.toGroupNames(groupKeys));//update names with the current values
 			
 			List<Long> areaKeys = condition.getEasyModeGroupAreaAccessIdList();
-			if(areaKeys == null) {
+			if(areaKeys == null || areaKeys.isEmpty()) {
 				areaKeys = envMapper.toAreaKeyFromOriginalNames(condition.getEasyModeGroupAreaAccess());
 			} else {
 				areaKeys = envMapper.toAreaKeyFromOriginalKeys(areaKeys);
 			}
 			condition.setEasyModeGroupAreaAccessIdList(areaKeys);
+			condition.setEasyModeGroupAreaAccess(envMapper.toAreaNames(areaKeys));
 			
 			String condString = condition.getConditionFromEasyModeConfiguration();
 			condition.setConditionExpression(condString);
@@ -444,9 +446,9 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			if(condition.getEasyModeGroupAccessIdList() != null 
 					|| condition.getEasyModeGroupAreaAccessIdList() != null) {
 			
-				String groupNames = envMapper.toOriginalGroupNames(condition.getEasyModeGroupAccessIdList());
+				String groupNames = envMapper.toGroupNames(condition.getEasyModeGroupAccessIdList());
 				condition.setEasyModeGroupAccess(groupNames);
-				String areaNames = envMapper.toOriginalAreaNames(condition.getEasyModeGroupAreaAccessIdList());
+				String areaNames = envMapper.toAreaNames(condition.getEasyModeGroupAreaAccessIdList());
 				condition.setEasyModeGroupAreaAccess(areaNames);
 				String condString = condition.getConditionFromEasyModeConfiguration();
 				if(backwardsCompatible) {

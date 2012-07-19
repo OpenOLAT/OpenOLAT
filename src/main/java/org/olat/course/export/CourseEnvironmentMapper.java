@@ -110,7 +110,7 @@ public class CourseEnvironmentMapper {
 		return areaKeyList;
 	}
 	
-	public String toOriginalGroupNames(List<Long> groupKeys) {
+	public String toGroupNames(List<Long> groupKeys) {
 		if(groupKeys == null || groupKeys.isEmpty()) return "";
 		StringBuilder sb = new StringBuilder();
 		for(Long groupKey:groupKeys) {
@@ -125,7 +125,7 @@ public class CourseEnvironmentMapper {
 		return sb.toString();
 	}
 	
-	public String toOriginalAreaNames(List<Long> areaKeys) {
+	public String toAreaNames(List<Long> areaKeys) {
 		if(areaKeys == null || areaKeys.isEmpty()) return "";
 		StringBuilder sb = new StringBuilder();
 		for(Long areaKey:areaKeys) {

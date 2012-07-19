@@ -143,14 +143,14 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 		@SuppressWarnings("unchecked")
 		List<Long> groupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
 		if(groupKeys != null) {
-			String groupNames = envMapper.toOriginalGroupNames(groupKeys);
+			String groupNames = envMapper.toGroupNames(groupKeys);
 			mc.set(COEditController.CONFIG_KEY_EMAILTOGROUPS, groupNames);
 		}
 
 		@SuppressWarnings("unchecked")
 		List<Long> areaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
 		if(areaKeys != null) {
-			String areaNames = envMapper.toOriginalAreaNames(areaKeys);	
+			String areaNames = envMapper.toAreaNames(areaKeys);	
 			mc.set(COEditController.CONFIG_KEY_EMAILTOAREAS, areaNames);
 		}
 		

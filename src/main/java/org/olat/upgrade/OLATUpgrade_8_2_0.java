@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Roles;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -167,9 +168,13 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			do {
 				entries = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, REPO_ENTRIES_BATCH_SIZE, true);
 				for(RepositoryEntry entry:entries) {
-					ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-					CourseEnvironmentMapper envMapper = getCourseEnvironmentMapper(entry.getOlatResource());
-					course.postImport(envMapper);
+					try {
+						ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+						CourseEnvironmentMapper envMapper = getCourseEnvironmentMapper(entry.getOlatResource());
+						course.postImport(envMapper);
+					} catch (CorruptedCourseException e) {
+						log.error("Course seems corrupt: " + entry.getOlatResource().getResourceableId());
+					}
 				}
 				counter += entries.size();
 				log.audit("Processed repository entries: " + entries.size());
