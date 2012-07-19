@@ -290,6 +290,28 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void queryByTypeLimitAccess() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-1-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-1", "tg", null, null, false, false, re.getOlatResource());
+		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<RepositoryEntry> entries = repositoryManager.queryByTypeLimitAccess(id,
+				re.getOlatResource().getResourceableTypeName(), new Roles(false, false, false, false, false, false, false));
+		
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		Assert.assertTrue(entries.contains(re));
+		for(RepositoryEntry entry:entries) {
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+	}
+	
+	@Test
 	public void isMember() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());

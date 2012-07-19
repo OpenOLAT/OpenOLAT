@@ -752,13 +752,13 @@ public class RepositoryManager extends BasicManager {
 			setIdentity = appendAccessSubSelects(sb, identity, roles);
 		}
 
-		DBQuery dbquery = DBFactory.getInstance().createQuery(sb.toString());
-		dbquery.setString("restrictedType", restrictedType);
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("restrictedType", restrictedType);
 		if(setIdentity) {
-			dbquery.setEntity("identity", identity);
+			query.setParameter("identityKey", identity.getKey());
 		}
-		//dbquery.setCacheable(true); performance killer
-		return dbquery.list();
+		return query.getResultList();
 	}
 	
 	/**
