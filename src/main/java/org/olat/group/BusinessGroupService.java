@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.translator.Translator;

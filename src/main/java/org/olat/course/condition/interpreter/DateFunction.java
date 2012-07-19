@@ -25,8 +25,6 @@
 
 package org.olat.course.condition.interpreter;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -67,11 +65,8 @@ public class DateFunction extends AbstractFunction {
 		if (!(inStack[0] instanceof String)) return handleException(new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT,
 				name, "", "error.argtype.date", "solution.example.date.infunction"));
 		String datetime = (String) inStack[0];
-		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-		sdf.setLenient(false);
-		try {
-			d = sdf.parse(datetime);
-		} catch (ParseException pe) {
+		d = ConditionDateFormatter.parse(datetime);
+		if (d == null) {
 			return handleException(new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT, name, datetime, "error.argtype.date",
 					"solution.example.date.infunction"));
 		}

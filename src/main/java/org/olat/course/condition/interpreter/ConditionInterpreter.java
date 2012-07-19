@@ -28,8 +28,11 @@ package org.olat.course.condition.interpreter;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -42,6 +45,8 @@ import org.olat.course.condition.interpreter.score.GetPassedWithCourseIdFunction
 import org.olat.course.condition.interpreter.score.GetScoreFunction;
 import org.olat.course.condition.interpreter.score.GetScoreWithCourseIdFunction;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 import com.neemsoft.jmep.Environment;
@@ -267,8 +272,103 @@ public class ConditionInterpreter {
 	public boolean evaluateCondition(Condition c) {
 		if(c.isExpertMode() && StringHelper.containsNonWhitespace(c.getConditionUpgraded())) {
 			return evaluateCondition(c.getConditionUpgraded());
+		} else if (!c.isExpertMode() && (c.getAttributeConditions() == null || c.getAttributeConditions().isEmpty())) {
+			//experimental optimized evaluation of the easy conditions
+			//return evaluateEasyCondition(c);
 		}
 		return evaluateCondition(c.getConditionExpression());
+	}
+	
+	public boolean evaluateEasyCondition(Condition c) {
+		// (begin && end && (groups || areas) && passedNode && coachAdmin) | alwayscoachAdmin
+		boolean eval = evaluateBegin(c) && evaluateEnd(c)
+				&& (evaluateGroups(c) || evaluateAreas(c))
+				&& evaluatePassedNode(c)
+				&& evaluateCoachesAndAdmins(c);
+		
+		if(!eval && c.isEasyModeAlwaysAllowCoachesAndAdmins()) {
+			Identity ident = uce.getIdentityEnvironment().getIdentity();
+			CourseGroupManager cgm = uce.getCourseEnvironment().getCourseGroupManager();
+			if(cgm.isIdentityCourseCoach(ident) || cgm.isIdentityCourseAdministrator(ident)) {
+				eval = true;
+			}
+		}
+		return eval;
+	}
+	
+	private boolean evaluateBegin(Condition c) {
+		String beginDateStr = c.getEasyModeBeginDate();
+		if(StringHelper.containsNonWhitespace(beginDateStr)) {
+			Date begin = ConditionDateFormatter.parse(beginDateStr);
+			return (new Date().compareTo(begin) >= 0);
+		}
+		return true;
+	}
+	
+	private boolean evaluateEnd(Condition c) {
+		String endDateStr = c.getEasyModeEndDate();
+		if(StringHelper.containsNonWhitespace(endDateStr)) {
+			Date end = ConditionDateFormatter.parse(endDateStr);
+			return (new Date().compareTo(end) <= 0);
+		}
+		return true;
+	}
+	
+	private boolean evaluateGroups(Condition c) {
+		if (c.getEasyModeGroupAccessIdList() != null) { 
+			List<Long> groupKeys = c.getEasyModeGroupAccessIdList();
+			Identity ident = uce.getIdentityEnvironment().getIdentity();
+			CourseGroupManager cgm = uce.getCourseEnvironment().getCourseGroupManager();
+			for(Long groupKey:groupKeys) {
+				if(cgm.isIdentityInGroup(ident, groupKey)) {
+					return true;
+				}
+			}
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	private boolean evaluateAreas(Condition c) {
+		if (c.getEasyModeGroupAreaAccessIdList() != null) {
+			List<Long> areaKeys = c.getEasyModeGroupAreaAccessIdList();
+			Identity ident = uce.getIdentityEnvironment().getIdentity();
+			CourseGroupManager cgm = uce.getCourseEnvironment().getCourseGroupManager();
+			for(Long areaKey:areaKeys) {
+				if(cgm.isIdentityInLearningArea(ident, areaKey)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean evaluatePassedNode(Condition c) {
+		if (c.getEasyModeNodePassedId() != null) {
+			if (c.getEasyModeCutValue() != null) {
+				ScoreAccounting sa = uce.getScoreAccounting();
+				Float score = sa.evalScoreOfCourseNode(c.getEasyModeNodePassedId());
+				Double dscore = new Double(score.doubleValue());
+				Double cutValue = new Double(c.getEasyModeCutValue());
+				return cutValue.compareTo(dscore) <= 0;
+			} else {
+				ScoreAccounting sa = uce.getScoreAccounting();
+				Boolean passed = sa.evalPassedOfCourseNode(c.getEasyModeNodePassedId());
+				return passed == null ? false : passed.booleanValue();
+			}
+		}
+		return true;
+	}
+	
+	private boolean evaluateCoachesAndAdmins(Condition c) {
+		if(c.isEasyModeCoachesAndAdmins()) {
+			Identity ident = uce.getIdentityEnvironment().getIdentity();
+			CourseGroupManager cgm = uce.getCourseEnvironment().getCourseGroupManager();
+			return cgm.isIdentityCourseCoach(ident) || cgm.isIdentityCourseAdministrator(ident);
+		}
+		return true;
 	}
 
 	/**

@@ -419,6 +419,7 @@ public class Condition implements Serializable, Cloneable {
 			// don't use "( )" as a condition!
 			return null;
 		} else {
+			System.out.println(sb.toString());
 			return sb.toString();
 		}
 	}
