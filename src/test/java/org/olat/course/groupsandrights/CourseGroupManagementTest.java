@@ -176,9 +176,9 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
 		securityManager.addIdentityToSecurityGroup(id3, g1.getOwnerGroup());
 		// areas
-		BGArea a1 = areaManager.createAndPersistBGAreaIfNotExists("a1", "desca1", course1);
-		BGArea a2 = areaManager.createAndPersistBGAreaIfNotExists("a2", null, course1);
-		BGArea a3 = areaManager.createAndPersistBGAreaIfNotExists("a3", null, course1);
+		BGArea a1 = areaManager.createAndPersistBGArea("a1", "desca1", course1);
+		BGArea a2 = areaManager.createAndPersistBGArea("a2", null, course1);
+		BGArea a3 = areaManager.createAndPersistBGArea("a3", null, course1);
 		areaManager.addBGToBGArea(g1, a1);
 		areaManager.addBGToBGArea(g2, a1);
 		areaManager.addBGToBGArea(g1, a2);

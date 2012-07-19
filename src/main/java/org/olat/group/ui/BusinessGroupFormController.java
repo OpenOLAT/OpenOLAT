@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -40,7 +39,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 
 /**
  * Implements a Business group creation dialog using FlexiForms.
@@ -97,8 +95,6 @@ public class BusinessGroupFormController extends FormBasicController {
 	/** The value for the autoCloseRanks checkbox. */
 	private final String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
 	
-	private final BusinessGroupService businessGroupService;
-
 	/**
 	 * Creates this controller.
 	 * 
@@ -110,7 +106,6 @@ public class BusinessGroupFormController extends FormBasicController {
 	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq);
 	}
 	
@@ -126,7 +121,6 @@ public class BusinessGroupFormController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
 		this.bulkMode = bulkMode;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq); // depends on bulkMode flag
 	}
 
@@ -309,34 +303,11 @@ public class BusinessGroupFormController extends FormBasicController {
 			}
 			businessGroupMaximumMembers.clearError();
 		}
-		
-		//7) check for name duplication			  
-		if(checkIfDuplicateGroupName()) {			
-			businessGroupName.setErrorKey("error.group.name.exists", new String[] {});
-			return false;
-		}
 	  // group name duplication test passed
 		businessGroupName.clearError();
 		
 		// all checks passed
 		return true;
-	}
-	
-	/**
-	 * Checks if this a learning group or right group, 
-	 * if the group name changes, 
-	 * and if the name is already used in this context.
-	 * @return
-	 */
-	private boolean checkIfDuplicateGroupName() {
-		Set<String> names = new HashSet<String>();
-		names.add(businessGroupName.getValue());
-	  //group name changes to an already used name, and is a learning group
-		if(businessGroup!=null && !businessGroup.getName().equals(businessGroupName.getValue())
-				&& businessGroupService.checkIfOneOrMoreNameExists(names, businessGroup)) {	
-			return true;
-		}
-		return false;
 	}
 
 	/**
@@ -390,18 +361,6 @@ public class BusinessGroupFormController extends FormBasicController {
 			return Integer.parseInt(result);
 		} else {
 			return null;
-		}
-	}
-
-	/**
-	 * @param nonexistingnames
-	 */
-	public void setGroupNameExistsError(Set<String> nonexistingnames) {
-		if (nonexistingnames == null || nonexistingnames.size() == 0) {
-			businessGroupName.setErrorKey("error.group.name.exists", new String[] {});
-		} else {
-			String[] args = new String[] { StringHelper.formatAsCSVString(nonexistingnames) };
-			businessGroupName.setErrorKey("error.group.name.exists", args);
 		}
 	}
 

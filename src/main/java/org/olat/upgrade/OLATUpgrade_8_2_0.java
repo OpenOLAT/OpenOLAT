@@ -267,7 +267,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 					List<Long> resourcesGroupKeys = findBusinessGroupsOfResource(resource);
 					BGArea existingArea = areaManager.findBGArea(area.getName(), resource);
 					if(existingArea == null) {
-						BGArea copyArea = areaManager.createAndPersistBGAreaIfNotExists(area.getName(), area.getDescription(), resource);
+						BGArea copyArea = areaManager.createAndPersistBGArea(area.getName(), area.getDescription(), resource);
 						for(BusinessGroup group:originalGroupList) {
 							if(resourcesGroupKeys.contains(group.getKey())) {
 								areaManager.addBGToBGArea(group, copyArea);

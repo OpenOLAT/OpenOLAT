@@ -28,7 +28,6 @@ package org.olat.group.area;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
@@ -51,7 +50,7 @@ public interface BGAreaManager {
 	 * @param resource The resource of this area
 	 * @return The new area or null if no area has been created
 	 */
-	public abstract BGArea createAndPersistBGAreaIfNotExists(String areaName, String description, OLATResource resource);
+	public abstract BGArea createAndPersistBGArea(String areaName, String description, OLATResource resource);
 
 	/**
 	 * Finds an area in the given context
@@ -82,7 +81,7 @@ public interface BGAreaManager {
 	 * @param area
 	 * @return the updated area
 	 */
-	public abstract BGArea updateBGArea(BGArea area);
+	public BGArea updateBGArea(BGArea area);
 
 	/**
 	 * Delete the given area form the database
@@ -207,16 +206,8 @@ public interface BGAreaManager {
 	 * @param area
 	 * @return The reloaded area
 	 */
-	public abstract BGArea reloadArea(BGArea area);
+	public BGArea reloadArea(BGArea area);
 
-	/**
-	 * checks if one or more of the given names exists already in the context.
-	 * @param allNames
-	 * @param bgContext
-	 * @return
-	 */
-	public abstract boolean checkIfOneOrMoreNameExistsInContext(Set<String> allNames, OLATResource resource);
-	
 	/**
 	 * Check if an area exist with this anem or this primary key within the
 	 * context of the resource

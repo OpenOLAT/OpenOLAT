@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
@@ -64,24 +63,6 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	@Autowired
 	private BusinessGroupArchiver businessGroupArchiver;
 
-
-	/**
-	 * @see org.olat.group.area.BGAreaManager#createAndPersistBGAreaIfNotExists(java.lang.String,
-	 *      java.lang.String, org.olat.group.context.BGContext)
-	 */
-	//o_clusterOK by:cg synchronized on resource
-	public BGArea createAndPersistBGAreaIfNotExists(final String areaName, final String description, final OLATResource resource) { 
-		BGArea createdBGArea =CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerCallback<BGArea>(){
-			public BGArea execute() {
-				BGArea area = findBGArea(areaName, resource);
-				if (area == null) { 
-					return createAndPersistBGArea(areaName, description, resource); 
-				}
-				return null;
-			}
-		});
-		return createdBGArea;
-	}
 	
 	@Override
 	public BGArea loadArea(Long key) {
@@ -134,20 +115,10 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		
 		BGArea updatedBGArea =CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerCallback<BGArea>(){
 			public BGArea execute() {
-				BGArea douplicate = findBGArea(area.getName(), resource);
-				if (douplicate == null) {
-					// does not exist, so just update it
-					dbInstance.updateObject(area);
-					return area;
-				} else if (douplicate.getKey().equals(area.getKey())) {
-					// name already exists, found the same object (name didn't change)
-					// need to copy description (that has changed) and update the object.
-					// if we updated area at this place we would get a hibernate exception
-					douplicate.setDescription(area.getDescription());
-					dbInstance.updateObject(douplicate);
-					return douplicate;
-				}
-				return null; // nothing updated
+				BGArea reloadArea = loadArea(area.getKey());
+				reloadArea.setName(area.getName());
+				reloadArea.setDescription(area.getDescription());
+				return dbInstance.getCurrentEntityManager().merge(reloadArea);
 			}
 		});
 		return updatedBGArea;
@@ -162,7 +133,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerExecutor(){
 			public void execute() {
-				BGArea reloadArea = findBGArea(area.getName(), resource);
+				BGArea reloadArea = loadArea(area.getKey());
 				if (reloadArea != null) {
 					// 1) delete all area - group relations
 					deleteBGtoAreaRelations(reloadArea);
@@ -369,21 +340,6 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		return (BGArea) DBFactory.getInstance().loadObject(area);
 	}
 
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> allNames, OLATResource resource) {
-		if(allNames == null || allNames.isEmpty()) {
-			return false;
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(area) from ").append(BGAreaImpl.class.getName()).append(" area where area.resource.key=:resourceKey and area.name in (:names)");
-		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("resourceKey", resource.getKey())
-				.setParameter("names", allNames)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getSingleResult();
-		return count.intValue() > 0;
-	}
-
 	@Override
 	public boolean existArea(String nameOrKey, OLATResource resource) {
 		Long key = null;
@@ -443,7 +399,8 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * @param resource The resource of this area
 	 * @return The new area
 	 */
-	private BGArea createAndPersistBGArea(String areaName, String description, OLATResource resource) {
+	@Override
+	public BGArea createAndPersistBGArea(String areaName, String description, OLATResource resource) {
 		BGArea area = new BGAreaImpl(areaName, description, resource);
 		dbInstance.getCurrentEntityManager().persist(area);
 		if (area != null) {

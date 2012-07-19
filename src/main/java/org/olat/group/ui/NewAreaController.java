@@ -26,7 +26,6 @@ package org.olat.group.ui;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -129,29 +128,22 @@ public class NewAreaController extends BasicController {
 					allNames.add(this.areaCreateController.getAreaName());
 				}
 
-				if(areaManager.checkIfOneOrMoreNameExistsInContext(allNames, resource)){
-					// set error of non existing name
-					this.areaCreateController.setAreaNameExistsError(null);
-				} else {
-					Codepoint.codepoint(this.getClass(), "createArea");
-					// create bulkgroups only if there is no name which already exists. 
-					newAreas = new HashSet<BGArea>();
-					newAreaNames = new HashSet<String>();
-					for (Iterator<String> iter = allNames.iterator(); iter.hasNext();) {
-						String areaName = iter.next();
-						BGArea newArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, areaDesc, resource);
-						newAreas.add(newArea);
-						newAreaNames.add(areaName);
-					}
-					// do loggin if ual given
-					for (Iterator<BGArea> iter = newAreas.iterator(); iter.hasNext();) {
-						BGArea a = iter.next();
-						ThreadLocalUserActivityLogger.log(GroupLoggingAction.AREA_CREATED, getClass(), LoggingResourceable.wrap(a));	
-					}						
-					// workflow successfully finished
-					// so far no events on the systembus to inform about new groups in BGContext 
-					fireEvent(ureq, Event.DONE_EVENT);
+				Codepoint.codepoint(this.getClass(), "createArea");
+				// create bulkgroups only if there is no name which already exists. 
+				newAreas = new HashSet<BGArea>();
+				newAreaNames = new HashSet<String>();
+				for (String areaName : allNames) {
+					BGArea newArea = areaManager.createAndPersistBGArea(areaName, areaDesc, resource);
+					newAreas.add(newArea);
+					newAreaNames.add(areaName);
 				}
+				// do loggin if ual given
+				for (BGArea area:newAreas) {
+					ThreadLocalUserActivityLogger.log(GroupLoggingAction.AREA_CREATED, getClass(), LoggingResourceable.wrap(area));	
+				}						
+				// workflow successfully finished
+				// so far no events on the systembus to inform about new groups in BGContext 
+				fireEvent(ureq, Event.DONE_EVENT);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// workflow cancelled
 				fireEvent(ureq, Event.CANCELLED_EVENT);

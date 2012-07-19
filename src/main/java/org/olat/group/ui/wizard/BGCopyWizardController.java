@@ -89,17 +89,12 @@ public class BGCopyWizardController extends WizardController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == this.groupController) {
 			if (event == Event.DONE_EVENT) {
-				BusinessGroup newGroup = doCopyGroup();
-				if (newGroup == null) {
-					this.groupController.setGroupNameExistsError(null);
-				} else {
-					this.copiedGroup = newGroup;
-					// finished event
-					fireEvent(ureq, Event.DONE_EVENT);
-					// do logging
-					ThreadLocalUserActivityLogger.log(GroupLoggingAction.BG_GROUP_COPIED, getClass(), 
-							LoggingResourceable.wrap(originalGroup), LoggingResourceable.wrap(copiedGroup));
-				}
+				copiedGroup = doCopyGroup();
+				// finished event
+				fireEvent(ureq, Event.DONE_EVENT);
+				// do logging
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.BG_GROUP_COPIED, getClass(), 
+						LoggingResourceable.wrap(originalGroup), LoggingResourceable.wrap(copiedGroup));
 			}
 		}
 		else if (source == copyForm) {

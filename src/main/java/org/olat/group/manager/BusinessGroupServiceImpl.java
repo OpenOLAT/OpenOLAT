@@ -24,12 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -181,19 +179,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource) {
-		
-		if(resource != null) {
-			boolean groupExists = businessGroupRelationDAO.checkIfOneOrMoreNameExistsInContext(Collections.singleton(name), resource);
-			if (groupExists) {
-				// there is already a group with this name, return without creating a new group
-				log.warn("A group with this name already exists! You will get null instead of a businessGroup returned!");
-				return null;
-			}
-		}
-		
+
 		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false);
-		
 		if(resource instanceof OLATResourceImpl) {
 			businessGroupRelationDAO.addRelationToResource(group, resource);
 			//add coach and participant permission
@@ -201,32 +189,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			securityManager.createAndPersistPolicyWithResource(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
 		}
 		return group;
-	}
-	
-	@Override
-	public Set<BusinessGroup> createUniqueBusinessGroupsFor(final Set<String> allNames, final String description,
-			final Integer minParticipants, final Integer maxParticipants, final boolean waitingListEnabled, final boolean autoCloseRanksEnabled,
-			final OLATResource resource) {
-
-	   //o_clusterOK by:cg
-		Set<BusinessGroup> createdGroups = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerCallback<Set<BusinessGroup>>(){
-	      public Set<BusinessGroup> execute() {
-					if(checkIfOneOrMoreNameExists(allNames, resource)){
-						// set error of non existing name
-						return null;
-					} else {
-						// create bulkgroups only if there is no name which already exists.
-						Set<BusinessGroup> newGroups = new HashSet<BusinessGroup>();
-						for (String name : allNames) {
-							BusinessGroup newGroup = createBusinessGroup(null, name, description, minParticipants, maxParticipants,
-									waitingListEnabled, autoCloseRanksEnabled, resource);
-							newGroups.add(newGroup);
-						}
-						return newGroups;
-					}
-	      }
-		});
-		return createdGroups;
 	}
 
 	@Override
@@ -346,16 +308,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Transactional
 	public List<BusinessGroup> loadAllBusinessGroups() {
 		return businessGroupDAO.loadAll();
-	}
-	
-	@Override
-	public boolean checkIfOneOrMoreNameExists(Set<String> names, OLATResource resource) {
-		return businessGroupRelationDAO.checkIfOneOrMoreNameExistsInContext(names, resource);
-	}
-
-	@Override
-	public boolean checkIfOneOrMoreNameExists(Set<String> names, BusinessGroup group) {
-		return businessGroupRelationDAO.checkIfOneOrMoreNameExistsInContext(names, group);
 	}
 
 	@Override

@@ -24,8 +24,10 @@
 */
 package org.olat.group.ui;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
@@ -122,14 +124,18 @@ public class NewBGController extends BasicController {
 				boolean enableWaitingList = groupCreateController.isWaitingListEnabled();
 				boolean enableAutoCloseRanks = groupCreateController.isAutoCloseRanksEnabled();
 				
-				Set<String> allNames = new HashSet<String>();
+				List<BusinessGroup> newGroups = new ArrayList<BusinessGroup>();
 				if (bulkMode) {
-					allNames = groupCreateController.getGroupNames();
+					for(String bgName:groupCreateController.getGroupNames()) {
+						BusinessGroup group = businessGroupService.createBusinessGroup(null, bgName, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
+						newGroups.add(group);
+					}
 				} else {
-					allNames.add(groupCreateController.getGroupName());
+					String bgName = groupCreateController.getGroupName();
+					BusinessGroup group = businessGroupService.createBusinessGroup(null, bgName, bgDesc, bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, resource);
+					newGroups.add(group);
 				}
 
-				newGroups = businessGroupService.createUniqueBusinessGroupsFor(allNames, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
 				if(newGroups != null){
 						for (BusinessGroup bg: newGroups) {
 							LoggingResourceable resourceInfo = LoggingResourceable.wrap(bg);
@@ -138,9 +144,6 @@ public class NewBGController extends BasicController {
 					// workflow successfully finished
 					// so far no events on the systembus to inform about new groups in BGContext 
 					fireEvent(ureq, Event.DONE_EVENT);
-				} else {
-					// Could not create any group, because one or groups-name already exist. Set error of non existing name
-					this.groupCreateController.setGroupNameExistsError(null);
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				// workflow cancelled

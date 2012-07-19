@@ -88,8 +88,8 @@ public interface BusinessGroupService {
 	 * @param resource
 	 * @return
 	 */
-	public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, String description, Integer minParticipants, Integer maxParticipants,
-			boolean waitingListEnabled, boolean autoCloseRanksEnabled, OLATResource resource);
+	//public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, String description, Integer minParticipants, Integer maxParticipants,
+	//		boolean waitingListEnabled, boolean autoCloseRanksEnabled, OLATResource resource);
 	
 	/**
 	 * Update the business group with the supplied arguments and do it in sync
@@ -255,11 +255,6 @@ public interface BusinessGroupService {
 	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults);
 	
 	public List<Long> toGroupKeys(String groupNames, OLATResource resource);
-	
-	//check
-	public boolean checkIfOneOrMoreNameExists(Set<String> names, OLATResource resource); 
-	
-	public boolean checkIfOneOrMoreNameExists(Set<String> names, BusinessGroup group); 
 
 	//retrieve repository entries
 

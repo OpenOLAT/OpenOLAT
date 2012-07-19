@@ -25,9 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import junit.framework.Assert;
@@ -240,98 +238,16 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, 0, 10, false, false, c2);
 		assertNotNull(g3);
 
-		BusinessGroup g2douplicate = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false, c1);
-		assertNull(g2douplicate); // name duplicate names allowed per group context
+		BusinessGroup g2duplicate = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false, c1);
+		assertNotNull(g2duplicate); // name duplicate names are allowed per group context
 
 		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false, c2);
 		assertNotNull(g4); // name duplicate in other context allowed
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
 		SearchBusinessGroupParams params2 = new SearchBusinessGroupParams(null, false, false);
-		Assert.assertEquals(2, businessGroupService.findBusinessGroups(params2, c1, 0, -1).size());
-		Assert.assertEquals(2, businessGroupService.countBusinessGroups(params2, c1));
-	}
-
-	@Test
-	public void testCheckIfNamesExistsInContext() throws Exception {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("id5-check-" + UUID.randomUUID().toString());
-
-		OLATResource ctxA = JunitTestHelper.createRandomResource();
-		OLATResource ctxB = JunitTestHelper.createRandomResource();
-
-		String[] namesInCtxA = new String[] { "A-GroupOne", "A-GroupTwo", "A-GroupThree", "A-GroupFour", "A-GroupFive", "A-GroupSix" };
-		String[] namesInCtxB = new String[] { "B-GroupAAA", "B-GroupBBB", "B-GroupCCC", "B-GroupDDD", "B-GroupEEE", "B-GroupFFF" };
-		BusinessGroup[] ctxAgroups = new BusinessGroup[namesInCtxA.length];
-		BusinessGroup[] ctxBgroups = new BusinessGroup[namesInCtxB.length];
-
-		for (int i = 0; i < namesInCtxA.length; i++) {
-			ctxAgroups[i] = businessGroupService.createBusinessGroup(id, namesInCtxA[i], null, 0, 0, false,
-					false, ctxA);
-		}
-		for (int i = 0; i < namesInCtxB.length; i++) {
-			ctxBgroups[i] = businessGroupService.createBusinessGroup(id, namesInCtxB[i], null, 0, 0, false,
-					false, ctxB);
-		}
-		// first click created two context and each of them containg groups
-		// evict all created and search
-		System.out.println("Test: ctxAgroups.length=" + ctxAgroups.length);
-		for (int i = 0; i < ctxAgroups.length; i++) {
-			System.out.println("Test: i=" + i);
-			System.out.println("Test: ctxAgroups[i]=" + ctxAgroups[i]);
-		}
-		dbInstance.commitAndCloseSession();
-
-		// next click needs to check of a set of groupnames already exists.
-		Set<String> subsetOkInA = new HashSet<String>();
-		subsetOkInA.add("A-GroupTwo");
-		subsetOkInA.add("A-GroupThree");
-		subsetOkInA.add("A-GroupFour");
-		
-		Set<String> subsetNOkInA = new HashSet<String>();
-		subsetNOkInA.add("A-GroupTwo");
-		subsetNOkInA.add("NOT-IN-A");
-		subsetNOkInA.add("A-GroupThree");
-		subsetNOkInA.add("A-GroupFour");
-
-		Set<String> subsetOkInB = new HashSet<String>();
-		subsetOkInB.add("B-GroupCCC");
-		subsetOkInB.add("B-GroupDDD");
-		subsetOkInB.add("B-GroupEEE");
-		subsetOkInB.add("B-GroupFFF");
-
-		Set<String> subsetNOkInB = new HashSet<String>();
-		subsetNOkInB.add("B-GroupCCC");
-		subsetNOkInB.add("NOT-IN-B");
-		subsetNOkInB.add("B-GroupEEE");
-		subsetNOkInB.add("B-GroupFFF");
-
-		Set<String> setSpansAandBNok = new HashSet<String>();
-		setSpansAandBNok.add("B-GroupCCC");
-		setSpansAandBNok.add("A-GroupTwo");
-		setSpansAandBNok.add("A-GroupThree");
-		setSpansAandBNok.add("B-GroupEEE");
-		setSpansAandBNok.add("B-GroupFFF");
-
-		boolean allExist = false;
-		allExist = businessGroupService.checkIfOneOrMoreNameExists(subsetOkInA, ctxA);
-		assertTrue("Three A-Group.. should find all", allExist);
-		// Check : one name does not exist, 3 exist 
-		assertTrue("A 'NOT-IN-A'.. should not find all", businessGroupService.checkIfOneOrMoreNameExists(subsetNOkInA, ctxA));
-		// Check : no name exist in context
-		assertFalse("A 'NOT-IN-A'.. should not find all", businessGroupService.checkIfOneOrMoreNameExists(subsetOkInB, ctxA));
-		//
-		allExist = businessGroupService.checkIfOneOrMoreNameExists(subsetOkInB, ctxB);
-		assertTrue("Three B-Group.. should find all", allExist);
-		// Check : one name does not exist, 3 exist
-		assertTrue("A 'NOT-IN-B'.. should not find all", businessGroupService.checkIfOneOrMoreNameExists(subsetNOkInB, ctxB));
-		// Check : no name exist in context
-		assertFalse("A 'NOT-IN-A'.. should not find all", businessGroupService.checkIfOneOrMoreNameExists(subsetOkInA, ctxB));
-		// Mix A (2x) and B (3x)
-		allExist = businessGroupService.checkIfOneOrMoreNameExists(setSpansAandBNok, ctxA);
-		assertTrue("Groupnames spanning two context... should not find all in context A", allExist);
-		// Mix A (2x) and B (3x)
-		allExist = businessGroupService.checkIfOneOrMoreNameExists(setSpansAandBNok, ctxB);
-		assertTrue("Groupnames spanning two context... should not find all in context B", allExist);
+		Assert.assertEquals(3, businessGroupService.findBusinessGroups(params2, c1, 0, -1).size());
+		Assert.assertEquals(3, businessGroupService.countBusinessGroups(params2, c1));
 	}
 
 	/**

@@ -26,10 +26,8 @@
 package org.olat.course.nodes.projectbroker.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
@@ -196,23 +194,9 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	 * If the goup-name already exist, it will be automatically try another one with suffix e.g. ' _2'
 	 * @see org.olat.course.nodes.projectbroker.service.ProjectGroupManager#changeProjectGroupName(org.olat.group.BusinessGroup, java.lang.String, java.lang.String)
 	 */
-	public BusinessGroup changeProjectGroupName(BusinessGroup projectGroup, String initialGroupName, String groupDescription, OLATResource courseResource) {
+	public BusinessGroup changeProjectGroupName(BusinessGroup projectGroup, String groupName, String groupDescription, OLATResource courseResource) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
-		logDebug("initialGroupName=" + initialGroupName);
-		String groupName = initialGroupName;
-		Set<String> names = new HashSet<String>();
-		names.add(groupName);
-		int counter = 2;
-		while (bgs.checkIfOneOrMoreNameExists(names, courseResource)) {
-		// a group with name already exist => look for an other one, append a number
-			groupName = initialGroupName + " _" + counter++ ;
-			logDebug("try groupName=" + groupName);
-			names = new HashSet<String>();
-			names.add(groupName);
-			
-		}
-		logDebug("groupName=" + groupName);
 		return bgs.updateBusinessGroup(reloadedBusinessGroup, groupName, groupDescription,
 				reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 	}

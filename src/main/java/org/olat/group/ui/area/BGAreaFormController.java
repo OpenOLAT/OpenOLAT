@@ -78,7 +78,7 @@ public class BGAreaFormController extends FormBasicController {
 	 * org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused") Controller listener, UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// add the name field
 		name = uifactory.addTextElement("area.form.name", "area.form.name", 255, "", formLayout);
 		name.setMandatory(true);
@@ -107,7 +107,7 @@ public class BGAreaFormController extends FormBasicController {
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	protected boolean validateFormLogic(@SuppressWarnings("unused") UserRequest ureq) {
+	protected boolean validateFormLogic(UserRequest ureq) {
 		// check name first
 		if (!StringHelper.containsNonWhitespace(this.name.getValue())) {
 			name.setErrorKey("form.legende.mandatory", new String[] {});
@@ -197,15 +197,6 @@ public class BGAreaFormController extends FormBasicController {
 	 */
 	public void setAreaName(String areaName) {
 		name.setValue(areaName);
-	}
-
-	/**
-	 * Displays an error message that this group already exists.
-	 * 
-	 * @param object <i>(unused)</i>
-	 */
-	public void setAreaNameExistsError(@SuppressWarnings("unused") Object object) {
-		name.setErrorKey("error.area.name.exists", new String[] {});
 	}
 
 	/**

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -180,41 +179,6 @@ public class BusinessGroupRelationDAO {
 		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), resultClass);
 		db.setParameter("resourceKey", resource.getKey());
 		return db;
-	}
-	
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, OLATResource resource) {
-		return checkIfOneOrMoreNameExistsInContext(names, Collections.singletonList(resource.getKey()));
-	}
-	
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group) {
-		if(names == null || names.isEmpty()) return false;
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select rel.resource.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
-			.append(" inner join rel.group bgs ")
-		  .append(" where bgs.key=:groupKey");
-		
-		List<Long> resourceKeys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
-				.setParameter("groupKey", group.getKey())
-				.getResultList();
-		
-		return checkIfOneOrMoreNameExistsInContext(names, resourceKeys);
-	}
-	
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, List<Long> resourceKeys) {
-		if(resourceKeys == null || resourceKeys.isEmpty()) return false;
-		if(names == null || names.isEmpty()) return false;
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(bgs) from ").append(BGResourceRelation.class.getName()).append(" as rel ")
-			.append(" inner join rel.group bgs ")
-		  .append(" where rel.resource.key in (:resourceKey) and bgs.name in (:names)");
-		
-		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("resourceKey", resourceKeys)
-				.setParameter("names", names)
-				.getSingleResult();
-		return count.intValue() > 0;
 	}
 	
 	public int countResources(BusinessGroup group) {

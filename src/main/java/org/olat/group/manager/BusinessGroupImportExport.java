@@ -211,7 +211,7 @@ public class BusinessGroupImportExport {
 			for (Area area : groupConfig.getAreas().getGroups()) {
 				String areaName = area.name;
 				String areaDesc = (area.description != null && !area.description.isEmpty()) ? area.description.get(0) : "";
-				BGArea newArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, areaDesc, resource);
+				BGArea newArea = areaManager.createAndPersistBGArea(areaName, areaDesc, resource);
 				if(areaSet.add(newArea)) {
 					env.getAreas().add(new BGAreaReference(newArea, area.key, area.name));
 				}
