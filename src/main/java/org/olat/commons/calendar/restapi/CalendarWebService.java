@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -135,6 +136,43 @@ public class CalendarWebService {
 		EventVO[] voes = new EventVO[events.size()];
 		voes = events.toArray(voes);
 		return Response.ok(voes).build();
+	}
+	
+	@DELETE
+	@Path("{calendarId}/events/{eventId}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response deleteEventByCalendar(@PathParam("calendarId") String calendarId,
+			@PathParam("eventId") String eventId, @PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest httpRequest) {
+		
+		UserRequest ureq = getUserRequest(httpRequest);
+		if(!ureq.getUserSession().isAuthenticated()) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		} else if (ureq.getIdentity() == null || !ureq.getIdentity().getKey().equals(identityKey)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		KalendarRenderWrapper calendar = getCalendar(ureq, calendarId);
+		if(calendar == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if(!hasWriteAccess(calendar)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		if(eventId == null) {
+			return Response.ok().status(Status.NOT_FOUND).build();
+		} else {
+			KalendarEvent kalEvent = calendar.getKalendar().getEvent(eventId);
+			if(kalEvent == null) {
+				return Response.ok().status(Status.NOT_FOUND).build();
+			} else {
+				calendarManager.removeEventFrom(calendar.getKalendar(), kalEvent);
+			}
+		}
+
+		return Response.ok().build();
 	}
 	
 	@PUT

@@ -37,6 +37,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -393,6 +394,34 @@ public class CalendarTest extends OlatJerseyTestCase {
 		Assert.assertTrue(found);
 
 		conn.shutdown();
+	}
+	
+	@Test
+	public void testDeletePersonalCalendarEvents() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id2.getName(), "A6B7C8"));
+		
+		//check if the event is saved
+		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(id2);
+		KalendarEvent kalEvent = new KalendarEvent(UUID.randomUUID().toString(), "Rendez-vous", new Date(), new Date());
+		calendarManager.addEventTo(calendarWrapper.getKalendar(), kalEvent);
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())
+				.path("calendars").path("user_" + calendarWrapper.getKalendar().getCalendarID())
+				.path("events").path(kalEvent.getID()).build();
+		HttpDelete delEventMethod = conn.createDelete(eventUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse delEventResponse = conn.execute(delEventMethod);
+		assertEquals(200, delEventResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(delEventResponse.getEntity());
+
+		conn.shutdown();
+		
+		//check if the event is saved
+		Collection<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
+		for(KalendarEvent savedEvent:savedEvents) {
+			Assert.assertFalse(savedEvent.getID().equals(kalEvent.getID()));
+		}
 	}
 	
 	protected CalendarVO getCourseCalendar(List<CalendarVO> vos) {
