@@ -49,9 +49,9 @@ public class EnhancedMapper extends MapperWrapper {
 	
 	@SuppressWarnings("rawtypes")
 	public String serializedClass(final Class type) {
-		if(type.equals(PersistentBag.class)) {
+		if(PersistentBag.class.equals(type)) {
 			return "org.hibernate.collection.PersistentBag";
-		} else if(type.equals(PersistentList.class)) {
+		} else if(PersistentList.class.equals(type)) {
 			return "org.hibernate.collection.PersistentList";
 		} else {
 			return super.serializedClass(type);
