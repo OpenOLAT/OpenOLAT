@@ -122,6 +122,7 @@ public class ImportReferencesController extends BasicController {
 	private Link reattachButton;
 	private Link noopButton;
 	private Link continueButton;
+	private Link importYesModeButton;
 	private RepositorySearchController searchController;
 	private RepositoryEntryImportExport importExport;
 	private DetailsReadOnlyForm repoDetailsForm;
@@ -138,6 +139,7 @@ public class ImportReferencesController extends BasicController {
 		importButton = LinkFactory.createButton("import.import.action", main, this);
 		reattachButton = LinkFactory.createButton("import.reattach.action", main, this);
 		noopButton = LinkFactory.createButton("import.noop.action", main, this);
+		importYesModeButton = LinkFactory.createButton("import.yesmode.action", main, this);
 		
 		main.contextPut("nodename", node.getShortTitle());
 		main.contextPut("type", translator.translate("node." + node.getType()));
@@ -148,6 +150,11 @@ public class ImportReferencesController extends BasicController {
 		mainPanel.setContent(main);
 
 		putInitialPanel(mainPanel);
+	}
+	
+	protected void importWithoutAsking (UserRequest ureq) {
+		event (ureq, importButton, Event.DONE_EVENT);
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	/**
@@ -262,6 +269,8 @@ public class ImportReferencesController extends BasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == continueButton){
 			fireEvent(ureq, Event.DONE_EVENT);
+		} else if (source == importYesModeButton) {
+			fireEvent(ureq, new Event("importYesMode"));
 		}
 	}
 
