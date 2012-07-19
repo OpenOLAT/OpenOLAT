@@ -55,7 +55,7 @@ public class TestDeployableRepositoryExport extends AbstractJUnit4SpringContextT
 		assertEquals(bean.getVersion(),Float.valueOf(1));
 		
 		File file = bean.getDeployableCourseZipFile();
-		assertEquals(file.getName(),"olatUserAndGroupService.jar");
+		assertEquals(file.getName(),"OpenOLAT-Help-8.1.zip");
 		assertNotNull(file);
 		assertTrue(file.exists());
 	}
