@@ -30,5 +30,63 @@
 		<constructor-arg index="0" ref="deletionModule" />
 		<property name="businessGroupService" ref="businessGroupService"/>
 	</bean>
+	
+	<!-- Menu of the business group main controller -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="groups.my" init-method="initExtensionPoints">
+		<property name="order" value="8200" />
+		<property name="navigationKey" value="MyGroups" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.main.BusinessGroupListController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.group.ui.main" />
+		<property name="i18nActionKey" value="menu.groups" />
+		<property name="i18nDescriptionKey" value="menu.groups.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.group.ui.main.BusinessGroupMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- List of open groups -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="groups.open" init-method="initExtensionPoints">
+		<property name="order" value="8201" />
+		<property name="navigationKey" value="OpenGroups" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.main.OpenBusinessGroupsController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.group.ui.main" />
+		<property name="i18nActionKey" value="menu.opengroups" />
+		<property name="i18nDescriptionKey" value="menu.opengroups.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.group.ui.main.BusinessGroupMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Administration groups -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="groups.admin" init-method="initExtensionPoints">
+		<property name="order" value="8202" />
+		<property name="navigationKey" value="AdminGroups" />
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.GroupManagerOnlyExtensionSecurityCallback" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.main.AdminBusinessGroupsController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.group.ui.main" />
+		<property name="i18nActionKey" value="menu.group.admin" />
+		<property name="i18nDescriptionKey" value="menu.group.admin.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.group.ui.main.BusinessGroupMainController</value>
+			</list>
+		</property>
+	</bean>
 
 </beans>

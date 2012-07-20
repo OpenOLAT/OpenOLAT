@@ -37,7 +37,6 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
@@ -46,44 +45,34 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupListController extends AbstractBusinessGroupListController {
+public class OpenBusinessGroupsController extends AbstractBusinessGroupListController {
 	private static final String TABLE_ACTION_LEAVE = "bgTblLeave";
 	private static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
 	private static final String TABLE_ACTION_ACCESS = "bgTblAccess";
 	
-
-	private final Link markedGroupsLink, allGroupsLink, ownedGroupsLink, searchOpenLink;
+	private final OpenBusinessGroupSearchController searchController;
+	
+	private final Link allOpenLink, searchOpenLink;
 	private final SegmentViewComponent segmentView;
 
-	private final BusinessGroupSearchController searchController;
-	
-	
-	public BusinessGroupListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list");
+
+	public OpenBusinessGroupsController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "open");
+		
+		//segment view
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		allOpenLink = LinkFactory.createLink("opengroups.all", mainVC, this);
+		segmentView.addSegment(allOpenLink, true);
+		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
+		segmentView.addSegment(searchOpenLink, false);
 
 		//search controller
-		searchController = new BusinessGroupSearchController(ureq, wControl, isAdmin(), true);
+		searchController = new OpenBusinessGroupSearchController(ureq, wControl);
 		listenTo(searchController);
 		mainVC.put("search", searchController.getInitialComponent());
 		searchController.getInitialComponent().setVisible(false);
-		mainVC.put("searchPanel", searchController.getInitialComponent());
-
-		//try to fill the table with marked groups	
-		boolean marked = updateMarkedGroups();
-		if(!marked) {
-			updateAllGroups();
-		}
-
-		//segmented view
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		markedGroupsLink = LinkFactory.createLink("marked.groups", mainVC, this);
-		segmentView.addSegment(markedGroupsLink, marked);
-		allGroupsLink = LinkFactory.createLink("opengroups.all", mainVC, this);
-		segmentView.addSegment(allGroupsLink, !marked);
-		ownedGroupsLink = LinkFactory.createLink("owned.groups", mainVC, this);
-		segmentView.addSegment(ownedGroupsLink, false);
-		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
-		segmentView.addSegment(searchOpenLink, false);
+		
+		updateOpenGroupModel();
 	}
 	
 	@Override
@@ -113,102 +102,46 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink ==markedGroupsLink) {
-					updateMarkedGroups();
-				} else if (clickedLink == allGroupsLink){
-					updateAllGroups();
-				} else if (clickedLink == ownedGroupsLink){
-					updateOwnedGroups();
-				} else if (clickedLink == searchOpenLink) {
-					doSearch(null);
+				if (clickedLink == allOpenLink) {
+					updateOpenGroupModel();
+				} else if (clickedLink == searchOpenLink){
+					updateSearchGroupModel(null);
 				}
 				searchController.getInitialComponent().setVisible(clickedLink == searchOpenLink);
 			}
 		}
-		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == searchController) {
 			if(event instanceof SearchEvent) {
-				doSearch((SearchEvent)event);
+				updateSearchGroupModel((SearchEvent)event);
 			}
 		}
 		super.event(ureq, source, event);
 	}
-	
-	private boolean updateMarkedGroups() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setMarked(Boolean.TRUE);
-		params.setAttendee(true);
-		params.setOwner(true);
-		params.setWaiting(true);
-		params.setIdentity(getIdentity());
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, true);
-		return !groups.isEmpty();
-	}
-	
-	private void updateAllGroups() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setAttendee(true);
-		params.setOwner(true);
-		params.setWaiting(true);
-		params.setIdentity(getIdentity());
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
-	}
-	
-	private void updateOwnedGroups() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setIdentity(getIdentity());
-		params.setOwner(true);
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
-	}
 
-	private void doSearch(SearchEvent event) {
-		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
-
-		search(event);
-		
-		if(isLogDebugEnabled()) {
-			logDebug("Group search takes (ms): " + (System.currentTimeMillis() - start), null);
-		}
-	}
-
-	private void search(SearchEvent event) {
+	private void updateSearchGroupModel(SearchEvent event) {
 		if(event == null) {
-			updateTableModel(Collections.<BusinessGroup>emptyList(), true);
+			groupListModel.setEntries(Collections.<BGTableItem>emptyList());
+			groupListCtr.modelChanged();
 			return;
 		}
-	
-		Long id = event.getId();
-		String name = event.getName();
-		String description = event.getDescription();
-		String ownerName = event.getOwnerName();
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setIdentity(getIdentity());
-		if(id != null) {
-			params.setGroupKeys(Collections.singletonList(id));
-		}
-		params.setName(StringHelper.containsNonWhitespace(name) ? name : null);
-		params.setDescription(StringHelper.containsNonWhitespace(description) ? description : null);
-		params.setOwnerName(StringHelper.containsNonWhitespace(ownerName) ? ownerName : null);
-		params.setOwner(event.isOwner());
-		params.setAttendee(event.isAttendee());
-		params.setWaiting(event.isWaiting());
-		params.setPublicGroup(event.getPublicGroups());
-		params.setResources(event.getResources());
-		//security
-		if(!event.isAttendee() && !event.isOwner() && !event.isWaiting()
-				&& (event.getPublicGroups() == null || !event.getPublicGroups().booleanValue())) {
-			params.setOwner(true);
-			params.setAttendee(true);
-			params.setWaiting(true);
-		}
+		params.setName(event.getName());
+		params.setDescription(event.getDescription());
+		params.setOwnerName(event.getOwnerName());
+		params.setPublicGroup(Boolean.TRUE);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		updateTableModel(groups, false);
+	}
+	
+	private void updateOpenGroupModel() {
+		//find all accessible business groups
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setPublicGroup(Boolean.TRUE);
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		updateTableModel(groups, false);
 	}

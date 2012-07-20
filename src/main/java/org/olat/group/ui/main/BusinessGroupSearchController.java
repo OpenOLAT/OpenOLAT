@@ -23,14 +23,13 @@ package org.olat.group.ui.main;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 
 /**
@@ -43,20 +42,23 @@ import org.olat.core.gui.control.WindowControl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 //fxdiff VCRP-1,2: access control of resources
-public class BGSearchController extends FormBasicController{
+public class BusinessGroupSearchController extends FormBasicController{
 
 	private TextElement id; // only for admins
 	private TextElement displayName;
 	private TextElement owner;
 	private TextElement description;
 	private FormSubmit searchButton;
-	private MultipleSelectionElement attendeeEl;
-	private MultipleSelectionElement ownerEl;
-	private MultipleSelectionElement waitingEl;
-	private MultipleSelectionElement publicEl;
+	private SingleSelection rolesEl;
+	private SingleSelection publicEl;
+	private SingleSelection resourceEl;
 	
 	private String limitUsername;
 	private boolean isAdmin;
+	
+	private String[] roleKeys = {"all", "owner", "attendee", "waiting"};
+	private String[] openKeys = {"all", "yes", "no"};
+	private String[] resourceKeys = {"all", "yes", "no"};
 
 	/**
 	 * Generic search form.
@@ -66,13 +68,13 @@ public class BGSearchController extends FormBasicController{
 	 * @param isAdmin Is calling identity an administrator? If yes, allow search by ID
 	 * @param limitTypes Limit searches to specific types.
 	 */
-	public BGSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
+	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
 		super(ureq, wControl);
 		this.isAdmin = isAdmin;
 		initForm(ureq);
 	}
 	
-	public BGSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean extended) {
+	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean extended) {
 		super(ureq, wControl, "group_search");
 		this.isAdmin = isAdmin;
 		initForm(ureq);
@@ -103,18 +105,30 @@ public class BGSearchController extends FormBasicController{
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
 		rightContainer.setRootForm(mainForm);
 		formLayout.add(rightContainer);
-
-		String[] ownerValues = new String[]{ translate("search.owner") };
-		ownerEl = uifactory.addCheckboxesVertical("search.owner", rightContainer, new String[]{"owner"}, ownerValues, null, 1);
 		
-		String[] attendeeValues = new String[]{ translate("search.attendee") };
-		attendeeEl = uifactory.addCheckboxesVertical("search.attendee", rightContainer, new String[]{"attendee"}, attendeeValues, null, 1);
-		
-		String[] waitingValues = new String[]{ translate("search.waiting") };
-		waitingEl = uifactory.addCheckboxesVertical("search.waiting", rightContainer, new String[]{"waiting"}, waitingValues, null, 1);
+		//roles
+		String[] roleValues = new String[roleKeys.length];
+		for(int i=roleKeys.length; i-->0; ) {
+			roleValues[i] = translate("search." + roleKeys[i]);
+		}
+		rolesEl = uifactory.addRadiosHorizontal("roles", "search.roles", rightContainer, roleKeys, roleValues);
+		rolesEl.select("all", true);
 
-		String[] publicValues = new String[]{ translate("search.public") };
-		publicEl = uifactory.addCheckboxesVertical("search.public", rightContainer, new String[]{"public"}, publicValues, null, 1);
+		//public
+		String[] openValues = new String[openKeys.length];
+		for(int i=openKeys.length; i-->0; ) {
+			openValues[i] = translate("search." + openKeys[i]);
+		}
+		publicEl = uifactory.addRadiosHorizontal("openBg", "search.open", rightContainer, openKeys, openValues);
+		publicEl.select("all", true);
+
+		//resources
+		String[] resourceValues = new String[resourceKeys.length];
+		for(int i=resourceKeys.length; i-->0; ) {
+			resourceValues[i] = translate("search." + resourceKeys[i]);
+		}
+		resourceEl = uifactory.addRadiosHorizontal("resourceBg", "search.resources", rightContainer, resourceKeys, resourceValues);
+		resourceEl.select("all", true);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -169,11 +183,7 @@ public class BGSearchController extends FormBasicController{
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		if (!isAdmin && isEmpty())	{
-			showWarning("cif.error.allempty", null);
-			allOk &= false;
-		}
-		
+
 		if(id != null) {
 			id.clearError();
 			if (id != null && !id.isEmpty()) {
@@ -185,47 +195,49 @@ public class BGSearchController extends FormBasicController{
 				}
 			}
 		}
-		
-		if(!isAdmin) {
-			boolean owner = ownerEl.isAtLeastSelected(1);
-			boolean attendee = attendeeEl.isAtLeastSelected(1);
-			boolean publicGroups = publicEl.isAtLeastSelected(1);
-			if(!owner && !attendee && !publicGroups) {
-				publicEl.select("public", true);
-			}	
-		}
+
 		return allOk && super.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void formOK (UserRequest ureq) {
-		SearchEvent e = new SearchEvent();
-		e.setId(getId());
-		e.setName(getName());
-		e.setDescription(getDescription());
-		e.setOwnerName(getOwner());
-		e.setOwner(ownerEl.isAtLeastSelected(1));
-		e.setAttendee(attendeeEl.isAtLeastSelected(1));
-		e.setWaiting(waitingEl.isAtLeastSelected(1));
-		e.setPublicGroups(publicEl.isAtLeastSelected(1));
-		fireEvent (ureq, e);
-		fireEvent(ureq, Event.DONE_EVENT);
+		fireSearchEvent(ureq);
 	}
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {
-			SearchEvent e = new SearchEvent();
-			e.setId(getId());
-			e.setName(getName());
-			e.setDescription(getDescription());
-			e.setOwnerName(getOwner());
-			e.setOwner(ownerEl.isAtLeastSelected(1));
-			e.setAttendee(attendeeEl.isAtLeastSelected(1));
-			e.setWaiting(waitingEl.isAtLeastSelected(1));
-			e.setPublicGroups(publicEl.isAtLeastSelected(1));
-			fireEvent(ureq, e);
-			fireEvent(ureq, Event.DONE_EVENT);
+			fireSearchEvent(ureq);
 		}
+	}
+	
+	private void fireSearchEvent(UserRequest ureq) {
+		SearchEvent e = new SearchEvent();
+		e.setName(getName());
+		e.setDescription(getDescription());
+		e.setOwnerName(getOwner());
+		
+		if(rolesEl.isOneSelected()) {
+			e.setAttendee(rolesEl.isSelected(0) || rolesEl.isSelected(1));
+			e.setOwner(rolesEl.isSelected(0) || rolesEl.isSelected(2));
+			e.setWaiting(rolesEl.isSelected(0) || rolesEl.isSelected(3));
+		}
+		
+		if(publicEl.isOneSelected()) {
+			if(publicEl.isSelected(1)) {
+				e.setPublicGroups(Boolean.TRUE);
+			} else if(publicEl.isSelected(2)) {
+				e.setPublicGroups(Boolean.FALSE);
+			}
+		}
+		
+		if(resourceEl.isOneSelected()) {
+			if(resourceEl.isSelected(1)) {
+				e.setResources(Boolean.TRUE);
+			} else if(resourceEl.isSelected(2)) {
+				e.setResources(Boolean.FALSE);
+			}
+		}
+		fireEvent(ureq, e);
 	}
 }

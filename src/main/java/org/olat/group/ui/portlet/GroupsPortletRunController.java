@@ -80,7 +80,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	private static final String CMD_LAUNCH = "cmd.launch";
 
 	private TableController tableCtr;
-	//private GroupListMiniModel groupListModel;
 	private GroupTableDataModel groupListModel;
 	private VelocityContainer groupsVC;
 	private List<BusinessGroup> groupList;

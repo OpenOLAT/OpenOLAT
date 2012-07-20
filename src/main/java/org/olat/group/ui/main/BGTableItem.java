@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.group.BusinessGroup;
@@ -36,8 +37,8 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BGTableItem {
-	private boolean accessControl;
 	private final boolean member;
+	private boolean marked;
 	private final Boolean allowLeave;
 	private final Boolean allowDelete;
 	private final BusinessGroup businessGroup;
@@ -45,31 +46,33 @@ public class BGTableItem {
 	private List<BGRepositoryEntryRelation> relations;
 	private List<PriceMethodBundle> access;
 	
-	public BGTableItem(BusinessGroup businessGroup, boolean member, Boolean allowLeave, Boolean allowDelete,
-			boolean accessControl, List<PriceMethodBundle> access) {
-		this.accessControl = accessControl;
+	public BGTableItem(BusinessGroup businessGroup, boolean marked, boolean member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
 		this.businessGroup = businessGroup;
+		this.marked = marked;
 		this.member = member;
 		this.allowLeave = allowLeave;
 		this.allowDelete = allowDelete;
 		this.access = access;
 	}
 
-	//fxdiff VCRP-1,2: access control of resources
+	public boolean isMarked() {
+		return marked;
+	}
+	
+	public void setMarked(boolean mark) {
+		this.marked = mark;
+	}
+
 	public boolean isMember() {
 		return member;
 	}
-	//fxdiff VCRP-1,2: access control of resources
+	
 	public boolean isAccessControl() {
-		return accessControl;
+		return access != null;
 	}
 
 	public List<PriceMethodBundle> getAccessTypes() {
 		return access;
-	}
-
-	public void setAccessControl(boolean accessControl) {
-		this.accessControl = accessControl;
 	}
 
 	public Boolean getAllowLeave() {
@@ -98,6 +101,22 @@ public class BGTableItem {
 
 	public void setRelations(List<BGRepositoryEntryRelation> relations) {
 		this.relations = relations;
+	}
+	
+	/**
+	 * Give the item a list of relations, it found alone which are its own
+	 * @param resources
+	 */
+	public void setUnfilteredRelations(List<BGRepositoryEntryRelation> resources) {
+		relations = new ArrayList<BGRepositoryEntryRelation>();
+		for(BGRepositoryEntryRelation resource:resources) {
+			if(businessGroup.getKey().equals(resource.getGroupKey())) {
+				relations.add(resource);
+				if(relations.size() >= 3) {
+					return;
+				}
+			}
+		}
 	}
 
 	@Override

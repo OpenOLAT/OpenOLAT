@@ -30,13 +30,14 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
+import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupEditController;
-import org.olat.group.ui.main.BGMainController;
+import org.olat.group.ui.main.BusinessGroupMainController;
 import org.olat.group.ui.management.BGManagementController;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
 import org.olat.resource.OLATResource;
@@ -169,8 +170,8 @@ public class BGControllerFactory {
 	 * @param initialViewIdentifier
 	 * @return a configured buddy group main controller
 	 */
-	public BGMainController createBuddyGroupMainController(UserRequest ureq, WindowControl wControl) {
-		return new BGMainController(ureq, wControl);
+	public MainLayoutController createBuddyGroupMainController(UserRequest ureq, WindowControl wControl) {
+		return new BusinessGroupMainController(ureq, wControl);
 	}
 
 	/**

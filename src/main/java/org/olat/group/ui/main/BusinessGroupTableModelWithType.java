@@ -65,35 +65,37 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	public Object getValueAt(int row, int col) {
 		BGTableItem wrapped = (BGTableItem)objects.get(row);
 		BusinessGroup businessGroup = wrapped.getBusinessGroup();
-		switch (col) {
-			case 0:
+		switch (Cols.values()[col]) {
+			case name:
 				String name = businessGroup.getName();
 				name = StringEscapeUtils.escapeHtml(name).toString();
 				return name;
-			case 1:
+			case description:
 				String description = businessGroup.getDescription();
 				description = FilterFactory.getHtmlTagsFilter().filter(description);
 				description = Formatter.truncate(description, 256);
 				return description;
-			case 2:
+			case groupType:
 				return trans.translate(businessGroup.getType());
-			case 3:
+			case allowLeave:
 				return wrapped.getAllowLeave();
-			case 4:
+			case allowDelete:
 				return wrapped.getAllowDelete();
-			case 5:
+			case resources:
 				return wrapped;
 			//fxdiff VCRP-1,2: access control of resources
-			case 6:
+			case accessControl:
 				return new Boolean(wrapped.isAccessControl());
-			case 7:
+			case accessControlLaunch:
 				if(wrapped.isAccessControl()) {
 					if(wrapped.isMember()) return trans.translate("select");
 					return trans.translate("table.access");
 				}
 				return null;
-			case 8:
+			case accessTypes:
 				return wrapped.getAccessTypes();
+			case mark:
+				return new Boolean(wrapped.isMarked());
 			default:
 				return "ERROR";
 		}
@@ -128,6 +130,29 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				objects.remove(i);
 				return;
 			}
+		}
+	}
+	
+	public enum Cols {
+		name("table.header.bgname"),
+		description("table.header.description"),
+		groupType(""),
+		allowLeave("table.header.leave"),
+		allowDelete("table.header.delete"),
+		resources("table.header.resources"),
+		accessControl(""),
+		accessControlLaunch("table.header.ac"),
+		accessTypes("table.header.ac"),
+		mark("table.header.mark");
+		
+		private final String i18n;
+		
+		private Cols(String i18n) {
+			this.i18n = i18n;
+		}
+		
+		public String i18n() {
+			return i18n;
 		}
 	}
 }

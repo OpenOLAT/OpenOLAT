@@ -36,7 +36,8 @@ public class SearchEvent extends Event {
 	private boolean owner;
 	private boolean attendee;
 	private boolean waiting;
-	public boolean publicGroups;
+	private Boolean publicGroups;
+	private Boolean resources;
 	
 	public SearchEvent() {
 		super("search");
@@ -98,11 +99,23 @@ public class SearchEvent extends Event {
 		this.waiting = waiting;
 	}
 
-	public boolean isPublicGroups() {
+	public Boolean getPublicGroups() {
 		return publicGroups;
 	}
 
-	public void setPublicGroups(boolean publicGroups) {
+	public void setPublicGroups(Boolean publicGroups) {
 		this.publicGroups = publicGroups;
 	}
+
+	public Boolean getResources() {
+		return resources;
+	}
+
+	public void setResources(Boolean resources) {
+		this.resources = resources;
+	}
+	
+	
+
+
 }

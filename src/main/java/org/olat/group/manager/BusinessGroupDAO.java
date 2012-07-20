@@ -39,6 +39,7 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.lifecycle.LifeCycleEntry;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -501,14 +502,36 @@ public class BusinessGroupDAO {
 			query.append(')');
 		}
 		
-		if(params.isPublicGroup()) {
+		if(params.getPublicGroup() != null) {
 			where = where(query, where);
-	    query.append(" bgResource.key in (")
-	         .append("   select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer ")
-	         .append("     where offer.valid=true")
-	         .append("     and (offer.validFrom is null or offer.validFrom<=:atDate)")
-					 .append("     and (offer.validTo is null or offer.validTo>=:atDate)")
-					 .append(" )");
+			if(params.getPublicGroup().booleanValue()) {
+		    query.append(" bgResource.key in (")
+		         .append("   select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer ")
+		         .append("     where offer.valid=true")
+		         .append("     and (offer.validFrom is null or offer.validFrom<=:atDate)")
+						 .append("     and (offer.validTo is null or offer.validTo>=:atDate)")
+						 .append(" )");
+			} else {
+		    query.append(" bgResource.key not in (")
+             .append("   select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer ")
+             .append("     where offer.valid=true")
+				     .append(" )");
+			}
+		}
+		
+		if(params.getMarked() != null) {
+			where = where(query, where);
+			query.append(" bgi.key ").append(params.getMarked().booleanValue() ? "" : "not").append(" in (")
+           .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark ")
+           .append("     where mark.resName='BusinessGroup' and mark.creator.key=:identId")
+			     .append(" )");
+		}
+		
+		if(params.getResources() != null) {
+			where = where(query, where);
+			query.append(" bgi.key ").append(params.getResources().booleanValue() ? "" : "not").append(" in (")
+           .append("   select bgRel.group.key from ").append(BGResourceRelation.class.getName()).append(" bgRel ")
+			     .append(" )");
 		}
 		
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
@@ -547,10 +570,10 @@ public class BusinessGroupDAO {
 
 		TypedQuery<T> dbq = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);
 		//add parameters
-		if(params.isOwner() || params.isAttendee() || params.isWaiting()) {
+		if(params.isOwner() || params.isAttendee() || params.isWaiting() || params.getMarked() != null) {
 			dbq.setParameter("identId", params.getIdentity().getKey());
 		}
-		if(params.isPublicGroup()) {
+		if(params.getPublicGroup() != null && params.getPublicGroup().booleanValue()) {
 			dbq.setParameter("atDate", new Date(), TemporalType.TIMESTAMP);
 		}
 		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {

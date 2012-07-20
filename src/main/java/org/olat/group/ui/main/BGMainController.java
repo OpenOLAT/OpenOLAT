@@ -159,7 +159,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	private Link allOpenLink;
 	private Link searchOpenLink;
 	private SegmentViewComponent segmentView;
-	private BGSearchController searchController;
+	private BusinessGroupSearchController searchController;
 	private BusinessGroupListController groupsCtr;
 
 	// group list table rows
@@ -214,7 +214,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		//fxdiff VCRP-1,2: access control of resources
-		searchController = new BGSearchController(ureq, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin());
+		searchController = new BusinessGroupSearchController(ureq, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin());
 		listenTo(searchController);
 		
 		// start with list of all groups
@@ -770,7 +770,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	//fxdiff VCRP-1,2: access control of resources
 	private BGTableItem wrapGroup(BusinessGroup group, boolean member, Boolean allowLeave, Boolean allowDelete, boolean accessControl,
 			List<PriceMethodBundle> access) {
-		BGTableItem tableItem = new BGTableItem(group, member, allowLeave, allowDelete, accessControl, access);
+		BGTableItem tableItem = new BGTableItem(group, false, member, allowLeave, allowDelete, access);
 		List<RepositoryEntry> resources = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, 3);
 		tableItem.setResources(resources);
 		return tableItem;

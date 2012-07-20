@@ -62,7 +62,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGTranslatorFactory;
-import org.olat.group.ui.main.BGMainController;
+import org.olat.group.ui.main.BusinessGroupMainController;
 
 /**
  * Controller for tab 'Learning-resource selection' 
@@ -70,7 +70,7 @@ import org.olat.group.ui.main.BGMainController;
  * @author Christian Guretzki
  */
 public class SelectionController extends BasicController {
-	private static final String PACKAGE_BG_MAIN_CONTROLLER = Util.getPackageName(BGMainController.class);	
+	private static final String PACKAGE_BG_MAIN_CONTROLLER = Util.getPackageName(BusinessGroupMainController.class);	
 	private static final String MY_PACKAGE = Util.getPackageName(SelectionController.class);
 	
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";

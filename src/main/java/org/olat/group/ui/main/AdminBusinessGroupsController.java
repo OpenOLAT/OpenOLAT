@@ -24,11 +24,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -46,44 +41,21 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupListController extends AbstractBusinessGroupListController {
-	private static final String TABLE_ACTION_LEAVE = "bgTblLeave";
-	private static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
-	private static final String TABLE_ACTION_ACCESS = "bgTblAccess";
+public class AdminBusinessGroupsController extends AbstractBusinessGroupListController {
+	private static final String TABLE_ACTION_DELETE = "bgTblDelete";
 	
+	private AdminBusinessGroupSearchController searchController;
 
-	private final Link markedGroupsLink, allGroupsLink, ownedGroupsLink, searchOpenLink;
-	private final SegmentViewComponent segmentView;
-
-	private final BusinessGroupSearchController searchController;
-	
-	
-	public BusinessGroupListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list");
-
-		//search controller
-		searchController = new BusinessGroupSearchController(ureq, wControl, isAdmin(), true);
-		listenTo(searchController);
-		mainVC.put("search", searchController.getInitialComponent());
-		searchController.getInitialComponent().setVisible(false);
-		mainVC.put("searchPanel", searchController.getInitialComponent());
-
-		//try to fill the table with marked groups	
-		boolean marked = updateMarkedGroups();
-		if(!marked) {
-			updateAllGroups();
+	public AdminBusinessGroupsController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "admin_group_list");
+		if(!isAdmin()) {
+			return;
 		}
-
-		//segmented view
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		markedGroupsLink = LinkFactory.createLink("marked.groups", mainVC, this);
-		segmentView.addSegment(markedGroupsLink, marked);
-		allGroupsLink = LinkFactory.createLink("opengroups.all", mainVC, this);
-		segmentView.addSegment(allGroupsLink, !marked);
-		ownedGroupsLink = LinkFactory.createLink("owned.groups", mainVC, this);
-		segmentView.addSegment(ownedGroupsLink, false);
-		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
-		segmentView.addSegment(searchOpenLink, false);
+		
+		//search controller
+		searchController = new AdminBusinessGroupSearchController(ureq, wControl, isAdmin(), true);
+		listenTo(searchController);
+		mainVC.put("searchPanel", searchController.getInitialComponent());
 	}
 	
 	@Override
@@ -97,8 +69,9 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		CustomCellRenderer resourcesRenderer = new BGResourcesCellRenderer(this, mainVC, getTranslator());
 		groupListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor(Cols.resources.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, resourcesRenderer));
 		groupListCtr.addColumnDescriptor(false, new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE, translate("table.header.leave"), null));
+		groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowDelete.i18n(), Cols.allowDelete.ordinal(), TABLE_ACTION_DELETE, translate("table.header.delete"), null));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), TABLE_ACTION_ACCESS, getLocale()));
-		return 7;
+		return 8;
 	}
 
 	@Override
@@ -108,23 +81,6 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
-				String segmentCName = sve.getComponentName();
-				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink ==markedGroupsLink) {
-					updateMarkedGroups();
-				} else if (clickedLink == allGroupsLink){
-					updateAllGroups();
-				} else if (clickedLink == ownedGroupsLink){
-					updateOwnedGroups();
-				} else if (clickedLink == searchOpenLink) {
-					doSearch(null);
-				}
-				searchController.getInitialComponent().setVisible(clickedLink == searchOpenLink);
-			}
-		}
 		super.event(ureq, source, event);
 	}
 
@@ -138,59 +94,23 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		super.event(ureq, source, event);
 	}
 	
-	private boolean updateMarkedGroups() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setMarked(Boolean.TRUE);
-		params.setAttendee(true);
-		params.setOwner(true);
-		params.setWaiting(true);
-		params.setIdentity(getIdentity());
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, true);
-		return !groups.isEmpty();
-	}
-	
-	private void updateAllGroups() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setAttendee(true);
-		params.setOwner(true);
-		params.setWaiting(true);
-		params.setIdentity(getIdentity());
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
-	}
-	
-	private void updateOwnedGroups() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setIdentity(getIdentity());
-		params.setOwner(true);
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
-	}
-
 	private void doSearch(SearchEvent event) {
 		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
 
 		search(event);
-		
+
 		if(isLogDebugEnabled()) {
 			logDebug("Group search takes (ms): " + (System.currentTimeMillis() - start), null);
 		}
 	}
 
 	private void search(SearchEvent event) {
-		if(event == null) {
-			updateTableModel(Collections.<BusinessGroup>emptyList(), true);
-			return;
-		}
-	
 		Long id = event.getId();
 		String name = event.getName();
 		String description = event.getDescription();
 		String ownerName = event.getOwnerName();
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setIdentity(getIdentity());
 		if(id != null) {
 			params.setGroupKeys(Collections.singletonList(id));
 		}
@@ -202,14 +122,15 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		params.setWaiting(event.isWaiting());
 		params.setPublicGroup(event.getPublicGroups());
 		params.setResources(event.getResources());
+		params.setIdentity(getIdentity());
+		
 		//security
-		if(!event.isAttendee() && !event.isOwner() && !event.isWaiting()
-				&& (event.getPublicGroups() == null || !event.getPublicGroups().booleanValue())) {
-			params.setOwner(true);
-			params.setAttendee(true);
-			params.setWaiting(true);
+		List<BusinessGroup> groups;
+		if(event.isAttendee() || event.isOwner()) {
+			params.setIdentity(getIdentity());
 		}
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		
 		updateTableModel(groups, false);
 	}
 }

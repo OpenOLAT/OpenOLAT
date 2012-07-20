@@ -48,7 +48,9 @@ public class SearchBusinessGroupParams {
 	private boolean owner;
 	private boolean attendee;
 	private boolean waiting;
-	private boolean publicGroup;
+	private Boolean publicGroup;
+	private Boolean marked;
+	private Boolean resources;
 	
 	public SearchBusinessGroupParams() {
 		//
@@ -175,11 +177,31 @@ public class SearchBusinessGroupParams {
 		this.waiting = waiting;
 	}
 
-	public boolean isPublicGroup() {
+	public Boolean getPublicGroup() {
 		return publicGroup;
 	}
 
-	public void setPublicGroup(boolean publicGroup) {
+	public void setPublicGroup(Boolean publicGroup) {
 		this.publicGroup = publicGroup;
 	}
+
+	public Boolean getMarked() {
+		return marked;
+	}
+
+	public void setMarked(Boolean marked) {
+		this.marked = marked;
+	}
+
+	public Boolean getResources() {
+		return resources;
+	}
+
+	public void setResources(Boolean resources) {
+		this.resources = resources;
+	}
+	
+	
+	
+	
 }

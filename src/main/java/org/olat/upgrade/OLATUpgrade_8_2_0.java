@@ -131,6 +131,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 				}
 				counter += groups.size();
 				log.audit("Processed context: " + groups.size());
+				dbInstance.intermediateCommit();
 			} while(groups.size() == REPO_ENTRIES_BATCH_SIZE);
 			
 			uhd.setBooleanDataValue(TASK_CONTEXTS, true);
@@ -150,6 +151,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 				}
 				counter += areas.size();
 				log.audit("Processed areas: " + areas.size());
+				dbInstance.intermediateCommit();
 			} while(areas.size() == REPO_ENTRIES_BATCH_SIZE);
 			
 			uhd.setBooleanDataValue(TASK_AREAS, true);
@@ -176,6 +178,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 						log.error("Course seems corrupt: " + entry.getOlatResource().getResourceableId());
 					}
 				}
+				dbInstance.intermediateCommit();
 				counter += entries.size();
 				log.audit("Processed repository entries: " + entries.size());
 			} while(entries.size() == REPO_ENTRIES_BATCH_SIZE);
