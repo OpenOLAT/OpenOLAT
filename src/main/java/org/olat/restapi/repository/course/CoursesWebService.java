@@ -24,12 +24,16 @@ import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -52,8 +56,11 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -70,7 +77,9 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
@@ -201,6 +210,57 @@ public class CoursesWebService {
 		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
+	}
+	
+	/**
+	 * 
+	 * 
+	 * 
+	 * @param request
+	 * @param access
+	 * @return
+	 */
+	@POST
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.MULTIPART_FORM_DATA})
+	public Response importCourse(@Context HttpServletRequest request) {
+		if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
+		
+		File tmpFile = null;
+		try {
+			MultipartReader partsReader = new MultipartReader(request);
+			tmpFile = partsReader.getFile();
+			long length = tmpFile.length();
+			if(length > 0) {
+				Long accessRaw = partsReader.getLongValue("access");
+				int access = accessRaw != null ? accessRaw.intValue() : RepositoryEntry.ACC_OWNERS;
+				String softKey = partsReader.getValue("softkey");
+				
+				ICourse course = importCourse(identity, tmpFile, softKey, access);
+				CourseVO vo = ObjectFactory.get(course);
+				return Response.ok(vo).build();
+			}
+			return Response.serverError().status(Status.NO_CONTENT).build();
+		} catch (Exception e) {
+			log.error("Error while importing a file",e);
+		} finally {
+			if(tmpFile != null && tmpFile.exists()) {
+				tmpFile.delete();
+			}
+		}
+
+		CourseVO vo = null;
+		return Response.ok(vo).build();
+	}
+	
+	public static ICourse importCourse(Identity identity, File fCourseImportZIP, String softKey, int access) {
+		RepositoryEntry re = CourseFactory.deployCourseFromZIP(fCourseImportZIP, identity.getName(), softKey, access);
+		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+		return course;
 	}
 	
 	public static ICourse copyCourse(Long copyFrom, UserRequest ureq, String name, String longTitle, CourseConfigVO courseConfigVO) {
