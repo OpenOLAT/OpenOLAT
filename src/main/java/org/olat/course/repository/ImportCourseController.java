@@ -88,6 +88,8 @@ public class ImportCourseController extends BasicController implements IAddContr
 	private Panel myPanel;
 	private static final VFSItemFileTypeFilter zipTypeFilter = new VFSItemFileTypeFilter(new String[] { "zip" });
 
+	private boolean importYesMode = false;
+	
 	/**
 	 * Import a course from a previous export.
 	 * 
@@ -290,6 +292,9 @@ public class ImportCourseController extends BasicController implements IAddContr
 				callback.canceled(ureq);
 				showError("add.failed");
 				return;
+			} else if (event.getCommand().equals("importYesMode")) {
+				importYesMode = true;
+				event (ureq, cfc, Event.DONE_EVENT);
 			}
 		} else if (source == sharedFolderImportController) {
 			if (event == Event.DONE_EVENT) {
@@ -398,6 +403,18 @@ public class ImportCourseController extends BasicController implements IAddContr
 				removeAsListenerAndDispose(activeImportController);
 				activeImportController = ctrl;
 				listenTo(activeImportController);
+				
+				while (importYesMode) {
+					if (ctrl instanceof ImportReferencesController) {
+						((ImportReferencesController) ctrl).importWithoutAsking (ureq);
+						break;
+					}
+					if (ctrl instanceof ImportPortfolioReferencesController) {
+						((ImportPortfolioReferencesController) ctrl).importWithoutAsking (ureq);
+						break;
+					}
+					break;
+				}
 				
 				myPanel.setContent(activeImportController.getInitialComponent());
 				return false;

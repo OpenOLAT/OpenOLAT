@@ -26,9 +26,7 @@
 	#set($hasSubcats = false)
 	#foreach($child in $children)
 		#if ($child.getType()==$leaf)
-			#if($RepoAccessVal.intValue() <= $child.getRepositoryEntry().getAccess())
-				#set($hasChildren = true)
-			#end
+			#set($hasChildren = true)
 		#else
 			#set($hasSubcats = true)
 		#end
@@ -66,7 +64,7 @@
 		<table class="b_table b_full">
 		#foreach($child in $children)
 			#if ($child.getType()==$leaf)
-				#if($RepoAccessVal.intValue() <= $child.getRepositoryEntry().getAccess())
+
 					#if($i%2==0)
 						<tr>
 					#else
@@ -127,7 +125,7 @@ new Ext.ToolTip({
 						</td>				
 					</tr>
 					#set ($i = $i +1)	
-				#end
+
 			#end
 			#set ($ri = $ri +1)
 		#end

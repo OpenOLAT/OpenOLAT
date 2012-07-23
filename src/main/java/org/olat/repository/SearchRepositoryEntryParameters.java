@@ -43,6 +43,7 @@ public class SearchRepositoryEntryParameters {
 	private Roles roles;
 	private String institution;
 	private boolean onlyExplicitMember;
+	private List<Long> repositoryEntryKeys;
 	
 	public SearchRepositoryEntryParameters() {
 		//
@@ -147,5 +148,13 @@ public class SearchRepositoryEntryParameters {
 
 	public void setOnlyExplicitMember(boolean onlyExplicitMember) {
 		this.onlyExplicitMember = onlyExplicitMember;
+	}
+
+	public List<Long> getRepositoryEntryKeys() {
+		return repositoryEntryKeys;
+	}
+
+	public void setRepositoryEntryKeys(List<Long> repositoryEntryKeys) {
+		this.repositoryEntryKeys = repositoryEntryKeys;
 	}
 }

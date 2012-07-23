@@ -11,16 +11,16 @@
 <!-- Testbed for some spring created beans -->
   
 <bean id="normalzip" class="org.olat.course.DeployableCourseExport">
-	<property name="courseUrl" value="http://www.olat.org/downloads/stable/olatUserAndGroupService.jar" />
+	<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat/org/openolat/help/OpenOLAT-Help/8.1/OpenOLAT-Help-8.1.zip" />
 	<property name="version" value="1" />
 </bean>
 
 <bean id="badurl" class="org.olat.course.DeployableCourseExport">
-	<property name="courseUrl" value="http://www.olat.org/bla" />
+	<property name="courseUrl" value="http://www.openolat.org/bla" />
 </bean>
 
 <bean id="textfile" class="org.olat.course.DeployableCourseExport">
-	<property name="courseUrl" value="http://www.olat.org/website/en/html/index.html" />
+	<property name="courseUrl" value="http://www.openolat.org/home.html" />
 	<property name="access" value="4" />
 	<property name="identifier" value="my identifier" />
 </bean>

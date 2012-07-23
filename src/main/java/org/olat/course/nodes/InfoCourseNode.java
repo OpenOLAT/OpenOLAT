@@ -207,7 +207,8 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	 */
 	public void cleanupOnDelete(ICourse course) {
 		// delete infoMessages and subscriptions (OLAT-6171)
-		List<InfoMessage>  messages = InfoMessageFrontendManager.getInstance().loadInfoMessageByResource(course,null, null, null, null, 0, 0);
+		String resSubpath = getIdent();
+		List<InfoMessage>  messages = InfoMessageFrontendManager.getInstance().loadInfoMessageByResource(course, resSubpath, null, null, null, 0, 0);
 		InfoMessageFrontendManager infoMessageManager = InfoMessageFrontendManager.getInstance();
 		for (InfoMessage im : messages) {
 			infoMessageManager.deleteInfoMessage(im);

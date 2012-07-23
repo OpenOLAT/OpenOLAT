@@ -38,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -217,7 +218,7 @@ public class FileUtils {
 	 * @return true upon success
 	 */
 	public static long getDirSize(File path) {
-		Iterator path_iterator;
+		Iterator<File> path_iterator;
 		File current_file;
 		long size;
 
@@ -226,7 +227,7 @@ public class FileUtils {
 		path_iterator = (Arrays.asList(f)).iterator();
 		size = 0;
 		while (path_iterator.hasNext()) {
-			current_file = (File) path_iterator.next();
+			current_file = path_iterator.next();
 			if (current_file.isFile()) {
 				size += current_file.length();
 			} else {
@@ -803,6 +804,19 @@ public class FileUtils {
 			return false;
 		}
 		return true;
+	}
+	
+	public static String normalizeFilename(String name) {
+		String nameFirstPass = name.replace(" ", "_");
+		nameFirstPass = nameFirstPass.replace("\u00C4", "Ae");
+		nameFirstPass = nameFirstPass.replace("\u00D6", "Oe");
+		nameFirstPass = nameFirstPass.replace("\u00DC", "Ue");
+		nameFirstPass = nameFirstPass.replace("\u00E4", "ae");
+		nameFirstPass = nameFirstPass.replace("\u00F6", "oe");
+		nameFirstPass = nameFirstPass.replace("\u00FC", "ue");
+		String nameNormalized = Normalizer.normalize(nameFirstPass, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+","");
+		String nameSanitized = nameNormalized.replaceAll("\\W+", "");
+		return nameSanitized;
 	}
 	
 	/**

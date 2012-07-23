@@ -28,6 +28,7 @@ package org.olat.ims.qti.process;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -45,7 +46,8 @@ public class AssessmentFactory {
 	 * @param resourcePathInfo
 	 * @return
 	 */
-	public static AssessmentInstance createAssessmentInstance(Identity subj, ModuleConfiguration modConfig, boolean preview, String resourcePathInfo) {
+	public static AssessmentInstance createAssessmentInstance(Identity subj, String remoteAddr, ModuleConfiguration modConfig, boolean preview,
+			long callingResId, String callingResDetail, String resourcePathInfo) {
 		AssessmentInstance ai = null;
 		Persister persister = null;
 
@@ -72,7 +74,7 @@ public class AssessmentFactory {
 			Resolver resolver = new ImsRepositoryResolver(re.getKey());
 			long aiID = CodeHelper.getForeverUniqueID();
 			try {
-				ai = new AssessmentInstance(re.getKey().longValue(), aiID, resolver, persister, modConfig);
+				ai = new AssessmentInstance(subj, remoteAddr, re.getKey().longValue(), aiID, callingResId, callingResDetail, resolver, persister, modConfig);
 			} catch (Exception e) { return null; }
 		}
 		else {
@@ -81,6 +83,12 @@ public class AssessmentFactory {
 			Resolver resolver = new ImsRepositoryResolver(new Long(ai.getRepositoryEntryKey()));
 			ai.setResolver(resolver);
 			ai.setPersister(persister);
+			ai.setAssessedIdentity(subj);
+			ai.setCallingResId(callingResId);
+			ai.setCallingResDetail(callingResDetail);
+			if(StringHelper.containsNonWhitespace(ai.getRemoteAddr())) {
+				ai.setRemoteAddr(remoteAddr);
+			}
 		}
 		return ai; 
 		
@@ -93,9 +101,9 @@ public class AssessmentFactory {
 	 * @param doc
 	 * @return
 	 */
-	public static AssessmentInstance createAssessmentInstance(Resolver resolver, Persister persister, ModuleConfiguration modConfig) {
+	public static AssessmentInstance createAssessmentInstance(Identity subj, String remoteAddr, long callingResId, String callingResDetail, Resolver resolver, Persister persister, ModuleConfiguration modConfig) {
 		long aiID = CodeHelper.getForeverUniqueID();
-		return new AssessmentInstance(0, aiID, resolver, persister, modConfig);
+		return new AssessmentInstance(null, remoteAddr, 0, aiID, callingResId, callingResDetail, resolver, persister, modConfig);
 	}
 
 }

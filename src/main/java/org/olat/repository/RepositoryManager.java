@@ -780,7 +780,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuffer query = new StringBuffer(400);
 		query.append("select v from" + " org.olat.repository.RepositoryEntry v inner join fetch v.olatResource as res,"
 				+ " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" + " where " + " v.ownerGroup = sgmsi.securityGroup and"
-				+ " sgmsi.identity = :identity");
+				+ " sgmsi.identity = :identity and v.access>0");
 		if (limitTypes != null && limitTypes.length > 0) {
 			for (int i = 0; i < limitTypes.length; i++) {
 				String limitType = limitTypes[i];
@@ -1298,6 +1298,9 @@ public class RepositoryManager extends BasicManager {
 		if (var_resourcetypes) {
 			query.append(" and res.resName in (:resourcetypes)");
 		}
+		if(params.getRepositoryEntryKeys() != null && !params.getRepositoryEntryKeys().isEmpty()) {
+			query.append(" and v.key in (:entryKeys)");
+		}
 
 		if(!count && orderBy) {
 			query.append(" order by v.displayname, v.key ASC");
@@ -1318,6 +1321,9 @@ public class RepositoryManager extends BasicManager {
 		}
 		if (var_resourcetypes) {
 			dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
+		}
+		if(params.getRepositoryEntryKeys() != null && !params.getRepositoryEntryKeys().isEmpty()) {
+			dbQuery.setParameterList("entryKeys", params.getRepositoryEntryKeys());
 		}
 
 		if(setIdentity) {

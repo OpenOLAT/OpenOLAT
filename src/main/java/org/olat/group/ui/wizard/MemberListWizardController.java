@@ -346,10 +346,10 @@ public class MemberListWizardController extends BasicController {
 	 */
 	private File archiveMembers(UserRequest ureq) {
 		File outputFile = null;
-		List columnList = this.getColumList();
-		List groupList = this.getGroupList();
-		String archiveType = this.getArchiveType();
-		List areaList = this.getAreaList();
+		List<String> columnList = getColumList();
+		List<BusinessGroup> groupList = getGroupList();
+		String archiveType = getArchiveType();
+		List<BGArea> areaList = getAreaList();
 		
 		if(GROUPS_MEMBERS.equals(wizardType)) {
 			outputFile = BusinessGroupArchiver.getInstance().archiveGroupMembers(context, columnList, groupList, archiveType, ureq);	

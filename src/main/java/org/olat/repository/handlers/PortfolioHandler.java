@@ -27,10 +27,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.sf.jazzlib.ZipEntry;
-import net.sf.jazzlib.ZipInputStream;
-import net.sf.jazzlib.ZipOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.hibernate.collection.PersistentList;
 import org.olat.core.CoreSpringFactory;

@@ -311,9 +311,9 @@ public class BusinessGroupArchiver {
 		List<Member> participants = new ArrayList<Member>();
 		List<Member> waitings = new ArrayList<Member>();
 				
-		List groups = BGContextManagerImpl.getInstance().getGroupsOfBGContext(context);
-		for (Iterator iter = groups.iterator(); iter.hasNext();) {
-			BusinessGroup group = (BusinessGroup) iter.next();
+		List<BusinessGroup> groups = BGContextManagerImpl.getInstance().getGroupsOfBGContext(context);
+		for (Iterator<BusinessGroup> iter = groups.iterator(); iter.hasNext();) {
+			BusinessGroup group = iter.next();
 			if (groupList.contains(group)) { //rely on the equals() method of the BusinessGroup impl			
 				if(group.getOwnerGroup()!=null) {
 				Iterator ownerIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getOwnerGroup()).iterator();
@@ -420,6 +420,7 @@ public class BusinessGroupArchiver {
 		//add two of _ more if this is not the case
 		fileNamePrefix = fileNamePrefix + "_";
 		fileNamePrefix = fileNamePrefix.length() >= 3 ? fileNamePrefix : fileNamePrefix +"__"; 
+		fileNamePrefix = FileUtils.normalizeFilename(fileNamePrefix);
 		outFile = File.createTempFile(fileNamePrefix, ".xls", tempDir);
 		FileUtils.save(outFile, stringBuffer.toString(), charset);
 		//FileUtils.saveString(outFile, stringBuffer.toString());
@@ -481,9 +482,9 @@ public class BusinessGroupArchiver {
 			Iterator<OrganisationalEntity> groupIterator = groupList.iterator();
 			while (groupIterator.hasNext()) {
 				OrganisationalEntity group = groupIterator.next();
-				List<Member> groupOwners = getFilteredList(owners, group, this.OWNER);
-				List<Member> groupParticipants = getFilteredList(participants, group, this.PARTICIPANT);
-				List<Member> groupWaiting = getFilteredList(waitings, group, this.WAITING);
+				List<Member> groupOwners = getFilteredList(owners, group, OWNER);
+				List<Member> groupParticipants = getFilteredList(participants, group, PARTICIPANT);
+				List<Member> groupWaiting = getFilteredList(waitings, group, WAITING);
 
 				File filePerGroup = archiveAllInOne(context, groupOwners, groupParticipants, groupWaiting, contextName, columnList, groupList,
 						orgEntityTitle, userLocale, group.getName(), tempDir, charset);
@@ -530,9 +531,9 @@ public class BusinessGroupArchiver {
 			Iterator<OrganisationalEntity> groupIterator = groupList.iterator();
 			while (groupIterator.hasNext()) {
 				OrganisationalEntity group = groupIterator.next();
-				List<Member> groupOwners = getFilteredList(owners, group, this.OWNER);
-				List<Member> groupParticipants = getFilteredList(participants, group, this.PARTICIPANT);
-				List<Member> groupWaiting = getFilteredList(waitings, group, this.WAITING);
+				List<Member> groupOwners = getFilteredList(owners, group, OWNER);
+				List<Member> groupParticipants = getFilteredList(participants, group, PARTICIPANT);
+				List<Member> groupWaiting = getFilteredList(waitings, group, WAITING);
 
 				File filePerGroup = archiveFileSingleGroup(context, groupOwners, groupParticipants, groupWaiting, columnList, groupList, orgEntityTitle,
 						userLocale, group.getName(), tempDir, charset);

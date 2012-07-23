@@ -358,7 +358,7 @@ public class CourseAssessmentWebService {
 				// The consequence is that we must loop on section and items and set the
 				// navigator on
 				// the right position before submitting the inputs.
-				AssessmentInstance ai = AssessmentFactory.createAssessmentInstance(identity, modConfig, false, resourcePathInfo);
+				AssessmentInstance ai = AssessmentFactory.createAssessmentInstance(identity, "", modConfig, false, course.getResourceableId(), courseNode.getIdent(), resourcePathInfo);
 				Navigator navigator = ai.getNavigator();
 				navigator.startAssessment();
 				// The type of the navigator depends on the setting of the course node

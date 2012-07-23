@@ -38,6 +38,7 @@ import org.olat.course.condition.interpreter.score.GetPassedFunction;
 import org.olat.course.condition.interpreter.score.GetPassedWithCourseIdFunction;
 import org.olat.course.condition.interpreter.score.GetScoreFunction;
 import org.olat.course.condition.interpreter.score.GetScoreWithCourseIdFunction;
+import org.olat.course.db.interpreter.GetUserCourseDBFunction;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -121,6 +122,7 @@ public class ConditionInterpreter {
 		eaf = new EvalAttributeFunction(userCourseEnv, EvalAttributeFunction.FUNCTION_TYPE_ATTRIBUTE_STARTS_WITH);
 		env.addFunction(eaf.name, eaf);
 		env.addFunction(GetUserPropertyFunction.name, new GetUserPropertyFunction(userCourseEnv));
+		env.addFunction(GetUserCourseDBFunction.name, new GetUserCourseDBFunction(userCourseEnv));
 		env.addFunction(HasLanguageFunction.name, new HasLanguageFunction(userCourseEnv));
 		env.addFunction(InInstitutionFunction.name, new InInstitutionFunction(userCourseEnv));
 		env.addFunction(IsCourseCoachFunction.name, new IsCourseCoachFunction(userCourseEnv));

@@ -103,12 +103,8 @@ public class ProjectBrokerDropboxScoringViewController extends DropboxScoringVie
 class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 
 	private Quota quota;
-	private UserCourseEnvironment userCourseEnv;
-	private CourseNode courseNode;
 
-	public ReturnboxFullAccessCallback(String relPath, UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
-		this.userCourseEnv = userCourseEnv;
-		this.courseNode = courseNode;
+	public ReturnboxFullAccessCallback(String relPath, UserCourseEnvironment userCourseEnv2, CourseNode courseNode2) {
 		QuotaManager qm = QuotaManager.getInstance();
 		quota = qm.getCustomQuota(relPath);
 		if (quota == null) { // if no custom quota set, use the default quotas...
@@ -136,7 +132,9 @@ class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 	/**
 	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canCopy()
 	 */
-	public boolean canCopy() { return false; }
+	public boolean canCopy() { 
+		return true;//needed to make the file an e-portfolio artefact
+	}
 	/**
 	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canDeleteRevisionsPermanently()
 	 */

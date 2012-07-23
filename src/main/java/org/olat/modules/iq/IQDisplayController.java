@@ -261,10 +261,12 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		//try{
 			if (repositorySoftkey != null) { // instantiate from repository
 				// build path information which will be used to store tempory qti file
-				String resourcePathInfo = this.callingResId + File.separator + this.callingResDetail; 
-				ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), modConfig, iqsec.isPreview(),resourcePathInfo); 
+				String resourcePathInfo = callingResId + File.separator + callingResDetail; 
+				ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr(),
+						modConfig, iqsec.isPreview(), callingResId, callingResDetail, resourcePathInfo); 
 			} else if (resolver != null) { // instantiate from given resolver
-				ai = AssessmentFactory.createAssessmentInstance(resolver, persister, modConfig);
+				ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr(),
+						callingResId, callingResDetail, resolver, persister, modConfig);
 			}
 		//}finally{
 			//QTIEditorMainController.IS_SAVING_RWL.readLock().unlock();
@@ -528,7 +530,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 	 */
 	protected void postSubmitAssessment(UserRequest ureq, AssessmentInstance ai) {
 		if (!qtistatus.isPreview()) {
-			iqm.persistResults(ai, callingResId, callingResDetail, ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr());
+			//iqm.persistResults(ai, callingResId, callingResDetail, ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr());
 			getWindowControl().setInfo(translator.translate("status.results.saved"));
 		} else {
 			getWindowControl().setInfo(translator.translate("status.results.notsaved"));

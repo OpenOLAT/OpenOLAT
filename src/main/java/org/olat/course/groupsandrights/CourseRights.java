@@ -59,6 +59,9 @@ public class CourseRights implements BGRights {
     public static final String RIGHT_GLOSSARY = BGRightManager.BG_RIGHT_PREFIX + "glossary";
     /** course right for statistics tool */
     public static final String RIGHT_STATISTICS = BGRightManager.BG_RIGHT_PREFIX + "statistics";
+    //fxdiff: right for course db
+    /** course right for custom dbs */
+    public static final String RIGHT_DB = BGRightManager.BG_RIGHT_PREFIX + "dbs";
     
     private static List rights;
     private Translator trans;
@@ -72,6 +75,8 @@ public class CourseRights implements BGRights {
         rights.add(RIGHT_ASSESSMENT);
         rights.add(RIGHT_GLOSSARY);
         rights.add(RIGHT_STATISTICS);
+        //fxdiff: right for course db
+        rights.add(RIGHT_DB);
     }
     
    
