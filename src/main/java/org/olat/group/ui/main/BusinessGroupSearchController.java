@@ -48,6 +48,7 @@ public class BusinessGroupSearchController extends FormBasicController{
 	private TextElement displayName;
 	private TextElement owner;
 	private TextElement description;
+	private TextElement courseTitle;
 	private FormSubmit searchButton;
 	private SingleSelection rolesEl;
 	private SingleSelection publicEl;
@@ -69,12 +70,6 @@ public class BusinessGroupSearchController extends FormBasicController{
 	 * @param limitTypes Limit searches to specific types.
 	 */
 	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
-		super(ureq, wControl);
-		this.isAdmin = isAdmin;
-		initForm(ureq);
-	}
-	
-	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean extended) {
 		super(ureq, wControl, "group_search");
 		this.isAdmin = isAdmin;
 		initForm(ureq);
@@ -85,6 +80,12 @@ public class BusinessGroupSearchController extends FormBasicController{
 		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout("left_1", getTranslator());
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(leftContainer);
+		
+		if(isAdmin) {
+			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", leftContainer);
+			id.setVisible(isAdmin);
+			id.setRegexMatchCheck("\\d*", "search.id.format");
+		}
 
 		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", leftContainer);
 		displayName.setFocus(true);
@@ -96,12 +97,8 @@ public class BusinessGroupSearchController extends FormBasicController{
 		}
 		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", leftContainer);
 		
-		if(isAdmin) {
-			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", leftContainer);
-			id.setVisible(isAdmin);
-			id.setRegexMatchCheck("\\d*", "search.id.format");
-		}
-		
+		courseTitle = uifactory.addTextElement("cif_coursetitle", "cif.coursetitle", 255, "", leftContainer);
+
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
 		rightContainer.setRootForm(mainForm);
 		formLayout.add(rightContainer);
@@ -170,14 +167,25 @@ public class BusinessGroupSearchController extends FormBasicController{
 	}
 
 	/**
-	 * @return Descritpion field value.
+	 * @return Description field value.
 	 */
 	public String getDescription() {
 		return description.getValue();
 	}
 	
+	/**
+	 * @return Course title field value
+	 */
+	public String getCourseTitle() {
+		return courseTitle.getValue();
+	}
+	
+	/**
+	 * @return True if the text search fields are empty
+	 */
 	public boolean isEmpty() {
-		return displayName.isEmpty() && owner.isEmpty() && description.isEmpty() && (id != null && id.isEmpty());
+		return displayName.isEmpty() && owner.isEmpty() && description.isEmpty()
+				&& (id != null && id.isEmpty()) && courseTitle.isEmpty();
 	}
 	
 	@Override
@@ -216,6 +224,7 @@ public class BusinessGroupSearchController extends FormBasicController{
 		e.setName(getName());
 		e.setDescription(getDescription());
 		e.setOwnerName(getOwner());
+		e.setCourseTitle(getCourseTitle());
 		
 		if(rolesEl.isOneSelected()) {
 			e.setAttendee(rolesEl.isSelected(0) || rolesEl.isSelected(1));

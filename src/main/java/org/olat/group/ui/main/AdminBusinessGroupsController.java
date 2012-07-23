@@ -19,7 +19,6 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -32,7 +31,6 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
@@ -53,7 +51,7 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 		}
 		
 		//search controller
-		searchController = new AdminBusinessGroupSearchController(ureq, wControl, isAdmin(), true);
+		searchController = new AdminBusinessGroupSearchController(ureq, wControl);
 		listenTo(searchController);
 		mainVC.put("searchPanel", searchController.getInitialComponent());
 	}
@@ -68,6 +66,9 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
 		CustomCellRenderer resourcesRenderer = new BGResourcesCellRenderer(this, mainVC, getTranslator());
 		groupListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor(Cols.resources.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, resourcesRenderer));
+		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastUsage.i18n(), Cols.lastUsage.ordinal(), null, getLocale()));
+		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getTranslator());
+		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
 		groupListCtr.addColumnDescriptor(false, new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE, translate("table.header.leave"), null));
 		groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowDelete.i18n(), Cols.allowDelete.ordinal(), TABLE_ACTION_DELETE, translate("table.header.delete"), null));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), TABLE_ACTION_ACCESS, getLocale()));
@@ -105,32 +106,8 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 	}
 
 	private void search(SearchEvent event) {
-		Long id = event.getId();
-		String name = event.getName();
-		String description = event.getDescription();
-		String ownerName = event.getOwnerName();
-		
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		if(id != null) {
-			params.setGroupKeys(Collections.singletonList(id));
-		}
-		params.setName(StringHelper.containsNonWhitespace(name) ? name : null);
-		params.setDescription(StringHelper.containsNonWhitespace(description) ? description : null);
-		params.setOwnerName(StringHelper.containsNonWhitespace(ownerName) ? ownerName : null);
-		params.setOwner(event.isOwner());
-		params.setAttendee(event.isAttendee());
-		params.setWaiting(event.isWaiting());
-		params.setPublicGroup(event.getPublicGroups());
-		params.setResources(event.getResources());
-		params.setIdentity(getIdentity());
-		
-		//security
-		List<BusinessGroup> groups;
-		if(event.isAttendee() || event.isOwner()) {
-			params.setIdentity(getIdentity());
-		}
-		groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		
+		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		updateTableModel(groups, false);
 	}
 }

@@ -43,12 +43,13 @@ public class SearchBusinessGroupParams {
 	private String exactName;
 	private String description;
 	private String ownerName;
+	private String courseTitle;
 	
 	private Identity identity;
 	private boolean owner;
 	private boolean attendee;
 	private boolean waiting;
-	private Boolean publicGroup;
+	private Boolean publicGroups;
 	private Boolean marked;
 	private Boolean resources;
 	
@@ -137,6 +138,14 @@ public class SearchBusinessGroupParams {
 		this.ownerName = ownerName;
 	}
 
+	public String getCourseTitle() {
+		return courseTitle;
+	}
+
+	public void setCourseTitle(String courseTitle) {
+		this.courseTitle = courseTitle;
+	}
+
 	public String getNameOrDesc() {
 		return nameOrDesc;
 	}
@@ -177,12 +186,12 @@ public class SearchBusinessGroupParams {
 		this.waiting = waiting;
 	}
 
-	public Boolean getPublicGroup() {
-		return publicGroup;
+	public Boolean getPublicGroups() {
+		return publicGroups;
 	}
 
-	public void setPublicGroup(Boolean publicGroup) {
-		this.publicGroup = publicGroup;
+	public void setPublicGroups(Boolean publicGroups) {
+		this.publicGroups = publicGroups;
 	}
 
 	public Boolean getMarked() {

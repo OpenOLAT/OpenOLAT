@@ -48,6 +48,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.BusinessGroupShortImpl;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -283,20 +284,23 @@ public class BusinessGroupDAO {
 	}
 	
 
-	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, List<BusinessGroup> groups) {
-		if(groups == null || groups.isEmpty() || (!owner && !attendee)) {
+	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting, List<BusinessGroup> groups) {
+		if(groups == null || groups.isEmpty() || (!owner && !attendee && !waiting)) {
 			return Collections.emptyList();
 		}
 		
 		StringBuilder sb = new StringBuilder(); 
 		sb.append("select bgi.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ");
-		if(owner && attendee) {
+		if(!owner && !attendee && waiting) {
+			sb.append(" inner join bgi.waitingGroup waitingGroup");
+		} else if(owner && !attendee && !waiting) {
+			sb.append(" inner join bgi.ownerGroup ownerGroup");
+		} else if(!owner && attendee && !waiting) {
+			sb.append(" inner join bgi.partipiciantGroup participantGroup");
+		} else {
 			sb.append(" left join bgi.ownerGroup ownerGroup");
 			sb.append(" left join bgi.partipiciantGroup participantGroup");
-		} else if(owner) {
-			sb.append(" inner join bgi.ownerGroup ownerGroup");
-		} else if(attendee) {
-			sb.append(" inner join bgi.partipiciantGroup participantGroup");
+			sb.append(" left join bgi.waitingGroup waitingGroup");
 		}
 		sb.append(" where bgi.key in (:groupKeys) and (");
 
@@ -305,12 +309,18 @@ public class BusinessGroupDAO {
 			or = or(sb, or);
 			sb.append("ownerGroup.key in (select ownerMemberShip.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
 				.append(" where ownerMemberShip.identity.key=:identId ")
-				 .append(")");
+				.append(")");
 		}
 		if(attendee) {
 			or = or(sb, or);
 			sb.append(" participantGroup.key in (select partMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partMembership ")
 				.append("  where partMembership.identity.key=:identId")
+				.append(" )");
+		}
+		if(waiting) {
+			or = or(sb, or);
+			sb.append(" waitingGroup.key in (select waitMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as waitMembership ")
+				.append("  where waitMembership.identity.key=:identId")
 				.append(" )");
 		}
 		sb.append(")");
@@ -322,6 +332,7 @@ public class BusinessGroupDAO {
 		List<Long> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("groupKeys", groupKeys)
 				.setParameter("identId", identity.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		return res;
 	}
@@ -467,9 +478,25 @@ public class BusinessGroupDAO {
 		
 		if(resource != null) {
 			where = where(query, where);
-			query.append("bgi in (")
-			     .append("  select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
+			query.append("bgi.key in (")
+			     .append("  select relation.group.key from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
 			     .append(")");
+		}
+		
+		if(params.getResources() != null) {
+			where = where(query, where);
+			query.append(" bgi.key ").append(params.getResources().booleanValue() ? "" : "not").append(" in (")
+           .append("   select bgRel.group.key from ").append(BGResourceRelation.class.getName()).append(" bgRel ")
+			     .append(" )");
+		}
+		
+		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
+			where = where(query, where);
+			query.append(" bgi.key in (")
+           .append("   select bgRel.groupKey from ").append(BGRepositoryEntryRelation.class.getName()).append(" bgRel ")
+           .append("     where ");
+			searchLikeAttribute(query, "bgRel", "repositoryEntryDisplayName", "displayName");
+			query.append(" )");
 		}
 		
 		if(params.getTypes() != null && !params.getTypes().isEmpty()) {
@@ -502,9 +529,9 @@ public class BusinessGroupDAO {
 			query.append(')');
 		}
 		
-		if(params.getPublicGroup() != null) {
+		if(params.getPublicGroups() != null) {
 			where = where(query, where);
-			if(params.getPublicGroup().booleanValue()) {
+			if(params.getPublicGroups().booleanValue()) {
 		    query.append(" bgResource.key in (")
 		         .append("   select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer ")
 		         .append("     where offer.valid=true")
@@ -524,13 +551,6 @@ public class BusinessGroupDAO {
 			query.append(" bgi.key ").append(params.getMarked().booleanValue() ? "" : "not").append(" in (")
            .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark ")
            .append("     where mark.resName='BusinessGroup' and mark.creator.key=:identId")
-			     .append(" )");
-		}
-		
-		if(params.getResources() != null) {
-			where = where(query, where);
-			query.append(" bgi.key ").append(params.getResources().booleanValue() ? "" : "not").append(" in (")
-           .append("   select bgRel.group.key from ").append(BGResourceRelation.class.getName()).append(" bgRel ")
 			     .append(" )");
 		}
 		
@@ -573,7 +593,7 @@ public class BusinessGroupDAO {
 		if(params.isOwner() || params.isAttendee() || params.isWaiting() || params.getMarked() != null) {
 			dbq.setParameter("identId", params.getIdentity().getKey());
 		}
-		if(params.getPublicGroup() != null && params.getPublicGroup().booleanValue()) {
+		if(params.getPublicGroups() != null && params.getPublicGroups().booleanValue()) {
 			dbq.setParameter("atDate", new Date(), TemporalType.TIMESTAMP);
 		}
 		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
@@ -604,6 +624,9 @@ public class BusinessGroupDAO {
 			if(StringHelper.containsNonWhitespace(params.getDescription())) {
 				dbq.setParameter("description", makeFuzzyQueryString(params.getDescription()));
 			}
+		}
+		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
+			dbq.setParameter("displayName", makeFuzzyQueryString(params.getCourseTitle()));
 		}
 		return dbq;
 	}

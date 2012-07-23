@@ -53,7 +53,7 @@ public class BGMarkCellRenderer implements CustomCellRenderer {
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof BGTableItem) {
+		if(val instanceof BGTableItem && renderer != null) {
 			BGTableItem item = (BGTableItem)val;
 			sb.append("<div class='b_mark'>");
 			

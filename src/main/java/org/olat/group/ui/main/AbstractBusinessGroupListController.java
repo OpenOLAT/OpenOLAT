@@ -259,9 +259,12 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	}
 	
 	protected void updateTableModel(List<BusinessGroup> groups, boolean alreadyMarked) {
-		
-		List<Long> groupsWithMembership = businessGroupService.isIdentityInBusinessGroups(getIdentity(), groups);
-		Set<Long> memberships = new HashSet<Long>(groupsWithMembership);
+		List<Long> groupsAsOwner = businessGroupService.isIdentityInBusinessGroups(getIdentity(), true, false, false, groups);
+		List<Long> groupsAsParticipant = businessGroupService.isIdentityInBusinessGroups(getIdentity(), false, true, false, groups);
+		List<Long> groupsAsWaiter = businessGroupService.isIdentityInBusinessGroups(getIdentity(), false, false, true, groups);
+
+		Set<Long> memberships = new HashSet<Long>(groupsAsOwner);
+		memberships.addAll(groupsAsParticipant);
 
 		List<Long> resourceKeys = new ArrayList<Long>(groups.size());
 		for(BusinessGroup group:groups) {
@@ -291,7 +294,15 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			
 			Boolean allowLeave =  memberships.contains(group.getKey()) ? Boolean.TRUE : null;
 			Boolean allowDelete = admin ? Boolean.TRUE : null;
-			boolean member = memberships.contains(group.getKey());
+			
+			BGMembership member = null;
+			if(groupsAsOwner.contains(group.getKey())) {
+				member = BGMembership.owner;
+			} else if (groupsAsParticipant.contains(group.getKey())) {
+				member = BGMembership.participant;
+			} else if (groupsAsWaiter.contains(group.getKey())) {
+				member = BGMembership.waiting;
+			}
 			boolean marked = markedResources.contains(group.getResource().getResourceableId());
 			BGTableItem tableItem = new BGTableItem(group, marked, member, allowLeave, allowDelete, accessMethods);
 			tableItem.setUnfilteredRelations(resources);

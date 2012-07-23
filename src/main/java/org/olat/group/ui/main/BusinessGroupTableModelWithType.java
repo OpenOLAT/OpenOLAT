@@ -88,7 +88,9 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				return new Boolean(wrapped.isAccessControl());
 			case accessControlLaunch:
 				if(wrapped.isAccessControl()) {
-					if(wrapped.isMember()) return trans.translate("select");
+					if(wrapped.getMembership() != null) {
+						return trans.translate("select");
+					}
 					return trans.translate("table.access");
 				}
 				return null;
@@ -96,6 +98,10 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				return wrapped.getAccessTypes();
 			case mark:
 				return new Boolean(wrapped.isMarked());
+			case lastUsage:
+				return wrapped.getBusinessGroup().getLastUsage();
+			case role:
+				return wrapped.getMembership();
 			default:
 				return "ERROR";
 		}
@@ -143,7 +149,9 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		accessControl(""),
 		accessControlLaunch("table.header.ac"),
 		accessTypes("table.header.ac"),
-		mark("table.header.mark");
+		mark("table.header.mark"),
+		lastUsage("table.header.lastUsage"),
+		role("table.header.role");
 		
 		private final String i18n;
 		

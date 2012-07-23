@@ -438,7 +438,8 @@ public interface BusinessGroupService {
 	 * @param businessGroups
 	 * @return The list of group keys where the identity is either participant or owner
 	 */
-	public List<Long> isIdentityInBusinessGroups(Identity identity, List<BusinessGroup> businessGroups);
+	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting,
+			List<BusinessGroup> businessGroups);
 
 	/**
 	 * Checks if an identity is in a business group with a specific name (exact match), either as owner or

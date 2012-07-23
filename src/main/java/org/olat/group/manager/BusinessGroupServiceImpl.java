@@ -1116,8 +1116,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public List<Long> isIdentityInBusinessGroups(Identity identity, List<BusinessGroup> groups) {
-		return businessGroupDAO.isIdentityInBusinessGroups(identity, true, true, groups);
+	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting,
+			List<BusinessGroup> groups) {
+		return businessGroupDAO.isIdentityInBusinessGroups(identity, owner, attendee, waiting, groups);
 	}
 
 	@Override

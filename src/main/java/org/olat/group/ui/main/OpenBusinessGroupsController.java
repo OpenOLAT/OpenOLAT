@@ -85,6 +85,9 @@ public class OpenBusinessGroupsController extends AbstractBusinessGroupListContr
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
 		CustomCellRenderer resourcesRenderer = new BGResourcesCellRenderer(this, mainVC, getTranslator());
 		groupListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor(Cols.resources.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, resourcesRenderer));
+		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastUsage.i18n(), Cols.lastUsage.ordinal(), null, getLocale()));
+		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getTranslator());
+		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
 		groupListCtr.addColumnDescriptor(false, new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE, translate("table.header.leave"), null));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), TABLE_ACTION_ACCESS, getLocale()));
 		return 7;
@@ -133,7 +136,7 @@ public class OpenBusinessGroupsController extends AbstractBusinessGroupListContr
 		params.setName(event.getName());
 		params.setDescription(event.getDescription());
 		params.setOwnerName(event.getOwnerName());
-		params.setPublicGroup(Boolean.TRUE);
+		params.setPublicGroups(Boolean.TRUE);
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		updateTableModel(groups, false);
 	}
@@ -141,7 +144,7 @@ public class OpenBusinessGroupsController extends AbstractBusinessGroupListContr
 	private void updateOpenGroupModel() {
 		//find all accessible business groups
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setPublicGroup(Boolean.TRUE);
+		params.setPublicGroups(Boolean.TRUE);
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		updateTableModel(groups, false);
 	}

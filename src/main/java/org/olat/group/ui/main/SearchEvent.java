@@ -19,7 +19,12 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.Collections;
+
 import org.olat.core.gui.control.Event;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.group.model.SearchBusinessGroupParams;
 
 /**
  * 
@@ -33,6 +38,7 @@ public class SearchEvent extends Event {
 	private String name;
 	private String description;
 	private String ownerName;
+	private String courseTitle;
 	private boolean owner;
 	private boolean attendee;
 	private boolean waiting;
@@ -75,6 +81,14 @@ public class SearchEvent extends Event {
 		this.ownerName = owner;
 	}
 
+	public String getCourseTitle() {
+		return courseTitle;
+	}
+
+	public void setCourseTitle(String courseTitle) {
+		this.courseTitle = courseTitle;
+	}
+
 	public boolean isOwner() {
 		return owner;
 	}
@@ -115,7 +129,21 @@ public class SearchEvent extends Event {
 		this.resources = resources;
 	}
 	
-	
-
-
+	public SearchBusinessGroupParams convertToSearchBusinessGroupParams(Identity identity) {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		if(id != null) {
+			params.setGroupKeys(Collections.singletonList(id));
+		}
+		params.setName(StringHelper.containsNonWhitespace(name) ? name : null);
+		params.setDescription(StringHelper.containsNonWhitespace(description) ? description : null);
+		params.setOwnerName(StringHelper.containsNonWhitespace(ownerName) ? ownerName : null);
+		params.setCourseTitle(StringHelper.containsNonWhitespace(courseTitle) ? courseTitle : null);
+		params.setOwner(isOwner());
+		params.setAttendee(isAttendee());
+		params.setWaiting(isWaiting());
+		params.setPublicGroups(getPublicGroups());
+		params.setResources(getResources());
+		params.setIdentity(identity);
+		return params;
+	}
 }

@@ -779,7 +779,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 			
 		//retrieve the offer
 		SearchBusinessGroupParams paramsAll = new SearchBusinessGroupParams();
-		paramsAll.setPublicGroup(true);
+		paramsAll.setPublicGroups(Boolean.TRUE);
 		List<BusinessGroup> accessGroups = businessGroupDao.findBusinessGroups(paramsAll, null, 0, 0);
 		Assert.assertNotNull(accessGroups);
 		Assert.assertTrue(accessGroups.size() >= 1);
@@ -810,20 +810,20 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		groups.add(group3);
 
 		//check owner + attendee
-		List<Long> groupKeysA = businessGroupDao.isIdentityInBusinessGroups(id, true, true, groups);
+		List<Long> groupKeysA = businessGroupDao.isIdentityInBusinessGroups(id, true, true, false, groups);
 		Assert.assertNotNull(groupKeysA);
 		Assert.assertEquals(2, groupKeysA.size());
 		Assert.assertTrue(groupKeysA.contains(group1.getKey()));
 		Assert.assertTrue(groupKeysA.contains(group2.getKey()));
 		
 		//check owner 
-		List<Long> groupKeysB = businessGroupDao.isIdentityInBusinessGroups(id, true, false, groups);
+		List<Long> groupKeysB = businessGroupDao.isIdentityInBusinessGroups(id, true, false, false, groups);
 		Assert.assertNotNull(groupKeysB);
 		Assert.assertEquals(1, groupKeysB.size());
 		Assert.assertTrue(groupKeysB.contains(group1.getKey()));
 
 		//check attendee 
-		List<Long> groupKeysC = businessGroupDao.isIdentityInBusinessGroups(id, false, true, groups);
+		List<Long> groupKeysC = businessGroupDao.isIdentityInBusinessGroups(id, false, true, false, groups);
 		Assert.assertNotNull(groupKeysC);
 		Assert.assertEquals(1, groupKeysC.size());
 		Assert.assertTrue(groupKeysC.contains(group2.getKey()));

@@ -770,7 +770,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	//fxdiff VCRP-1,2: access control of resources
 	private BGTableItem wrapGroup(BusinessGroup group, boolean member, Boolean allowLeave, Boolean allowDelete, boolean accessControl,
 			List<PriceMethodBundle> access) {
-		BGTableItem tableItem = new BGTableItem(group, false, member, allowLeave, allowDelete, access);
+		BGTableItem tableItem = new BGTableItem(group, false, null, allowLeave, allowDelete, access);
 		List<RepositoryEntry> resources = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, 3);
 		tableItem.setResources(resources);
 		return tableItem;

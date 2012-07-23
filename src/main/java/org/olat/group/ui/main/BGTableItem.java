@@ -37,7 +37,7 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BGTableItem {
-	private final boolean member;
+	private final BGMembership member;
 	private boolean marked;
 	private final Boolean allowLeave;
 	private final Boolean allowDelete;
@@ -46,7 +46,7 @@ public class BGTableItem {
 	private List<BGRepositoryEntryRelation> relations;
 	private List<PriceMethodBundle> access;
 	
-	public BGTableItem(BusinessGroup businessGroup, boolean marked, boolean member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
+	public BGTableItem(BusinessGroup businessGroup, boolean marked, BGMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
 		this.businessGroup = businessGroup;
 		this.marked = marked;
 		this.member = member;
@@ -63,7 +63,7 @@ public class BGTableItem {
 		this.marked = mark;
 	}
 
-	public boolean isMember() {
+	public BGMembership getMembership() {
 		return member;
 	}
 	
