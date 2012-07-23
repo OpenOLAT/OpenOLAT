@@ -587,6 +587,10 @@ public class CourseFactory extends BasicManager {
 	 * @param exportedCourseZIPFile
 	 */
 	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, int access) {
+		return deployCourseFromZIP(exportedCourseZIPFile, "administrator", null, access);
+	}
+	
+	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, String initialAuthor, String softKey, int access) {
 		// create the course instance
 		OLATResource newCourseResource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, exportedCourseZIPFile);
@@ -600,7 +604,9 @@ public class CourseFactory extends BasicManager {
 		// create the repository entry
 		RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("administrator");
 		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(courseExportData);
-		String softKey = importExport.getSoftkey();
+		if(!StringHelper.containsNonWhitespace(softKey)) {
+			softKey = importExport.getSoftkey();
+		}
 		RepositoryEntry existingEntry = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
 		if (existingEntry != null) {
 			Tracing.logInfo("RepositoryEntry with softkey " + softKey + " already exists. Course will not be deployed.", CourseFactory.class);
