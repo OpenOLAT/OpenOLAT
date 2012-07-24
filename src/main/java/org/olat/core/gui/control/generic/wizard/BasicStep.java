@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElementImpl;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -55,6 +56,7 @@ public abstract class BasicStep implements Step {
 	private Step nextStep;
 	private String i18nStepTitle;
 	private String i18nStepDescription;
+	private String[] i18nArguments;
 
 	public BasicStep(UserRequest ureq){
 		this.locale = ureq.getLocale();
@@ -88,7 +90,14 @@ public abstract class BasicStep implements Step {
 		if(i18nStepTitle == null){
 			throw new AssertException("no i18n key set for step title, or getStepTitle() not overridden.");
 		}
-		FormLink fl = new FormLinkImpl(i18nStepTitle, i18nStepTitle);
+		FormLink fl;
+		if(i18nArguments != null && i18nArguments.length > 0) {
+			String title = this.getTranslator().translate(i18nStepTitle, i18nArguments);
+			fl = new FormLinkImpl(i18nStepTitle, null, title, Link.FLEXIBLEFORMLNK + Link.NONTRANSLATED);
+		} else {
+			fl = new FormLinkImpl(i18nStepTitle, i18nStepTitle);
+		}
+		
 		fl.setTranslator(getTranslator());
 		return fl;
 	}
@@ -116,5 +125,10 @@ public abstract class BasicStep implements Step {
 	protected void setI18nTitleAndDescr(String i18nKeyTitle, String i18nKeyDescription){
 		this.i18nStepTitle = i18nKeyTitle;
 		this.i18nStepDescription = i18nKeyDescription;
+	}
+	
+	protected void setI18nTitleAndDescr(String i18nKeyTitle, String i18nKeyDescription, String[] i18nArguments){
+		setI18nTitleAndDescr(i18nKeyTitle, i18nKeyDescription);
+		this.i18nArguments = i18nArguments;
 	}
 }

@@ -37,16 +37,16 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  */
 public class AdminBusinessGroupsController extends AbstractBusinessGroupListController {
 
-	private AdminBusinessGroupSearchController searchController;
+	private final BusinessGroupSearchController searchController;
 
 	public AdminBusinessGroupsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "admin_group_list");
-		if(!isAdmin()) {
-			return;
+		if(isAdmin()) {
+			searchController = new BusinessGroupSearchController(ureq, wControl, true, false);
+		} else {
+			searchController = new BusinessGroupSearchController(ureq, wControl, false, true);
 		}
-		
 		//search controller
-		searchController = new AdminBusinessGroupSearchController(ureq, wControl);
 		listenTo(searchController);
 		mainVC.put("searchPanel", searchController.getInitialComponent());
 	}
@@ -96,6 +96,10 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
 
 		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+		params.setOwner(false);
+		params.setAttendee(false);
+		params.setWaiting(false);
+		
 		updateTableModel(params, false);
 
 		if(isLogDebugEnabled()) {

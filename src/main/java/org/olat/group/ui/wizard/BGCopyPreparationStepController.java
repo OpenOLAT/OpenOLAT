@@ -65,40 +65,47 @@ public class BGCopyPreparationStepController extends StepFormBasicController {
 		initForm(ureq);
 	}
 
-	public boolean isCopyTools() {
+	public Boolean getCopyTools() {
 		return getBool("Tools");
 	}
 	
-	public boolean isCopyAreas() {
+	public Boolean getCopyAreas() {
 		return getBool("Areas");
 	}
 	
-	public boolean isCopyOwners() {
+	public Boolean getCopyOwners() {
 		return getBool("Owners");
 	}
 	
-	public boolean isCopyRights() {
+	public Boolean getCopyRights() {
 		return getBool("Rights");
 	}
 	
-	public boolean isCopyParticipants() {
+	public Boolean getCopyParticipants() {
 		return getBool("Participants");
 	}
 	
-	public boolean isCopyMembersVisibility() {
+	public Boolean getCopyMembersVisibility() {
 		return getBool("MembersVisibility");
 	}
 	
-	public boolean isCopyWaitingList() {
+	public Boolean getCopyWaitingList() {
 		return getBool("WaitingList");
 	}
 
-	private boolean getBool (String k) {
-		return ce.isSelected(Arrays.asList(keys).indexOf(k));
+	private Boolean getBool (String k) {
+		return new Boolean(ce.isSelected(Arrays.asList(keys).indexOf(k)));
 	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		addToRunContext("tools", getCopyTools());
+		addToRunContext("areas", getCopyAreas());
+		addToRunContext("rights", getCopyRights());
+		addToRunContext("owners", getCopyOwners());
+		addToRunContext("participants", getCopyParticipants());
+		addToRunContext("membersvisibility", getCopyMembersVisibility());
+		addToRunContext("waitingList", getCopyWaitingList());
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 

@@ -54,8 +54,9 @@ public class BusinessGroupSearchController extends FormBasicController{
 	private SingleSelection publicEl;
 	private SingleSelection resourceEl;
 	
+	private final boolean showId;
+	private final boolean showRoles;
 	private String limitUsername;
-	private boolean isAdmin;
 	
 	private String[] roleKeys = {"all", "owner", "attendee", "waiting"};
 	private String[] openKeys = {"all", "yes", "no"};
@@ -69,9 +70,10 @@ public class BusinessGroupSearchController extends FormBasicController{
 	 * @param isAdmin Is calling identity an administrator? If yes, allow search by ID
 	 * @param limitTypes Limit searches to specific types.
 	 */
-	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
+	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean showId, boolean showRoles) {
 		super(ureq, wControl, "group_search");
-		this.isAdmin = isAdmin;
+		this.showId = showId;
+		this.showRoles = showRoles;
 		initForm(ureq);
 	}
 	
@@ -81,9 +83,8 @@ public class BusinessGroupSearchController extends FormBasicController{
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(leftContainer);
 		
-		if(isAdmin) {
+		if(showId) {
 			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", leftContainer);
-			id.setVisible(isAdmin);
 			id.setRegexMatchCheck("\\d*", "search.id.format");
 		}
 
@@ -104,12 +105,14 @@ public class BusinessGroupSearchController extends FormBasicController{
 		formLayout.add(rightContainer);
 		
 		//roles
-		String[] roleValues = new String[roleKeys.length];
-		for(int i=roleKeys.length; i-->0; ) {
-			roleValues[i] = translate("search." + roleKeys[i]);
+		if(showRoles) {
+			String[] roleValues = new String[roleKeys.length];
+			for(int i=roleKeys.length; i-->0; ) {
+				roleValues[i] = translate("search." + roleKeys[i]);
+			}
+			rolesEl = uifactory.addRadiosHorizontal("roles", "search.roles", rightContainer, roleKeys, roleValues);
+			rolesEl.select("all", true);
 		}
-		rolesEl = uifactory.addRadiosHorizontal("roles", "search.roles", rightContainer, roleKeys, roleValues);
-		rolesEl.select("all", true);
 
 		//public
 		String[] openValues = new String[openKeys.length];
@@ -226,7 +229,7 @@ public class BusinessGroupSearchController extends FormBasicController{
 		e.setOwnerName(getOwner());
 		e.setCourseTitle(getCourseTitle());
 		
-		if(rolesEl.isOneSelected()) {
+		if(rolesEl != null && rolesEl.isOneSelected()) {
 			e.setAttendee(rolesEl.isSelected(0) || rolesEl.isSelected(1));
 			e.setOwner(rolesEl.isSelected(0) || rolesEl.isSelected(2));
 			e.setWaiting(rolesEl.isSelected(0) || rolesEl.isSelected(3));

@@ -51,7 +51,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		super(ureq, wControl, "group_list");
 
 		//search controller
-		searchController = new BusinessGroupSearchController(ureq, wControl, isAdmin());
+		searchController = new BusinessGroupSearchController(ureq, wControl, isAdmin(), true);
 		listenTo(searchController);
 		mainVC.put("search", searchController.getInitialComponent());
 		searchController.getInitialComponent().setVisible(false);

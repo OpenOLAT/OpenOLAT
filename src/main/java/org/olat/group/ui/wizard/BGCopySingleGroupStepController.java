@@ -19,6 +19,9 @@
  */
 package org.olat.group.ui.wizard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -68,7 +71,36 @@ public class BGCopySingleGroupStepController extends StepFormBasicController   {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String copyName = groupController.getGroupName();
+		@SuppressWarnings("unchecked")
+		List<BGCopyBusinessGroup> copies = (List<BGCopyBusinessGroup>)getFromRunContext("groupsCopy");
+		if(copies == null) {
+			copies = new ArrayList<BGCopyBusinessGroup>();
+			addToRunContext("groupsCopy", copies);
+		}
+		
+		BGCopyBusinessGroup currentCopy = getWithOriginal(copies);
+		if(currentCopy == null) {
+			BGCopyBusinessGroup group = new BGCopyBusinessGroup(originalGroup);
+			group.setName(groupController.getGroupName());
+			group.setDescription(groupController.getGroupDescription());
+			group.setMinParticipants(groupController.getGroupMin());
+			group.setMaxParticipants(groupController.getGroupMax());
+			copies.add(group);
+		} else {
+			currentCopy.setName(groupController.getGroupName());
+			currentCopy.setDescription(groupController.getGroupDescription());
+			currentCopy.setMinParticipants(groupController.getGroupMin());
+			currentCopy.setMaxParticipants(groupController.getGroupMax());
+		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+	
+	private BGCopyBusinessGroup getWithOriginal(List<BGCopyBusinessGroup> copies) {
+		for(BGCopyBusinessGroup copy:copies) {
+			if(copy.getOriginal().equals(originalGroup)) {
+				return copy;
+			}
+		}
+		return null;
 	}
 }

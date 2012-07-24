@@ -63,6 +63,7 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.NewBGController;
+import org.olat.group.ui.wizard.BGCopyBusinessGroup;
 import org.olat.group.ui.wizard.BGCopyPreparationStep;
 import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
 import org.olat.group.ui.wizard.BGMergeStep;
@@ -376,13 +377,46 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				return StepsMainRunController.DONE_MODIFIED;
+				@SuppressWarnings("unchecked")
+				List<BGCopyBusinessGroup> copies = (List<BGCopyBusinessGroup>)runContext.get("groupsCopy");
+				if(copies != null && !copies.isEmpty()) {
+					boolean copyAreas = convertToBoolean(runContext, "areas");
+					boolean copyCollabToolConfig = convertToBoolean(runContext, "tools");
+					boolean copyRights = convertToBoolean(runContext, "rights");
+					boolean copyOwners = convertToBoolean(runContext, "owners");
+					boolean copyParticipants = convertToBoolean(runContext, "participants");
+					boolean copyMemberVisibility = convertToBoolean(runContext, "membersvisibility");
+					boolean copyWaitingList = convertToBoolean(runContext, "waitingList");
+					boolean copyRelations = convertToBoolean(runContext, "resources");
+
+					for(BGCopyBusinessGroup copy:copies) {
+						businessGroupService.copyBusinessGroup(copy.getOriginal(), copy.getName(), copy.getDescription(),
+								copy.getMinParticipants(), copy.getMaxParticipants(), null, null,
+								copyAreas, copyCollabToolConfig, copyRights, copyOwners, copyParticipants,
+								copyMemberVisibility, copyWaitingList, copyRelations);
+					
+					}
+					return StepsMainRunController.DONE_MODIFIED;
+				} else {
+					return StepsMainRunController.DONE_UNCHANGED;
+				}
 			}
 		};
 		
 		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("copy.group"));
 		listenTo(businessGroupWizard);
 		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
+	}
+	
+	private boolean convertToBoolean(StepsRunContext runContext, String key) {
+		Object obj = runContext.get(key);
+		if(obj instanceof Boolean) {
+			return ((Boolean)obj).booleanValue();
+		} else {
+			return false;
+		}
+		
+		
 	}
 	
 	/**

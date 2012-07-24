@@ -22,7 +22,11 @@ package org.olat.group.ui.wizard;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
@@ -52,6 +56,14 @@ public class BGCopySingleGroupStep extends BasicStep {
 		} else {
 			setNextStep(new BGCopySingleGroupStep(ureq, groups));
 		}
+	}
+
+	@Override
+	public FormItem getStepTitle() {
+		String title = getTranslator().translate("copy.wizard.bgstep", new String[]{ groupToCopy.getName() });
+		FormLink fl = new FormLinkImpl("copy.wizard." + groupToCopy.getKey(), null, title, Link.FLEXIBLEFORMLNK + Link.NONTRANSLATED);
+		fl.setTranslator(getTranslator());
+		return fl;
 	}
 
 	@Override

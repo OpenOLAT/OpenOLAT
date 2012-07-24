@@ -214,7 +214,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		//fxdiff VCRP-1,2: access control of resources
-		searchController = new BusinessGroupSearchController(ureq, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin());
+		searchController = new BusinessGroupSearchController(ureq, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), true);
 		listenTo(searchController);
 		
 		// start with list of all groups
