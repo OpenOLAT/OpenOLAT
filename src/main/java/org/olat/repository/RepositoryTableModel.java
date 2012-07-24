@@ -26,6 +26,7 @@
 package org.olat.repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -77,6 +78,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	public RepositoryTableModel(Translator translator) {
 		super(new ArrayList<RepositoryEntry>());
 		this.translator = translator;
+		repoEntriesWithOffer = new HashMap<Long,OLATResourceAccess>();
 		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
 	}
 
@@ -165,6 +167,15 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		
 		repoEntriesWithOffer = new HashMap<Long,OLATResourceAccess>();
 		List<OLATResourceAccess> withOffers = acFrontendManager.filterRepositoryEntriesWithAC(objects);
+		for(OLATResourceAccess withOffer:withOffers) {
+			repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
+		}
+	}
+	
+	public void addObject(RepositoryEntry object) {
+		getObjects().add(object);
+		List<RepositoryEntry> repoList = Collections.singletonList(object);
+		List<OLATResourceAccess> withOffers = acFrontendManager.filterRepositoryEntriesWithAC(repoList);
 		for(OLATResourceAccess withOffer:withOffers) {
 			repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
 		}

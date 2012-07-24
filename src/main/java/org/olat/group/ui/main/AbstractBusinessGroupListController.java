@@ -28,6 +28,8 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -56,6 +58,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.vfs.Quota;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
@@ -63,6 +66,8 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.NewBGController;
+import org.olat.group.ui.wizard.BGConfigBusinessGroup;
+import org.olat.group.ui.wizard.BGConfigToolsStep;
 import org.olat.group.ui.wizard.BGCopyBusinessGroup;
 import org.olat.group.ui.wizard.BGCopyPreparationStep;
 import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
@@ -109,6 +114,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	protected final BusinessGroupModule groupModule;
 	protected final ACFrontendManager acFrontendManager;
 	protected final BusinessGroupService businessGroupService;
+	protected final CollaborationToolsFactory collaborationTools;
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page) {
 		super(ureq, wControl);
@@ -119,6 +125,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
+		collaborationTools = CollaborationToolsFactory.getInstance();
 		
 		mainVC = createVelocityContainer(page);
 
@@ -191,7 +198,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				toogleMark((BGTableItem)uobj);
 			}
 		} else if (source == createButton) {
-			doGroupCreate(ureq, getWindowControl());
+			doCreate(ureq, getWindowControl());
 		}
 	}
 	
@@ -240,7 +247,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				if(TABLE_ACTION_DELETE.equals(te.getAction())) {
 					confirmDelete(ureq, selectedItems);
 				} else if(TABLE_ACTION_DUPLICATE.equals(te.getAction())) {
-					doGroupCopy(ureq, selectedItems);
+					doCopy(ureq, selectedItems);
 				} else if(TABLE_ACTION_CONFIG.equals(te.getAction())) {
 					doConfiguration(ureq, selectedItems);
 				} else if(TABLE_ACTION_EMAIL.equals(te.getAction())) {
@@ -255,14 +262,14 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			if(event == Event.DONE_EVENT) {
 				boolean withEmail = deleteDialogBox.isSendMail();
 				List<BusinessGroup> groupsToDelete = deleteDialogBox.getGroupsToDelete();
-				doGroupDelete(ureq, withEmail, groupsToDelete);
+				doDelete(ureq, withEmail, groupsToDelete);
 				reload();
 			}
 			cmc.deactivate();
 			cleanUpPopups();
 		} else if (source == leaveDialogBox) {
 			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
-				doGroupLeave(ureq, (BusinessGroup)leaveDialogBox.getUserObject());
+				doLeave(ureq, (BusinessGroup)leaveDialogBox.getUserObject());
 			}
 		} else if (source == groupCreateController) {
 			if(event == Event.DONE_EVENT) {
@@ -323,7 +330,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 * 
 	 * @param ureq
 	 */
-	private void doGroupLeave(UserRequest ureq, BusinessGroup group) {
+	private void doLeave(UserRequest ureq, BusinessGroup group) {
 		// 1) remove as owner
 		if (securityManager.isIdentityInSecurityGroup(getIdentity(), group.getOwnerGroup())) {
 			List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
@@ -349,7 +356,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 * @param ureq
 	 * @param wControl
 	 */
-	protected void doGroupCreate(UserRequest ureq, WindowControl wControl) {				
+	protected void doCreate(UserRequest ureq, WindowControl wControl) {				
 		removeAsListenerAndDispose(groupCreateController);
 		groupCreateController = new NewBGController(ureq, wControl, null, false, null);
 		listenTo(groupCreateController);
@@ -364,7 +371,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 * @param ureq
 	 * @param items
 	 */
-	private void doGroupCopy(UserRequest ureq, List<BGTableItem> items) {
+	private void doCopy(UserRequest ureq, List<BGTableItem> items) {
 		removeAsListenerAndDispose(businessGroupWizard);
 		if(items == null || items.isEmpty()) return;
 		
@@ -415,8 +422,6 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		} else {
 			return false;
 		}
-		
-		
 	}
 	
 	/**
@@ -424,26 +429,62 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 * @param ureq
 	 * @param items
 	 */
-	private void doConfiguration(UserRequest ureq, List<BGTableItem> items) {
-		if(items == null || items.isEmpty()) return;
-		
-	}
-	
-	/**
-	 * 
-	 * @param ureq
-	 * @param items
-	 */
-	private void doEmails(UserRequest ureq, List<BGTableItem> items) {
-		if(items == null || items.isEmpty()) return;
-		
+	private void doConfiguration(UserRequest ureq, List<BGTableItem> selectedItems) {
 		removeAsListenerAndDispose(businessGroupWizard);
-		if(items == null || items.isEmpty()) return;
+		if(selectedItems == null || selectedItems.isEmpty()) return;
 		
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
-		for(BGTableItem item:items) {
-			groups.add(item.getBusinessGroup());
-		}
+		final List<BusinessGroup> groups = toBusinessGroups(selectedItems);
+
+		Step start = new BGConfigToolsStep(ureq);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				//configuration
+				BGConfigBusinessGroup configuration = (BGConfigBusinessGroup)runContext.get("configuration");
+				if(!configuration.getToolsToEnable().isEmpty() || !configuration.getToolsToDisable().isEmpty()) {
+					
+					for(BusinessGroup group:groups) {
+						CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+						for(String enabledTool:configuration.getToolsToEnable()) {
+							tools.setToolEnabled(enabledTool, true);
+							if(CollaborationTools.TOOL_FOLDER.equals(enabledTool)) {
+								tools.saveFolderAccess(new Long(configuration.getFolderAccess()));
+								
+								Quota quota = configuration.getQuota();
+								System.out.println(quota);
+								
+								
+							} else if (CollaborationTools.TOOL_CALENDAR.equals(enabledTool)) {
+								tools.saveCalendarAccess(new Long(configuration.getCalendarAccess()));
+							}
+						}
+						for(String disabledTool:configuration.getToolsToDisable()) {
+							tools.setToolEnabled(disabledTool, false);
+						}
+					}
+				}
+				if(configuration.getResources() != null && !configuration.getResources().isEmpty()) {
+					businessGroupService.addResourcesTo(groups, configuration.getResources());
+				}
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("config.group"));
+		listenTo(businessGroupWizard);
+		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
+	}
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param items
+	 */
+	private void doEmails(UserRequest ureq, List<BGTableItem> selectedItems) {
+		removeAsListenerAndDispose(businessGroupWizard);
+		if(selectedItems == null || selectedItems.isEmpty()) return;
+		
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems);
 
 		Step start = new BGEmailSelectReceiversStep(ureq, groups);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -457,7 +498,6 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("email.group"));
 		listenTo(businessGroupWizard);
 		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
-		
 	}
 	
 	/**
@@ -475,14 +515,11 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 * @param ureq
 	 * @param items
 	 */
-	private void doMerge(UserRequest ureq, List<BGTableItem> items) {
+	private void doMerge(UserRequest ureq, List<BGTableItem> selectedItems) {
 		removeAsListenerAndDispose(businessGroupWizard);
-		if(items == null || items.isEmpty()) return;
+		if(selectedItems == null || selectedItems.isEmpty()) return;
 
-		final List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
-		for(BGTableItem item:items) {
-			groups.add(item.getBusinessGroup());
-		}
+		final List<BusinessGroup> groups = toBusinessGroups(selectedItems);
 
 		Step start = new BGMergeStep(ureq, groups);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -508,11 +545,10 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 */
 	private void confirmDelete(UserRequest ureq, List<BGTableItem> selectedItems) {
 		StringBuilder names = new StringBuilder();
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
-		for(BGTableItem item:selectedItems) {
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems);
+		for(BusinessGroup group:groups) {
 			if(names.length() > 0) names.append(", ");
-			names.append(item.getBusinessGroup().getName());
-			groups.add(item.getBusinessGroup());
+			names.append(group.getName());
 		}
 		
 		deleteDialogBox = new BusinessGroupDeleteDialogBoxController(ureq, getWindowControl(), groups);
@@ -523,6 +559,14 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		listenTo(cmc);
 	}
 	
+	private List<BusinessGroup> toBusinessGroups(List<BGTableItem> items) {
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		for(BGTableItem item:items) {
+			groups.add(item.getBusinessGroup());
+		}
+		return groups;
+	}
+	
 	/**
 	 * Deletes the group. Checks if user is in owner group,
 	 * otherwise does nothing
@@ -530,7 +574,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 * @param ureq
 	 * @param doSendMail specifies if notification mails should be sent to users of delted group
 	 */
-	private void doGroupDelete(UserRequest ureq, boolean doSendMail, List<BusinessGroup> groups) {
+	private void doDelete(UserRequest ureq, boolean doSendMail, List<BusinessGroup> groups) {
 		for(BusinessGroup group:groups) {
 			//check security
 			boolean ow = ureq.getUserSession().getRoles().isOLATAdmin()

@@ -270,6 +270,8 @@ public interface BusinessGroupService {
 	
 	public void addResourceTo(BusinessGroup group, OLATResource resource);
 	
+	public void addResourcesTo(List<BusinessGroup> groups, List<OLATResource> resources);
+	
 	public void removeResourceFrom(BusinessGroup group, OLATResource resource);
 	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);

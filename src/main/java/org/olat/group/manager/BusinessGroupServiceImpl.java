@@ -1135,6 +1135,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public boolean hasResources(BusinessGroup group) {
 		return businessGroupRelationDAO.countResources(group) > 0;
 	}
@@ -1149,6 +1150,19 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
+	public void addResourcesTo(List<BusinessGroup> groups, List<OLATResource> resources) {
+		if(groups == null || groups.isEmpty()) return;
+		if(resources == null || resources.isEmpty()) return;
+		for(BusinessGroup group:groups) {
+			for(OLATResource resource:resources) {
+				addResourceTo(group, resource);
+			}
+		}
+	}
+
+	@Override
+	@Transactional
 	public void removeResourceFrom(BusinessGroup group, OLATResource resource) {
 		businessGroupRelationDAO.deleteRelation(group, resource);
 		//remove permission
@@ -1157,16 +1171,19 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findResources(groups, firstResult, maxResults);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findRepositoryEntries(groups, firstResult, maxResults);
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findRelationToRepositoryEntries(groups, firstResult, maxResults);
 	}
@@ -1186,6 +1203,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting,
 			List<BusinessGroup> groups) {
 		return businessGroupDAO.isIdentityInBusinessGroups(identity, owner, attendee, waiting, groups);

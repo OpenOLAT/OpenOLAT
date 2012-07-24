@@ -81,7 +81,6 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	private Link addTabResourcesButton;
 
 	private BusinessGroup group;
-	private RepositoryEntry currentRepoEntry;
 	private final BusinessGroupService businessGroupService;
 
 	/**
@@ -150,8 +149,6 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 					if (!alreadyAssociated) {
 						doAddRepositoryEntry(re);
 						fireEvent(ureq, Event.CHANGED_EVENT);
-						//MultiUserEvent mue = new BGContextEvent(BGContextEvent.RESOURCE_ADDED, this.groupContext);
-						//CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(mue, this.groupContext);
 					}
 				}
 			}
@@ -159,19 +156,19 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
-				currentRepoEntry = repoTableModel.getObject(te.getRowId());
+				RepositoryEntry re = repoTableModel.getObject(te.getRowId());
 				if (actionid.equals(RepositoryTableModel.TABLE_ACTION_SELECT_LINK)) {
 					//present dialog box if resource should be removed
-					String text = getTranslator().translate("resource.remove", new String[] { group.getName(), currentRepoEntry.getDisplayname() });
+					String text = getTranslator().translate("resource.remove", new String[] { group.getName(), re.getDisplayname() });
 					confirmRemoveResource = activateYesNoDialog(ureq, null, text, this.confirmRemoveResource);
+					confirmRemoveResource.setUserObject(re);
 				}
 			}
 		} else if (source == confirmRemoveResource) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
-				doRemoveResource(currentRepoEntry);
+				RepositoryEntry re = (RepositoryEntry)confirmRemoveResource.getUserObject();
+				doRemoveResource(re);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-				//MultiUserEvent mue = new BGContextEvent(BGContextEvent.RESOURCE_REMOVED, this.groupContext);
-				//CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(mue, this.groupContext);
 			}
 		}
 	}
@@ -195,7 +192,4 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	protected void doDispose() {
 		//
 	}
-
-
-
 }
