@@ -33,25 +33,39 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.ui.NewBGController;
+import org.olat.group.ui.wizard.BGCopyPreparationStep;
+import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
+import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -66,19 +80,32 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	protected static final String TABLE_ACTION_LEAVE = "bgTblLeave";
 	protected static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
 	protected static final String TABLE_ACTION_ACCESS = "bgTblAccess";
+	protected static final String TABLE_ACTION_DUPLICATE = "bgTblDuplicate";
+	protected static final String TABLE_ACTION_MERGE = "bgTblMerge";
+	protected static final String TABLE_ACTION_USERS = "bgTblUser";
+	protected static final String TABLE_ACTION_CONFIG = "bgTblConfig";
+	protected static final String TABLE_ACTION_EMAIL = "bgTblEmail";
+	protected static final String TABLE_ACTION_DELETE = "bgTblDelete";
 	
 	protected final VelocityContainer mainVC;
 
 	protected final TableController groupListCtr;
 	protected BusinessGroupTableModelWithType groupListModel;
+	protected SearchBusinessGroupParams lastSearchParams;
 	
-	private DialogBoxController deleteDialogBox;
-	private DialogBoxController sendEMailOnDeleteDialogBox;
 	private DialogBoxController leaveDialogBox;
+	
+	private Link createButton;
+	
+	private NewBGController groupCreateController;
+	private BusinessGroupDeleteDialogBoxController deleteDialogBox;
+	private StepsMainRunController businessGroupWizard;
+	private CloseableModalController cmc;
 	
 	private final boolean admin;
 	protected final MarkManager markManager;
 	protected final BaseSecurity securityManager;
+	protected final BusinessGroupModule groupModule;
 	protected final ACFrontendManager acFrontendManager;
 	protected final BusinessGroupService businessGroupService;
 	
@@ -88,11 +115,11 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		admin = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		acFrontendManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		
 		mainVC = createVelocityContainer(page);
-		
 
 		//table
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -102,14 +129,33 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		listenTo(groupListCtr);
 
 		int numOfColumns = initColumns();
-		
 		groupListModel = new BusinessGroupTableModelWithType(new ArrayList<BGTableItem>(), getTranslator(), numOfColumns);
 		groupListCtr.setTableDataModel(groupListModel);
 
 		mainVC.put("groupList", groupListCtr.getInitialComponent());
-
+		
+		initButtons(ureq);
 
 		putInitialPanel(mainVC);
+	}
+	
+	protected abstract void initButtons(UserRequest ureq);
+
+	protected void initButtons(UserRequest ureq, boolean create) {
+		if(create && canCreateBusinessGroup(ureq)) {
+			createButton = LinkFactory.createButton("create.group", mainVC, this);
+		}
+		
+	}
+	
+	protected boolean canCreateBusinessGroup(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles.isOLATAdmin() || roles.isGroupManager()
+				|| (roles.isAuthor() && groupModule.isAuthorAllowedToCreateBG())
+				|| (!roles.isInvitee() && !roles.isInvitee() && groupModule.isUserAllowedToCreateBG())) {
+			return true;
+		}
+		return false;
 	}
 	
 	protected abstract int initColumns();
@@ -143,9 +189,15 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			if(uobj instanceof BGTableItem) {
 				toogleMark((BGTableItem)uobj);
 			}
+		} else if (source == createButton) {
+			doGroupCreate(ureq, getWindowControl());
 		}
 	}
 	
+	/**
+	 * Add/remove as favorite
+	 * @param item
+	 */
 	private void toogleMark(BGTableItem item) {
 		OLATResource bgResource = item.getBusinessGroup().getResource();
 		if(markManager.isMarked(bgResource, getIdentity(), null)) {
@@ -181,26 +233,87 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				} else if (actionid.equals(TABLE_ACTION_ACCESS)) {
 					doLaunch(ureq, businessGroup);
 				}
+			} else if (event instanceof TableMultiSelectEvent) {
+				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
+				List<BGTableItem> selectedItems = groupListModel.getObjects(te.getSelection());
+				if(TABLE_ACTION_DELETE.equals(te.getAction())) {
+					confirmDelete(ureq, selectedItems);
+				} else if(TABLE_ACTION_DUPLICATE.equals(te.getAction())) {
+					doGroupCopy(ureq, selectedItems);
+				} else if(TABLE_ACTION_CONFIG.equals(te.getAction())) {
+					doConfiguration(ureq, selectedItems);
+				} else if(TABLE_ACTION_EMAIL.equals(te.getAction())) {
+					doEmails(ureq, selectedItems);
+				} else if(TABLE_ACTION_USERS.equals(te.getAction())) {
+					doUserManagement(ureq, selectedItems);
+				} else if(TABLE_ACTION_MERGE.equals(te.getAction())) {
+					doMerge(ureq, selectedItems);
+				}
 			}
 		} else if (source == deleteDialogBox) {
-			if (DialogBoxUIFactory.isOkEvent(event)) {
-				sendEMailOnDeleteDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.mail.text"), sendEMailOnDeleteDialogBox);
-				sendEMailOnDeleteDialogBox.setUserObject(deleteDialogBox.getUserObject());
-			}//else cancel was clicked or box closed
-		} else if(source == sendEMailOnDeleteDialogBox){
-			boolean withEmail = DialogBoxUIFactory.isOkEvent(event);
-			doGroupDelete(ureq, withEmail, (BusinessGroup)sendEMailOnDeleteDialogBox.getUserObject());
+			if(event == Event.DONE_EVENT) {
+				boolean withEmail = deleteDialogBox.isSendMail();
+				List<BusinessGroup> groupsToDelete = deleteDialogBox.getGroupsToDelete();
+				doGroupDelete(ureq, withEmail, groupsToDelete);
+				reload();
+			}
+			cmc.deactivate();
+			cleanUpPopups();
 		} else if (source == leaveDialogBox) {
 			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
 				doGroupLeave(ureq, (BusinessGroup)leaveDialogBox.getUserObject());
 			}
+		} else if (source == groupCreateController) {
+			if(event == Event.DONE_EVENT) {
+				BusinessGroup group = groupCreateController.getCreatedGroup();
+				if(group != null) {
+					reload();
+				}
+			}
+			cmc.deactivate();
+			cleanUpPopups();
+		} else if (source == businessGroupWizard) { 
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(businessGroupWizard);
+				businessGroupWizard = null;
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					reload();
+				}
+			}
+		} else if (source == cmc) {
+			cleanUpPopups();
 		}
 		super.event(ureq, source, event);
 	}
 	
+	/**
+	 * Clean up all popup controllers
+	 */
+	private void cleanUpPopups() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(deleteDialogBox);
+		removeAsListenerAndDispose(groupCreateController);
+		cmc = null;
+		deleteDialogBox = null;
+		groupCreateController = null;
+	}
+	
+	/**
+	 * Launch a business group with its business path
+	 * @param ureq
+	 * @param group
+	 */
 	protected void doLaunch(UserRequest ureq, BusinessGroup group) {
 		String businessPath = "[BusinessGroup:" + group.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	/**
+	 * Reload the table with the last search parameters
+	 */
+	protected void reload() {
+		updateTableModel(lastSearchParams, false);
 	}
 	
 	/**
@@ -231,34 +344,187 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	}
 	
 	/**
+	 * Create a new business group
+	 * @param ureq
+	 * @param wControl
+	 */
+	protected void doGroupCreate(UserRequest ureq, WindowControl wControl) {				
+		removeAsListenerAndDispose(groupCreateController);
+		groupCreateController = new NewBGController(ureq, wControl, null, false, null);
+		listenTo(groupCreateController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupCreateController.getInitialComponent(), true, translate("create.form.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	/**
+	 * Make copies of a list of business groups
+	 * @param ureq
+	 * @param items
+	 */
+	private void doGroupCopy(UserRequest ureq, List<BGTableItem> items) {
+		removeAsListenerAndDispose(businessGroupWizard);
+		if(items == null || items.isEmpty()) return;
+		
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		for(BGTableItem item:items) {
+			groups.add(item.getBusinessGroup());
+		}
+
+		Step start = new BGCopyPreparationStep(ureq, groups);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("copy.group"));
+		listenTo(businessGroupWizard);
+		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
+	}
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param items
+	 */
+	private void doConfiguration(UserRequest ureq, List<BGTableItem> items) {
+		if(items == null || items.isEmpty()) return;
+		
+	}
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param items
+	 */
+	private void doEmails(UserRequest ureq, List<BGTableItem> items) {
+		if(items == null || items.isEmpty()) return;
+		
+		removeAsListenerAndDispose(businessGroupWizard);
+		if(items == null || items.isEmpty()) return;
+		
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		for(BGTableItem item:items) {
+			groups.add(item.getBusinessGroup());
+		}
+
+		Step start = new BGEmailSelectReceiversStep(ureq, groups);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				//send emails
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("email.group"));
+		listenTo(businessGroupWizard);
+		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
+		
+	}
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param items
+	 */
+	private void doUserManagement(UserRequest ureq, List<BGTableItem> items) {
+		if(items == null || items.isEmpty()) return;
+		
+	}
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param items
+	 */
+	private void doMerge(UserRequest ureq, List<BGTableItem> items) {
+		removeAsListenerAndDispose(businessGroupWizard);
+		if(items == null || items.isEmpty()) return;
+
+		final List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		for(BGTableItem item:items) {
+			groups.add(item.getBusinessGroup());
+		}
+
+		Step start = new BGMergeStep(ureq, groups);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				BusinessGroup targetGroup = (BusinessGroup)runContext.get("targetGroup");
+				groups.remove(targetGroup);
+				businessGroupService.mergeBusinessGroups(getIdentity(), targetGroup, groups);
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("merge.group"));
+		listenTo(businessGroupWizard);
+		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
+		
+	}
+	
+	/**
+	 * Confirmation panel before deleting the groups
+	 * @param ureq
+	 * @param selectedItems
+	 */
+	private void confirmDelete(UserRequest ureq, List<BGTableItem> selectedItems) {
+		StringBuilder names = new StringBuilder();
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		for(BGTableItem item:selectedItems) {
+			if(names.length() > 0) names.append(", ");
+			names.append(item.getBusinessGroup().getName());
+			groups.add(item.getBusinessGroup());
+		}
+		
+		deleteDialogBox = new BusinessGroupDeleteDialogBoxController(ureq, getWindowControl(), groups);
+		listenTo(deleteDialogBox);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteDialogBox.getInitialComponent(),
+				true, translate("dialog.modal.bg.delete.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	/**
 	 * Deletes the group. Checks if user is in owner group,
-	 * otherwhise does nothing
+	 * otherwise does nothing
 	 * 
 	 * @param ureq
 	 * @param doSendMail specifies if notification mails should be sent to users of delted group
 	 */
-	private void doGroupDelete(UserRequest ureq, boolean doSendMail, BusinessGroup group) {
-		// 1) send notification mails to users
-		boolean ow = securityManager.isIdentityInSecurityGroup(getIdentity(), group.getOwnerGroup());
-		// check if user is in owner group (could fake link in table)
-		if (!admin && !ow) {
-			logWarn("User tried to delete a group but he was not owner of the group", null);
-			return;
-		}
+	private void doGroupDelete(UserRequest ureq, boolean doSendMail, List<BusinessGroup> groups) {
+		for(BusinessGroup group:groups) {
+			//check security
+			boolean ow = ureq.getUserSession().getRoles().isOLATAdmin()
+					|| ureq.getUserSession().getRoles().isGroupManager()
+					|| securityManager.isIdentityInSecurityGroup(getIdentity(), group.getOwnerGroup());
 
-		if (doSendMail) {
-			String businessPath = getWindowControl().getBusinessControl().getAsString();
-			businessGroupService.deleteBusinessGroupWithMail(group, businessPath, getIdentity(), getLocale());
-		} else {
-			businessGroupService.deleteBusinessGroup(group);
+			if (ow) {
+				if (doSendMail) {
+					String businessPath = getWindowControl().getBusinessControl().getAsString();
+					businessGroupService.deleteBusinessGroupWithMail(group, businessPath, getIdentity(), getLocale());
+				} else {
+					businessGroupService.deleteBusinessGroup(group);
+				}
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_DELETED, getClass(), LoggingResourceable.wrap(group));
+			}
 		}
-		// do Logging
-		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_DELETED, getClass(), LoggingResourceable.wrap(group));
-		// 4) update Tables
 		showInfo("info.group.deleted");
 	}
 	
-	protected void updateTableModel(List<BusinessGroup> groups, boolean alreadyMarked) {
+	protected List<BusinessGroup> updateTableModel(SearchBusinessGroupParams params, boolean alreadyMarked) {
+		List<BusinessGroup> groups;
+		if(params == null) {
+			groups = new ArrayList<BusinessGroup>();
+		} else {
+			groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		}
+		lastSearchParams = params;
+
 		List<Long> groupsAsOwner = businessGroupService.isIdentityInBusinessGroups(getIdentity(), true, false, false, groups);
 		List<Long> groupsAsParticipant = businessGroupService.isIdentityInBusinessGroups(getIdentity(), false, true, false, groups);
 		List<Long> groupsAsWaiter = businessGroupService.isIdentityInBusinessGroups(getIdentity(), false, false, true, groups);
@@ -311,5 +577,6 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		
 		groupListModel.setEntries(items);
 		groupListCtr.modelChanged();
+		return groups;
 	}
 }

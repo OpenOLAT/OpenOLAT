@@ -216,6 +216,15 @@ public interface BusinessGroupService {
 			Integer targetMax, OLATResource targetResource, Map<BGArea,BGArea> areaLookupMap, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
 			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations);
 
+	/**
+	 * Merge the owners, participants and the waiting list.
+	 * 
+	 * @param targetGroup
+	 * @param groupsToMerge
+	 * @return
+	 */
+	public BusinessGroup mergeBusinessGroups(Identity merger, BusinessGroup targetGroup, List<BusinessGroup> groupsToMerge);
+	
 	//search methods
 	/**
 	 * Find the business group associated with this security group

@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -47,11 +48,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
@@ -78,7 +76,7 @@ import org.olat.core.util.mail.MailHelper;
  * @author patrick
  */
 
-class ContactForm extends FormBasicController {
+public class ContactForm extends FormBasicController {
 	//
 	private final static String NLS_CONTACT_TO = "contact.to";
 	private TextElement tto = null;
@@ -99,6 +97,7 @@ class ContactForm extends FormBasicController {
 	private final static int emailCols = 60;
 	private boolean readOnly=false;
 	private boolean hasMsgCancel=false;
+	private boolean hasMsgSave=true;
 	private final static String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	private SelectionElement tcpfrom;
 	private Identity emailFrom;
@@ -118,6 +117,18 @@ class ContactForm extends FormBasicController {
 		this.contactAttachmentMaxSizeInMb = MailHelper.getMaxSizeForAttachement();
 		initForm(ureq);
 	}
+	
+	public ContactForm(UserRequest ureq, WindowControl wControl, Form rootForm, Identity emailFrom, boolean readOnly, boolean isCancellable, boolean isSaveable, boolean hasRecipientsEditable) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		this.emailFrom = emailFrom;
+		this.readOnly = readOnly;
+		this.recipientsAreEditable = hasRecipientsEditable;
+		this.hasMsgCancel = isCancellable;
+		this.hasMsgSave = isSaveable;
+		this.contactAttachmentMaxSizeInMb = MailHelper.getMaxSizeForAttachement();
+		initForm(ureq);
+	}
+		
 
 	/**
 	 * @param defaultSubject
@@ -133,7 +144,7 @@ class ContactForm extends FormBasicController {
 	 * 
 	 * @param emailList
 	 */
-	protected void addEmailTo(ContactList emailList) {
+	public void addEmailTo(ContactList emailList) {
 		if (contactLists.containsKey(emailList.getName())) {
 			//there is already a ContactList with this name...
 			ContactList existing = contactLists.get(emailList.getName());
@@ -167,7 +178,7 @@ class ContactForm extends FormBasicController {
 	/**
 	 * @param defaultBody
 	 */
-	protected void setBody(String defaultBody) {
+	public void setBody(String defaultBody) {
 		tbody.setValue(defaultBody);
 		tbody.setEnabled(!readOnly);
 		tbody.setVisible(true);
@@ -177,7 +188,7 @@ class ContactForm extends FormBasicController {
 	
 	
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		
 		if(readOnly){
 			return true;
@@ -203,7 +214,7 @@ class ContactForm extends FormBasicController {
 	/**
 	 * @return
 	 */
-	protected Identity getEmailFrom() {
+	public Identity getEmailFrom() {
 		return emailFrom;
 	}
 
@@ -212,7 +223,7 @@ class ContactForm extends FormBasicController {
 	 * 
 	 * @return
 	 */
-	protected List<ContactList> getEmailToContactLists() {
+	public List<ContactList> getEmailToContactLists() {
 		List<ContactList> retVal = new ArrayList<ContactList>();
 		retVal.addAll(contactLists.values());
 		return retVal;
@@ -251,18 +262,18 @@ class ContactForm extends FormBasicController {
 	/**
 	 * @return
 	 */
-	protected String getSubject() {
+	public String getSubject() {
 		return tsubject.getValue();
 	}
 
 	/**
 	 * @return email body text
  	 */
- 	protected String getBody() {
+ 	public String getBody() {
  			return tbody.getValue();
 	}
  	
- 	protected List<File> getAttachments() {
+ 	public List<File> getAttachments() {
  		List<File> attachments = new ArrayList<File>();
  		for(FormLink removeLink : attachmentLinks) {
  			attachments.add((File)removeLink.getUserObject());
@@ -270,14 +281,14 @@ class ContactForm extends FormBasicController {
  		return attachments;
  	}
  	
- 	protected void cleanUpAttachments() {
+ 	public void cleanUpAttachments() {
  		if(attachementTempDir != null && attachementTempDir.exists()) {
 			FileUtils.deleteDirsAndFiles(attachementTempDir, true, true);
 			attachementTempDir = null;
 		}
  	}
  	
- 	protected boolean isTcpFrom() {
+ 	public boolean isTcpFrom() {
  		return tcpfrom.isSelected(0);
  	}
  	
@@ -388,7 +399,9 @@ class ContactForm extends FormBasicController {
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		
-		uifactory.addFormSubmitButton("msg.save", buttonGroupLayout);
+		if(hasMsgSave) {
+			uifactory.addFormSubmitButton("msg.save", buttonGroupLayout);
+		}
 		if (hasMsgCancel) {
 			uifactory.addFormCancelButton("msg.cancel", buttonGroupLayout, ureq, getWindowControl());
 		}

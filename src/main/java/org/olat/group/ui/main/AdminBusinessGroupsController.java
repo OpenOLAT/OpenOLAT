@@ -19,10 +19,7 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -31,7 +28,6 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -40,8 +36,7 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class AdminBusinessGroupsController extends AbstractBusinessGroupListController {
-	private static final String TABLE_ACTION_DELETE = "bgTblDelete";
-	
+
 	private AdminBusinessGroupSearchController searchController;
 
 	public AdminBusinessGroupsController(UserRequest ureq, WindowControl wControl) {
@@ -55,7 +50,19 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 		listenTo(searchController);
 		mainVC.put("searchPanel", searchController.getInitialComponent());
 	}
-	
+
+	@Override
+	protected void initButtons(UserRequest ureq) {
+		initButtons(ureq, true);
+		groupListCtr.setMultiSelect(true);
+		groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
+		groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
+		groupListCtr.addMultiSelectAction("table.users.management", TABLE_ACTION_USERS);
+		groupListCtr.addMultiSelectAction("table.config", TABLE_ACTION_CONFIG);
+		groupListCtr.addMultiSelectAction("table.email", TABLE_ACTION_EMAIL);
+		groupListCtr.addMultiSelectAction("table.delete", TABLE_ACTION_DELETE);
+	}
+
 	@Override
 	protected int initColumns() {
 		CustomCellRenderer markRenderer = new BGMarkCellRenderer(this, mainVC, getTranslator());
@@ -76,16 +83,6 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		super.event(ureq, source, event);
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == searchController) {
 			if(event instanceof SearchEvent) {
@@ -98,16 +95,11 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 	private void doSearch(SearchEvent event) {
 		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
 
-		search(event);
+		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+		updateTableModel(params, false);
 
 		if(isLogDebugEnabled()) {
 			logDebug("Group search takes (ms): " + (System.currentTimeMillis() - start), null);
 		}
-	}
-
-	private void search(SearchEvent event) {
-		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
 	}
 }

@@ -24,10 +24,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -391,6 +393,74 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}	
 		}
 		return newGroup;
+	}
+	
+	
+
+	@Override
+	public BusinessGroup mergeBusinessGroups(final Identity merger, final BusinessGroup targetGroup, final List<BusinessGroup> groupsToMerge) {
+		groupsToMerge.remove(targetGroup);//to be sure
+
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(targetGroup, new SyncerExecutor(){
+			public void execute() {
+				Set<Identity> currentOwners
+					= new HashSet<Identity>(securityManager.getIdentitiesOfSecurityGroup(targetGroup.getOwnerGroup()));
+				Set<Identity> currentParticipants 
+					= new HashSet<Identity>(securityManager.getIdentitiesOfSecurityGroup(targetGroup.getPartipiciantGroup()));
+				Set<Identity> currentWaiters
+					= new HashSet<Identity>(securityManager.getIdentitiesOfSecurityGroup(targetGroup.getWaitingGroup()));
+
+				Set<Identity> newOwners = new HashSet<Identity>();
+				Set<Identity> newParticipants = new HashSet<Identity>();
+				Set<Identity> newWaiters = new HashSet<Identity>();
+				
+				//collect the owners
+				for(BusinessGroup group:groupsToMerge) {
+					List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
+					owners.removeAll(currentOwners);
+					newOwners.addAll(owners);
+				}
+				
+				//collect the participants but test if they are not already owners
+				for(BusinessGroup group:groupsToMerge) {
+					List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+					participants.removeAll(currentParticipants);
+					for(Identity participant:participants) {
+						if(!newOwners.contains(participant)) {
+							newParticipants.add(participant);
+						}
+					}
+				}
+				
+				//collect the waiting list but test if they are not already owners or participants
+				for(BusinessGroup group:groupsToMerge) {
+					if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()) {
+						List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
+						waitingList.removeAll(currentWaiters);
+						for(Identity waiter:waitingList) {
+							if(!newOwners.contains(waiter) && !newParticipants.contains(waiter)) {
+								newWaiters.add(waiter);
+							}
+						}
+					}
+				}
+				
+				for(Identity newOwner:newOwners) {
+					addOwner(merger, newOwner, targetGroup);
+				}
+				for(Identity newParticipant:newParticipants) {
+					addParticipant(merger, newParticipant, targetGroup);
+				}
+				for(Identity newWaiter:newWaiters) {
+					addToWaitingList(merger, newWaiter, targetGroup);
+				}
+			}
+		});
+		
+		for(BusinessGroup group:groupsToMerge) {
+			deleteBusinessGroup(group);
+		}
+		return targetGroup;
 	}
 
 	@Override

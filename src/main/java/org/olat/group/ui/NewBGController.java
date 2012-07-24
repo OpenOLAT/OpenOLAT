@@ -64,7 +64,7 @@ public class NewBGController extends BasicController {
 	private VelocityContainer contentVC;
 	private BusinessGroupFormController groupCreateController;
 	private boolean bulkMode = false;
-	private Set<BusinessGroup> newGroups;
+	private List<BusinessGroup> newGroups;
 
 	/**
 	 * @param ureq
@@ -124,15 +124,15 @@ public class NewBGController extends BasicController {
 				boolean enableWaitingList = groupCreateController.isWaitingListEnabled();
 				boolean enableAutoCloseRanks = groupCreateController.isAutoCloseRanksEnabled();
 				
-				List<BusinessGroup> newGroups = new ArrayList<BusinessGroup>();
+				newGroups = new ArrayList<BusinessGroup>();
 				if (bulkMode) {
 					for(String bgName:groupCreateController.getGroupNames()) {
-						BusinessGroup group = businessGroupService.createBusinessGroup(null, bgName, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
+						BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
 						newGroups.add(group);
 					}
 				} else {
 					String bgName = groupCreateController.getGroupName();
-					BusinessGroup group = businessGroupService.createBusinessGroup(null, bgName, bgDesc, bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, resource);
+					BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, resource);
 					newGroups.add(group);
 				}
 
@@ -169,6 +169,9 @@ public class NewBGController extends BasicController {
 	 * @return
 	 */
 	public BusinessGroup getCreatedGroup() {
+		if(newGroups == null || newGroups.isEmpty()) {
+			return null;
+		}
 		return newGroups.iterator().next();
 	}
 	
@@ -178,7 +181,11 @@ public class NewBGController extends BasicController {
 	 * @return the new groups.
 	 */
 	public Set<BusinessGroup> getCreatedGroups(){
-		return newGroups;
+		Set<BusinessGroup> groupSet = new HashSet<BusinessGroup>(newGroups);
+		if(newGroups == null) {
+			groupSet.addAll(newGroups); 
+		}
+		return groupSet;
 	}
 	
 	/**
@@ -188,16 +195,20 @@ public class NewBGController extends BasicController {
 	 */
 	public Set<String> getCreatedGroupNames(){
 		Set<String> groupNames = new HashSet<String>();
-		for (Iterator<BusinessGroup> iterator = this.newGroups.iterator(); iterator.hasNext();) {
-			 groupNames.add( iterator.next().getName());
+		if(newGroups != null) {
+			for (Iterator<BusinessGroup> iterator = newGroups.iterator(); iterator.hasNext();) {
+				 groupNames.add( iterator.next().getName());
+			}
 		}
 		return groupNames;
 	}
 	
 	public Set<Long> getCreatedGroupKeys(){
 		Set<Long> groupKeys = new HashSet<Long>();
-		for (BusinessGroup group:newGroups) {
-			 groupKeys.add(group.getKey());
+		if(newGroups != null) {
+			for (BusinessGroup group:newGroups) {
+				 groupKeys.add(group.getKey());
+			}
 		}
 		return groupKeys;
 	}
@@ -209,5 +220,4 @@ public class NewBGController extends BasicController {
 	public boolean isBulkMode(){
 		return bulkMode;
 	}
-
 }

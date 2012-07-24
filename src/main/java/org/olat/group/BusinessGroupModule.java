@@ -44,6 +44,9 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	public static final String DELETE_EMAIL_DURATION_PROPERTY_NAME = "DeleteEmailDuration";
 	public static final int DEFAULT_DELETE_EMAIL_DURATION = 30;
 	
+	public static final String USER_ALLOWED_TO_CREATE_BG = "userAllowedToCreate";
+	public static final String AUTHOR_ALLOWED_TO_CREATE_BG = "authorAllowedToCreate";
+	
 	/**
 	 * [used by spring]
 	 */
@@ -98,6 +101,14 @@ public class BusinessGroupModule extends AbstractOLATModule {
 
 	public int getDeleteEmailDuration() {
 		return DEFAULT_DELETE_EMAIL_DURATION;//getIntProperty(DELETE_EMAIL_DURATION_PROPERTY_NAME, DEFAULT_DELETE_EMAIL_DURATION);
+	}
+	
+	public boolean isUserAllowedToCreateBG() {
+		return true;
+	}
+	
+	public boolean isAuthorAllowedToCreateBG() {
+		return true;
 	}
 
 }

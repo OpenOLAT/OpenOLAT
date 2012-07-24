@@ -26,10 +26,12 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -80,6 +82,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	private BusinessGroup businessGroup;
 
 	private boolean bulkMode = false;
+	private boolean embbeded = false;
 
 	private Set<String> validNames;
 
@@ -121,6 +124,14 @@ public class BusinessGroupFormController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
 		this.bulkMode = bulkMode;
+		initForm(ureq); // depends on bulkMode flag
+	}
+	
+	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, Form rootForm) {
+		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, rootForm);
+		this.businessGroup = businessGroup;
+		bulkMode = false;
+		embbeded = true;
 		initForm(ureq); // depends on bulkMode flag
 	}
 
@@ -189,19 +200,21 @@ public class BusinessGroupFormController extends FormBasicController {
 				enableAutoCloseRanks.select("create.form.enableAutoCloseRanks", businessGroup.getAutoCloseRanksEnabled());
 			}
 		}
-
-		// Create submit and cancel buttons
-		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("finish", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		
+		if(!embbeded) {
+			// Create submit and cancel buttons
+			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+			formLayout.add(buttonLayout);
+			uifactory.addFormSubmitButton("finish", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		// 1) Check valid group names
 		if (!StringHelper.containsNonWhitespace(businessGroupName.getValue())) {
 			businessGroupName.setErrorKey("form.legende.mandatory", new String[] {});

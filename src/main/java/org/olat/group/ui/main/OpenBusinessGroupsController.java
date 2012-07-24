@@ -19,9 +19,6 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,7 +34,6 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -46,15 +42,10 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OpenBusinessGroupsController extends AbstractBusinessGroupListController {
-	private static final String TABLE_ACTION_LEAVE = "bgTblLeave";
-	private static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
-	private static final String TABLE_ACTION_ACCESS = "bgTblAccess";
-	
-	private final OpenBusinessGroupSearchController searchController;
 	
 	private final Link allOpenLink, searchOpenLink;
 	private final SegmentViewComponent segmentView;
-
+	private final OpenBusinessGroupSearchController searchController;
 
 	public OpenBusinessGroupsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "open");
@@ -76,6 +67,11 @@ public class OpenBusinessGroupsController extends AbstractBusinessGroupListContr
 	}
 	
 	@Override
+	protected void initButtons(UserRequest ureq) {
+		//
+	}
+
+	@Override
 	protected int initColumns() {
 		CustomCellRenderer markRenderer = new BGMarkCellRenderer(this, mainVC, getTranslator());
 		groupListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor(Cols.mark.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, markRenderer));
@@ -91,11 +87,6 @@ public class OpenBusinessGroupsController extends AbstractBusinessGroupListContr
 		groupListCtr.addColumnDescriptor(false, new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE, translate("table.header.leave"), null));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), TABLE_ACTION_ACCESS, getLocale()));
 		return 7;
-	}
-
-	@Override
-	protected void doDispose() {
-		//
 	}
 	
 	@Override
@@ -127,25 +118,21 @@ public class OpenBusinessGroupsController extends AbstractBusinessGroupListContr
 
 	private void updateSearchGroupModel(SearchEvent event) {
 		if(event == null) {
-			groupListModel.setEntries(Collections.<BGTableItem>emptyList());
-			groupListCtr.modelChanged();
-			return;
+			updateTableModel(null, false);
+		} else {
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			params.setName(event.getName());
+			params.setDescription(event.getDescription());
+			params.setOwnerName(event.getOwnerName());
+			params.setPublicGroups(Boolean.TRUE);
+			updateTableModel(params, false);
 		}
-		
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setName(event.getName());
-		params.setDescription(event.getDescription());
-		params.setOwnerName(event.getOwnerName());
-		params.setPublicGroups(Boolean.TRUE);
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
 	}
 	
 	private void updateOpenGroupModel() {
 		//find all accessible business groups
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setPublicGroups(Boolean.TRUE);
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
+		updateTableModel(params, false);
 	}
 }

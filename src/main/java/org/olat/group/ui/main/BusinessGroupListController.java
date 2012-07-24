@@ -19,9 +19,6 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,7 +34,6 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -46,16 +42,10 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BusinessGroupListController extends AbstractBusinessGroupListController {
-	private static final String TABLE_ACTION_LEAVE = "bgTblLeave";
-	private static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
-	private static final String TABLE_ACTION_ACCESS = "bgTblAccess";
 	
-
 	private final Link markedGroupsLink, allGroupsLink, ownedGroupsLink, searchOpenLink;
 	private final SegmentViewComponent segmentView;
-
 	private final BusinessGroupSearchController searchController;
-	
 	
 	public BusinessGroupListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "group_list");
@@ -84,7 +74,19 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
 		segmentView.addSegment(searchOpenLink, false);
 	}
-	
+
+	@Override
+	protected void initButtons(UserRequest ureq) {
+		initButtons(ureq, true);
+		groupListCtr.setMultiSelect(true);
+		groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
+		groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
+		groupListCtr.addMultiSelectAction("table.users.management", TABLE_ACTION_USERS);
+		groupListCtr.addMultiSelectAction("table.config", TABLE_ACTION_CONFIG);
+		groupListCtr.addMultiSelectAction("table.email", TABLE_ACTION_EMAIL);
+		groupListCtr.addMultiSelectAction("table.delete", TABLE_ACTION_DELETE);
+	}
+
 	@Override
 	protected int initColumns() {
 		CustomCellRenderer markRenderer = new BGMarkCellRenderer(this, mainVC, getTranslator());
@@ -147,9 +149,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		params.setOwner(true);
 		params.setWaiting(true);
 		params.setIdentity(getIdentity());
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, true);
-		return !groups.isEmpty();
+		return !updateTableModel(params, true).isEmpty();
 	}
 	
 	private void updateAllGroups() {
@@ -158,16 +158,14 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		params.setOwner(true);
 		params.setWaiting(true);
 		params.setIdentity(getIdentity());
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
+		updateTableModel(params, false);
 	}
 	
 	private void updateOwnedGroups() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setIdentity(getIdentity());
 		params.setOwner(true);
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
+		updateTableModel(params, false);
 	}
 
 	private void doSearch(SearchEvent event) {
@@ -182,19 +180,17 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 
 	private void search(SearchEvent event) {
 		if(event == null) {
-			updateTableModel(Collections.<BusinessGroup>emptyList(), true);
-			return;
+			updateTableModel(null, false);
+		} else {
+			SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+			//security
+			if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()
+					&& (params.getPublicGroups() == null || !params.getPublicGroups().booleanValue())) {
+				params.setOwner(true);
+				params.setAttendee(true);
+				params.setWaiting(true);
+			}
+			updateTableModel(params, false);
 		}
-	
-		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
-		//security
-		if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()
-				&& (params.getPublicGroups() == null || !params.getPublicGroups().booleanValue())) {
-			params.setOwner(true);
-			params.setAttendee(true);
-			params.setWaiting(true);
-		}
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		updateTableModel(groups, false);
 	}
 }
