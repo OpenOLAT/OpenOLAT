@@ -107,7 +107,7 @@
 		<property name="syncPersonalGroups" value="${instantMessaging.sync.personal.groups}" />
 		<!-- synchonisation of olat learning group as buddy group on IM server. Runs only once -->
 		<property name="syncLearningGroups" value="${instantMessaging.sync.learning.groups}" />
-		
+		<property name="packetReplyTimeout" value="${instantMessaging.packetReplyTimeout}" />
 	</bean>
 	
 	<bean id="org.olat.im.NameHelper" class="org.olat.instantMessaging.IMNameHelper">

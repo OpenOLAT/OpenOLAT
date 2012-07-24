@@ -24,6 +24,7 @@
 */
 package org.olat.instantMessaging;
 
+import org.jivesoftware.smack.SmackConfiguration;
 import org.olat.core.logging.StartupException;
 
 /**
@@ -171,6 +172,10 @@ public class IMConfig {
 		this.syncLearningGroups = syncLearningGroups;
 	}
 	
+	public void setPacketReplyTimeout (int timeout) {
+		SmackConfiguration.setPacketReplyTimeout(timeout);
+	}
+
 	// fxdiff: FXOLAT-46
 	/**
 	 * @param hideExternalClientInfo The hideExternalClientInfo to set.
