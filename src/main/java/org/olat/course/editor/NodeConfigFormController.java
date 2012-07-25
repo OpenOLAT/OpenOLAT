@@ -48,7 +48,9 @@ public class NodeConfigFormController extends FormBasicController {
 	public final static int SHORT_TITLE_MAX_LENGTH =25;
 	
 	private final static String[] displayOptionsKeys = new String[]{
+		CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT,
 		CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT,
+		CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT,
 		CourseNode.DISPLAY_OPTS_TITLE_CONTENT,
 		CourseNode.DISPLAY_OPTS_CONTENT};
 	
@@ -155,7 +157,9 @@ public class NodeConfigFormController extends FormBasicController {
 		objectives.setMaxLength(4000);
 		
 		String[] values = new String[]{
+				translate("nodeConfigForm.short_title_desc_content"),
 				translate("nodeConfigForm.title_desc_content"),
+				translate("nodeConfigForm.short_title_content"),
 				translate("nodeConfigForm.title_content"),
 				translate("nodeConfigForm.content_only")};
 		displayOptions = uifactory.addDropdownSingleselect("displayOptions", "nodeConfigForm.display_options", formLayout, displayOptionsKeys, values, null);

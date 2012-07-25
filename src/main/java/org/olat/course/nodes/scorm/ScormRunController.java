@@ -141,13 +141,9 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		putInitialPanel(main);
 
 		boolean doSkip = config.getBooleanSafe(ScormEditController.CONFIG_SKIPLAUNCHPAGE, true);
-		if (isAssessable && doSkip && !maxAttemptsReached()) {
+		if (doSkip && !maxAttemptsReached()) {
 			doLaunch(ureq, true);
-			//CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.createOLATResourceableType(getClass().getName()));
 			getWindowControl().getWindowBackOffice().addCycleListener(this);
-			
-//			Component scormContent = scormDispC.getInitialComponent();
-//			fireEvent(ureq, new FullWidthReplaceRequestEvent(true, scormContent));
 		}
 	}
 
@@ -436,7 +432,12 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 
 	@Override
 	public void event(Event event) {
-		if (event == Window.END_OF_DISPATCH_CYCLE) {
+		if (event == Window.END_OF_DISPATCH_CYCLE || event == Window.BEFORE_RENDER_ONLY) {
+			// do initial modal dialog activation 
+			// a) just after the dispatching of the event which is before
+			// rendering after a normal click
+			// b) just before a render-only operation which happens when using a
+			// jump-in URL followed by a redirect without dispatching
 			scormDispC.activate();
 			getWindowControl().getWindowBackOffice().removeCycleListener(this);
 		}

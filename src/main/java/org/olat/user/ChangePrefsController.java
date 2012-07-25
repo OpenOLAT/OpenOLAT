@@ -41,12 +41,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.id.User;
 import org.olat.core.id.context.HistoryManager;
 import org.olat.core.id.context.HistoryModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
 import org.olat.properties.PropertyManager;
@@ -339,11 +342,13 @@ class UserPrefsResetForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if (resetElements.isAtLeastSelected(1)) {
 			// Log out user first if logged in
+			boolean logout = false;
 			Set<UserSession> sessions = UserSession.getAuthenticatedUserSessions();
 			for (UserSession session : sessions) {
 				Identity ident = session.getIdentity();
 				if (ident != null && tobeChangedIdentity.equalsByPersistableKey(ident)) {
 					session.signOffAndClear();
+					logout = true;
 					break;
 				}
 			}
@@ -371,6 +376,13 @@ class UserPrefsResetForm extends FormBasicController {
 			}
 			// reset form buttons
 			resetElements.uncheckAll();
+			
+			if(logout) {
+				//if logout, need a redirect to the login page
+				String lang = I18nManager.getInstance().getLocaleKey(ureq.getLocale());
+				ureq.getDispatchResult().setResultingMediaResource(
+						new RedirectMediaResource(WebappHelper.getServletContextPath() + "/dmz/?lang=" + lang + "&logout=true"));
+			}
 		}
 	}
 	

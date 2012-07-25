@@ -40,8 +40,34 @@ public class TitledWrapperHelper {
 		String displayOption = courseNode.getDisplayOption();
 		if(CourseNode.DISPLAY_OPTS_CONTENT.equals(displayOption)) {
 			return controller;
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
+		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
 			TitleInfo titleInfo = new TitleInfo(null, courseNode.getShortTitle(), null, courseNode.getIdent());
+			titleInfo.setDescriptionCssClass("o_course_run_objectives");
+			TitledWrapperController titledController = new TitledWrapperController(ureq, wControl, controller, "o_course_run", titleInfo);
+			if (StringHelper.containsNonWhitespace(iconCssClass)) {
+				titledController.setTitleCssClass(" b_with_small_icon_left " + iconCssClass + " ");
+			}
+			return titledController; 
+		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
+			TitleInfo titleInfo = new TitleInfo(null, courseNode.getLongTitle(), null, courseNode.getIdent());
+			titleInfo.setDescriptionCssClass("o_course_run_objectives");
+			TitledWrapperController titledController = new TitledWrapperController(ureq, wControl, controller, "o_course_run", titleInfo);
+			if (StringHelper.containsNonWhitespace(iconCssClass)) {
+				titledController.setTitleCssClass(" b_with_small_icon_left " + iconCssClass + " ");
+			}
+			return titledController; 
+		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
+			String title = courseNode.getShortTitle();
+			String description = null;
+			if (StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
+				if (StringHelper.containsNonWhitespace(title)) {
+					description = "<h4>" + title + "</h4>" + courseNode.getLearningObjectives();
+				} else {
+					description = courseNode.getLearningObjectives();
+				}
+			}
+			
+			TitleInfo titleInfo = new TitleInfo(null, courseNode.getShortTitle(), description, courseNode.getIdent());
 			titleInfo.setDescriptionCssClass("o_course_run_objectives");
 			TitledWrapperController titledController = new TitledWrapperController(ureq, wControl, controller, "o_course_run", titleInfo);
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
@@ -50,11 +76,11 @@ public class TitledWrapperHelper {
 			return titledController; 
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 
-			String longTitle = courseNode.getLongTitle();
+			String title = courseNode.getLongTitle();
 			String description = null;
 			if (StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
-				if (StringHelper.containsNonWhitespace(longTitle)) {
-					description = "<h4>" + longTitle + "</h4>" + courseNode.getLearningObjectives();
+				if (StringHelper.containsNonWhitespace(title)) {
+					description = "<h4>" + title + "</h4>" + courseNode.getLearningObjectives();
 				} else {
 					description = courseNode.getLearningObjectives();
 				}

@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.id.User;
 import org.olat.user.AbstractUserPropertyHandler;
 import org.olat.user.UserManager;
-
+import java.util.regex.Pattern;
 /**
  * <h3>Description:</h3>
  * This generic text property provides a userfield that has a maximum of 127
@@ -45,6 +45,8 @@ import org.olat.user.UserManager;
  */
 public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandler {
 	
+	private Pattern regExp;
+	private String regExpMsgKey;
 
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
@@ -94,8 +96,15 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 	public boolean isValid(FormItem formItem, Map formContext) {
 		org.olat.core.gui.components.form.flexible.elements.TextElement textElemItem = (org.olat.core.gui.components.form.flexible.elements.TextElement) formItem;
 		if (textElemItem.isMandatory()) {
-			return ! textElemItem.isEmpty("new.form.mandatory");
+			if (textElemItem.isEmpty("new.form.mandatory")) {
+				return false;
+			}
 		} 
+
+		if (regExp != null) {
+			return regExp.matcher(textElemItem.getValue()).matches();
+		}
+		
 		return true;
 	}
 
@@ -108,8 +117,22 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 			validationError.setErrorKey("general.error.max.127");
 			return false;
 		}
+		
+		if (regExp != null) {
+			if (!regExp.matcher(value).matches()) {
+				validationError.setErrorKey(regExpMsgKey);
+				return false;
+			}
+		}
+		
 		return true;
 	}
-
 	
+	public void setRegExp(String rx) {
+		this.regExp = Pattern.compile(rx);
+	}
+	
+	public void setRegExpMsgKey(String key) {
+		this.regExpMsgKey = key;
+	}
 }
