@@ -45,7 +45,7 @@ public class BGAccessControlledCellRenderer implements CustomCellRenderer {
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof Collection) {
-			Collection<?> accessTypes = (Collection<String>)val;
+			Collection<?> accessTypes = (Collection<?>)val;
 			for(Object accessType:accessTypes) {
 				if(accessType instanceof String) {
 					String type = (String)accessType;

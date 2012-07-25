@@ -17,46 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.ui.main;
+package org.olat.group.ui.wizard;
 
 import java.util.Locale;
 
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 
 /**
  * 
+ * Render the status of a user (new, removed, current)
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BGRoleCellRenderer implements CustomCellRenderer {
+public class BGUserStatusCellRenderer implements CustomCellRenderer {
 	
-	private final Translator translator;
-	
-	public BGRoleCellRenderer(Locale locale) {
-		this.translator = Util.createPackageTranslator(BGRoleCellRenderer.class, locale);
+	public BGUserStatusCellRenderer() {
+		//
 	}
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof BGMembership) {
-			BGMembership membership = (BGMembership)val;
-			switch(membership) {
-				case owner: {
-					sb.append(translator.translate("owned.groups"));
-					break;
+		if(val instanceof BGUserManagementGroupTableDataModel.Status) {
+			BGUserManagementGroupTableDataModel.Status status = (BGUserManagementGroupTableDataModel.Status)val;
+			sb.append("<div class='b_status'><span>");
+			switch(status) {
+				case newOwner: {
+					sb.append("+O"); break;
 				}
-				case participant: {
-					sb.append(translator.translate("search.attendee"));
-					break;
+				case newParticipant: {
+					sb.append("+P"); break;
 				}
-				case waiting: {
-					sb.append(translator.translate("search.waiting"));
-					break;
+				case newWaiting: {
+					sb.append("+W"); break;
+				}
+				case removed: {
+					sb.append("-"); break;
 				}
 			}
+			sb.append("</span></div>");
 		}
 	}
 }

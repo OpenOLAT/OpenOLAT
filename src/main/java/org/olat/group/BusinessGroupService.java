@@ -35,6 +35,7 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.DisplayMembers;
+import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -224,6 +225,13 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public BusinessGroup mergeBusinessGroups(Identity merger, BusinessGroup targetGroup, List<BusinessGroup> groupsToMerge);
+	
+	/**
+	 * Update the members of a list of business groups
+	 * @param membersMod
+	 * @param groups
+	 */
+	public void updateMembership(Identity identity, MembershipModification modifications, List<BusinessGroup> groups);
 	
 	//search methods
 	/**

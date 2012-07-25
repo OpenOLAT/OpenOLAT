@@ -78,6 +78,7 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.DisplayMembers;
+import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.BGMailHelper;
@@ -461,6 +462,53 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			deleteBusinessGroup(group);
 		}
 		return targetGroup;
+	}
+
+	@Override
+	public void updateMembership(Identity identity, MembershipModification membersMod, List<BusinessGroup> groups) {
+		for(BusinessGroup group:groups) {
+			updateMembers(identity, membersMod, group);
+		}
+	}
+	
+	private void updateMembers(final Identity identity, final MembershipModification membersMod, final BusinessGroup group) {
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
+			public void execute() {
+				List<Identity> currentOwners = securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
+				List<Identity> currentParticipants = securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+				List<Identity> currentWaitingList = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
+
+				for(Identity owner:membersMod.getAddOwners()) {
+					if(!currentOwners.contains(owner)) {
+						addOwner(identity, owner, group);
+					}
+				}
+				for(Identity participant:membersMod.getAddParticipants()) {
+					if(!currentParticipants.contains(participant)) {
+						addParticipant(identity, participant, group);
+					}
+				}
+				for(Identity waitingIdentity:membersMod.getAddToWaitingList()) {
+					if(!currentWaitingList.contains(waitingIdentity)) {
+						addToWaitingList(identity, waitingIdentity, group);
+					}
+				}
+				
+				//remove owners
+				List<Identity> ownerToRemove = new ArrayList<Identity>();
+				for(Identity removed:membersMod.getRemovedIdentities()) {
+					if(currentOwners.contains(removed)) {
+						ownerToRemove.add(removed);
+					}
+					if(currentParticipants.contains(removed)) {
+						removeParticipant(identity, removed, group);
+					}
+					if(currentWaitingList.contains(removed)) {
+						removeFromWaitingList(identity, removed, group);
+					}
+				}
+				removeOwners(identity, ownerToRemove, group);
+		}});
 	}
 
 	@Override

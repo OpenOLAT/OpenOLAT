@@ -19,7 +19,6 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;

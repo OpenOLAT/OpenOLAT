@@ -97,6 +97,10 @@ public class MailNotificationEditController extends BasicController {
 			}
 		}
 	}
+	
+	public boolean isSendMail() {
+		return mailForm.sendMailSwitchEnabled();
+	}
 
 	/**
 	 * @return The mail template containing the configured mail or null if user
@@ -108,6 +112,14 @@ public class MailNotificationEditController extends BasicController {
 		} else {
 			return null;
 		}
+	}
+	
+	/**
+	 * Return the current template, always
+	 * @return
+	 */
+	public MailTemplate getTemplate() {
+		return mailTemplate;
 	}
 	
 	/**

@@ -34,8 +34,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
+import org.olat.core.gui.components.table.ColumnDescriptor;
+import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
@@ -49,6 +50,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.group.model.MembershipModification;
+import org.olat.group.ui.main.BGMembership;
+import org.olat.group.ui.main.BGRoleCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -65,20 +69,16 @@ public class BGUserManagementController extends BasicController {
 	protected static final String COMMAND_SELECTUSER = "select.user";
 	
 	private VelocityContainer mainVC;
-	private Link addOwner, addParticipant;
+	private Link addOwner, addParticipant, addToWaitingList;
 	private Link okLink, cancelLink;
 	private TableController usersCtrl;
-	private UserSearchController addOwnerCtrl;
-	private UserSearchController addParticipantCtrl;
+	private UserSearchController addCtrl;
 	private CloseableModalController cmc;
 	private BGUserManagementGroupTableDataModel userTableModel;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private final List<BusinessGroup> groups;
 	private final BaseSecurity securityManager;
-	private final List<Identity> addedOwners = new ArrayList<Identity>();
-	private final List<Identity> addedParticipants = new ArrayList<Identity>();
-	private final List<Identity> removedIdentities = new ArrayList<Identity>();
 
 	public BGUserManagementController(UserRequest ureq, WindowControl wControl, List<BusinessGroup> groups) {
 		super(ureq, wControl);
@@ -88,8 +88,9 @@ public class BGUserManagementController extends BasicController {
 		
 		mainVC = createVelocityContainer("users");
 		
-		addOwner = LinkFactory.createButton("users.addparticipant", mainVC, this);
-		addParticipant = LinkFactory.createButton("users.addowner", mainVC, this);
+		addOwner = LinkFactory.createButton("users.addowner", mainVC, this);
+		addParticipant = LinkFactory.createButton("users.addparticipant", mainVC, this);
+		addToWaitingList = LinkFactory.createButton("users.addwaiting", mainVC, this);
 
 		Translator userTrans = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());;
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -97,59 +98,48 @@ public class BGUserManagementController extends BasicController {
 		usersCtrl = new TableController(tableConfig, ureq, getWindowControl(), userTrans);
 		listenTo(usersCtrl);
 
-		userTableModel = new BGUserManagementGroupTableDataModel(Collections.<Identity>emptyList(), getLocale(), userPropertyHandlers);
-		initGroupTable();
+		userTableModel = new BGUserManagementGroupTableDataModel(getLocale(), userPropertyHandlers);
+		CustomCellRenderer statusRenderer = new BGUserStatusCellRenderer();
+		usersCtrl.addColumnDescriptor(new CustomRenderColumnDescriptor("table.status", 0, null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, statusRenderer));
+		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getLocale());
+		usersCtrl.addColumnDescriptor(new CustomRenderColumnDescriptor("table.role", 1, null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
+			usersCtrl.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i+2, null, getLocale()));
+		}
+		usersCtrl.addMultiSelectAction("remove", COMMAND_REMOVEUSER);
+		usersCtrl.setMultiSelect(true);
 		usersCtrl.setTableDataModel(userTableModel);
 		
 		mainVC.put("users", usersCtrl.getInitialComponent());
-		
-		
-
 		okLink = LinkFactory.createButton("ok", mainVC, this);
 		cancelLink = LinkFactory.createButton("cancel", mainVC, this);
-		
-		
 		putInitialPanel(mainVC);
 
 		loadModel();
 	}
 	
-	protected void initGroupTable() {			
-		// first the login name
-		DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.user.login", 0, COMMAND_VCARD, getLocale());
-		cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-		
-		usersCtrl.addColumnDescriptor(cd0);
-
-		// followed by the users fields
-		for (int i = 0; i < userPropertyHandlers.size(); i++) {
-			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
-			usersCtrl.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i+1, null, getLocale()));
-		}
-
-		usersCtrl.addColumnDescriptor(new StaticColumnDescriptor(COMMAND_SELECTUSER, "table.subject.action", translate("action.general")));
-		usersCtrl.addMultiSelectAction("remove", COMMAND_REMOVEUSER);
-		usersCtrl.setMultiSelect(true);
-	}
-	
 	private void loadModel() {
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		
+		List<SecurityGroup> onwerSecGroups = new ArrayList<SecurityGroup>();
+		List<SecurityGroup> participantSecGroups = new ArrayList<SecurityGroup>();
+		List<SecurityGroup> waitingSecGroups = new ArrayList<SecurityGroup>();
 		for(BusinessGroup group:groups) {
 			if(group.getOwnerGroup() != null) {
-				secGroups.add(group.getOwnerGroup());
+				onwerSecGroups.add(group.getOwnerGroup());
 			}
 			if(group.getPartipiciantGroup() != null) {
-				secGroups.add(group.getPartipiciantGroup());
+				participantSecGroups.add(group.getPartipiciantGroup());
 			}
 			if(group.getWaitingGroup() != null) {
-				secGroups.add(group.getWaitingGroup());
+				waitingSecGroups.add(group.getWaitingGroup());
 			}
 		}
-		
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroups(secGroups);
-		userTableModel.setObjects(identities);
+
+		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroups(onwerSecGroups);
+		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroups(participantSecGroups);
+		List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroups(waitingSecGroups);
+		userTableModel.setMembers(owners, participants, waitingList);
 		usersCtrl.modelChanged();
 	}
 	
@@ -162,14 +152,13 @@ public class BGUserManagementController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == cmc) {
 			cleanupPopup();
-		} else if (source == addOwnerCtrl || source == addParticipantCtrl) {
+		} else if (source == addCtrl) {
 			List<Identity> identitiesToAdd = extractIdentities(event);
-			if (source == addOwnerCtrl) {
-				addedParticipants.addAll(identitiesToAdd);
-				userTableModel.getObjects().addAll(identitiesToAdd);
-			} else if(source == addParticipantCtrl) {
-				addedParticipants.addAll(identitiesToAdd);
-				userTableModel.getObjects().addAll(identitiesToAdd);
+			BGMembership type = (BGMembership)addCtrl.getUserObject();
+			switch(type) {
+				case owner: userTableModel.addOwners(identitiesToAdd); break;
+				case participant: userTableModel.addParticipants(identitiesToAdd); break;
+				case waiting: userTableModel.addToWaitingList(identitiesToAdd); break;
 			}
 			usersCtrl.modelChanged();
 			cmc.deactivate();
@@ -189,23 +178,11 @@ public class BGUserManagementController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == addOwner) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(addOwnerCtrl);
-			
-			addOwnerCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);			
-			listenTo(addOwnerCtrl);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), addOwnerCtrl.getInitialComponent(), true, translate("users.addowner"));
-			listenTo(cmc);
-			cmc.activate();
+			addMembership(ureq, BGMembership.owner);
 		} else if (source == addParticipant) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(addParticipantCtrl);
-			
-			addParticipantCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);			
-			listenTo(addParticipantCtrl);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), addParticipantCtrl.getInitialComponent(), true, translate("users.addowner"));
-			listenTo(cmc);
-			cmc.activate();
+			addMembership(ureq, BGMembership.participant);
+		} else if (source == addToWaitingList) {
+			addMembership(ureq, BGMembership.waiting);
 		} else if (source == okLink) {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == cancelLink) {
@@ -213,11 +190,33 @@ public class BGUserManagementController extends BasicController {
 		}
 	}
 	
+	private void addMembership(UserRequest ureq, BGMembership type) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(addCtrl);
+		
+		addCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);	
+		addCtrl.setUserObject(type);
+		listenTo(addCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addCtrl.getInitialComponent(), true, translate("users.addowner"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	public List<BusinessGroup> getGroups() {
+		return groups;
+	}
+
+	public MembershipModification getModifications() {
+		MembershipModification mod = new MembershipModification();
+		mod.setAddOwners(userTableModel.getAddOwnerIdentities());
+		mod.setAddParticipants(userTableModel.getAddParticipantIdentities());
+		mod.setAddToWaitingList(userTableModel.getAddToWaitingList());
+		mod.setRemovedIdentities(userTableModel.getRemovedIdentities());
+		return mod;
+	}
+	
 	private void removeIdentities(List<Identity> toRemove) {
-		userTableModel.getObjects().removeAll(toRemove);
-		addedOwners.removeAll(toRemove);
-		addedParticipants.removeAll(toRemove);
-		removedIdentities.addAll(toRemove);
+		userTableModel.remove(toRemove);
 		usersCtrl.modelChanged();
 	}
 	
@@ -237,11 +236,9 @@ public class BGUserManagementController extends BasicController {
 	
 	private void cleanupPopup() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(addOwnerCtrl);
-		removeAsListenerAndDispose(addParticipantCtrl);
+		removeAsListenerAndDispose(addCtrl);
 		cmc = null;
-		addOwnerCtrl = null;
-		addParticipantCtrl = null;
+		addCtrl = null;
 	}
 
 

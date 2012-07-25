@@ -58,12 +58,15 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.mail.MailNotificationEditController;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.vfs.Quota;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.NewBGController;
 import org.olat.group.ui.wizard.BGConfigBusinessGroup;
@@ -72,8 +75,8 @@ import org.olat.group.ui.wizard.BGCopyBusinessGroup;
 import org.olat.group.ui.wizard.BGCopyPreparationStep;
 import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
 import org.olat.group.ui.wizard.BGMergeStep;
+import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
-import org.olat.group.ui.wizard.BGUserManagementSendMailController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -107,7 +110,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	
 	private NewBGController groupCreateController;
 	private BGUserManagementController userManagementController;
-	private BGUserManagementSendMailController userManagementSendMailController;
+	private MailNotificationEditController userManagementSendMailController;
 	private BusinessGroupDeleteDialogBoxController deleteDialogBox;
 	private StepsMainRunController businessGroupWizard;
 	private CloseableModalController cmc;
@@ -297,14 +300,18 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			cmc.deactivate();
 			if(event == Event.DONE_EVENT) {
 				//confirm sending emails
-				confirmUserManagementEmail(ureq);
+				MembershipModification mod = userManagementController.getModifications();
+				List<BusinessGroup> groups = userManagementController.getGroups();
+				confirmUserManagementEmail(ureq, mod, groups);
 			} else {
 				cleanUpPopups();
 			}
 		} else if (source == userManagementSendMailController) {
 			if(event == Event.DONE_EVENT) {
-				boolean sendMail = userManagementSendMailController.isSendMail();
-				finishUserManagement(sendMail);
+				BGUserMailTemplate sendMail = (BGUserMailTemplate)userManagementSendMailController.getTemplate();
+				MembershipModification mod = sendMail.getModifications();
+				List<BusinessGroup> groups = sendMail.getGroups();
+				finishUserManagement(mod, groups, sendMail, userManagementSendMailController.isSendMail());
 			}
 			cmc.deactivate();
 			cleanUpPopups();
@@ -539,20 +546,22 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		listenTo(cmc);
 	}
 	
-	private void confirmUserManagementEmail(UserRequest ureq) {
+	private void confirmUserManagementEmail(UserRequest ureq, MembershipModification mod, List<BusinessGroup> groups) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(userManagementSendMailController);
 		
-		userManagementSendMailController = new BGUserManagementSendMailController(ureq, getWindowControl());
+		MailTemplate template = new BGUserMailTemplate(groups, mod, "", "");
+		userManagementSendMailController = new MailNotificationEditController(getWindowControl(), ureq, template, false);
+		Component cmp = userManagementSendMailController.getInitialComponent();
 		listenTo(userManagementSendMailController);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userManagementSendMailController.getInitialComponent(),
-				true, translate("users.group"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cmp, true, translate("users.group"));
 		cmc.activate();
 		listenTo(cmc);
 	}
 	
-	private void finishUserManagement(boolean sendMail) {
-		
+	private void finishUserManagement(MembershipModification mod, List<BusinessGroup> groups, MailTemplate template, boolean sendMail) {
+		businessGroupService.updateMembership(getIdentity(), mod, groups);
+		//TODO send mails
 	}
 	
 	/**
