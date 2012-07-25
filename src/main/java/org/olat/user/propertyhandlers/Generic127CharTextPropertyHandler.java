@@ -96,7 +96,9 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 	public boolean isValid(FormItem formItem, Map formContext) {
 		org.olat.core.gui.components.form.flexible.elements.TextElement textElemItem = (org.olat.core.gui.components.form.flexible.elements.TextElement) formItem;
 		if (textElemItem.isMandatory()) {
-			return ! textElemItem.isEmpty("new.form.mandatory");
+			if (textElemItem.isEmpty("new.form.mandatory")) {
+				return false;
+			}
 		} 
 
 		if (regExp != null) {
