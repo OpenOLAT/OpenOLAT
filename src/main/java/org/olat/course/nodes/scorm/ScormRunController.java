@@ -141,13 +141,9 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		putInitialPanel(main);
 
 		boolean doSkip = config.getBooleanSafe(ScormEditController.CONFIG_SKIPLAUNCHPAGE, true);
-		if (isAssessable && doSkip && !maxAttemptsReached()) {
+		if (doSkip && !maxAttemptsReached()) {
 			doLaunch(ureq, true);
-			//CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.createOLATResourceableType(getClass().getName()));
 			getWindowControl().getWindowBackOffice().addCycleListener(this);
-			
-//			Component scormContent = scormDispC.getInitialComponent();
-//			fireEvent(ureq, new FullWidthReplaceRequestEvent(true, scormContent));
 		}
 	}
 
