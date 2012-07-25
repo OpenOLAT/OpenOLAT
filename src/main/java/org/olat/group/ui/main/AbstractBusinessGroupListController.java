@@ -72,6 +72,8 @@ import org.olat.group.ui.wizard.BGCopyBusinessGroup;
 import org.olat.group.ui.wizard.BGCopyPreparationStep;
 import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
 import org.olat.group.ui.wizard.BGMergeStep;
+import org.olat.group.ui.wizard.BGUserManagementController;
+import org.olat.group.ui.wizard.BGUserManagementSendMailController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -104,6 +106,8 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	private Link createButton;
 	
 	private NewBGController groupCreateController;
+	private BGUserManagementController userManagementController;
+	private BGUserManagementSendMailController userManagementSendMailController;
 	private BusinessGroupDeleteDialogBoxController deleteDialogBox;
 	private StepsMainRunController businessGroupWizard;
 	private CloseableModalController cmc;
@@ -289,6 +293,21 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 					reload();
 				}
 			}
+		} else if (source == userManagementController) {
+			cmc.deactivate();
+			if(event == Event.DONE_EVENT) {
+				//confirm sending emails
+				confirmUserManagementEmail(ureq);
+			} else {
+				cleanUpPopups();
+			}
+		} else if (source == userManagementSendMailController) {
+			if(event == Event.DONE_EVENT) {
+				boolean sendMail = userManagementSendMailController.isSendMail();
+				finishUserManagement(sendMail);
+			}
+			cmc.deactivate();
+			cleanUpPopups();
 		} else if (source == cmc) {
 			cleanUpPopups();
 		}
@@ -505,8 +524,34 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 * @param ureq
 	 * @param items
 	 */
-	private void doUserManagement(UserRequest ureq, List<BGTableItem> items) {
-		if(items == null || items.isEmpty()) return;
+	private void doUserManagement(UserRequest ureq, List<BGTableItem> selectedItems) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(userManagementController);
+		if(selectedItems == null || selectedItems.isEmpty()) return;
+		
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems);
+		
+		userManagementController = new BGUserManagementController(ureq, getWindowControl(), groups);
+		listenTo(userManagementController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), userManagementController.getInitialComponent(),
+				true, translate("users.group"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void confirmUserManagementEmail(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(userManagementSendMailController);
+		
+		userManagementSendMailController = new BGUserManagementSendMailController(ureq, getWindowControl());
+		listenTo(userManagementSendMailController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), userManagementSendMailController.getInitialComponent(),
+				true, translate("users.group"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void finishUserManagement(boolean sendMail) {
 		
 	}
 	
