@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
@@ -85,14 +86,14 @@ public class FunctionalArtefactTest {
 		String password = userVO.get(0).getPassword();
 		
 		/* deploy course with REST */
-		RepositoryEntryVO repositoryEntry = functionalVOUtil.importAllElementsCourseCourse(deploymentUrl);
+		CourseVO repositoryEntry = functionalVOUtil.importAllElementsCourse(deploymentUrl);
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, username, password, true));
 		
 		/* open course and check if it's open */
 		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
-		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, repositoryEntry.getResourceableId()));
+		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, repositoryEntry.getRepoEntryKey()));
 		
 		//TODO:JK: implement me
 	}

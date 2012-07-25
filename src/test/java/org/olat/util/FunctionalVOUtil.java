@@ -36,24 +36,30 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.junit.Assert;
-import org.olat.restapi.RepositoryEntriesTest;
 import org.olat.restapi.RestConnection;
-import org.olat.restapi.support.vo.RepositoryEntryVO;
+import org.olat.restapi.support.vo.CourseVO;
 import org.olat.user.restapi.UserVO;
 
 public class FunctionalVOUtil {
+	public final static String ALL_ELEMENTS_COURSE_DISPLAYNAME = "All Elements Course";
+	
 	private String username;
 	private String password;
+	
+	private String allElementsCourseDisplayname;
 	
 	public FunctionalVOUtil(String username, String password){
 		setUsername(username);
 		setPassword(password);
+		
+		setAllElementsCourseDisplayname(ALL_ELEMENTS_COURSE_DISPLAYNAME);
 	}
 	
 	/**
@@ -107,8 +113,8 @@ public class FunctionalVOUtil {
 		return(user);
 	}
 	
-	public RepositoryEntryVO importAllElementsCourseCourse(URL deploymentUrl) throws URISyntaxException, IOException{
-		URL courseUrl = RepositoryEntriesTest.class.getResource("../course/All_Elements_Course.zip");
+	public CourseVO importAllElementsCourse(URL deploymentUrl) throws URISyntaxException, IOException{
+		URL courseUrl = FunctionalVOUtil.class.getResource("/org/olat/course/All_Elements_Course.zip");
 		Assert.assertNotNull(courseUrl);
 		
 		File course = new File(courseUrl.toURI());
@@ -117,25 +123,35 @@ public class FunctionalVOUtil {
 
 		assertTrue(restConnection.login(getUsername(), getPassword()));
 		
-		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("repo/entries").build();
-		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/courses").build();
+		HttpPost method = restConnection.createPost(request, MediaType.APPLICATION_JSON, true);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(course));
 		entity.addPart("filename", new StringBody("All_Elements_Course.zip"));
 		entity.addPart("resourcename", new StringBody("All Elements Course"));
-		entity.addPart("displayname", new StringBody("All Elements Course"));
+		entity.addPart("displayname", new StringBody(""));
+		entity.addPart("access", new StringBody("3"));
+		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
+		entity.addPart("softkey", new StringBody(softKey));
 		method.setEntity(entity);
 		
 		HttpResponse response = restConnection.execute(method);
-		System.out.println("*===============*" + response.getStatusLine().getStatusCode());
-		
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
 		InputStream body = response.getEntity().getContent();
 		
-		RepositoryEntryVO vo = restConnection.parse(body, RepositoryEntryVO.class);
+		CourseVO vo = restConnection.parse(body, CourseVO.class);
 		assertNotNull(vo);
+		assertNotNull(vo.getRepoEntryKey());
+		assertNotNull(vo.getKey());
+		
+//		Long repoKey = vo.getRepoEntryKey();
+//		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(repoKey);
+//		assertNotNull(re);
+//		assertNotNull(re.getOwnerGroup());
+//		assertNotNull(re.getOlatResource());
+//		assertEquals("All Elements Course", re.getDisplayname());
+//		assertEquals(softKey, re.getSoftkey());
 		
 		return(vo);
 	}
@@ -154,5 +170,13 @@ public class FunctionalVOUtil {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getAllElementsCourseDisplayname() {
+		return allElementsCourseDisplayname;
+	}
+
+	public void setAllElementsCourseDisplayname(String allElementsCourseDisplayname) {
+		this.allElementsCourseDisplayname = allElementsCourseDisplayname;
 	}
 }

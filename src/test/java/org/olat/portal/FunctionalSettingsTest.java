@@ -68,6 +68,8 @@ public class FunctionalSettingsTest {
 	FunctionalUtil functionalUtil;
 	FunctionalVOUtil functionalVOUtil;
 	FunctionalHomeSiteUtil functionalHomeSiteUtil;
+	
+	int portalColumnCount;
 
 	@Before
 	public void setup(){
@@ -76,6 +78,8 @@ public class FunctionalSettingsTest {
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
+		
+		portalColumnCount = 2;
 	}
 	
 	@Test
@@ -86,40 +90,61 @@ public class FunctionalSettingsTest {
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser));
-		Thread.sleep(5000);
+		//Thread.sleep(5000);
 		
 		/* reset settings */
 		Assert.assertTrue(functionalHomeSiteUtil.resetSettings(browser));
-		Thread.sleep(5000);
+		//Thread.sleep(10000);
+		
+		//TODO:JK: check if still logged in
 		
 		/* set language */
 		functionalHomeSiteUtil.selectLanguage(browser, FunctionalHomeSiteUtil.GERMAN_LANGUAGE_VALUE);
-		Thread.sleep(10000);
+		//Thread.sleep(10000);
 		
 		/* resume off */
 		functionalHomeSiteUtil.disableResume(browser);
 		
 		/* logout */
 		Assert.assertTrue(functionalUtil.logout(browser));
-		Thread.sleep(5000);
+		//Thread.sleep(5000);
 		
 		/* login for test case */
 		Assert.assertTrue(functionalUtil.login(browser));
 		
 		/* click configure */
 		functionalHomeSiteUtil.beginEditingPortal(browser);
-		Thread.sleep(5000);
+		//Thread.sleep(5000);
 		
 		/* de-/activate portlets */
-		functionalHomeSiteUtil.deactivatePortlet(browser, functionalHomeSiteUtil.getPortletEffCss());
-		functionalHomeSiteUtil.activatePortlet(browser, functionalHomeSiteUtil.getPortletNotesCss());
+		if(functionalHomeSiteUtil.deactivatePortlet(browser, functionalHomeSiteUtil.getPortletEffCss())){
+			Assert.assertFalse(functionalHomeSiteUtil.checkPortletActive(browser, functionalHomeSiteUtil.getPortletEffCss()));
+		}
 		
-		functionalHomeSiteUtil.movePortlet(browser, functionalHomeSiteUtil.getPortletDykCss(), FunctionalHomeSiteUtil.Direction.UP);
-		functionalHomeSiteUtil.movePortlet(browser, functionalHomeSiteUtil.getPortletNotiCss(), FunctionalHomeSiteUtil.Direction.LEFT);
+		if(functionalHomeSiteUtil.activatePortlet(browser, functionalHomeSiteUtil.getPortletNotesCss())){
+			Assert.assertTrue(functionalHomeSiteUtil.checkPortletActive(browser, functionalHomeSiteUtil.getPortletNotesCss()));
+		}
 		
+		/* move portlets */
+		int oldPositionDyk[] = functionalHomeSiteUtil.findPortletPosition(browser, functionalHomeSiteUtil.getPortletDykCss(), portalColumnCount);
+		
+		if(functionalHomeSiteUtil.movePortlet(browser, functionalHomeSiteUtil.getPortletDykCss(), FunctionalHomeSiteUtil.Direction.UP)){
+			browser.refresh();
+			int newPosition[] = functionalHomeSiteUtil.findPortletPosition(browser, functionalHomeSiteUtil.getPortletDykCss(), portalColumnCount);
+			
+			Assert.assertEquals(oldPositionDyk[1], newPosition[1] + 1);
+		}
+		
+		int oldPositionNoti[] = functionalHomeSiteUtil.findPortletPosition(browser, functionalHomeSiteUtil.getPortletNotiCss(), portalColumnCount);
+		
+		if(functionalHomeSiteUtil.movePortlet(browser, functionalHomeSiteUtil.getPortletNotiCss(), FunctionalHomeSiteUtil.Direction.LEFT)){
+			int newPosition[] = functionalHomeSiteUtil.findPortletPosition(browser, functionalHomeSiteUtil.getPortletNotiCss(), portalColumnCount);
+
+			Assert.assertEquals(oldPositionNoti[0] - 1, newPosition[0]);
+		}
+		
+		/* end editing portal */
 		functionalHomeSiteUtil.endEditingPortal(browser);
-		
-		//TODO:JK: do something fancy to test the result
 		
 		/* edit settings */
 		functionalHomeSiteUtil.openActionByMenuTree(browser, FunctionalHomeSiteUtil.HomeSiteAction.SETTINGS);

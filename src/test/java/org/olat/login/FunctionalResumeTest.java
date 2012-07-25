@@ -33,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.util.FunctionalHomeSiteUtil;
@@ -80,14 +81,14 @@ public class FunctionalResumeTest {
 	@RunAsClient
 	public void checkResume() throws IOException, URISyntaxException{	
 		/* deploy course with rest */
-		RepositoryEntryVO repositoryEntry = functionalVOUtil.importAllElementsCourseCourse(deploymentUrl);
+		CourseVO course = functionalVOUtil.importAllElementsCourse(deploymentUrl);
 		
 		/* create xpath to check if course is open */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//li[@class='b_nav_tab b_nav_active b_resource_CourseModule'")
 		.append("//a[@title='")
-		.append(repositoryEntry.getDisplayname())
+		.append(functionalVOUtil.getAllElementsCourseDisplayname())
 		.append("']");
 		
 		String courseXPath = selectorBuffer.toString();
@@ -100,7 +101,7 @@ public class FunctionalResumeTest {
 		
 		/* open course and check if it's open */
 		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
-		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, repositoryEntry.getResourceableId()));
+		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, course.getRepoEntryKey()));
 
 		Assert.assertTrue(browser.isElementPresent(courseXPath));
 		

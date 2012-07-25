@@ -20,7 +20,12 @@
 package org.olat.util;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
+
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -29,6 +34,8 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalUtil {
+	private final static OLog log = Tracing.createLoggerFor(FunctionalUtil.class);
+	
 	public final static String DEPLOYMENT_URL = "http://localhost:8080/olat";
 	public final static String WAIT_LIMIT = "15000";
 	
@@ -160,6 +167,43 @@ public class FunctionalUtil {
 	}
 
 	/**
+	 * @param browser
+	 * @param locator
+	 * @return true on success otherwise false
+	 * 
+	 * Waits at most waitLimit amount of time for element to load
+	 * specified by locator.
+	 */
+	public boolean waitForPageToLoadElement(Selenium browser, String locator){
+		long startTime = Calendar.getInstance().getTimeInMillis();
+		long currentTime = startTime;
+		long waitLimit = Long.parseLong(getWaitLimit());
+
+		log.info("waiting for page to load element");
+		
+		do{
+			if(browser.isElementPresent(locator)){
+				log.info("found element after " + (currentTime - startTime) + "ms");
+				
+				return(true);
+			}
+			
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			
+			currentTime = Calendar.getInstance().getTimeInMillis();
+		}while(waitLimit >  currentTime - startTime);
+		
+		log.warn("giving up after " + waitLimit + "ms");
+		
+		return(false);
+	}
+	
+	/**
 	 * @param site
 	 * @return the matching CSS class
 	 * 
@@ -214,6 +258,10 @@ public class FunctionalUtil {
 	 * Check if the correct olat site is open.
 	 */
 	public boolean checkCurrentSite(Selenium browser, OlatSite site){
+		return(checkCurrentSite(browser, site, -1));
+	}
+	
+	public boolean checkCurrentSite(Selenium browser, OlatSite site, long timeout){
 		String selectedCss = findCssClassOfSite(site);
 		
 		if(selectedCss == null){
@@ -228,12 +276,28 @@ public class FunctionalUtil {
 		.append(getOlatActiveNavigationSiteCss())
 		.append(".")
 		.append(selectedCss);
+
+		long timeElapsed = 0;
+		long startTime = Calendar.getInstance().getTimeInMillis();
 		
-		if(browser.isElementPresent(selectorBuffer.toString())){
-			return(true);
-		}else{
-			return(false);	
-		}
+		do{
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				return(true);
+			}
+			
+			if(timeout != -1){
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					//TODO:JK: Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
+		}while(timeElapsed <= timeout && timeout != -1);
+		
+		return(false);
 	}
 	
 	/**
@@ -250,20 +314,21 @@ public class FunctionalUtil {
 			return(false);
 		}
 		
-		if(checkCurrentSite(browser, site)){
+		if(checkCurrentSite(browser, site, 15000)){
 			return(true);
 		}
 		
-		StringBuffer selectorBuffer = new StringBuffer();
+		StringBuilder selectorBuffer = new StringBuilder();
 		
 		selectorBuffer.append("css=.")
 		.append(getOlatNavigationSiteCss())
 		.append(".")
 		.append(selectedCss)
-		.append(" * a");
+		.append(" a");
 		
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(getWaitLimit());
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}
@@ -351,7 +416,7 @@ public class FunctionalUtil {
 		
 		activeTabSelectorBuffer.append("css=#")
 		.append(getContentCss())
-		.append(" * ul .")
+		.append(" ul .")
 		.append(getContentTabCss())
 		.append(tabIndex + 1)
 		.append('.')
@@ -362,10 +427,10 @@ public class FunctionalUtil {
 			
 			selectorBuffer.append("css=#")
 			.append(getContentCss())
-			.append(" * ul .")
+			.append(" ul .")
 			.append(getContentTabCss())
 			.append(tabIndex + 1)
-			.append(" * a");
+			.append(" a");
 			
 			browser.click(selectorBuffer.toString());
 			browser.waitForPageToLoad(getWaitLimit());

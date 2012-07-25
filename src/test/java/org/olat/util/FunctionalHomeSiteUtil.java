@@ -19,7 +19,18 @@
  */
 package org.olat.util;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Calendar;
+
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.exception.MethodInvocationException;
+import org.apache.velocity.exception.ParseErrorException;
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.junit.Assert;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalUtil.OlatSite;
 
 import com.thoughtworks.selenium.Selenium;
@@ -29,12 +40,13 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalHomeSiteUtil {
+	private final static OLog log = Tracing.createLoggerFor(FunctionalHomeSiteUtil.class);
 	
 	public final static String HOME_SITE_MENU_TREE_SELECTED_CSS = "b_tree_selected";
-	
+
 	public final static String FORM_ELEMENT_WRAPPER = "b_form_element_wrapper";
 	public final static String CLEARFIX = "b_clearfix";
-	
+
 	/* menu tree */
 	public final static String HOME_ACTION_PORTAL_CSS = "o_sel_portal";
 	public final static String HOME_ACTION_SETTINGS_CSS = "o_sel_mysettings";
@@ -44,24 +56,25 @@ public class FunctionalHomeSiteUtil {
 	public final static String HOME_ACTION_PERSONAL_FOLDER_CSS = "o_sel_userfolder";
 	public final static String HOME_ACTION_NOTES_CSS = "o_sel_notelist";
 	public final static String HOME_ACTION_EVIDENCES_OF_ACHIEVEMENT_CSS = "o_sel_effstatements";
-	
+
 	public final static String EPORTFOLIO_ACTION_MY_ARTIFACTS_CSS = "o_sel_EPArtefacts";
 	public final static String EPORTFOLIO_ACTION_MY_BINDERS_CSS = "o_sel_EPMaps";
 	public final static String EPORTFOLIO_ACTION_MY_PORTFOLIO_TASKS_CSS = "o_sel_EPStructuredMaps";
 	public final static String EPORTFOLIO_ACTION_RELEASED_BINDERS_CSS = "o_sel_EPSharedMaps";
-	
+
 	/* portal */
 	public final static String PORTAL_EDIT_LINK_CSS = "o_home_portaleditlink";
-	
+
 	public final static String PORTAL_WRAPPER_CSS = "b_portal_wrapper";
+	public final static String PORTAL_CSS = "b_portal";
 	public final static String PORTAL_COLUMN_CSS_PREFIX = "o_sel_portal_col_";
 	public final static String PORTAL_SUBCOLUMNS_CSS = "b_subcolumns";
 	public final static String PORTAL_INACTIVE_CSS = "b_portal_inactive";
-	
+
 	public final static String PORTLET_CSS = "b_portlet";
 	public final static String PORTLET_EDIT_CSS = "b_portlet_edit";
 	public final static String PORTLET_INACTIVE_CSS = "b_portlet_incactive";
-	
+
 	public final static String PORTLET_QUICKSTART_CSS = "o_portlet_quickstart";
 	public final static String PORTLET_REPOSITORY_STUDENT_CSS = "o_portlet_repository_student";
 	public final static String PORTLET_REPOSITORY_TEACHER_CSS = "o_portlet_repository_teacher";
@@ -72,71 +85,71 @@ public class FunctionalHomeSiteUtil {
 	public final static String PORTLET_NOTI_CSS = "o_portlet_noti";
 	public final static String PORTLET_EFF_CSS = "o_portlet_eff";
 	public final static String PORTLET_NOTES_CSS = "o_portlet_notes";
-	public final static String PORTLET_DYK_CSS = "o_portlet_dyk";
-	
+	public final static String PORTLET_DYK_CSS = "b_portlet_dyk";
+
 	public final static String PORTLET_MOVE_LEFT_CSS = "b_portlet_edit_left";
 	public final static String PORTLET_MOVE_RIGHT_CSS = "b_portlet_edit_right";
 	public final static String PORTLET_MOVE_UPWARDS_CSS = "b_portlet_edit_up";
 	public final static String PORTLET_MOVE_DOWNWARDS_CSS = "b_portlet_edit_down";
 	public final static String PORTLET_EDIT_INACTIVATE_CSS = "b_portlet_edit_delete";
 	public final static String PORTLET_EDIT_ACTIVATE_CSS = "b_portlet_add";
-	
+
 	/* General System Settings */
 	public final static String PREFS_BUTTONS_CSS = "o_sel_home_settings_prefs_buttons";
-	
+
 	public final static String LANGUAGE_OPTIONS_ID = "o_fioform_language_SELBOX";
-	
+
 	public final static String GERMAN_LANGUAGE_VALUE = "de";
 	public final static String ENGLISH_LANGUAGE_VALUE = "en";
 	public final static String FRENCH_LANGUAGE_VALUE = "fr";
 	public final static String SPANISH_LANGUAGE_VALUE = "es";
 	public final static String ITALIAN_LANGUAGE_VALUE = "it";
-	
+
 	/* Specific System Settings */
 	public final static String GUI_BUTTONS_CSS = "o_sel_home_settings_gui_buttons";
-	
+
 	public final static String ACCESSIBILITY_CSS = "o_sel_home_settings_accessibility";
 	public final static String RESUME_LAST_SESSION_CSS = "o_sel_home_settings_resume";
 	public final static String SUPPORT_FOR_BROWSER_BACK_CSS = "o_sel_home_settings_back_enabling";
-	
+
 	public final static String NO_VALUE = "none";
 	public final static String YES_AUTOMATICALLY_VALUE = "auto";
 	public final static String YES_ON_REQUEST_VALUE = "request";
-	
+
 	public final static String OFF_VALUE = "no";
 	public final static String ON_VALUE = "yes";
-	
+
 	/* Reset Configurations */
 	public final static String SYSPREFS_BUTTONS_CSS = "o_sel_home_settings_reset_sysprefs_buttons";
-	
+
 	public final static String CONFIGURATIONS_CSS = "o_sel_home_settings_reset_sysprefs";
-	
+
 	public final static String GUI_PREFERENCES_VALUE = "guiprefs";
 	public final static String SYS_PREFERENCES_VALUE = "sysprefs";
 	public final static String RESUME_VALUE = "resume";
-	
+
 	/* password tab */
 	//TODO:JK: add CSS classes to olat
 	public final static String OLD_PASSWORD_CSS = "";
 	public final static String NEW_PASSWORD_CSS = "";
 	public final static String CONFIRM_PASSWORD_CSS = "";
-	
+
 	public enum PortalSettingsForms {
 		GENERAL_SYSTEM_SETTINGS,
 		SPECIFIC_SYSTEM_SETTINGS,
 		RESET_CONFIGURATIONS;
-		
+
 		public enum SpecificSystemSettingsRadios {
 			ACCESSIBILITY(ACCESSIBILITY_CSS),
 			RESUME_LAST_SESSION(RESUME_LAST_SESSION_CSS),	
 			SUPPORT_FOR_BROWSER_BACK(SUPPORT_FOR_BROWSER_BACK_CSS);
-			
+
 			private String groupCss;
-			
+
 			SpecificSystemSettingsRadios(String groupCss){
 				setGroupCss(groupCss);
 			}
-			
+
 			public String getGroupCss() {
 				return groupCss;
 			}
@@ -149,9 +162,9 @@ public class FunctionalHomeSiteUtil {
 				NO(NO_VALUE),
 				YES_AUTOMATICALLY(YES_AUTOMATICALLY_VALUE),
 				YES_ON_REQUEST(YES_ON_REQUEST_VALUE);
-				
+
 				private String valueAttribute;
-				
+
 				ResumeLastSession(String valueAttribute){
 					setValueAttribute(valueAttribute);
 				}
@@ -164,13 +177,13 @@ public class FunctionalHomeSiteUtil {
 					this.valueAttribute = valueAttribute;
 				}
 			}
-			
+
 			public enum SupportForBrowserBack {
 				ON(ON_VALUE),
 				OFF(OFF_VALUE);
-				
+
 				private String valueAttribute;
-				
+
 				SupportForBrowserBack(String valueAttribute){
 					setValueAttribute(valueAttribute);
 				}
@@ -184,17 +197,17 @@ public class FunctionalHomeSiteUtil {
 				}
 			}
 		}
-		
+
 
 		public enum ResetConfigurations{
 			Configurations(CONFIGURATIONS_CSS);
-			
+
 			private String groupCss;
-			
+
 			ResetConfigurations(String groupCss){
 				setGroupCss(groupCss);
 			}
-			
+
 			public String getGroupCss() {
 				return groupCss;
 			}
@@ -207,14 +220,14 @@ public class FunctionalHomeSiteUtil {
 				GUI_PREFERENCES(GUI_PREFERENCES_VALUE),
 				SYS_PREFERENCES(SYS_PREFERENCES_VALUE),
 				RESUME(RESUME_VALUE);
-				
+
 				private String valueAttribute;
 
 				ConfigurationsCheckboxes (String valueAttribute){
 					setValueAttribute(valueAttribute);
 				}
-				
-				
+
+
 				public String getValueAttribute() {
 					return valueAttribute;
 				}
@@ -225,7 +238,7 @@ public class FunctionalHomeSiteUtil {
 			}
 		}
 	}
-	
+
 	public enum HomeSiteAction {
 		PORTAL,
 		SETTINGS,
@@ -237,14 +250,14 @@ public class FunctionalHomeSiteUtil {
 		EVIDENCES_OF_ACHIEVEMENT,
 		OTHER_USERS, /* no corresponding CSS class available */
 	};
-	
+
 	public enum EPortfolioAction {
 		MY_ARTIFACTS,
 		MY_BINDERS,
 		MY_PORTFOLIO_TASKS,
 		RELEASED_BINDERS,
 	};
-	
+
 	public enum Direction {
 		UP,
 		DOWN,
@@ -259,11 +272,11 @@ public class FunctionalHomeSiteUtil {
 		WEB_DAV,
 		TERMS_OF_USE;
 	}
-	
+
 	private FunctionalUtil functionalUtil;
-	
+
 	private String homeActionNavigationSelectedCss;
-	
+
 	private String homeActionPortalCss;
 	private String homeActionSettingsCss;
 	private String homeActionCalendarCss;
@@ -277,17 +290,18 @@ public class FunctionalHomeSiteUtil {
 	private String ePortfolioActionMyBindersCss;
 	private String ePortfolioActionMyPortfolioTasksCss;
 	private String ePortfolioActionReleasedBindersCss;
-	
+
 	private String portalEditLinkCss;
 	private String portalWrapperCss;
+	private String portalCss;
 	private String portalColumnCssPrefix;
 	private String portalSubcolumnsCss;
 	private String portalInactiveCss;
-	
+
 	private String portletCss;
 	private String portletEditCss;
 	private String portletInactiveCss;
-	
+
 	private String portletQuickstartCss;
 	private String portletRepositoryStudentCss;
 	private String portletRepositoryTeacherCss;
@@ -299,14 +313,14 @@ public class FunctionalHomeSiteUtil {
 	private String portletEffCss;
 	private String portletNotesCss;
 	private String portletDykCss;
-	
+
 	private String portletActivateCss;
 	private String portletInactivateCss;
 	private String portletMoveLeftCss;
 	private String portletMoveRightCss;
 	private String portletMoveUpCss;
 	private String portletMoveDownCss;
-	
+
 	private String prefsButtonsCss;
 	private String guiButtonsCss;
 	private String sysprefsButtonsCss;
@@ -314,7 +328,7 @@ public class FunctionalHomeSiteUtil {
 	private String oldPasswordCss;
 	private String newPasswordCss;
 	private String confirmPasswordCss;
-	
+
 	/**
 	 * @param functionalUtil
 	 * 
@@ -322,9 +336,9 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public FunctionalHomeSiteUtil(FunctionalUtil functionalUtil){
 		setUtil(functionalUtil);
-		
+
 		setHomeActionNavigationSelectedCss(HOME_SITE_MENU_TREE_SELECTED_CSS);
-		
+
 		setHomeActionPortalCss(HOME_ACTION_PORTAL_CSS);
 		setHomeActionSettingsCss(HOME_ACTION_SETTINGS_CSS);
 		setHomeActionCalendarCss(HOME_ACTION_CALENDAR_CSS);
@@ -333,21 +347,22 @@ public class FunctionalHomeSiteUtil {
 		setHomeActionPersonalFolderCss(HOME_ACTION_PERSONAL_FOLDER_CSS);
 		setHomeActionNotesCss(HOME_ACTION_NOTES_CSS);
 		setHomeActionEvidencesOfAchievementCss(HOME_ACTION_EVIDENCES_OF_ACHIEVEMENT_CSS);
-		
+
 		setEPortfolioActionMyArtifactsCss(EPORTFOLIO_ACTION_MY_ARTIFACTS_CSS);
 		setEPortfolioActionMyBindersCss(EPORTFOLIO_ACTION_MY_BINDERS_CSS);
 		setEPortfolioActionMyPortfolioTasksCss(EPORTFOLIO_ACTION_MY_PORTFOLIO_TASKS_CSS);
 		setEPortfolioActionReleasedBindersCss(EPORTFOLIO_ACTION_RELEASED_BINDERS_CSS);
-		
+
 		setPortalEditLinkCss(PORTAL_EDIT_LINK_CSS);
 		setPortalWrapperCss(PORTAL_WRAPPER_CSS);
+		setPortalCss(PORTAL_CSS);
 		setPortalColumnCssPrefix(PORTAL_COLUMN_CSS_PREFIX);
 		setPortalSubcolumnsCss(PORTAL_SUBCOLUMNS_CSS);
-		
+
 		setPortletCss(PORTLET_CSS);
 		setPortletEditCss(PORTLET_EDIT_CSS);
 		setPortletInactiveCss(PORTLET_INACTIVE_CSS);
-		
+
 		setPortletQuickstartCss(PORTLET_QUICKSTART_CSS);
 		setPortletRepositoryStudentCss(PORTLET_REPOSITORY_STUDENT_CSS);
 		setPortletRepositoryTeacherCss(PORTLET_REPOSITORY_TEACHER_CSS);
@@ -359,23 +374,23 @@ public class FunctionalHomeSiteUtil {
 		setPortletEffCss(PORTLET_EFF_CSS);
 		setPortletNotesCss(PORTLET_NOTES_CSS);
 		setPortletDykCss(PORTLET_DYK_CSS);
-		
+
 		setPortletActivateCss(PORTLET_EDIT_ACTIVATE_CSS);
 		setPortletInactivateCss(PORTLET_EDIT_INACTIVATE_CSS);
 		setPortletMoveLeftCss(PORTLET_MOVE_LEFT_CSS);
 		setPortletMoveRightCss(PORTLET_MOVE_RIGHT_CSS);
 		setPortletMoveUpCss(PORTLET_MOVE_UPWARDS_CSS);
 		setPortletMoveDownCss(PORTLET_MOVE_DOWNWARDS_CSS);
-		
+
 		setPrefsButtonsCss(FORM_ELEMENT_WRAPPER + " " + PREFS_BUTTONS_CSS + " " + CLEARFIX);
 		setGuiButtonsCss(FORM_ELEMENT_WRAPPER + " " + GUI_BUTTONS_CSS + " " + CLEARFIX);
 		setSysprefsButtonsCss(FORM_ELEMENT_WRAPPER + " " + SYSPREFS_BUTTONS_CSS + " " + CLEARFIX);
-		
+
 		setOldPasswordCss(OLD_PASSWORD_CSS);
 		setNewPasswordCss(NEW_PASSWORD_CSS);
 		setConfirmPasswordCss(CONFIRM_PASSWORD_CSS);
 	}
-	
+
 	/**
 	 * @param page
 	 * @return the matching CSS class
@@ -385,7 +400,7 @@ public class FunctionalHomeSiteUtil {
 	public String findCssClassOfAction(Object page){
 		if(page == null)
 			return(null);
-		
+
 		String selectedCss = null;
 
 		if(page instanceof HomeSiteAction){
@@ -453,10 +468,10 @@ public class FunctionalHomeSiteUtil {
 			}
 			}
 		}
-		
+
 		return(selectedCss);
 	}
-	
+
 	/**
 	 * @param browser
 	 * @param action
@@ -465,26 +480,46 @@ public class FunctionalHomeSiteUtil {
 	 * Check if the correct page is open.
 	 */
 	public boolean checkCurrentAction(Selenium browser, Object action){
+		return(checkCurrentAction(browser, action, -1));
+	}
+
+	public boolean checkCurrentAction(Selenium browser, Object action, long timeout){
 		String selectedCss = findCssClassOfAction(action);
-		
+
 		if(selectedCss == null)
 			return(false);
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("css=ul li.")
 		.append(selectedCss)
 		.append('.')
 		.append(getHomeActionNavigationSelectedCss())
 		.append(" * a");
-		
-		if(browser.isElementPresent(selectorBuffer.toString())){
-			return(true);
-		}else{
-			return(false);
-		}
+
+		long timeElapsed = 0;
+		long startTime = Calendar.getInstance().getTimeInMillis();
+
+		do{
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				return(true);
+			}
+
+			if(timeout != -1){
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					//TODO:JK: Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
+		}while(timeElapsed <= timeout && timeout != -1);
+
+		return(false);
 	}
-	
+
 	/**
 	 * @param browser
 	 * @param action
@@ -494,22 +529,23 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){
 		String selectedCss = findCssClassOfAction(action);
-		
+
 		if(selectedCss == null){
 			return(false);
 		}
-		
-		if(!checkCurrentAction(browser, action)){
+
+		if(!checkCurrentAction(browser, action, 15000)){
 			StringBuffer selectorBuffer = new StringBuffer();
-			
+
 			selectorBuffer.append("css=ul .")
 			.append(selectedCss)
-			.append(" * a");
-			
+			.append(" a");
+
 			browser.click(selectorBuffer.toString());
 			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		}
-		
+
 		return(true);
 	}
 
@@ -522,21 +558,21 @@ public class FunctionalHomeSiteUtil {
 		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
 			functionalUtil.openSite(browser, OlatSite.HOME);
 		}
-		
+
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.PORTAL));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.PORTAL));
-		
+
 		/* begin editing */
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("css=.")
 		.append(PORTAL_EDIT_LINK_CSS)
 		.append(" * a");
-		
+
 		browser.click(selectorBuffer.toString());
 	}
-	
+
 	/**
 	 * @param browser
 	 * 
@@ -546,18 +582,18 @@ public class FunctionalHomeSiteUtil {
 		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
 			functionalUtil.openSite(browser, OlatSite.HOME);
 		}
-		
+
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.PORTAL));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.PORTAL));
-		
+
 		/* end editing */
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("css=.")
 		.append(PORTAL_EDIT_LINK_CSS)
 		.append(" * a");
-		
+
 		browser.click(selectorBuffer.toString());
 	}
 
@@ -569,11 +605,44 @@ public class FunctionalHomeSiteUtil {
 	 * Check the state of a portlet.
 	 */
 	public boolean checkPortletActive(Selenium browser, String portletCss){
-		//TODO:JK: implement me
-		
-		return(false);
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//div[@class='")
+		.append(getPortalCss())
+		.append(' ')
+		.append(getPortalSubcolumnsCss())
+		.append("']//div[@class='")
+		.append(getPortletCss())
+		.append(' ')
+		.append(portletCss)
+		.append("']");
+
+		if(browser.isElementPresent(selectorBuffer.toString())){
+			return(true);
+		}else{
+			/* selector of editing portlets */
+			selectorBuffer = new StringBuffer();
+
+			selectorBuffer.append("xpath=//div[@class='")
+			.append(getPortalCss())
+			.append(' ')
+			.append(getPortalSubcolumnsCss())
+			.append("']//div[@class='")
+			.append(getPortletCss())
+			.append(' ')
+			.append(getPortletEditCss())
+			.append(' ')
+			.append(portletCss)
+			.append("']");
+
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				return(true);
+			}else{
+				return(false);
+			}
+		}
 	}
-	
+
 	/**
 	 * @param browser
 	 * @param portletCss
@@ -584,13 +653,84 @@ public class FunctionalHomeSiteUtil {
 	 * Find the position of the portlet within the portal.
 	 */
 	public int[] findPortletPosition(Selenium browser, String portletCss, int columnCount){
-		int position[] = new int[2];
-		
-		//TODO:JK: implement me
-		
+		for(int i = 0; i < columnCount; i++){
+			StringBuffer selectorBuffer = new StringBuffer();
+
+			selectorBuffer.append("css=.")
+			.append(getPortalCss())
+			.append('.')
+			.append(getPortalSubcolumnsCss())
+			.append(" .")
+			.append(getPortalColumnCssPrefix())
+			.append(i + 1)
+			.append(" .")
+			.append(getPortletCss())
+			.append('.')
+			.append(getPortletEditCss())
+			.append('.')
+			.append(portletCss);
+
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				int position[] = new int[2];
+
+				position[0] = i;
+
+				selectorBuffer = new StringBuffer();
+
+				selectorBuffer.append("css=.")
+				.append(getPortalCss())
+				.append(" .")
+				.append(getPortalColumnCssPrefix())
+				.append(i + 1)
+				.append(" .")
+				.append(getPortletCss());
+
+				VelocityContext context = new VelocityContext();
+
+				context.put("portalCss", getPortalCss());
+				context.put("portalSubcolumnsCss", getPortalSubcolumnsCss());
+				context.put("portletCss", getPortletCss());
+
+				context.put("portlet", portletCss);
+
+				context.put("column", i);
+				context.put("j_stop", browser.getCssCount(selectorBuffer.toString()).intValue());
+
+				VelocityEngine engine = null;
+
+				engine = new VelocityEngine();
+
+				StringWriter sw = new StringWriter();
+
+				try {
+					engine.evaluate(context, sw, "portletPosition", FunctionalHomeSiteUtil.class.getResourceAsStream("PortletPosition.vm"));
+
+					Integer j = new Integer(browser.getEval(sw.toString()));
+					position[1] = j.intValue();
+
+					return(position);
+				} catch (ParseErrorException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (MethodInvocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ResourceNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+
+				return(null);
+			}
+		}
+
 		return(null);
 	}
-	
+
 	/**
 	 * @param browser
 	 * @param portletCss
@@ -601,7 +741,7 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public boolean activatePortlet(Selenium browser, String portletCss){
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("css=.")
 		.append(getPortletCss())
 		.append('.')
@@ -611,16 +751,16 @@ public class FunctionalHomeSiteUtil {
 		.append(" .")
 		.append(getPortletActivateCss())
 		.append(" * a");
-		
+
 		if(browser.isElementPresent(selectorBuffer.toString())){
 			browser.click(selectorBuffer.toString());
-			
+
 			return(true);
 		}else{
 			return(false);
 		}
 	}
-	
+
 	/**
 	 * @param browser
 	 * @param portletCss
@@ -631,7 +771,7 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public boolean deactivatePortlet(Selenium browser, String portletCss){
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("css=.")
 		.append(getPortletCss())
 		.append('.')
@@ -640,16 +780,16 @@ public class FunctionalHomeSiteUtil {
 		.append(portletCss)
 		.append(" * .")
 		.append(getPortletInactivateCss());
-		
+
 		if(browser.isElementPresent(selectorBuffer.toString())){
 			browser.click(selectorBuffer.toString());
-			
+
 			return(true);
 		}else{
 			return(false);
 		}
 	}
-	
+
 	/**
 	 * @param browser
 	 * @param portletCss
@@ -660,7 +800,7 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public boolean movePortlet(Selenium browser, String portletCss, Direction direction){
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("css=.")
 		.append(getPortletCss())
 		.append('.')
@@ -668,45 +808,45 @@ public class FunctionalHomeSiteUtil {
 		.append('.')
 		.append(portletCss)
 		.append(" * .");
-		
+
 		switch(direction){
 		case LEFT:
 		{
 			selectorBuffer.append(getPortletMoveLeftCss());
-			
+
 			break;
 		}
 		case RIGHT:
 		{
 			selectorBuffer.append(getPortletMoveRightCss());
-			
+
 			break;
 		}
 		case UP:
 		{
 			selectorBuffer.append(getPortletMoveUpCss());
-			
+
 			break;
 		}
 		case DOWN:
 		{
 			selectorBuffer.append(getPortletMoveDownCss());
-			
+
 			break;
 		}
 		}
-		
+
 		if(browser.isElementPresent(selectorBuffer.toString())){
 			browser.click(selectorBuffer.toString());
-			
+
 			return(true);
 		}else{
 			return(false);
 		}
-			
+
 	}
-	
-	
+
+
 	/**
 	 * @param browser
 	 * @param language permitted values are: en, es, fr, de, it
@@ -715,28 +855,29 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public void selectLanguage(Selenium browser, String language){
 		functionalUtil.openSite(browser, OlatSite.HOME);
-		
+
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
-		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
-		
+		//Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
+
 		/* open System tab */
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
-		
+
 		/* select language */
 		functionalUtil.selectOption(browser, LANGUAGE_OPTIONS_ID, language);
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("xpath=//form//div[@class='");
 		selectorBuffer.append(getPrefsButtonsCss());
 		selectorBuffer.append("']//");
 		selectorBuffer.append("button[@type='button']");
-		
+
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 	}
-	
+
 	/**
 	 * @param browser
 	 * 
@@ -744,28 +885,29 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public void enableResume(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
-		
+
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
-		
+
 		/* open System tab */
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
-		
+
 		/* enable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.YES_AUTOMATICALLY.getValueAttribute()));
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("xpath=//form//div[@class='");
 		selectorBuffer.append(getGuiButtonsCss());
 		selectorBuffer.append("']//");
 		selectorBuffer.append("button[@type='button']");
-		
+
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 	}
 
 	/**
@@ -775,30 +917,31 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public void enableResumeOnRequest(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
-		
+
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
-		
+
 		/* open system tab */
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
-		
+
 		/* enable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.YES_ON_REQUEST.getValueAttribute()));
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("xpath=//form//div[@class='");
 		selectorBuffer.append(getGuiButtonsCss());
 		selectorBuffer.append("']//");
 		selectorBuffer.append("button[@type='button']");
-		
+
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 	}
-	
+
 	/**
 	 * @param browser
 	 * 
@@ -806,88 +949,91 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public boolean disableResume(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
-		
+
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
-		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
-		
+		//Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
+
 		/* open system tab */
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
-		
+
 		/* enable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.NO.getValueAttribute()));
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("xpath=//form//div[@class='");
 		selectorBuffer.append(getGuiButtonsCss());
 		selectorBuffer.append("']//");
 		selectorBuffer.append("button[@type='button']");
-		
+
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
-		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+
 		return(true);
 	}
-	
+
 	public boolean enableBack(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
-		
+
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
-		
+
 		/* open system tab */
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
-		
+
 		/* enable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SUPPORT_FOR_BROWSER_BACK.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SupportForBrowserBack.ON.getValueAttribute()));
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("xpath=//form//div[@class='");
 		selectorBuffer.append(getGuiButtonsCss());
 		selectorBuffer.append("']//");
 		selectorBuffer.append("button[@type='button']");
-		
+
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
-		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+
 		return(true);
 	}
-	
+
 	public boolean disableBack(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
-		
+
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
-		
+
 		/* open system tab */
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
-		
+
 		/* enable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SUPPORT_FOR_BROWSER_BACK.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SupportForBrowserBack.OFF.getValueAttribute()));
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("xpath=//form//div[@class='");
 		selectorBuffer.append(getGuiButtonsCss());
 		selectorBuffer.append("']//");
 		selectorBuffer.append("button[@type='button']");
-		
+
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
-		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+
 		return(true);
 	}
-	
+
 	/**
 	 * @param browser
 	 * @return true on success
@@ -895,38 +1041,44 @@ public class FunctionalHomeSiteUtil {
 	 * Resets portal settings to default.
 	 */
 	public boolean resetSettings(Selenium browser){
+		log.info("open portal");
 		functionalUtil.openSite(browser, OlatSite.HOME);
-		
+
 		/* open settings page */
+		log.info("open settings tab");
 		if(!openActionByMenuTree(browser, HomeSiteAction.SETTINGS)){
 			return(false);
 		}
-		
+
 		/* click system tab */
-		functionalUtil.openContentTab(browser, 1);
+		log.info("open system settings tab");
+		functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal());
 		
 		/* using reset configurations form */
 		/* click all checkboxes */
+		log.info("clicking all reset configurations checkboxes");
 		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, GUI_PREFERENCES_VALUE);
-		
+
 		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, SYS_PREFERENCES_VALUE);
-		
+
 		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, RESUME_VALUE);
-		
+
 		/* click Reset */
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("xpath=//form//div[@class='");
 		selectorBuffer.append(getSysprefsButtonsCss());
 		selectorBuffer.append("']//");
 		selectorBuffer.append("button[@type='button']");
-		
+
+		log.info("submitting changes");
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}
-	
+
 	public FunctionalUtil getUtil() {
 		return functionalUtil;
 	}
@@ -1057,6 +1209,14 @@ public class FunctionalHomeSiteUtil {
 
 	public void setPortalWrapperCss(String portalWrapperCss) {
 		this.portalWrapperCss = portalWrapperCss;
+	}
+
+	public String getPortalCss() {
+		return portalCss;
+	}
+
+	public void setPortalCss(String portalCss) {
+		this.portalCss = portalCss;
 	}
 
 	public String getPortalColumnCssPrefix() {

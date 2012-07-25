@@ -1,0 +1,22 @@
+if (document.querySelector){
+	var portalCss = "${portalCss}";
+	var portalSubcolumns = "${portalSubcolumnsCss}";
+	var portletCss = "${portletCss}";
+	
+	var portlet = "${portlet}";
+	
+	var j_stop = ${j_stop};
+	var column = ${column};
+	
+	var selection = document.querySelectorAll('.' + portalCss + '.' + portalSubcolumns + ':nth-child(' + (column + 1) + ') .' + portletCss);
+		
+	for(j=0; j < j_stop; j++){
+		var current = selection.item(j);
+		
+		if(current.className.contains(portlet)){
+			return(j);
+		}
+	}
+}
+
+return(-1);
