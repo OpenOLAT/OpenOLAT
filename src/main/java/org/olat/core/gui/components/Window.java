@@ -107,6 +107,12 @@ public class Window extends Container {
 	public static final Event END_OF_DISPATCH_CYCLE = new Event("eodc");
 
 	/**
+	 * fired before render-only call is rendered (e.g. after reload, redirect).
+	 * In this case normally no dispatch is fired. No dispatch will be done
+	 */
+	public static final Event BEFORE_RENDER_ONLY = new Event("before_render_only");	
+	
+	/**
 	 * fired before inline (text/html computed response) takes place
 	 */
 	public static final Event BEFORE_INLINE_RENDERING = new Event("before_inline_rendering");
@@ -521,6 +527,7 @@ public class Window extends Container {
 			if (renderOnly || timestampID == null) {
 				inline = true;
 				validate = true;
+				wbackofficeImpl.fireCycleEvent(BEFORE_RENDER_ONLY);
 			} else if (validatingCausedRerendering && timestampID.equals("-1")) {
 				// the first request after the 302 redirect cause by a component validation 
 				// -> just rerender, but clear the flag for further async media requests
