@@ -270,9 +270,9 @@ public class MemberListWizardController extends BasicController {
 					}
 				} else {
 					if (GROUPS_MEMBERS.equals(wizardType)) {						
-						setGroupList(getSelectedValues(groupsOrAreaChoice));
+						setGroupList(getSelectedGroups(groupsOrAreaChoice));
 					} else if (AREAS_MEMBERS.equals(wizardType)) {						
-						setAreaList(getSelectedValues(groupsOrAreaChoice));				
+						setAreaList(getSelectedAreas(groupsOrAreaChoice));				
 					}								
 					velocityContainer2.put("colsChoice", colsChoiceController.getInitialComponent());				
 					wizardController.setNextWizardStep(translate("memberlistwizard.colchoice"), velocityContainer2);					
@@ -367,8 +367,8 @@ public class MemberListWizardController extends BasicController {
 	 * @param choice
 	 * @return a list with the selected values of the input choice component.
 	 */
-	private List getSelectedValues(Choice choice) {	
-		List<Object> selValues = new ArrayList<Object>();
+	private List<BGArea> getSelectedAreas(Choice choice) {	
+		List<BGArea> selValues = new ArrayList<BGArea>();
 		List<Integer> selRowsIndexes = choice.getSelectedRows();
 		int numRows = choice.getTableDataModel().getRowCount();
 		for(int i=0; i<numRows; i++) {
@@ -376,11 +376,38 @@ public class MemberListWizardController extends BasicController {
 				boolean booleanValue = ((Boolean)choice.getTableDataModel().getValueAt(i, 0)).booleanValue();
 				if(booleanValue) {
 					ObjectWrapper objWrapper = (ObjectWrapper)choice.getTableDataModel().getValueAt(i, 1); 
-					selValues.add(objWrapper.getWrappedObj());
+					if(objWrapper.getWrappedObj() instanceof BGArea) {
+						selValues.add((BGArea)objWrapper.getWrappedObj());
+					}
 				}
 			} else if(selRowsIndexes.contains(new Integer(i))) {
 				ObjectWrapper objWrapper = (ObjectWrapper)choice.getTableDataModel().getValueAt(i, 1); 
-				selValues.add(objWrapper.getWrappedObj());
+				if(objWrapper.getWrappedObj() instanceof BGArea) {
+					selValues.add((BGArea)objWrapper.getWrappedObj());
+				}
+			}					
+		}		
+		return selValues;
+	}
+	
+	private List<BusinessGroup> getSelectedGroups(Choice choice) {	
+		List<BusinessGroup> selValues = new ArrayList<BusinessGroup>();
+		List<Integer> selRowsIndexes = choice.getSelectedRows();
+		int numRows = choice.getTableDataModel().getRowCount();
+		for(int i=0; i<numRows; i++) {
+			if(selRowsIndexes.size() == 0) {
+				boolean booleanValue = ((Boolean)choice.getTableDataModel().getValueAt(i, 0)).booleanValue();
+				if(booleanValue) {
+					ObjectWrapper objWrapper = (ObjectWrapper)choice.getTableDataModel().getValueAt(i, 1); 
+					if(objWrapper.getWrappedObj() instanceof BusinessGroup) {
+						selValues.add((BusinessGroup)objWrapper.getWrappedObj());
+					}
+				}
+			} else if(selRowsIndexes.contains(new Integer(i))) {
+				ObjectWrapper objWrapper = (ObjectWrapper)choice.getTableDataModel().getValueAt(i, 1); 
+				if(objWrapper.getWrappedObj() instanceof BusinessGroup) {
+					selValues.add((BusinessGroup)objWrapper.getWrappedObj());
+				}
 			}					
 		}		
 		return selValues;
