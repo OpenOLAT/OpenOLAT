@@ -83,7 +83,7 @@ public class FunctionalVOUtil {
 		
 		for(int i = 0; i < count; i++){
 			UserVO vo = new UserVO();
-			String username = "selenium_" + i + "_" + UUID.randomUUID().toString();
+			String username = ("selenium_" + i + "_" + UUID.randomUUID().toString()).substring(0, 24);
 			vo.setLogin(username);
 			String password = ("passwd_" + i + "_" + UUID.randomUUID().toString()).substring(0, 24);
 			vo.setPassword(password);

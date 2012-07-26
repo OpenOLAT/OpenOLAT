@@ -208,7 +208,7 @@ public class FunctionalSettingsTest {
 		String newPassword = ("passwd_" + 0 + "_" + UUID.randomUUID().toString()).substring(0, 24);
 		
 		functionalUtil.openContentTab(browser, SettingsTab.PASSWORD.ordinal());
-		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getOldPasswordCss(), functionalUtil.getPassword());
+		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getOldPasswordCss(), current.getPassword());
 		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getNewPasswordCss(), newPassword);
 		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getConfirmPasswordCss(), newPassword);
 		

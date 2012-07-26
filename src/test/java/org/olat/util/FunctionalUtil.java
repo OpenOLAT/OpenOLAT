@@ -593,9 +593,9 @@ public class FunctionalUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form")
-		.append("//div[@class='")
+		.append("//div[contains(@class, '")
 		.append(entryCss)
-		.append("']")
+		.append("')]")
 		.append("//input[@type='password']");
 		
 		browser.type(selectorBuffer.toString(), text);
