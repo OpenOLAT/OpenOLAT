@@ -49,6 +49,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -448,6 +449,26 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		Long cntL = (Long) res.get(0);
 		if (cntL.longValue() != 0 && cntL.longValue() != 1) throw new AssertException("unique n-to-n must always yield 0 or 1");
 		return (cntL.longValue() == 1);
+	}
+
+	@Override
+	public void touchMembership(Identity identity, List<SecurityGroup> secGroups) {
+		if (secGroups == null || secGroups.isEmpty()) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select sgmsi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		  .append("where sgmsi.identity.key=:identityKey and sgmsi.securityGroup in (:securityGroups)");
+		
+		List<ModifiedInfo> infos = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), ModifiedInfo.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("securityGroups", secGroups)
+				.getResultList();
+		
+		for(ModifiedInfo info:infos) {
+			info.setLastModified(new Date());
+			DBFactory.getInstance().getCurrentEntityManager().merge(info);
+		}
 	}
 
 	/**

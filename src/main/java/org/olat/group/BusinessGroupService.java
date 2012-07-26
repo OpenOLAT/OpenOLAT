@@ -123,7 +123,7 @@ public interface BusinessGroupService {
 	 * @param group
 	 * @return
 	 */
-	public BusinessGroup setLastUsageFor(BusinessGroup group);
+	public BusinessGroup setLastUsageFor(Identity identity, BusinessGroup group);
 	
 	/**
 	 * Reload the business group

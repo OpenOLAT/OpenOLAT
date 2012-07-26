@@ -25,8 +25,9 @@
 
 package org.olat.group.ui.main;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
@@ -34,6 +35,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 
 /**
  * @author gnaegi
@@ -41,12 +43,14 @@ import org.olat.group.BusinessGroup;
 public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTableItem> {
 	private final int columnCount;
 	private Translator trans;
+	
+	private Map<Long, BusinessGroupMembership> memberships;
 
 	/**
 	 * @param owned list of business groups
 	 */
-	public BusinessGroupTableModelWithType(List<BGTableItem> owned, Translator trans, int columnCount) {
-		super(owned);
+	public BusinessGroupTableModelWithType(Translator trans, int columnCount) {
+		super(new ArrayList<BGTableItem>());
 		this.trans = trans;
 		//fxdiff VCRP-1,2: access control of resources
 		this.columnCount = columnCount;
@@ -102,6 +106,18 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				return wrapped.getBusinessGroup().getLastUsage();
 			case role:
 				return wrapped.getMembership();
+			case firstTime:
+				if(memberships != null) {
+					BusinessGroupMembership membership = memberships.get(businessGroup.getKey());
+					return membership == null ? null : membership.getCreationDate();
+				}
+				return null;
+			case lastTime:
+				if(memberships != null) {
+					BusinessGroupMembership membership = memberships.get(businessGroup.getKey());
+					return membership == null ? null : membership.getLastModified();
+				}
+				return null;
 			default:
 				return "ERROR";
 		}
@@ -110,14 +126,15 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	@Override
 	//fxdiff VCRP-1,2: access control of resources
 	public Object createCopyWithEmptyList() {
-		return new BusinessGroupTableModelWithType(Collections.<BGTableItem>emptyList(), trans, columnCount);
+		return new BusinessGroupTableModelWithType(trans, columnCount);
 	}
 
 	/**
 	 * @param owned
 	 */
-	public void setEntries(List<BGTableItem> owned) {
-		this.objects = owned;
+	public void setEntries(List<BGTableItem> owned, Map<Long, BusinessGroupMembership> memberships) {
+		setObjects(owned);
+		this.memberships = memberships;
 	}
 
 	/**
@@ -151,7 +168,9 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		accessTypes("table.header.ac"),
 		mark("table.header.mark"),
 		lastUsage("table.header.lastUsage"),
-		role("table.header.role");
+		role("table.header.role"),
+		firstTime("table.header.firstTime"),
+		lastTime("table.header.lastTime");
 		
 		private final String i18n;
 		

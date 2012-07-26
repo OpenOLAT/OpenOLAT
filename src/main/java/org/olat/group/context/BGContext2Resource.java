@@ -35,7 +35,8 @@ import org.olat.resource.OLATResource;
  * @author gnaegi
  */
 public class BGContext2Resource extends PersistentObject {
-
+	private static final long serialVersionUID = -8038136432971186300L;
+	
 	private BGContextImpl groupContext;
 	private OLATResource resource;
 

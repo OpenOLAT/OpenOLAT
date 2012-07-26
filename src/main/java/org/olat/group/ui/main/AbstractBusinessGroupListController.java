@@ -148,7 +148,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		listenTo(groupListCtr);
 
 		int numOfColumns = initColumns();
-		groupListModel = new BusinessGroupTableModelWithType(new ArrayList<BGTableItem>(), getTranslator(), numOfColumns);
+		groupListModel = new BusinessGroupTableModelWithType(getTranslator(), numOfColumns);
 		groupListCtr.setTableDataModel(groupListModel);
 
 		mainVC.put("groupList", groupListCtr.getInitialComponent());
@@ -712,7 +712,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			items.add(tableItem);
 		}
 		
-		groupListModel.setEntries(items);
+		groupListModel.setEntries(items, memberships);
 		groupListCtr.modelChanged();
 		return groups;
 	}

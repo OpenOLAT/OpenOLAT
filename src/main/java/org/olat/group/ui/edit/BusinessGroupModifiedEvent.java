@@ -51,6 +51,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class BusinessGroupModifiedEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = 6234290505358324180L;
 	/** event: group has been modified */
 	public static final String CONFIGURATION_MODIFIED_EVENT = "configuration.modified.event";
 	/** event: an identity has been added to the group */

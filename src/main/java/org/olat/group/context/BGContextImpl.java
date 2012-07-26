@@ -38,6 +38,7 @@ import org.olat.core.logging.AssertException;
  * @author gnaegi
  */
 public class BGContextImpl extends PersistentObject {
+	private static final long serialVersionUID = -8242401346721569801L;
 
 	private static final int GROUPTYPE_MAXLENGTH = 15;
 

@@ -204,7 +204,7 @@ public class BGAreaEditController extends BasicController {
 		// 1) add groups to area
 		List<Integer> addedGroups = groupsChoice.getAddedRows();
 		for (Integer position:addedGroups) {
-			BusinessGroup group = groupsDataModel.getGroup(position.intValue());
+			BusinessGroup group = groupsDataModel.getObject(position.intValue());
 			// refresh group to prevent stale object exception and context proxy
 			// issues
 			group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(group);
@@ -217,7 +217,7 @@ public class BGAreaEditController extends BasicController {
 		// 2) remove groups from area
 		List<Integer> removedGroups = groupsChoice.getRemovedRows();
 		for (Integer position:removedGroups) {
-			BusinessGroup group = groupsDataModel.getGroup(position.intValue());
+			BusinessGroup group = groupsDataModel.getObject(position.intValue());
 			areaManager.removeBGFromArea(group, area);
 			this.inAreaGroups.remove(group);
 		}

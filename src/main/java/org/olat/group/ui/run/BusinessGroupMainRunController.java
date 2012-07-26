@@ -237,7 +237,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		 */
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		businessGroup = businessGroupService.setLastUsageFor(bGroup);
+		businessGroup = businessGroupService.setLastUsageFor(getIdentity(), bGroup);
 		if(businessGroup == null) {
 			VelocityContainer vc = createVelocityContainer("deleted");
 			vc.contextPut("name", bGroup.getName());

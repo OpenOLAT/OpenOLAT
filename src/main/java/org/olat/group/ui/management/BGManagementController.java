@@ -536,7 +536,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				int rowid = te.getRowId();
-				this.currentArea = areaListModel.getBGAreaAt(rowid);
+				this.currentArea = areaListModel.getObject(rowid);
 				if (actionid.equals(CMD_AREA_EDIT)) {
 					doAreaEdit(ureq);
 				} else if (actionid.equals(CMD_AREA_DELETE)) {

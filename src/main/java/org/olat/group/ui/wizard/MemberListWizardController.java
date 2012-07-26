@@ -270,9 +270,9 @@ public class MemberListWizardController extends BasicController {
 					}
 				} else {
 					if (GROUPS_MEMBERS.equals(wizardType)) {						
-						this.setGroupList(getSelectedValues(groupsOrAreaChoice));
+						setGroupList(getSelectedValues(groupsOrAreaChoice));
 					} else if (AREAS_MEMBERS.equals(wizardType)) {						
-						this.setAreaList(getSelectedValues(groupsOrAreaChoice));				
+						setAreaList(getSelectedValues(groupsOrAreaChoice));				
 					}								
 					velocityContainer2.put("colsChoice", colsChoiceController.getInitialComponent());				
 					wizardController.setNextWizardStep(translate("memberlistwizard.colchoice"), velocityContainer2);					

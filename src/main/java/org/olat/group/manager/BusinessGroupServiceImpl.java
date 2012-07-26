@@ -254,12 +254,25 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional
-	public BusinessGroup setLastUsageFor(final BusinessGroup group) {
+	public BusinessGroup setLastUsageFor(final Identity identity, final BusinessGroup group) {
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
 				try {
 					BusinessGroup reloadedBusinessGroup = loadBusinessGroup(group);
 					reloadedBusinessGroup.setLastUsage(new Date());
+					if(identity != null) {
+						List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+						if(group.getOwnerGroup() != null) {
+							secGroups.add(group.getOwnerGroup());
+						}
+						if(group.getPartipiciantGroup() != null) {
+							secGroups.add(group.getPartipiciantGroup());
+						}
+						if(group.getWaitingGroup() != null) {
+							secGroups.add(group.getWaitingGroup());
+						}
+						securityManager.touchMembership(identity, secGroups);
+					}
 					return businessGroupDAO.merge(reloadedBusinessGroup);
 				} catch(DBRuntimeException e) {
 					if(e.getCause() instanceof ObjectNotFoundException) {

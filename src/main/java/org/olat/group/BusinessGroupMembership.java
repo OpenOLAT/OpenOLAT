@@ -19,8 +19,7 @@
  */
 package org.olat.group;
 
-import java.util.Date;
-
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.group.model.BGMembership;
 
@@ -28,12 +27,9 @@ import org.olat.group.model.BGMembership;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface BusinessGroupMembership extends ModifiedInfo {
-
+public interface BusinessGroupMembership extends CreateInfo, ModifiedInfo {
 
 	public Long getIdentityKey();
-
-	public Date getLastModified();
 
 	public Long getOwnerGroupKey();
 

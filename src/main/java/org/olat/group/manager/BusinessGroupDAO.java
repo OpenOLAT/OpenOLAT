@@ -234,7 +234,6 @@ public class BusinessGroupDAO {
 		List<BusinessGroupMembership> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembership.class)
 				.setParameter("groupKeys", groupKeys)
 				.setParameter("identId", identity.getKey())
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		return res;
 	}

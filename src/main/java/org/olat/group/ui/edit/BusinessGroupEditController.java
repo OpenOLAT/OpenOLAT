@@ -175,7 +175,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		if (lockEntry.isSuccess()) {
 			// reload group to minimize stale object exception and update last usage
 			// timestamp
-			currBusinessGroup = businessGroupService.setLastUsageFor(businessGroup);
+			currBusinessGroup = businessGroupService.setLastUsageFor(getIdentity(), businessGroup);
 			if(currBusinessGroup == null) {
 				VelocityContainer vc = createVelocityContainer("deleted");
 				vc.contextPut("name", businessGroup.getName());

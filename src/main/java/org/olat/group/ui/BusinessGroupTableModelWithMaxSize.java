@@ -33,6 +33,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
@@ -49,6 +50,8 @@ import org.olat.group.BusinessGroupService;
  * @author gnaegi
  */
 public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<BusinessGroup> {
+	private static final OLog log = Tracing.createLoggerFor(BusinessGroupTableModelWithMaxSize.class);
+	
 	private static final int COLUMN_COUNT = 7;
 	private List<Integer> members;
 	private Translator trans;
@@ -107,7 +110,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 				buf.append(trans.translate("grouplist.table.partipiciant.delimiter"));
 				buf.append(businessGroup.getMaxParticipants());
 				if(numbParts>businessGroup.getMaxParticipants()) {
-				  Tracing.logInfo("Group overflow detected for the group: " + businessGroup + ", participants: " + numbParts + " maxParticipamts: " + businessGroup.getMaxParticipants(), BusinessGroupTableModelWithMaxSize.class);
+				  log.info("Group overflow detected for the group: " + businessGroup + ", participants: " + numbParts + " maxParticipamts: " + businessGroup.getMaxParticipants());
 				}
 				return buf.toString();
 			case 3:

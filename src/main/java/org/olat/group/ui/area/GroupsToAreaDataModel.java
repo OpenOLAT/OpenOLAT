@@ -36,8 +36,8 @@ import org.olat.group.BusinessGroup;
  * 
  * @author gnaegi
  */
-public class GroupsToAreaDataModel extends DefaultTableDataModel {
-	List inAreaGroups;
+public class GroupsToAreaDataModel extends DefaultTableDataModel<BusinessGroup> {
+	List<BusinessGroup> inAreaGroups;
 
 	/**
 	 * Constructor for the GroupsToAreaDataModel
@@ -46,7 +46,7 @@ public class GroupsToAreaDataModel extends DefaultTableDataModel {
 	 * @param inAreaGroups All groups that are associated to the group area. The
 	 *          checked rows.
 	 */
-	public GroupsToAreaDataModel(List allGroups, List inAreaGroups) {
+	public GroupsToAreaDataModel(List<BusinessGroup> allGroups, List<BusinessGroup> inAreaGroups) {
 		super(allGroups);
 		this.inAreaGroups = inAreaGroups;
 	}
@@ -63,19 +63,11 @@ public class GroupsToAreaDataModel extends DefaultTableDataModel {
 	 */
 	public Object getValueAt(int row, int col) {
 		if (col == 0) {
-			return inAreaGroups.contains(getGroup(row)) ? Boolean.TRUE : Boolean.FALSE;
+			return inAreaGroups.contains(getObject(row)) ? Boolean.TRUE : Boolean.FALSE;
 		} else if (col == 1) {
-			return getGroup(row).getName();
+			return getObject(row).getName();
 		} else {
 			return "ERROR";
 		}
-	}
-
-	/**
-	 * @param row
-	 * @return the group at the given position
-	 */
-	public BusinessGroup getGroup(int row) {
-		return (BusinessGroup) super.getObject(row);
 	}
 }

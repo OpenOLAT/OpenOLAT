@@ -396,9 +396,9 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		if (multiSelectionElements == null) {
 			return new ArrayList<Long>();
 		}
-		Set selectedKeys = multiSelectionElements.getSelectedKeys();
+		Set<String> selectedKeys = multiSelectionElements.getSelectedKeys();
 		List<Long> selectedKeysLong = new ArrayList<Long>();
-		for (Object key : selectedKeys) {
+		for (String key : selectedKeys) {
 			selectedKeysLong.add(Long.parseLong(key.toString()));
 		}
 		return selectedKeysLong;
@@ -472,11 +472,8 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	}
 	
 	private void update() {
-		
-		List k;
-		
 		if ( (radioKeysOwners != null) && (multiSelectionOwnerKeys != null) ) {
-			k = Arrays.asList(radioKeysOwners);
+			List<String> k = Arrays.asList(radioKeysOwners);
 			multiSelectionOwnerKeys.setVisible(
 					k.contains(NLS_RADIO_CHOOSE) && 
 					radioButtonOwner.isSelected(k.indexOf(NLS_RADIO_CHOOSE))
@@ -484,7 +481,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		}
 		
 		if ( (radioKeysPartips != null) && (multiSelectionPartipKeys != null) ) {		
-			k = Arrays.asList(radioKeysPartips);
+			List<String> k = Arrays.asList(radioKeysPartips);
 			multiSelectionPartipKeys.setVisible(
 					k.contains(NLS_RADIO_CHOOSE) && 
 					radioButtonPartips.isSelected(k.indexOf(NLS_RADIO_CHOOSE))
@@ -493,7 +490,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		
 		if ( (radioButtonWaitings != null) && (multiSelectionWaitingKeys != null) ) {		
 			radioButtonWaitings.setVisible(showWaitingList);
-			k = Arrays.asList(radioKeysWaitings);
+			List<String> k = Arrays.asList(radioKeysWaitings);
 			multiSelectionWaitingKeys.setVisible(
 					showWaitingList &&
 					k.contains(NLS_RADIO_CHOOSE) && 

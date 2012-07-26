@@ -35,7 +35,6 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -53,8 +52,6 @@ public class GroupsSite implements SiteInstance {
 	private static final OLATResourceable ORES_GROUPS = OresHelper.createOLATResourceableInstance("BGMainController", 0l);
 
 	// refer to the definitions in org.olat
-	private static final String PACKAGE = Util.getPackageName(BaseChiefController.class);
-
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
@@ -62,7 +59,7 @@ public class GroupsSite implements SiteInstance {
 	 * 
 	 */
 	public GroupsSite(Locale loc) {
-		Translator trans = new PackageTranslator(PACKAGE, loc);
+		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
 		origNavElem = new DefaultNavElement(trans.translate("topnav.buddygroups"), trans.translate("topnav.buddygroups.alt"), "o_site_groups");
 		origNavElem.setAccessKey("g".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
