@@ -16,7 +16,47 @@
 	<tx:annotation-driven transaction-manager="txManager"/>
 
 	<bean id="businessGroupModule" class="org.olat.group.BusinessGroupModule" 
-		init-method="init" depends-on="userModule"/>
+		init-method="init" depends-on="userModule">
+		<property name="persistedProperties">
+	  		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
+	  				depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
+	    		<constructor-arg index="0" ref="coordinatorManager"/>
+	    		<constructor-arg index="1" ref="businessGroupModule" />
+	  		</bean>
+		</property>
+	</bean>
+	
+	<!-- default configuration -->
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="businessGroupModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				user.allowed.create=${group.user.create}
+				author.allowed.create=${group.author.create}
+			</value>
+		</property>
+	</bean>
+	
+	<!-- Business group admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8205" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.BusinessGroupModuleAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="group" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.group.ui"/>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean> 
 	
 	<!-- Menu of the business group main controller -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="groups.my" init-method="initExtensionPoints">

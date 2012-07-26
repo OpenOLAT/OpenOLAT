@@ -170,8 +170,8 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	protected boolean canCreateBusinessGroup(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
 		if(roles.isOLATAdmin() || roles.isGroupManager()
-				|| (roles.isAuthor() && groupModule.isAuthorAllowedToCreateBG())
-				|| (!roles.isInvitee() && !roles.isInvitee() && groupModule.isUserAllowedToCreateBG())) {
+				|| (roles.isAuthor() && groupModule.isAuthorAllowedCreate())
+				|| (!roles.isGuestOnly() && !roles.isInvitee() && groupModule.isUserAllowedCreate())) {
 			return true;
 		}
 		return false;

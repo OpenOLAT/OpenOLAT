@@ -23,6 +23,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.site.GroupsSite;
 
@@ -38,14 +39,9 @@ import org.olat.group.site.GroupsSite;
 public class BusinessGroupModule extends AbstractOLATModule {
 
 	public static String ORES_TYPE_GROUP = OresHelper.calculateTypeName(BusinessGroup.class);
-	
-	public static final String LAST_USAGE_DURATION_PROPERTY_NAME = "LastUsageDuration";
-	public static final int DEFAULT_LAST_USAGE_DURATION = 24;
-	public static final String DELETE_EMAIL_DURATION_PROPERTY_NAME = "DeleteEmailDuration";
-	public static final int DEFAULT_DELETE_EMAIL_DURATION = 30;
-	
-	public static final String USER_ALLOWED_TO_CREATE_BG = "userAllowedToCreate";
-	public static final String AUTHOR_ALLOWED_TO_CREATE_BG = "authorAllowedToCreate";
+
+	private boolean userAllowedCreate;
+	private boolean authorAllowedCreate;
 	
 	/**
 	 * [used by spring]
@@ -64,6 +60,16 @@ public class BusinessGroupModule extends AbstractOLATModule {
 				new BusinessGroupContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(GroupsSite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(GroupsSite.class));
+		
+		//set properties
+		String userAllowed = getStringPropertyValue("user.allowed.create", true);
+		if(StringHelper.containsNonWhitespace(userAllowed)) {
+			userAllowedCreate = "true".equals(userAllowed);
+		}
+		String authorAllowed = getStringPropertyValue("author.allowed.create", true);
+		if(StringHelper.containsNonWhitespace(authorAllowed)) {
+			authorAllowedCreate = "true".equals(authorAllowed);
+		}
 	}
 
 	/**
@@ -71,44 +77,33 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	 */
 	@Override
 	protected void initDefaultProperties() {
-	// nothing to init
+		userAllowedCreate = getBooleanConfigParameter("user.allowed.create", true);
+		authorAllowedCreate = getBooleanConfigParameter("author.allowed.create", true);
 	}
 
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#initFromChangedProperties()
-	 */
 	@Override
 	protected void initFromChangedProperties() {
-	// nothing to init
+		init();
 	}
-
+	
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
 	}
-	
-	public void setLastUsageDuration(int lastUsageDuration) {
-		setIntProperty(LAST_USAGE_DURATION_PROPERTY_NAME, lastUsageDuration, true);
+
+	public boolean isUserAllowedCreate() {
+		return userAllowedCreate;
 	}
 
-	public void setDeleteEmailDuration(int deleteEmailDuration) {
-		setIntProperty(DELETE_EMAIL_DURATION_PROPERTY_NAME, deleteEmailDuration, true);
+	public void setUserAllowedCreate(boolean userAllowedCreate) {
+		setStringProperty("user.allowed.create", Boolean.toString(userAllowedCreate), true);
 	}
 
-	public int getLastUsageDuration() {
-		return DEFAULT_LAST_USAGE_DURATION;// getIntProperty(LAST_USAGE_DURATION_PROPERTY_NAME, DEFAULT_LAST_USAGE_DURATION);
+	public boolean isAuthorAllowedCreate() {
+		return authorAllowedCreate;
 	}
 
-	public int getDeleteEmailDuration() {
-		return DEFAULT_DELETE_EMAIL_DURATION;//getIntProperty(DELETE_EMAIL_DURATION_PROPERTY_NAME, DEFAULT_DELETE_EMAIL_DURATION);
+	public void setAuthorAllowedCreate(boolean authorAllowedCreate) {
+		setStringProperty("author.allowed.create", Boolean.toString(authorAllowedCreate), true);
 	}
-	
-	public boolean isUserAllowedToCreateBG() {
-		return true;
-	}
-	
-	public boolean isAuthorAllowedToCreateBG() {
-		return true;
-	}
-
 }
