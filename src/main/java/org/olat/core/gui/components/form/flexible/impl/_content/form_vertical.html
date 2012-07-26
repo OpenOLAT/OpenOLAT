@@ -7,7 +7,6 @@
 
 #foreach ($item in $formitemnames)
 #if ($f.isVisible($item))
-$f.getElementCssClass($item)
 	#if($f.hasError($item))
 	<div class="b_form_element_wrapper$f.getElementCssClass($item) b_form_vertical b_form_error b_clearfix">		
 	#else

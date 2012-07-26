@@ -101,6 +101,7 @@ public class DisclaimerFormController extends FormBasicController {
 			// Create submit and cancel buttons
 			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 			formLayout.add(buttonLayout);
+			buttonLayout.setElementCssClass("o_sel_disclaimer_buttons");
 			uifactory.addFormSubmitButton(DCL_ACCEPT, NLS_DISCLAIMER_OK, buttonLayout);
 			uifactory.addFormCancelButton(NLS_DISCLAIMER_NOK, buttonLayout, ureq, getWindowControl());			
 		}
