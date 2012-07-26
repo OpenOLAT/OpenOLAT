@@ -49,17 +49,20 @@ import org.olat.user.restapi.UserVO;
 
 public class FunctionalVOUtil {
 	public final static String ALL_ELEMENTS_COURSE_DISPLAYNAME = "All Elements Course";
+	public final static String ALL_ELEMENTS_COURSE_FILENAME = "All_Elements_Course.zip";
 	
 	private String username;
 	private String password;
 	
 	private String allElementsCourseDisplayname;
+	private String allElementsCourseFilename;
 	
 	public FunctionalVOUtil(String username, String password){
 		setUsername(username);
 		setPassword(password);
 		
 		setAllElementsCourseDisplayname(ALL_ELEMENTS_COURSE_DISPLAYNAME);
+		setAllElementsCourseFilename(ALL_ELEMENTS_COURSE_FILENAME);
 	}
 	
 	/**
@@ -129,7 +132,7 @@ public class FunctionalVOUtil {
 		entity.addPart("file", new FileBody(course));
 		entity.addPart("filename", new StringBody("All_Elements_Course.zip"));
 		entity.addPart("resourcename", new StringBody("All Elements Course"));
-		entity.addPart("displayname", new StringBody(""));
+		entity.addPart("displayname", new StringBody(getAllElementsCourseDisplayname()));
 		entity.addPart("access", new StringBody("3"));
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
 		entity.addPart("softkey", new StringBody(softKey));
@@ -178,5 +181,13 @@ public class FunctionalVOUtil {
 
 	public void setAllElementsCourseDisplayname(String allElementsCourseDisplayname) {
 		this.allElementsCourseDisplayname = allElementsCourseDisplayname;
+	}
+
+	public String getAllElementsCourseFilename() {
+		return allElementsCourseFilename;
+	}
+
+	public void setAllElementsCourseFilename(String allElementsCourseFilename) {
+		this.allElementsCourseFilename = allElementsCourseFilename;
 	}
 }

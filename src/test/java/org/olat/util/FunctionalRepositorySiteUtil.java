@@ -59,11 +59,11 @@ public class FunctionalRepositorySiteUtil {
 		DETAILED_VIEW;
 	}
 
-	public final static String TITLE_OF_LEARNING_RESOURCE_CSS = "";
-	public final static String AUTHOR_CSS = "";
-	public final static String DESCRIPTION_CSS = "";
-	public final static String ID_CSS = "";
-	public final static String LIMIT_SEARCH_CSS = "";
+	public final static String TITLE_OF_LEARNING_RESOURCE_CSS = "o_sel_repo_search_displayname";
+	public final static String AUTHOR_CSS = "o_sel_repo_search_author";
+	public final static String DESCRIPTION_CSS = "o_sel_repo_search_description";
+	public final static String ID_CSS = "o_sel_repo_search_id";
+	public final static String LIMIT_SEARCH_CSS = "o_sel_repo_search_type_limit";
 	
 	public enum SearchField {	
 		TITLE_OF_LEARNING_RESOURCE(TITLE_OF_LEARNING_RESOURCE_CSS),
@@ -332,21 +332,24 @@ public class FunctionalRepositorySiteUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form[")
-		.append(searchFormIndex)
+		.append(searchFormIndex + 1)
 		.append("]")
 		.append("//div[@class='b_form_element']")
-		.append("a[@class='b_button']");
+		.append("//a[@class='b_button']");
 		
 		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		/* click course */
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("//form")
-		.append("//tr[@class='b_first_child b_last_child']")
+		.append("//tr[contains(@class,'b_first_child') and contains(@class, 'b_last_child')]")
+		.append("//td[3]")
 		.append("//a");
 		
 		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		return(true);
 	}

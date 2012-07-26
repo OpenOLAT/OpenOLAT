@@ -362,7 +362,7 @@ public class FunctionalUtil {
 	    		browser.click("name=" + getAcknowledgeCheckbox());
 
 	    		/* click accept button */
-	    		browser.click("xpath=//div[@class='b_window']//button[last()]");
+	    		browser.click("xpath=//div[contains(@class, 'b_window')]//button[last()]");
 	    		browser.waitForPageToLoad(getWaitLimit());
 	    	}
 
@@ -378,11 +378,7 @@ public class FunctionalUtil {
 	    }
 		
 		/* validate page */
-		if(checkCurrentSite(browser, OlatSite.HOME)){
-			return(true);
-		}else{
-			return(false);
-		}
+	    return(true);
 	}
 	
 	/**
@@ -575,9 +571,9 @@ public class FunctionalUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form")
-		.append("//div[@class='")
+		.append("//div[contains(@class, '")
 		.append(entryCss)
-		.append("']")
+		.append("')]")
 		.append("//input[@type='text']");
 		
 		browser.type(selectorBuffer.toString(), text);

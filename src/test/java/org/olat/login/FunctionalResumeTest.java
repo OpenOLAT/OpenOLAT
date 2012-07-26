@@ -86,9 +86,9 @@ public class FunctionalResumeTest {
 		/* create xpath to check if course is open */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//li[@class='b_nav_tab b_nav_active b_resource_CourseModule'")
+		selectorBuffer.append("xpath=//li[@class='b_nav_tab b_nav_active b_resource_CourseModule']")
 		.append("//a[@title='")
-		.append(functionalVOUtil.getAllElementsCourseDisplayname())
+		.append(functionalVOUtil.getAllElementsCourseFilename().substring(0, functionalVOUtil.getAllElementsCourseFilename().indexOf('.')))
 		.append("']");
 		
 		String courseXPath = selectorBuffer.toString();
