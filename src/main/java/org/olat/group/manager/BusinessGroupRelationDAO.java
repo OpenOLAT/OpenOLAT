@@ -30,7 +30,6 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -89,14 +88,10 @@ public class BusinessGroupRelationDAO {
 		}
 	}
 
-	public boolean isIdentityInBusinessGroup(Identity identity, String name, Long groupKey, OLATResource resource) {
+	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi");
 		boolean and = false;
-		if(StringHelper.containsNonWhitespace(name)) {
-			and = and(sb, and);
-			sb.append(" bgi.name=:name");
-		}
 		if(groupKey != null) {
 			and = and(sb, and);
 			sb.append(" bgi.key=:groupKey");
@@ -120,10 +115,6 @@ public class BusinessGroupRelationDAO {
 		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resourceKey", resource.getKey());
-
-		if(StringHelper.containsNonWhitespace(name)) {
-			query.setParameter("name", name);
-		}
 		if(groupKey != null) {
 			query.setParameter("groupKey", groupKey);
 		}

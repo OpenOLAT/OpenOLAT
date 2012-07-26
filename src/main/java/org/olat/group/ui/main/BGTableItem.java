@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.group.BusinessGroup;
+import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;

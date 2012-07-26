@@ -25,7 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
-import org.olat.group.ui.main.BGMembership;
+import org.olat.group.model.BGMembership;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**

@@ -50,8 +50,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.group.model.BGMembership;
 import org.olat.group.model.MembershipModification;
-import org.olat.group.ui.main.BGMembership;
 import org.olat.group.ui.main.BGRoleCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;

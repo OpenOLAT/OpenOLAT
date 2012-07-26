@@ -828,4 +828,41 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, groupKeysC.size());
 		Assert.assertTrue(groupKeysC.contains(group2.getKey()));
 	}
+	
+	@Test
+	public void getMembershipInfoInBusinessGroups() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+
+		securityManager.addIdentityToSecurityGroup(id, group2.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id, group3.getWaitingGroup());
+		dbInstance.commitAndCloseSession();
+		
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		groups.add(group1);
+		groups.add(group2);
+		groups.add(group3);
+
+		//check owner + attendee
+		List<Long> groupKeysA = businessGroupDao.isIdentityInBusinessGroups(id, true, true, false, groups);
+		Assert.assertNotNull(groupKeysA);
+		Assert.assertEquals(2, groupKeysA.size());
+		Assert.assertTrue(groupKeysA.contains(group1.getKey()));
+		Assert.assertTrue(groupKeysA.contains(group2.getKey()));
+		
+		//check owner 
+		List<Long> groupKeysB = businessGroupDao.isIdentityInBusinessGroups(id, true, false, false, groups);
+		Assert.assertNotNull(groupKeysB);
+		Assert.assertEquals(1, groupKeysB.size());
+		Assert.assertTrue(groupKeysB.contains(group1.getKey()));
+
+		//check attendee 
+		List<Long> groupKeysC = businessGroupDao.isIdentityInBusinessGroups(id, false, true, false, groups);
+		Assert.assertNotNull(groupKeysC);
+		Assert.assertEquals(1, groupKeysC.size());
+		Assert.assertTrue(groupKeysC.contains(group2.getKey()));
+	}
 }

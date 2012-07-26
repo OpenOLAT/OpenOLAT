@@ -22,8 +22,10 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
@@ -62,9 +64,11 @@ import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.vfs.Quota;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
+import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -657,12 +661,20 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		}
 		lastSearchParams = params;
 
-		List<Long> groupsAsOwner = businessGroupService.isIdentityInBusinessGroups(getIdentity(), true, false, false, groups);
-		List<Long> groupsAsParticipant = businessGroupService.isIdentityInBusinessGroups(getIdentity(), false, true, false, groups);
-		List<Long> groupsAsWaiter = businessGroupService.isIdentityInBusinessGroups(getIdentity(), false, false, true, groups);
+		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(getIdentity(), groups);
 
-		Set<Long> memberships = new HashSet<Long>(groupsAsOwner);
-		memberships.addAll(groupsAsParticipant);
+		Map<Long, BusinessGroupMembership> memberships = new HashMap<Long, BusinessGroupMembership>();
+		for(BusinessGroupMembership membership: groupsAsOwner) {
+			if(membership.getOwnerGroupKey() != null) {
+				memberships.put(membership.getOwnerGroupKey(), membership);
+			}
+			if(membership.getParticipantGroupKey() != null) {
+				memberships.put(membership.getParticipantGroupKey(), membership);
+			}
+			if(membership.getWaitingGroupKey() != null) {
+				memberships.put(membership.getWaitingGroupKey(), membership);
+			}
+		}
 
 		List<Long> resourceKeys = new ArrayList<Long>(groups.size());
 		for(BusinessGroup group:groups) {
@@ -690,17 +702,10 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				}
 			}
 			
-			Boolean allowLeave =  memberships.contains(group.getKey()) ? Boolean.TRUE : null;
+			BusinessGroupMembership membership =  memberships.get(group.getKey());
+			Boolean allowLeave =  membership != null;
 			Boolean allowDelete = admin ? Boolean.TRUE : null;
-			
-			BGMembership member = null;
-			if(groupsAsOwner.contains(group.getKey())) {
-				member = BGMembership.owner;
-			} else if (groupsAsParticipant.contains(group.getKey())) {
-				member = BGMembership.participant;
-			} else if (groupsAsWaiter.contains(group.getKey())) {
-				member = BGMembership.waiting;
-			}
+			BGMembership member = membership == null ? null : membership.getMembership();
 			boolean marked = markedResources.contains(group.getResource().getResourceableId());
 			BGTableItem tableItem = new BGTableItem(group, marked, member, allowLeave, allowDelete, accessMethods);
 			tableItem.setUnfilteredRelations(resources);

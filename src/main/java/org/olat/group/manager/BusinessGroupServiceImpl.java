@@ -67,6 +67,7 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.DeletableGroupData;
@@ -1252,23 +1253,21 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting,
-			List<BusinessGroup> groups) {
-		return businessGroupDAO.isIdentityInBusinessGroups(identity, owner, attendee, waiting, groups);
+	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, List<BusinessGroup> businessGroups) {
+		return businessGroupDAO.getMembershipInfoInBusinessGroups(identity, businessGroups);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public boolean isIdentityInBusinessGroup(Identity identity, String groupName,
-			boolean ownedById, boolean attendedById, OLATResource resource) {
-		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupName, null, resource);
+	public boolean isIdentityInBusinessGroup(Identity identity, boolean ownedById, boolean attendedById, OLATResource resource) {
+		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, null, resource);
 	}
 	
 	@Override
 	@Transactional(readOnly=true)
 	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey,
 			boolean ownedById, boolean attendedById, OLATResource resource) {
-		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, null, groupKey, resource);
+		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupKey, resource);
 	}
 	
 	@Override

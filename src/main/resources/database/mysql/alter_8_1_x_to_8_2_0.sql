@@ -99,7 +99,21 @@ create or replace view o_re_strict_tutor_v as (
    where re.membersonly=1 and re.accesscode=1
 );
 
-
+create or replace view o_bs_gp_membership_v as (
+   select
+      membership.id as membership_id,
+      membership.identity_id as identity_id,
+      membership.lastmodified as lastmodified,
+      membership.creationdate as creationdate,
+      owned_gp.group_id as owned_gp_id,
+      participant_gp.group_id as participant_gp_id,
+      waiting_gp.group_id as waiting_gp_id
+   from o_bs_membership as membership
+   left join o_gp_business as owned_gp on (membership.secgroup_id = owned_gp.fk_ownergroup)
+   left join o_gp_business as participant_gp on (membership.secgroup_id = participant_gp.fk_partipiciantgroup)
+   left join o_gp_business as waiting_gp on (membership.secgroup_id = waiting_gp.fk_waitinggroup)
+   where (owned_gp.group_id is not null or participant_gp.group_id is not null or waiting_gp.group_id is not null)
+);
 
 
 

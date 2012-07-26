@@ -46,10 +46,12 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
+import org.olat.group.model.BusinessGroupMembershipImpl;
 import org.olat.group.model.BusinessGroupShortImpl;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
@@ -283,6 +285,28 @@ public class BusinessGroupDAO {
 		return group;
 	}
 	
+	public List<BusinessGroupMembership> getMembershipInfoInBusinessGroups(Identity identity, List<BusinessGroup> groups) {
+		if(groups == null || groups.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder(); 
+		sb.append("select membership from ").append(BusinessGroupMembershipImpl.class.getName()).append(" as membership ")
+		  .append(" where membership.identityKey=:identId ")
+		  .append(" and (membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
+
+		List<Long> groupKeys = new ArrayList<Long>();
+		for(BusinessGroup group:groups) {
+			groupKeys.add(group.getKey());
+		}
+		List<BusinessGroupMembership> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembership.class)
+				.setParameter("groupKeys", groupKeys)
+				.setParameter("identId", identity.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return res;
+		
+	}
 
 	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting, List<BusinessGroup> groups) {
 		if(groups == null || groups.isEmpty() || (!owner && !attendee && !waiting)) {
