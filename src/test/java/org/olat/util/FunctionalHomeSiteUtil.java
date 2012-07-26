@@ -130,9 +130,9 @@ public class FunctionalHomeSiteUtil {
 
 	/* password tab */
 	//TODO:JK: add CSS classes to olat
-	public final static String OLD_PASSWORD_CSS = "";
-	public final static String NEW_PASSWORD_CSS = "";
-	public final static String CONFIRM_PASSWORD_CSS = "";
+	public final static String OLD_PASSWORD_CSS = "o_sel_home_pwd_old";
+	public final static String NEW_PASSWORD_CSS = "o_sel_home_pwd_new_1";
+	public final static String CONFIRM_PASSWORD_CSS = "o_sel_home_pwd_new_2";
 
 	public enum PortalSettingsForms {
 		GENERAL_SYSTEM_SETTINGS,
@@ -690,6 +690,7 @@ public class FunctionalHomeSiteUtil {
 				context.put("portalCss", getPortalCss());
 				context.put("portalSubcolumnsCss", getPortalSubcolumnsCss());
 				context.put("portletCss", getPortletCss());
+				context.put("portalColumnCssPrefix", getPortalColumnCssPrefix());
 
 				context.put("portlet", portletCss);
 
@@ -956,8 +957,8 @@ public class FunctionalHomeSiteUtil {
 
 		/* open system tab */
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
-
-		/* enable resume */
+		
+		/* disable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.NO.getValueAttribute()));
@@ -1074,7 +1075,7 @@ public class FunctionalHomeSiteUtil {
 		log.info("submitting changes");
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		//functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}

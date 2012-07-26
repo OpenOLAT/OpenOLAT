@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,6 +43,7 @@ import org.junit.runner.RunWith;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalHomeSiteUtil;
+import org.olat.util.FunctionalLocatorPairsFactory;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
 import org.olat.util.FunctionalHomeSiteUtil.SettingsTab;
@@ -90,31 +92,25 @@ public class FunctionalSettingsTest {
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser));
-		//Thread.sleep(5000);
 		
 		/* reset settings */
 		Assert.assertTrue(functionalHomeSiteUtil.resetSettings(browser));
-		//Thread.sleep(10000);
-		
-		//TODO:JK: check if still logged in
+		Assert.assertTrue(functionalUtil.login(browser));
 		
 		/* set language */
 		functionalHomeSiteUtil.selectLanguage(browser, FunctionalHomeSiteUtil.GERMAN_LANGUAGE_VALUE);
-		//Thread.sleep(10000);
 		
 		/* resume off */
 		functionalHomeSiteUtil.disableResume(browser);
 		
 		/* logout */
 		Assert.assertTrue(functionalUtil.logout(browser));
-		//Thread.sleep(5000);
 		
 		/* login for test case */
 		Assert.assertTrue(functionalUtil.login(browser));
 		
 		/* click configure */
 		functionalHomeSiteUtil.beginEditingPortal(browser);
-		//Thread.sleep(5000);
 		
 		/* de-/activate portlets */
 		if(functionalHomeSiteUtil.deactivatePortlet(browser, functionalHomeSiteUtil.getPortletEffCss())){
@@ -159,27 +155,45 @@ public class FunctionalSettingsTest {
 		Assert.assertTrue(functionalUtil.logout(browser));
 		Assert.assertTrue(functionalUtil.login(browser));
 		
-		HashMap<String,String> pages = new HashMap<String,String>();
+		LinkedHashMap<String,String> pages = new LinkedHashMap<String,String>();
 		
-		//TODO:JK: add locators as key to click and as value to test for.
-		//pages.put();
+		/* locators as key to click and as value to test for */
+		FunctionalLocatorPairsFactory pairsFactory = new FunctionalLocatorPairsFactory(functionalUtil);
+		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteHomeCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteHomeCss()));
+		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteAdministrationCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteAdministrationCss()));
+		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()));
+		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteGroupsCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteGroupsCss()));
+		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteLearningResourcesCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteLearningResourcesCss()));
+		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteUserManagementCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteUserManagementCss()));
 		
 		
 		/* visit specified pages */
-		Iterator iter = pages.keySet().iterator();
+		String[] keys = pages.keySet().toArray(new String[0]);
+		String[] values = (String[]) pages.values().toArray(new String[0]);
 		
-		while(iter.hasNext()){
-			Map.Entry pairs = (Map.Entry) iter.next();
+		int i;
+		
+		for(i = 0; i < pages.size(); i++){
+			browser.click(keys[i]);
 			
-			browser.click((String) pairs.getKey());
+			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			functionalUtil.waitForPageToLoadElement(browser, values[i]);
 		}
 		
 		/* test for the appropriate pages */
-		String[] keys = (String[]) pages.entrySet().toArray();
+		i = pages.size() -1;
 		
-		for(int i = pages.size() -1; i >= 0; i--){
+		Assert.assertTrue(browser.isElementPresent(values[i]));
+		
+		i--;
+		
+		for(; i >= 0; i--){
 			browser.goBack();
-			Assert.assertTrue(browser.isElementPresent(pages.get(keys[i])));
+
+			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			functionalUtil.waitForPageToLoadElement(browser, values[i]);
+			
+			Assert.assertTrue(browser.isElementPresent(values[i]));
 		}
 		
 		/* password test */
@@ -191,7 +205,7 @@ public class FunctionalSettingsTest {
 		functionalUtil.openSite(browser, FunctionalUtil.OlatSite.HOME);
 		functionalHomeSiteUtil.openActionByMenuTree(browser, FunctionalHomeSiteUtil.HomeSiteAction.SETTINGS);
 		
-		String newPassword = "passwd_" + 0 + "_" + UUID.randomUUID().toString();
+		String newPassword = ("passwd_" + 0 + "_" + UUID.randomUUID().toString()).substring(0, 24);
 		
 		functionalUtil.openContentTab(browser, SettingsTab.PASSWORD.ordinal());
 		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getOldPasswordCss(), functionalUtil.getPassword());
@@ -202,8 +216,5 @@ public class FunctionalSettingsTest {
 		
 		Assert.assertTrue(functionalUtil.logout(browser));
 		Assert.assertTrue(functionalUtil.login(browser, current.getLogin(), newPassword, true));
-		
-		
-		functionalHomeSiteUtil.endEditingPortal(browser);
 	}
 }

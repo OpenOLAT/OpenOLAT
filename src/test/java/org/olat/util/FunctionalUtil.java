@@ -430,7 +430,7 @@ public class FunctionalUtil {
 			.append(" ul .")
 			.append(getContentTabCss())
 			.append(tabIndex + 1)
-			.append(" a");
+			.append(" * a");
 			
 			browser.click(selectorBuffer.toString());
 			browser.waitForPageToLoad(getWaitLimit());
