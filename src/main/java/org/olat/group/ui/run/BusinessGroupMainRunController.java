@@ -60,7 +60,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
@@ -85,7 +85,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.DisplayMembers;
-import org.olat.group.ui.BGTranslatorFactory;
+import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -138,8 +138,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public static final OLATResourceable ORES_TOOLMEMBERS = OresHelper.createOLATResourceableType("toolmembers");
 	public static final OLATResourceable ORES_TOOLRESOURCES = OresHelper.createOLATResourceableType("toolresources");
 
-	private static final String PACKAGE = Util.getPackageName(BusinessGroupMainRunController.class);
-
 	// activity identifyers are used as menu user objects and for the user
 	// activity events
 	// change value with care, used in logfiles etc!!
@@ -172,7 +170,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private Panel mainPanel;
 	private VelocityContainer main, vc_sendToChooserForm, resourcesVC;
-	private PackageTranslator resourceTrans;
+	private Translator resourceTrans;
 
 	private BusinessGroup businessGroup;
 
@@ -262,8 +260,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		// Initialize translator:
 		// package translator with default group fallback translators and type
 		// translator
-		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, businessGroup.getType(), ureq.getLocale()));
-		this.resourceTrans = new PackageTranslator(Util.getPackageName(RepositoryTableModel.class), ureq.getLocale(), getTranslator());
+		setTranslator(Util.createPackageTranslator(BGControllerFactory.class, getLocale(), getTranslator()));
+		resourceTrans = Util.createPackageTranslator(RepositoryTableModel.class, getLocale(), getTranslator());
 
 		// main component layed out in panel
 		main = createVelocityContainer("bgrun");

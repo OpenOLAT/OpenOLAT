@@ -34,13 +34,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.WizardController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -54,10 +51,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Florian Gnägi
  */
 public class BGMultipleCopyWizardController extends WizardController {
-	private static final String PACKAGE = Util.getPackageName(BGMultipleCopyWizardController.class);
-
 	private BGCopyWizardCopyForm copyForm;
-	private Translator trans;
 	private BusinessGroup originalGroup;
 	private GroupNamesForm groupNamesForm;
 	
@@ -74,14 +68,13 @@ public class BGMultipleCopyWizardController extends WizardController {
 	public BGMultipleCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup) {
 		super(ureq, wControl, 2);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		this.trans = BGTranslatorFactory.createBGPackageTranslator(PACKAGE, originalGroup.getType(), ureq.getLocale());
 		this.originalGroup = originalGroup;
 		// init wizard step 1
-		this.copyForm = new BGCopyWizardCopyForm(ureq, wControl);
-		this.copyForm.addControllerListener(this);
+		copyForm = new BGCopyWizardCopyForm(ureq, wControl);
+		copyForm.addControllerListener(this);
 		// init wizard title and set step 1
-		setWizardTitle(trans.translate("bgcopywizard.multiple.title"));
-		setNextWizardStep(trans.translate("bgcopywizard.copyform.title"), this.copyForm.getInitialComponent());
+		setWizardTitle(translate("bgcopywizard.multiple.title"));
+		setNextWizardStep(translate("bgcopywizard.copyform.title"), copyForm.getInitialComponent());
 	}
 
 	/**
@@ -98,7 +91,7 @@ public class BGMultipleCopyWizardController extends WizardController {
 			if (event == Event.DONE_EVENT) {
 				groupNamesForm = new GroupNamesForm(ureq, wControl, this.originalGroup.getMaxParticipants());
 				groupNamesForm.addControllerListener(this);
-				setNextWizardStep(trans.translate("bgcopywizard.multiple.groupnames.title"), groupNamesForm.getInitialComponent());
+				setNextWizardStep(translate("bgcopywizard.multiple.groupnames.title"), groupNamesForm.getInitialComponent());
 			}
 		}
 		else if (source == groupNamesForm) {
@@ -123,7 +116,7 @@ public class BGMultipleCopyWizardController extends WizardController {
 					}
 				}
 				if (nokGroups.length() > 0) {
-					String warning = trans.translate("bgcopywizard.multiple.groupnames.douplicates", new String[] { okGroups.toString(),
+					String warning = translate("bgcopywizard.multiple.groupnames.douplicates", new String[] { okGroups.toString(),
 							nokGroups.toString() });
 					getWindowControl().setWarning(warning);
 				}

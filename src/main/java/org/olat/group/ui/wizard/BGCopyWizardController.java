@@ -34,11 +34,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.WizardController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.BusinessGroupFormController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -53,9 +51,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Florian Gnägi
  */
 public class BGCopyWizardController extends WizardController {
-	
-	private static final String PACKAGE = Util.getPackageName(BGCopyWizardController.class);
-
 	private BGCopyWizardCopyForm copyForm;
 	private BusinessGroupFormController groupController;
 	private Translator trans;
@@ -75,7 +70,6 @@ public class BGCopyWizardController extends WizardController {
 		super(ureq, wControl, 2);
 		setBasePackage(BGCopyWizardController.class);
 		bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		this.trans = BGTranslatorFactory.createBGPackageTranslator(PACKAGE, originalGroup.getType(), ureq.getLocale());
 		this.originalGroup = originalGroup;
 		// init wizard step 1
 		copyForm = new BGCopyWizardCopyForm(ureq, wControl);

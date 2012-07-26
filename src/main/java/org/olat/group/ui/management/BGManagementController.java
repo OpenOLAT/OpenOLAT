@@ -86,7 +86,6 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.BGControllerFactory;
-import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.BusinessGroupTableModel;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
@@ -118,7 +117,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author gnaegi
  */
 public class BGManagementController extends MainLayoutBasicController implements GenericEventListener {
-	private static final String PACKAGE = Util.getPackageName(BGManagementController.class);
 
 	// Menu commands
 	private static final String CMD_OVERVIEW = "cmd.overview";
@@ -233,7 +231,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// Initialize translator
 		// 1 - package translator with default group fallback translators and type
 		// translator
-		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, "LearningGroup", ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(BGControllerFactory.class, getLocale(), getTranslator()));
 		// user translator
 
 		// initialize all velocity containers

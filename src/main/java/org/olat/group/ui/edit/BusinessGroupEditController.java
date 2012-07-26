@@ -83,8 +83,8 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRights;
+import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGMailHelper;
-import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.BusinessGroupFormController;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -103,8 +103,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 
 public class BusinessGroupEditController extends BasicController implements ControllerEventListener, GenericEventListener, Activateable2 {
-	//needed for complicated fall back translator chaining
-	private static final String PACKAGE = Util.getPackageName(BusinessGroupEditController.class);
 	private final BGRightManager rightManager;
 	private final BGAreaManager areaManager;
 	private final BusinessGroupService businessGroupService;
@@ -168,7 +166,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		// Initialize translator:
 		// package translator with default group fallback translators and type
 		// translator
-		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, businessGroup.getType(), ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(BGControllerFactory.class, getLocale(), getTranslator()));
 		// Initialize available rights
 		bgRights = new CourseRights(ureq.getLocale());
 		// try to acquire edit lock on business group

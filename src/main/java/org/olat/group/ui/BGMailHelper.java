@@ -210,8 +210,7 @@ public class BGMailHelper {
 		String[] bodyArgs = new String[] { actor.getUser().getProperty(UserConstants.FIRSTNAME, null), actor.getUser().getProperty(UserConstants.LASTNAME, null), actor.getUser().getProperty(UserConstants.EMAIL, null),
 				actor.getName() };
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
-		Translator trans = BGTranslatorFactory.createBGPackageTranslator(Util.getPackageName(BusinessGroupService.class), group.getType(),
-				locale);
+		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale);
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey, bodyArgs);
 		

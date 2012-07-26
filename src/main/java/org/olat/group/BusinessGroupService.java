@@ -45,9 +45,7 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface BusinessGroupService {
-	
-	//public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
-	
+
 	/**
 	 * Extension-point method to register objects which have deletable group-data.
 	 * Listener will be called in method deleteBusinessGroup.
