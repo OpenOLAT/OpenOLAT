@@ -42,10 +42,8 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
@@ -121,8 +119,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupImportExport businessGroupImportExport;
 	@Autowired
 	private BusinessGroupArchiver businessGroupArchiver;
-	@Autowired
-	private BusinessGroupDeletionManager businessGroupDeletionManager;
 	@Autowired
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	@Autowired
@@ -209,7 +205,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				bg.setMaxParticipants(minParticipants);
 				bg.setMinParticipants(maxParticipants);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
-				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
 				return businessGroupDAO.merge(bg);
 			}
 		});
@@ -234,7 +229,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 				bg.setAutoCloseRanksEnabled(autoCloseRanks);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
-				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
 				return businessGroupDAO.merge(bg);
 			}
 		});
@@ -266,7 +260,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				try {
 					BusinessGroup reloadedBusinessGroup = loadBusinessGroup(group);
 					reloadedBusinessGroup.setLastUsage(new Date());
-					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 					return businessGroupDAO.merge(reloadedBusinessGroup);
 				} catch(DBRuntimeException e) {
 					if(e.getCause() instanceof ObjectNotFoundException) {
@@ -574,11 +567,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public void deleteGroupsAfterLifeCycle(List<BusinessGroup> groups) {
-		businessGroupDeletionManager.deleteGroups(groups);
-	}
-	
-	@Override
 	public void deleteBusinessGroup(BusinessGroup group) {
 		try{
 			OLATResourceableJustBeforeDeletedEvent delEv = new OLATResourceableJustBeforeDeletedEvent(group);
@@ -651,21 +639,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 		}
 	}
-	
-	@Override
-	public List<BusinessGroup> getDeletableGroups(int lastLoginDuration) {
-		return businessGroupDAO.getDeletableGroups(lastLoginDuration);
-	}
-
-	@Override
-	public List<BusinessGroup> getGroupsInDeletionProcess(int deleteEmailDuration) {
-		return businessGroupDAO.getGroupsInDeletionProcess(deleteEmailDuration);
-	}
-
-	@Override
-	public List<BusinessGroup> getGroupsReadyToDelete(int deleteEmailDuration) {
-		return businessGroupDAO.getGroupsReadyToDelete(deleteEmailDuration);
-	}
 
 	@Override
 	public MailerResult deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, String businessPath, Identity deletedBy, Locale locale) {
@@ -702,13 +675,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			return mailerResult;
 		}
 		return null;
-	}
-
-	@Override
-	public String sendDeleteEmailTo(List<BusinessGroup> selectedGroups, MailTemplate mailTemplate, boolean isTemplateChanged, String keyEmailSubject, 
-			String keyEmailBody, Identity sender, Translator pT) {
-		
-		return businessGroupDeletionManager.sendDeleteEmailTo(selectedGroups, mailTemplate, isTemplateChanged, keyEmailSubject, keyEmailBody, sender, pT);
 	}
 	
 	private void removeFromRepositoryEntrySecurityGroup(BusinessGroup group) {

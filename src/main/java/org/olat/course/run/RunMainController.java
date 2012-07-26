@@ -773,7 +773,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// coach. the flag is not needed here
 				// since the groups knows itself if the user is coach and the user sees
 				// only his own groups.
-				BGControllerFactory.getInstance().createRunControllerAsTopNavTab(group, ureq, getWindowControl(), /*ual, */false);
+				BGControllerFactory.getInstance().createRunControllerAsTopNavTab(group, ureq, getWindowControl());
 			} else {
 				// display error and do logging
 				getWindowControl().setError(translate("error.invalid.group"));

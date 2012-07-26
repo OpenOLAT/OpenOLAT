@@ -20,7 +20,6 @@
 package org.olat.group.manager;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -37,7 +36,6 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.collaboration.CollaborationTools;
-import org.olat.commons.lifecycle.LifeCycleEntry;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
@@ -47,7 +45,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupMembership;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
@@ -210,71 +207,6 @@ public class BusinessGroupDAO {
 		em.remove(group);
 	}
 	
-	public List<BusinessGroup> getDeletableGroups(int lastLoginDuration) {
-		Calendar lastUsageLimit = Calendar.getInstance();
-		lastUsageLimit.add(Calendar.MONTH, - lastLoginDuration);
-		log.debug("lastLoginLimit=" + lastUsageLimit);
-		// 1. get all business-groups with last usage > x
-		StringBuilder sb = new StringBuilder();
-		sb.append("select gr from ").append(BusinessGroupImpl.class).append(" as gr ")
-		  .append(" where (gr.lastUsage = null or gr.lastUsage < :lastUsage)");
-		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), BusinessGroup.class)
-				.setParameter("lastUsage", lastUsageLimit.getTime(), TemporalType.TIMESTAMP)
-				.getResultList();
-
-		// 2. get all businness-groups in deletion-process (email send)
-		StringBuilder sc = new StringBuilder();
-		sc.append( "select gr from ").append(BusinessGroupImpl.class.getName()).append(" as gr")
-		  .append(", ").append(LifeCycleEntry.class.getName()).append(" as le ")
-			.append(" where gr.key = le.persistentRef ")
-			.append(" and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'" )
-			.append(" and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "'");
-		List<BusinessGroup> groupsInProcess = dbInstance.getCurrentEntityManager()
-				.createQuery(sc.toString(), BusinessGroup.class)
-				.getResultList();
-		
-		// 3. Remove all groups in deletion-process from all unused-groups
-		groups.removeAll(groupsInProcess);
-		return groups;
-	}
-
-	public List<BusinessGroup> getGroupsInDeletionProcess(int deleteEmailDuration) {
-		Calendar deleteEmailLimit = Calendar.getInstance();
-		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
-		log.debug("deleteEmailLimit=" + deleteEmailLimit);
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select gr from ").append(BusinessGroupImpl.class.getName()).append(" as gr")
-			.append(" , ").append(LifeCycleEntry.class.getName()).append(" as le")
-			.append(" where gr.key = le.persistentRef ")
-			.append(" and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'")
-			.append(" and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "' and le.lcTimestamp >= :deleteEmailDate ");
-
-		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
-				.setParameter("deleteEmailDate", deleteEmailLimit.getTime(), TemporalType.TIMESTAMP)
-				.getResultList();
-		return groups;
-	}
-	
-	public List<BusinessGroup> getGroupsReadyToDelete(int deleteEmailDuration) {
-		Calendar deleteEmailLimit = Calendar.getInstance();
-		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
-		log.debug("deleteEmailLimit=" + deleteEmailLimit);
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select gr from ").append(BusinessGroupImpl.class.getName()).append(" as gr")
-			.append(" , ").append(LifeCycleEntry.class.getName()).append(" as le")
-			.append(" where gr.key = le.persistentRef ")
-			.append(" and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'")
-			.append(" and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "' and le.lcTimestamp < :deleteEmailDate ");
-		
-		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
-				.setParameter("deleteEmailDate", deleteEmailLimit.getTime(), TemporalType.TIMESTAMP)
-				.getResultList();
-		return groups;
-	}
-	
 	/**
 	 * Work with the hibernate session
 	 * @param group
@@ -305,7 +237,6 @@ public class BusinessGroupDAO {
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		return res;
-		
 	}
 
 	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting, List<BusinessGroup> groups) {

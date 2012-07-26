@@ -17,19 +17,6 @@
 
 	<bean id="businessGroupModule" class="org.olat.group.BusinessGroupModule" 
 		init-method="init" depends-on="userModule"/>
-		
-	<!-- 
-	<bean id="businessGroupManager" class="org.olat.group.BusinessGroupManagerImpl" depends-on="collaborationToolsFactory">
-		<constructor-arg index="0" ref="baseSecurityManager" />
-		<constructor-arg index="1" ref="userDeletionManager" />
-		<property name="dbVendor" value="${db.vendor}" />
-	</bean>
-	-->
-	
-	<bean id="groupDeletionManager" class="org.olat.group.manager.BusinessGroupDeletionManager">
-		<constructor-arg index="0" ref="deletionModule" />
-		<property name="businessGroupService" ref="businessGroupService"/>
-	</bean>
 	
 	<!-- Menu of the business group main controller -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="groups.my" init-method="initExtensionPoints">

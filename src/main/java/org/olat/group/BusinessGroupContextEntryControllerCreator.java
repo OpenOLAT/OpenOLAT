@@ -57,13 +57,12 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 		Controller ctrl = null;
 		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
 		if(bgroup != null) {
-			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin()
-					|| ureq.getUserSession().getRoles().isGroupManager();
 			// check if allowed to start (must be member or admin)
 			//fxdiff VCRP-1,2: access control of resources
-			if (isOlatAdmin || bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
+			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
+					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
 				// only olatadmins or admins of this group can administer this group
-				ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup, isOlatAdmin, null);
+				ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup, null);
 			}
 		}
 		return ctrl;

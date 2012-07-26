@@ -26,9 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.AddToGroupsEvent;
@@ -48,7 +46,7 @@ import org.olat.resource.OLATResource;
  */
 public interface BusinessGroupService {
 	
-	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
+	//public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 	
 	/**
 	 * Extension-point method to register objects which have deletable group-data.
@@ -75,21 +73,6 @@ public interface BusinessGroupService {
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource);
-	
-	/**
-	 * Creates business-groups with certain names when no group in a given resource's context
-	 * with this names already exists.
-	 * @param allNames
-	 * @param description
-	 * @param minParticipants
-	 * @param maxParticipants
-	 * @param waitingListEnabled
-	 * @param autoCloseRanksEnabled
-	 * @param resource
-	 * @return
-	 */
-	//public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, String description, Integer minParticipants, Integer maxParticipants,
-	//		boolean waitingListEnabled, boolean autoCloseRanksEnabled, OLATResource resource);
 	
 	/**
 	 * Update the business group with the supplied arguments and do it in sync
@@ -135,20 +118,7 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public MailerResult deleteBusinessGroupWithMail(BusinessGroup group, String businessPath, Identity deletedBy, Locale locale);
-	
-	
-	public void deleteGroupsAfterLifeCycle(List<BusinessGroup> groups);
-	
-	public List<BusinessGroup> getDeletableGroups(int lastLoginDuration);
-	
-	public List<BusinessGroup> getGroupsInDeletionProcess(int deleteEmailDuration);
-	
-	public List<BusinessGroup> getGroupsReadyToDelete(int deleteEmailDuration);
-	
 
-	public String sendDeleteEmailTo(List<BusinessGroup> selectedGroups, MailTemplate mailTemplate, boolean isTemplateChanged, String keyEmailSubject, 
-			String keyEmailBody, Identity sender, Translator pT);
-	
 	/**
 	 * Set certain business-group as active (set last-usage and delete time stamp for
 	 * 'SEND_DELETE_EMAIL_ACTION' in LifeCycleManager):

@@ -45,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.area.BGArea;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 
 /**
@@ -96,7 +95,7 @@ public class AreaSelectionController extends FormBasicController {
 		if (source == createNew) {
 			//user wants to create a new area -> show new area create form
 			removeAsListenerAndDispose(areaCreateCntrllr);
-			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(ureq, getWindowControl(), courseGrpMngr.getCourseResource());
+			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseGrpMngr.getCourseResource(), true, null);
 			listenTo(areaCreateCntrllr);
 			
 			removeAsListenerAndDispose(cmc);

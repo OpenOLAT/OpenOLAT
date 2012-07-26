@@ -207,7 +207,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 					BusinessGroup currBusinessGroup = groupListModel.getBusinessGroupAt(rowid);
 					boolean isInBusinessGroup = businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), currBusinessGroup);
 					if(isInBusinessGroup) {
-					  BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false);
+					  BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl());
 					} else {
 						showInfo("groupsPortlet.no_member");
 					}

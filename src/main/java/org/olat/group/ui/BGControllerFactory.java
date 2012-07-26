@@ -25,22 +25,17 @@
 
 package org.olat.group.ui;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.group.BusinessGroup;
-import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.main.BusinessGroupMainController;
-import org.olat.group.ui.management.BGManagementController;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
-import org.olat.resource.OLATResource;
 
 /**
  * Description: <BR>
@@ -76,22 +71,6 @@ public class BGControllerFactory {
 	}
 
 	//
-	// 1) Group edit controllers
-	//
-
-	/**
-	 * Factory method to create a configured group edit controller
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param businessGroup
-	 * @return an edit controller for this busines group
-	 */
-	public BusinessGroupEditController createEditControllerFor(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
-		return new BusinessGroupEditController(ureq, wControl, businessGroup);
-	}
-
-	//
 	// 2) Group run controllers
 	//
 
@@ -106,7 +85,7 @@ public class BGControllerFactory {
 	 * @return a run controller for this business group
 	 */
 	public BusinessGroupMainRunController createRunControllerFor(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup,
-			boolean isGMAdmin, String initialViewIdentifier) {
+			 String initialViewIdentifier) {
 
 		// build up the context path
 		WindowControl bwControl;
@@ -134,27 +113,12 @@ public class BGControllerFactory {
 	 * @param initialViewIdentifier
 	 * @return BusinessGroupMainRunController or null if already initialized
 	 */
-	public BusinessGroupMainRunController createRunControllerAsTopNavTab(BusinessGroup businessGroup, UserRequest ureq,
-			WindowControl wControl, boolean isGMAdmin) {
-		String displayName = businessGroup.getName();
-
-		BusinessGroupMainRunController bgMrc = null;
-
-		OLATResourceable ores = businessGroup;
-		DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-		//was brasato:: DTabs dts = wControl.getDTabs();
-		DTab dt = dts.getDTab(ores);
-		if (dt == null) {
-			// does not yet exist -> create and add
-			dt = dts.createDTab(ores, displayName);
-			// tabs full
-			if (dt == null) return null;
-			bgMrc = createRunControllerFor(ureq, dt.getWindowControl(), businessGroup, isGMAdmin, null);
-			dt.setController(bgMrc);
-			dts.addDTab(dt);
-		}
-		dts.activate(ureq, dt, "", null); // null: do not activate to a certain view
-		return bgMrc;
+	public void createRunControllerAsTopNavTab(BusinessGroup businessGroup, UserRequest ureq,
+			WindowControl wControl) {
+		String url = "[BusinessGroup:" + businessGroup.getKey() + "]";
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
+		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 
 	//
@@ -170,52 +134,9 @@ public class BGControllerFactory {
 	 * @param initialViewIdentifier
 	 * @return a configured buddy group main controller
 	 */
-	public MainLayoutController createBuddyGroupMainController(UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createGroupMainController(UserRequest ureq, WindowControl wControl) {
 		return new BusinessGroupMainController(ureq, wControl);
 	}
 
-	/**
-	 * Factory method to create a configured group management controller for
-	 * learning groups and right groups.
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param bgContext
-	 * @param useBackLink
-	 * @return a business group management controller for this group context
-	 */
-	public BGManagementController createManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource,
-			boolean useBackLink) {
-		// controller configuration
-		return new BGManagementController(ureq, wControl, resource, useBackLink);
-	}
 
-	/**
-	 * a new area creation controller
-	 * @param ureq
-	 * @param wControl
-	 * @param ual
-	 * @param bgContext
-	 * @return
-	 */
-	public NewAreaController createNewAreaController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
-		return createNewAreaController(ureq, wControl, resource, true, null);
-	}
-	
-	/**
-	 * a new area creation controller in bulkmode
-	 * @param ureq
-	 * @param wControl
-	 * @param ual
-	 * @param bgContext
-	 * @param bulkMode
-	 * @param csvNames
-	 * @return
-	 */
-	public NewAreaController createNewAreaController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvNames) {
-		if (resource == null) throw new AssertException("Group resource must not be null");
-		NewAreaController nac = new NewAreaController(ureq, wControl, resource, bulkMode, csvNames);
-		return nac;
-	}
-	
 }

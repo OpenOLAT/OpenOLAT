@@ -42,7 +42,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.group.ui.main.BGMainController;
 
 /**
  * Description:<br>
@@ -51,7 +50,7 @@ import org.olat.group.ui.main.BGMainController;
  * @author Felix Jost
  */
 public class GroupsSite implements SiteInstance {
-	private static final OLATResourceable ORES_GROUPS = OresHelper.lookupType(BGMainController.class);
+	private static final OLATResourceable ORES_GROUPS = OresHelper.createOLATResourceableInstance("BGMainController", 0l);
 
 	// refer to the definitions in org.olat
 	private static final String PACKAGE = Util.getPackageName(BaseChiefController.class);

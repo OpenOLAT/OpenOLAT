@@ -159,7 +159,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		if(businessGroup != null && !bulkMode) {
 			BusinessControlFactory bcf = BusinessControlFactory.getInstance();
 			List<ContextEntry> entries = bcf.createCEListFromString("[BusinessGroup:" + businessGroup.getKey() + "]");
-			String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+			String url = bcf.getAsURIString(entries, true);
 			uifactory.addStaticTextElement("create.form.businesspath", url, formLayout);
 		}
 		

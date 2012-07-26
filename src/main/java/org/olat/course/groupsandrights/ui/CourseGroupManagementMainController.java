@@ -38,7 +38,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.management.BGManagementController;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -76,7 +75,7 @@ public class CourseGroupManagementMainController extends MainLayoutBasicControll
 		CourseGroupManager groupManager = course.getCourseEnvironment().getCourseGroupManager();
 		OLATResource courseResource = groupManager.getCourseResource();
 
-		groupManageCtr = BGControllerFactory.getInstance().createManagementController(ureq, getWindowControl(), courseResource, false);
+		groupManageCtr = new BGManagementController(ureq, getWindowControl(), courseResource, false);
 		listenTo(groupManageCtr);
 		putInitialPanel(groupManageCtr.getInitialComponent());
 		

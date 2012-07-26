@@ -798,7 +798,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	 */
 	private void createNewAreaController(UserRequest ureq, WindowControl wControl) {
 		removeAsListenerAndDispose(areaCreateController);
-		areaCreateController = BGControllerFactory.getInstance().createNewAreaController(ureq, wControl, resource);
+		areaCreateController = new NewAreaController(ureq, wControl, resource, true, null);
 		listenTo(areaCreateController);
 				
 		newAreaVC.put("areaCreateForm", areaCreateController.getInitialComponent());
@@ -839,7 +839,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	private void doGroupEdit(UserRequest ureq) {
 		removeAsListenerAndDispose(groupEditCtr);
-		groupEditCtr = BGControllerFactory.getInstance().createEditControllerFor(ureq, getWindowControl(), currentGroup);
+		groupEditCtr = new BusinessGroupEditController(ureq, getWindowControl(), currentGroup);
 		listenTo(groupEditCtr);
 		// add as listener to BusinessGroup so we are being notified about changes.
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), currentGroup);
@@ -852,7 +852,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	}
 
 	private void doGroupRun(UserRequest ureq) {
-		BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currentGroup, ureq, getWindowControl(), true);
+		BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currentGroup, ureq, getWindowControl());
 	}
 
 	private void doGroupDelete() {

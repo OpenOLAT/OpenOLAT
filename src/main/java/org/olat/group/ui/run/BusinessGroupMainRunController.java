@@ -85,7 +85,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.DisplayMembers;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -792,7 +791,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		//fxdiff BAKS-7 Resume function
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ORES_TOOLADMIN));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLADMIN, null, getWindowControl());
-		collabToolCtr = bgEditCntrllr = BGControllerFactory.getInstance().createEditControllerFor(ureq, bwControl, businessGroup);
+		collabToolCtr = bgEditCntrllr = new BusinessGroupEditController(ureq, bwControl, businessGroup);
 		listenTo(bgEditCntrllr);
 		mainPanel.setContent(bgEditCntrllr.getInitialComponent());
 	}

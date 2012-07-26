@@ -221,7 +221,7 @@ public class GroupOverviewController extends BasicController {
 						updateGroupsTable(ureq);	
 					}
 					else {
-						BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), true);
+						BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl());
 					}
 				} else if (actionid.equals(TABLE_ACTION_UNSUBSCRIBE)){
 					// fxdiff: FXOLAT-101 see similar doBuddyGroupLeave() in BGMainController

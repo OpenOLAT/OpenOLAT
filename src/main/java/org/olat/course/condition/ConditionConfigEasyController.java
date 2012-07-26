@@ -71,7 +71,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.resource.OLATResource;
@@ -388,8 +387,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			String[] csvAreaName = (String[]) fixAreaError.getUserObject();
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
 			removeAsListenerAndDispose(areaCreateCtlr);
-			areaCreateCtlr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
+			areaCreateCtlr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
 			listenTo(areaCreateCtlr);
 			
 			removeAsListenerAndDispose(cmc);

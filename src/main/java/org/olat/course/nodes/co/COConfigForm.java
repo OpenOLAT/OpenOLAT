@@ -60,7 +60,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.modules.ModuleConfiguration;
@@ -637,8 +636,7 @@ public class COConfigForm extends FormBasicController {
 			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
 			easyAreaList.setEnabled(false);
 			removeAsListenerAndDispose(areaCreateCntrllr);
-			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
+			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
 			listenTo(areaCreateCntrllr);
 			
 			removeAsListenerAndDispose(cmc);

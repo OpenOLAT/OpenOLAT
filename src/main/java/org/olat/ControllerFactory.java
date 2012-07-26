@@ -48,7 +48,6 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGControllerFactory;
-import org.olat.group.ui.main.BGMainController;
 import org.olat.home.HomeMainController;
 import org.olat.home.InviteeHomeMainController;
 import org.olat.repository.RepositoryEntry;
@@ -85,20 +84,19 @@ public class ControllerFactory {
 			// normal home
 			if (ureq.getUserSession().getRoles().isGuestOnly()) return new HomeMainController(ureq, wControl);
 
-		} else if (OresHelper.isOfType(olatResourceable, BGMainController.class)) {
-			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BuddyGroupMainController, but is in guest group " + roles);
-			return BGControllerFactory.getInstance().createBuddyGroupMainController(ureq, wControl);
+		} else if (OresHelper.isOfType(olatResourceable, "BGMainController")) {
+			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a GroupMainController, but is in guest group " + roles);
+			return BGControllerFactory.getInstance().createGroupMainController(ureq, wControl);
 
 		} else if (OresHelper.isOfType(olatResourceable, BusinessGroup.class)) {
 			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BusinessGroup, but is in guest group " + roles);
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			BusinessGroup bg = bgs.loadBusinessGroup(olatResourceable.getResourceableId());
-			boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
 			// check if allowed to start (must be member or admin)
-			if (isAdmin || bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
+			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
+					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
 				// only olatadmins or admins of this group can administer this group
-				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg, isAdmin,
-						initialViewIdentifier);
+				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg, initialViewIdentifier);
 			}
 			// else skip
 

@@ -65,7 +65,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.modules.ModuleConfiguration;
@@ -471,9 +470,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			easyAreaList.setEnabled(false);
 			removeAsListenerAndDispose(areaCreateCntrllr);
 			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
-			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), 
-					courseResource, true, csvAreaName[0]
+			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName[0]
 			);
 			listenTo(areaCreateCntrllr);
 			
