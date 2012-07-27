@@ -249,6 +249,57 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertEquals(3, businessGroupService.findBusinessGroups(params2, c1, 0, -1).size());
 		Assert.assertEquals(3, businessGroupService.countBusinessGroups(params2, c1));
 	}
+	
+	@Test
+	public void mergeGroups() {
+		//create some identities
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("merge-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("merge-2-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("merge-3-" + UUID.randomUUID().toString());
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("merge-4-" + UUID.randomUUID().toString());
+		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("merge-5-" + UUID.randomUUID().toString());
+		Identity id6 = JunitTestHelper.createAndPersistIdentityAsUser("merge-6-" + UUID.randomUUID().toString());
+		//create groups and memberships
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "old-1", null, 0, 10, false, false, null);
+		securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id3, g1.getOwnerGroup());
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "old-2", null, 0, 10, false, false, null);
+		securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id4, g2.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id5, g2.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id6, g2.getOwnerGroup());
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "target", null, 0, 10, false, false, null);
+		securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//merge
+		List<BusinessGroup> groupsToMerge = new ArrayList<BusinessGroup>();
+		groupsToMerge.add(g1);
+		groupsToMerge.add(g2);
+		groupsToMerge.add(g3);
+		BusinessGroup mergedGroup = businessGroupService.mergeBusinessGroups(wg1, g3, groupsToMerge);
+		Assert.assertNotNull(mergedGroup);
+		Assert.assertEquals(g3, mergedGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//check merge
+		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(mergedGroup.getOwnerGroup());
+		Assert.assertNotNull(owners);
+		Assert.assertEquals(2, owners.size());
+		Assert.assertTrue(owners.contains(id3));
+		Assert.assertTrue(owners.contains(id6));
+		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(mergedGroup.getPartipiciantGroup());
+		Assert.assertNotNull(participants);
+		Assert.assertEquals(3, participants.size());
+		Assert.assertTrue(participants.contains(id1));
+		Assert.assertTrue(participants.contains(id2));
+		Assert.assertTrue(participants.contains(id5));
+		List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(mergedGroup.getWaitingGroup());
+		Assert.assertNotNull(waitingList);
+		Assert.assertEquals(1, waitingList.size());
+		Assert.assertTrue(waitingList.contains(id4));
+	}
 
 	/**
 	 * Test existence of BuddyGroups inserted in the setUp phase................

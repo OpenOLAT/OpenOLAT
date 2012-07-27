@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -41,8 +42,10 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupPropertyDAO;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.test.JunitTestHelper;
@@ -60,6 +63,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -67,6 +72,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	@Autowired
 	private ACFrontendManager acFrontendManager;
+	@Autowired
+	private MarkManager markManager;
 	
 	@After
 	public void tearDown() throws Exception {
@@ -790,6 +797,92 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 			Assert.assertNotNull(offers);
 			Assert.assertFalse(offers.isEmpty());
 		}
+	}
+	
+	@Test
+	public void findBusinessGroupsWithResources() {
+		//create a group attach to a resource
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("marker-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "rsrc-grp-1", "rsrc-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "rsrc-grp-2", "rsrc-grp-2-desc", 0, 5, true, false, true, false, false);
+		businessGroupRelationDao.addRelationToResource(group1, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		//check the search function with resources
+		SearchBusinessGroupParams paramsWith = new SearchBusinessGroupParams();
+		paramsWith.setResources(Boolean.TRUE);
+		List<BusinessGroup> groupWith = businessGroupDao.findBusinessGroups(paramsWith, null, 0, 0);
+		Assert.assertNotNull(groupWith);
+		Assert.assertFalse(groupWith.isEmpty());
+		Assert.assertTrue(groupWith.contains(group1));
+
+		//check the search function without resources
+		SearchBusinessGroupParams paramsWithout = new SearchBusinessGroupParams();
+		paramsWithout.setResources(Boolean.FALSE);
+		List<BusinessGroup> groupWithout = businessGroupDao.findBusinessGroups(paramsWithout, null, 0, 0);
+		Assert.assertNotNull(groupWithout);
+		Assert.assertFalse(groupWithout.isEmpty());
+		Assert.assertTrue(groupWithout.contains(group2));
+	}
+	
+	@Test
+	public void findMarkedBusinessGroup() {
+		Identity marker = JunitTestHelper.createAndPersistIdentityAsUser("marker-" + UUID.randomUUID().toString());
+		//create a group with a mark and an other without as control
+		BusinessGroup group1 = businessGroupDao.createAndPersist(marker, "marked-grp-1", "marked-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(marker, "marked-grp-2", "marked-grp-2-desc", 0, 5, true, false, true, false, false);
+		markManager.setMark(group1.getResource(), marker, null, "[BusinessGroup:" + group1.getKey() + "]");
+		dbInstance.commitAndCloseSession();
+		
+		//check marked
+		SearchBusinessGroupParams paramsAll = new SearchBusinessGroupParams();
+		paramsAll.setIdentity(marker);
+		paramsAll.setMarked(Boolean.TRUE);
+		List<BusinessGroup> markedGroups = businessGroupDao.findBusinessGroups(paramsAll, null, 0, 0);
+		Assert.assertNotNull(markedGroups);
+		Assert.assertEquals(1, markedGroups.size());
+		Assert.assertTrue(markedGroups.contains(group1));
+		
+		//check not marked
+		SearchBusinessGroupParams paramsNotMarked = new SearchBusinessGroupParams();
+		paramsNotMarked.setIdentity(marker);
+		paramsNotMarked.setOwner(true);
+		paramsNotMarked.setMarked(Boolean.FALSE);
+		List<BusinessGroup> notMarkedGroups = businessGroupDao.findBusinessGroups(paramsNotMarked, null, 0, 0);
+		Assert.assertNotNull(notMarkedGroups);
+		Assert.assertEquals(1, notMarkedGroups.size());
+		Assert.assertTrue(notMarkedGroups.contains(group2));
+	}
+	
+	@Test
+	public void findMarkedBusinessGroupCrossContamination() {
+		Identity marker1 = JunitTestHelper.createAndPersistIdentityAsUser("marker-1-" + UUID.randomUUID().toString());
+		Identity marker2 = JunitTestHelper.createAndPersistIdentityAsUser("marker-2-" + UUID.randomUUID().toString());
+		//create a group with a mark and an other without as control
+		BusinessGroup group1 = businessGroupDao.createAndPersist(marker1, "marked-grp-3", "marked-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(marker1, "marked-grp-4", "marked-grp-2-desc", 0, 5, true, false, true, false, false);
+		markManager.setMark(group1.getResource(), marker1, null, "[BusinessGroup:" + group1.getKey() + "]");
+		markManager.setMark(group2.getResource(), marker2, null, "[BusinessGroup:" + group2.getKey() + "]");
+		dbInstance.commitAndCloseSession();
+		
+		//check marked
+		SearchBusinessGroupParams paramsMarker1 = new SearchBusinessGroupParams();
+		paramsMarker1.setIdentity(marker1);
+		paramsMarker1.setMarked(Boolean.TRUE);
+		List<BusinessGroup> markedGroups = businessGroupDao.findBusinessGroups(paramsMarker1, null, 0, 0);
+		Assert.assertNotNull(markedGroups);
+		Assert.assertEquals(1, markedGroups.size());
+		Assert.assertTrue(markedGroups.contains(group1));
+		
+		//check not marked
+		SearchBusinessGroupParams paramsMarker2 = new SearchBusinessGroupParams();
+		paramsMarker2.setIdentity(marker2);
+		paramsMarker2.setMarked(Boolean.TRUE);
+		List<BusinessGroup> markedGroups2 = businessGroupDao.findBusinessGroups(paramsMarker2, null, 0, 0);
+		Assert.assertNotNull(markedGroups2);
+		Assert.assertEquals(1, markedGroups2.size());
+		Assert.assertTrue(markedGroups2.contains(group2));
 	}
 	
 	@Test

@@ -442,13 +442,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				
 				//collect the waiting list but test if they are not already owners or participants
 				for(BusinessGroup group:groupsToMerge) {
-					if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()) {
-						List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
-						waitingList.removeAll(currentWaiters);
-						for(Identity waiter:waitingList) {
-							if(!newOwners.contains(waiter) && !newParticipants.contains(waiter)) {
-								newWaiters.add(waiter);
-							}
+					List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
+					waitingList.removeAll(currentWaiters);
+					for(Identity waiter:waitingList) {
+						if(!newOwners.contains(waiter) && !newParticipants.contains(waiter)) {
+							newWaiters.add(waiter);
 						}
 					}
 				}
