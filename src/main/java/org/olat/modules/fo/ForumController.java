@@ -220,8 +220,11 @@ public class ForumController extends BasicController implements GenericEventList
 		vcListTitles = createVelocityContainer("list_titles");
 		
 		msgCreateButton = LinkFactory.createButtonSmall("msg.create", vcListTitles, this);
+		msgCreateButton.setElementCssClass("o_sel_forum_thread_new");
 		archiveForumButton = LinkFactory.createButtonSmall("archive.forum", vcListTitles, this);
+		archiveForumButton.setElementCssClass("o_sel_forum_archive");
 		filterForUserButton = LinkFactory.createButtonSmall("filter", vcListTitles, this);
+		filterForUserButton.setElementCssClass("o_sel_forum_filter");
 
 		if(!this.isGuestOnly(ureq)) {
 		  SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);

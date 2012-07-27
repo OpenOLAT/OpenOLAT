@@ -133,6 +133,7 @@ public class FeedMainController extends BasicController implements Activateable,
 		// owner of the resource.
 		if (callback.mayEditMetadata()) {
 			editFeedButton = LinkFactory.createButtonSmall("feed.edit", vcInfo, this);
+			editFeedButton.setElementCssClass("o_sel_feed_edit");
 		}
 
 		vcInfo.contextPut("callback", callback);

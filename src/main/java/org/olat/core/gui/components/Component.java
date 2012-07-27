@@ -54,6 +54,7 @@ public abstract class Component {
 
 	private String name;
 	private String dispatchID;
+	private String elementCssClass;
 
 	private long timestamp = 1l;
 	private boolean staticCmp = true;
@@ -156,6 +157,14 @@ public abstract class Component {
 	 */
 	public String getComponentName() {
 		return name;
+	}
+
+	public String getElementCssClass() {
+		return elementCssClass;
+	}
+
+	public void setElementCssClass(String elementCssClass) {
+		this.elementCssClass = elementCssClass;
 	}
 
 	/**
