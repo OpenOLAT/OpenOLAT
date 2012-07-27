@@ -660,8 +660,14 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		}
 		lastSearchParams = params;
+		if(groups.isEmpty()) {
+			groupListModel.setEntries(Collections.<BGTableItem>emptyList(), Collections.<Long,BusinessGroupMembership>emptyMap());
+			groupListCtr.modelChanged();
+			return groups;
+		}
 
-		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(getIdentity(), groups);
+		//retrieve all user's membership if there are more than 50 groups
+		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(getIdentity(), groups.size() > 50 ? null : groups);
 
 		Map<Long, BusinessGroupMembership> memberships = new HashMap<Long, BusinessGroupMembership>();
 		for(BusinessGroupMembership membership: groupsAsOwner) {
@@ -675,13 +681,18 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				memberships.put(membership.getWaitingGroupKey(), membership);
 			}
 		}
-
-		List<Long> resourceKeys = new ArrayList<Long>(groups.size());
-		for(BusinessGroup group:groups) {
-			resourceKeys.add(group.getResource().getKey());
-		}
+		
 		List<BGRepositoryEntryRelation> resources = businessGroupService.findRelationToRepositoryEntries(groups, 0, -1);
-		List<OLATResourceAccess> resourcesWithAC = acFrontendManager.getAccessMethodForResources(resourceKeys, true, new Date());
+		List<OLATResourceAccess> resourcesWithAC;
+		if(groups.size() > 50) {
+			resourcesWithAC	= acFrontendManager.getAccessMethodForResources(null, "BusinessGroup", true, new Date());
+		} else {
+			List<Long> resourceKeys = new ArrayList<Long>(groups.size());
+			for(BusinessGroup group:groups) {
+				resourceKeys.add(group.getResource().getKey());
+			}
+			resourcesWithAC	= acFrontendManager.getAccessMethodForResources(resourceKeys, "BusinessGroup", true, new Date());
+		}
 		
 		Set<Long> markedResources = new HashSet<Long>(groups.size() * 2 + 1);
 		for(BusinessGroup group:groups) {

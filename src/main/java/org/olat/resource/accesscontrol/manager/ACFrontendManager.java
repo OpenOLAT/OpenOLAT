@@ -251,7 +251,7 @@ public class ACFrontendManager extends BasicManager {
 			resourceKeys.add(ores.getKey());
 		}
 		
-		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, true, new Date());
+		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, null, true, new Date());
 		return resourceWithOffers;
 	}
 	
@@ -268,8 +268,8 @@ public class ACFrontendManager extends BasicManager {
 		return methodManager.getAccessMethodForBusinessGroup(valid, atDate);
 	}
 	
-	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, boolean valid, Date atDate) {
-		return methodManager.getAccessMethodForResources(resourceKeys, valid, atDate);
+	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate) {
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, valid, atDate);
 	}
 
 	/**

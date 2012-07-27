@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
@@ -291,17 +292,22 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 	}
 	
 	@Override
-	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, boolean valid, Date atDate) {
-		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptyList();
-		
+	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate) {
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, resource, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
 			.append(" inner join access.offer offer")
 			.append(" inner join offer.resource oResource")
-			.append(" where access.valid=").append(valid)
-			.append(" and offer.valid=").append(valid)
-			.append(" and resource.key in (:resourceKeys) and oResource.key=resource.key");
+			.append(" where access.valid=").append(valid).append(" and offer.valid=").append(valid);
+		if(resourceKeys != null && !resourceKeys.isEmpty()) {
+			sb.append(" and resource.key in (:resourceKeys) and oResource.key=resource.key");
+		}
+		if(StringHelper.containsNonWhitespace(resourceType)) {
+			sb.append(" and oResource.resName =:resourceType and oResource.key=resource.key");
+			
+		}
+			
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
@@ -311,7 +317,13 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		if(atDate != null) {
 			query.setTimestamp("atDate", atDate);
 		}
-		query.setParameterList("resourceKeys", resourceKeys);
+		
+		if(resourceKeys != null && !resourceKeys.isEmpty()) {
+			query.setParameterList("resourceKeys", resourceKeys);
+		}
+		if(StringHelper.containsNonWhitespace(resourceType)) {
+			query.setParameter("resourceType", resourceType);
+		}
 		
 		List<Object[]> rawResults = query.list();
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<Long,OLATResourceAccess>();

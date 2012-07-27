@@ -218,23 +218,24 @@ public class BusinessGroupDAO {
 	}
 	
 	public List<BusinessGroupMembership> getMembershipInfoInBusinessGroups(Identity identity, List<BusinessGroup> groups) {
-		if(groups == null || groups.isEmpty()) {
-			return Collections.emptyList();
-		}
-
 		StringBuilder sb = new StringBuilder(); 
 		sb.append("select membership from ").append(BusinessGroupMembershipImpl.class.getName()).append(" as membership ")
-		  .append(" where membership.identityKey=:identId ")
-		  .append(" and (membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
-
-		List<Long> groupKeys = new ArrayList<Long>();
-		for(BusinessGroup group:groups) {
-			groupKeys.add(group.getKey());
+		  .append(" where membership.identityKey=:identId ");
+		if(groups != null && !groups.isEmpty()) {
+		  sb.append(" and (membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
 		}
-		List<BusinessGroupMembership> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembership.class)
-				.setParameter("groupKeys", groupKeys)
-				.setParameter("identId", identity.getKey())
-				.getResultList();
+		
+		TypedQuery<BusinessGroupMembership> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembership.class)
+				.setParameter("identId", identity.getKey());
+		if(groups != null && !groups.isEmpty()) {
+			List<Long> groupKeys = new ArrayList<Long>();
+			for(BusinessGroup group:groups) {
+				groupKeys.add(group.getKey());
+			}
+			query.setParameter("groupKeys", groupKeys);
+		}
+		
+		List<BusinessGroupMembership> res = query.getResultList();
 		return res;
 	}
 

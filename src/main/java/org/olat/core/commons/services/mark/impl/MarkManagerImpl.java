@@ -108,14 +108,18 @@ public class MarkManagerImpl extends MarkManager {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where ")
-			.append("mark.resId in(:resIds) and mark.resName=:resName and mark.creator=:creator");
+			.append("mark.resName=:resName and mark.creator=:creator");
+		if(resIds.size() < 50) {//if there is too much resource to filter, retrieve all the mark
+			sb.append(" and mark.resId in(:resIds)");
+		}
 
-		List<Long> markedResIds = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("resName", resourceTypeName)
-				.setParameter("resIds", resIds)
-				.setParameter("creator", identity)
-				.getResultList();
-
+				.setParameter("creator", identity);
+		if(resIds.size() < 50) {
+			query.setParameter("resIds", resIds);
+		}
+		List<Long> markedResIds = query.getResultList();
 		resIds.retainAll(markedResIds);
 	}
 

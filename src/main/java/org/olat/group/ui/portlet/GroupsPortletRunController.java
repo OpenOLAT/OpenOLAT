@@ -83,7 +83,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	private GroupTableDataModel groupListModel;
 	private VelocityContainer groupsVC;
 	private List<BusinessGroup> groupList;
-	private Identity ident;
 	private Link showAllLink;
 	
 	private final BusinessGroupService businessGroupService;
@@ -104,9 +103,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);
 		sortingTermsList.add(SortingCriteria.DATE_SORTING);
 		
-		this.ident = ureq.getIdentity();
-		
-		this.groupsVC = this.createVelocityContainer("groupsPortlet");
+		groupsVC = createVelocityContainer("groupsPortlet");
 		showAllLink = LinkFactory.createLink("groupsPortlet.showAll", groupsVC, this);
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -127,10 +124,10 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("groupsPortlet.type", 1, null, trans.getLocale(),
 				ColumnDescriptor.ALIGNMENT_RIGHT));
 		
-		this.sortingCriteria = getPersistentSortingConfiguration(ureq);
-		reloadModel(this.sortingCriteria);
+		sortingCriteria = getPersistentSortingConfiguration(ureq);
+		reloadModel(sortingCriteria);
      
-		this.groupsVC.put("table", tableCtr.getInitialComponent());		
+		groupsVC.put("table", tableCtr.getInitialComponent());		
 		putInitialPanel(groupsVC);
 
 		// register for businessgroup type events
@@ -161,7 +158,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
-			groupList = businessGroupService.findBusinessGroups(params, null, 0, -1);
+			groupList = businessGroupService.findBusinessGroups(params, null, 0, sortingCriteria.getMaxEntries());
 			groupList = getSortedList(groupList, sortingCriteria);
 
 			List<PortletEntry> entries = convertBusinessGroupToPortletEntryList(groupList);
@@ -169,7 +166,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 			groupListModel = new GroupTableDataModel(entries);
 			tableCtr.setTableDataModel(groupListModel);
 		} else {
-			reloadModel(this.getPersistentManuallySortedItems());
+			reloadModel(getPersistentManuallySortedItems());
 		}
 	}
 	
@@ -241,7 +238,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 			// GenericEventListener)
 			// -> to avoid rare race conditions like e.g. dispose->deregister and null
 			// controllers, but queue is still firing events
-			boolean modified = mev.updateBusinessGroupList(groupList, ident);
+			boolean modified = mev.updateBusinessGroupList(groupList, getIdentity());
 			if (modified) tableCtr.modelChanged();
 		}
 	}
@@ -314,7 +311,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
    */
   private class GroupTableDataModel extends PortletDefaultTableDataModel {  	
   	public GroupTableDataModel(List<PortletEntry> objects) {
-  		super(objects,2);
+  		super(objects, 1);
   	}
   	
   	public Object getValueAt(int row, int col) {
@@ -325,8 +322,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
   				String name = businessGroup.getName();
   				name = StringEscapeUtils.escapeHtml(name).toString();
   				return name;
-  			case 1:
-  				return getTranslator().translate(businessGroup.getType());
   			default:
   				return "ERROR";
   		}
@@ -351,7 +346,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 		 * @param locale
 		 */
 		public GroupsManualSortingTableDataModel(List<PortletEntry> objects) {
-			super(objects, 4);
+			super(objects, 3);
 		}
 
 		/**
@@ -368,9 +363,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 					description = FilterFactory.getHtmlTagsFilter().filter(description);
 					return (description == null ? "n/a" : description);
 				case 2:
-					String resType = group.getType();					
-					return (resType == null ? "n/a" : translate(resType));
-				case 3:
 					Date date = group.getCreationDate();
 					//return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, getTranslator().getLocale()).format(date);
 					return date;
