@@ -67,7 +67,7 @@ import org.olat.repository.site.RepositorySite;
  * Initial Date:  06.03.2009 <br>
  * @author gnaegi
  */
-public class RepositoryPortletRunController extends AbstractPortletRunController implements GenericEventListener {
+public class RepositoryPortletRunController extends AbstractPortletRunController<RepositoryEntry> implements GenericEventListener {
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
@@ -122,7 +122,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(BusinessGroup.class));
 	}
 	
-	private List<PortletEntry> getAllPortletEntries() {
+	private List<PortletEntry<RepositoryEntry>> getAllPortletEntries() {
 		if (studentView) {
 			List<RepositoryEntry> allRepoEntries = RepositoryManager.getInstance().getLearningResourcesAsStudent(getIdentity());
 			return convertRepositoryEntriesToPortletEntryList(allRepoEntries);
@@ -131,9 +131,17 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 			return convertRepositoryEntriesToPortletEntryList(allRepoEntries);
 		}
 	}
+	
+	private List<RepositoryEntry> getAllEntries() {
+		if (studentView) {
+			return RepositoryManager.getInstance().getLearningResourcesAsStudent(getIdentity());
+		} else {
+			return RepositoryManager.getInstance().getLearningResourcesAsTeacher(getIdentity());
+		}
+	}
 
-	private List<PortletEntry> convertRepositoryEntriesToPortletEntryList(List<RepositoryEntry> items) {
-		List<PortletEntry> convertedList = new ArrayList<PortletEntry>();
+	private List<PortletEntry<RepositoryEntry>> convertRepositoryEntriesToPortletEntryList(List<RepositoryEntry> items) {
+		List<PortletEntry<RepositoryEntry>> convertedList = new ArrayList<PortletEntry<RepositoryEntry>>();
 		for(RepositoryEntry item:items) {
 			boolean closed = RepositoryManager.getInstance().createRepositoryEntryStatus(item.getStatusCode()).isClosed();
 			if(!closed) {
@@ -145,17 +153,17 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			List<PortletEntry> entries = getAllPortletEntries();
-			entries = getSortedList(entries, sortingCriteria );
-			
+			List<RepositoryEntry> items = getAllEntries();
+			items = getSortedList(items, sortingCriteria );
+			List<PortletEntry<RepositoryEntry>> entries = convertRepositoryEntriesToPortletEntryList(items);
 			repoEntryListModel = new RepositoryPortletTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(repoEntryListModel);
 		} else {
-			reloadModel(this.getPersistentManuallySortedItems());
+			reloadModel(getPersistentManuallySortedItems());
 		}
 	}
 	
-	protected void reloadModel(List<PortletEntry> sortedItems) {						
+	protected void reloadModel(List<PortletEntry<RepositoryEntry>> sortedItems) {						
 		repoEntryListModel = new RepositoryPortletTableDataModel(sortedItems, getLocale());
 		tableCtr.setTableDataModel(repoEntryListModel);
 	}
@@ -255,13 +263,13 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @param wControl
 	 * @return a PortletToolSortingControllerImpl instance.
 	 */
-	protected PortletToolSortingControllerImpl createSortingTool(UserRequest ureq, WindowControl wControl) {
+	protected PortletToolSortingControllerImpl<RepositoryEntry> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {			
-			List<PortletEntry> portletEntryList = getAllPortletEntries();			
-			PortletDefaultTableDataModel tableDataModel = new RepositoryPortletTableDataModel(portletEntryList, ureq.getLocale());
-			List sortedItems = getPersistentManuallySortedItems(); 
+			List<PortletEntry<RepositoryEntry>> portletEntryList = getAllPortletEntries();			
+			PortletDefaultTableDataModel<RepositoryEntry> tableDataModel = new RepositoryPortletTableDataModel(portletEntryList, ureq.getLocale());
+			List<PortletEntry<RepositoryEntry>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<RepositoryEntry>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);
@@ -274,8 +282,8 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
    * @param ureq
    * @return
    */
-  private List<PortletEntry> getPersistentManuallySortedItems() {  	
-  	List<PortletEntry> portletEntryList = getAllPortletEntries();
+  private List<PortletEntry<RepositoryEntry>> getPersistentManuallySortedItems() {  	
+  	List<PortletEntry<RepositoryEntry>> portletEntryList = getAllPortletEntries();
 		return this.getPersistentManuallySortedItems(portletEntryList);
 	}
   
@@ -286,11 +294,9 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @param sortingCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-  protected Comparator getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator(){			
-			public int compare(final Object o1, final Object o2) {
-				RepositoryEntry repoEntry1= ((RepositoryPortletEntry)o1).getValue();
-				RepositoryEntry repoEntry2 = ((RepositoryPortletEntry)o2).getValue();		
+  protected Comparator<RepositoryEntry> getComparator(final SortingCriteria sortingCriteria) {
+		return new Comparator<RepositoryEntry>(){			
+			public int compare(final RepositoryEntry repoEntry1, final RepositoryEntry repoEntry2) {
 				int comparisonResult = 0;
 			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(repoEntry1.getDisplayname(), repoEntry2.getDisplayname());			  		  	

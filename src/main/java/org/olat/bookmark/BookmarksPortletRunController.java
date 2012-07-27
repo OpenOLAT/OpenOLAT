@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -76,7 +75,7 @@ import org.olat.repository.RepositoryManager;
  * Initial Date:  11.07.2005 <br>
  * @author gnaegi
  */
-public class BookmarksPortletRunController extends AbstractPortletRunController implements GenericEventListener {
+public class BookmarksPortletRunController extends AbstractPortletRunController<Bookmark> implements GenericEventListener {
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 	
@@ -142,7 +141,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 * @param ureq
 	 * @return
 	 */
-	private List<PortletEntry> getAllPortletEntries() {
+	private List<PortletEntry<Bookmark>> getAllPortletEntries() {
 		BookmarkManager mb = BookmarkManager.getInstance();
 		List<Bookmark> bookmarkList = mb.findBookmarksByIdentity(getIdentity());
 		return convertBookmarkToPortletEntryList(bookmarkList);
@@ -153,8 +152,8 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 * @param items
 	 * @return
 	 */
-	private List<PortletEntry> convertBookmarkToPortletEntryList(List<Bookmark> items) {
-		List<PortletEntry> convertedList = new ArrayList<PortletEntry>();
+	private List<PortletEntry<Bookmark>> convertBookmarkToPortletEntryList(List<Bookmark> items) {
+		List<PortletEntry<Bookmark>> convertedList = new ArrayList<PortletEntry<Bookmark>>();
 		
 		List<Long> reKeys = new ArrayList<Long>();
 		for(Bookmark bookmark:items) {
@@ -188,7 +187,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 			
 			bookmarkList = getSortedList(bookmarkList, sortingCriteria );
 			
-			List<PortletEntry> entries = convertBookmarkToPortletEntryList(bookmarkList);
+			List<PortletEntry<Bookmark>> entries = convertBookmarkToPortletEntryList(bookmarkList);
 			bookmarkListModel = new BookmarkPortletTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(bookmarkListModel);
 		} else {
@@ -201,7 +200,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 * @param ureq
 	 * @param sortedItems
 	 */
-	protected void reloadModel(List<PortletEntry> sortedItems) {					
+	protected void reloadModel(List<PortletEntry<Bookmark>> sortedItems) {					
 		bookmarkListModel = new BookmarkPortletTableDataModel(sortedItems, this.locale);
 		tableCtr.setTableDataModel(bookmarkListModel);
 	}
@@ -253,9 +252,9 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
    * @param ureq
    * @return
    */
-  private List getPersistentManuallySortedItems() {
-  	List<PortletEntry> entries = getAllPortletEntries();
-		return this.getPersistentManuallySortedItems(entries);		
+  private List<PortletEntry<Bookmark>> getPersistentManuallySortedItems() {
+  	List<PortletEntry<Bookmark>> entries = getAllPortletEntries();
+		return getPersistentManuallySortedItems(entries);		
 	}
 
 	/**
@@ -274,14 +273,14 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 * @param wControl
 	 * @return a PortletToolSortingControllerImpl istance.
 	 */
-	protected PortletToolSortingControllerImpl createSortingTool(UserRequest ureq, WindowControl wControl) {
+	protected PortletToolSortingControllerImpl<Bookmark> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {			
-			List<PortletEntry> entries = getAllPortletEntries();
-			PortletDefaultTableDataModel tableDataModel = new BookmarkManualSortingTableDataModel(entries, ureq.getLocale());
+			List<PortletEntry<Bookmark>> entries = getAllPortletEntries();
+			PortletDefaultTableDataModel<Bookmark> tableDataModel = new BookmarkManualSortingTableDataModel(entries, ureq.getLocale());
 			
-			List sortedItems = getPersistentManuallySortedItems(); 
+			List<PortletEntry<Bookmark>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<Bookmark>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			listenTo(portletToolsController);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
@@ -296,11 +295,9 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 * @param sortingCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-	protected Comparator getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator(){			
-			public int compare(final Object o1, final Object o2) {
-				BookmarkImpl bookmark1 = (BookmarkImpl)o1;
-				BookmarkImpl bookmark2 = (BookmarkImpl)o2;		
+	protected Comparator<Bookmark> getComparator(final SortingCriteria sortingCriteria) {
+		return new Comparator<Bookmark>(){			
+			public int compare(final Bookmark bookmark1, final Bookmark bookmark2) {	
 				int comparisonResult = 0;
 			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(bookmark1.getTitle(), bookmark2.getTitle());			  				  	
@@ -325,10 +322,10 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 * Initial Date:  10.12.2007 <br>
 	 * @author Lavinia Dumitrescu
 	 */
-	class BookmarkPortletTableDataModel extends PortletDefaultTableDataModel {
+	class BookmarkPortletTableDataModel extends PortletDefaultTableDataModel<Bookmark> {
 		private Locale locale;
 
-		public BookmarkPortletTableDataModel(List<PortletEntry> objects, Locale locale) {
+		public BookmarkPortletTableDataModel(List<PortletEntry<Bookmark>> objects, Locale locale) {
 			super(objects, 2);
 			this.locale = locale;
 		}
@@ -377,14 +374,14 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 * Initial Date:  23.11.2007 <br>
 	 * @author Lavinia Dumitrescu
 	 */
-	class BookmarkManualSortingTableDataModel extends PortletDefaultTableDataModel {
+	class BookmarkManualSortingTableDataModel extends PortletDefaultTableDataModel<Bookmark> {
 		private Locale locale;
 
 		/**
 		 * @param objects
 		 * @param locale
 		 */
-		public BookmarkManualSortingTableDataModel(List<PortletEntry> objects, Locale locale) {
+		public BookmarkManualSortingTableDataModel(List<PortletEntry<Bookmark>> objects, Locale locale) {
 			super(objects, 4);
 			this.locale = locale;
 		}
@@ -393,7 +390,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 		 */
 		public final Object getValueAt(int row, int col) {
-			PortletEntry entry = getObject(row);
+			PortletEntry<Bookmark> entry = getObject(row);
 			Bookmark bm = (BookmarkImpl) entry.getValue();
 			switch (col) {
 				case 0:

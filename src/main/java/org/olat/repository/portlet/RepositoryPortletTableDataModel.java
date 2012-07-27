@@ -35,11 +35,11 @@ import org.olat.repository.RepositoryEntry;
  * Initial Date:  06.03.2009 <br>
  * @author gnaegi, rhaag
  */
-public class RepositoryPortletTableDataModel extends PortletDefaultTableDataModel {
+public class RepositoryPortletTableDataModel extends PortletDefaultTableDataModel<RepositoryEntry> {
 	/**
 	 * @see org.olat.core.gui.components.table.DefaultTableDataModel#getValueAt(int, int)
 	 */
-	public  RepositoryPortletTableDataModel(List<PortletEntry> objects, Locale locale) {
+	public  RepositoryPortletTableDataModel(List<PortletEntry<RepositoryEntry>> objects, Locale locale) {
 		super(objects, 3);
 		super.setLocale(locale);
 	}

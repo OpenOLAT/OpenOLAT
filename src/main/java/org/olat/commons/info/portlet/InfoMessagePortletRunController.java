@@ -40,7 +40,6 @@ import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -72,7 +71,7 @@ import org.olat.core.util.notifications.items.SubscriptionListItem;
  * Initial Date:  27 juil. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoMessagePortletRunController extends AbstractPortletRunController implements GenericEventListener {
+public class InfoMessagePortletRunController extends AbstractPortletRunController<InfoSubscriptionItem> implements GenericEventListener {
 	
 	private Link showAllLink;
 	private TableController tableController;
@@ -96,7 +95,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 		removeAsListenerAndDispose(tableController);
 		tableController = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("peekview.title", 0,
-				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new InfoNodeRenderer(Formatter.getInstance(getLocale()))));
+				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new InfoNodeRenderer()));
 		
 		listenTo(tableController);
 		
@@ -133,7 +132,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	}
 
 	@Override
-	protected Comparator<InfoPortletEntry> getComparator(SortingCriteria criteria) {
+	protected Comparator<InfoSubscriptionItem> getComparator(SortingCriteria criteria) {
 		return new InfoPortletEntryComparator(criteria);
 	}
 	
@@ -142,8 +141,8 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	 * @param items
 	 * @return
 	 */
-	private List<PortletEntry> convertToPortletEntryList(List<InfoSubscriptionItem> infos) {
-		List<PortletEntry> convertedList = new ArrayList<PortletEntry>();
+	private List<PortletEntry<InfoSubscriptionItem>> convertToPortletEntryList(List<InfoSubscriptionItem> infos) {
+		List<PortletEntry<InfoSubscriptionItem>> convertedList = new ArrayList<PortletEntry<InfoSubscriptionItem>>();
 		long i = 0;
 		for(InfoSubscriptionItem info:infos) {
 			convertedList.add(new InfoPortletEntry(i++, info));
@@ -160,28 +159,28 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 				items.add(new InfoSubscriptionItem(info, item));
 			}
 		}
-		List<PortletEntry> entries = convertToPortletEntryList(items);
-		entries = getSortedList(entries, criteria);
+		items = getSortedList(items, criteria);
+		List<PortletEntry<InfoSubscriptionItem>> entries = convertToPortletEntryList(items);
 		InfosTableModel model = new InfosTableModel(entries);
 		tableController.setTableDataModel(model);
 	}
 
 	@Override
-	protected void reloadModel(List<PortletEntry> sortedItems) {
+	protected void reloadModel(List<PortletEntry<InfoSubscriptionItem>> sortedItems) {
 		InfosTableModel model = new InfosTableModel(sortedItems);
 		tableController.setTableDataModel(model);
 	}
 	
-	protected PortletToolSortingControllerImpl createSortingTool(UserRequest ureq, WindowControl wControl) {
+	protected PortletToolSortingControllerImpl<InfoSubscriptionItem> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {
-			final List<PortletEntry> empty = Collections.<PortletEntry>emptyList();
-			final PortletDefaultTableDataModel defaultModel = new PortletDefaultTableDataModel(empty, 2) {
+			final List<PortletEntry<InfoSubscriptionItem>> empty = Collections.<PortletEntry<InfoSubscriptionItem>>emptyList();
+			final PortletDefaultTableDataModel<InfoSubscriptionItem> defaultModel = new PortletDefaultTableDataModel<InfoSubscriptionItem>(empty, 2) {
 				@Override
 				public Object getValueAt(int row, int col) {
 					return null;
 				}
 			};
-			portletToolsController = new PortletToolSortingControllerImpl(ureq, wControl, getTranslator(), sortingCriteria, defaultModel, empty);
+			portletToolsController = new PortletToolSortingControllerImpl<InfoSubscriptionItem>(ureq, wControl, getTranslator(), sortingCriteria, defaultModel, empty);
 			portletToolsController.setConfigManualSorting(false);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);
@@ -205,10 +204,10 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 		}
 	}
 	
-	public class InfosTableModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
-		private final List<PortletEntry> infos;
+	public class InfosTableModel extends BaseTableDataModelWithoutFilter<PortletEntry<InfoSubscriptionItem>> {
+		private final List<PortletEntry<InfoSubscriptionItem>> infos;
 		
-		public InfosTableModel(List<PortletEntry> infos) {
+		public InfosTableModel(List<PortletEntry<InfoSubscriptionItem>> infos) {
 			this.infos = infos;
 		}
 
@@ -233,11 +232,6 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	}
 	
 	public class InfoNodeRenderer implements CustomCellRenderer {
-		private final Formatter formatter;
-		
-		public InfoNodeRenderer(Formatter formatter) {
-			this.formatter = formatter;
-		}
 		
 		@Override
 		public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {

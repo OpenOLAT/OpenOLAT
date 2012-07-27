@@ -35,6 +35,6 @@ import org.olat.core.gui.control.Controller;
  * Initial Date:  21.11.2007 <br>
  * @author Lavinia Dumitrescu
  */
-public interface PortletToolController extends Controller {
+public interface PortletToolController<T> extends Controller {
  //empty
 }

@@ -29,11 +29,11 @@ import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 
-public abstract class PortletDefaultTableDataModel  extends DefaultTableDataModel<PortletEntry> {
+public abstract class PortletDefaultTableDataModel<T>  extends DefaultTableDataModel<PortletEntry<T>> {
 	
 	private int numCols = 0;
 
-	public PortletDefaultTableDataModel(List<PortletEntry> portletEntries, int numCols) {
+	public PortletDefaultTableDataModel(List<PortletEntry<T>> portletEntries, int numCols) {
 		super(portletEntries);
 		this.numCols = numCols;
 	}
@@ -41,5 +41,9 @@ public abstract class PortletDefaultTableDataModel  extends DefaultTableDataMode
 	@Override
 	public int getColumnCount() {		
 		return numCols;
+	}
+	
+	public T getPortletValue(int row) {
+		return getObject(row).getValue();
 	}
 }

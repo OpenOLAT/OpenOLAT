@@ -47,7 +47,6 @@ import org.olat.group.ui.BGControllerFactory;
  * @author gnaegi
  */
 public class GroupsPortlet extends AbstractPortlet {
-	private static final String PACKAGE_UI = Util.getPackageName(BGControllerFactory.class);
 	private GroupsPortletRunController runCtr;
 
 	/**
@@ -55,7 +54,7 @@ public class GroupsPortlet extends AbstractPortlet {
 	 *      org.olat.core.gui.UserRequest, java.util.Map)
 	 */
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
-		Translator translator = new PackageTranslator(PACKAGE_UI, ureq.getLocale());
+		Translator translator = Util.createPackageTranslator(BGControllerFactory.class, ureq.getLocale());
 		Portlet p = new GroupsPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
