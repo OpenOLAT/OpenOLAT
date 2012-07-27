@@ -220,8 +220,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				BusinessGroup bg = loadBusinessGroup(group);
 				bg.setName(name);
 				bg.setDescription(description);
-				bg.setMaxParticipants(new Integer(minParticipants));
-				bg.setMinParticipants(new Integer(maxParticipants));
+				bg.setMaxParticipants(minParticipants);
+				bg.setMinParticipants(maxParticipants);
 				bg.setWaitingListEnabled(waitingList);
 				if (waitingList != null && waitingList.booleanValue() && bg.getWaitingGroup() == null) {
 					// Waitinglist is enabled but not created => Create waitingGroup

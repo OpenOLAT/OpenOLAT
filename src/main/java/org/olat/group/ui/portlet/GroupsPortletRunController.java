@@ -80,7 +80,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	private final TableController tableCtr;
 	private final GroupTableDataModel groupListModel;
 	private VelocityContainer groupsVC;
-	private List<BusinessGroup> groupList;
 	private Link showAllLink;
 	
 	private final BusinessGroupService businessGroupService;
@@ -131,17 +130,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(BusinessGroup.class));
 	}
 	
-	/**
-	 * Gets all groups for this portlet and wraps them into PortletEntry impl.
-	 * @param ureq
-	 * @return the PortletEntry list.
-	 */
-	private List<PortletEntry<BusinessGroup>> getAllPortletEntries() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
-		groupList = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		return convertBusinessGroupToPortletEntryList(groupList);
-	}
-	
 	private List<PortletEntry<BusinessGroup>> convertBusinessGroupToPortletEntryList(List<BusinessGroup> groups) {
 		List<PortletEntry<BusinessGroup>> convertedList = new ArrayList<PortletEntry<BusinessGroup>>();
 		for(BusinessGroup group:groups) {
@@ -159,7 +147,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
 		  	order = sortingCriteria.isAscending() ? BusinessGroupOrder.creationDateAsc : BusinessGroupOrder.creationDateDesc;
 		  }
-			groupList = businessGroupService.findBusinessGroups(params, null, 0, sortingCriteria.getMaxEntries(), order);
+			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(params, null, 0, sortingCriteria.getMaxEntries(), order);
 			List<PortletEntry<BusinessGroup>> entries = convertBusinessGroupToPortletEntryList(groupList);
 			groupListModel.setObjects(entries);
 			tableCtr.modelChanged();
@@ -221,19 +209,19 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	public void event(Event event) {
 		if (event instanceof BusinessGroupModifiedEvent) {
 			BusinessGroupModifiedEvent mev = (BusinessGroupModifiedEvent) event;
-			// TODO:fj:b this operation should not be too expensive since many other
-			// users have to be served also
-			// store the event and apply it only when the component validate event is
-			// fired.
-			// FIXME:fj:a check all such event that they do not say, execute more than
-			// 1-2 db queries : 100 listening users -> 100-200 db queries!
-			// TODO:fj:b concept of defering that event if this controller here is in
-			// the dispatchEvent - code (e.g. DefaultController implements
-			// GenericEventListener)
-			// -> to avoid rare race conditions like e.g. dispose->deregister and null
-			// controllers, but queue is still firing events
-			boolean modified = mev.updateBusinessGroupList(groupList, getIdentity());
-			if (modified) tableCtr.modelChanged();
+			if(getIdentity().getKey().equals(mev.getAffectedIdentityKey())) {
+				Long modifiedKey = mev.getModifiedGroupKey();
+				for(PortletEntry<BusinessGroup> portlet:groupListModel.getObjects()) {
+					if(modifiedKey.equals(portlet.getKey())) {
+						GroupPortletEntry groupPortlet = (GroupPortletEntry)portlet;
+						if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(event.getCommand())) {
+							groupListModel.getObjects().remove(groupPortlet);
+							tableCtr.modelChanged();
+							break;
+						}
+					}
+				}
+			}
 		}
 	}
 	
@@ -245,11 +233,12 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 * @return a PortletToolSortingControllerImpl instance.
 	 */
 	protected PortletToolSortingControllerImpl<BusinessGroup> createSortingTool(UserRequest ureq, WindowControl wControl) {
-		if(portletToolsController==null) {			
-			
-			List<PortletEntry<BusinessGroup>> portletEntryList = getAllPortletEntries();			
+		if(portletToolsController==null) {
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(params, null, 0, -1);
+			List<PortletEntry<BusinessGroup>> portletEntryList = convertBusinessGroupToPortletEntryList(groupList);
 			GroupsManualSortingTableDataModel tableDataModel = new GroupsManualSortingTableDataModel(portletEntryList);
-			List<PortletEntry<BusinessGroup>> sortedItems = getPersistentManuallySortedItems(); 
+			List<PortletEntry<BusinessGroup>> sortedItems = getPersistentManuallySortedItems();
 			
 			portletToolsController = new PortletToolSortingControllerImpl<BusinessGroup>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
@@ -369,7 +358,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		}	
 	}
 	
-	 private class GroupPortletEntry implements PortletEntry<BusinessGroup> {
+	private class GroupPortletEntry implements PortletEntry<BusinessGroup> {
 	  	private BusinessGroup value;
 	  	private Long key;
 	  	
@@ -385,6 +374,5 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	  	public BusinessGroup getValue() {
 	  		return value;
 	  	}
-	  }
-
+	}
 }
