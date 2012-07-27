@@ -45,7 +45,6 @@ public class FunctionalHomeSiteUtil {
 	public final static String HOME_SITE_MENU_TREE_SELECTED_CSS = "b_tree_selected";
 
 	public final static String FORM_ELEMENT_WRAPPER = "b_form_element_wrapper";
-	public final static String CLEARFIX = "b_clearfix";
 
 	/* menu tree */
 	public final static String HOME_ACTION_PORTAL_CSS = "o_sel_portal";
@@ -382,9 +381,9 @@ public class FunctionalHomeSiteUtil {
 		setPortletMoveUpCss(PORTLET_MOVE_UPWARDS_CSS);
 		setPortletMoveDownCss(PORTLET_MOVE_DOWNWARDS_CSS);
 
-		setPrefsButtonsCss(FORM_ELEMENT_WRAPPER + " " + PREFS_BUTTONS_CSS + " " + CLEARFIX);
-		setGuiButtonsCss(FORM_ELEMENT_WRAPPER + " " + GUI_BUTTONS_CSS + " " + CLEARFIX);
-		setSysprefsButtonsCss(FORM_ELEMENT_WRAPPER + " " + SYSPREFS_BUTTONS_CSS + " " + CLEARFIX);
+		setPrefsButtonsCss(PREFS_BUTTONS_CSS);
+		setGuiButtonsCss(GUI_BUTTONS_CSS);
+		setSysprefsButtonsCss(SYSPREFS_BUTTONS_CSS);
 
 		setOldPasswordCss(OLD_PASSWORD_CSS);
 		setNewPasswordCss(NEW_PASSWORD_CSS);
@@ -859,7 +858,6 @@ public class FunctionalHomeSiteUtil {
 
 		/* goto home site */
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
-		//Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
 
 		/* open System tab */
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
@@ -869,9 +867,9 @@ public class FunctionalHomeSiteUtil {
 
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//form//div[@class='");
+		selectorBuffer.append("xpath=//form//div[contains(@class, '");
 		selectorBuffer.append(getPrefsButtonsCss());
-		selectorBuffer.append("']//");
+		selectorBuffer.append("')]//");
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
@@ -901,9 +899,9 @@ public class FunctionalHomeSiteUtil {
 
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//form//div[@class='");
+		selectorBuffer.append("xpath=//form//div[contains(@class, '");
 		selectorBuffer.append(getGuiButtonsCss());
-		selectorBuffer.append("']//");
+		selectorBuffer.append("')]//");
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
@@ -933,9 +931,9 @@ public class FunctionalHomeSiteUtil {
 
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//form//div[@class='");
+		selectorBuffer.append("xpath=//form//div[contains(@class, '");
 		selectorBuffer.append(getGuiButtonsCss());
-		selectorBuffer.append("']//");
+		selectorBuffer.append("')]//");
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
@@ -965,9 +963,9 @@ public class FunctionalHomeSiteUtil {
 
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//form//div[@class='");
+		selectorBuffer.append("xpath=//form//div[contains(@class, '");
 		selectorBuffer.append(getGuiButtonsCss());
-		selectorBuffer.append("']//");
+		selectorBuffer.append("')]//");
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
@@ -994,9 +992,9 @@ public class FunctionalHomeSiteUtil {
 
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//form//div[@class='");
+		selectorBuffer.append("xpath=//form//div[contains(@class, '");
 		selectorBuffer.append(getGuiButtonsCss());
-		selectorBuffer.append("']//");
+		selectorBuffer.append("')]//");
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
@@ -1023,9 +1021,9 @@ public class FunctionalHomeSiteUtil {
 
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//form//div[@class='");
+		selectorBuffer.append("xpath=//form//div[contains(@class, '");
 		selectorBuffer.append(getGuiButtonsCss());
-		selectorBuffer.append("']//");
+		selectorBuffer.append("')]//");
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
@@ -1067,9 +1065,9 @@ public class FunctionalHomeSiteUtil {
 		/* click Reset */
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//form//div[@class='");
+		selectorBuffer.append("xpath=//form//div[contains(@class, '");
 		selectorBuffer.append(getSysprefsButtonsCss());
-		selectorBuffer.append("']//");
+		selectorBuffer.append("')]//");
 		selectorBuffer.append("button[@type='button']");
 
 		log.info("submitting changes");

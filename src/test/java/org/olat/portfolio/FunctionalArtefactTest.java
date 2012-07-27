@@ -66,35 +66,80 @@ public class FunctionalArtefactTest {
 	FunctionalVOUtil functionalVOUtil;
 	FunctionalRepositorySiteUtil functionalResourcesSiteUtil;
 	
+	UserVO user;
+	CourseVO course;
+	
 	@Before
-	public void setup(){
+	public void setup() throws IOException, URISyntaxException{
 		functionalUtil = new FunctionalUtil();
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 
 		functionalResourcesSiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-	}
-	
-	@Test
-	@RunAsClient
-	public void collectArtefacts() throws IOException, URISyntaxException{
 		
 		/* create test user with REST */
 		List<UserVO> userVO = functionalVOUtil.createTestUsers(deploymentUrl, 1);
 		
-		String username = userVO.get(0).getLogin();
-		String password = userVO.get(0).getPassword();
-		
+		user = userVO.get(0);
+
 		/* deploy course with REST */
-		CourseVO repositoryEntry = functionalVOUtil.importAllElementsCourse(deploymentUrl);
+		course = functionalVOUtil.importAllElementsCourse(deploymentUrl);
 		
+	}
+	
+	@Test
+	@RunAsClient
+	public void checkCollectForumPost(){
 		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser, username, password, true));
+		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
 		/* open course and check if it's open */
-		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
-		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, repositoryEntry.getRepoEntryKey()));
+		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, course.getRepoEntryKey()));
+	}
+	
+	@Test
+	@RunAsClient
+	public void checkCollectWikiArticle(){
+		/* login for test setup */
+		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
-		//TODO:JK: implement me
+		/* open course and check if it's open */
+		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		
+	}
+	
+	@Test
+	@RunAsClient
+	public void checkCollectBlogPost(){
+		/* login for test setup */
+		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
+		
+		/* open course and check if it's open */
+		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		
+	}
+	
+	@Test
+	@RunAsClient
+	public void checkAddTextArtefact(){
+		/* login for test setup */
+		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
+		
+	}
+	
+	@Test
+	@RunAsClient
+	public void checkUploadFileArtefact(){
+		/* login for test setup */
+		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
+		
+	}
+	
+	@Test
+	@RunAsClient
+	public void checkCreateLearningJournal(){
+		/* login for test setup */
+		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
+		
 	}
 }

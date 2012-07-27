@@ -21,9 +21,13 @@ package org.olat.util;
 
 import java.util.List;
 
+import org.junit.Assert;
+import org.olat.util.FunctionalUtil.OlatSite;
+
 import com.thoughtworks.selenium.Selenium;
 
 /**
+ * Description: <br>
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
@@ -315,45 +319,61 @@ public class FunctionalRepositorySiteUtil {
 	 * @param key
 	 * @return true on success otherwise false
 	 * 
-	 * Opens a course matching key by using the search form.
+	 * Opens a course by using business path.
 	 */
 	public boolean openCourse(Selenium browser, Long key){
-		
-		if(!activateMenuTreeAction(browser, RepositorySiteAction.SEARCH_FORM))
-			return(false);
-		
-		//FIXME:JK: use CSS classes instead of ordinal
-		int searchFormIndex = 0;
-		
-		/* open search form */
-		functionalUtil.typeText(browser, SearchField.ID.getEntryCss(), key.toString());
-		
-		/* click search */
-		StringBuffer selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//form[")
-		.append(searchFormIndex + 1)
-		.append("]")
-		.append("//div[@class='b_form_element']")
-		.append("//a[@class='b_button']");
-		
-		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
-		
-		/* click course */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("//form")
-		.append("//tr[contains(@class,'b_first_child') and contains(@class, 'b_last_child')]")
-		.append("//td[3]")
-		.append("//a");
-		
-		browser.click(selectorBuffer.toString());
+		browser.open(functionalUtil.getDeploymentUrl() + "url/RepositoryEntry/" + key);
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		return(true);
 	}
 
+	/**
+	 * @param browser
+	 * @param key
+	 * @return true on success otherwise false
+	 * 
+	 * Opens a course matching key by using the search form.
+	 */
+	public boolean openCourseWithoutBusinessPath(Selenium browser, Long key){
+		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
+			return(false);
+
+		if(!activateMenuTreeAction(browser, RepositorySiteAction.SEARCH_FORM))
+			return(false);
+
+		//FIXME:JK: use CSS classes instead of ordinal
+		int searchFormIndex = 0;
+
+		/* open search form */
+		functionalUtil.typeText(browser, SearchField.ID.getEntryCss(), key.toString());
+
+		/* click search */
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//form[")
+		.append(searchFormIndex + 1)
+		.append("]")
+		.append("//div[@class='b_form_element']")
+		.append("//a[@class='b_button']");
+
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+
+		/* click course */
+		selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("//form")
+		.append("//tr[contains(@class,'b_first_child') and contains(@class, 'b_last_child')]")
+		.append("//td[3]") //TODO:JK: this isn't very safe
+		.append("//a");
+
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		return(true);
+	}
+	
 	public String getRepositorySiteMenuTreeSelectedCss() {
 		return repositorySiteMenuTreeSelectedCss;
 	}

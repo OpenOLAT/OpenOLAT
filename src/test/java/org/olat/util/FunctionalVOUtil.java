@@ -50,6 +50,16 @@ import org.olat.user.restapi.UserVO;
 public class FunctionalVOUtil {
 	public final static String ALL_ELEMENTS_COURSE_DISPLAYNAME = "All Elements Course";
 	public final static String ALL_ELEMENTS_COURSE_FILENAME = "All_Elements_Course.zip";
+
+	public enum SysGroups{
+		USERMANAGERS,
+		GROUPMANAGERS,
+		AUTHORS,
+		ADMIN,
+		USERS,
+		ANONYMOUS,
+		INSTITUTIONAL_RESOURCE_MANAGER,
+	};
 	
 	private String username;
 	private String password;
@@ -114,6 +124,10 @@ public class FunctionalVOUtil {
 		restConnection.shutdown();
 		
 		return(user);
+	}
+	
+	public void addUserToSysGroup(UserVO user, SysGroups group){
+		//TODO:JK: implement me
 	}
 	
 	public CourseVO importAllElementsCourse(URL deploymentUrl) throws URISyntaxException, IOException{
