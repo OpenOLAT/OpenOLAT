@@ -33,8 +33,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.group.model.BGRepositoryEntryRelation;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -61,15 +59,15 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof BGTableItem) {
 			BGTableItem item = (BGTableItem)val;
-			List<RepositoryEntry> resources = item.getResources();
-			if(resources != null && !resources.isEmpty()) {
+			if (item.getRelations() != null && !item.getRelations().isEmpty()) {
+				List<RepositoryEntryShort> relations = item.getRelations();
 				int count = 0;
-				for(RepositoryEntry resource:resources) {
+				for(RepositoryEntryShort relation:relations) {
 					if(renderer == null) {//fxdiff: FXOLAT-267 for XSL export
 						if(sb.length() > 0) {
 							sb.append(", ");
 						}
-						sb.append(resource.getDisplayname());
+						sb.append(relation.getDisplayName());
 					} else if(count >= 2) {
 						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
 						link.setCustomDisplayText("...");
@@ -81,37 +79,8 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 						break;
 					} else {
 						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
-						link.setCustomDisplayText(resource.getDisplayname());
-						link.setUserObject(resource.getKey());
-						
-						URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
-						RenderResult renderResult = new RenderResult();
-						link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
-						count++;
-					}
-				}
-			} else if (item.getRelations() != null && !item.getRelations().isEmpty()) {
-				List<BGRepositoryEntryRelation> relations = item.getRelations();
-				int count = 0;
-				for(BGRepositoryEntryRelation relation:relations) {
-					if(renderer == null) {//fxdiff: FXOLAT-267 for XSL export
-						if(sb.length() > 0) {
-							sb.append(", ");
-						}
-						sb.append(relation.getRepositoryEntryDisplayName());
-					} else if(count >= 2) {
-						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
-						link.setCustomDisplayText("...");
-						link.setUserObject(item.getBusinessGroup());
-						
-						URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
-						RenderResult renderResult = new RenderResult();
-						link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
-						break;
-					} else {
-						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
-						link.setCustomDisplayText(relation.getRepositoryEntryDisplayName());
-						link.setUserObject(relation.getRepositoryEntryKey());
+						link.setCustomDisplayText(relation.getDisplayName());
+						link.setUserObject(relation);
 						
 						URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
 						RenderResult renderResult = new RenderResult();

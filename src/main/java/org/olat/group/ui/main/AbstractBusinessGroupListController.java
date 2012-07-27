@@ -56,17 +56,18 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -81,7 +82,6 @@ import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
 import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
-import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
@@ -105,7 +105,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	protected final VelocityContainer mainVC;
 
 	protected final TableController groupListCtr;
-	protected BusinessGroupTableModelWithType groupListModel;
+	protected final BusinessGroupTableModelWithType groupListModel;
 	protected SearchBusinessGroupParams lastSearchParams;
 	
 	private DialogBoxController leaveDialogBox;
@@ -192,16 +192,12 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link && source.getComponentName().startsWith("repo_entry_")) {
 			Object uobj = ((Link)source).getUserObject();
-			if (uobj instanceof Long) {
-				Long repoEntryKey = (Long)((Link)source).getUserObject();
-				BusinessControl bc = BusinessControlFactory.getInstance().createFromString("[RepositoryEntry:" + repoEntryKey + "]");
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-				NewControllerFactory.getInstance().launch(ureq, bwControl);
-			} else if(uobj instanceof BusinessGroup) {
-				BusinessGroup bg = (BusinessGroup)uobj;
-				BusinessControl bc = BusinessControlFactory.getInstance().createFromString("[BusinessGroup:" + bg.getKey() + "][toolresources:0]");
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-				NewControllerFactory.getInstance().launch(ureq, bwControl);
+			if (uobj instanceof RepositoryEntryShort) {
+				RepositoryEntryShort re = (RepositoryEntryShort)((Link)source).getUserObject();
+				NewControllerFactory.getInstance().launch("[RepositoryEntry:" + re.getKey() + "]", ureq, getWindowControl());
+			} else if(uobj instanceof BusinessGroupShort) {
+				BusinessGroupShort bg = (BusinessGroupShort)uobj;
+				NewControllerFactory.getInstance().launch("[BusinessGroup:" + bg.getKey() + "][toolresources:0]", ureq, getWindowControl());
 			}
 		} else if (source instanceof Link && source.getComponentName().startsWith("marked_")) {
 			Object uobj = ((Link)source).getUserObject();
@@ -218,12 +214,13 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	 * @param item
 	 */
 	private void toogleMark(BGTableItem item) {
-		OLATResource bgResource = item.getBusinessGroup().getResource();
+		OLATResourceable bgResource = OresHelper.createOLATResourceableInstance("BusinessGroup", item.getBusinessGroupKey());
+		//		item.getBusinessGroup().getResource();
 		if(markManager.isMarked(bgResource, getIdentity(), null)) {
 			markManager.removeMark(bgResource, getIdentity(), null);
 			item.setMarked(false);
 		} else {
-			String businessPath = "[BusinessGroup:" + item.getBusinessGroup().getKey() + "]";
+			String businessPath = "[BusinessGroup:" + item.getBusinessGroupKey() + "]";
 			markManager.setMark(bgResource, getIdentity(), null, businessPath);
 			item.setMarked(true);
 		}
@@ -237,14 +234,14 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 
-				BusinessGroup businessGroup = groupListModel.getObject(te.getRowId()).getBusinessGroup();
-				businessGroup = businessGroupService.loadBusinessGroup(businessGroup);
+				Long businessGroupKey = groupListModel.getObject(te.getRowId()).getBusinessGroupKey();
+				BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(businessGroupKey);
 				//prevent rs after a group is deleted by someone else
 				if(businessGroup == null) {
 					groupListModel.removeBusinessGroup(businessGroup);
 					groupListCtr.modelChanged();
 				} else if(actionid.equals(TABLE_ACTION_LAUNCH)) {
-					String businessPath = "[BusinessGroup:" + businessGroup.getKey() + "]";
+					String businessPath = "[BusinessGroup:" + businessGroupKey + "]";
 					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 				} else if(actionid.equals(TABLE_ACTION_LEAVE)) {
 					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", businessGroup.getName()), leaveDialogBox);
@@ -326,15 +323,19 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	}
 	
 	/**
-	 * Clean up all popup controllers
+	 * Aggressive clean up all popup controllers
 	 */
 	private void cleanUpPopups() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(deleteDialogBox);
 		removeAsListenerAndDispose(groupCreateController);
+		removeAsListenerAndDispose(businessGroupWizard);
+		removeAsListenerAndDispose(leaveDialogBox);
 		cmc = null;
+		leaveDialogBox = null;
 		deleteDialogBox = null;
 		groupCreateController = null;
+		businessGroupWizard = null;
 	}
 	
 	/**
@@ -405,10 +406,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		removeAsListenerAndDispose(businessGroupWizard);
 		if(items == null || items.isEmpty()) return;
 		
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
-		for(BGTableItem item:items) {
-			groups.add(item.getBusinessGroup());
-		}
+		List<BusinessGroup> groups = toBusinessGroups(items);
 
 		Step start = new BGCopyPreparationStep(ureq, groups);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -618,10 +616,11 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	}
 	
 	private List<BusinessGroup> toBusinessGroups(List<BGTableItem> items) {
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		List<Long> groupKeys = new ArrayList<Long>();
 		for(BGTableItem item:items) {
-			groups.add(item.getBusinessGroup());
+			groupKeys.add(item.getBusinessGroupKey());
 		}
+		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
 		return groups;
 	}
 	

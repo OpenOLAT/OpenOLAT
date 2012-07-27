@@ -17,7 +17,6 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
 package org.olat.group.ui.main;
 
 import org.olat.core.gui.UserRequest;

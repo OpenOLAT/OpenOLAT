@@ -20,12 +20,13 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
-import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 
 /**
@@ -42,18 +43,38 @@ public class BGTableItem {
 	private boolean marked;
 	private final Boolean allowLeave;
 	private final Boolean allowDelete;
-	private final BusinessGroup businessGroup;
-	private List<RepositoryEntry> resources;
-	private List<BGRepositoryEntryRelation> relations;
+	private final String businessGroupDescription;
+	private final Date businessGroupLastUsage;
+	
+	private final BusinessGroupShort businessGroup;
+	private List<RepositoryEntryShort> relations;
 	private List<PriceMethodBundle> access;
 	
 	public BGTableItem(BusinessGroup businessGroup, boolean marked, BGMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
-		this.businessGroup = businessGroup;
+		this.businessGroup = new BGShort(businessGroup);
+		this.businessGroupDescription = businessGroup.getDescription();
+		this.businessGroupLastUsage = businessGroup.getLastUsage();
 		this.marked = marked;
 		this.member = member;
 		this.allowLeave = allowLeave;
 		this.allowDelete = allowDelete;
 		this.access = access;
+	}
+
+	public Long getBusinessGroupKey() {
+		return businessGroup.getKey();
+	}
+	
+	public String getBusinessGroupName() {
+		return businessGroup.getName();
+	}
+
+	public String getBusinessGroupDescription() {
+		return businessGroupDescription;
+	}
+
+	public Date getBusinessGroupLastUsage() {
+		return businessGroupLastUsage;
 	}
 
 	public boolean isMarked() {
@@ -84,24 +105,12 @@ public class BGTableItem {
 		return allowDelete;
 	}
 
-	public BusinessGroup getBusinessGroup() {
+	public BusinessGroupShort getBusinessGroup() {
 		return businessGroup;
 	}
 	
-	public List<RepositoryEntry> getResources() {
-		return resources;
-	}
-
-	public void setResources(List<RepositoryEntry> resources) {
-		this.resources = resources;
-	}
-
-	public List<BGRepositoryEntryRelation> getRelations() {
+	public List<RepositoryEntryShort> getRelations() {
 		return relations;
-	}
-
-	public void setRelations(List<BGRepositoryEntryRelation> relations) {
-		this.relations = relations;
 	}
 	
 	/**
@@ -109,10 +118,10 @@ public class BGTableItem {
 	 * @param resources
 	 */
 	public void setUnfilteredRelations(List<BGRepositoryEntryRelation> resources) {
-		relations = new ArrayList<BGRepositoryEntryRelation>();
+		relations = new ArrayList<RepositoryEntryShort>(3);
 		for(BGRepositoryEntryRelation resource:resources) {
 			if(businessGroup.getKey().equals(resource.getGroupKey())) {
-				relations.add(resource);
+				relations.add(new RepositoryEntryShort(resource));
 				if(relations.size() >= 3) {
 					return;
 				}
@@ -132,8 +141,55 @@ public class BGTableItem {
 		}
 		if(obj instanceof BGTableItem) {
 			BGTableItem item = (BGTableItem)obj;
-			return businessGroup != null && businessGroup.equalsByPersistableKey(item.businessGroup);
+			return businessGroup != null && businessGroup.equals(item.businessGroup);
 		}
 		return false;
+	}
+	
+	private static class BGShort implements BusinessGroupShort {
+		private final Long key;
+		private final String name;
+		
+		public BGShort(BusinessGroup group) {
+			this.key = group.getKey();
+			this.name = group.getName().intern();
+		}
+
+		@Override
+		public String getResourceableTypeName() {
+			return "BusinessGroup";
+		}
+
+		@Override
+		public Long getResourceableId() {
+			return key;
+		}
+
+		@Override
+		public Long getKey() {
+			return key;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public int hashCode() {
+			return key.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof BGShort) {
+				BGShort sh = (BGShort)obj;
+				return key != null && key.equals(sh.key);
+			}
+			return false;
+		}
 	}
 }

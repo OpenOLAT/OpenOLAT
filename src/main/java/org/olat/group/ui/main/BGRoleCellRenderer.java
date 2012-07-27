@@ -37,7 +37,7 @@ public class BGRoleCellRenderer implements CustomCellRenderer {
 	private final Translator translator;
 	
 	public BGRoleCellRenderer(Locale locale) {
-		this.translator = Util.createPackageTranslator(BGRoleCellRenderer.class, locale);
+		translator = Util.createPackageTranslator(BGRoleCellRenderer.class, locale);
 	}
 
 	@Override

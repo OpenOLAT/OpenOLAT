@@ -42,7 +42,7 @@ import org.olat.core.gui.translator.Translator;
 public class BGMarkCellRenderer implements CustomCellRenderer {
 	
 	private final Translator translator;
-	private VelocityContainer container;
+	private final VelocityContainer container;
 	private final Controller listeningController;
 	
 	public BGMarkCellRenderer(Controller listeningController, VelocityContainer container, Translator translator) {

@@ -62,7 +62,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 
 /**
@@ -73,7 +72,7 @@ import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
  * 
  * @author gnaegi
  */
-public class GroupsPortletRunController extends AbstractPortletRunController<BusinessGroup> implements GenericEventListener {
+public class GroupsPortletRunController extends AbstractPortletRunController<BusinessGroupEntry> implements GenericEventListener {
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
@@ -119,7 +118,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("groupsPortlet.bgname", 0, CMD_LAUNCH, trans.getLocale()));
 		
 		sortingCriteria = getPersistentSortingConfiguration(ureq);
-		groupListModel = new GroupTableDataModel(Collections.<PortletEntry<BusinessGroup>>emptyList());
+		groupListModel = new GroupTableDataModel(Collections.<PortletEntry<BusinessGroupEntry>>emptyList());
 		tableCtr.setTableDataModel(groupListModel);
 		reloadModel(sortingCriteria);
      
@@ -130,10 +129,14 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(BusinessGroup.class));
 	}
 	
-	private List<PortletEntry<BusinessGroup>> convertBusinessGroupToPortletEntryList(List<BusinessGroup> groups) {
-		List<PortletEntry<BusinessGroup>> convertedList = new ArrayList<PortletEntry<BusinessGroup>>();
+	private List<PortletEntry<BusinessGroupEntry>> convertBusinessGroupToPortletEntryList(List<BusinessGroup> groups, boolean withDescription) {
+		List<PortletEntry<BusinessGroupEntry>> convertedList = new ArrayList<PortletEntry<BusinessGroupEntry>>();
 		for(BusinessGroup group:groups) {
-			convertedList.add(new GroupPortletEntry(group));
+			GroupPortletEntry entry = new GroupPortletEntry(group);
+			if(withDescription) {
+				entry.getValue().setDescription(group.getDescription());
+			}
+			convertedList.add(entry);
 		}
 		return convertedList;
 	}
@@ -148,7 +151,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		  	order = sortingCriteria.isAscending() ? BusinessGroupOrder.creationDateAsc : BusinessGroupOrder.creationDateDesc;
 		  }
 			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(params, null, 0, sortingCriteria.getMaxEntries(), order);
-			List<PortletEntry<BusinessGroup>> entries = convertBusinessGroupToPortletEntryList(groupList);
+			List<PortletEntry<BusinessGroupEntry>> entries = convertBusinessGroupToPortletEntryList(groupList, false);
 			groupListModel.setObjects(entries);
 			tableCtr.modelChanged();
 		} else {
@@ -156,7 +159,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		}
 	}
 	
-	protected void reloadModel(List<PortletEntry<BusinessGroup>> sortedItems) {						
+	protected void reloadModel(List<PortletEntry<BusinessGroupEntry>> sortedItems) {						
 		groupListModel.setObjects(sortedItems);
 		tableCtr.modelChanged();
 	}
@@ -182,14 +185,8 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_LAUNCH)) {
-					int rowid = te.getRowId();
-					BusinessGroup currBusinessGroup = groupListModel.getBusinessGroupAt(rowid);
-					boolean isInBusinessGroup = businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), currBusinessGroup);
-					if(isInBusinessGroup) {
-					  BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl());
-					} else {
-						showInfo("groupsPortlet.no_member");
-					}
+					PortletEntry<BusinessGroupEntry> entry = groupListModel.getObject(te.getRowId());
+					NewControllerFactory.getInstance().launch("[BusinessGroup:" + entry.getKey() + "]", ureq, getWindowControl());
 				}
 			}
 		}	
@@ -209,16 +206,15 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	public void event(Event event) {
 		if (event instanceof BusinessGroupModifiedEvent) {
 			BusinessGroupModifiedEvent mev = (BusinessGroupModifiedEvent) event;
-			if(getIdentity().getKey().equals(mev.getAffectedIdentityKey())) {
+			if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(event.getCommand()) &&
+					getIdentity().getKey().equals(mev.getAffectedIdentityKey())) {
+				
 				Long modifiedKey = mev.getModifiedGroupKey();
-				for(PortletEntry<BusinessGroup> portlet:groupListModel.getObjects()) {
-					if(modifiedKey.equals(portlet.getKey())) {
-						GroupPortletEntry groupPortlet = (GroupPortletEntry)portlet;
-						if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(event.getCommand())) {
-							groupListModel.getObjects().remove(groupPortlet);
-							tableCtr.modelChanged();
-							break;
-						}
+				for(PortletEntry<BusinessGroupEntry> portlet:groupListModel.getObjects()) {
+					if(modifiedKey.equals(portlet.getKey())) {;
+						groupListModel.getObjects().remove(portlet);
+						tableCtr.modelChanged();
+						break;
 					}
 				}
 			}
@@ -232,15 +228,15 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 * @param wControl
 	 * @return a PortletToolSortingControllerImpl instance.
 	 */
-	protected PortletToolSortingControllerImpl<BusinessGroup> createSortingTool(UserRequest ureq, WindowControl wControl) {
+	protected PortletToolSortingControllerImpl<BusinessGroupEntry> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
 			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(params, null, 0, -1);
-			List<PortletEntry<BusinessGroup>> portletEntryList = convertBusinessGroupToPortletEntryList(groupList);
+			List<PortletEntry<BusinessGroupEntry>> portletEntryList = convertBusinessGroupToPortletEntryList(groupList, true);
 			GroupsManualSortingTableDataModel tableDataModel = new GroupsManualSortingTableDataModel(portletEntryList);
-			List<PortletEntry<BusinessGroup>> sortedItems = getPersistentManuallySortedItems();
+			List<PortletEntry<BusinessGroupEntry>> sortedItems = getPersistentManuallySortedItems();
 			
-			portletToolsController = new PortletToolSortingControllerImpl<BusinessGroup>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<BusinessGroupEntry>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);
@@ -253,14 +249,14 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
    * @param ureq
    * @return
    */
-  private List<PortletEntry<BusinessGroup>> getPersistentManuallySortedItems() { 
+  private List<PortletEntry<BusinessGroupEntry>> getPersistentManuallySortedItems() { 
   	@SuppressWarnings("unchecked")
 		Map<Long, Integer> storedPrefs = (Map<Long, Integer>)guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
   	
   	SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
   	params.setGroupKeys(storedPrefs.keySet());
   	List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
-  	List<PortletEntry<BusinessGroup>> portletEntryList = convertBusinessGroupToPortletEntryList(groups);
+  	List<PortletEntry<BusinessGroupEntry>> portletEntryList = convertBusinessGroupToPortletEntryList(groups, false);
 		return getPersistentManuallySortedItems(portletEntryList);
 	}
   
@@ -271,9 +267,9 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 * @param sortingCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-  protected Comparator<BusinessGroup> getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator<BusinessGroup>(){			
-			public int compare(final BusinessGroup group1, final BusinessGroup group2) {
+  protected Comparator<BusinessGroupEntry> getComparator(final SortingCriteria sortingCriteria) {
+		return new Comparator<BusinessGroupEntry>(){			
+			public int compare(final BusinessGroupEntry group1, final BusinessGroupEntry group2) {
 				int comparisonResult = 0;
 			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(group1.getName(), group2.getName());			  		  	
@@ -296,14 +292,14 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
    * Initial Date:  10.12.2007 <br>
    * @author Lavinia Dumitrescu
    */
-  private class GroupTableDataModel extends PortletDefaultTableDataModel<BusinessGroup> {  	
-  	public GroupTableDataModel(List<PortletEntry<BusinessGroup>> objects) {
+  private class GroupTableDataModel extends PortletDefaultTableDataModel<BusinessGroupEntry> {  	
+  	public GroupTableDataModel(List<PortletEntry<BusinessGroupEntry>> objects) {
   		super(objects, 1);
   	}
   	
   	public Object getValueAt(int row, int col) {
-  		PortletEntry<BusinessGroup> entry = getObject(row);
-  		BusinessGroup businessGroup = entry.getValue();
+  		PortletEntry<BusinessGroupEntry> entry = getObject(row);
+  		BusinessGroupEntry businessGroup = entry.getValue();
   		switch (col) {
   			case 0:
   				String name = businessGroup.getName();
@@ -312,10 +308,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
   			default:
   				return "ERROR";
   		}
-  	}
-  	
-  	public BusinessGroup getBusinessGroupAt(int row) {
-  		return getPortletValue(row);
   	}
   }
 
@@ -327,12 +319,12 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
    * Initial Date:  10.12.2007 <br>
    * @author Lavinia Dumitrescu
    */
-	private class GroupsManualSortingTableDataModel extends PortletDefaultTableDataModel<BusinessGroup>  {		
+	private class GroupsManualSortingTableDataModel extends PortletDefaultTableDataModel<BusinessGroupEntry>  {		
 		/**
 		 * @param objects
 		 * @param locale
 		 */
-		public GroupsManualSortingTableDataModel(List<PortletEntry<BusinessGroup>> objects) {
+		public GroupsManualSortingTableDataModel(List<PortletEntry<BusinessGroupEntry>> objects) {
 			super(objects, 3);
 		}
 
@@ -340,8 +332,8 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 		 */
 		public final Object getValueAt(int row, int col) {
-			PortletEntry<BusinessGroup> portletEntry = getObject(row);
-			BusinessGroup group = (BusinessGroup) portletEntry.getValue();
+			PortletEntry<BusinessGroupEntry> portletEntry = getObject(row);
+			BusinessGroupEntry group = portletEntry.getValue();
 			switch (col) {
 				case 0:
 					return group.getName();
@@ -358,12 +350,12 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		}	
 	}
 	
-	private class GroupPortletEntry implements PortletEntry<BusinessGroup> {
-	  	private BusinessGroup value;
+	private class GroupPortletEntry implements PortletEntry<BusinessGroupEntry> {
+	  	private BusinessGroupEntry value;
 	  	private Long key;
 	  	
 	  	public GroupPortletEntry(BusinessGroup group) {
-	  		value = group;
+	  		value = new BusinessGroupEntry(group);
 	  		key = group.getKey();
 	  	}
 	  	
@@ -371,7 +363,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	  		return key;
 	  	}
 	  	
-	  	public BusinessGroup getValue() {
+	  	public BusinessGroupEntry getValue() {
 	  		return value;
 	  	}
 	}

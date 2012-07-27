@@ -39,6 +39,7 @@ import org.olat.group.BusinessGroupMembership;
 
 /**
  * @author gnaegi
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTableItem> {
 	private final int columnCount;
@@ -52,7 +53,6 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	public BusinessGroupTableModelWithType(Translator trans, int columnCount) {
 		super(new ArrayList<BGTableItem>());
 		this.trans = trans;
-		//fxdiff VCRP-1,2: access control of resources
 		this.columnCount = columnCount;
 	}
 
@@ -68,19 +68,16 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	 */
 	public Object getValueAt(int row, int col) {
 		BGTableItem wrapped = (BGTableItem)objects.get(row);
-		BusinessGroup businessGroup = wrapped.getBusinessGroup();
 		switch (Cols.values()[col]) {
 			case name:
-				String name = businessGroup.getName();
+				String name = wrapped.getBusinessGroup().getName();
 				name = StringEscapeUtils.escapeHtml(name).toString();
 				return name;
 			case description:
-				String description = businessGroup.getDescription();
+				String description = wrapped.getBusinessGroupDescription();
 				description = FilterFactory.getHtmlTagsFilter().filter(description);
 				description = Formatter.truncate(description, 256);
 				return description;
-			case groupType:
-				return trans.translate(businessGroup.getType());
 			case allowLeave:
 				return wrapped.getAllowLeave();
 			case allowDelete:
@@ -103,18 +100,18 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 			case mark:
 				return new Boolean(wrapped.isMarked());
 			case lastUsage:
-				return wrapped.getBusinessGroup().getLastUsage();
+				return wrapped.getBusinessGroupLastUsage();
 			case role:
 				return wrapped.getMembership();
 			case firstTime:
 				if(memberships != null) {
-					BusinessGroupMembership membership = memberships.get(businessGroup.getKey());
+					BusinessGroupMembership membership = memberships.get(wrapped.getBusinessGroupKey());
 					return membership == null ? null : membership.getCreationDate();
 				}
 				return null;
 			case lastTime:
 				if(memberships != null) {
-					BusinessGroupMembership membership = memberships.get(businessGroup.getKey());
+					BusinessGroupMembership membership = memberships.get(wrapped.getBusinessGroupKey());
 					return membership == null ? null : membership.getLastModified();
 				}
 				return null;
@@ -136,20 +133,11 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		setObjects(owned);
 		this.memberships = memberships;
 	}
-
-	/**
-	 * @param row
-	 * @return the business group at the given row
-	 */
-	public BusinessGroup getBusinessGroupAt(int row) {
-		BGTableItem wrapped = (BGTableItem)objects.get(row);
-		return wrapped.getBusinessGroup();
-	}
 	
 	public void removeBusinessGroup(BusinessGroup bg) {
 		for(int i=objects.size(); i-->0; ) {
 			BGTableItem wrapped = (BGTableItem)objects.get(i);
-			if(bg.equals(wrapped.getBusinessGroup())) {
+			if(bg.getKey().equals(wrapped.getBusinessGroupKey())) {
 				objects.remove(i);
 				return;
 			}

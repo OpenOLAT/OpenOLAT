@@ -218,6 +218,24 @@ public class BusinessGroupDAO {
 		return group;
 	}
 	
+	public int countMembershipInfoInBusinessGroups(Identity identity, List<Long> groupKeys) {
+		StringBuilder sb = new StringBuilder(); 
+		sb.append("select count(membership) from ").append(BusinessGroupMembershipImpl.class.getName()).append(" as membership ")
+		  .append(" where membership.identityKey=:identId ");
+		if(groupKeys != null && !groupKeys.isEmpty()) {
+		  sb.append(" and (membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
+		}
+		
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("identId", identity.getKey());
+		if(groupKeys != null && !groupKeys.isEmpty()) {
+			query.setParameter("groupKeys", groupKeys);
+		}
+		
+		Number res = query.getSingleResult();
+		return res.intValue();
+	}
+	
 	public List<BusinessGroupMembership> getMembershipInfoInBusinessGroups(Identity identity, List<BusinessGroup> groups) {
 		StringBuilder sb = new StringBuilder(); 
 		sb.append("select membership from ").append(BusinessGroupMembershipImpl.class.getName()).append(" as membership ")

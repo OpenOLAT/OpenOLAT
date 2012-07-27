@@ -54,6 +54,8 @@ public class BGUserStatusCellRenderer implements CustomCellRenderer {
 				}
 				case removed: {
 					sb.append("-"); break;
+				} case current: {
+					break;
 				}
 			}
 			sb.append("</span></div>");
