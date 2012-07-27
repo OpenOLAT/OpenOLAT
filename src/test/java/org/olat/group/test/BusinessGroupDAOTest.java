@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupPropertyDAO;
@@ -883,6 +884,38 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertNotNull(markedGroups2);
 		Assert.assertEquals(1, markedGroups2.size());
 		Assert.assertTrue(markedGroups2.contains(group2));
+	}
+	
+	@Test
+	public void findBusinessGroupOrdered() {
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "a_ordered-grp-3", "marked-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "z_ordered-grp-4", "marked-grp-2-desc", 0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		//check the query order by name
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		List<BusinessGroup> orderedByName = businessGroupDao.findBusinessGroups(params, null, 0, 0, BusinessGroupOrder.nameAsc);
+		Assert.assertNotNull(orderedByName);
+		Assert.assertFalse(orderedByName.isEmpty());
+		int index1 = orderedByName.indexOf(group1);
+		int index2 = orderedByName.indexOf(group2);
+		Assert.assertTrue(index1 < index2);
+
+		//check the query order by creation date
+		List<BusinessGroup> orderedByCreationDate = businessGroupDao.findBusinessGroups(params, null, 0, 0, BusinessGroupOrder.creationDateAsc);
+		Assert.assertNotNull(orderedByCreationDate);
+		Assert.assertFalse(orderedByCreationDate.isEmpty());
+		int index3 = orderedByCreationDate.indexOf(group1);
+		int index4 = orderedByCreationDate.indexOf(group2);
+		Assert.assertTrue(index3 < index4);
+		
+		//check the query order by creation date
+		List<BusinessGroup> orderedBy = businessGroupDao.findBusinessGroups(params, null, 0, 0, BusinessGroupOrder.nameAsc, BusinessGroupOrder.creationDateDesc);
+		Assert.assertNotNull(orderedBy);
+		Assert.assertFalse(orderedBy.isEmpty());
+		int index5 = orderedBy.indexOf(group1);
+		int index6 = orderedBy.indexOf(group2);
+		Assert.assertTrue(index5 < index6);
 	}
 	
 	@Test

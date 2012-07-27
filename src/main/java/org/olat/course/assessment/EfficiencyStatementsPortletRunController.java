@@ -129,7 +129,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 * @return the PortletEntry list.
 	 */
 	private List<PortletEntry> getAllPortletEntries() {
-		List<UserEfficiencyStatementLight> efficiencyStatementsList = EfficiencyStatementManager.getInstance().findEfficiencyStatementsLight(identity);	
+		List<UserEfficiencyStatementLight> efficiencyStatementsList = EfficiencyStatementManager.getInstance().findEfficiencyStatementsLight(getIdentity());	
 		List<PortletEntry> portletEntryList = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
 		return portletEntryList;
 	}
@@ -154,7 +154,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
   protected void reloadModel(SortingCriteria sortingCriteria) {
   	if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
   		EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-  		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(identity);
+  		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(getIdentity());
 
   		efficiencyStatementsList = getSortedList(efficiencyStatementsList, sortingCriteria);  		
   		List<PortletEntry> entries = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);

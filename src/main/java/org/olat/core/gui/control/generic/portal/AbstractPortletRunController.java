@@ -60,19 +60,16 @@ public abstract class AbstractPortletRunController extends BasicController {
 	protected SortingCriteria sortingCriteria;
 	protected ArrayList<Integer> sortingTermsList = new ArrayList<Integer>();
 	private final String portletName;
-	private final Preferences guiPreferences; 
-	protected final Identity identity;
-	protected final Locale locale;
+	protected final Preferences guiPreferences; 
+
 	
 	public AbstractPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) {
 		super(ureq, wControl, trans);		
 		collator = Collator.getInstance();
 		this.portletName = portletName;		
 		this.guiPreferences = ureq.getUserSession().getGuiPreferences();
-		this.identity = ureq.getIdentity();
-		this.locale = ureq.getLocale();
 	}
-	
+
 	
 	/**
 	 * Handles portletToolsController events.

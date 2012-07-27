@@ -236,7 +236,7 @@ public interface BusinessGroupService {
 	
 	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource);
 	
-	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults);
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
 	
 	public List<Long> toGroupKeys(String groupNames, OLATResource resource);
 

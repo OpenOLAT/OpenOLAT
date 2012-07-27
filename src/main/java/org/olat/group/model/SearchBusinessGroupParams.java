@@ -20,6 +20,7 @@
 package org.olat.group.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -35,10 +36,10 @@ import org.olat.core.id.Identity;
  */
 public class SearchBusinessGroupParams {
 	
-	private List<String> types;
-	private List<String> tools;
+	private Collection<String> types;
+	private Collection<String> tools;
 	private String nameOrDesc;
-	private List<Long> groupKeys;
+	private Collection<Long> groupKeys;
 	private String name;
 	private String exactName;
 	private String description;
@@ -64,11 +65,11 @@ public class SearchBusinessGroupParams {
 	}
 
 	
-	public List<String> getTypes() {
+	public Collection<String> getTypes() {
 		return types;
 	}
 	
-	public void setTypes(List<String> types) {
+	public void setTypes(Collection<String> types) {
 		this.types = types;
 	}
 	
@@ -81,7 +82,7 @@ public class SearchBusinessGroupParams {
 		}
 	}
 
-	public List<String> getTools() {
+	public Collection<String> getTools() {
 		return tools;
 	}
 
@@ -98,11 +99,11 @@ public class SearchBusinessGroupParams {
 		}
 	}
 
-	public List<Long> getGroupKeys() {
+	public Collection<Long> getGroupKeys() {
 		return groupKeys;
 	}
 
-	public void setGroupKeys(List<Long> groupKeys) {
+	public void setGroupKeys(Collection<Long> groupKeys) {
 		this.groupKeys = groupKeys;
 	}
 

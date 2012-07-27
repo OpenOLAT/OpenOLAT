@@ -45,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
@@ -372,8 +373,9 @@ public class BusinessGroupDAO {
 		return count.intValue();
 	}
 	
-	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults) {
-		TypedQuery<BusinessGroup> query = createFindDBQuery(params, resource, BusinessGroup.class);
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource,
+			int firstResult, int maxResults, BusinessGroupOrder... ordering) {
+		TypedQuery<BusinessGroup> query = createFindDBQuery(params, resource, BusinessGroup.class, ordering);
 		query.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
@@ -382,7 +384,7 @@ public class BusinessGroupDAO {
 		return groups;
 	}
 	
-	private <T> TypedQuery<T> createFindDBQuery(SearchBusinessGroupParams params, OLATResource resource, Class<T> resultClass) {
+	private <T> TypedQuery<T> createFindDBQuery(SearchBusinessGroupParams params, OLATResource resource, Class<T> resultClass, BusinessGroupOrder... ordering) {
 		StringBuilder query = new StringBuilder();
 		if(BusinessGroup.class.equals(resultClass)) {
 			query.append("select distinct(bgi) from ");
@@ -539,9 +541,21 @@ public class BusinessGroupDAO {
 		}
 		//order by (not for count)
 		if(BusinessGroup.class.equals(resultClass)) {
-			query.append(" order by bgi.name,bgi.key");
+			query.append(" order by ");
+			if(ordering != null && ordering.length > 0) {
+				for(BusinessGroupOrder o:ordering) {
+					switch(o) {
+						case nameAsc: query.append("bgi.name,");break;
+						case nameDesc: query.append("bgi.name desc,");break;
+						case creationDateAsc: query.append("bgi.creationDate,");break;
+						case creationDateDesc: query.append("bgi.creationDate desc,");break;
+					}
+				}
+			} else {
+				query.append("bgi.name,");
+			}
+			query.append("bgi.key");
 		}
-		
 
 		TypedQuery<T> dbq = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);
 		//add parameters

@@ -26,19 +26,19 @@
 package org.olat.group.ui.portlet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
@@ -48,22 +48,20 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.portal.AbstractPortletRunController;
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.core.gui.control.generic.portal.PortletToolSortingControllerImpl;
 import org.olat.core.gui.control.generic.portal.SortingCriteria;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.site.GroupsSite;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 
@@ -79,8 +77,8 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
-	private TableController tableCtr;
-	private GroupTableDataModel groupListModel;
+	private final TableController tableCtr;
+	private final GroupTableDataModel groupListModel;
 	private VelocityContainer groupsVC;
 	private List<BusinessGroup> groupList;
 	private Link showAllLink;
@@ -99,7 +97,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
-		sortingTermsList.add(SortingCriteria.TYPE_SORTING);
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);
 		sortingTermsList.add(SortingCriteria.DATE_SORTING);
 		
@@ -117,14 +114,14 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 		tableConfig.setSortingEnabled(false);
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), trans);
 		listenTo(tableCtr);
-		
+
 		// dummy header key, won't be used since setDisplayTableHeader is set to
 		// false
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("groupsPortlet.bgname", 0, CMD_LAUNCH, trans.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("groupsPortlet.type", 1, null, trans.getLocale(),
-				ColumnDescriptor.ALIGNMENT_RIGHT));
 		
 		sortingCriteria = getPersistentSortingConfiguration(ureq);
+		groupListModel = new GroupTableDataModel(Collections.<PortletEntry>emptyList());
+		tableCtr.setTableDataModel(groupListModel);
 		reloadModel(sortingCriteria);
      
 		groupsVC.put("table", tableCtr.getInitialComponent());		
@@ -140,41 +137,41 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	 * @return the PortletEntry list.
 	 */
 	private List<PortletEntry> getAllPortletEntries() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
 		groupList = businessGroupService.findBusinessGroups(params, null, 0, -1);
-		List<PortletEntry> entries = convertBusinessGroupToPortletEntryList(groupList);
-		return entries;
+		return convertBusinessGroupToPortletEntryList(groupList);
 	}
 	
-	private List<PortletEntry> convertBusinessGroupToPortletEntryList(List<BusinessGroup> items) {
+	private List<PortletEntry> convertBusinessGroupToPortletEntryList(List<BusinessGroup> groups) {
 		List<PortletEntry> convertedList = new ArrayList<PortletEntry>();
-		Iterator<BusinessGroup> listIterator = items.iterator();
-		while(listIterator.hasNext()) {
-			convertedList.add(new GroupPortletEntry(listIterator.next()));
+		for(BusinessGroup group:groups) {
+			convertedList.add(new GroupPortletEntry(group));
 		}
 		return convertedList;
 	}
 	
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
-			groupList = businessGroupService.findBusinessGroups(params, null, 0, sortingCriteria.getMaxEntries());
-			groupList = getSortedList(groupList, sortingCriteria);
-
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+			BusinessGroupOrder order = null;
+			if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {
+		  	order = sortingCriteria.isAscending() ? BusinessGroupOrder.nameAsc : BusinessGroupOrder.nameDesc;
+		  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
+		  	order = sortingCriteria.isAscending() ? BusinessGroupOrder.creationDateAsc : BusinessGroupOrder.creationDateDesc;
+		  }
+			groupList = businessGroupService.findBusinessGroups(params, null, 0, sortingCriteria.getMaxEntries(), order);
 			List<PortletEntry> entries = convertBusinessGroupToPortletEntryList(groupList);
-			
-			groupListModel = new GroupTableDataModel(entries);
-			tableCtr.setTableDataModel(groupListModel);
+			groupListModel.setObjects(entries);
+			tableCtr.modelChanged();
 		} else {
 			reloadModel(getPersistentManuallySortedItems());
 		}
 	}
 	
 	protected void reloadModel(List<PortletEntry> sortedItems) {						
-		groupListModel = new GroupTableDataModel(sortedItems);
-		tableCtr.setTableDataModel(groupListModel);
+		groupListModel.setObjects(sortedItems);
+		tableCtr.modelChanged();
 	}
-	
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
@@ -182,10 +179,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink) {
-			// activate group tab in top navigation
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, GroupsSite.class.getName(), null);
-			dts.activateStatic(ureq, GroupsSite.class.getName(), null);
+			NewControllerFactory.getInstance().launch("[GroupsSite:0]", ureq, getWindowControl());
 		} 
 	}
 
@@ -270,9 +264,15 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
    * @param ureq
    * @return
    */
-  private List<PortletEntry> getPersistentManuallySortedItems() {  	
-  	List<PortletEntry> portletEntryList = getAllPortletEntries();
-		return this.getPersistentManuallySortedItems(portletEntryList);
+  private List<PortletEntry> getPersistentManuallySortedItems() { 
+  	@SuppressWarnings("unchecked")
+		Map<Long, Integer> storedPrefs = (Map<Long, Integer>)guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
+  	
+  	SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+  	params.setGroupKeys(storedPrefs.keySet());
+  	List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+  	List<PortletEntry> portletEntryList = convertBusinessGroupToPortletEntryList(groups);
+		return getPersistentManuallySortedItems(portletEntryList);
 	}
   
   /**
@@ -290,8 +290,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 			  	comparisonResult = collator.compare(group1.getName(), group2.getName());			  		  	
 			  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
 			  	comparisonResult = group1.getCreationDate().compareTo(group2.getCreationDate());
-			  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.TYPE_SORTING) {
-			  	comparisonResult = group1.getType().compareTo(group2.getType());
 			  }
 			  if(!sortingCriteria.isAscending()) {
 			  	//if not isAscending return (-comparisonResult)			  	
@@ -364,7 +362,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 					return (description == null ? "n/a" : description);
 				case 2:
 					Date date = group.getCreationDate();
-					//return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, getTranslator().getLocale()).format(date);
 					return date;
 				default:
 					return "error";

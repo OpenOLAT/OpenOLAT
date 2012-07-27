@@ -149,7 +149,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	}
 	
 	private List<PortletEntry> getAllPortletEntries() {
-		notificationsList = man.getValidSubscribers(identity);
+		notificationsList = man.getValidSubscribers(getIdentity());
 		// calc subscriptioninfo for all subscriptions and, if only those with news are to be shown, remove the other ones
 		for (Iterator<Subscriber> it_subs = notificationsList.iterator(); it_subs.hasNext();) {
 			Subscriber subscriber = it_subs.next();
@@ -158,7 +158,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 			if(notifHandler == null) {
 				it_subs.remove();
 			} else {
-				SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, compareDate);
+				SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, getLocale(), compareDate);
 				if (!subsInfo.hasNews()) {
 					it_subs.remove();
 				}
@@ -195,7 +195,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 			}
 			notificationsList = getSortedList(notificationsList, sortingCriteria );		
 			List<PortletEntry> entries = convertNotificationToPortletEntryList(notificationsList);
-			notificationListModel = new NotificationsPortletTableDataModel(entries, locale, subscriptionMap);
+			notificationListModel = new NotificationsPortletTableDataModel(entries, getLocale(), subscriptionMap);
 			tableCtr.setTableDataModel(notificationListModel);
   	} else {
 			reloadModel(this.getPersistentManuallySortedItems());
@@ -208,7 +208,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
    */
 	protected void reloadModel(List<PortletEntry> sortedItems) {
 		Map subscriptionMap = NotificationHelper.getSubscriptionMap(getIdentity(), getLocale(), true, compareDate);
-		notificationListModel = new NotificationsPortletTableDataModel(sortedItems, locale, subscriptionMap);
+		notificationListModel = new NotificationsPortletTableDataModel(sortedItems, getLocale(), subscriptionMap);
 		tableCtr.setTableDataModel(notificationListModel);
 	}
 

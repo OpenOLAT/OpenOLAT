@@ -128,13 +128,13 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 		putInitialPanel(bookmarksVC);
 		
 		//register for events targeted at this Identity
-		eventBusThisIdentityOres = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());
+		eventBusThisIdentityOres = OresHelper.createOLATResourceableInstance(Identity.class, getIdentity().getKey());
     //TODO: LD: use this:	//ureq.getUserSession().getSingleUserEventCenter().registerFor(this, ureq.getIdentity(), eventBusOres);
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), eventBusThisIdentityOres);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), eventBusThisIdentityOres);
 		
 		//register for events targeted at all Identities (e.g. delete bookmark for a course if a course is deleted)
 		eventBusAllIdentitiesOres = OresHelper.createOLATResourceableType(Identity.class);
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(),eventBusAllIdentitiesOres);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(),eventBusAllIdentitiesOres);
 	}
 	
 	/**
@@ -144,7 +144,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 */
 	private List<PortletEntry> getAllPortletEntries() {
 		BookmarkManager mb = BookmarkManager.getInstance();
-		List<Bookmark> bookmarkList = mb.findBookmarksByIdentity(identity);
+		List<Bookmark> bookmarkList = mb.findBookmarksByIdentity(getIdentity());
 		return convertBookmarkToPortletEntryList(bookmarkList);
 	}
 	
@@ -184,12 +184,12 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
 			BookmarkManager mb = BookmarkManager.getInstance();
-			List<Bookmark> bookmarkList = mb.findBookmarksByIdentity(identity);
+			List<Bookmark> bookmarkList = mb.findBookmarksByIdentity(getIdentity());
 			
 			bookmarkList = getSortedList(bookmarkList, sortingCriteria );
 			
 			List<PortletEntry> entries = convertBookmarkToPortletEntryList(bookmarkList);
-			bookmarkListModel = new BookmarkPortletTableDataModel(entries, this.locale);
+			bookmarkListModel = new BookmarkPortletTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(bookmarkListModel);
 		} else {
 			reloadModel(this.getPersistentManuallySortedItems());
@@ -210,7 +210,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 
 	public void event(Event event) {		
 		if(event instanceof BookmarkEvent) {			
-			if(((BookmarkEvent)event).getUsername().equals(identity.getName()) || ((BookmarkEvent)event).isAllUsersEvent()) {
+			if(((BookmarkEvent)event).getUsername().equals(getIdentity().getName()) || ((BookmarkEvent)event).isAllUsersEvent()) {
 			  reloadModel(sortingCriteria);			  
 			}
 		}		

@@ -125,7 +125,7 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 		putInitialPanel(notesVC);
 		
     //register for events targeted at this Identity - TODO: LD: use SingleUserEventCenter
-		eventBusThisIdentityOres = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());    
+		eventBusThisIdentityOres = OresHelper.createOLATResourceableInstance(Identity.class, getIdentity().getKey());    
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), eventBusThisIdentityOres);
 	}
 	
@@ -166,7 +166,7 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 			noteList = getSortedList(noteList, sortingCriteria );
 			
 			List<PortletEntry> entries = convertNoteToPortletEntryList(noteList);
-			notesListModel = new NoteSortingTableDataModel(entries, locale);
+			notesListModel = new NoteSortingTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(notesListModel);
 		} else {
 			reloadModel(this.getPersistentManuallySortedItems());
@@ -178,7 +178,7 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#reloadModel(org.olat.core.gui.UserRequest, java.util.List)
 	 */
 	protected void reloadModel(List<PortletEntry> sortedItems) {
-		notesListModel = new NoteSortingTableDataModel(sortedItems, locale);
+		notesListModel = new NoteSortingTableDataModel(sortedItems, getLocale());
 		tableCtr.setTableDataModel(notesListModel);
 	}
 	
@@ -188,7 +188,7 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 */
 	public void event(Event event) {		
 		if(event instanceof NoteEvent) {			
-			if(((NoteEvent)event).getUsername().equals(identity.getName())) {
+			if(((NoteEvent)event).getUsername().equals(getIdentity().getName())) {
 			  reloadModel(sortingCriteria);						  
 			}
 		}		

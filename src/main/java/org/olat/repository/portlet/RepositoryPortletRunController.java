@@ -124,10 +124,10 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	
 	private List<PortletEntry> getAllPortletEntries() {
 		if (studentView) {
-			List<RepositoryEntry> allRepoEntries = RepositoryManager.getInstance().getLearningResourcesAsStudent(identity);
+			List<RepositoryEntry> allRepoEntries = RepositoryManager.getInstance().getLearningResourcesAsStudent(getIdentity());
 			return convertRepositoryEntriesToPortletEntryList(allRepoEntries);
 		} else {
-			List<RepositoryEntry> allRepoEntries = RepositoryManager.getInstance().getLearningResourcesAsTeacher(identity);
+			List<RepositoryEntry> allRepoEntries = RepositoryManager.getInstance().getLearningResourcesAsTeacher(getIdentity());
 			return convertRepositoryEntriesToPortletEntryList(allRepoEntries);
 		}
 	}

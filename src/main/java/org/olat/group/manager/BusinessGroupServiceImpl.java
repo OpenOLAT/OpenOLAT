@@ -66,6 +66,7 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.DeletableGroupData;
@@ -552,7 +553,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults) {
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource,
+			int firstResult, int maxResults, BusinessGroupOrder... ordering) {
 		if(params == null) {
 			params = new SearchBusinessGroupParams();
 		}
