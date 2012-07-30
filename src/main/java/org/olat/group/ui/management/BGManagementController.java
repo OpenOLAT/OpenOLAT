@@ -216,7 +216,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	 * @param bgContext
 	 * @param controllerFlags
 	 */
-	public BGManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean backLink) {
+	public BGManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource, String resourceName, boolean backLink) {
 		super(ureq, wControl);
 		this.resource = resource;
 		this.backLink = backLink;
@@ -235,7 +235,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// user translator
 
 		// initialize all velocity containers
-		initVC();
+		initVC(resourceName);
 
 		// Layout is controlled with generic controller: menu - content - tools
 		// Navigation menu
@@ -660,24 +660,14 @@ public class BGManagementController extends MainLayoutBasicController implements
 	}
 
 	private TreeModel buildTreeModel(UserRequest ureq) {
-		GenericTreeNode root, gtn;
-
 		GenericTreeModel gtm = new GenericTreeModel();
-		root = new GenericTreeNode();
+		GenericTreeNode root = new GenericTreeNode();
 		root.setTitle(translate("menu.index"));
 		root.setUserObject(CMD_OVERVIEW);
 		root.setAltText(translate("menu.index.alt"));
 		gtm.setRootNode(root);
 
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			gtn = new GenericTreeNode();
-			gtn.setTitle(translate("menu.editcontext"));
-			gtn.setUserObject(CMD_EDITCONTEXT);
-			gtn.setAltText(translate("menu.editcontext.alt"));
-			root.addChild(gtn);
-		}
-
-		gtn = new GenericTreeNode();
+		GenericTreeNode gtn = new GenericTreeNode();
 		gtn.setTitle(translate("menu.allgroups"));
 		gtn.setUserObject(CMD_GROUPLIST);
 		gtn.setAltText(translate("menu.allgroups.alt"));
@@ -748,10 +738,12 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	}
 
-	private void initVC() {
+	private void initVC(String resourceName) {
 		// push group type as 'type' for type specific help pages
 		// Overview page
 		overviewVC = createVelocityContainer("overview");
+		overviewVC.contextPut("resourceName", resourceName);
+		
 		// Create new group form
 		newGroupVC = createVelocityContainer("newgroup");
 		// Group list

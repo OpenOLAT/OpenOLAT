@@ -75,7 +75,7 @@ public class CourseGroupManagementMainController extends MainLayoutBasicControll
 		CourseGroupManager groupManager = course.getCourseEnvironment().getCourseGroupManager();
 		OLATResource courseResource = groupManager.getCourseResource();
 
-		groupManageCtr = new BGManagementController(ureq, getWindowControl(), courseResource, false);
+		groupManageCtr = new BGManagementController(ureq, getWindowControl(), courseResource, course.getCourseTitle(), false);
 		listenTo(groupManageCtr);
 		putInitialPanel(groupManageCtr.getInitialComponent());
 		
