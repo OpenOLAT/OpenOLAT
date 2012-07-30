@@ -69,11 +69,27 @@ public class RepositoryEntryIconRenderer extends CustomCssCellRenderer {
 	protected String getCssClass(Object val) {
 		// use small icon and create icon class for resource:
 		// o_FileResource-SHAREDFOLDER_icon
-		RepositoryEntry re = (RepositoryEntry) val;
-		if (re == null) {
+		if(val == null) {
 			return "";
 		}
-		return "b_small_icon " + getIconCssClass(re);
+		
+		String cssClass = "";
+		if(val instanceof RepositoryEntryShort) {
+			cssClass = getIconCssClass((RepositoryEntryShort)val);
+		} else if (val instanceof RepositoryEntry) {
+			cssClass = getIconCssClass((RepositoryEntry)val);
+		}
+		return "b_small_icon " + cssClass;
+	}
+	
+	public String getIconCssClass(RepositoryEntryShort re) {
+		String iconCSSClass = "o_" + re.getResourceType().replace(".", "-");
+		if (re != null && RepositoryManager.getInstance().createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {
+			iconCSSClass = iconCSSClass.concat("_icon_closed");
+		} else {
+			iconCSSClass = iconCSSClass.concat("_icon");
+		}
+		return iconCSSClass;
 	}
 	
 	public String getIconCssClass(RepositoryEntry re) {
@@ -91,12 +107,20 @@ public class RepositoryEntryIconRenderer extends CustomCssCellRenderer {
 	 */
 	@Override
 	protected String getHoverText(Object val) {
-		RepositoryEntry re = (RepositoryEntry) val;
-		if (re == null) {
+		if (val == null) {
 			return "n/a";
 		}
-		String typeName = re.getOlatResource().getResourceableTypeName();
-		return ControllerFactory.translateResourceableTypeName(typeName, locale);
+		
+		if(val instanceof RepositoryEntry) {
+			RepositoryEntry re = (RepositoryEntry) val;
+			String typeName = re.getOlatResource().getResourceableTypeName();
+			return ControllerFactory.translateResourceableTypeName(typeName, locale);
+		}
+		if(val instanceof RepositoryEntryShort) {
+			RepositoryEntryShort re = (RepositoryEntryShort) val;
+			String typeName = re.getResourceType();
+			return ControllerFactory.translateResourceableTypeName(typeName, locale);
+		}
+		return "n/a";
 	}
-
 }

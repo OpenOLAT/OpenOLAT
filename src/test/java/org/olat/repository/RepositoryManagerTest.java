@@ -210,7 +210,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id, re.getParticipantGroup());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
@@ -232,7 +232,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id, group.getPartipiciantGroup());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
@@ -253,7 +253,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id, re.getTutorGroup());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(id);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(id, 0, -1);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
@@ -275,7 +275,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(id);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(id, 0, -1);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));

@@ -27,6 +27,7 @@ package org.olat.repository;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -421,7 +422,7 @@ public class RepositoryManager extends BasicManager {
 		return entries.get(0);
 	}
 	
-	public List<RepositoryEntry> lookupRepositoryEntries(List<Long> keys) {
+	public List<RepositoryEntry> lookupRepositoryEntries(Collection<Long> keys) {
 		if (keys == null || keys.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -1587,7 +1588,7 @@ public class RepositoryManager extends BasicManager {
 	 * @return list of RepositoryEntries
 	 */
 	 //fxdiff VCRP-1,2: access control of resources
-	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity) {
+	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join fetch v.olatResource as res")
@@ -1601,11 +1602,16 @@ public class RepositoryManager extends BasicManager {
 			.append("   v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictParticipant.class.getName()).append(" vmember")
 			.append("     where (vmember.repoParticipantKey=:identityKey or vmember.groupParticipantKey=:identityKey)")
 			.append(" ))");
+		appendOrderBy(sb, "v", orderby);
 
-		List<RepositoryEntry> repoEntries = dbInstance.getCurrentEntityManager()
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
-				.getResultList();	
+				.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		List<RepositoryEntry> repoEntries = query.getResultList();	
 		return repoEntries;
 	}
 	
@@ -1618,7 +1624,7 @@ public class RepositoryManager extends BasicManager {
 	 * @return list of RepositoryEntries
 	 */
 	 //fxdiff VCRP-1,2: access control of resources
-	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity) {
+	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join fetch v.olatResource as res ")
@@ -1641,12 +1647,30 @@ public class RepositoryManager extends BasicManager {
 			.append("   and poi.permission = 'bgr.editor' and poi.olatResource = ori")
 			.append("   and groupRelation.resource=ori")
 		  .append(" )");
+		appendOrderBy(sb, "v", orderby);
 		
-		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
-				.getResultList();
+				.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		List<RepositoryEntry> entries = query.getResultList();
 		return entries;
+	}
+	
+	private void appendOrderBy(StringBuilder sb, String var, RepositoryEntryOrder... orderby) {
+		if(orderby != null && orderby.length > 0) {
+			sb.append(" order by ");
+			for(RepositoryEntryOrder o:orderby) {
+				switch(o) {
+					case nameAsc: sb.append(var).append(".key asc").append(","); break;
+					case nameDesc: sb.append(var).append(".key desc").append(","); break;
+				}
+			}
+			sb.append(var).append(".key asc");
+		}
 	}
 	
 	public boolean isIdentityInTutorSecurityGroup(Identity identity, OLATResource resource) {

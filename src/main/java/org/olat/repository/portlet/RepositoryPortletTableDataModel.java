@@ -24,7 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
-import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryShort;
 
 /**
  * Description:<br>
@@ -35,11 +35,11 @@ import org.olat.repository.RepositoryEntry;
  * Initial Date:  06.03.2009 <br>
  * @author gnaegi, rhaag
  */
-public class RepositoryPortletTableDataModel extends PortletDefaultTableDataModel<RepositoryEntry> {
+public class RepositoryPortletTableDataModel extends PortletDefaultTableDataModel<RepositoryEntryShort> {
 	/**
 	 * @see org.olat.core.gui.components.table.DefaultTableDataModel#getValueAt(int, int)
 	 */
-	public  RepositoryPortletTableDataModel(List<PortletEntry<RepositoryEntry>> objects, Locale locale) {
+	public  RepositoryPortletTableDataModel(List<PortletEntry<RepositoryEntryShort>> objects, Locale locale) {
 		super(objects, 3);
 		super.setLocale(locale);
 	}
@@ -48,21 +48,21 @@ public class RepositoryPortletTableDataModel extends PortletDefaultTableDataMode
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public final Object getValueAt(int row, int col) {
-		RepositoryEntry repoEntry = getRepositoryEntry(row);
+		RepositoryPortletEntry repoEntry = (RepositoryPortletEntry)getObject(row);
 		switch (col) {
 			case 0:
-				return repoEntry.getDisplayname();
+				return repoEntry.getValue().getDisplayname();
 			case 1:
 				return repoEntry.getDescription(); 
 			case 2:
-				return repoEntry;
+				return repoEntry.getValue();
 			default:
 				return "error";
 		}
 	}	
 
-	public RepositoryEntry getRepositoryEntry(int row) {
-		PortletEntry<RepositoryEntry> portletEntry = getObject(row);
+	public RepositoryEntryShort getRepositoryEntry(int row) {
+		PortletEntry<RepositoryEntryShort> portletEntry = getObject(row);
 		return portletEntry.getValue();
 	}
 }

@@ -33,7 +33,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.generic.portal.PortletToolController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.group.ui.BGControllerFactory;

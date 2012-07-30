@@ -21,6 +21,7 @@ package org.olat.repository.portlet;
 
 import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryShort;
 
 /**
  * Description:<br>
@@ -31,20 +32,61 @@ import org.olat.repository.RepositoryEntry;
  * 
  * @author gnaegi
  */
-public class RepositoryPortletEntry implements PortletEntry<RepositoryEntry> {
-	private RepositoryEntry value;
-	private Long key;
+public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryShort> {
+	private RepositoryEntryShort value;
+	private String description;
 
 	public RepositoryPortletEntry(RepositoryEntry repoEntry) {
-		value = repoEntry;
-		key = repoEntry.getKey();
+		value = new REShort(repoEntry);
 	}
 
 	public Long getKey() {
-		return key;
+		return value.getKey();
 	}
 
-	public RepositoryEntry getValue() {
+	public RepositoryEntryShort getValue() {
 		return value;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	private static class REShort implements RepositoryEntryShort {
+		private final Long key;
+		private final String displayname;
+		private final String type;
+		private final int statusCode;
+		
+		public REShort(RepositoryEntry entry) {
+			key = entry.getKey();
+			displayname = entry.getDisplayname().intern();
+			type = entry.getOlatResource().getResourceableTypeName();
+			statusCode = entry.getStatusCode();
+		}
+
+		@Override
+		public Long getKey() {
+			return key;
+		}
+
+		@Override
+		public String getDisplayname() {
+			return displayname;
+		}
+
+		@Override
+		public String getResourceType() {
+			return type;
+		}
+
+		@Override
+		public int getStatusCode() {
+			return statusCode;
+		}
 	}
 }

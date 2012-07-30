@@ -253,9 +253,14 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
   	@SuppressWarnings("unchecked")
 		Map<Long, Integer> storedPrefs = (Map<Long, Integer>)guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
   	
-  	SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
-  	params.setGroupKeys(storedPrefs.keySet());
-  	List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+  	List<BusinessGroup> groups;
+  	if(storedPrefs != null) {
+  		SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+  		params.setGroupKeys(storedPrefs.keySet());
+  		groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+  	} else {
+  		groups = new ArrayList<BusinessGroup>();
+  	}
   	List<PortletEntry<BusinessGroupEntry>> portletEntryList = convertBusinessGroupToPortletEntryList(groups, false);
 		return getPersistentManuallySortedItems(portletEntryList);
 	}

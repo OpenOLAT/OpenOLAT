@@ -406,7 +406,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	protected void doSearchMyCoursesStudent(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.myAsStudent;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.getLearningResourcesAsStudent(ureq.getIdentity());
+		List<RepositoryEntry> entries = rm.getLearningResourcesAsStudent(ureq.getIdentity(), 0, -1);
 		//fxdiff VCRP-10: repository search with type filter
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}
@@ -418,7 +418,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	protected void doSearchMyCoursesTeacher(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.myAsTeacher;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.getLearningResourcesAsTeacher(ureq.getIdentity());
+		List<RepositoryEntry> entries = rm.getLearningResourcesAsTeacher(ureq.getIdentity(), 0, -1);
 		//fxdiff VCRP-10: repository search with type filter
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}

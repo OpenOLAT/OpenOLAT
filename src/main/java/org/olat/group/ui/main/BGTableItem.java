@@ -27,6 +27,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 
 /**
@@ -121,7 +122,7 @@ public class BGTableItem {
 		relations = new ArrayList<RepositoryEntryShort>(3);
 		for(BGRepositoryEntryRelation resource:resources) {
 			if(businessGroup.getKey().equals(resource.getGroupKey())) {
-				relations.add(new RepositoryEntryShort(resource));
+				relations.add(new REShort(resource));
 				if(relations.size() >= 3) {
 					return;
 				}
@@ -188,6 +189,51 @@ public class BGTableItem {
 			if(obj instanceof BGShort) {
 				BGShort sh = (BGShort)obj;
 				return key != null && key.equals(sh.key);
+			}
+			return false;
+		}
+	}
+	
+	private static class REShort implements RepositoryEntryShort {
+		private final Long key;
+		private final String displayname;
+
+		public REShort(BGRepositoryEntryRelation rel) {
+			this.key = rel.getRepositoryEntryKey();
+			this.displayname = rel.getRepositoryEntryDisplayName();
+		}
+
+		public Long getKey() {
+			return key;
+		}
+
+		public String getDisplayname() {
+			return displayname;
+		}
+
+		@Override
+		public String getResourceType() {
+			return "CourseModule";
+		}
+
+		@Override
+		public int getStatusCode() {
+			return 0;
+		}
+
+		@Override
+		public int hashCode() {
+			return key.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof REShort) {
+				REShort re = (REShort)obj;
+				return key != null && key.equals(re.key);
 			}
 			return false;
 		}

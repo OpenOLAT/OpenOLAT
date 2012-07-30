@@ -82,6 +82,7 @@ import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
 import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
