@@ -33,9 +33,9 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupListController extends AbstractBusinessGroupListController {
-	
-	public BusinessGroupListController(UserRequest ureq, WindowControl wControl) {
+public class FavoritBusinessGroupListController extends AbstractBusinessGroupListController {
+
+	public FavoritBusinessGroupListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "group_list");
 	}
 
@@ -47,7 +47,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	@Override
 	protected int initColumns() {
 		CustomCellRenderer markRenderer = new BGMarkCellRenderer(this, mainVC, getTranslator());
-		groupListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor(Cols.mark.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, markRenderer));
+		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.mark.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, markRenderer));
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH, getLocale()));
@@ -64,12 +64,13 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		return 7;
 	}
 	
-	protected void updateAllGroups() {
+	protected boolean updateMarkedGroups() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setMarked(Boolean.TRUE);
 		params.setAttendee(true);
 		params.setOwner(true);
 		params.setWaiting(true);
 		params.setIdentity(getIdentity());
-		updateTableModel(params, false);
+		return !updateTableModel(params, true).isEmpty();
 	}
 }

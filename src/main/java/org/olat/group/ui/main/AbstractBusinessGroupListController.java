@@ -281,14 +281,20 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				doLeave(ureq, (BusinessGroup)leaveDialogBox.getUserObject());
 			}
 		} else if (source == groupCreateController) {
+			BusinessGroup group = null;
 			if(event == Event.DONE_EVENT) {
-				BusinessGroup group = groupCreateController.getCreatedGroup();
+				group = groupCreateController.getCreatedGroup();
 				if(group != null) {
 					reload();
 				}
 			}
 			cmc.deactivate();
 			cleanUpPopups();
+			//if new group -> go to the tab
+			if(group != null) {
+				String businessPath = "[BusinessGroup:" + group.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
 		} else if (source == businessGroupWizard) { 
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();

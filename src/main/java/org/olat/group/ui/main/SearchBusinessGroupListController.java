@@ -25,6 +25,8 @@ import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
@@ -33,21 +35,36 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupListController extends AbstractBusinessGroupListController {
+public class SearchBusinessGroupListController extends AbstractBusinessGroupListController {
 	
-	public BusinessGroupListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list");
+
+	private final BusinessGroupSearchController searchController;
+	
+	public SearchBusinessGroupListController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "group_list_search");
+
+		//search controller
+		searchController = new BusinessGroupSearchController(ureq, wControl, isAdmin(), true);
+		listenTo(searchController);
+		mainVC.put("search", searchController.getInitialComponent());
 	}
 
 	@Override
 	protected void initButtons(UserRequest ureq) {
 		initButtons(ureq, true);
+		groupListCtr.setMultiSelect(true);
+		groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
+		groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
+		groupListCtr.addMultiSelectAction("table.users.management", TABLE_ACTION_USERS);
+		groupListCtr.addMultiSelectAction("table.config", TABLE_ACTION_CONFIG);
+		groupListCtr.addMultiSelectAction("table.email", TABLE_ACTION_EMAIL);
+		groupListCtr.addMultiSelectAction("table.delete", TABLE_ACTION_DELETE);
 	}
 
 	@Override
 	protected int initColumns() {
 		CustomCellRenderer markRenderer = new BGMarkCellRenderer(this, mainVC, getTranslator());
-		groupListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor(Cols.mark.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, markRenderer));
+		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.mark.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, markRenderer));
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH, getLocale()));
@@ -63,13 +80,44 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), TABLE_ACTION_ACCESS, getLocale()));
 		return 7;
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == searchController) {
+			if(event instanceof SearchEvent) {
+				doSearch((SearchEvent)event);
+			}
+		}
+		super.event(ureq, source, event);
+	}
 	
-	protected void updateAllGroups() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setAttendee(true);
-		params.setOwner(true);
-		params.setWaiting(true);
-		params.setIdentity(getIdentity());
-		updateTableModel(params, false);
+	protected void updateSearch() {
+		doSearch(null);
+	}
+
+	private void doSearch(SearchEvent event) {
+		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
+
+		search(event);
+		
+		if(isLogDebugEnabled()) {
+			logDebug("Group search takes (ms): " + (System.currentTimeMillis() - start), null);
+		}
+	}
+
+	private void search(SearchEvent event) {
+		if(event == null) {
+			updateTableModel(null, false);
+		} else {
+			SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+			//security
+			if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()
+					&& (params.getPublicGroups() == null || !params.getPublicGroups().booleanValue())) {
+				params.setOwner(true);
+				params.setAttendee(true);
+				params.setWaiting(true);
+			}
+			updateTableModel(params, false);
+		}
 	}
 }
