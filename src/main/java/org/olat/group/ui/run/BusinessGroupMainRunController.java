@@ -28,7 +28,7 @@ package org.olat.group.ui.run;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -39,7 +39,6 @@ import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.table.Table;
@@ -57,8 +56,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -483,28 +480,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				String actionid = te.getActionId();
 				int rowid = te.getRowId();
 				RepositoryTableModel repoTableModel = (RepositoryTableModel) resourcesCtr.getTableDataModel();
-				RepositoryEntry currentRepoEntry = (RepositoryEntry)repoTableModel.getObject(rowid);
-				if (actionid.equals(RepositoryTableModel.TABLE_ACTION_SELECT_LINK)) {
+				if (RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY.equals(actionid)
+						|| RepositoryTableModel.TABLE_ACTION_SELECT_LINK.equals(actionid)) {
+
+					RepositoryEntry currentRepoEntry = (RepositoryEntry)repoTableModel.getObject(rowid);
 					OLATResource ores = currentRepoEntry.getOlatResource();
 					if (ores == null) throw new AssertException("repoEntry had no olatresource, repoKey = " + currentRepoEntry.getKey());
-					
 					addLoggingResourceable(LoggingResourceable.wrap(ores, OlatResourceableType.genRepoEntry));
-					String title = currentRepoEntry.getDisplayname();
-					
-					DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-					//was brasato:: DTabs dts = getWindowControl().getDTabs();
-					DTab dt = dts.getDTab(ores);
-					if (dt == null) {
-						// does not yet exist -> create and add
-						//fxdiff BAKS-7 Resume function
-						dt = dts.createDTab(ores, currentRepoEntry, title);
-						if (dt == null) return;
-						Controller ctrl = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
-						dt.setController(ctrl);
-						dts.addDTab(dt);
-					}
-					dts.activate(ureq, dt, null); // null: do not activate to a certain
-																				// view
+
+					String businessPath = "[RepositoryEntry:" + currentRepoEntry.getKey() + "]";
+					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 				}
 			}
 		} else if (source == sendToChooserForm) {
@@ -1032,7 +1017,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			listenTo(resourcesCtr);
 			
 			resourcesVC = createVelocityContainer("resources");
-			repoTableModel.addColumnDescriptors(resourcesCtr, translate("resources.launch"), false);
+			repoTableModel.addColumnDescriptors(resourcesCtr, null, true);
 			resourcesVC.put("resources", resourcesCtr.getInitialComponent());
 		}
 		// add table model to table
