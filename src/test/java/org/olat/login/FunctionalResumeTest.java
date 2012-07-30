@@ -126,6 +126,14 @@ public class FunctionalResumeTest {
 		/* enable resume on request */
 		functionalHomeSiteUtil.enableResumeOnRequest(browser);
 		
+		/*
+		 * There's a need to click something in the course because
+		 * else it won't open up again after resume.
+		 */
+		functionalCourseUtil.openWithoutBusinessPath(browser, course.getRepoEntryKey(), 4);
+		
+		Assert.assertTrue(functionalUtil.logout(browser));
+		
 		/* login without clicking away dialogs */
 		Assert.assertTrue(functionalUtil.login(browser, false));
 		

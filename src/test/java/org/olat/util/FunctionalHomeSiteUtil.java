@@ -113,7 +113,7 @@ public class FunctionalHomeSiteUtil {
 
 	public final static String NO_VALUE = "none";
 	public final static String YES_AUTOMATICALLY_VALUE = "auto";
-	public final static String YES_ON_REQUEST_VALUE = "request";
+	public final static String YES_ON_REQUEST_VALUE = "ondemand";
 
 	public final static String OFF_VALUE = "no";
 	public final static String ON_VALUE = "yes";

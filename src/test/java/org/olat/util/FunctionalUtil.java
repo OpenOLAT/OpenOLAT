@@ -42,7 +42,7 @@ public class FunctionalUtil {
 	public final static String LOGIN_PAGE = "dmz";
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
 	
-	public final static String INFO_DIALOG = "b_info";
+	public final static String INFO_DIALOG = "o_interceptionPopup";
 
 	public enum OlatSite {
 		HOME,
@@ -370,7 +370,7 @@ public class FunctionalUtil {
 	    	//TODO:JK: find a way to solve endless loop
 	    	//while(browser.isElementPresent("class="+ getInfoDialog())){
 	    		/* click last button */
-	    	if(browser.isElementPresent("class="+ getInfoDialog())){
+	    	if(browser.isElementPresent("id="+ getInfoDialog())){
 	    		browser.click("xpath=//form//div//button[@type='button']/../../span/a[@class='b_button']");
 	    		browser.waitForPageToLoad(getWaitLimit());
 	    	}

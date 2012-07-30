@@ -19,6 +19,7 @@
  */
 package org.olat.portfolio;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -39,10 +40,10 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
+import org.olat.util.FunctionalEportfolioUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
-import org.olat.util.FunctionalUtil.OlatSite;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 
@@ -62,6 +63,23 @@ public class FunctionalArtefactTest {
 	public final static String BLOG_POST_DESCRIPTION = "Where you may find useful information about multiplexing.";
 	public final static String BLOG_POST_CONTENT = "Operating Systems: Design & Implementation (by Andrew S. Tanenbaum)";
 	
+	public final static String TEXT_ARTEFACT_CONTENT = "";
+	public final static String TEXT_ARTEFACT_TITLE = "";
+	public final static String TEXT_ARTEFACT_DESCRIPTION = "";
+	public final static String TEXT_ARTEFACT_TAGS = "";
+	public final static String TEXT_ARTEFACT_BINDERPATH = "";
+	
+	public final static String FILE_ARTEFACT_PATH = "";
+	public final static String FILE_ARTEFACT_TITLE = "";
+	public final static String FILE_ARTEFACT_DESCRIPTION = "";
+	public final static String FILE_ARTEFACT_TAGS = "";
+	public final static String FILE_ARTEFACT_BINDERPATH = "";
+
+	public final static String LEARNING_JOURNAL_TITLE = "";
+	public final static String LEARNING_JOURNAL_DESCRIPTION = "";
+	public final static String LEARNING_JOURNAL_TAGS = "";
+	public final static String LEARNING_JOURNAL_BINDERPATH = "";
+	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();
@@ -76,6 +94,7 @@ public class FunctionalArtefactTest {
 	FunctionalUtil functionalUtil;
 	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	FunctionalCourseUtil functionalCourseUtil;
+	FunctionalEportfolioUtil functionalEportfolioUtil;
 	FunctionalVOUtil functionalVOUtil;
 	
 	UserVO user;
@@ -88,6 +107,7 @@ public class FunctionalArtefactTest {
 
 		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
 		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+		functionalEportfolioUtil = new FunctionalEportfolioUtil(functionalUtil);
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 		
@@ -95,20 +115,22 @@ public class FunctionalArtefactTest {
 		List<UserVO> userVO = functionalVOUtil.createTestUsers(deploymentUrl, 1);
 		
 		user = userVO.get(0);
-
-		/* deploy course with REST */
-		course = functionalVOUtil.importAllElementsCourse(deploymentUrl);
-		
 	}
 	
 	@Test
 	@RunAsClient
-	public void checkCollectForumPost(){
+	public void checkCollectForumPost() throws IOException, URISyntaxException{
+		/* deploy course with REST */
+		course = functionalVOUtil.importAllElementsCourse(deploymentUrl);
+		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
-		/* open course and check if it's open */
+		/* post message to forum */
 		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
+		
+		/* add artefact */
+		//TODO:JK: implement me
 	}
 	
 	@Test
@@ -120,9 +142,11 @@ public class FunctionalArtefactTest {
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
-		/* open course and check if it's open */
+		/* create an article for the wiki */
 		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
 		
+		/* add artefact */
+		//TODO:JK: implement me
 	}
 	
 	@Test
@@ -134,9 +158,11 @@ public class FunctionalArtefactTest {
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
-		/* open course and check if it's open */
+		/* blog */
 		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, vo.getKey(), BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
 		
+		/* add artefact */
+		//TODO:JK: implement me
 	}
 	
 	@Test
@@ -145,14 +171,24 @@ public class FunctionalArtefactTest {
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
+		/* add text artefact */
+		Assert.assertTrue(functionalEportfolioUtil.addTextArtefact(browser, TEXT_ARTEFACT_CONTENT,
+				TEXT_ARTEFACT_TITLE, TEXT_ARTEFACT_DESCRIPTION,
+				TEXT_ARTEFACT_TAGS,
+				TEXT_ARTEFACT_BINDERPATH));
 	}
 	
 	@Test
 	@RunAsClient
-	public void checkUploadFileArtefact(){
+	public void checkUploadFileArtefact() throws URISyntaxException{
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
-		
+
+		/* upload file artefact */
+		Assert.assertTrue(functionalEportfolioUtil.uploadFileArtefact(browser, new File(FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_PATH).toURI()),
+				FILE_ARTEFACT_TITLE, FILE_ARTEFACT_DESCRIPTION,
+				FILE_ARTEFACT_TAGS,
+				FILE_ARTEFACT_BINDERPATH));
 	}
 	
 	@Test
@@ -161,5 +197,10 @@ public class FunctionalArtefactTest {
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
+		/* create learning journal */
+		Assert.assertTrue(functionalEportfolioUtil.createLearningJournal(browser,
+				LEARNING_JOURNAL_TITLE, LEARNING_JOURNAL_DESCRIPTION,
+				LEARNING_JOURNAL_TAGS,
+				LEARNING_JOURNAL_BINDERPATH));
 	}
 }
