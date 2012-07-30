@@ -20,8 +20,9 @@
 package org.olat.core.gui.control.generic.textmarker;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -71,8 +72,20 @@ class GlossaryDefinitionMapper extends LogDelegator implements Mapper {
 			return new NotFoundMediaResource(relPath);
 		}
 
-		// cut away ".html"
-		String glossaryMainTerm = parts[2].substring(0, parts[2].length() - 5).replace("+", " ");
+		String glossaryMainTerm = parts[2];
+		if(parts.length > 2) {//this handle / or \ in a term
+			for(int i=3; i<parts.length; i++) {
+				glossaryMainTerm += "/" + parts[i];
+			}
+		}
+		//cut away ".html" if necessary
+		if(glossaryMainTerm.endsWith(".html")) {
+			glossaryMainTerm = glossaryMainTerm.substring(0, glossaryMainTerm.length() - 5);
+		}
+		glossaryMainTerm = glossaryMainTerm.toLowerCase();
+		
+		Set<String> alternatives = new HashSet<String>();
+		prepareAlternatives(glossaryMainTerm, alternatives);
 
 		// Create a media resource
 		StringMediaResource resource = new StringMediaResource() {
@@ -85,26 +98,38 @@ class GlossaryDefinitionMapper extends LogDelegator implements Mapper {
 		resource.setLastModified(gIM.getGlossaryLastModifiedTime(glossaryFolder));
 		resource.setContentType("text/html");
 
-		ArrayList<GlossaryItem> glossItems = gIM.getGlossaryItemListByVFSItem(glossaryFolder);
-		String description = "<dd><dt>" + glossaryMainTerm + "</dt>";
-		// FIXME: have a way not to loop over all items, but get by Term
-		boolean foundADescription = false;
-		for (Iterator<GlossaryItem> iterator = glossItems.iterator(); iterator.hasNext();) {
-			GlossaryItem glossaryItem = iterator.next();
-			if (glossaryItem.getGlossTerm().toLowerCase().equals(glossaryMainTerm.toLowerCase())) {
-				description += "<dl>" + glossaryItem.getGlossDef() + "</dl>";
-				foundADescription = true;
+		List<GlossaryItem> glossItems = gIM.getGlossaryItemListByVFSItem(glossaryFolder);
+		GlossaryItem foundItem = null;
+		for (GlossaryItem glossaryItem : glossItems) {
+			String item = glossaryItem.getGlossTerm().toLowerCase();
+			if (alternatives.contains(item)) {
+				foundItem = glossaryItem;
 				break;
 			}
 		}
-		description += "</dd>"; 
-		if (!foundADescription) return new NotFoundMediaResource(relPath);
+		if (foundItem == null) {
+			return new NotFoundMediaResource(relPath);
+		}
 		
-		resource.setData(description);
+		StringBuilder sb = new StringBuilder();
+		sb.append("<dd><dt>").append(foundItem.getGlossTerm()).append("</dt><dl>")
+		  .append(foundItem.getGlossDef()).append("</dl></dd>");
+		resource.setData(sb.toString());
 		resource.setEncoding("utf-8");
 
 		if (isLogDebugEnabled()) logDebug("loaded definition for " + glossaryMainTerm, null);
 		return resource;
 	}
-
+	
+	private void prepareAlternatives(String term, Set<String> alternatives) {
+		alternatives.add(term);
+		if(term.indexOf('+') >= 0) {
+			String alt = term.replace('+',' ');
+			prepareAlternatives(alt, alternatives);
+		}
+		if(term.indexOf('/') >= 0) {
+			String alt = term.replace('/', '\\');
+			prepareAlternatives(alt, alternatives);
+		}
+	}
 }
