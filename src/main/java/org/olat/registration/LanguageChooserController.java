@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,6 +54,7 @@ import org.olat.dispatcher.LocaleNegotiator;
 public class LanguageChooserController extends FormBasicController {
 
 	private String curlang;
+	private FormSubmit nextButton;
 	private SingleSelection langs;
 	
 	private boolean fireStandardEvent = true;
@@ -101,6 +103,7 @@ public class LanguageChooserController extends FormBasicController {
 			FormLayoutContainer langLayout = (FormLayoutContainer)flc.getFormComponent("langLayout");
 			langLayout.contextPut("languageCode", loc.toString());
 			langLayout.contextPut("selectLanguage", translate("select.language"));
+			nextButton.setTranslator(getTranslator());
 			
 			if(fireStandardEvent) {
 				fireEvent(ureq, mue);
@@ -143,7 +146,7 @@ public class LanguageChooserController extends FormBasicController {
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("submit.weiter", buttonLayout);
+		nextButton = uifactory.addFormSubmitButton("submit.weiter", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
