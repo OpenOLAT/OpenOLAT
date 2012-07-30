@@ -42,9 +42,12 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
+import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.olat.restapi.RepositoryEntriesTest;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 
 public class FunctionalVOUtil {
@@ -173,6 +176,68 @@ public class FunctionalVOUtil {
 		return(vo);
 	}
 
+	public RepositoryEntryVO importWiki(URL deploymentUrl) throws URISyntaxException, IOException{
+		URL wikiUrl = FunctionalVOUtil.class.getResource("/org/olat/portfolio/wiki.zip");
+		Assert.assertNotNull(wikiUrl);
+		
+		File wiki = new File(wikiUrl.toURI());
+		
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+
+		assertTrue(restConnection.login(getUsername(), getPassword()));
+		
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/entries").build();
+		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(wiki));
+		entity.addPart("filename", new StringBody("wiki.zip"));
+		entity.addPart("resourcename", new StringBody("Wiki"));
+		entity.addPart("displayname", new StringBody("Wiki"));
+		method.setEntity(entity);
+		
+		HttpResponse response = restConnection.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		InputStream body = response.getEntity().getContent();
+		
+		RepositoryEntryVO vo = restConnection.parse(body, RepositoryEntryVO.class);
+		assertNotNull(vo);
+		
+		return(vo);
+	}
+	
+	public RepositoryEntryVO importBlog(URL deploymentUrl) throws URISyntaxException, IOException{
+		URL blogUrl = FunctionalVOUtil.class.getResource("/org/olat/portfolio/blog.zip");
+		Assert.assertNotNull(blogUrl);
+		
+		File blog = new File(blogUrl.toURI());
+		
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+
+		assertTrue(restConnection.login(getUsername(), getPassword()));
+		
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/entries").build();
+		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(blog));
+		entity.addPart("filename", new StringBody("blog.zip"));
+		entity.addPart("resourcename", new StringBody("Blog"));
+		entity.addPart("displayname", new StringBody("Blog"));
+		method.setEntity(entity);
+		
+		HttpResponse response = restConnection.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		InputStream body = response.getEntity().getContent();
+		
+		RepositoryEntryVO vo = restConnection.parse(body, RepositoryEntryVO.class);
+		assertNotNull(vo);
+		
+		return(null);
+	}
+	
 	public String getUsername() {
 		return username;
 	}

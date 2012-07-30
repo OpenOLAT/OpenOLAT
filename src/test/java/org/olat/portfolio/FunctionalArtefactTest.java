@@ -38,6 +38,7 @@ import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
+import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
@@ -51,6 +52,16 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @RunWith(Arquillian.class)
 public class FunctionalArtefactTest {
+	public final static String FORUM_POST_TITLE = "question about multiplexing";
+	public final static String FORUM_POST_MESSAGE = "What multiplexing exists in operating systems?";
+	
+	public final static String WIKI_ARTICLE_PAGENAME = "Multiplexing";
+	public final static String WIKI_ARTICLE_CONTENT = "==Time Multiplexing==\nscheduling a serially-reusable resource among several users\n\n==Space multiplexing==\ndividing a multiple-use resource up among several users";
+	
+	public final static String BLOG_POST_TITLE = "Multiplexing articles";
+	public final static String BLOG_POST_DESCRIPTION = "Where you may find useful information about multiplexing.";
+	public final static String BLOG_POST_CONTENT = "Operating Systems: Design & Implementation (by Andrew S. Tanenbaum)";
+	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();
@@ -63,8 +74,9 @@ public class FunctionalArtefactTest {
 	URL deploymentUrl;
 
 	FunctionalUtil functionalUtil;
+	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	FunctionalCourseUtil functionalCourseUtil;
 	FunctionalVOUtil functionalVOUtil;
-	FunctionalRepositorySiteUtil functionalResourcesSiteUtil;
 	
 	UserVO user;
 	CourseVO course;
@@ -74,7 +86,9 @@ public class FunctionalArtefactTest {
 		functionalUtil = new FunctionalUtil();
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 
-		functionalResourcesSiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 		
 		/* create test user with REST */
@@ -94,28 +108,34 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
 		/* open course and check if it's open */
-		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
 	}
 	
 	@Test
 	@RunAsClient
-	public void checkCollectWikiArticle(){
+	public void checkCollectWikiArticle() throws URISyntaxException, IOException{
+		/* import wiki via rest */
+		RepositoryEntryVO vo = functionalVOUtil.importWiki(deploymentUrl);
+		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
 		/* open course and check if it's open */
-		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
 		
 	}
 	
 	@Test
 	@RunAsClient
-	public void checkCollectBlogPost(){
+	public void checkCollectBlogPost() throws URISyntaxException, IOException{
+		/* import blog via rest */
+		RepositoryEntryVO vo = functionalVOUtil.importBlog(deploymentUrl);
+		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
 		/* open course and check if it's open */
-		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, vo.getKey(), BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
 		
 	}
 	

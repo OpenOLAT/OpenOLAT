@@ -57,7 +57,7 @@ public class FunctionalIQTestTest {
 
 	FunctionalUtil functionalUtil;
 	FunctionalVOUtil functionalVOUtil;
-	FunctionalRepositorySiteUtil functionalResourcesSiteUtil;
+	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	
 	@Before
 	public void setup(){
@@ -65,7 +65,7 @@ public class FunctionalIQTestTest {
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		functionalResourcesSiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
 	}
 	
 	@Test

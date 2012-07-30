@@ -36,6 +36,7 @@ import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
+import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalHomeSiteUtil.HomeSiteAction;
 import org.olat.util.FunctionalRepositorySiteUtil;
@@ -65,7 +66,8 @@ public class FunctionalResumeTest {
 	FunctionalUtil functionalUtil;
 	FunctionalVOUtil functionalVOUtil;
 	FunctionalHomeSiteUtil functionalHomeSiteUtil;
-	FunctionalRepositorySiteUtil functionalResourcesSiteUtil;
+	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	FunctionalCourseUtil functionalCourseUtil;
 	
 	@Before
 	public void setup(){
@@ -74,7 +76,8 @@ public class FunctionalResumeTest {
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
-		functionalResourcesSiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
 	}
 	
 	@Test
@@ -101,8 +104,14 @@ public class FunctionalResumeTest {
 		
 		/* open course and check if it's open */
 		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
-		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
 
+		/*
+		 * There's a need to click something in the course because
+		 * else it won't open up again after resume.
+		 */
+		functionalCourseUtil.openWithoutBusinessPath(browser, course.getRepoEntryKey(), 0);
+		
 		Assert.assertTrue(browser.isElementPresent(courseXPath));
 		
 		/* logout */

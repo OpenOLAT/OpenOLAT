@@ -56,7 +56,7 @@ public class FunctionalPortfolioTest {
 
 	FunctionalUtil functionalUtil;
 	FunctionalVOUtil functionalVOUtil;
-	FunctionalRepositorySiteUtil functionalResourcesSiteUtil;
+	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	
 	@Before
 	public void setup(){
@@ -64,7 +64,7 @@ public class FunctionalPortfolioTest {
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		functionalResourcesSiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
 	}
 
 	@Test

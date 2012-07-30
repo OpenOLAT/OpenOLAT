@@ -45,6 +45,53 @@ public class FunctionalCourseUtil {
 	/**
 	 * @param browser
 	 * @param courseId
+	 * @param nth
+	 * @return true on success otherwise false
+	 * 
+	 * Opens the nth course element within the specified course.
+	 */
+	public boolean open(Selenium browser, long courseId, int nth){
+		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
+			return(false);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//ul[contains(@class, 'b_tree_l1']//li//a[")
+		.append(nth + 1)
+		.append("]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param courseId
+	 * @param nth
+	 * @return true on success otherwise false
+	 * 
+	 * Opens the nth course element within the specified course
+	 * without using business paths.
+	 */
+	public boolean openWithoutBusinessPath(Selenium browser, long courseId, int nth){
+		if(!functionalRepositorySiteUtil.openCourseWithoutBusinessPath(browser, courseId))
+			return(false);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//ul[contains(@class, 'b_tree_l1']//li//a[")
+		.append(nth + 1)
+		.append("]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param courseId
 	 * @param nth forum in the course
 	 * @return true on success, otherwise false
 	 * 
