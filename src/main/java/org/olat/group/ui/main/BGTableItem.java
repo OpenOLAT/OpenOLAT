@@ -89,6 +89,21 @@ public class BGTableItem {
 	public Integer getMaxParticipants() {
 		return businessGroup.getMaxParticipants();
 	}
+	
+	public boolean isWaitingListEnabled() {
+		return businessGroup.isWaitingListEnabled();
+	}
+	
+	public boolean isFull() {
+		Integer maxParticipants = businessGroup.getMaxParticipants();
+		if(maxParticipants == null || maxParticipants.intValue() <= 0) {
+			return false;
+		}
+		if(maxParticipants.intValue() <= getNumOfParticipants()) {
+			return true;
+		}
+		return false;
+	}
 
 	public String getBusinessGroupDescription() {
 		return businessGroupDescription;
@@ -172,18 +187,21 @@ public class BGTableItem {
 		private final String name;
 		private final Integer maxParticipants;
 		private int numOfParticipants;
+		private final boolean waitingListEnabled;
 		
 		public BGShort(BusinessGroup group) {
-			this.key = group.getKey();
-			this.name = group.getName().intern();
-			this.maxParticipants = group.getMaxParticipants();
+			key = group.getKey();
+			name = group.getName().intern();
+			maxParticipants = group.getMaxParticipants();
+			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 		}
 		
 		public BGShort(BusinessGroupView group) {
-			this.key = group.getKey();
-			this.name = group.getName().intern();
-			this.maxParticipants = group.getMaxParticipants();
-			this.numOfParticipants = group.getNumOfParticipants();
+			key = group.getKey();
+			name = group.getName().intern();
+			maxParticipants = group.getMaxParticipants();
+			numOfParticipants = group.getNumOfParticipants();
+			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 		}
 
 		@Override
@@ -212,6 +230,10 @@ public class BGTableItem {
 
 		public int getNumOfParticipants() {
 			return numOfParticipants;
+		}
+		
+		public boolean isWaitingListEnabled() {
+			return waitingListEnabled;
 		}
 
 		@Override

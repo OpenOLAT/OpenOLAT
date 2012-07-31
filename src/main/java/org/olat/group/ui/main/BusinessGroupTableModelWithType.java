@@ -125,6 +125,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				}
 				return "&infin;";
 			}
+			case wrapper:
+				return wrapped;
 			default:
 				return "ERROR";
 		}
@@ -170,7 +172,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
 		key("table.header.key"),
-		freePlaces("table.header.freePlaces");
+		freePlaces("table.header.freePlaces"),
+		wrapper("");
 		
 		private final String i18n;
 		
