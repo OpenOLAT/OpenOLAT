@@ -115,6 +115,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 					return membership == null ? null : membership.getLastModified();
 				}
 				return null;
+			case key:
+				return wrapped.getBusinessGroupKey().toString();
 			default:
 				return "ERROR";
 		}
@@ -158,7 +160,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		lastUsage("table.header.lastUsage"),
 		role("table.header.role"),
 		firstTime("table.header.firstTime"),
-		lastTime("table.header.lastTime");
+		lastTime("table.header.lastTime"),
+		key("table.header.key");
 		
 		private final String i18n;
 		

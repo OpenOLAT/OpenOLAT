@@ -143,7 +143,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 
 		//table
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setPreferencesOffered(true, "group.list");
+		tableConfig.setPreferencesOffered(true, this.getClass().getSimpleName());
 		tableConfig.setTableEmptyMessage(translate("open.nogroup"));			
 		groupListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator(), false);
 		listenTo(groupListCtr);
