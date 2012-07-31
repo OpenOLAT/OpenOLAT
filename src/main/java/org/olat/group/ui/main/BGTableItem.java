@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupView;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.repository.RepositoryEntryShort;
@@ -47,11 +48,22 @@ public class BGTableItem {
 	private final String businessGroupDescription;
 	private final Date businessGroupLastUsage;
 	
-	private final BusinessGroupShort businessGroup;
+	private final BGShort businessGroup;
 	private List<RepositoryEntryShort> relations;
 	private List<PriceMethodBundle> access;
 	
 	public BGTableItem(BusinessGroup businessGroup, boolean marked, BGMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
+		this.businessGroup = new BGShort(businessGroup);
+		this.businessGroupDescription = businessGroup.getDescription();
+		this.businessGroupLastUsage = businessGroup.getLastUsage();
+		this.marked = marked;
+		this.member = member;
+		this.allowLeave = allowLeave;
+		this.allowDelete = allowDelete;
+		this.access = access;
+	}
+	
+	public BGTableItem(BusinessGroupView businessGroup, boolean marked, BGMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
 		this.businessGroup = new BGShort(businessGroup);
 		this.businessGroupDescription = businessGroup.getDescription();
 		this.businessGroupLastUsage = businessGroup.getLastUsage();
@@ -68,6 +80,14 @@ public class BGTableItem {
 	
 	public String getBusinessGroupName() {
 		return businessGroup.getName();
+	}
+	
+	public int getNumOfParticipants() {
+		return businessGroup.getNumOfParticipants();
+	}
+	
+	public Integer getMaxParticipants() {
+		return businessGroup.getMaxParticipants();
 	}
 
 	public String getBusinessGroupDescription() {
@@ -150,10 +170,20 @@ public class BGTableItem {
 	private static class BGShort implements BusinessGroupShort {
 		private final Long key;
 		private final String name;
+		private final Integer maxParticipants;
+		private int numOfParticipants;
 		
 		public BGShort(BusinessGroup group) {
 			this.key = group.getKey();
 			this.name = group.getName().intern();
+			this.maxParticipants = group.getMaxParticipants();
+		}
+		
+		public BGShort(BusinessGroupView group) {
+			this.key = group.getKey();
+			this.name = group.getName().intern();
+			this.maxParticipants = group.getMaxParticipants();
+			this.numOfParticipants = group.getNumOfParticipants();
 		}
 
 		@Override
@@ -174,6 +204,14 @@ public class BGTableItem {
 		@Override
 		public String getName() {
 			return name;
+		}
+
+		public Integer getMaxParticipants() {
+			return maxParticipants;
+		}
+
+		public int getNumOfParticipants() {
+			return numOfParticipants;
 		}
 
 		@Override
@@ -197,7 +235,6 @@ public class BGTableItem {
 	private static class REShort implements RepositoryEntryShort {
 		private final Long key;
 		private final String displayname;
-
 		public REShort(BGRepositoryEntryRelation rel) {
 			this.key = rel.getRepositoryEntryKey();
 			this.displayname = rel.getRepositoryEntryDisplayName();

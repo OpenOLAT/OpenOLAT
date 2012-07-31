@@ -502,12 +502,12 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check with empty list of groups
-		List<BGRepositoryEntryRelation> emptyRelations = businessGroupRelationDao.findRelationToRepositoryEntries(Collections.<BusinessGroup>emptyList(), 0, -1); 
+		List<BGRepositoryEntryRelation> emptyRelations = businessGroupRelationDao.findRelationToRepositoryEntries(Collections.<Long>emptyList(), 0, -1); 
 		Assert.assertNotNull(emptyRelations);
 		Assert.assertEquals(0, emptyRelations.size());
 		
 		//check with the group
-		List<BGRepositoryEntryRelation> relations = businessGroupRelationDao.findRelationToRepositoryEntries(Collections.singletonList(group), 0, -1); 
+		List<BGRepositoryEntryRelation> relations = businessGroupRelationDao.findRelationToRepositoryEntries(Collections.singletonList(group.getKey()), 0, -1); 
 		Assert.assertNotNull(relations);
 		Assert.assertEquals(3, relations.size());
 		

@@ -98,7 +98,7 @@ public class EnrollmentManager extends BasicManager {
 					Codepoint.codepoint(EnrollmentManager.class, "doInSync1");
 					// 6_1_0-RC15: reload group object here another node might have changed this in the meantime
 					BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(group);					
-					if (reloadedGroup.getMaxParticipants() != null && !reloadedGroup.getMaxParticipants().equals("")) {
+					if (reloadedGroup.getMaxParticipants() != null) {
 						int participantsCounter = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
 						
 						logInfo("doEnroll - participantsCounter: " + participantsCounter + ", maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getName());

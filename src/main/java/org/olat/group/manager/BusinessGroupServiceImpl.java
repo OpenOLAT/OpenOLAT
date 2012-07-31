@@ -69,6 +69,7 @@ import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupView;
 import org.olat.group.DeletableGroupData;
 import org.olat.group.DeletableReference;
 import org.olat.group.GroupLoggingAction;
@@ -559,6 +560,24 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			params = new SearchBusinessGroupParams();
 		}
 		return businessGroupDAO.findBusinessGroups(params, resource, firstResult, maxResults);
+	}
+
+
+	@Override
+	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource) {
+		if(params == null) {
+			params = new SearchBusinessGroupParams();
+		}
+		return businessGroupDAO.countBusinessGroupViews(params, resource);
+	}
+
+	@Override
+	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource, int firstResult,
+			int maxResults, BusinessGroupOrder... ordering) {
+		if(params == null) {
+			params = new SearchBusinessGroupParams();
+		}
+		return businessGroupDAO.findBusinessGroupViews(params, resource, firstResult, maxResults);
 	}
 
 	@Override
@@ -1212,8 +1231,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	
 	@Override
 	@Transactional(readOnly=true)
-	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
-		return businessGroupRelationDAO.findRelationToRepositoryEntries(groups, firstResult, maxResults);
+	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<Long> groupKeys, int firstResult, int maxResults) {
+		return businessGroupRelationDAO.findRelationToRepositoryEntries(groupKeys, firstResult, maxResults);
 	}
 
 	@Override
@@ -1232,7 +1251,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, List<BusinessGroup> businessGroups) {
+	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, Collection<Long> businessGroups) {
 		return businessGroupDAO.getMembershipInfoInBusinessGroups(identity, businessGroups);
 	}
 

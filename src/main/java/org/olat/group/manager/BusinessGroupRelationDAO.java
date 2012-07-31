@@ -235,8 +235,8 @@ public class BusinessGroupRelationDAO {
 		return query.getResultList();
 	}
 	
-	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
-		if(groups == null || groups.isEmpty()) {
+	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<Long> groupKeys, int firstResult, int maxResults) {
+		if(groupKeys == null || groupKeys.isEmpty()) {
 			return Collections.emptyList();
 		}
 
@@ -250,10 +250,6 @@ public class BusinessGroupRelationDAO {
 			query.setMaxResults(maxResults);
 		}
 		
-		List<Long> groupKeys = new ArrayList<Long>();
-		for(BusinessGroup group:groups) {
-			groupKeys.add(group.getKey());
-		}
 		query.setParameter("groupKeys", groupKeys);
 		return query.getResultList();
 	}

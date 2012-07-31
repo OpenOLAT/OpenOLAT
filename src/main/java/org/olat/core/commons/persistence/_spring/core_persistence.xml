@@ -23,6 +23,7 @@
 		<mapping-file>org/olat/group/context/BGContext2Resource.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/BusinessGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/model/BGResourceRelation.hbm.xml</mapping-file>
+		<mapping-file>org/olat/group/model/BusinessGroupViewImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/model/BusinessGroupMembershipImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/lock/pessimistic/PLockImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/references/ReferenceImpl.hbm.xml</mapping-file>

@@ -117,6 +117,14 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				return null;
 			case key:
 				return wrapped.getBusinessGroupKey().toString();
+			case freePlaces: {
+				Integer maxParticipants = wrapped.getMaxParticipants();
+				if(maxParticipants != null && maxParticipants.intValue() > 0) {
+					int free = maxParticipants - wrapped.getNumOfParticipants();
+					return Integer.toString(free);
+				}
+				return "&infin;";
+			}
 			default:
 				return "ERROR";
 		}
@@ -161,7 +169,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		role("table.header.role"),
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
-		key("table.header.key");
+		key("table.header.key"),
+		freePlaces("table.header.freePlaces");
 		
 		private final String i18n;
 		

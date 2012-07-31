@@ -92,6 +92,8 @@
     			  	
 	</class>
 	
+	
+	
 	<class name="org.olat.group.model.BusinessGroupShortImpl" table="o_gp_business" mutable="false">
 		<cache usage="read-write" />
 		<id name="key" type="long" column="group_id" unsaved-value="null">

@@ -89,6 +89,9 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	 */
 	public void setDescription(String description);
 	
+	/**
+	 * @return The associated resource
+	 */
 	public OLATResource getResource();
 
 	/**

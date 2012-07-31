@@ -238,6 +238,12 @@ public interface BusinessGroupService {
 	
 	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
 	
+	
+	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource);
+	
+	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
+	
+	
 	public List<Long> toGroupKeys(String groupNames, OLATResource resource);
 
 	//retrieve repository entries
@@ -252,7 +258,7 @@ public interface BusinessGroupService {
 	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
 	
-	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
+	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<Long> groups, int firstResult, int maxResults);
 	
 	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults);
 	
@@ -425,7 +431,7 @@ public interface BusinessGroupService {
 	 * @param businessGroups
 	 * @return The list of group keys where the identity is either participant or owner
 	 */
-	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, List<BusinessGroup> businessGroups);
+	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, Collection<Long> businessGroups);
 
 	/**
 	 * Checks if an identity is in a business group with a specific name (exact match), either as owner or

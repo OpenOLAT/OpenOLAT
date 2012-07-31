@@ -68,6 +68,7 @@ import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupView;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -658,12 +659,12 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		showInfo("info.group.deleted");
 	}
 	
-	protected List<BusinessGroup> updateTableModel(SearchBusinessGroupParams params, boolean alreadyMarked) {
-		List<BusinessGroup> groups;
+	protected List<BusinessGroupView> updateTableModel(SearchBusinessGroupParams params, boolean alreadyMarked) {
+		List<BusinessGroupView> groups;
 		if(params == null) {
-			groups = new ArrayList<BusinessGroup>();
+			groups = new ArrayList<BusinessGroupView>();
 		} else {
-			groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+			groups = businessGroupService.findBusinessGroupViews(params, null, 0, -1);
 		}
 		lastSearchParams = params;
 		if(groups.isEmpty()) {
@@ -672,9 +673,18 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			return groups;
 		}
 
-		//retrieve all user's membership if there are more than 50 groups
-		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(getIdentity(), groups.size() > 50 ? null : groups);
+		List<Long> groupKeysWithMembers;
+		if(groups.size() > 50) {
+			groupKeysWithMembers = null;
+		} else {
+			groupKeysWithMembers = new ArrayList<Long>(groups.size());
+			for(BusinessGroupView view:groups) {
+				groupKeysWithMembers.add(view.getKey());
+			}
+		}
 
+		//retrieve all user's membership if there are more than 50 groups
+		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(getIdentity(), groupKeysWithMembers);
 		Map<Long, BusinessGroupMembership> memberships = new HashMap<Long, BusinessGroupMembership>();
 		for(BusinessGroupMembership membership: groupsAsOwner) {
 			if(membership.getOwnerGroupKey() != null) {
@@ -688,20 +698,31 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			}
 		}
 		
-		List<BGRepositoryEntryRelation> resources = businessGroupService.findRelationToRepositoryEntries(groups, 0, -1);
+		//find resources / courses
+		List<Long> groupKeysWithRelations = new ArrayList<Long>();
+		for(BusinessGroupView view:groups) {
+			if(view.getNumOfRelations() > 0) {
+				groupKeysWithRelations.add(view.getKey());
+			}
+		}
+		List<BGRepositoryEntryRelation> resources = businessGroupService.findRelationToRepositoryEntries(groupKeysWithRelations, 0, -1);
+		
+		//find offers
+		List<Long> groupWithOfferKeys = new ArrayList<Long>(groups.size());
+		for(BusinessGroupView view:groups) {
+			if(view.getNumOfOffers() > 0) {
+				groupWithOfferKeys.add(view.getResource().getKey());
+			}
+		}
 		List<OLATResourceAccess> resourcesWithAC;
-		if(groups.size() > 50) {
+		if(groupWithOfferKeys.size() > 50) {
 			resourcesWithAC	= acFrontendManager.getAccessMethodForResources(null, "BusinessGroup", true, new Date());
 		} else {
-			List<Long> resourceKeys = new ArrayList<Long>(groups.size());
-			for(BusinessGroup group:groups) {
-				resourceKeys.add(group.getResource().getKey());
-			}
-			resourcesWithAC	= acFrontendManager.getAccessMethodForResources(resourceKeys, "BusinessGroup", true, new Date());
+			resourcesWithAC	= acFrontendManager.getAccessMethodForResources(groupWithOfferKeys, "BusinessGroup", true, new Date());
 		}
 		
 		Set<Long> markedResources = new HashSet<Long>(groups.size() * 2 + 1);
-		for(BusinessGroup group:groups) {
+		for(BusinessGroupView group:groups) {
 			markedResources.add(group.getResource().getResourceableId());
 		}
 		if(!alreadyMarked) {
@@ -709,7 +730,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		}
 		
 		List<BGTableItem> items = new ArrayList<BGTableItem>();
-		for(BusinessGroup group:groups) {
+		for(BusinessGroupView group:groups) {
 			Long oresKey = group.getResource().getKey();
 			List<PriceMethodBundle> accessMethods = null;
 			for(OLATResourceAccess access:resourcesWithAC) {

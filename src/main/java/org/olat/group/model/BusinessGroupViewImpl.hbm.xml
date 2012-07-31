@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+	<class name="org.olat.group.model.BusinessGroupViewImpl" table="o_gp_business_v" mutable="false">
+		<cache usage="read-write" />
+
+		<id name="key" type="long" column="group_id" unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+		<property  name="lastModified" column="lastmodified" type="timestamp" />
+		<property  name="creationDate" column="creationdate" type="timestamp" />
+		<!-- standards business group fields -->
+  		<property name="lastUsage" column="lastusage" type="timestamp" />
+		<property name="name" type="string" column="groupname" unique="false" length="255" index="gp_name_idx"/>	
+		<property name="description" type="string" column="descr" length="16777210" not-null="false"/>
+		<property name="minParticipants" column="minparticipants" not-null="false"/>
+		<property name="maxParticipants" column="maxparticipants" not-null="false"/>
+		<property name="waitingListEnabled" type="boolean" column="waitinglist_enabled" unique="false" not-null="false"/>	
+		<property name="autoCloseRanksEnabled" type="boolean" column="autocloseranks_enabled" unique="false" not-null="false"/>	
+		<!--  statistics informations -->
+  		<property name="numOfParticipants" column="num_of_participants" type="integer" />
+  		<property name="numOfRelations" column="num_of_relations" type="integer" />
+  		<property name="numOfOffers" column="num_of_offers" type="integer" />
+  		<property name="numOfValidOffers" column="num_of_valid_offers" type="integer" />
+
+		<many-to-one name="resource" class="org.olat.resource.OLATResourceImpl"
+    		outer-join="true" cascade="none" lazy="false">  
+			<column name="fk_resource" not-null="false" unique="true" />    	
+    	</many-to-one> 
+
+		<many-to-one name="ownerGroup" class="org.olat.basesecurity.SecurityGroupImpl"
+    		outer-join="true" cascade="none">  
+			<column name="fk_ownergroup" not-null="false" unique="true" />    	
+    	</many-to-one> 
+    	
+		<many-to-one name="partipiciantGroup" class="org.olat.basesecurity.SecurityGroupImpl"
+    		outer-join="true" cascade="none">  
+			<column name="fk_partipiciantgroup" not-null="false" unique="true" />    	
+    	</many-to-one> 
+
+		<many-to-one name="waitingGroup" class="org.olat.basesecurity.SecurityGroupImpl"
+    		outer-join="true" cascade="none">  
+			<column name="fk_waitinggroup" not-null="false" unique="true" />    	
+    	</many-to-one> 		  	
+	</class>
+
+</hibernate-mapping>

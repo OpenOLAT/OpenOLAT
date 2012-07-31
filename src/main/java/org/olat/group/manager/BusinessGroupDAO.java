@@ -47,6 +47,7 @@ import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupView;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.BusinessGroupMembershipImpl;
@@ -236,21 +237,17 @@ public class BusinessGroupDAO {
 		return res.intValue();
 	}
 	
-	public List<BusinessGroupMembership> getMembershipInfoInBusinessGroups(Identity identity, List<BusinessGroup> groups) {
+	public List<BusinessGroupMembership> getMembershipInfoInBusinessGroups(Identity identity, Collection<Long> groupKeys) {
 		StringBuilder sb = new StringBuilder(); 
 		sb.append("select membership from ").append(BusinessGroupMembershipImpl.class.getName()).append(" as membership ")
 		  .append(" where membership.identityKey=:identId ");
-		if(groups != null && !groups.isEmpty()) {
+		if(groupKeys != null && !groupKeys.isEmpty()) {
 		  sb.append(" and (membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
 		}
 		
 		TypedQuery<BusinessGroupMembership> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembership.class)
 				.setParameter("identId", identity.getKey());
-		if(groups != null && !groups.isEmpty()) {
-			List<Long> groupKeys = new ArrayList<Long>();
-			for(BusinessGroup group:groups) {
-				groupKeys.add(group.getKey());
-			}
+		if(groupKeys != null && !groupKeys.isEmpty()) {
 			query.setParameter("groupKeys", groupKeys);
 		}
 		
@@ -617,6 +614,250 @@ public class BusinessGroupDAO {
 		}
 		return dbq;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource) {
+		TypedQuery<Number> query = createFindViewDBQuery(params, resource, Number.class)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE);
+
+		Number count = query.getSingleResult();
+		return count.intValue();
+	}
+	
+	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource,
+			int firstResult, int maxResults, BusinessGroupOrder... ordering) {
+		TypedQuery<BusinessGroupView> query = createFindViewDBQuery(params, resource, BusinessGroupView.class, ordering);
+		query.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		List<BusinessGroupView> groups = query.getResultList();
+		return groups;
+	}
+	
+	private <T> TypedQuery<T> createFindViewDBQuery(SearchBusinessGroupParams params, OLATResource resource, Class<T> resultClass, BusinessGroupOrder... ordering) {
+		StringBuilder query = new StringBuilder();
+		if(BusinessGroupView.class.equals(resultClass)) {
+			query.append("select distinct(bgi) from ");
+		} else {
+			query.append("select count(bgi.key) from ");
+		}
+		query.append(BusinessGroupView.class.getName()).append(" as bgi ");
+
+		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
+			//implicit joins
+			query.append(", ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ")
+				   .append(", ").append(IdentityImpl.class.getName()).append(" identity")
+				   .append(", ").append(UserImpl.class.getName()).append(" user ");
+		}
+		//inner joins
+		if(BusinessGroupView.class.equals(resultClass)) {
+			query.append("inner join fetch bgi.ownerGroup ownerGroup ")
+			     .append("inner join fetch bgi.partipiciantGroup participantGroup ")
+			     .append("inner join fetch bgi.waitingGroup waitingGroup ")
+			     .append("inner join fetch bgi.resource bgResource ");
+		} else {
+			query.append("inner join bgi.ownerGroup ownerGroup ")
+			     .append("inner join bgi.partipiciantGroup participantGroup ")
+			     .append("inner join bgi.waitingGroup waitingGroup ")
+	         .append("inner join bgi.resource bgResource ");
+		}
+
+		boolean where = false;
+		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
+			where = true;
+			query.append(" where ownerGroup = sgmi.securityGroup")
+				   .append(" and sgmi.identity = identity ")
+				   .append(" and identity.user = user and ")
+			//query the name in login, firstName and lastName
+				   .append("(");
+			searchLikeUserProperty(query, "firstName", "owner");
+			query.append(" or ");
+			searchLikeUserProperty(query, "lastName", "owner");
+			query.append(" or ");
+			searchLikeAttribute(query, "identity", "name", "owner");
+			query.append(")");
+		}
+		
+		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
+			where = where(query, where);
+			query.append("bgi.key in (:groupKeys)");
+		}
+		
+		if(resource != null) {
+			where = where(query, where);
+			query.append("bgi.key in (")
+			     .append("  select relation.group.key from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
+			     .append(")");
+		}
+		
+		if(params.getResources() != null) {
+			where = where(query, where);
+			query.append(" bgi.numOfRelations").append(params.getResources().booleanValue() ? ">0" : "<=0");
+		}
+		
+		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
+			where = where(query, where);
+			query.append(" bgi.key in (")
+           .append("   select bgRel.groupKey from ").append(BGRepositoryEntryRelation.class.getName()).append(" bgRel ")
+           .append("     where ");
+			searchLikeAttribute(query, "bgRel", "repositoryEntryDisplayName", "displayName");
+			query.append(" )");
+		}
+		
+		if(params.isOwner() || params.isAttendee() || params.isWaiting()) {
+			where = where(query, where);
+			boolean subOr = false;
+			query.append('(');
+			if(params.isOwner()) {
+				subOr = or(query, subOr);
+				query.append("ownerGroup.key in (select ownerMemberShip.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
+				     .append(" where ownerMemberShip.identity.key=:identId ")
+				     .append(")");
+			}
+			if(params.isAttendee()) {
+				subOr = or(query, subOr);
+				query.append(" participantGroup.key in (select partMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partMembership ")
+				     .append("  where partMembership.identity.key=:identId")
+				     .append(" )");
+			}
+			if(params.isWaiting()) {
+				subOr = or(query, subOr);
+				query.append(" waitingGroup.key in (select waitMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as waitMembership ")
+				     .append("  where waitMembership.identity.key=:identId")
+				     .append(" )");
+			}
+			query.append(')');
+		}
+		
+		if(params.getPublicGroups() != null) {
+			where = where(query, where);
+			if(params.getPublicGroups().booleanValue()) {
+		    query.append(" bgi.numOfValidOffers>0");
+			} else {
+		    query.append(" bgi.numOfOffers<=0");
+			}
+		}
+		
+		if(params.getMarked() != null) {
+			where = where(query, where);
+			query.append(" bgi.key ").append(params.getMarked().booleanValue() ? "" : "not").append(" in (")
+           .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark ")
+           .append("     where mark.resName='BusinessGroup' and mark.creator.key=:identId")
+			     .append(" )");
+		}
+		
+		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
+			where = where(query, where);
+			query.append("(");
+			searchLikeAttribute(query, "bgi", "name", "search");
+			query.append(" or ");
+			searchLikeAttribute(query, "bgi", "description", "search");
+			query.append(")");
+		} else {
+			if(StringHelper.containsNonWhitespace(params.getExactName())) {
+				where = where(query, where);
+				query.append("bgi.name=:exactName");
+			}
+			if(StringHelper.containsNonWhitespace(params.getName())) {
+				where = where(query, where);
+				searchLikeAttribute(query, "bgi", "name", "name");
+			}
+			if(StringHelper.containsNonWhitespace(params.getDescription())) {
+				where = where(query, where);
+				searchLikeAttribute(query, "bgi", "description", "description");
+			}
+		}
+		
+		if(params.getTools() != null && !params.getTools().isEmpty()) {
+			where = where(query, where);
+			query.append("bgi.key in (select prop.resourceTypeId from ").append(Property.class.getName()).append(" prop")
+				.append(" where prop.category='").append(CollaborationTools.PROP_CAT_BG_COLLABTOOLS).append("'")
+				.append(" and prop.name in (:tools) and prop.stringValue='true' and prop.resourceTypeName='BusinessGroup')");
+		}
+		//order by (not for count)
+		if(BusinessGroupView.class.equals(resultClass)) {
+			query.append(" order by ");
+			if(ordering != null && ordering.length > 0) {
+				for(BusinessGroupOrder o:ordering) {
+					switch(o) {
+						case nameAsc: query.append("bgi.name,");break;
+						case nameDesc: query.append("bgi.name desc,");break;
+						case creationDateAsc: query.append("bgi.creationDate,");break;
+						case creationDateDesc: query.append("bgi.creationDate desc,");break;
+					}
+				}
+			} else {
+				query.append("bgi.name,");
+			}
+			query.append("bgi.key");
+		}
+
+		TypedQuery<T> dbq = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);
+		//add parameters
+		if(params.isOwner() || params.isAttendee() || params.isWaiting() || params.getMarked() != null) {
+			dbq.setParameter("identId", params.getIdentity().getKey());
+		}
+		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
+			dbq.setParameter("groupKeys", params.getGroupKeys());
+		}
+		if (resource != null) {
+			dbq.setParameter("resourceKey", resource.getKey());
+		}
+		if(params.getTools() != null && !params.getTools().isEmpty()) {
+			dbq.setParameter("tools", params.getTools());
+		}
+		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
+			dbq.setParameter("owner", makeFuzzyQueryString(params.getOwnerName()));
+		}
+		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
+			dbq.setParameter("search", makeFuzzyQueryString(params.getNameOrDesc()));
+		} else {
+			if(StringHelper.containsNonWhitespace(params.getExactName())) {
+				dbq.setParameter("exactName", params.getExactName());
+			}
+			if(StringHelper.containsNonWhitespace(params.getName())) {
+				dbq.setParameter("name", makeFuzzyQueryString(params.getName()));
+			}
+			if(StringHelper.containsNonWhitespace(params.getDescription())) {
+				dbq.setParameter("description", makeFuzzyQueryString(params.getDescription()));
+			}
+		}
+		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
+			dbq.setParameter("displayName", makeFuzzyQueryString(params.getCourseTitle()));
+		}
+		return dbq;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	public int countContacts(Identity identity) {
 		List<Long> result = createContactsQuery(identity, Long.class).getResultList();
