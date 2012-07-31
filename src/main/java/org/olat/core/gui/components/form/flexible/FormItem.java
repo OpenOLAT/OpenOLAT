@@ -254,6 +254,8 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 *            i18n key parameters
 	 */
 	public void setLabel(String labelkey, String[] params);
+	
+	public void setLabel(String labelkey, String[] params, boolean translate);
 
 	/**
 	 * see setErrorComponent for comments

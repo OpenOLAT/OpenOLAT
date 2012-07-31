@@ -64,6 +64,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	private Panel examplePanel;
 	private String[] labelParams;
 	private String labelKey;
+	private boolean translateLabel;
 	private Component labelC;
 	private Panel labelPanel;
 	protected Translator translator;
@@ -176,7 +177,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	protected abstract void rootFormAvailable();
 	
 	protected boolean translateLabel() {
-		return true;
+		return translateLabel;
 	}
 
 	public void setTranslator(Translator translator) {
@@ -211,19 +212,24 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	}
 
 	public String getLabelText() {
-		return translate(labelKey, labelParams);
+		return translateLabel() ? translate(labelKey, labelParams) : labelKey;
 	}
 
 	public void setLabel(String label, String[] params) {
+		setLabel(label, params,  true); 
+	}
+	
+	public void setLabel(String label, String[] params, boolean translate) {
 		if (label == null) {
 			hasLabel = false;
 		}
 		hasLabel = true;
+		translateLabel = translate;
 		labelKey = label;
 		labelParams = params;
 		// set label may be called before the translator is available
 		if (getTranslator() != null) {
-			labelC = new SimpleLabelText(label, translate(label, params));
+			labelC = new SimpleLabelText(label, getLabelText());
 			labelPanel.setContent(labelC);
 		}
 	}

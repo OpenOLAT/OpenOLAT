@@ -56,6 +56,8 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 */
 	public void setKeysAndValues(String[] keys, String values[], String[] cssClasses);
 	
+	public Set<String> getKeys();
+	
 	/**
 	 * @param howmany
 	 * @return
