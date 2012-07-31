@@ -84,9 +84,7 @@ public class BGControllerFactory {
 	 * @param initialViewIdentifier
 	 * @return a run controller for this business group
 	 */
-	public BusinessGroupMainRunController createRunControllerFor(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup,
-			 String initialViewIdentifier) {
-
+	public BusinessGroupMainRunController createRunControllerFor(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		// build up the context path
 		WindowControl bwControl;
 		OLATResourceable businessOres = businessGroup;
@@ -97,7 +95,7 @@ public class BGControllerFactory {
 		} else {
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 		}
-		return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, initialViewIdentifier);
+		return new BusinessGroupMainRunController(ureq, bwControl, businessGroup);
 	}
 
 	/**

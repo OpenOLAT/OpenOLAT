@@ -369,7 +369,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				fireEvent(ureq, Event.CHANGED_EVENT );		
 			} 
 		//fxdiff VCRP-1,2: access control of resources
-		} else if (source == this.modifyBusinessGroupController || source == tabAccessCtrl) {
+		} else if (source == modifyBusinessGroupController || source == tabAccessCtrl) {
 			if (event == Event.DONE_EVENT) {
 				// update business group with the specified values
 				// values are taken from the modifyBusinessGroupForm
@@ -405,6 +405,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				vc_tab_bgDetails.put("businessGroupForm", this.modifyBusinessGroupController.getInitialComponent());
 
 			}
+		} else if (source == resourceController) {
+			fireEvent(ureq, event);
 		}
 	}
 

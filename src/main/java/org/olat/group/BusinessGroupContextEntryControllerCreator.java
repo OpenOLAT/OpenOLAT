@@ -62,7 +62,7 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
 					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
 				// only olatadmins or admins of this group can administer this group
-				ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup, null);
+				ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup);
 			}
 		}
 		return ctrl;

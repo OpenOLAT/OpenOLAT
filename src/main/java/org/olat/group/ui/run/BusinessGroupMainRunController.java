@@ -60,7 +60,6 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -196,17 +195,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private String adminNodeId; // reference to admin menu item
 
 	// not null indicates tool is enabled
-	private GenericTreeNode nodeFolder;
-	private GenericTreeNode nodeForum;
-	private GenericTreeNode nodeWiki;
-	private GenericTreeNode nodeCal;
-	private GenericTreeNode nodePortfolio;
+	private GenericTreeNode nodeFolder, nodeForum, nodeWiki, nodeCal, nodePortfolio;
 	//fxdiff BAKS-7 Resume function
-	private GenericTreeNode nodeContact;
-	private GenericTreeNode nodeGroupOwners;
-	private GenericTreeNode nodeResources;
-	private GenericTreeNode nodeInformation;
-	private GenericTreeNode nodeAdmin;
+	private GenericTreeNode nodeContact, nodeGroupOwners, nodeResources, nodeInformation, nodeAdmin;
 	private boolean groupRunDisabled;
 	private OLATResourceable assessmentEventOres;
 	//fxdiff VCRP-1,2: access control of resources
@@ -223,8 +214,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 * @param flags
 	 * @param initialViewIdentifier supported are null, "toolforum", "toolfolder"
 	 */
-	public BusinessGroupMainRunController(UserRequest ureq, WindowControl control, BusinessGroup bGroup,
-			String initialViewIdentifier) {
+	public BusinessGroupMainRunController(UserRequest ureq, WindowControl control, BusinessGroup bGroup) {
 		super(ureq, control);
 
 		/*
@@ -315,118 +305,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			bgTree.setTreeModel(new GenericTreeModel());
 			needActivation = true;
 			return;
-		}
-
-		//REVIEW:PB:2009-05-31: consolidate ContextEntry <-> initialViewIdentifier Concept -> go for ContextEntry at the end.
-		// first step -> if initialViewIdentifier != null -> map initialViewIdentifier to ore with OresHelper
-		// how to remove initialViewIdentifier and replace by ContextEntry Path?
-		
-		
-		// jump to either the forum or the folder if the business-launch-path says so.
-		BusinessControl bc = getWindowControl().getBusinessControl();
-		ContextEntry ce = bc.popLauncherContextEntry();
-		if (ce != null) { // a context path is left for me
-			OLATResourceable ores = ce.getOLATResourceable();
-			if (OresHelper.equals(ores, ORES_TOOLFORUM)) {
-				// start the forum
-				if (nodeForum != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_FORUM);
-					bgTree.setSelectedNode(nodeForum);
-				} else { // not enabled
-					String text = translate("warn.forumnotavailable");
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			} else if (OresHelper.equals(ores, ORES_TOOLFOLDER)) {
-				if (nodeFolder != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_FOLDER);
-					bgTree.setSelectedNode(nodeFolder);
-				} else { // not enabled
-					String text = translate("warn.foldernotavailable");				
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			} else if (OresHelper.equals(ores, ORES_TOOLWIKI)) {
-				if (nodeWiki != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_WIKI);
-					bgTree.setSelectedNode(nodeWiki);
-				} else { // not enabled
-					String text = translate("warn.wikinotavailable");
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			} else if (OresHelper.equals(ores, ORES_TOOLCAL)) {
-				if (nodeCal != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_CALENDAR);
-					bgTree.setSelectedNode(nodeCal);
-				} else { // not enabled
-					String text = translate("warn.calnotavailable");
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			} else if (OresHelper.equals(ores, ORES_TOOLPORTFOLIO)) {
-				if (nodePortfolio != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_PORTFOLIO);
-					bgTree.setSelectedNode(nodePortfolio);
-				} else { // not enabled
-					String text = translate("warn.portfolionotavailable");
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			}
-		}
-		
-		// jump to node if initialViewIdent says so.
-		if (initialViewIdentifier != null) {
-			if (initialViewIdentifier.equals(INITVIEW_TOOLFORUM)) {
-				if (nodeForum != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_FORUM);
-					bgTree.setSelectedNode(nodeForum);
-				} else { // not enabled
-					String text = translate("warn.forumnotavailable");
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			} else if (initialViewIdentifier.equals(INITVIEW_TOOLFOLDER)) {
-				if (nodeFolder != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_FOLDER);
-					bgTree.setSelectedNode(nodeFolder);
-				} else { // not enabled
-					String text = translate("warn.foldernotavailable");
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			} 
-			else if (initialViewIdentifier.equals(INITVIEW_TOOLWIKI)) {
-				if (nodeWiki != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_WIKI);
-					bgTree.setSelectedNode(nodeWiki);
-				} else { // not enabled
-					String text = translate("warn.wikinotavailable");
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			}
-			else if (initialViewIdentifier.equals(INITVIEW_TOOLCAL)) {
-				if (nodeCal != null) {
-					handleTreeActions(ureq, ACTIVITY_MENUSELECT_CALENDAR);
-					bgTree.setSelectedNode(nodeCal);
-				} else { // not enabled
-					String text = translate("warn.calnotavailable");
-					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
-					listenTo(mc); // cleanup on dispose
-					mainPanel.setContent(mc.getInitialComponent());
-				}
-			}
-			else throw new AssertException("unknown initialViewIdentifier:'" + initialViewIdentifier + "'");
 		}
 	}
 
@@ -844,22 +722,18 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CLOSED, getClass());
 		
 		if (chatCtr != null) {
-			
 			InstantMessagingGroupChatController chat = (InstantMessagingGroupChatController) chatCtr;
-		
 			if (chat.isChatWindowOpen()) {
 				chat.close();
 				getWindowControl().getWindowBackOffice().sendCommandTo(chat.getCloseCommand());
 			}
-		
 			removeAsListenerAndDispose(chatCtr);
 		}
 		
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, this.businessGroup);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, businessGroup);
 		
 		userSession.getSingleUserEventCenter().deregisterFor(this, assessmentEventOres);
 	}
@@ -1074,15 +948,18 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			root.addChild(gtnChild);
 			nodeCal = gtnChild;
 		}
-
-		gtnChild = new GenericTreeNode();
-		gtnChild.setTitle(translate("menutree.resources"));
-		gtnChild.setUserObject(ACTIVITY_MENUSELECT_SHOW_RESOURCES);
-		gtnChild.setAltText(translate("menutree.resources.alt"));
-		gtnChild.setIconCssClass("o_course_icon");
-		root.addChild(gtnChild);
-		//fxdiff BAKS-7 Resume function
-		nodeResources = gtnChild;
+		
+		boolean hasResources = businessGroupService.hasResources(businessGroup);
+		if(hasResources) {
+			gtnChild = new GenericTreeNode();
+			gtnChild.setTitle(translate("menutree.resources"));
+			gtnChild.setUserObject(ACTIVITY_MENUSELECT_SHOW_RESOURCES);
+			gtnChild.setAltText(translate("menutree.resources.alt"));
+			gtnChild.setIconCssClass("o_course_icon");
+			root.addChild(gtnChild);
+			//fxdiff BAKS-7 Resume function
+			nodeResources = gtnChild;
+		}
 
 		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
 		if (displayMembers.isShowOwners() || displayMembers.isShowParticipants()) {

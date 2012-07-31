@@ -96,7 +96,7 @@ public class ControllerFactory {
 			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
 					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
 				// only olatadmins or admins of this group can administer this group
-				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg, initialViewIdentifier);
+				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg);
 			}
 			// else skip
 
