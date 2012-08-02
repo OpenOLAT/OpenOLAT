@@ -127,23 +127,18 @@ create or replace view o_gp_business_v  as (
       gp.maxparticipants as maxparticipants,
       gp.waitinglist_enabled as waitinglist_enabled,
       gp.autocloseranks_enabled as autocloseranks_enabled,
-      -- count participants
       (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
-      -- count owners
       (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
-      -- count valid offers
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = gp.fk_resource
          and offer.is_valid=1
          and (offer.validfrom is null or offer.validfrom >= curtime())
          and (offer.validto is null or offer.validto <= curtime())
       ) as num_of_valid_offers,
-      -- count offers
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = gp.fk_resource
          and offer.is_valid=1
       ) as num_of_offers,
-      -- count relations
       (select count(relation.fk_resource) from o_gp_business_to_resource as relation 
          where relation.fk_group = gp.group_id
       ) as num_of_relations,

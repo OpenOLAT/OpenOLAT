@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
@@ -1204,29 +1205,35 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id, group3.getWaitingGroup());
 		dbInstance.commitAndCloseSession();
 		
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
-		groups.add(group1);
-		groups.add(group2);
-		groups.add(group3);
+		List<Long> groupKeys = new ArrayList<Long>();
+		groupKeys.add(group1.getKey());
+		groupKeys.add(group2.getKey());
+		groupKeys.add(group3.getKey());
 
 		//check owner + attendee
-		List<Long> groupKeysA = businessGroupDao.isIdentityInBusinessGroups(id, true, true, false, groups);
-		Assert.assertNotNull(groupKeysA);
-		Assert.assertEquals(2, groupKeysA.size());
-		Assert.assertTrue(groupKeysA.contains(group1.getKey()));
-		Assert.assertTrue(groupKeysA.contains(group2.getKey()));
+		int countMembershipA = businessGroupDao.countMembershipInfoInBusinessGroups(id, groupKeys);
+		Assert.assertEquals(3, countMembershipA);
+		List<BusinessGroupMembership> memberships = businessGroupDao.getMembershipInfoInBusinessGroups(id, groupKeys);
+		Assert.assertNotNull(memberships);
+		Assert.assertEquals(3, memberships.size());
 		
-		//check owner 
-		List<Long> groupKeysB = businessGroupDao.isIdentityInBusinessGroups(id, true, false, false, groups);
-		Assert.assertNotNull(groupKeysB);
-		Assert.assertEquals(1, groupKeysB.size());
-		Assert.assertTrue(groupKeysB.contains(group1.getKey()));
-
-		//check attendee 
-		List<Long> groupKeysC = businessGroupDao.isIdentityInBusinessGroups(id, false, true, false, groups);
-		Assert.assertNotNull(groupKeysC);
-		Assert.assertEquals(1, groupKeysC.size());
-		Assert.assertTrue(groupKeysC.contains(group2.getKey()));
+		int found = 0;
+		for(BusinessGroupMembership membership:memberships) {
+			Assert.assertNotNull(membership.getIdentityKey());
+			Assert.assertNotNull(membership.getCreationDate());
+			Assert.assertNotNull(membership.getLastModified());
+			Assert.assertNotNull(membership.getMembership());
+			if(membership.getOwnerGroupKey() != null && group1.getKey().equals(membership.getOwnerGroupKey())) {
+				found++;
+			}
+			if(membership.getParticipantGroupKey() != null && group2.getKey().equals(membership.getParticipantGroupKey())) {
+				found++;
+			}
+			if(membership.getWaitingGroupKey() != null && group3.getKey().equals(membership.getWaitingGroupKey())) {
+				found++;
+			}
+		}
+		Assert.assertEquals(3, found);
 	}
 	
 	private boolean contains(List<BusinessGroupView> views, BusinessGroup group) {

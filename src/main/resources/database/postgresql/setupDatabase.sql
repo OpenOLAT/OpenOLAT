@@ -1065,6 +1065,56 @@ create or replace view o_gp_business_to_repository_v as (
 	inner join o_repositoryentry as repoentry on (repoentry.fk_olatresource = relation.fk_resource)
 );
 
+create or replace view o_bs_gp_membership_v as (
+   select
+      membership.id as membership_id,
+      membership.identity_id as identity_id,
+      membership.lastmodified as lastmodified,
+      membership.creationdate as creationdate,
+      owned_gp.group_id as owned_gp_id,
+      participant_gp.group_id as participant_gp_id,
+      waiting_gp.group_id as waiting_gp_id
+   from o_bs_membership as membership
+   left join o_gp_business as owned_gp on (membership.secgroup_id = owned_gp.fk_ownergroup)
+   left join o_gp_business as participant_gp on (membership.secgroup_id = participant_gp.fk_partipiciantgroup)
+   left join o_gp_business as waiting_gp on (membership.secgroup_id = waiting_gp.fk_waitinggroup)
+   where (owned_gp.group_id is not null or participant_gp.group_id is not null or waiting_gp.group_id is not null)
+);
+
+create or replace view o_gp_business_v  as (
+   select
+      gp.group_id as group_id,
+      gp.groupname as groupname,
+      gp.lastmodified as lastmodified,
+      gp.creationdate as creationdate,
+      gp.lastusage as lastusage,
+      gp.descr as descr,
+      gp.minparticipants as minparticipants,
+      gp.maxparticipants as maxparticipants,
+      gp.waitinglist_enabled as waitinglist_enabled,
+      gp.autocloseranks_enabled as autocloseranks_enabled,
+      (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
+      (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = gp.fk_resource
+         and offer.is_valid=true
+         and (offer.validfrom is null or offer.validfrom >= current_timestamp)
+         and (offer.validto is null or offer.validto <= current_timestamp)
+      ) as num_of_valid_offers,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = gp.fk_resource
+         and offer.is_valid=true
+      ) as num_of_offers,
+      (select count(relation.fk_resource) from o_gp_business_to_resource as relation 
+         where relation.fk_group = gp.group_id
+      ) as num_of_relations,
+      gp.fk_resource as fk_resource,
+      gp.fk_ownergroup as fk_ownergroup,
+      gp.fk_partipiciantgroup as fk_partipiciantgroup,
+      gp.fk_waitinggroup as fk_waitinggroup
+   from o_gp_business as gp
+);
+
 create or replace view o_re_member_v as (
    select
       re.repositoryentry_id as re_id,
