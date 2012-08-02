@@ -1049,6 +1049,56 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findBusinessGroupsHeadless() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("head-1-" + UUID.randomUUID().toString());
+		BusinessGroup headlessGroup = businessGroupDao.createAndPersist(null, "headless-grp", "headless-grp-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup headedGroup = businessGroupDao.createAndPersist(owner, "headed-grp", "headed-grp-desc", 0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		//check marked
+		SearchBusinessGroupParams headlessParams = new SearchBusinessGroupParams();
+		headlessParams.setHeadless(true);
+		List<BusinessGroupView> groups = businessGroupDao.findBusinessGroupViews(headlessParams, null, 0, 0);
+		Assert.assertNotNull(groups);
+		Assert.assertFalse(groups.isEmpty());
+		Assert.assertTrue(contains(groups, headlessGroup));
+		Assert.assertFalse(contains(groups, headedGroup));
+	}
+	
+	@Test
+	public void findBusinessGroupsNumOfMembers() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("head-1-" + UUID.randomUUID().toString());
+		Identity part1 = JunitTestHelper.createAndPersistIdentityAsUser("head-1-" + UUID.randomUUID().toString());
+		Identity part2 = JunitTestHelper.createAndPersistIdentityAsUser("head-1-" + UUID.randomUUID().toString());
+		BusinessGroup groupWith1 = businessGroupDao.createAndPersist(owner, "headless-grp", "headless-grp-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup groupWith3 = businessGroupDao.createAndPersist(owner, "headed-grp", "headed-grp-desc", 0, 5, true, false, true, false, false);
+		securityManager.addIdentityToSecurityGroup(part1, groupWith3.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(part2, groupWith3.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//check groups with more than 2 members
+		SearchBusinessGroupParams paramsWithMoreThan2 = new SearchBusinessGroupParams();
+		paramsWithMoreThan2.setNumOfMembers(2);
+		paramsWithMoreThan2.setNumOfMembersBigger(true);
+		List<BusinessGroupView> groupsWithMoreThan2 = businessGroupDao.findBusinessGroupViews(paramsWithMoreThan2, null, 0, 0);
+		Assert.assertNotNull(groupsWithMoreThan2);
+		Assert.assertFalse(groupsWithMoreThan2.isEmpty());
+		Assert.assertTrue(contains(groupsWithMoreThan2, groupWith3));
+		Assert.assertFalse(contains(groupsWithMoreThan2, groupWith1));
+		
+		//check groups with more than 2 members
+		SearchBusinessGroupParams paramsWithLessThan2 = new SearchBusinessGroupParams();
+		paramsWithLessThan2.setNumOfMembers(2);
+		paramsWithLessThan2.setNumOfMembersBigger(false);
+		List<BusinessGroupView> groupsWithLessThan2 = businessGroupDao.findBusinessGroupViews(paramsWithLessThan2, null, 0, 0);
+		Assert.assertNotNull(groupsWithLessThan2);
+		Assert.assertFalse(groupsWithLessThan2.isEmpty());
+		Assert.assertTrue(contains(groupsWithLessThan2, groupWith1));
+		Assert.assertFalse(contains(groupsWithLessThan2, groupWith3));
+	}
+	
+	
+	@Test
 	public void findBusinessGroupOrdered() {
 		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "a_ordered-grp-3", "marked-grp-1-desc", 0, 5, true, false, true, false, false);
 		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "z_ordered-grp-4", "marked-grp-2-desc", 0, 5, true, false, true, false, false);

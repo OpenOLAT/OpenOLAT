@@ -42,9 +42,9 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 	public AdminBusinessGroupsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "admin_group_list");
 		if(isAdmin()) {
-			searchController = new BusinessGroupSearchController(ureq, wControl, true, false);
+			searchController = new BusinessGroupSearchController(ureq, wControl, true, false, true);
 		} else {
-			searchController = new BusinessGroupSearchController(ureq, wControl, false, true);
+			searchController = new BusinessGroupSearchController(ureq, wControl, false, true, false);
 		}
 		//search controller
 		listenTo(searchController);

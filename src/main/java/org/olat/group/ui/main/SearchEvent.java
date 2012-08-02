@@ -42,6 +42,7 @@ public class SearchEvent extends Event {
 	private boolean owner;
 	private boolean attendee;
 	private boolean waiting;
+	private boolean headless = false;
 	private Boolean publicGroups;
 	private Boolean resources;
 	
@@ -129,6 +130,14 @@ public class SearchEvent extends Event {
 		this.resources = resources;
 	}
 	
+	public boolean isHeadless() {
+		return headless;
+	}
+
+	public void setHeadless(boolean headless) {
+		this.headless = headless;
+	}
+
 	public SearchBusinessGroupParams convertToSearchBusinessGroupParams(Identity identity) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		if(id != null) {
@@ -144,6 +153,7 @@ public class SearchEvent extends Event {
 		params.setPublicGroups(getPublicGroups());
 		params.setResources(getResources());
 		params.setIdentity(identity);
+		params.setHeadless(isHeadless());
 		return params;
 	}
 }

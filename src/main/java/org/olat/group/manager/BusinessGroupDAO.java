@@ -738,6 +738,20 @@ public class BusinessGroupDAO {
 			     .append(" )");
 		}
 		
+		if(params.isHeadless()) {
+			where = where(query, where);
+			query.append(" bgi.numOfRelations=0 and bgi.numOfOwners=0 and bgi.numOfParticipants=0");
+		}
+		
+		if(params.getNumOfMembers() > -1) {
+			where = where(query, where);
+			if(params.isNumOfMembersBigger()) {
+				query.append(" (bgi.numOfOwners + bgi.numOfParticipants)>=").append(params.getNumOfMembers());
+			} else {
+				query.append(" (bgi.numOfOwners + bgi.numOfParticipants)<=").append(params.getNumOfMembers());
+			}	
+		}
+		
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
 			where = where(query, where);
 			query.append("(");

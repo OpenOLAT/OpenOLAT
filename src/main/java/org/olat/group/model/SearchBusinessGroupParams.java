@@ -52,6 +52,10 @@ public class SearchBusinessGroupParams {
 	private Boolean publicGroups;
 	private Boolean marked;
 	private Boolean resources;
+	private boolean headless = false;
+	private int numOfMembers = -1;
+	private boolean numOfMembersBigger = true;
+	
 	
 	public SearchBusinessGroupParams() {
 		//
@@ -191,8 +195,52 @@ public class SearchBusinessGroupParams {
 	public void setResources(Boolean resources) {
 		this.resources = resources;
 	}
+
+	/**
+	 * Only available on views
+	 * @return
+	 */
+	public boolean isHeadless() {
+		return headless;
+	}
+
+	/**
+	 * Only available on views
+	 * @param headless
+	 */
+	public void setHeadless(boolean headless) {
+		this.headless = headless;
+	}
+
+	/**
+	 * Only available on views
+	 * @return
+	 */
+	public int getNumOfMembers() {
+		return numOfMembers;
+	}
+
+	/**
+	 * Only available on views
+	 * @param headless
+	 */
+	public void setNumOfMembers(int numOfMembers) {
+		this.numOfMembers = numOfMembers;
+	}
 	
-	
-	
-	
+	/**
+	 * Only available on views
+	 * @return
+	 */
+	public boolean isNumOfMembersBigger() {
+		return numOfMembersBigger;
+	}
+
+	/**
+	 * Only available on views
+	 * @param headless
+	 */
+	public void setNumOfMembersBigger(boolean numOfMembersBigger) {
+		this.numOfMembersBigger = numOfMembersBigger;
+	}
 }

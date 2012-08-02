@@ -21,6 +21,7 @@
 		<property name="waitingListEnabled" type="boolean" column="waitinglist_enabled" unique="false" not-null="false"/>	
 		<property name="autoCloseRanksEnabled" type="boolean" column="autocloseranks_enabled" unique="false" not-null="false"/>	
 		<!--  statistics informations -->
+  		<property name="numOfOwners" column="num_of_owners" type="integer" />
   		<property name="numOfParticipants" column="num_of_participants" type="integer" />
   		<property name="numOfRelations" column="num_of_relations" type="integer" />
   		<property name="numOfOffers" column="num_of_offers" type="integer" />

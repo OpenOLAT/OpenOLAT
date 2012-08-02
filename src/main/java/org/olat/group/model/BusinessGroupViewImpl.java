@@ -28,7 +28,10 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupView;
 import org.olat.resource.OLATResource;
 
-
+/**
+ * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
 public class BusinessGroupViewImpl extends PersistentObject implements BusinessGroupView {
 
 	private static final long serialVersionUID = -9042740930754224954L;
@@ -46,7 +49,8 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 	private Boolean waitingListEnabled;
 	private Boolean autoCloseRanksEnabled;
 	private Date lastModified;
-	
+
+	private int numOfOwners;
 	private int numOfParticipants;
 	private int numOfRelations;
 	private int numOfOffers;
@@ -59,6 +63,15 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 
 	public void setNumOfRelations(int numOfRelations) {
 		this.numOfRelations = numOfRelations;
+	}
+
+	@Override
+	public int getNumOfOwners() {
+		return numOfOwners;
+	}
+
+	public void setNumOfOwners(int numOfOwners) {
+		this.numOfOwners = numOfOwners;
 	}
 
 	@Override

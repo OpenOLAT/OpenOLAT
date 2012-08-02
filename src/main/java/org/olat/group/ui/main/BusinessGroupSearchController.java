@@ -22,6 +22,7 @@ package org.olat.group.ui.main;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -52,9 +53,11 @@ public class BusinessGroupSearchController extends FormBasicController{
 	private SingleSelection rolesEl;
 	private SingleSelection publicEl;
 	private SingleSelection resourceEl;
+	private MultipleSelectionElement headlessEl;
 	
 	private final boolean showId;
 	private final boolean showRoles;
+	private final boolean showAdminTools;
 	private String limitUsername;
 	
 	private String[] roleKeys = {"all", "owner", "attendee", "waiting"};
@@ -69,10 +72,11 @@ public class BusinessGroupSearchController extends FormBasicController{
 	 * @param isAdmin Is calling identity an administrator? If yes, allow search by ID
 	 * @param limitTypes Limit searches to specific types.
 	 */
-	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean showId, boolean showRoles) {
+	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean showId, boolean showRoles, boolean showAdminTools) {
 		super(ureq, wControl, "group_search");
 		this.showId = showId;
 		this.showRoles = showRoles;
+		this.showAdminTools = showAdminTools;
 		initForm(ureq);
 	}
 	
@@ -128,6 +132,12 @@ public class BusinessGroupSearchController extends FormBasicController{
 		}
 		resourceEl = uifactory.addRadiosHorizontal("resourceBg", "search.resources", rightContainer, resourceKeys, resourceValues);
 		resourceEl.select("all", true);
+		
+		if(showAdminTools) {
+			String[] keys = new String[] { "headless" };
+			String[] values = new String[] { translate("search.headless.check") };
+			headlessEl = uifactory.addCheckboxesHorizontal("headless.groups", "search.headless", rightContainer, keys, values, null);
+		}
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -223,10 +233,17 @@ public class BusinessGroupSearchController extends FormBasicController{
 	
 	private void fireSearchEvent(UserRequest ureq) {
 		SearchEvent e = new SearchEvent();
+		e.setId(getId());
 		e.setName(getName());
 		e.setDescription(getDescription());
 		e.setOwnerName(getOwner());
 		e.setCourseTitle(getCourseTitle());
+		
+		if(headlessEl != null && headlessEl.isAtLeastSelected(1)) {
+			e.setHeadless(true);
+		} else {
+			e.setHeadless(false);
+		}
 		
 		if(rolesEl != null && rolesEl.isOneSelected()) {
 			e.setAttendee(rolesEl.isSelected(0) || rolesEl.isSelected(1));

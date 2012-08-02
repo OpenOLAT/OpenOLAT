@@ -80,9 +80,11 @@ public class GroupsPortlet extends AbstractPortlet {
 	 *      org.olat.core.gui.UserRequest)
 	 */
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
-		if(this.runCtr != null) runCtr.dispose();
-		this.runCtr = new GroupsPortletRunController(wControl, ureq, getTranslator(), this.getName());
-		return this.runCtr.getInitialComponent();
+		if(runCtr != null) {
+			runCtr.dispose();
+		}
+		runCtr = new GroupsPortletRunController(wControl, ureq, getTranslator(), this.getName());
+		return runCtr.getInitialComponent();
 	}
 
 	/**
@@ -103,18 +105,17 @@ public class GroupsPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
 	 */
 	public void disposeRunComponent() {
-		if (this.runCtr != null) {
-			this.runCtr.dispose();
-			this.runCtr = null;
+		if (runCtr != null) {
+			runCtr.dispose();
+			runCtr = null;
 		}
 	}
 	
-	public PortletToolController getTools(UserRequest ureq, WindowControl wControl) {
+	public PortletToolController<BusinessGroupEntry> getTools(UserRequest ureq, WindowControl wControl) {
 		//portlet was not yet visible
 		if ( runCtr == null ) {
-			this.runCtr = new GroupsPortletRunController(wControl, ureq, getTranslator(), this.getName());
+			runCtr = new GroupsPortletRunController(wControl, ureq, getTranslator(), this.getName());
 		}
 	  return runCtr.createSortingTool(ureq, wControl);
 	}
-
 }

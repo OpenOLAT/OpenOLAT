@@ -115,8 +115,6 @@ create or replace view o_bs_gp_membership_v as (
    where (owned_gp.group_id is not null or participant_gp.group_id is not null or waiting_gp.group_id is not null)
 );
 
-
-
 create or replace view o_gp_business_v  as (
    select
       gp.group_id as group_id,
@@ -131,6 +129,8 @@ create or replace view o_gp_business_v  as (
       gp.autocloseranks_enabled as autocloseranks_enabled,
       -- count participants
       (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
+      -- count owners
+      (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
       -- count valid offers
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = gp.fk_resource
@@ -152,5 +152,5 @@ create or replace view o_gp_business_v  as (
       gp.fk_partipiciantgroup as fk_partipiciantgroup,
       gp.fk_waitinggroup as fk_waitinggroup
    from o_gp_business as gp
-)
+);
 
