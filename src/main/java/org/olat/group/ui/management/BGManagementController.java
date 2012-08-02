@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.NewControllerFactory;
 import org.olat.admin.securitygroup.gui.UserControllerFactory;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
@@ -526,7 +527,8 @@ public class BGManagementController extends MainLayoutBasicController implements
 				} else if (actionid.equals(CMD_GROUP_EDIT)) {
 					doGroupEdit(ureq);
 				} else if (actionid.equals(CMD_GROUP_RUN)) {
-					doGroupRun(ureq);
+					String bsuinessPath = "[BusinessGroup:" + currentGroup.getKey() + "]";
+					NewControllerFactory.getInstance().launch(bsuinessPath, ureq, getWindowControl());	
 				} else if (actionid.equals(CMD_GROUP_DELETE)) {
 					doGroupDeleteConfirm(ureq);
 				}
@@ -615,7 +617,8 @@ public class BGManagementController extends MainLayoutBasicController implements
 		} else if (cmd.equals(CMD_AREA_CREATE)) {
 			createNewAreaController(ureq, getWindowControl());
 		} else if (cmd.equals(CMD_GROUP_RUN)) {
-			doGroupRun(ureq);
+			String bsuinessPath = "[BusinessGroup:" + currentGroup.getKey() + "]";
+			NewControllerFactory.getInstance().launch(bsuinessPath, ureq, getWindowControl());
 		} else if (cmd.equals(CMD_GROUP_COPY)) {
 			doGroupCopy(ureq);
 		} else if (cmd.equals(CMD_GROUP_COPY_MULTIPLE)) {
@@ -839,10 +842,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 			setTools(STATE_GROUP_EDIT);
 		}
 		// else don't change the tools state
-	}
-
-	private void doGroupRun(UserRequest ureq) {
-		BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currentGroup, ureq, getWindowControl());
 	}
 
 	private void doGroupDelete() {

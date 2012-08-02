@@ -471,11 +471,6 @@ public class BusinessGroupDAO {
 			query.append(" )");
 		}
 		
-		if(params.getTypes() != null && !params.getTypes().isEmpty()) {
-			where = where(query, where);
-			query.append("bgi.type in (:types)");
-		}
-		
 		if(params.isOwner() || params.isAttendee() || params.isWaiting()) {
 			where = where(query, where);
 			boolean subOr = false;
@@ -587,9 +582,6 @@ public class BusinessGroupDAO {
 		if (resource != null) {
 			dbq.setParameter("resourceKey", resource.getKey());
 		}
-		if (params.getTypes() != null && !params.getTypes().isEmpty()) {
-			dbq.setParameter("types", params.getTypes());
-		}
 		if(params.getTools() != null && !params.getTools().isEmpty()) {
 			dbq.setParameter("tools", params.getTools());
 		}
@@ -614,17 +606,6 @@ public class BusinessGroupDAO {
 		}
 		return dbq;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource) {
 		TypedQuery<Number> query = createFindViewDBQuery(params, resource, Number.class)
@@ -838,26 +819,6 @@ public class BusinessGroupDAO {
 		}
 		return dbq;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	public int countContacts(Identity identity) {
 		List<Long> result = createContactsQuery(identity, Long.class).getResultList();

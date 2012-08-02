@@ -59,16 +59,14 @@ public class GroupSearchResultProvider implements ResultMapProvider {
 	private final BusinessGroupService businessGroupService;
 	private RepositoryManager repoM;
 	private Translator pT;
-	private String typeFilter;
 	private final Identity identity;
 	private static final int MAX_RESULTS = 50;
 
-	public GroupSearchResultProvider(Identity identity, Locale locale, String typeFilter){
+	public GroupSearchResultProvider(Identity identity, Locale locale){
 		this.identity = identity;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		repoM = RepositoryManager.getInstance();
 		pT = Util.createPackageTranslator(this.getClass(), locale);
-		this.typeFilter = typeFilter;
 	}
 	
 	/**
@@ -106,7 +104,6 @@ public class GroupSearchResultProvider implements ResultMapProvider {
 	private void searchForOneTerm(String searchValue, Map<Long, String> tempResult){
 		// search groups itself		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(typeFilter);
 		params.setNameOrDesc('%' + searchValue + '%');
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		for (BusinessGroup group : groups) {			

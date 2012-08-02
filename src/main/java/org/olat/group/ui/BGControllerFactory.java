@@ -25,12 +25,10 @@
 
 package org.olat.group.ui;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.group.BusinessGroup;
@@ -97,31 +95,6 @@ public class BGControllerFactory {
 		}
 		return new BusinessGroupMainRunController(ureq, bwControl, businessGroup);
 	}
-
-	/**
-	 * Creates a runtime environment for this business group as a tab in the top
-	 * navigation bar
-	 * 
-	 * @param businessGroup
-	 * @param ureq
-	 * @param wControl
-	 * @param userActivityLogger The logger used to log the user activities or
-	 *          null if no logger used
-	 * @param isGMAdmin
-	 * @param initialViewIdentifier
-	 * @return BusinessGroupMainRunController or null if already initialized
-	 */
-	public void createRunControllerAsTopNavTab(BusinessGroup businessGroup, UserRequest ureq,
-			WindowControl wControl) {
-		String url = "[BusinessGroup:" + businessGroup.getKey() + "]";
-		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
-		NewControllerFactory.getInstance().launch(ureq, bwControl);
-	}
-
-	//
-	// group management controllers
-	//
 
 	/**
 	 * Factory method to create a configured buddy group main controller for the

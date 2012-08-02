@@ -603,6 +603,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertTrue(groups.contains(group2));
 		Assert.assertFalse(groups.contains(group3));
+		
+		//check the same with the views
+		List<BusinessGroupView> groupViews = businessGroupDao.findBusinessGroupViews(params, null, 0, -1);
+		Assert.assertNotNull(groupViews);
+		Assert.assertEquals(2, groupViews.size() );
+		Assert.assertTrue(contains(groupViews, group1));
+		Assert.assertTrue(contains(groupViews, group2));
+		Assert.assertFalse(contains(groupViews, group3));
 	}
 	
 	@Test
@@ -621,6 +629,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertTrue(groups.contains(group2));
 		Assert.assertTrue(groups.contains(group3));
+		
+		//check the same with the views
+		List<BusinessGroupView> groupViews = businessGroupDao.findBusinessGroupViews(params, null, 0, -1);
+		Assert.assertNotNull(groupViews);
+		Assert.assertEquals(3, groupViews.size() );
+		Assert.assertTrue(contains(groupViews, group1));
+		Assert.assertTrue(contains(groupViews, group2));
+		Assert.assertTrue(contains(groupViews, group3));
 	}
 	
 	@Test
@@ -631,6 +647,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-" + name + "-desc", 0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
+		//check find business group
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setDescription(name);
 		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
@@ -639,6 +656,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertFalse(groups.contains(group2));
 		Assert.assertFalse(groups.contains(group3));
+		
+		//check find business group
+		List<BusinessGroupView> groupViews = businessGroupDao.findBusinessGroupViews(params, null, 0, -1);
+		Assert.assertNotNull(groupViews);
+		Assert.assertEquals(1, groupViews.size() );
+		Assert.assertTrue(contains(groupViews, group1));
+		Assert.assertFalse(contains(groupViews, group2));
+		Assert.assertFalse(contains(groupViews, group3));
 	}
 	
 	@Test
@@ -657,6 +682,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertTrue(groups.contains(group2));
 		Assert.assertTrue(groups.contains(group3));
+		
+		//check same search with the views
+		List<BusinessGroupView> groupViews = businessGroupDao.findBusinessGroupViews(params, null, 0, -1);
+		Assert.assertNotNull(groupViews);
+		Assert.assertEquals(3, groupViews.size() );
+		Assert.assertTrue(contains(groupViews, group1));
+		Assert.assertTrue(contains(groupViews, group2));
+		Assert.assertTrue(contains(groupViews, group3));
 	}
 	
 	@Test
@@ -675,6 +708,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertFalse(groups.contains(group2));
 		Assert.assertTrue(groups.contains(group3));
+		
+		//check the same search with the views
+		List<BusinessGroupView> groupViews = businessGroupDao.findBusinessGroupViews(params, null, 0, -1);
+		Assert.assertNotNull(groupViews);
+		Assert.assertEquals(2, groupViews.size() );
+		Assert.assertTrue(contains(groupViews, group1));
+		Assert.assertFalse(contains(groupViews, group2));
+		Assert.assertTrue(contains(groupViews, group3));
 	}
 	
 	@Test
@@ -693,6 +734,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertTrue(groups.contains(group2));
 		Assert.assertTrue(groups.contains(group3));
+		
+		//check the same search with the views
+		List<BusinessGroupView> groupViews = businessGroupDao.findBusinessGroupViews(params, null, 0, -1);
+		Assert.assertNotNull(groupViews);
+		Assert.assertEquals(3, groupViews.size() );
+		Assert.assertTrue(contains(groupViews, group1));
+		Assert.assertTrue(contains(groupViews, group2));
+		Assert.assertTrue(contains(groupViews, group3));
 	}
 	
 	@Test
@@ -716,6 +765,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertFalse(groups.contains(group2));
 		Assert.assertTrue(groups.contains(group3));
+		
+		//check the same with the views
+		List<BusinessGroupView> groupViews = businessGroupDao.findBusinessGroupViews(params, null, 0, -1);
+		Assert.assertNotNull(groupViews);
+		Assert.assertEquals(2, groupViews.size() );
+		Assert.assertTrue(contains(groupViews, group1));
+		Assert.assertFalse(contains(groupViews, group2));
+		Assert.assertTrue(contains(groupViews, group3));
 	}
 	
 	@Test
@@ -738,6 +795,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertTrue(groups.contains(group2));
 		Assert.assertTrue(groups.contains(group3));
+		
+		//check the same with the views
+		List<BusinessGroupView> groupViews = businessGroupDao.findBusinessGroupViews(params, null, 0, -1);
+		Assert.assertNotNull(groupViews);
+		Assert.assertEquals(3, groupViews.size() );
+		Assert.assertTrue(contains(groupViews, group1));
+		Assert.assertTrue(contains(groupViews, group2));
+		Assert.assertTrue(contains(groupViews, group3));
 	}
 	
 	@Test
@@ -791,6 +856,33 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(allGroups.contains(group1));
 		Assert.assertTrue(allGroups.contains(group2));
 		Assert.assertTrue(allGroups.contains(group3));
+		
+		//The same tests with the views
+		//check owner on views
+		List<BusinessGroupView> ownedGroupViews = businessGroupDao.findBusinessGroupViews(paramsOwner, null, 0, 0);
+		Assert.assertNotNull(ownedGroupViews);
+		Assert.assertEquals(1, ownedGroupViews.size());
+		Assert.assertTrue(contains(ownedGroupViews, group1));
+		
+		//check attendee on views
+		List<BusinessGroupView> attendeeGroupViews = businessGroupDao.findBusinessGroupViews(paramsAttendee, null, 0, 0);
+		Assert.assertNotNull(attendeeGroupViews);
+		Assert.assertEquals(1, attendeeGroupViews.size());
+		Assert.assertTrue(contains(attendeeGroupViews, group2));
+
+		//check waiting on views
+		List<BusinessGroupView> waitingGroupViews = businessGroupDao.findBusinessGroupViews(paramsWaiting, null, 0, 0);
+		Assert.assertNotNull(waitingGroupViews);
+		Assert.assertEquals(1, waitingGroupViews.size());
+		Assert.assertTrue(contains(waitingGroupViews, group3));
+		
+		//check all on views
+		List<BusinessGroupView> allGroupViews = businessGroupDao.findBusinessGroupViews(paramsAll, null, 0, 0);
+		Assert.assertNotNull(allGroupViews);
+		Assert.assertEquals(3, allGroupViews.size());
+		Assert.assertTrue(contains(allGroupViews, group1));
+		Assert.assertTrue(contains(allGroupViews, group2));
+		Assert.assertTrue(contains(allGroupViews, group3));
 	}
 	
 	@Test
@@ -813,6 +905,18 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(accessGroups.contains(group));
 		
 		for(BusinessGroup accessGroup:accessGroups) {
+			List<Offer> offers = acFrontendManager.findOfferByResource(accessGroup.getResource(), true, new Date());
+			Assert.assertNotNull(offers);
+			Assert.assertFalse(offers.isEmpty());
+		}
+		
+		//check the search with the views
+		List<BusinessGroupView> accessGroupViews = businessGroupDao.findBusinessGroupViews(paramsAll, null, 0, 0);
+		Assert.assertNotNull(accessGroupViews);
+		Assert.assertTrue(accessGroupViews.size() >= 1);
+		Assert.assertTrue(contains(accessGroupViews, group));
+		
+		for(BusinessGroupView accessGroup:accessGroupViews) {
 			List<Offer> offers = acFrontendManager.findOfferByResource(accessGroup.getResource(), true, new Date());
 			Assert.assertNotNull(offers);
 			Assert.assertFalse(offers.isEmpty());
@@ -844,6 +948,19 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertNotNull(groupWithout);
 		Assert.assertFalse(groupWithout.isEmpty());
 		Assert.assertTrue(groupWithout.contains(group2));
+
+		//check the same with the views
+		//check the search function with resources
+		List<BusinessGroupView> groupViewWith = businessGroupDao.findBusinessGroupViews(paramsWith, null, 0, 0);
+		Assert.assertNotNull(groupViewWith);
+		Assert.assertFalse(groupViewWith.isEmpty());
+		Assert.assertTrue(contains(groupViewWith, group1));
+
+		//check the search function without resources
+		List<BusinessGroupView> groupViewWithout = businessGroupDao.findBusinessGroupViews(paramsWithout, null, 0, 0);
+		Assert.assertNotNull(groupViewWithout);
+		Assert.assertFalse(groupViewWithout.isEmpty());
+		Assert.assertTrue(contains(groupViewWithout, group2));
 	}
 	
 	@Test
@@ -873,6 +990,19 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertNotNull(notMarkedGroups);
 		Assert.assertEquals(1, notMarkedGroups.size());
 		Assert.assertTrue(notMarkedGroups.contains(group2));
+		
+		//check the search with the views
+		//check marked
+		List<BusinessGroupView> markedGroupViews = businessGroupDao.findBusinessGroupViews(paramsAll, null, 0, 0);
+		Assert.assertNotNull(markedGroupViews);
+		Assert.assertEquals(1, markedGroupViews.size());
+		Assert.assertTrue(contains(markedGroupViews, group1));
+		
+		//check not marked
+		List<BusinessGroupView> notMarkedGroupViews = businessGroupDao.findBusinessGroupViews(paramsNotMarked, null, 0, 0);
+		Assert.assertNotNull(notMarkedGroupViews);
+		Assert.assertEquals(1, notMarkedGroupViews.size());
+		Assert.assertTrue(contains(notMarkedGroupViews, group2));
 	}
 	
 	@Test
@@ -903,6 +1033,19 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertNotNull(markedGroups2);
 		Assert.assertEquals(1, markedGroups2.size());
 		Assert.assertTrue(markedGroups2.contains(group2));
+		
+		//check the search with views
+		//check marked
+		List<BusinessGroupView> markedGroupViews = businessGroupDao.findBusinessGroupViews(paramsMarker1, null, 0, 0);
+		Assert.assertNotNull(markedGroupViews);
+		Assert.assertEquals(1, markedGroupViews.size());
+		Assert.assertTrue(contains(markedGroupViews, group1));
+		
+		//check not marked
+		List<BusinessGroupView> markedGroupsView2 = businessGroupDao.findBusinessGroupViews(paramsMarker2, null, 0, 0);
+		Assert.assertNotNull(markedGroupsView2);
+		Assert.assertEquals(1, markedGroupsView2.size());
+		Assert.assertTrue(contains(markedGroupsView2, group2));
 	}
 	
 	@Test
@@ -935,6 +1078,31 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		int index5 = orderedBy.indexOf(group1);
 		int index6 = orderedBy.indexOf(group2);
 		Assert.assertTrue(index5 < index6);
+		
+		//The find views must return exactly the same results
+		//views: check the query order by name
+		List<BusinessGroupView> orderedViewByName = businessGroupDao.findBusinessGroupViews(params, null, 0, 0, BusinessGroupOrder.nameAsc);
+		Assert.assertNotNull(orderedViewByName);
+		Assert.assertFalse(orderedViewByName.isEmpty());
+		int indexView1 = indexOf(orderedViewByName, group1);
+		int indexView2 = indexOf(orderedViewByName, group2);
+		Assert.assertTrue(indexView1 < indexView2);
+
+		//check the query order by creation date
+		List<BusinessGroupView> orderedViewByCreationDate = businessGroupDao.findBusinessGroupViews(params, null, 0, 0, BusinessGroupOrder.creationDateAsc);
+		Assert.assertNotNull(orderedViewByCreationDate);
+		Assert.assertFalse(orderedViewByCreationDate.isEmpty());
+		int indexView3 = indexOf(orderedViewByCreationDate, group1);
+		int indexView4 = indexOf(orderedViewByCreationDate, group2);
+		Assert.assertTrue(indexView3 < indexView4);
+		
+		//check the query order by creation date
+		List<BusinessGroupView> orderedViewBy = businessGroupDao.findBusinessGroupViews(params, null, 0, 0, BusinessGroupOrder.nameAsc, BusinessGroupOrder.creationDateDesc);
+		Assert.assertNotNull(orderedViewBy);
+		Assert.assertFalse(orderedViewBy.isEmpty());
+		int indexView5 = indexOf(orderedViewBy, group1);
+		int indexView6 = indexOf(orderedViewBy, group2);
+		Assert.assertTrue(indexView5 < indexView6);
 	}
 	
 	@Test
@@ -1020,7 +1188,18 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 			}
 		}
 		return false;
-		
-		
+	}
+	
+	private int indexOf(List<BusinessGroupView> views, BusinessGroup group) {
+		int index = -1;
+		if(views != null && !views.isEmpty()) {
+			for(BusinessGroupView view:views) {
+				index++;
+				if(view.getKey().equals(group.getKey())) {
+					break; 
+				}
+			}
+		}
+		return index;
 	}
 }

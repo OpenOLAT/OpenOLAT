@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.bookmark.AddAndEditBookmarkController;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.core.CoreSpringFactory;
@@ -112,7 +113,6 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
@@ -773,7 +773,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// coach. the flag is not needed here
 				// since the groups knows itself if the user is coach and the user sees
 				// only his own groups.
-				BGControllerFactory.getInstance().createRunControllerAsTopNavTab(group, ureq, getWindowControl());
+				String bsuinessPath = "[BusinessGroup:" + group.getKey() + "]";
+				NewControllerFactory.getInstance().launch(bsuinessPath, ureq, getWindowControl());
 			} else {
 				// display error and do logging
 				getWindowControl().setError(translate("error.invalid.group"));

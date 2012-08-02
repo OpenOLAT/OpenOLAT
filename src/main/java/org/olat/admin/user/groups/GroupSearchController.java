@@ -130,7 +130,7 @@ public class GroupSearchController extends StepFormBasicController {
 	 */
 	private void doSearchGroups(String searchValue, UserRequest ureq) {	
 		if (StringHelper.containsNonWhitespace(searchValue)){
-			GroupSearchResultProvider searchProvider = new GroupSearchResultProvider(ureq.getIdentity(), getLocale(), null);
+			GroupSearchResultProvider searchProvider = new GroupSearchResultProvider(ureq.getIdentity(), getLocale());
 			Map<String, String> resMap = new HashMap<String, String>();
 			searchProvider.getAutoCompleteContent(searchValue, resMap);
 			updateResultTable(resMap);

@@ -36,7 +36,6 @@ import org.olat.core.id.Identity;
  */
 public class SearchBusinessGroupParams {
 	
-	private Collection<String> types;
 	private Collection<String> tools;
 	private String nameOrDesc;
 	private Collection<Long> groupKeys;
@@ -63,25 +62,7 @@ public class SearchBusinessGroupParams {
 		this.owner = owner;
 		this.attendee = attendee;
 	}
-
 	
-	public Collection<String> getTypes() {
-		return types;
-	}
-	
-	public void setTypes(Collection<String> types) {
-		this.types = types;
-	}
-	
-	public void addTypes(String... types) {
-		if(this.types == null) {
-			this.types = new ArrayList<String>();
-		}
-		for(String type:types) {
-			this.types.add(type);
-		}
-	}
-
 	public Collection<String> getTools() {
 		return tools;
 	}
