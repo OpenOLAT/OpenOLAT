@@ -80,7 +80,7 @@ public class TitledWrapperHelper {
 			String description = null;
 			
 			if (StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
-					//description = courseNode.getLearningObjectives();
+					description = courseNode.getLearningObjectives();
 			}
 			
 			TitleInfo titleInfo = new TitleInfo(null, title, description, courseNode.getIdent());
