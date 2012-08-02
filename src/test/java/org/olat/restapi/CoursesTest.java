@@ -195,9 +195,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
-		InputStream body = response.getEntity().getContent();
-		
-		CourseVO vo = parse(body, CourseVO.class);
+		CourseVO vo = conn.parse(response, CourseVO.class);
 		assertNotNull(vo);
 		assertNotNull(vo.getRepoEntryKey());
 		assertNotNull(vo.getKey());

@@ -66,9 +66,8 @@ import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.SearchBusinessGroupParams;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
@@ -293,8 +292,9 @@ public class CalendarWebService {
 		KalendarRenderWrapper wrapper = null;
 		if("group".equals(type)) {
 			Long groupId = Long.parseLong(id);
-			BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(groupId, false);
-			if(BusinessGroupManagerImpl.getInstance().isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			BusinessGroup group = bgs.loadBusinessGroup(groupId);
+			if(bgs.isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
 				CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
 				wrapper = collaborationManager.getCalendar(group, ureq, false);
 			}
@@ -365,11 +365,10 @@ public class CalendarWebService {
 		CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
 		
 		//start found forums in groups
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP, BusinessGroup.TYPE_RIGHTGROUP);
+		BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		params.addTools(CollaborationTools.TOOL_CALENDAR);
-		List<BusinessGroup> groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
+		List<BusinessGroup> groups = bgm.findBusinessGroups(params, null, 0, -1);
 		for(BusinessGroup group:groups) {
 			KalendarRenderWrapper wrapper = collaborationManager.getCalendar(group, ureq, false);
 			calVisitor.visit(wrapper);
