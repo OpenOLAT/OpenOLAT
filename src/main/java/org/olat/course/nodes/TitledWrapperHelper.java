@@ -61,8 +61,6 @@ public class TitledWrapperHelper {
 			String description = null;
 			if (StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
 				if (StringHelper.containsNonWhitespace(title)) {
-					description = "<h4>" + title + "</h4>" + courseNode.getLearningObjectives();
-				} else {
 					description = courseNode.getLearningObjectives();
 				}
 			}
