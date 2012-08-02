@@ -67,7 +67,7 @@ public class TitledWrapperHelper {
 				}
 			}
 			
-			TitleInfo titleInfo = new TitleInfo(null, courseNode.getShortTitle(), description, courseNode.getIdent());
+			TitleInfo titleInfo = new TitleInfo(null, title, description, courseNode.getIdent());
 			titleInfo.setDescriptionCssClass("o_course_run_objectives");
 			TitledWrapperController titledController = new TitledWrapperController(ureq, wControl, controller, "o_course_run", titleInfo);
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
@@ -78,15 +78,12 @@ public class TitledWrapperHelper {
 
 			String title = courseNode.getLongTitle();
 			String description = null;
+			
 			if (StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
-				if (StringHelper.containsNonWhitespace(title)) {
-					description = "<h4>" + title + "</h4>" + courseNode.getLearningObjectives();
-				} else {
-					description = courseNode.getLearningObjectives();
-				}
+					//description = courseNode.getLearningObjectives();
 			}
 			
-			TitleInfo titleInfo = new TitleInfo(null, courseNode.getShortTitle(), description, courseNode.getIdent());
+			TitleInfo titleInfo = new TitleInfo(null, title, description, courseNode.getIdent());
 			titleInfo.setDescriptionCssClass("o_course_run_objectives");
 			TitledWrapperController titledController = new TitledWrapperController(ureq, wControl, controller, "o_course_run", titleInfo);
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
