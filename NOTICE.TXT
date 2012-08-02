@@ -149,13 +149,6 @@ This product uses software in the public domain
 -----------------------------------------------------------------------
 This product uses software based on the General Public License (GPL)
 * Connector/J	(GNU General Public License, Version 2) [http://www.mysql.com/downloads/connector/j/]
-* JAZZLIB ZIP library [http://jazzlib.sourceforge.net]
-  It is under GPL with a special exception :
-  "As a special exception, if you link this library with other files to
-  produce an executable, this library does not by itself cause the
-  resulting executable to be covered by the GNU General Public License.
-  This exception does not however invalidate any other reasons why the
-  executable file might be covered by the GNU General Public License."
 
 -----------------------------------------------------------------------
 This product uses software based on the CDDL

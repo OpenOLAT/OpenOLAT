@@ -317,20 +317,19 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	 * @param ureq
 	 */
 
-	public void persistResults(AssessmentInstance ai, long resId, String resDetail, Identity assessedIdentity, String remoteAddr) {
+	public void persistResults(AssessmentInstance ai) {
 		AssessmentContext ac = ai.getAssessmentContext();
 		
 		QTIResultSet qtiResultSet = new QTIResultSet();
 		qtiResultSet.setLastModified(new Date(System.currentTimeMillis()));
-		qtiResultSet.setOlatResource(resId);
-		qtiResultSet.setOlatResourceDetail(resDetail);
+		qtiResultSet.setOlatResource(ai.getCallingResId());
+		qtiResultSet.setOlatResourceDetail(ai.getCallingResDetail());
 		qtiResultSet.setRepositoryRef(ai.getRepositoryEntryKey());
-		qtiResultSet.setIdentity(assessedIdentity);
+		qtiResultSet.setIdentity(ai.getAssessedIdentity());
 		qtiResultSet.setQtiType(ai.getType());
 		qtiResultSet.setAssessmentID(ai.getAssessID());
 		
 		qtiResultSet.setDuration(new Long(ai.getAssessmentContext().getDuration()));
-		// TODO qtiResultSet.setLastModified();
 		
 		if (ai.isSurvey()){
 			qtiResultSet.setScore(0);
@@ -359,7 +358,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 				else qtiResult.setScore(ic.getScore());
 				qtiResult.setTstamp(new Date(ic.getLatestAnswerTime()));
 				qtiResult.setLastModified(new Date(System.currentTimeMillis()));
-				qtiResult.setIp(remoteAddr);
+				qtiResult.setIp(ai.getRemoteAddr());
 				
 				// Get user answers for this item
 				StringBuilder sb = new StringBuilder();

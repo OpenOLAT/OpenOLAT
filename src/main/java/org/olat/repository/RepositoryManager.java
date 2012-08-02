@@ -125,7 +125,7 @@ public class RepositoryManager extends BasicManager {
 	public void setUserCourseInformationsManager(UserCourseInformationsManager userCourseInformationsManager) {
 		this.userCourseInformationsManager = userCourseInformationsManager;
 	}
-
+	
 	/**
 	 * [used by Spring]
 	 * @param userCourseInformationsManager
@@ -688,6 +688,7 @@ public class RepositoryManager extends BasicManager {
 				 .append("     and groupRelation.resource=ori")
 		     .append("  )")
 		     .append(" ))");
+		
 		if(resourceTypes != null && resourceTypes.length > 0) {
 			query.append(" and reResource.resName in (:resnames)");
 		}
@@ -832,7 +833,7 @@ public class RepositoryManager extends BasicManager {
 		  .append(" left join fetch v.participantGroup as participantGroup")
 		  .append(" left join fetch v.tutorGroup as tutorGroup")
 			.append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi")
-			.append(" where v.ownerGroup=sgmsi.securityGroup and sgmsi.identity.key=:identityKey");
+			.append(" where v.ownerGroup=sgmsi.securityGroup and sgmsi.identity.key=:identityKey and v.access>0");
 		if (limitTypes != null && limitTypes.length > 0) {
 			sb.append(" and res.resName in (:types)");
 		}
@@ -1104,7 +1105,6 @@ public class RepositoryManager extends BasicManager {
 		logInfo("Repo-Perf: runGenericANDQueryWithRolesRestriction#1 takes " + timeQuery1);
 		return result;
 	}
-
 	//fxdiff VCRP-1,2: access control of resources
 	private boolean appendAccessSubSelects(StringBuilder sb, Identity identity, Roles roles) {
 		sb.append("(v.access >= ");

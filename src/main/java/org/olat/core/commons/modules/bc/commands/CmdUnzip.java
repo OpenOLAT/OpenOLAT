@@ -95,23 +95,30 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		boolean fileNotExist = false;
-		for (String sItem:selection.getFiles()) {
-			VFSItem vfsItem = currentContainer.resolve(sItem);
-			if (vfsItem != null && (vfsItem instanceof VFSLeaf)) {
-				if (!doUnzip((VFSLeaf)vfsItem, currentContainer, ureq, wContr)) {
-					status = FolderCommandStatus.STATUS_FAILED;
+		VFSItem currentVfsItem = null;
+		try {
+			boolean fileNotExist = false;
+			for (String sItem:selection.getFiles()) {
+				currentVfsItem = currentContainer.resolve(sItem);
+				if (currentVfsItem != null && (currentVfsItem instanceof VFSLeaf)) {
+					if (!doUnzip((VFSLeaf)currentVfsItem, currentContainer, ureq, wContr)) {
+						status = FolderCommandStatus.STATUS_FAILED;
+						break;
+					}
+				} else {
+					fileNotExist = true;
 					break;
 				}
-			} else {
-				fileNotExist = true;
-				break;
 			}
-		}
-		
-		if (fileNotExist) {
-			status = FolderCommandStatus.STATUS_FAILED;
-			getWindowControl().setError(translator.translate("FileDoesNotExist"));
+			
+			if (fileNotExist) {
+				status = FolderCommandStatus.STATUS_FAILED;
+				getWindowControl().setError(translator.translate("FileDoesNotExist"));
+			}
+		} catch (IllegalArgumentException e) {
+			logError("Corrupted ZIP", e);
+			String name = currentVfsItem == null ? "NULL" : currentVfsItem.getName();
+			getWindowControl().setError(translator.translate("FileUnzipFailed", new String[]{name}));
 		}
 		
 		return null;

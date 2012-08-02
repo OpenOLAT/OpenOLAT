@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+
+  <class name="org.olat.course.db.impl.CourseDBEntryImpl" table="o_co_db_entry">
+    <id name="key" type="long" column="id" unsaved-value="null">
+      <generator class="hilo" />
+    </id>
+	
+		<version name="version" access="field" column="version"/>
+		<property  name="lastModified" column="lastmodified" type="timestamp" />
+		<property  name="creationDate" column="creationdate" type="timestamp" />
+
+    <property name="courseKey" type="long" column="courseid" />
+		<many-to-one
+			name="identity"
+			class="org.olat.basesecurity.IdentityImpl"
+			outer-join="false"
+			cascade="none"/>
+    
+    <property name="category"	type="string" column="category" length="32" index="o_co_db_cat_idx"/>
+    <property name="name"	type="string" column="name" not-null="true" index="o_co_db_name_idx"/>
+    <property name="floatValue"	type="float" column="floatvalue" />
+    <property name="longValue" type="long" column="longvalue" />
+    <property name="stringValue" type="string" column="stringvalue"	/>
+    <property name="textValue" type="text" column="textvalue" />
+  </class>
+
+</hibernate-mapping>

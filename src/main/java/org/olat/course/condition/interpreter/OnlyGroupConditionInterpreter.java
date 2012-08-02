@@ -30,6 +30,7 @@ import org.olat.course.condition.interpreter.score.GetPassedFunction;
 import org.olat.course.condition.interpreter.score.GetPassedWithCourseIdFunction;
 import org.olat.course.condition.interpreter.score.GetScoreFunction;
 import org.olat.course.condition.interpreter.score.GetScoreWithCourseIdFunction;
+import org.olat.course.db.interpreter.GetUserCourseDBFunction;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -80,6 +81,7 @@ public class OnlyGroupConditionInterpreter extends ConditionInterpreter{
 		env.addFunction("hasAttribute", new DummyBooleanFunction(userCourseEnv));
 		env.addFunction("isInAttribute", new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(GetUserPropertyFunction.name, new DummyStringFunction(userCourseEnv));
+		env.addFunction(GetUserCourseDBFunction.name, new DummyStringFunction(userCourseEnv));
 		env.addFunction(HasLanguageFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(InInstitutionFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(IsCourseCoachFunction.name, new DummyBooleanFunction(userCourseEnv));

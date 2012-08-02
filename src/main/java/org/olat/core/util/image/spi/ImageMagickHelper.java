@@ -146,46 +146,52 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 			logError("", e);
 		}
 		
-		if(worker.isProcessing()) {
-			worker.destroyProcess();
-		}
+		worker.destroyProcess();
+		
 		return worker.size;
 	}
 	
 	private final FinalSize executeProcess(File thumbnailFile, Process proc) {
+
+		InputStream stderr = proc.getErrorStream();
+		InputStreamReader iserr = new InputStreamReader(stderr);
+		BufferedReader berr = new BufferedReader(iserr);
+		String l = null;
+		StringBuilder errors = new StringBuilder();
+		StringBuilder output = new StringBuilder();
+
 		try {
-			InputStream stderr = proc.getErrorStream();
-			InputStreamReader iserr = new InputStreamReader(stderr);
-      BufferedReader berr = new BufferedReader(iserr);
-      String l = null;
-      StringBuilder errors = new StringBuilder();
-      while ( (l = berr.readLine()) != null) {
-      	errors.append(l);
-      }
-			
-			InputStream stdout = proc.getInputStream();
-			InputStreamReader isr = new InputStreamReader(stdout);
-      BufferedReader br = new BufferedReader(isr);
-      String line = null;
-      StringBuilder output = new StringBuilder();
-      while ( (line = br.readLine()) != null) {
-      	output.append(line);
-      }
-      
-      if(isLogDebugEnabled()) {
-				logDebug("Error: " + errors.toString());
-				logDebug("Output: " + output.toString());
+			while ((l = berr.readLine()) != null) {
+				errors.append(l);
 			}
 
+			InputStream stdout = proc.getInputStream();
+			InputStreamReader isr = new InputStreamReader(stdout);
+			BufferedReader br = new BufferedReader(isr);
+			String line = null;
+
+			while ((line = br.readLine()) != null) {
+				output.append(line);
+			}
+		} catch (IOException e) {
+			//
+		}
+
+		if (isLogDebugEnabled()) {
+			logDebug("Error: " + errors.toString());
+			logDebug("Output: " + output.toString());
+		}
+
+		try {
 			int exitValue = proc.waitFor();
-			if(exitValue == 0) {
+			if (exitValue == 0) {
 				return extractSizeFromOutput(thumbnailFile, output);
 			}
-			return null;
-		} catch (Exception e) {
-			logError("", e);
-			return null;
+		} catch (InterruptedException e) {
+			//
 		}
+		logWarn("Could not generate thumbnail: "+thumbnailFile, null);
+		return null;
 	}
 	/**
 	 * Extract informations from the process:<br/>
@@ -252,7 +258,6 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 	
 	private class ProcessWorker extends Thread {
 		
-		private volatile boolean processing;
 		private volatile Process process;
 		private volatile FinalSize size;
 
@@ -267,17 +272,15 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 			this.doneSignal = doneSignal;
 		}
 		
-		public boolean isProcessing() {
-			return processing;
-		}
-		
 		public void destroyProcess() {
-			process.destroy();
+			if (process != null) {
+				process.destroy();
+				process = null;
+			}
 		}
 
 		@Override
 		public void run() {
-			processing = true;
 			
 			try {
 				if(isLogDebugEnabled()) {
@@ -289,13 +292,9 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 				size = executeProcess(thumbnailFile, process);
 				doneSignal.countDown();
 			} catch (IOException e) {
-				logError("", e);
-				if(process != null) {
-					process.destroy();
-				}
+				logError ("Could not spawn convert sub process", e);
+				destroyProcess();
 			}
-			
-			processing = false;
 		}
 	}
 }

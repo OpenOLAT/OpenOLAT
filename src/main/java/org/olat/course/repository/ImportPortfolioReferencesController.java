@@ -87,6 +87,7 @@ public class ImportPortfolioReferencesController extends BasicController {
 	private Link noopButton;
 	private Link cancelButton;
 	private Link continueButton;
+	private Link importYesModeButton;
 	private RepositorySearchController searchController;
 	private RepositoryEntryImportExport importExport;
 	private DetailsReadOnlyForm repoDetailsForm;
@@ -103,7 +104,7 @@ public class ImportPortfolioReferencesController extends BasicController {
 		reattachButton = LinkFactory.createButton("import.reattach.action", main, this);
 		noopButton = LinkFactory.createButton("import.noop.action", main, this);
 		cancelButton = LinkFactory.createButton("cancel", main, this);
-		
+		importYesModeButton = LinkFactory.createButton("import.yesmode.action", main, this);
 		main.contextPut("nodename", node.getShortTitle());
 		main.contextPut("type", translate("node." + node.getType()));
 		main.contextPut("displayname", importExport.getDisplayName());
@@ -115,6 +116,11 @@ public class ImportPortfolioReferencesController extends BasicController {
 		putInitialPanel(mainPanel);
 	}
 
+	protected void importWithoutAsking (UserRequest ureq) {
+		event (ureq, importButton, Event.DONE_EVENT);
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component,
@@ -151,6 +157,8 @@ public class ImportPortfolioReferencesController extends BasicController {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == continueButton){
 			fireEvent(ureq, Event.DONE_EVENT);
+		} else if (source == importYesModeButton) {
+			fireEvent(ureq, new Event("importYesMode"));
 		}
 	}
 

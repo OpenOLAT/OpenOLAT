@@ -19,7 +19,10 @@
  */
 package org.olat.collaboration;
 
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
+import org.olat.group.BusinessGroup;
 
 /**
  * 
@@ -30,5 +33,7 @@ public interface CollaborationManager {
 	public String getFolderRelPath(OLATResourceable ores);
 	
 	public Long lookupFolderAccess(OLATResourceable ores);
+	
+	public KalendarRenderWrapper getCalendar(BusinessGroup group, UserRequest ureq, boolean isAdmin);
 
 }

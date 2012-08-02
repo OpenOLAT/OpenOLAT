@@ -18,7 +18,10 @@ Preconditions:
   1.1 Do not add a password and make sure you uncheck the init Mercurial repo checkbox at the end. Right 
 	  click to clone repo into your workspace.
 
-2. In Terminal: create eclipse project settings and create .classpath file by running
+2. Setup Eclipse Environment
+  2.1 If M2_REPO Eclipse variable is missing then execute in terminal:
+   mvn -Declipse.workspace=<location of your workspace> eclipse:configure-workspace
+  2.2 In terminal: create eclipse project settings and create .classpath file by running
    mvn eclipse:clean eclipse:eclipse
 
 3. In Eclipse: refresh the project. 

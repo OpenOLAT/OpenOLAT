@@ -166,9 +166,13 @@ public class NekoHtmlPageHandler extends DefaultHandler {
 			
 			String tmpUri = uri;
 			VFSContainer tmpDir = startDir;
-			while(tmpUri.startsWith("../")) {
+			while(tmpUri.startsWith("../") && tmpDir != null) {
 				tmpDir = tmpDir.getParentContainer();
 				tmpUri = tmpUri.substring(3);
+			}
+			if (tmpDir == null) {
+				// no local file uri, return unchanged
+				return uri;
 			}
 			
 			String diffPath = getRelativeResultingPath(tmpDir);

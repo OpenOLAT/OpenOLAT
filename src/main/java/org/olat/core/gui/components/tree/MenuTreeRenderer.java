@@ -161,7 +161,6 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		
 		// render link
 		String title = curRoot.getTitle();
-		title = StringEscapeUtils.escapeHtml(title).toString();
 
 		if (markedNode != null && markedNode == curRoot) {
 			target.append("<span style=\"border:2px solid red;\">");
@@ -230,8 +229,8 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		}
 		
 		// add css class to identify level
-		target.append(" b_tree_l").append(level);	
-
+		target.append(" b_tree_l").append(level);		
+		
 		// fix needed for firefox bug when fast clicking: the onclick="try{return o2cl()}catch(e){return false}"  -> when the document is reloaded, all function js gets unloaded, but the old link can still be clicked.			
 		target.append("\" onclick=\"try {if(o2cl()){Effect.ScrollTo('b_top'); return true;} else {return false;}} catch(e){return false}\" href=\"");					
 		
@@ -247,10 +246,16 @@ public class MenuTreeRenderer implements ComponentRenderer {
 				ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent() });
 			}
 		}		
+		
 		// Add menu item title as alt hoover text
-		target.append("\" title=\"");
-		target.append(curRoot.getAltText() == null ? title : StringEscapeUtils.escapeHtml(curRoot.getAltText()).toString());
+		String alt = curRoot.getAltText();
+		if (alt != null) {
+			target.append("\" title=\"");
+			target.append(StringEscapeUtils.escapeHtml(alt).toString());
+		}
+		
 		target.append("\"");
+		
 		if (iframePostEnabled) {
 			ubu.appendTarget(target);
 		}

@@ -31,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
@@ -48,7 +47,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 @ContextConfiguration(locations={"classpath:org/olat/course/_spring/textContextDeployableRepoExport.xml"})
 public class TestDeployableRepositoryExport extends AbstractJUnit4SpringContextTests {
 	
-	@Test @Ignore
+	@Test
 	public void testZipDownloadNormalCase() {
 		DeployableCourseExport bean = (DeployableCourseExport) applicationContext.getBean("normalzip");
 		assertNotNull(bean);
@@ -56,7 +55,7 @@ public class TestDeployableRepositoryExport extends AbstractJUnit4SpringContextT
 		assertEquals(bean.getVersion(),Float.valueOf(1));
 		
 		File file = bean.getDeployableCourseZipFile();
-		assertEquals(file.getName(),"olatUserAndGroupService.jar");
+		assertEquals(file.getName(),"OpenOLAT-Help-8.1.zip");
 		assertNotNull(file);
 		assertTrue(file.exists());
 	}

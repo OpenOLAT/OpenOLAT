@@ -74,6 +74,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -98,6 +99,8 @@ import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
+import org.olat.course.db.CourseDBManager;
+import org.olat.course.db.CustomDBMainController;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
@@ -499,6 +502,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_ASSESSMENT)));
 		courseRightsCache.put(CourseRights.RIGHT_GLOSSARY, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_GLOSSARY)));
 		courseRightsCache.put(CourseRights.RIGHT_STATISTICS, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_STATISTICS)));
+		courseRightsCache.put(CourseRights.RIGHT_DB, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_DB)));
 	}
 
 	/**
@@ -829,7 +833,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				listenTo(currentToolCtr);
 				all.setContent(currentToolCtr.getInitialComponent());
 			} else throw new OLATSecurityException("clicked statistic, but no according right");
-		} else if (cmd.equals("archiver")) {
+		//fxdiff: open a panel to manage the course dbs
+		} else if (cmd.equals("customDb")) {
+			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
+				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
+				listenTo(currentToolCtr);
+				all.setContent(currentToolCtr.getInitialComponent());
+			} else throw new OLATSecurityException("clicked dbs, but no according right");
+
+		}else if (cmd.equals("archiver")) {
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 				currentToolCtr = new ArchiverMainController(ureq, getWindowControl(), course, new IArchiverCallback() {
 					public boolean mayArchiveQtiResults() {
@@ -1134,6 +1146,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				myTool.addLink("statistic", translate("command.openstatistic"));
 			}
+			//fxdiff: enable the course db menu item
+			if (CourseDBManager.getInstance().isEnabled() && (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin)) {
+				myTool.addLink("customDb", translate("command.opendb"));
+			}
 		}
 
 		// 2) add coached groups
@@ -1151,14 +1167,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
 		}
-
-		// 4) add right groups
-		/*if (rightGroups.size() > 0) {
-			myTool.addHeader(translate("header.tools.rightGroups"));
-			for (BusinessGroup group : rightGroups) {
-				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
-			}
-		}*/
 
 		// 5) add waiting-list groups
 		if (waitingListGroups.size() > 0) {
