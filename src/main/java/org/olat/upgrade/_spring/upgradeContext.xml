@@ -14,7 +14,7 @@
  	<bean id="olatUpgradeManager.enabled" class="org.olat.upgrade.UpgradeManagerImpl" lazy-init="true"  init-method="init" depends-on="folderModule">
  		<property name="dbVendor" value="${db.vendor}"/>
 		<property name="upgradesDefinitions" ref="olatupgrades"/>
-		<property name="dataSource" ref="${db.vendor}DataSource"/>
+		<property name="dataSource" ref="${db.vendor}_${db.source}_DataSource"/>
 		<property name="autoUpgradeDatabase" value="${auto.upgrade.database}" />
 	</bean>
 	<bean id="olatUpgradeManager.disabled" class="org.olat.upgrade.UpgradeManagerDummy"  init-method="init" lazy-init="true"/>

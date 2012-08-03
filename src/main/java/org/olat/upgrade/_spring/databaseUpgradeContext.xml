@@ -12,7 +12,7 @@
  		depends-on="org.olat.core.util.WebappHelper">
  		<property name="dbVendor" value="${db.vendor}"/>
 		<property name="upgradesDefinitions" ref="databaseUpgrades"/>
-		<property name="dataSource" ref="${db.vendor}DataSource"/>
+		<property name="dataSource" ref="${db.vendor}_${db.source}_DataSource"/>
 		<property name="autoUpgradeDatabase" value="${auto.upgrade.database}" />
 	</bean>
 

@@ -24,13 +24,13 @@
 	<!-- EntityManagerFactory -->
 	<bean id="emf" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
 		<property name="persistenceUnitManager" ref="pum"/>
-		<property name="jpaProperties" ref="${db.vendor}HibernateProperties"/>
+		<property name="jpaProperties" ref="${db.vendor}_${db.source}_HibernateProperties"/>
 	</bean>
 	
     <bean id="AuditInterceptor" class="org.olat.core.commons.persistence.AuditInterceptor" />
-
-	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="${db.vendor}PooledDataSource"/>
+    
+    <bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="emf"/>
 	</bean>
 
 	<bean id="database" class="org.olat.core.commons.persistence.DBImpl" destroy-method="destroy">
@@ -47,7 +47,7 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="mysqlHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+	<bean id="mysql_local_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
 			<props>
 			     <!-- Using datasource of hibernate -->
@@ -60,8 +60,19 @@
 		</constructor-arg>
 		<property name="addMoreProperties" ref="c3p0HibernateProperties" />
 	</bean>
+	
+	<bean id="mysql_jndi_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+		<constructor-arg>
+			<props>
+		     	<!-- Using datasource of hibernate -->
+				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+        	</props>            
+		</constructor-arg>
+		<property name="addMoreProperties" ref="hibernateProps" />
+	</bean>
 
-	<bean id="postgresqlHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+	<bean id="postgresql_local_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
 			<props>
 				<prop key="hibernate.connection.driver_class">org.postgresql.Driver</prop>
@@ -72,6 +83,17 @@
 	        </props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="c3p0HibernateProperties" />
+	</bean>
+	
+	<bean id="postgresql_jndi_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+		<constructor-arg>
+			<props>
+		     	<!-- Using datasource of hibernate -->
+				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+        	</props>            
+		</constructor-arg>
+		<property name="addMoreProperties" ref="hibernateProps" />
 	</bean>
 
 	<bean id="hibernateProps" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
@@ -140,10 +162,9 @@
 		<property name="addMoreProperties" ref="hibernateProps" />
 	</bean>
 
-	<!-- c3p0 pooled JDBC connection -->
-	<bean id="mysqlPooledDataSource"
+	<!-- c3p0 pooled JDBC connection
+	<bean id="mysql_local_DataSource"
 		class="com.mchange.v2.c3p0.ComboPooledDataSource" lazy-init="true" destroy-method="close">
-    	<!--  connection settings -->
     	<property name="driverClass"><value>com.mysql.jdbc.Driver</value></property>
 		<property name="jdbcUrl"><value>jdbc:mysql://${db.host}:${db.host.port}/${db.name}?useUnicode=true&amp;characterEncoding=UTF-8</value></property>
 		<property name="user" value="${db.user}" />
@@ -155,14 +176,13 @@
 		<property name="autoCommitOnClose" value="false" />
 		<property name="acquireIncrement" value="2" />
 		<property name="idleConnectionTestPeriod" value="500" />
-		<!-- property name="hibernate.c3p0.numHelperThreads" value="10" -->
+		<property name="hibernate.c3p0.numHelperThreads" value="10">
 		<property name="maxAdministrativeTaskTime" value="120" />
-	</bean>
+	</bean> -->
 	
-	<!-- c3p0 pooled JDBC connection -->
-	<bean id="postgresqlPooledDataSource"
+	<!-- c3p0 pooled JDBC connection 
+	<bean id="postgresql_local_DataSource"
 		class="com.mchange.v2.c3p0.ComboPooledDataSource" lazy-init="true" destroy-method="close">
-    	<!--  connection settings -->
     	<property name="driverClass"><value>org.postgresql.Driver</value></property>
 		<property name="jdbcUrl"><value>jdbc:postgresql://${db.host}:${db.host.port}/${db.name}</value></property>
 		<property name="user" value="${db.user}" />
@@ -174,28 +194,35 @@
 		<property name="autoCommitOnClose" value="false" />
 		<property name="acquireIncrement" value="2" />
 		<property name="idleConnectionTestPeriod" value="500" />
-		<!-- property name="hibernate.c3p0.numHelperThreads" value="10" -->
+		< property name="hibernate.c3p0.numHelperThreads" value="10">
 		<property name="maxAdministrativeTaskTime" value="120" />
-	</bean>
+	</bean> -->
 
 	<!-- The following dataresources are referenced from the statisticContext.xml and upgradeContext.xml, but are not used in the SessionFactory!
 		 The SessionFactory's DB Connection is configured with the bean "${db.vendor}HibernateProperties".-->
 
 	<!-- The mysql datasource checks upon startup whether the tables are of type InnoDB, if not it will not start. If you have an other type of transactional tables just switch back the spring config
 	to the normal  org.springframework.jdbc.datasource.DriverManagerDataSource and the check is gone.-->                  
-	<bean id="mysqlDataSource" class="org.olat.core.commons.persistence.InnoDBAwareDriverManagerDataSource" lazy-init="true" init-method="init">
+	<bean id="mysql_local_DataSource" class="org.olat.core.commons.persistence.InnoDBAwareDriverManagerDataSource" lazy-init="true" init-method="init">
 		<property name="driverClassName"><value>com.mysql.jdbc.Driver</value></property>
 		<property name="url"><value>jdbc:mysql://${db.host}:${db.host.port}/${db.name}?useUnicode=true&amp;characterEncoding=UTF-8</value></property>
 		<property name="username" value="${db.user}" />
 		<property name="password" value="${db.pass}" />
 		<property name="dbVendor" value="${db.vendor}" />
 	</bean>
+	
+	<bean id="mysql_jndi_DataSource" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="${db.jndi}"/>
+	</bean>
 
-	<bean id="postgresqlDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" lazy-init="true">
+	<bean id="postgresql_local_DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" lazy-init="true">
 		<property name="driverClassName"><value>org.postgresql.Driver</value></property>
 		<property name="url"><value>jdbc:postgresql://${db.host}:${db.host.port}/${db.name}</value></property>
 		<property name="username" value="${db.user}" />
 		<property name="password" value="${db.pass}" />
 	</bean>
-	
+
+	<bean id="postgresql_jndi_DataSource" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="${db.jndi}"/>
+	</bean>
 </beans>
