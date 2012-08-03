@@ -19,7 +19,10 @@
  */
 package org.olat.course.nodes.iq;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -27,13 +30,17 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.test.ArquillianDeployments;
+import org.olat.user.restapi.UserVO;
+import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
+import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.FunctionalVOUtil;
 
 import com.thoughtworks.selenium.DefaultSelenium;
@@ -56,21 +63,37 @@ public class FunctionalIQTestTest {
 	URL deploymentUrl;
 
 	FunctionalUtil functionalUtil;
-	FunctionalVOUtil functionalVOUtil;
 	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	FunctionalCourseUtil functionalCourseUtil;
+	FunctionalVOUtil functionalVOUtil;
+
+	UserVO user;
 	
 	@Before
-	public void setup(){
+	public void setup() throws IOException, URISyntaxException{
 		functionalUtil = new FunctionalUtil();
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 		
-		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+		
+		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
+		
+		/* create test user with REST */
+		List<UserVO> userVO = functionalVOUtil.createTestUsers(deploymentUrl, 1);
+		
+		user = userVO.get(0);
 	}
 	
 	@Test
 	@RunAsClient
 	public void checkCreate(){
+		/* login for test setup */
+		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
+		
+		/* open repository site */
+		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
+		
 		//TODO:JK: implement me
 	}
 }

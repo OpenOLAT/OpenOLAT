@@ -70,6 +70,8 @@ public class FunctionalUtil {
 	public final static String ACTIVE_CONTENT_TAB_CSS = "b_active";
 	
 	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
+	public final static String WIZARD_NEXT_CSS = "b_wizard_button_next";
+	public final static String WIZARD_FINISH_CSS = "b_wizard_button_finish";
 	
 	private String username;
 	private String password;
@@ -99,6 +101,8 @@ public class FunctionalUtil {
 	private String activeContentTabCss;
 	
 	private String formSaveXPath;
+	private String wizardNextCss;
+	private String wizardFinishCss;
 	
 	public FunctionalUtil(){
 		Properties properties = new Properties();
@@ -143,6 +147,8 @@ public class FunctionalUtil {
 		activeContentTabCss = ACTIVE_CONTENT_TAB_CSS;
 		
 		formSaveXPath = FORM_SAVE_XPATH;
+		wizardNextCss = WIZARD_NEXT_CSS;
+		wizardFinishCss = WIZARD_FINISH_CSS;
 	}
 	
 	/**
@@ -603,6 +609,14 @@ public class FunctionalUtil {
 		return(true);
 	}
 	
+	/**
+	 * @param browser
+	 * @param id
+	 * @param value
+	 * @return
+	 * 
+	 * Select an item of an option box.
+	 */
 	public boolean selectOption(Selenium browser, String id, String value){
 		StringBuffer selectLocatorBuffer = new StringBuffer();
 		
@@ -618,7 +632,43 @@ public class FunctionalUtil {
 		
 		browser.select(selectLocatorBuffer.toString(), optionLocatorBuffer.toString());
 		
-		return(false);
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @return
+	 * 
+	 * Clicks the next button of a wizard.
+	 */
+	public boolean clickWizardNext(Selenium browser){
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//form//a[contains(@class, ")
+		.append(getWizardNextCss())
+		.append(")]");
+		
+		browser.click(locatorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @return
+	 * 
+	 * Clicks the finish button of a wizard.
+	 */
+	public boolean clickWizardFinish(Selenium browser){
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//form//a[contains(@class, ")
+		.append(getWizardFinishCss())
+		.append(")]");
+		
+		browser.click(locatorBuffer.toString());
+		
+		return(true);
 	}
 	
 	public String getUsername() {
@@ -780,5 +830,21 @@ public class FunctionalUtil {
 
 	public void setFormSaveXPath(String formSaveXPath) {
 		this.formSaveXPath = formSaveXPath;
+	}
+
+	public String getWizardNextCss() {
+		return wizardNextCss;
+	}
+
+	public void setWizardNextCss(String wizardNextCss) {
+		this.wizardNextCss = wizardNextCss;
+	}
+
+	public String getWizardFinishCss() {
+		return wizardFinishCss;
+	}
+
+	public void setWizardFinishCss(String wizardFinishCss) {
+		this.wizardFinishCss = wizardFinishCss;
 	}
 }

@@ -37,6 +37,9 @@ public class FunctionalCourseUtil {
 	public final static String FORUM_FILTER_CSS = "o_sel_forum_filter";
 	
 	public final static String WIKI_CREATE_ARTICLE_CSS = "o_sel_wiki_search";
+	public final static String WIKI_ARTICLE_BOX_CSS = "o_wikimod-article-box";
+	
+	public final static String BLOG_CREATE_ENTRY_CSS = "o_sel_feed_item_new";
 	
 	private String eportfolioAddCss;
 	
@@ -48,6 +51,9 @@ public class FunctionalCourseUtil {
 	private String forumFilterCss;
 	
 	private String wikiCreateArticleCss;
+	private String wikiArticleBoxCss;
+	
+	private String blogCreateEntryCss;
 	
 	private FunctionalUtil functionalUtil;
 	private FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
@@ -66,6 +72,9 @@ public class FunctionalCourseUtil {
 		setForumFilterCss(FORUM_FILTER_CSS);
 		
 		setWikiCreateArticleCss(WIKI_CREATE_ARTICLE_CSS);
+		setWikiArticleBoxCss(WIKI_ARTICLE_BOX_CSS);
+		
+		setBlogCreateEntryCss(BLOG_CREATE_ENTRY_CSS);
 	}
 	
 	/**
@@ -117,6 +126,25 @@ public class FunctionalCourseUtil {
 	
 	/**
 	 * @param browser
+	 * @return true on success
+	 * 
+	 * Adds an artefact to eportfolio by clicking the appropriate
+	 * button.
+	 */
+	public boolean addToEportfolio(Selenium browser){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, ")
+		.append(getEportfolioAddCss())
+		.append(")]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
 	 * @param courseId
 	 * @param nth forum in the course
 	 * @return true on success, otherwise false
@@ -155,9 +183,40 @@ public class FunctionalCourseUtil {
 		if(!openForum(browser, courseId, nthForum))
 			return(false);
 		
-		//TODO:JK: implement me
+		StringBuffer selectorBuffer = new StringBuffer();
 		
-		return(false);
+		/* click open new topic */
+		selectorBuffer.append("xpath=//div[contains(@class, ")
+		.append(getForumToolbarCss())
+		.append(")]//a[contains(@class, ")
+		.append(getForumThreadNewCss())
+		.append(")]");
+		
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		/* fill in form - title */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//input[@type='text']");
+		
+		browser.type(selectorBuffer.toString(), title);
+		
+		/* fill in form - post */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//textarea");
+		
+		browser.type(selectorBuffer.toString(), message);
+		
+		/* save form */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//button[last()]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
 	}
 	
 	/**
@@ -186,10 +245,49 @@ public class FunctionalCourseUtil {
 	public boolean createWikiArticle(Selenium browser, long wikiId, String pagename, String content){
 		if(!openWiki(browser, wikiId))
 			return(false);
-			
-		//TODO:JK: implement me
 		
-		return(false);
+		/* type pagename */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//div[contains(@class, ")
+		.append(getWikiCreateArticleCss())
+		.append(")]/..//input[@type='text']");
+		
+		browser.type(selectorBuffer.toString(), pagename);
+		
+		/* click create */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//div[contains(@class, ")
+		.append(getWikiCreateArticleCss())
+		.append(")]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		/* edit content */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, ")
+		.append(getWikiArticleBoxCss())
+		.append(")]//a");
+		
+		browser.click(selectorBuffer.toString());
+		
+		/* fill in text area */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//textarea");
+		
+		browser.type(selectorBuffer.toString(), content);
+		
+		/* click save */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//button[last()]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
 	}
 	
 	/**
@@ -220,7 +318,41 @@ public class FunctionalCourseUtil {
 		if(!openBlog(browser, blogId))
 			return(false);
 		
-		//TODO:JK: implement me
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, ")
+		.append(getBlogCreateEntryCss())
+		.append(")]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		/* fill in form - title */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//input[type='text' and first()]");
+		
+		browser.type(selectorBuffer.toString(), title);
+		
+		/* fill in form - description */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//textarea[0]");
+		
+		browser.type(selectorBuffer.toString(), description);
+		
+		/* fill in form - content */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//textarea[1]");
+		
+		browser.type(selectorBuffer.toString(), content);
+		
+		/* save form */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//button[last()]");
+		
+		browser.click(selectorBuffer.toString());
 		
 		return(false);
 	}
@@ -296,6 +428,22 @@ public class FunctionalCourseUtil {
 
 	public void setWikiCreateArticleCss(String wikiCreateArticleCss) {
 		this.wikiCreateArticleCss = wikiCreateArticleCss;
+	}
+
+	public String getWikiArticleBoxCss() {
+		return wikiArticleBoxCss;
+	}
+
+	public void setWikiArticleBoxCss(String wikiArticleBoxCss) {
+		this.wikiArticleBoxCss = wikiArticleBoxCss;
+	}
+
+	public String getBlogCreateEntryCss() {
+		return blogCreateEntryCss;
+	}
+
+	public void setBlogCreateEntryCss(String blogCreateEntryCss) {
+		this.blogCreateEntryCss = blogCreateEntryCss;
 	}
 	
 }

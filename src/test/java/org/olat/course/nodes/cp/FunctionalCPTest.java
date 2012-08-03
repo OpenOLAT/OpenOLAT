@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.iq;
+package org.olat.course.nodes.cp;
 
 import java.net.URL;
 
@@ -42,7 +42,7 @@ import com.thoughtworks.selenium.DefaultSelenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 @RunWith(Arquillian.class)
-public class FunctionalPortfolioTest {
+public class FunctionalCPTest {
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();

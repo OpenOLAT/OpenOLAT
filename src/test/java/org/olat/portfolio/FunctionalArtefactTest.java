@@ -21,6 +21,7 @@ package org.olat.portfolio;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalEportfolioUtil;
+import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
@@ -92,6 +94,7 @@ public class FunctionalArtefactTest {
 	URL deploymentUrl;
 
 	FunctionalUtil functionalUtil;
+	FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	FunctionalCourseUtil functionalCourseUtil;
 	FunctionalEportfolioUtil functionalEportfolioUtil;
@@ -104,10 +107,11 @@ public class FunctionalArtefactTest {
 	public void setup() throws IOException, URISyntaxException{
 		functionalUtil = new FunctionalUtil();
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
+		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
 
 		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
 		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
-		functionalEportfolioUtil = new FunctionalEportfolioUtil(functionalUtil);
+		functionalEportfolioUtil = new FunctionalEportfolioUtil(functionalUtil, functionalHomeSiteUtil);
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 		
@@ -130,7 +134,7 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
 		
 		/* add artefact */
-		//TODO:JK: implement me
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser));
 	}
 	
 	@Test
@@ -146,7 +150,7 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
 		
 		/* add artefact */
-		//TODO:JK: implement me
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser));
 	}
 	
 	@Test
@@ -162,7 +166,7 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, vo.getKey(), BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
 		
 		/* add artefact */
-		//TODO:JK: implement me
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser));
 	}
 	
 	@Test
@@ -180,12 +184,12 @@ public class FunctionalArtefactTest {
 	
 	@Test
 	@RunAsClient
-	public void checkUploadFileArtefact() throws URISyntaxException{
+	public void checkUploadFileArtefact() throws URISyntaxException, MalformedURLException{
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 
 		/* upload file artefact */
-		Assert.assertTrue(functionalEportfolioUtil.uploadFileArtefact(browser, new File(FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_PATH).toURI()),
+		Assert.assertTrue(functionalEportfolioUtil.uploadFileArtefact(browser, FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_PATH).toURI(),
 				FILE_ARTEFACT_TITLE, FILE_ARTEFACT_DESCRIPTION,
 				FILE_ARTEFACT_TAGS,
 				FILE_ARTEFACT_BINDERPATH));

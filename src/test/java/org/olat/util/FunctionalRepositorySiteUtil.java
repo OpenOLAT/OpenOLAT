@@ -62,6 +62,20 @@ public class FunctionalRepositorySiteUtil {
 		LAST_ACCESS,
 		DETAILED_VIEW;
 	}
+	
+	public final static String CP_LEARNING_CONTENT_ALIAS = "cp";
+	public final static String WIKI_ALIAS = "wiki";
+	public final static String PODCAST_ALIAS = "podcast";
+	public final static String BLOG_ALIAS = "blog";
+	public final static String PORTFOLIO_ALIAS = "portfolio";
+	public final static String IQTEST_ALIAS = "iqtest";
+	public final static String QUESTIONAIRE_ALIAS = "iqsurv";
+	public final static String RESOURCE_FOLDER_ALIAS = "bc";
+	public final static String GLOSSARY_ALIAS = "glossary";
+	
+	public enum CourseNode {
+		
+	}
 
 	public final static String TITLE_OF_LEARNING_RESOURCE_CSS = "o_sel_repo_search_displayname";
 	public final static String AUTHOR_CSS = "o_sel_repo_search_author";
@@ -372,6 +386,18 @@ public class FunctionalRepositorySiteUtil {
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		return(true);
+	}
+	
+	public String findCssClassOfCourseAlias(String descriptor){
+		//TODO:JK: implement me
+		
+		return(null);
+	}
+	
+	public boolean createCourseNode(Selenium browser, String descriptor, String title, String description){
+		//TODO:JK: implement me
+		
+		return(false);
 	}
 	
 	public String getRepositorySiteMenuTreeSelectedCss() {
