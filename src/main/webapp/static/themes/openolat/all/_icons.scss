@@ -49,6 +49,14 @@ option.b_with_small_icon_left {
 	background-repeat: no-repeat;
 }
 
+td a span.b_small_table_icon, td a.b_small_table_icon {
+	padding-left:20px;
+	width: 16px;
+	height: 16px;
+	background-position: 2px 50%;
+	background-repeat: no-repeat;
+}
+
 a.b_small_icon:hover {
 	// a link containing no text (just a small icon as background) should not display underline while hovering
 	text-decoration:none; 

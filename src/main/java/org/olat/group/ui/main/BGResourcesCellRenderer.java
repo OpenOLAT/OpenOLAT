@@ -80,6 +80,7 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 						break;
 					} else {
 						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
+						link.setCustomEnabledLinkCSS("b_small_table_icon o_CourseModule_icon");
 						link.setCustomDisplayText(relation.getDisplayname());
 						link.setUserObject(relation);
 						
