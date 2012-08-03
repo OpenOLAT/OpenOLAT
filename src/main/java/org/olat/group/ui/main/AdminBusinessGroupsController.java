@@ -19,6 +19,8 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -28,6 +30,8 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -84,26 +88,40 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), TABLE_ACTION_ACCESS, getLocale()));
 		return 9;
 	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(state instanceof SearchEvent) {
+			searchController.activate(ureq, entries, state);
+			doSearch(ureq, (SearchEvent)state);
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == searchController) {
 			if(event instanceof SearchEvent) {
-				doSearch((SearchEvent)event);
+				doSearch(ureq, (SearchEvent)event);
 			}
 		}
 		super.event(ureq, source, event);
 	}
 	
-	private void doSearch(SearchEvent event) {
+	private void doSearch(UserRequest ureq, SearchEvent event) {
 		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
 
 		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
 		params.setOwner(false);
 		params.setAttendee(false);
 		params.setWaiting(false);
-		
 		updateTableModel(params, false);
+		
+		//back button
+		ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
+		if(currentEntry != null) {
+			currentEntry.setTransientState(event);
+		}
+		addToHistory(ureq, this);
 
 		if(isLogDebugEnabled()) {
 			logDebug("Group search takes (ms): " + (System.currentTimeMillis() - start), null);

@@ -23,6 +23,7 @@ import java.util.Collections;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.group.model.SearchBusinessGroupParams;
 
@@ -30,7 +31,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SearchEvent extends Event {
+public class SearchEvent extends Event implements StateEntry {
 
 	private static final long serialVersionUID = 6630250536374073143L;
 	
@@ -155,5 +156,22 @@ public class SearchEvent extends Event {
 		params.setIdentity(identity);
 		params.setHeadless(isHeadless());
 		return params;
+	}
+
+	@Override
+	public SearchEvent clone() {
+		SearchEvent clone = new SearchEvent();
+		clone.id = id;
+		clone.name = name;
+		clone.description = description;
+		clone.ownerName = ownerName;
+		clone.courseTitle = courseTitle;
+		clone.owner = owner;
+		clone.attendee = attendee;
+		clone.waiting = waiting;
+		clone.headless = headless;
+		clone.publicGroups = publicGroups;
+		clone.resources = resources;
+		return clone;
 	}
 }

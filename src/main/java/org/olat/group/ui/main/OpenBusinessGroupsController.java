@@ -19,6 +19,8 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -26,28 +28,34 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomCellRenderer;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OpenBusinessGroupsController extends AbstractBusinessGroupListController {
+public class OpenBusinessGroupsController extends BasicController implements Activateable2 {
 	
 	private final Link allOpenLink, searchOpenLink;
 	private final SegmentViewComponent segmentView;
-	private final OpenBusinessGroupSearchController searchController;
+	private final VelocityContainer mainVC;
+	
+	private OpenBusinessGroupListController listController;
+	private SearchOpenBusinessGroupListController searchController;
 
 	public OpenBusinessGroupsController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "open");
+		super(ureq, wControl);
+		
+		mainVC = createVelocityContainer("open_group_overview");
 		
 		//segment view
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -55,38 +63,17 @@ public class OpenBusinessGroupsController extends AbstractBusinessGroupListContr
 		segmentView.addSegment(allOpenLink, true);
 		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
 		segmentView.addSegment(searchOpenLink, false);
-
-		//search controller
-		searchController = new OpenBusinessGroupSearchController(ureq, wControl);
-		listenTo(searchController);
-		mainVC.put("search", searchController.getInitialComponent());
-		searchController.getInitialComponent().setVisible(false);
 		
-		updateOpenGroupModel();
+		getOpenGroups(ureq);
+		
+		putInitialPanel(mainVC);
 	}
 	
 	@Override
-	protected void initButtons(UserRequest ureq) {
+	protected void doDispose() {
 		//
 	}
 
-	@Override
-	protected int initColumns() {
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
-		CustomCellRenderer resourcesRenderer = new BGResourcesCellRenderer(this, mainVC, getTranslator());
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.resources.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, resourcesRenderer));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH, getLocale()));
-		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
-		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getLocale());
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
-		groupListCtr.addColumnDescriptor(new AccessActionColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), getTranslator()));
-		return 8;
-	}
-	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
@@ -95,42 +82,52 @@ public class OpenBusinessGroupsController extends AbstractBusinessGroupListContr
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == allOpenLink) {
-					updateOpenGroupModel();
+					getOpenGroups(ureq);
 				} else if (clickedLink == searchOpenLink){
-					updateSearchGroupModel(null);
+					getSearchGroupsController(ureq);
 				}
-				searchController.getInitialComponent().setVisible(clickedLink == searchOpenLink);
 			}
 		}
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == searchController) {
-			if(event instanceof SearchEvent) {
-				updateSearchGroupModel((SearchEvent)event);
-			}
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String segment = entry.getOLATResourceable().getResourceableTypeName();
+		if("All".equals(segment)) {
+			getOpenGroups(ureq).activate(ureq, entries.subList(1, entries.size()), entry.getTransientState());
+			segmentView.select(allOpenLink);
+		} else if ("Search".equals(segment)) {
+			getSearchGroupsController(ureq).activate(ureq, entries.subList(1, entries.size()), entry.getTransientState());
+			segmentView.select(searchOpenLink);
 		}
-		super.event(ureq, source, event);
 	}
 
-	private void updateSearchGroupModel(SearchEvent event) {
-		if(event == null) {
-			updateTableModel(null, false);
-		} else {
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			params.setName(event.getName());
-			params.setDescription(event.getDescription());
-			params.setOwnerName(event.getOwnerName());
-			params.setPublicGroups(Boolean.TRUE);
-			updateTableModel(params, false);
+	private SearchOpenBusinessGroupListController getSearchGroupsController(UserRequest ureq) {
+		if(searchController == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			searchController = new SearchOpenBusinessGroupListController(ureq, bwControl);
+			listenTo(searchController);
 		}
+		
+		mainVC.put("groupList", searchController.getInitialComponent());
+		addToHistory(ureq, searchController);
+		return searchController;
 	}
 	
-	private void updateOpenGroupModel() {
-		//find all accessible business groups
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setPublicGroups(Boolean.TRUE);
-		updateTableModel(params, false);
+	private OpenBusinessGroupListController getOpenGroups(UserRequest ureq) {
+		if(listController == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("All", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			listController = new OpenBusinessGroupListController(ureq, bwControl);
+			listenTo(listController);
+		}
+		
+		mainVC.put("groupList", listController.getInitialComponent());
+		addToHistory(ureq, listController);
+		return listController;
 	}
 }

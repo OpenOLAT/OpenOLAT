@@ -22,7 +22,6 @@ package org.olat.group.ui.main;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -39,104 +38,77 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SearchBusinessGroupListController extends AbstractBusinessGroupListController {
+public class SearchOpenBusinessGroupListController extends AbstractBusinessGroupListController {
 	
+	private final OpenBusinessGroupSearchController searchController;
 
-	private final BusinessGroupSearchController searchController;
-	
-	public SearchBusinessGroupListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list_search");
+	public SearchOpenBusinessGroupListController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "open_group_list");
 
 		//search controller
-		searchController = new BusinessGroupSearchController(ureq, wControl, isAdmin(), true, false);
+		searchController = new OpenBusinessGroupSearchController(ureq, wControl);
 		listenTo(searchController);
 		mainVC.put("search", searchController.getInitialComponent());
 	}
-
+	
 	@Override
 	protected void initButtons(UserRequest ureq) {
-		initButtons(ureq, true);
-		groupListCtr.setMultiSelect(true);
-		groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
-		groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
-		groupListCtr.addMultiSelectAction("table.users.management", TABLE_ACTION_USERS);
-		groupListCtr.addMultiSelectAction("table.config", TABLE_ACTION_CONFIG);
-		groupListCtr.addMultiSelectAction("table.email", TABLE_ACTION_EMAIL);
-		groupListCtr.addMultiSelectAction("table.delete", TABLE_ACTION_DELETE);
+		//
 	}
 
 	@Override
 	protected int initColumns() {
-		CustomCellRenderer markRenderer = new BGMarkCellRenderer(this, mainVC, getTranslator());
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.mark.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, markRenderer));
+		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH, getLocale()));
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
+		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale()));
 		CustomCellRenderer resourcesRenderer = new BGResourcesCellRenderer(this, mainVC, getTranslator());
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.resources.i18n(), Cols.resources.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, resourcesRenderer));
+		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH, getLocale()));
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.lastUsage.i18n(), Cols.lastUsage.ordinal(), null, getLocale()));
 		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getLocale());
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
-		groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE, translate("table.header.leave"), null));
-		return 11;
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == searchController) {
-			if(event instanceof SearchEvent) {
-				doSearch(ureq, (SearchEvent)event);
-			}
-		}
-		super.event(ureq, source, event);
+		groupListCtr.addColumnDescriptor(new AccessActionColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), getTranslator()));
+		return 8;
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(state instanceof SearchEvent) {
 			searchController.activate(ureq, entries, state);
-			doSearch(ureq, (SearchEvent)state);
+			updateSearchGroupModel(ureq, (SearchEvent)state);
 		}
 	}
 
-	protected void updateSearch(UserRequest ureq) {
-		doSearch(ureq, null);
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == searchController) {
+			if(event instanceof SearchEvent) {
+				updateSearchGroupModel(ureq, (SearchEvent)event);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
-	private void doSearch(UserRequest ureq, SearchEvent event) {
-		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
 
-		search(event);
-		
-		//back button
-		ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
-		if(currentEntry != null) {
-			currentEntry.setTransientState(event);
-		}
-		addToHistory(ureq, this);
-		
-		if(isLogDebugEnabled()) {
-			logDebug("Group search takes (ms): " + (System.currentTimeMillis() - start), null);
-		}
-	}
-
-	private void search(SearchEvent event) {
+	private void updateSearchGroupModel(UserRequest ureq, SearchEvent event) {
 		if(event == null) {
 			updateTableModel(null, false);
 		} else {
-			SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
-			//security
-			if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()
-					&& (params.getPublicGroups() == null || !params.getPublicGroups().booleanValue())) {
-				params.setOwner(true);
-				params.setAttendee(true);
-				params.setWaiting(true);
-			}
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			params.setName(event.getName());
+			params.setDescription(event.getDescription());
+			params.setOwnerName(event.getOwnerName());
+			params.setPublicGroups(Boolean.TRUE);
 			updateTableModel(params, false);
 		}
+
+		//back button
+		ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
+		if(currentEntry != null && event != null) {
+			currentEntry.setTransientState(event);
+		}
+		addToHistory(ureq, this);
 	}
 }

@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -58,6 +59,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
@@ -93,7 +96,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-abstract class AbstractBusinessGroupListController extends BasicController {
+abstract class AbstractBusinessGroupListController extends BasicController implements Activateable2 {
 	protected static final String TABLE_ACTION_LEAVE = "bgTblLeave";
 	protected static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
 	protected static final String TABLE_ACTION_ACCESS = "bgTblAccess";
@@ -166,7 +169,6 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		if(create && canCreateBusinessGroup(ureq)) {
 			createButton = LinkFactory.createButton("create.group", mainVC, this);
 		}
-		
 	}
 	
 	protected boolean canCreateBusinessGroup(UserRequest ureq) {
@@ -190,6 +192,11 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 		//
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link && source.getComponentName().startsWith("repo_entry_")) {
@@ -273,20 +280,21 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				boolean withEmail = deleteDialogBox.isSendMail();
 				List<BusinessGroup> groupsToDelete = deleteDialogBox.getGroupsToDelete();
 				doDelete(ureq, withEmail, groupsToDelete);
-				reload();
+				reloadModel();
 			}
 			cmc.deactivate();
 			cleanUpPopups();
 		} else if (source == leaveDialogBox) {
 			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
 				doLeave(ureq, (BusinessGroup)leaveDialogBox.getUserObject());
+				reloadModel();
 			}
 		} else if (source == groupCreateController) {
 			BusinessGroup group = null;
 			if(event == Event.DONE_EVENT) {
 				group = groupCreateController.getCreatedGroup();
 				if(group != null) {
-					reload();
+					reloadModel();
 				}
 			}
 			cmc.deactivate();
@@ -302,7 +310,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				removeAsListenerAndDispose(businessGroupWizard);
 				businessGroupWizard = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					reload();
+					reloadModel();
 				}
 			}
 		} else if (source == userManagementController) {
@@ -321,6 +329,7 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 				MembershipModification mod = sendMail.getModifications();
 				List<BusinessGroup> groups = sendMail.getGroups();
 				finishUserManagement(mod, groups, sendMail, userManagementSendMailController.isSendMail());
+				reloadModel();
 			}
 			cmc.deactivate();
 			cleanUpPopups();
@@ -354,13 +363,6 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 	protected void doLaunch(UserRequest ureq, BusinessGroup group) {
 		String businessPath = "[BusinessGroup:" + group.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-	
-	/**
-	 * Reload the table with the last search parameters
-	 */
-	protected void reload() {
-		updateTableModel(lastSearchParams, false);
 	}
 	
 	/**
@@ -657,6 +659,10 @@ abstract class AbstractBusinessGroupListController extends BasicController {
 			}
 		}
 		showInfo("info.group.deleted");
+	}
+	
+	protected void reloadModel() {
+		updateTableModel(lastSearchParams, false);
 	}
 	
 	protected List<BusinessGroupView> updateTableModel(SearchBusinessGroupParams params, boolean alreadyMarked) {

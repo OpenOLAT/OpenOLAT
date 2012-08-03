@@ -19,6 +19,8 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,6 +33,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -42,7 +48,7 @@ import org.olat.core.gui.control.WindowControl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 //fxdiff VCRP-1,2: access control of resources
-public class BusinessGroupSearchController extends FormBasicController{
+public class BusinessGroupSearchController extends FormBasicController implements Activateable2 {
 
 	private TextElement id; // only for admins
 	private TextElement displayName;
@@ -220,6 +226,14 @@ public class BusinessGroupSearchController extends FormBasicController{
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(state instanceof SearchEvent) {
+			setSearchEvent((SearchEvent)state);
+			
+		}
+	}
+
+	@Override
 	protected void formOK (UserRequest ureq) {
 		fireSearchEvent(ureq);
 	}
@@ -231,6 +245,53 @@ public class BusinessGroupSearchController extends FormBasicController{
 		}
 	}
 	
+	private void setSearchEvent(SearchEvent e) {
+		if(e.getId() != null && id != null) {
+			id.setValue(e.getId().toString());
+		}
+		if(StringHelper.containsNonWhitespace(e.getName())) {
+			displayName.setValue(e.getName());
+		}
+		if(StringHelper.containsNonWhitespace(e.getDescription())) {
+			description.setValue(e.getDescription());
+		}
+		if(StringHelper.containsNonWhitespace(e.getOwnerName())) {
+			owner.setValue(e.getOwnerName());
+		}
+		if(StringHelper.containsNonWhitespace(e.getCourseTitle())) {
+			courseTitle.setValue(e.getCourseTitle());
+		}
+		if(e.isHeadless() && headlessEl != null) {
+			headlessEl.select("headless", true);
+		}
+		if(rolesEl != null) {
+			if(e.isOwner() && e.isAttendee() && e.isWaiting()) {
+				rolesEl.select("all", true);
+			} else if(e.isOwner()) {
+				rolesEl.select("owner", true);
+			} else if(e.isAttendee()) {
+				rolesEl.select("attendee", true);
+			} else if(e.isWaiting()) {
+				rolesEl.select("waiting", true);
+			}
+		}
+		if(e.getPublicGroups() != null && publicEl != null) {
+			if(e.getPublicGroups().booleanValue()) {
+				publicEl.select("yes", true);
+			} else {
+				publicEl.select("no", true);
+			}
+		}
+		
+		if(e.getResources() != null && resourceEl != null) {
+			if(e.getResources().booleanValue()) {
+				resourceEl.select("yes", true);
+			} else {
+				resourceEl.select("no", true);
+			}
+		}
+	}
+
 	private void fireSearchEvent(UserRequest ureq) {
 		SearchEvent e = new SearchEvent();
 		e.setId(getId());

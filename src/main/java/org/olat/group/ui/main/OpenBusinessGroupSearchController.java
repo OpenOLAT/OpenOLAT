@@ -20,6 +20,8 @@
 
 package org.olat.group.ui.main;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,6 +32,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -40,7 +46,7 @@ import org.olat.core.gui.control.WindowControl;
  * Initial Date:  21 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OpenBusinessGroupSearchController extends FormBasicController{
+public class OpenBusinessGroupSearchController extends FormBasicController implements Activateable2 {
 
 	private TextElement displayName;
 	private TextElement owner;
@@ -114,6 +120,13 @@ public class OpenBusinessGroupSearchController extends FormBasicController{
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(state instanceof SearchEvent) {
+			setSearchEvent((SearchEvent)state);
+		}
+	}
+
+	@Override
 	protected void formOK (UserRequest ureq) {
 		fireSearchEvent(ureq);
 	}
@@ -122,6 +135,18 @@ public class OpenBusinessGroupSearchController extends FormBasicController{
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {
 			fireSearchEvent(ureq);
+		}
+	}
+	
+	private void setSearchEvent(SearchEvent e) {
+		if(StringHelper.containsNonWhitespace(e.getName())) {
+			displayName.setValue(e.getName());
+		}
+		if(StringHelper.containsNonWhitespace(e.getDescription())) {
+			description.setValue(e.getDescription());
+		}
+		if(StringHelper.containsNonWhitespace(e.getOwnerName())) {
+			owner.setValue(e.getOwnerName());
 		}
 	}
 	

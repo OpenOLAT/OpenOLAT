@@ -1,5 +1,7 @@
 package org.olat.group.ui.main;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -8,9 +10,16 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -19,7 +28,7 @@ import org.olat.core.gui.control.controller.BasicController;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OverviewBusinessGroupListController extends BasicController {
+public class OverviewBusinessGroupListController extends BasicController implements Activateable2 {
 	
 	private final Link markedGroupsLink, allGroupsLink, ownedGroupsLink, searchOpenLink;
 	private final SegmentViewComponent segmentView;
@@ -35,7 +44,7 @@ public class OverviewBusinessGroupListController extends BasicController {
 		
 		mainVC = createVelocityContainer("group_list_overview");
 		
-		boolean marked = updateMarkedGroups(ureq);
+		boolean marked = updateMarkedGroups(ureq).updateMarkedGroups();
 		if(!marked) {
 			updateAllGroups(ureq);
 		}
@@ -53,6 +62,11 @@ public class OverviewBusinessGroupListController extends BasicController {
 		
 		putInitialPanel(mainVC);
 	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -61,54 +75,87 @@ public class OverviewBusinessGroupListController extends BasicController {
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
+				Controller selectedController = null;
 				if (clickedLink == markedGroupsLink) {
-					updateMarkedGroups(ureq);
+					selectedController = updateMarkedGroups(ureq);
 				} else if (clickedLink == allGroupsLink){
-					updateAllGroups(ureq);
+					selectedController = updateAllGroups(ureq);
 				} else if (clickedLink == ownedGroupsLink){
-					updateOwnedGroups(ureq);
+					selectedController = updateOwnedGroups(ureq);
 				} else if (clickedLink == searchOpenLink) {
-					doSearch(ureq, null);
+					selectedController = updateSearch(ureq);
 				}
+				addToHistory(ureq, selectedController);
 			}
 		}
 	}
-
+	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	private boolean updateMarkedGroups(UserRequest ureq) {
-		if(favoritGroupsCtrl == null) {
-			favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, getWindowControl());
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String segment = entry.getOLATResourceable().getResourceableTypeName();
+		List<ContextEntry> subEntries = entries.subList(1, entries.size());
+		if("Favorits".equals(segment)) {
+			updateMarkedGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+			segmentView.select(markedGroupsLink);
+		} else if("AllGroups".equals(segment)) {
+			updateAllGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+			segmentView.select(allGroupsLink);
+		} else if("OwnedGroups".equals(segment)) {
+			updateOwnedGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+			segmentView.select(ownedGroupsLink);
+		} else if("Search".equals(segment)) {
+			updateSearch(ureq).activate(ureq, subEntries, entry.getTransientState());
+			segmentView.select(searchOpenLink);
 		}
-		boolean hasMark = favoritGroupsCtrl.updateMarkedGroups();
+	}
+
+	private FavoritBusinessGroupListController updateMarkedGroups(UserRequest ureq) {
+		if(favoritGroupsCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl);
+		}
 		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
-		return hasMark;
+		addToHistory(ureq, favoritGroupsCtrl);
+		return favoritGroupsCtrl;
 	}
 	
-	private void updateAllGroups(UserRequest ureq) {
+	private BusinessGroupListController updateAllGroups(UserRequest ureq) {
 		if(allGroupsCtrl == null) {
-			allGroupsCtrl = new BusinessGroupListController(ureq, getWindowControl());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AllGroups", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			allGroupsCtrl = new BusinessGroupListController(ureq, bwControl);
 		}
 		allGroupsCtrl.updateAllGroups();
 		mainVC.put("groupList", allGroupsCtrl.getInitialComponent());
+		addToHistory(ureq, allGroupsCtrl);
+		return allGroupsCtrl;
 	}
 	
-	private void updateOwnedGroups(UserRequest ureq) {
+	private OwnedBusinessGroupListController updateOwnedGroups(UserRequest ureq) {
 		if(ownedGroupsCtrl == null) {
-			ownedGroupsCtrl = new OwnedBusinessGroupListController(ureq, getWindowControl());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("OwnedGroups", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			ownedGroupsCtrl = new OwnedBusinessGroupListController(ureq, bwControl);
 		}
 		ownedGroupsCtrl.updateOwnedGroups();
 		mainVC.put("groupList", ownedGroupsCtrl.getInitialComponent());
+		addToHistory(ureq, ownedGroupsCtrl);
+		return ownedGroupsCtrl;
 	}
 	
-	private void doSearch(UserRequest ureq, Object obj) {
+	private SearchBusinessGroupListController updateSearch(UserRequest ureq) {
 		if(searchGroupsCtrl == null) {
-			searchGroupsCtrl = new SearchBusinessGroupListController(ureq, getWindowControl());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl);
 		}
-		searchGroupsCtrl.updateSearch();
+		searchGroupsCtrl.updateSearch(ureq);
 		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());
+		addToHistory(ureq, searchGroupsCtrl);
+		return searchGroupsCtrl;
 	}
 }
