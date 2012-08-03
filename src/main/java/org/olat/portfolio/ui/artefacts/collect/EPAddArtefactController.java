@@ -77,6 +77,7 @@ public class EPAddArtefactController extends BasicController {
 		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		addLinkVC = createVelocityContainer("addLink");
 		addBtn = LinkFactory.createButton("add.artefact", addLinkVC, this);
+		addBtn.setElementCssClass("o_sel_add_artfeact");
 		putInitialPanel(addLinkVC);
 	}
 
@@ -85,15 +86,18 @@ public class EPAddArtefactController extends BasicController {
 		EPArtefactHandler<?> textHandler = portfolioModule.getArtefactHandler(EPTextArtefact.TEXT_ARTEFACT_TYPE);
 		if (textHandler != null && textHandler.isEnabled()) {
 			textBtn = LinkFactory.createLink("add.text.artefact", addPage, this);
+			textBtn.setElementCssClass("o_sel_add_text_artfeact");
 		}
 		EPArtefactHandler<?> fileHandler = portfolioModule.getArtefactHandler(FileArtefact.FILE_ARTEFACT_TYPE);
 		if (fileHandler != null && fileHandler.isEnabled()) {
 			uploadBtn = LinkFactory.createLink("add.artefact.upload", addPage, this);
+			uploadBtn.setElementCssClass("o_sel_add_upload_artfeact");
 		}
 		EPArtefactHandler<?> liveblogHandler = portfolioModule.getArtefactHandler(LiveBlogArtefact.TYPE);
 		if (liveblogHandler != null && liveblogHandler.isEnabled()) {
 			liveBlogBtn = LinkFactory.createLink("add.artefact.liveblog", addPage, this);
 			liveBlogBtn.setCustomDisplayText(translate("add.artefact.blog"));
+			liveBlogBtn.setElementCssClass("o_sel_add_liveblog_artfeact");
 		}
 		
 		importBtn = LinkFactory.createLink("add.artefact.import", addPage, this); // not yet available, for v2 when import/export exists
