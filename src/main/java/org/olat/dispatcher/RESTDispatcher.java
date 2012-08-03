@@ -190,7 +190,11 @@ public class RESTDispatcher implements Dispatcher {
 				} else if (Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER") == null) {
 					// Session is already available, but no main window (Head-less REST
 					// session). Only create the base chief controller and the window
-					AuthHelper.createAuthHome(ureq);
+					Window currentWindow = AuthHelper.createAuthHome(ureq).getWindow();
+					//the user is authenticated successfully with a security token, we can set the authenticated path
+					currentWindow.setUriPrefix(WebappHelper.getServletContextPath() + DispatcherAction.PATH_AUTHENTICATED);
+					Windows ws = Windows.getWindows(ureq);
+					ws.registerWindow(currentWindow);
 					// no need to call setIdentityAsActive as this was already done by RestApiLoginFilter...
 				}
 			}
@@ -293,11 +297,11 @@ public class RESTDispatcher implements Dispatcher {
 	private String getRedirectToURL(UserSession usess) {
 		ChiefController cc = (ChiefController) Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
 		Window w = cc.getWindow();
-		
-		URLBuilder ubu = new URLBuilder("", w.getInstanceId(), String.valueOf(w.getTimestamp()), null);
+
+		URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherAction.PATH_AUTHENTICATED, w.getInstanceId(), String.valueOf(w.getTimestamp()), null);
 		StringOutput sout = new StringOutput(30);
 		ubu.buildURI(sout, null, null);
 		
-		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_AUTHENTICATED + sout.toString();
+		return sout.toString();
 	}
 }
