@@ -250,8 +250,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 					groupListModel.removeBusinessGroup(businessGroup);
 					groupListCtr.modelChanged();
 				} else if(actionid.equals(TABLE_ACTION_LAUNCH)) {
-					String businessPath = "[BusinessGroup:" + businessGroupKey + "]";
-					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+					doLaunch(ureq, businessGroup);
 				} else if(actionid.equals(TABLE_ACTION_LEAVE)) {
 					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", businessGroup.getName()), leaveDialogBox);
 					leaveDialogBox.setUserObject(businessGroup);

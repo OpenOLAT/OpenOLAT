@@ -21,6 +21,7 @@ package org.olat.group.ui.main;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -31,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -90,7 +92,16 @@ public class SearchOpenBusinessGroupListController extends AbstractBusinessGroup
 		}
 		super.event(ureq, source, event);
 	}
-
+	
+	@Override
+	protected void doLaunch(UserRequest ureq, BusinessGroup group) {	
+		if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
+			super.doLaunch(ureq, group);
+		} else {
+			String businessPath = "[GroupCard:" + group.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		}
+	}
 
 	private void updateSearchGroupModel(UserRequest ureq, SearchEvent event) {
 		if(event == null) {

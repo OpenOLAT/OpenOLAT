@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.main;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -27,6 +28,7 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -64,6 +66,16 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 		return 8;
 	}
 	
+	@Override
+	protected void doLaunch(UserRequest ureq, BusinessGroup group) {	
+		if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
+			super.doLaunch(ureq, group);
+		} else {
+			String businessPath = "[GroupCard:" + group.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		}
+	}
+
 	private void updateOpenGroupModel(UserRequest ureq) {
 		//find all accessible business groups
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();

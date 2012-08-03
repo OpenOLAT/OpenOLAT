@@ -39,9 +39,20 @@ import org.olat.group.site.GroupsSite;
 public class BusinessGroupModule extends AbstractOLATModule {
 
 	public static String ORES_TYPE_GROUP = OresHelper.calculateTypeName(BusinessGroup.class);
+	
+	private static final String USER_ALLOW_CREATE_BG = "user.allowed.create";
+	private static final String AUTHOR_ALLOW_CREATE_BG = "author.allowed.create";
+	private static final String CONTACT_BUSINESS_CARD = "contact.business.card";
+	
+	public static final String CONTACT_BUSINESS_CARD_NEVER = "never";
+	public static final String CONTACT_BUSINESS_CARD_ALWAYS = "always";
+	public static final String CONTACT_BUSINESS_CARD_GROUP_CONFIG = "groupconfig";
+
 
 	private boolean userAllowedCreate;
 	private boolean authorAllowedCreate;
+	private String contactBusinessCard;
+	
 	
 	/**
 	 * [used by spring]
@@ -58,17 +69,24 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		// Add controller factory extension point to launch groups
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(BusinessGroup.class.getSimpleName(),
 				new BusinessGroupContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("GroupCard",
+				new BusinessGroupCardContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(GroupsSite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(GroupsSite.class));
 		
 		//set properties
-		String userAllowed = getStringPropertyValue("user.allowed.create", true);
+		String userAllowed = getStringPropertyValue(USER_ALLOW_CREATE_BG, true);
 		if(StringHelper.containsNonWhitespace(userAllowed)) {
 			userAllowedCreate = "true".equals(userAllowed);
 		}
-		String authorAllowed = getStringPropertyValue("author.allowed.create", true);
+		String authorAllowed = getStringPropertyValue(AUTHOR_ALLOW_CREATE_BG, true);
 		if(StringHelper.containsNonWhitespace(authorAllowed)) {
 			authorAllowedCreate = "true".equals(authorAllowed);
+		}
+		
+		String contactAllowed = getStringPropertyValue(CONTACT_BUSINESS_CARD, true);
+		if(StringHelper.containsNonWhitespace(contactAllowed)) {
+			contactBusinessCard = contactAllowed;
 		}
 	}
 
@@ -77,8 +95,9 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	 */
 	@Override
 	protected void initDefaultProperties() {
-		userAllowedCreate = getBooleanConfigParameter("user.allowed.create", true);
-		authorAllowedCreate = getBooleanConfigParameter("author.allowed.create", true);
+		userAllowedCreate = getBooleanConfigParameter(USER_ALLOW_CREATE_BG, true);
+		authorAllowedCreate = getBooleanConfigParameter(AUTHOR_ALLOW_CREATE_BG, true);
+		contactBusinessCard = getStringConfigParameter(CONTACT_BUSINESS_CARD, CONTACT_BUSINESS_CARD_NEVER, true);
 	}
 
 	@Override
@@ -96,7 +115,7 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	}
 
 	public void setUserAllowedCreate(boolean userAllowedCreate) {
-		setStringProperty("user.allowed.create", Boolean.toString(userAllowedCreate), true);
+		setStringProperty(USER_ALLOW_CREATE_BG, Boolean.toString(userAllowedCreate), true);
 	}
 
 	public boolean isAuthorAllowedCreate() {
@@ -104,6 +123,16 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	}
 
 	public void setAuthorAllowedCreate(boolean authorAllowedCreate) {
-		setStringProperty("author.allowed.create", Boolean.toString(authorAllowedCreate), true);
+		setStringProperty(AUTHOR_ALLOW_CREATE_BG, Boolean.toString(authorAllowedCreate), true);
 	}
+
+	public String getContactBusinessCard() {
+		return contactBusinessCard;
+	}
+
+	public void setContactBusinessCard(String contactBusinessCard) {
+		setStringProperty(CONTACT_BUSINESS_CARD, contactBusinessCard, true);
+	}
+	
+	
 }

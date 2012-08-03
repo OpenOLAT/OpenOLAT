@@ -51,7 +51,9 @@ public class TreeHelper {
 	 * @return the first treenode with the given user object or null if not found
 	 */
 	public static TreeNode findNodeByUserObject(Object userObject, TreeNode node) {
-		if (node.getUserObject().equals(userObject)) return node;
+		if (node.getUserObject() != null && node.getUserObject().equals(userObject)) {
+			return node;
+		}
 		int childcnt = node.getChildCount();
 		for (int i = 0; i < childcnt; i++) {
 			TreeNode child = (TreeNode) node.getChildAt(i);

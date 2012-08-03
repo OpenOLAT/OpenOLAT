@@ -34,6 +34,9 @@
 			<value>
 				user.allowed.create=${group.user.create}
 				author.allowed.create=${group.author.create}
+				<!-- Show the contact form in the business group card.
+				     Values are: never,always,groupconfig -->
+				contact.business.card=${group.card.contact}
 			</value>
 		</property>
 	</bean>

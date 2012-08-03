@@ -28,27 +28,22 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
-import org.olat.group.ui.BGControllerFactory;
+import org.olat.group.ui.homepage.GroupInfoMainController;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 
 /**
- * <h3>Description:</h3>
- * <p>
- * This class can create run controllers for business groups for a given context
- * entry
- * <p>
- * Initial Date: 19.08.2009 <br>
  * 
- * @author gnaegi, gnaegi@frentix.com, www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+public class BusinessGroupCardContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		OLATResourceable ores = ce.getOLATResourceable();
 
@@ -57,10 +52,12 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 		Controller ctrl = null;
 		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
 		if(bgroup != null) {
+			// check if allowed to start (must be member or admin)
 			//fxdiff VCRP-1,2: access control of resources
 			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
 					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
-				ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup);
+				// only olatadmins or admins of this group can administer this group
+				ctrl = new GroupInfoMainController(ureq, wControl, bgroup);
 			}
 		}
 		return ctrl;

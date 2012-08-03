@@ -173,7 +173,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		lastTime("table.header.lastTime"),
 		key("table.header.key"),
 		freePlaces("table.header.freePlaces"),
-		wrapper("");
+		wrapper(""),
+		card("table.header.businesscard");
 		
 		private final String i18n;
 		
