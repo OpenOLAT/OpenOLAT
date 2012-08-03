@@ -27,10 +27,12 @@ import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -83,6 +85,7 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 		updateTableModel(params, false);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("All", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		addToHistory(ureq, ores, null);
 	}
 }

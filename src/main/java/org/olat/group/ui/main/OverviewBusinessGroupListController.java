@@ -19,7 +19,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -115,6 +117,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	private FavoritBusinessGroupListController updateMarkedGroups(UserRequest ureq) {
 		if(favoritGroupsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl);
 		}
@@ -126,6 +129,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	private BusinessGroupListController updateAllGroups(UserRequest ureq) {
 		if(allGroupsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AllGroups", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			allGroupsCtrl = new BusinessGroupListController(ureq, bwControl);
 		}
@@ -138,6 +142,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	private OwnedBusinessGroupListController updateOwnedGroups(UserRequest ureq) {
 		if(ownedGroupsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("OwnedGroups", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			ownedGroupsCtrl = new OwnedBusinessGroupListController(ureq, bwControl);
 		}
@@ -150,6 +155,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	private SearchBusinessGroupListController updateSearch(UserRequest ureq) {
 		if(searchGroupsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl);
 		}

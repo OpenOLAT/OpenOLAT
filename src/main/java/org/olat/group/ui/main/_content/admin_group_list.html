@@ -4,3 +4,9 @@
 $r.render("searchPanel")
 <p />
 $r.render("groupList")
+#if($r.available("create.group"))
+	<div class="b_clearfix">
+		<p>$r.translate("create.group.description")</p>
+		$r.render("create.group")
+	</div>
+#end

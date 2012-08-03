@@ -37,7 +37,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -108,6 +110,7 @@ public class OpenBusinessGroupsController extends BasicController implements Act
 	private SearchOpenBusinessGroupListController getSearchGroupsController(UserRequest ureq) {
 		if(searchController == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			searchController = new SearchOpenBusinessGroupListController(ureq, bwControl);
 			listenTo(searchController);
@@ -121,6 +124,7 @@ public class OpenBusinessGroupsController extends BasicController implements Act
 	private OpenBusinessGroupListController getOpenGroups(UserRequest ureq) {
 		if(listController == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("All", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			listController = new OpenBusinessGroupListController(ureq, bwControl);
 			listenTo(listController);
