@@ -106,17 +106,19 @@ public class FileElementRenderer implements ComponentRenderer {
 	 			sb.append(" onchange=\"b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload)\"");
 	 		}
 	 		// Add mime type restriction
-	 		Set<String> mimeTypes = fileElem.getMimeTypeLimitations();
-	 		if (mimeTypes.size() > 0 ) {
-	 			sb.append(" accept=\"");
-	 			Iterator iterator = mimeTypes.iterator();
-	 			while (iterator.hasNext()) {
-					String type = (String) iterator.next();
-					sb.append(type);
-					if (iterator.hasNext()) sb.append(",");
-				}
-	 			sb.append("\"");
-	 		}
+//TODO: This does unfortunately not work in the different browsers. Not even video/* does work properly in safari. 
+// We do not limit the selection here, check file type later on the server which is way more stable than this fancy "accept" attribute
+//	 		Set<String> mimeTypes = fileElem.getMimeTypeLimitations();
+//	 		if (mimeTypes.size() > 0 ) {
+//	 			sb.append(" accept=\"");
+//	 			Iterator iterator = mimeTypes.iterator();
+//	 			while (iterator.hasNext()) {
+//					String type = (String) iterator.next();
+//					sb.append(type);
+//					if (iterator.hasNext()) sb.append(",");
+//				}
+//	 			sb.append("\"");
+//	 		}
 	 		// Add pseudo focus marker on fake file chooser button
 	 		sb.append(" onfocus=\"this.form.fake_").append(id).append(".nextSibling.style.border = '1px dotted black';\"");
 	 		sb.append(" onblur=\"this.form.fake_").append(id).append(".nextSibling.style.border = '0';\"");

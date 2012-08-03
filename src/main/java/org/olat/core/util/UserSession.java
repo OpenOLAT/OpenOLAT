@@ -44,7 +44,6 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import org.apache.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Disposable;
@@ -115,7 +114,6 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		//usersession is listening for SignOnOffEvents from other clusternodes
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, ORES_USERSESSION);
 		registeredWithBus = true;
-		Logger.getLogger(getClass().getName()).debug("UserSession<init> END");
 	}
 
 	/**
