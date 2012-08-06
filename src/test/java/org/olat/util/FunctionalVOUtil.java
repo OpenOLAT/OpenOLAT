@@ -235,7 +235,7 @@ public class FunctionalVOUtil {
 		RepositoryEntryVO vo = restConnection.parse(body, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
-		return(null);
+		return(vo);
 	}
 	
 	public String getUsername() {

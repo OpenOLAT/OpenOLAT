@@ -27,6 +27,8 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalCourseUtil {
+	public final static String COURSE_RUN_CSS = "o_course_run";
+	
 	public final static String EPORTFOLIO_ADD_CSS = "b_eportfolio_add";
 	
 	public final static String FORUM_ICON_CSS = "o_fo_icon";
@@ -40,6 +42,8 @@ public class FunctionalCourseUtil {
 	public final static String WIKI_ARTICLE_BOX_CSS = "o_wikimod-article-box";
 	
 	public final static String BLOG_CREATE_ENTRY_CSS = "o_sel_feed_item_new";
+	
+	private String courseRunCss;
 	
 	private String eportfolioAddCss;
 	
@@ -61,6 +65,8 @@ public class FunctionalCourseUtil {
 	public FunctionalCourseUtil(FunctionalUtil functionalUtil, FunctionalRepositorySiteUtil functionalRepositorySiteUtil){
 		this.functionalUtil = functionalUtil;
 		this.functionalRepositorySiteUtil = functionalRepositorySiteUtil;
+		
+		setCourseRunCss(COURSE_RUN_CSS);
 		
 		setEportfolioAddCss(EPORTFOLIO_ADD_CSS);
 		
@@ -158,9 +164,9 @@ public class FunctionalCourseUtil {
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//ul//li//a[contains(@class, ")
+		selectorBuffer.append("xpath=//ul//li//a[contains(@class, '")
 		.append(getForumIconCss())
-		.append(")][")
+		.append("')][")
 		.append(nth + 1)
 		.append("]");
 		
@@ -188,9 +194,9 @@ public class FunctionalCourseUtil {
 		/* click open new topic */
 		selectorBuffer.append("xpath=//div[contains(@class, ")
 		.append(getForumToolbarCss())
-		.append(")]//a[contains(@class, ")
+		.append(")]//a[contains(@class, '")
 		.append(getForumThreadNewCss())
-		.append(")]");
+		.append("')]");
 		
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
@@ -198,7 +204,9 @@ public class FunctionalCourseUtil {
 		/* fill in form - title */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//form//input[@type='text']");
+		selectorBuffer.append("xpath=//div[contains(@class '")
+		.append(getCourseRunCss())
+		.append("')]//form//input[@type='text']");
 		
 		browser.type(selectorBuffer.toString(), title);
 		
@@ -272,6 +280,8 @@ public class FunctionalCourseUtil {
 		.append(")]//a");
 		
 		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
 		
 		/* fill in text area */
 		selectorBuffer = new StringBuffer();
@@ -372,6 +382,14 @@ public class FunctionalCourseUtil {
 	public void setFunctionalRepositorySiteUtil(
 			FunctionalRepositorySiteUtil functionalRepositorySiteUtil) {
 		this.functionalRepositorySiteUtil = functionalRepositorySiteUtil;
+	}
+
+	public String getCourseRunCss() {
+		return courseRunCss;
+	}
+
+	public void setCourseRunCss(String courseRunCss) {
+		this.courseRunCss = courseRunCss;
 	}
 
 	public String getEportfolioAddCss() {

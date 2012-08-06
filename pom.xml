@@ -582,7 +582,9 @@
 							</systemProperties>
 							<testNGArtifactName>none:none</testNGArtifactName>
 							<includes>
-               					 <include>org/olat/test/Selenium2TestsJunit4.java</include>
+               					<!-- <include>org/olat/test/Selenium2TestsJunit4.java</include>  --> 
+               					<!-- <include>org/olat/portal/FunctionalSettingsTest.java</include> --> 
+               					 <include>org/olat/login/FunctionalResumeTest.java</include>
               				</includes>
 						</configuration>
 					</plugin>

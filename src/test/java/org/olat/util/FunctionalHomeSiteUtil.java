@@ -536,9 +536,9 @@ public class FunctionalHomeSiteUtil {
 		if(!checkCurrentAction(browser, action, 15000)){
 			StringBuffer selectorBuffer = new StringBuffer();
 
-			selectorBuffer.append("css=ul .")
+			selectorBuffer.append("css=ul * .")
 			.append(selectedCss)
-			.append(" a");
+			.append(" * a");
 
 			browser.click(selectorBuffer.toString());
 			browser.waitForPageToLoad(functionalUtil.getWaitLimit());

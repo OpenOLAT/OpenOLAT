@@ -101,7 +101,6 @@ public class FunctionalArtefactTest {
 	FunctionalVOUtil functionalVOUtil;
 	
 	UserVO user;
-	CourseVO course;
 	
 	@Before
 	public void setup() throws IOException, URISyntaxException{
@@ -125,7 +124,7 @@ public class FunctionalArtefactTest {
 	@RunAsClient
 	public void checkCollectForumPost() throws IOException, URISyntaxException{
 		/* deploy course with REST */
-		course = functionalVOUtil.importAllElementsCourse(deploymentUrl);
+		CourseVO course = functionalVOUtil.importAllElementsCourse(deploymentUrl);
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
