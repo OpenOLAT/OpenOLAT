@@ -51,7 +51,7 @@ public class MultipartReader {
 	private Map<String, String> fields = new HashMap<String, String>();
 
 	public MultipartReader(HttpServletRequest request) {
-		long uploadLimit = -1l;
+		long uploadLimit = 500000l;
 		apache(request, uploadLimit);
 	}
 

@@ -28,7 +28,8 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	org.olat.login.FunctionalLoginTest.class
+	org.olat.login.FunctionalLoginTest.class,
+	org.olat.login.FunctionalResumeTest.class,
 })
 public class Selenium2TestsJunit4 {
 	//
