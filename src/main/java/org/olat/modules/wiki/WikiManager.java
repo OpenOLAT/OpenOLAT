@@ -124,7 +124,6 @@ public class WikiManager extends BasicManager {
 	 * @param initialPageName opens the wiki with an certain page, default is the index page if null is passed
 	 * @param courseContext - a course context or null if used outside a course
 	 * @param courseNodeContext - a courseNode context or null if used outside a course
-	 * @param groupContext - a BusinessGroup or null if not used in group context
 	 */
 	public WikiMainController createWikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, WikiSecurityCallback securityCallback, String initialPageName) {
 		return new WikiMainController(ureq, wControl, ores, securityCallback, initialPageName);

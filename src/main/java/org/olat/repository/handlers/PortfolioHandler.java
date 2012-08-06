@@ -31,7 +31,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.hibernate.collection.PersistentList;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -119,13 +118,13 @@ public class PortfolioHandler implements RepositoryHandler {
 		myStream.alias("structureToStructure", EPStructureToStructureLink.class);
 		myStream.alias("collectionRestriction", CollectRestriction.class);
 		myStream.omitField(EPAbstractMap.class, "ownerGroup"); // see also OLAT-6344
-		myStream.addDefaultImplementation(PersistentList.class, List.class);
+		//myStream.addDefaultImplementation(PersistentList.class, List.class);
 		myStream.addDefaultImplementation(ArrayList.class, List.class);
-		myStream.registerConverter(new CollectionConverter(myStream.getMapper()) {
+		/*myStream.registerConverter(new CollectionConverter(myStream.getMapper()) {
 		    public boolean canConvert(Class type) {
 		        return PersistentList.class == type;
 		    }
-		});
+		});*/
 		
 	}
 	
@@ -234,7 +233,8 @@ public class PortfolioHandler implements RepositoryHandler {
 	 * Transform the map in a XML file and zip it (Repository export want a zip)
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable)
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	@Override
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		MediaResource mr = null;
 
 		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");

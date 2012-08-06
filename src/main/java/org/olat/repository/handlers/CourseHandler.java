@@ -152,12 +152,13 @@ public class CourseHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	@Override
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
 		String exportFileName = re.getDisplayname() + ".zip";
 		exportFileName = StringHelper.transformDisplayNameToFileSystemName(exportFileName);
 		File fExportZIP = new File(System.getProperty("java.io.tmpdir")+File.separator+exportFileName);
-		CourseFactory.exportCourseToZIP(res, fExportZIP);
+		CourseFactory.exportCourseToZIP(res, fExportZIP, backwardsCompatible);
 		return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
 	}
 
@@ -272,7 +273,7 @@ public class CourseHandler implements RepositoryHandler {
 		// Archive course run structure (like course export)
 		String courseExportFileName = "course_export.zip";
 		File courseExportZIP = new File(tmpExportDir, courseExportFileName);
-		CourseFactory.exportCourseToZIP(entry.getOlatResource(), courseExportZIP);
+		CourseFactory.exportCourseToZIP(entry.getOlatResource(), courseExportZIP, false);
 		// Zip runtime data and course run structure data into one zip-file
 		String completeArchiveFileName = "del_course_" + entry.getOlatResource().getResourceableId() + ".zip";
 		String completeArchivePath = archivFilePath + File.separator + completeArchiveFileName;

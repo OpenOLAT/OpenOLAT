@@ -64,6 +64,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.ta.DropboxController;
@@ -1051,6 +1052,24 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 			}
 		}
 	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		postImportCondition(conditionTask, envMapper);
+		postImportCondition(conditionDrop, envMapper);
+		postImportCondition(conditionReturnbox, envMapper);
+		postImportCondition(conditionScoring, envMapper);
+		postImportCondition(conditionSolution, envMapper);
+	}
 
-		
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		postExportCondition(conditionTask, envMapper, backwardsCompatible);
+		postExportCondition(conditionDrop, envMapper, backwardsCompatible);
+		postExportCondition(conditionReturnbox, envMapper, backwardsCompatible);
+		postExportCondition(conditionScoring, envMapper, backwardsCompatible);
+		postExportCondition(conditionSolution, envMapper, backwardsCompatible);
+	}
 }

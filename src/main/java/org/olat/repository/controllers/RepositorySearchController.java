@@ -360,10 +360,10 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param owner
 	 * @param access
 	 */
-	public void doSearchByOwnerLimitAccess(Identity owner, int access) {
+	public void doSearchByOwnerLimitAccess(Identity owner) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		//fxdiff VCRP-1,2: access control of resources
-		List entries = rm.queryByOwnerLimitAccess(owner, access, Boolean.TRUE);
+		List<RepositoryEntry> entries = rm.queryByOwnerLimitAccess(owner, RepositoryEntry.ACC_USERS, Boolean.TRUE);
 
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
@@ -381,7 +381,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	void doSearchByTypeLimitAccess(String type, UserRequest ureq) {
 		searchType = null;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		List entries = rm.queryByTypeLimitAccess(type, ureq);
+		List<RepositoryEntry> entries = rm.queryByTypeLimitAccess(ureq.getIdentity(), ureq.getUserSession().getRoles(), type);
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		tableCtr.setFilters(null, null);
@@ -406,7 +406,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	protected void doSearchMyCoursesStudent(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.myAsStudent;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.getLearningResourcesAsStudent(ureq.getIdentity());
+		List<RepositoryEntry> entries = rm.getLearningResourcesAsStudent(ureq.getIdentity(), 0, -1);
 		//fxdiff VCRP-10: repository search with type filter
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}
@@ -418,7 +418,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	protected void doSearchMyCoursesTeacher(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.myAsTeacher;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.getLearningResourcesAsTeacher(ureq.getIdentity());
+		List<RepositoryEntry> entries = rm.getLearningResourcesAsTeacher(ureq.getIdentity(), 0, -1);
 		//fxdiff VCRP-10: repository search with type filter
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}

@@ -51,8 +51,7 @@ import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -87,9 +86,9 @@ public class SecurityGroupsRepositoryMainController extends MainLayoutBasicContr
 	
 	private final RepositoryEntry repoEntry;
 	private final RepositoryManager rm;
-	private final BusinessGroupManager bgm;
 	private final BaseSecurity securityManager;
 	private final AccessControlModule acModule;
+	private final BusinessGroupService businessGroupService;
 	
 	private final boolean mayModifyMembers;
 	
@@ -107,9 +106,9 @@ public class SecurityGroupsRepositoryMainController extends MainLayoutBasicContr
 		
 		this.repoEntry = repoEntry;
 		this.mayModifyMembers = mayModifyMembers;
-		bgm = BusinessGroupManagerImpl.getInstance();
 		securityManager = BaseSecurityManager.getInstance();
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		
@@ -288,7 +287,7 @@ public class SecurityGroupsRepositoryMainController extends MainLayoutBasicContr
 			} else if (source == participantsController) {
 				secGroup = repoEntry.getParticipantGroup();							
 			}
-			BusinessGroupAddResponse response = bgm.addToSecurityGroupAndFireEvent(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), secGroup);
+			BusinessGroupAddResponse response = businessGroupService.addToSecurityGroupAndFireEvent(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), secGroup);
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());			
@@ -298,14 +297,14 @@ public class SecurityGroupsRepositoryMainController extends MainLayoutBasicContr
 			List<Identity> identitiesToRemove = identitiesRemoveEvent.getRemovedIdentities();
 			if (source == ownersController) {
 				SecurityGroup ownerGroup = repoEntry.getOwnerGroup();
-				bgm.removeAndFireEvent(ureq.getIdentity(), identitiesToRemove, ownerGroup);
+				businessGroupService.removeAndFireEvent(ureq.getIdentity(), identitiesToRemove, ownerGroup);
 			} else if (source == tutorsController) {
 				SecurityGroup tutorGroup = repoEntry.getTutorGroup();
-				bgm.removeAndFireEvent(ureq.getIdentity(), identitiesToRemove, tutorGroup);
+				businessGroupService.removeAndFireEvent(ureq.getIdentity(), identitiesToRemove, tutorGroup);
 				removeTutors(identitiesToRemove);
 			} else if (source == participantsController) {
 				SecurityGroup participantGroup = repoEntry.getParticipantGroup();	
-				bgm.removeAndFireEvent(ureq.getIdentity(), identitiesToRemove, participantGroup);	
+				businessGroupService.removeAndFireEvent(ureq.getIdentity(), identitiesToRemove, participantGroup);	
 				removeParticipants(identitiesToRemove);
 			}
 		}
@@ -336,7 +335,7 @@ public class SecurityGroupsRepositoryMainController extends MainLayoutBasicContr
 		if("CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
 			CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
-			List<BusinessGroup> groups = gm.getAllLearningGroupsFromAllContexts();
+			List<BusinessGroup> groups = gm.getAllBusinessGroups();
 			return groups;
 		}
 		return Collections.emptyList();

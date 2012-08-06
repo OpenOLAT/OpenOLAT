@@ -66,7 +66,7 @@ public class WebDocumentHandler extends FileHandler implements RepositoryHandler
 	private static final boolean DOWNLOADEABLE = true;
 	private static final boolean EDITABLE = false;
 	private static final boolean WIZARD_SUPPORT = false;
-	private static final List supportedTypes;
+	private static final List<String> supportedTypes;
 	
 	
 	/**
@@ -75,7 +75,7 @@ public class WebDocumentHandler extends FileHandler implements RepositoryHandler
 	public WebDocumentHandler() { super(); }
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(5);
+		supportedTypes = new ArrayList<String>(5);
 		supportedTypes.add(FileResource.GENERIC_TYPE_NAME);
 		supportedTypes.add(DocFileResource.TYPE_NAME);
 		supportedTypes.add(XlsFileResource.TYPE_NAME);
@@ -90,7 +90,7 @@ public class WebDocumentHandler extends FileHandler implements RepositoryHandler
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 	

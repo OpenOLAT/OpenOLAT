@@ -25,13 +25,14 @@
 
 package org.olat.admin.cache;
 
+import java.util.List;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -52,7 +53,7 @@ import org.olat.core.logging.Tracing;
 
 /**
  * Description:<BR/>
- * TODO: Class Description for DockingController
+ * 
  * 
  * <P/>
  * Initial Date:  Jul 13, 2005
@@ -65,7 +66,7 @@ public class AllCachesController extends BasicController {
 	
 	private VelocityContainer myContent;
 	private TableController tableCtr;
-	private TableDataModel tdm;
+	private TableDataModel<String> tdm;
 	private CacheManager cm;
 	private final String[] cnames;
 	private DialogBoxController dc;
@@ -170,7 +171,7 @@ public class AllCachesController extends BasicController {
 
 }
 
-class AllCachesTableDataModel extends BaseTableDataModelWithoutFilter {
+class AllCachesTableDataModel implements TableDataModel<String> {
   private String[] cnames;
 	private CacheManager cacheManager;
   
@@ -179,6 +180,21 @@ class AllCachesTableDataModel extends BaseTableDataModelWithoutFilter {
   	this.cacheManager = CacheManager.getInstance();
   }
 	
+	@Override
+	public String getObject(int row) {
+		return cnames[row];
+	}
+
+	@Override
+	public void setObjects(List<String> objects) {
+		cnames = objects.toArray(cnames);
+	}
+
+	@Override
+	public AllCachesTableDataModel createCopyWithEmptyList() {
+		return new AllCachesTableDataModel(new String[0]);
+	}
+
 	public int getColumnCount() {
 		return 9;
 	}
@@ -190,17 +206,16 @@ class AllCachesTableDataModel extends BaseTableDataModelWithoutFilter {
 	public Object getValueAt(int row, int col) {
 		String cname = cnames[row];
 		Cache c = cacheManager.getCache(cname);
-		//todo: use Statistics stat = c.getStatistics();
 		switch(col) {
 			case 0: return cname;
-			case 1: return c.isDiskPersistent()? Boolean.TRUE:Boolean.FALSE;
-			case 2: return new Long(c.getHitCount());
-			case 3: return new Long(c.getMissCountExpired());
-			case 4: return new Long(c.getMissCountNotFound());
+			case 1: return c.getCacheConfiguration().isDiskPersistent()? Boolean.TRUE:Boolean.FALSE;
+			case 2: return new Long(c.getLiveCacheStatistics().getCacheHitCount());
+			case 3: return new Long(c.getLiveCacheStatistics().getCacheMissCountExpired());
+			case 4: return new Long(c.getLiveCacheStatistics().getCacheMissCount());
 			case 5: return new Long(c.getKeysNoDuplicateCheck().size());
-			case 6: return new Long(c.getTimeToIdleSeconds());
-			case 7: return new Long(c.getTimeToLiveSeconds());
-			case 8: return new Long(c.getMaxElementsInMemory());
+			case 6: return new Long(c.getCacheConfiguration().getTimeToIdleSeconds());
+			case 7: return new Long(c.getCacheConfiguration().getTimeToLiveSeconds());
+			case 8: return new Long(c.getCacheConfiguration().getMaxElementsInMemory());
 			default: throw new AssertException("nonexisting column:"+col);
 		}
 	}

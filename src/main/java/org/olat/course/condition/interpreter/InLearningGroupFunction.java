@@ -25,10 +25,14 @@
 
 package org.olat.course.condition.interpreter;
 
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
 
 /**
  * @author Felix Jost
@@ -85,11 +89,30 @@ public class InLearningGroupFunction extends AbstractFunction {
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		//System.out.println("todo: check if "+(ident==null? "n/a":ident.getName())+" is in group "+groupName);
 		
-		return cgm.isIdentityInLearningGroup(ident,groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		if(isGroupKey(groupName)) {
+			Long groupKey = Long.parseLong(groupName);
+			return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		
+		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseResource());
+		if(!groupKeys.isEmpty()) {
+			return cgm.isIdentityInGroup(ident, groupKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		return ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_TRUE;
 	}
-
+	
+	private boolean isGroupKey(String groupName) {
+		char[] charArr = groupName.toCharArray();
+		for(int i=charArr.length; i-->0; ) {
+			char ch = charArr[i];
+			if(ch < 47 || ch > 58) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

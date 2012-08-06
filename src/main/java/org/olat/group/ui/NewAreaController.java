@@ -24,10 +24,12 @@
 */
 package org.olat.group.ui;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,9 +41,8 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.area.BGAreaFormController;
+import org.olat.resource.OLATResource;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -59,13 +60,13 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class NewAreaController extends BasicController {
 
-	private BGContext bgContext;
+	private OLATResource resource;
 	private VelocityContainer contentVC;
 	private BGAreaFormController areaCreateController;
 	private boolean bulkMode = false;
 	private Set<BGArea> newAreas;
 	private HashSet<String> newAreaNames;
-	private BGAreaManager areaManager;
+	private final BGAreaManager areaManager;
 
 	/**
 	 * 
@@ -76,23 +77,23 @@ public class NewAreaController extends BasicController {
 	 * @param bulkMode
 	 * @param csvGroupNames
 	 */
-	NewAreaController(UserRequest ureq, WindowControl wControl, BGContext bgContext, boolean bulkMode, String csvAreaNames) {
+	public NewAreaController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvAreaNames) {
 		super(ureq, wControl);
-		this.bgContext = bgContext;
+		this.resource = resource;
 		this.bulkMode = bulkMode;
 		//
-		this.areaManager = BGAreaManagerImpl.getInstance();
-		this.contentVC = this.createVelocityContainer("areaform");
-		this.contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		contentVC = this.createVelocityContainer("areaform");
+		contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
 		//
-		this.areaCreateController = new BGAreaFormController(ureq, wControl, null, bulkMode);
-		listenTo(this.areaCreateController);
-		this.contentVC.put("areaForm", this.areaCreateController.getInitialComponent());
+		areaCreateController = new BGAreaFormController(ureq, wControl, null, bulkMode);
+		listenTo(areaCreateController);
+		contentVC.put("areaForm", areaCreateController.getInitialComponent());
 		
 		if (csvAreaNames != null) {
-			this.areaCreateController.setAreaName(csvAreaNames);
+			areaCreateController.setAreaName(csvAreaNames);
 		}
-		this.putInitialPanel(this.contentVC);
+		putInitialPanel(contentVC);
 	}
 	
 	/**
@@ -127,29 +128,22 @@ public class NewAreaController extends BasicController {
 					allNames.add(this.areaCreateController.getAreaName());
 				}
 
-				if(areaManager.checkIfOneOrMoreNameExistsInContext(allNames, bgContext)){
-					// set error of non existing name
-					this.areaCreateController.setAreaNameExistsError(null);
-				} else {
-					Codepoint.codepoint(this.getClass(), "createArea");
-					// create bulkgroups only if there is no name which already exists. 
-					newAreas = new HashSet<BGArea>();
-					newAreaNames = new HashSet<String>();
-					for (Iterator<String> iter = allNames.iterator(); iter.hasNext();) {
-						String areaName = iter.next();
-						BGArea newArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, areaDesc, bgContext);
-						newAreas.add(newArea);
-						newAreaNames.add(areaName);
-					}
-					// do loggin if ual given
-					for (Iterator<BGArea> iter = newAreas.iterator(); iter.hasNext();) {
-						BGArea a = iter.next();
-						ThreadLocalUserActivityLogger.log(GroupLoggingAction.AREA_CREATED, getClass(), LoggingResourceable.wrap(a));	
-					}						
-					// workflow successfully finished
-					// so far no events on the systembus to inform about new groups in BGContext 
-					fireEvent(ureq, Event.DONE_EVENT);
+				Codepoint.codepoint(this.getClass(), "createArea");
+				// create bulkgroups only if there is no name which already exists. 
+				newAreas = new HashSet<BGArea>();
+				newAreaNames = new HashSet<String>();
+				for (String areaName : allNames) {
+					BGArea newArea = areaManager.createAndPersistBGArea(areaName, areaDesc, resource);
+					newAreas.add(newArea);
+					newAreaNames.add(areaName);
 				}
+				// do loggin if ual given
+				for (BGArea area:newAreas) {
+					ThreadLocalUserActivityLogger.log(GroupLoggingAction.AREA_CREATED, getClass(), LoggingResourceable.wrap(area));	
+				}						
+				// workflow successfully finished
+				// so far no events on the systembus to inform about new groups in BGContext 
+				fireEvent(ureq, Event.DONE_EVENT);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// workflow cancelled
 				fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -164,6 +158,8 @@ public class NewAreaController extends BasicController {
 	public String getCreatedAreaName(){
 		return newAreas.iterator().next().getName();
 	}
+	
+	
 	
 	/**
 	 * if Event.DONE_EVENT received the return value is always NOT NULL. If
@@ -181,6 +177,14 @@ public class NewAreaController extends BasicController {
 	 */
 	public Set<BGArea> getCreatedAreas(){
 		return newAreas;
+	}
+	
+	public List<Long> getCreatedAreaKeys(){
+		List<Long> areaKeys = new ArrayList<Long>();
+		for(BGArea newArea:newAreas) {
+			areaKeys.add(newArea.getKey());
+		}
+		return areaKeys;
 	}
 	
 	/**

@@ -1,0 +1,32 @@
+<OLATGroupExport>
+  <AreaCollection>
+    <Area name="Area 1">
+      <Description>&lt;p&gt;Area 1 description&lt;/p&gt;</Description>
+    </Area>
+    <Area name="Area 2">
+      <Description>&lt;p&gt;Area 2 description&lt;/p&gt;</Description>
+    </Area>
+    <Area name="Area 3">
+      <Description>&lt;p&gt;Area 3 empty&lt;/p&gt;</Description>
+    </Area>
+  </AreaCollection>
+  <GroupCollection>
+    <Group name="Export group 1" waitingList="false" autoCloseRanks="false" showOwners="true" showParticipants="true" showWaitingList="false">
+      <Description>&lt;p&gt;Export group 1&lt;/p&gt;</Description>
+      <CollabTools hasNews="false" hasContactForm="false" hasCalendar="false" hasFolder="false" hasForum="false" hasChat="false" hasWiki="false" hasPortfolio="false"/>
+      <AreaRelation>Area 1</AreaRelation>
+      <AreaRelation>Area 2</AreaRelation>
+    </Group>
+    <Group name="Export group 2" maxParticipants="25" waitingList="true" autoCloseRanks="false" showOwners="true" showParticipants="false" showWaitingList="false">
+      <Description>&lt;p&gt;Export group 1&lt;/p&gt;</Description>
+      <CollabTools hasNews="false" hasContactForm="false" hasCalendar="false" hasFolder="false" hasForum="false" hasChat="false" hasWiki="false" hasPortfolio="false"/>
+      <AreaRelation>Area 1</AreaRelation>
+      <AreaRelation>Area 2</AreaRelation>
+    </Group>
+    <Group name="Export group 3" maxParticipants="25" waitingList="true" autoCloseRanks="false" showOwners="true" showParticipants="true" showWaitingList="true" info="&lt;p&gt;Hello Mitglied&lt;/p&gt;">
+      <Description>&lt;p&gt;Export group 2&lt;/p&gt;</Description>
+      <CollabTools hasNews="true" hasContactForm="true" hasCalendar="true" hasFolder="true" hasForum="true" hasChat="true" hasWiki="true" hasPortfolio="true"/>
+      <AreaRelation>Area 2</AreaRelation>
+    </Group>
+  </GroupCollection>
+</OLATGroupExport>

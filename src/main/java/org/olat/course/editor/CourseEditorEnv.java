@@ -65,14 +65,19 @@ public interface CourseEditorEnv {
 	 * @return
 	 */
 	boolean existsGroup(String groupname);
-
-	boolean existsRightGroup(String groupname);
 	
 	/**
 	 * @param areaname
 	 * @return
 	 */
-	boolean existsArea(String areaname);
+	boolean existsArea(String areaNameOrKey);
+	
+	/**
+	 * Return the invalid areas
+	 * @param areaname
+	 * @return
+	 */
+	public List<String> validateAreas(List<String> areaname);
 
 	/**
 	 * @return

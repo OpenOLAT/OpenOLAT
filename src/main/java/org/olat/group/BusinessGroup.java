@@ -32,7 +32,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
-import org.olat.group.context.BGContext;
+import org.olat.resource.OLATResource;
 
 /**
  * Initial Date: Aug 2, 2004
@@ -41,14 +41,14 @@ import org.olat.group.context.BGContext;
  *         Comment: All OLAT business group implementation share this interface.
  *         Examples are the buddygroups or the learning groups
  */
-public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OLATResourceable {
+public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateInfo, ModifiedInfo, OLATResourceable {
 
 	/** group type: buddygroup * */
-	public final static String TYPE_BUDDYGROUP = "BuddyGroup";
+	//public final static String TYPE_BUDDYGROUP = "BuddyGroup";
 	/** group type: learning group * */
-	public final static String TYPE_LEARNINGROUP = "LearningGroup";
+	//public final static String TYPE_LEARNINGROUP = "LearningGroup";
 	/** group type: course right group * */
-	public final static String TYPE_RIGHTGROUP = "RightGroup";
+	//public final static String TYPE_RIGHTGROUP = "RightGroup";
 	/** regular expression to check for valid group names */
 	// commas are not allowed. name is used in course conditions for weak binding
 	public final static String VALID_GROUPNAME_REGEXP = "^[^,\"]*$";
@@ -88,6 +88,11 @@ public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OL
 	 * @param description the description of this group. Might be NULL
 	 */
 	public void setDescription(String description);
+	
+	/**
+	 * @return The associated resource
+	 */
+	public OLATResource getResource();
 
 	/**
 	 * The BusinessGroup has 1..n Owners acting as <i>administrators </i>.
@@ -113,17 +118,7 @@ public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OL
 	/**
 	 * @return last usage of this group
 	 */
-	java.util.Date getLastUsage();
-
-	/**
-	 * @return the business group context for this group
-	 */
-	public BGContext getGroupContext();
-
-	/**
-	 * @param groupContext the business group context
-	 */
-	public void setGroupContext(BGContext groupContext);
+	public Date getLastUsage();
 
 	/**
 	 * @return the maximal number of participants

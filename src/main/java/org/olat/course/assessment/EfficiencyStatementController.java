@@ -126,7 +126,7 @@ public class EfficiencyStatementController extends BasicController {
 		}
 		if(businessGroup == null && courseRepo != null) {
 			ICourse course = CourseFactory.loadCourse(courseRepo.getOlatResource());
-			List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getParticipatingLearningGroupsFromAllContexts(statementOwner);
+			List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getParticipatingBusinessGroups(statementOwner);
 			if(groups.size() > 0) {
 				businessGroup = groups.get(0);
 			}

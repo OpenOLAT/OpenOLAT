@@ -19,12 +19,7 @@
  */
 package org.olat.instantMessaging;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-
 import org.olat.core.logging.LogDelegator;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.StartupException;
 
 
@@ -68,15 +63,6 @@ public class IMNameHelper extends LogDelegator {
 		// replace "@" by "_at_" --> this allows "@" also for olat-usernames
 		String imUsername = olatUsername.replace("@", config.getReplaceStringForEmailAt());
 		if (config.isMultipleInstances()) {
-			if (olatUsername.contains(USERNAME_INSTANCE_DELIMITER + instanceID)){
-				// build stacktrace to find bad places in code:
-				OLATRuntimeException ore = new OLATRuntimeException("stacktrace for calls to IMNameHelper.getIMUsernameByOlatUsername()", null);
-				final Writer result = new StringWriter();
-				final PrintWriter printWriter = new PrintWriter(result);
-				ore.printStackTrace(printWriter);
-				logError("Double wrapping of olat-username! check the usage of it, as this IMUser (given olat-username: " + olatUsername + " imUsername: " + imUsername + " ) already contained the instanceID!! Calling Stack: " + result.toString(), null);
-				return olatUsername.toLowerCase();
-			}
 			return (imUsername + USERNAME_INSTANCE_DELIMITER + instanceID).toLowerCase();
 		}
 		else {

@@ -39,7 +39,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hibernate.util.ArrayHelper;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -457,7 +456,7 @@ public class TranslationDevManager extends BasicManager {
 				} 
 			}
 		}
-		log.info("removeDeletedKeys: found " + validCombinedKeys.size() + " valid keys in " + ArrayHelper.toString(referenceLanguages));
+		log.info("removeDeletedKeys: found " + validCombinedKeys.size() + " valid keys in " + referenceLanguages);
 		//
 		// For each language except DE and EN, go through all i18n files and
 		// remove keys not in the valid set
@@ -484,10 +483,10 @@ public class TranslationDevManager extends BasicManager {
 					String combinedKey = bundleName + ":" + key;
 					if (!validCombinedKeys.contains(combinedKey)) {
 						if (reallyRemoveIt) {
-							log.info("Deleting " + langKey + ":" + bundleName + ":" + key + " - does not exist in " + ArrayHelper.toString(referenceLanguages));
+							log.info("Deleting " + langKey + ":" + bundleName + ":" + key + " - does not exist in " + referenceLanguages);
 							properties.remove(key);
 						} else {
-							log.info("Should be deleted: " + langKey + ":" + bundleName + ":" + key + " - does not exist in " + ArrayHelper.toString(referenceLanguages));
+							log.info("Should be deleted: " + langKey + ":" + bundleName + ":" + key + " - does not exist in " + referenceLanguages);
 						}
 					}
 				}

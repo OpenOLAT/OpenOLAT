@@ -41,6 +41,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.RepositoryEntryDocument;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
@@ -76,7 +77,9 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
   	Roles roles = new Roles(true, true, true, true, false, true, false);
   	int counter = 0;
   	//fxdiff VCRP-1,2: access control of resources
-  	List<RepositoryEntry> repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(null,null,null,null,null,roles, null);
+  	SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+  	params.setRoles(roles);
+  	List<RepositoryEntry> repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
   	if (isLogDebugEnabled()) logDebug("RepositoryIndexer repositoryList.size=" + repositoryList.size());
   	// loop over all repository-entries
 		// committing here to make sure the loadBusinessGroup below does actually

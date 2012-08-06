@@ -41,10 +41,10 @@ import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -64,11 +64,7 @@ import org.olat.course.nodes.co.COEditController;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -189,32 +185,19 @@ public class CourseCreationHelper {
 			// 2. setup enrollment
 			// --------------------------
 			final String groupBaseName = createGroupBaseName();
-			final BGContextManager bcm = BGContextManagerImpl.getInstance();
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 			// get default context for learning groups
-			BGContext defaultContext = null;
-			for (Object entry : bcm.findBGContextsForResource(addedEntry.getOlatResource(), true, false)) {
-				if (entry instanceof BGContext) {
-					if (((BGContext) entry).getGroupType().equals(BusinessGroup.TYPE_LEARNINGROUP)) {
-						defaultContext = (BGContext) entry;
-						break;
-					}
-				} else {
-					throw (new AssertException("Found a context that is no BGContext object"));
-				}
-			}
-			if (defaultContext == null) { throw (new AssertException("No default learning group context found")); }
-
+			
 			// create n learning groups with m allowed members
 			String comma = "";
 			String tmpGroupList = "";
 			String groupNamesList = "";
 			for (int i = 0; i < courseConfig.getGroupCount(); i++) {
 				// create group
-				BusinessGroup learningGroup = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, groupBaseName + " "
+				BusinessGroup learningGroup = bgs.createBusinessGroup( null, groupBaseName + " "
 						+ (i + 1), null, 0, courseConfig.getSubscriberCount(), courseConfig.getEnableWaitlist(), courseConfig.getEnableFollowup(),
-						defaultContext);
+						course.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 				// enable the contact collaboration tool
 				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(learningGroup);
 				ct.setToolEnabled(CollaborationTools.TOOL_CONTACT, true);

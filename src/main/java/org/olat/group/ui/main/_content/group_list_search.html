@@ -1,0 +1,10 @@
+<div class="b_clearfix">
+	$r.render("search")
+	$r.render("groupList")
+</div>
+#if($r.available("create.group"))
+	<div class="b_clearfix">
+		<p>$r.translate("create.group.description")</p>
+		$r.render("create.group")
+	</div>
+#end

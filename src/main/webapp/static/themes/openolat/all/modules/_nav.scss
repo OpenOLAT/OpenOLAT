@@ -161,7 +161,7 @@ div.b_tree {
 			/* selected, hovered, active <a> tag */
 			a:focus, a:hover { color: $basecolor; background-color: transparent; text-decoration:underline; }	
 			a.b_tree_selected,a:active { color: $basecolor; background-color: transparent; text-decoration:none; }	
-			li a.b_tree_selected_parents,a.b_tree_l0,strong { color: $basecolor; font-weight: bold; }
+			a.b_tree_selected_parents,strong { color: $basecolor; font-weight: bold; }
 						
 			/*  icon positioning */
 			@for $i from 1 through 11 {

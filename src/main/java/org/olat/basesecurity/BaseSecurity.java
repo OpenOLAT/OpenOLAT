@@ -88,6 +88,13 @@ public interface BaseSecurity {
 	 * @return true if the identity is in the group
 	 */
 	public boolean isIdentityInSecurityGroup(Identity identity, SecurityGroup secGroup);
+	
+	/**
+	 * Change the last modificaiton date of the membership
+	 * @param identity
+	 * @param secGroups
+	 */
+	public void touchMembership(Identity identity, List<SecurityGroup> secGroups);
 
 	/**
 	 * search

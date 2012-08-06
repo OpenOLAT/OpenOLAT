@@ -38,6 +38,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
 import org.olat.course.nodes.info.InfoCourseNodeEditController;
 import org.olat.course.nodes.info.InfoPeekViewController;
@@ -79,6 +80,20 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 			config.set(InfoCourseNodeConfiguration.CONFIG_DURATION, "90");
 			config.set(InfoCourseNodeConfiguration.CONFIG_LENGTH, "10");
 		}
+	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		postImportCondition(preConditionEdit, envMapper);
+		postImportCondition(preConditionAdmin, envMapper);
+	}
+
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		postExportCondition(preConditionEdit, envMapper, backwardsCompatible);
+		postExportCondition(preConditionAdmin, envMapper, backwardsCompatible);
 	}
 	
 	@Override

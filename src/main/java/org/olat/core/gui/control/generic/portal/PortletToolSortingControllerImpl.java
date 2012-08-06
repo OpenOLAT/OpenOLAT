@@ -32,7 +32,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -51,19 +50,18 @@ import org.olat.core.gui.translator.Translator;
  * Initial Date:  07.11.2007 <br>
  * @author Lavinia Dumitrescu
  */
-public class PortletToolSortingControllerImpl extends BasicController 
-						 implements PortletToolController, PortletToolSorting {
+public class PortletToolSortingControllerImpl<T> extends BasicController 
+						 implements PortletToolController<T>, PortletToolSorting {
 
 	public static final String COMMAND_AUTO_SORTING = "a_sort";
 	public static final String COMMAND_MANUAL_SORTING = "m_sort";
-	
-	private Panel panel;
+
 	private VelocityContainer mainVC;
 			
 	private boolean isAutoSortable;
 	private boolean isManualSortable;
 	private SortingCriteria sortingCriteria;
-	private List<PortletEntry> sortedItems;
+	private List<PortletEntry<T>> sortedItems;
 	
 	
 	//GUI elements
@@ -71,7 +69,7 @@ public class PortletToolSortingControllerImpl extends BasicController
 	private Link autoSorting;
 	private PortletAutoSortingConfigurator portletAutoSortingConfigurator;
 	private CloseableModalController closeableModalController;
-	private PortletManualSortingConfigurator portletManualSortingConfigurator;
+	private PortletManualSortingConfigurator<T> portletManualSortingConfigurator;
 	
 	/**
 	 * The sorting terms list is configurable.
@@ -80,7 +78,7 @@ public class PortletToolSortingControllerImpl extends BasicController
 	 * @param sortingTerms (a list with e.g. SortingCriteria.TYPE_SORTING, SortingCriteria.ALPHABETICAL_SORTING,SortingCriteria.DATE_SORTING)
 	 */
 	public PortletToolSortingControllerImpl(UserRequest ureq, WindowControl wControl,Translator callerTranslator, SortingCriteria sortingCriteria, 
-			PortletDefaultTableDataModel tableDataModel, List<PortletEntry> sortedItems) {
+			PortletDefaultTableDataModel<T> tableDataModel, List<PortletEntry<T>> sortedItems) {
 		super(ureq, wControl);
 		
 		this.sortedItems = sortedItems;
@@ -100,12 +98,12 @@ public class PortletToolSortingControllerImpl extends BasicController
 		autoSorting.setCustomEnabledLinkCSS("b_portlet_edit_sort_auto");
 		autoSorting.setCustomDisabledLinkCSS("b_portlet_edit_sort_auto_disabled");
 		
-		panel = this.putInitialPanel(mainVC);
+		putInitialPanel(mainVC);
 		
 		portletAutoSortingConfigurator = new PortletAutoSortingConfigurator(ureq, wControl, sortingCriteria);
 		portletAutoSortingConfigurator.addControllerListener(this);
 						
-		portletManualSortingConfigurator = new PortletManualSortingConfigurator(ureq, wControl, callerTranslator, tableDataModel, sortedItems);
+		portletManualSortingConfigurator = new PortletManualSortingConfigurator<T>(ureq, wControl, callerTranslator, tableDataModel, sortedItems);
 		portletManualSortingConfigurator.addControllerListener(this);
 		
 	}
@@ -200,7 +198,7 @@ public class PortletToolSortingControllerImpl extends BasicController
 		portletAutoSortingConfigurator.setSortingCriteria(sortingCriteria);
 	}	
 
-	public List<PortletEntry> getSortedItems() {
+	public List<PortletEntry<T>> getSortedItems() {
 		return sortedItems;
 	}
 

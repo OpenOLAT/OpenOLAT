@@ -236,7 +236,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * LD: Debug method. 
 	 * @param efficiencyStatement
 	 */
-	private void printEfficiencyStatement(EfficiencyStatement efficiencyStatement) {
+	protected void printEfficiencyStatement(EfficiencyStatement efficiencyStatement) {
 		List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
 		if (assessmentNodes != null) {
 			Iterator<Map<String,Object>> iter = assessmentNodes.iterator();
@@ -247,7 +247,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 				Boolean passed = (Boolean)nodeData.get(AssessmentHelper.KEY_PASSED);
 				Integer attempts = (Integer)nodeData.get(AssessmentHelper.KEY_ATTEMPTS);
 				String attemptsStr = attempts==null ? null : String.valueOf(attempts.intValue());				
-				System.out.println("title: " + title + " score: " + score + " passed: " + passed + " attempts: " + attemptsStr);				
+				logInfo("title: " + title + " score: " + score + " passed: " + passed + " attempts: " + attemptsStr);				
 			}
 		}		
 	}

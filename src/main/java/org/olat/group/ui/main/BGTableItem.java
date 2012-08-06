@@ -20,11 +20,15 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryEntry;
-import org.olat.resource.accesscontrol.model.OLATResourceAccess;
+import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupView;
+import org.olat.group.model.BGMembership;
+import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 
 /**
@@ -37,39 +41,96 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BGTableItem {
-	private boolean accessControl;
-	private final boolean member;
+	private final BGMembership member;
+	private boolean marked;
 	private final Boolean allowLeave;
 	private final Boolean allowDelete;
-	private final BusinessGroup businessGroup;
-	private List<RepositoryEntry> resources;
+	private final String businessGroupDescription;
+	private final Date businessGroupLastUsage;
+	
+	private final BGShort businessGroup;
+	private List<RepositoryEntryShort> relations;
 	private List<PriceMethodBundle> access;
 	
-	public BGTableItem(BusinessGroup businessGroup, boolean member, Boolean allowLeave, Boolean allowDelete,
-			boolean accessControl, List<PriceMethodBundle> access) {
-		this.accessControl = accessControl;
-		this.businessGroup = businessGroup;
+	public BGTableItem(BusinessGroup businessGroup, boolean marked, BGMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
+		this.businessGroup = new BGShort(businessGroup);
+		this.businessGroupDescription = businessGroup.getDescription();
+		this.businessGroupLastUsage = businessGroup.getLastUsage();
+		this.marked = marked;
+		this.member = member;
+		this.allowLeave = allowLeave;
+		this.allowDelete = allowDelete;
+		this.access = access;
+	}
+	
+	public BGTableItem(BusinessGroupView businessGroup, boolean marked, BGMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
+		this.businessGroup = new BGShort(businessGroup);
+		this.businessGroupDescription = businessGroup.getDescription();
+		this.businessGroupLastUsage = businessGroup.getLastUsage();
+		this.marked = marked;
 		this.member = member;
 		this.allowLeave = allowLeave;
 		this.allowDelete = allowDelete;
 		this.access = access;
 	}
 
-	//fxdiff VCRP-1,2: access control of resources
-	public boolean isMember() {
+	public Long getBusinessGroupKey() {
+		return businessGroup.getKey();
+	}
+	
+	public String getBusinessGroupName() {
+		return businessGroup.getName();
+	}
+	
+	public int getNumOfParticipants() {
+		return businessGroup.getNumOfParticipants();
+	}
+	
+	public Integer getMaxParticipants() {
+		return businessGroup.getMaxParticipants();
+	}
+	
+	public boolean isWaitingListEnabled() {
+		return businessGroup.isWaitingListEnabled();
+	}
+	
+	public boolean isFull() {
+		Integer maxParticipants = businessGroup.getMaxParticipants();
+		if(maxParticipants == null || maxParticipants.intValue() <= 0) {
+			return false;
+		}
+		if(maxParticipants.intValue() <= getNumOfParticipants()) {
+			return true;
+		}
+		return false;
+	}
+
+	public String getBusinessGroupDescription() {
+		return businessGroupDescription;
+	}
+
+	public Date getBusinessGroupLastUsage() {
+		return businessGroupLastUsage;
+	}
+
+	public boolean isMarked() {
+		return marked;
+	}
+	
+	public void setMarked(boolean mark) {
+		this.marked = mark;
+	}
+
+	public BGMembership getMembership() {
 		return member;
 	}
-	//fxdiff VCRP-1,2: access control of resources
+	
 	public boolean isAccessControl() {
-		return accessControl;
+		return access != null;
 	}
 
 	public List<PriceMethodBundle> getAccessTypes() {
 		return access;
-	}
-
-	public void setAccessControl(boolean accessControl) {
-		this.accessControl = accessControl;
 	}
 
 	public Boolean getAllowLeave() {
@@ -80,16 +141,28 @@ public class BGTableItem {
 		return allowDelete;
 	}
 
-	public BusinessGroup getBusinessGroup() {
+	public BusinessGroupShort getBusinessGroup() {
 		return businessGroup;
 	}
 	
-	public List<RepositoryEntry> getResources() {
-		return resources;
+	public List<RepositoryEntryShort> getRelations() {
+		return relations;
 	}
-
-	public void setResources(List<RepositoryEntry> resources) {
-		this.resources = resources;
+	
+	/**
+	 * Give the item a list of relations, it found alone which are its own
+	 * @param resources
+	 */
+	public void setUnfilteredRelations(List<BGRepositoryEntryRelation> resources) {
+		relations = new ArrayList<RepositoryEntryShort>(3);
+		for(BGRepositoryEntryRelation resource:resources) {
+			if(businessGroup.getKey().equals(resource.getGroupKey())) {
+				relations.add(new REShort(resource));
+				if(relations.size() >= 3) {
+					return;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -104,8 +177,124 @@ public class BGTableItem {
 		}
 		if(obj instanceof BGTableItem) {
 			BGTableItem item = (BGTableItem)obj;
-			return businessGroup != null && businessGroup.equalsByPersistableKey(item.businessGroup);
+			return businessGroup != null && businessGroup.equals(item.businessGroup);
 		}
 		return false;
+	}
+	
+	private static class BGShort implements BusinessGroupShort {
+		private final Long key;
+		private final String name;
+		private final Integer maxParticipants;
+		private int numOfParticipants;
+		private final boolean waitingListEnabled;
+		
+		public BGShort(BusinessGroup group) {
+			key = group.getKey();
+			name = group.getName().intern();
+			maxParticipants = group.getMaxParticipants();
+			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
+		}
+		
+		public BGShort(BusinessGroupView group) {
+			key = group.getKey();
+			name = group.getName().intern();
+			maxParticipants = group.getMaxParticipants();
+			numOfParticipants = group.getNumOfParticipants();
+			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
+		}
+
+		@Override
+		public String getResourceableTypeName() {
+			return "BusinessGroup";
+		}
+
+		@Override
+		public Long getResourceableId() {
+			return key;
+		}
+
+		@Override
+		public Long getKey() {
+			return key;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		public Integer getMaxParticipants() {
+			return maxParticipants;
+		}
+
+		public int getNumOfParticipants() {
+			return numOfParticipants;
+		}
+		
+		public boolean isWaitingListEnabled() {
+			return waitingListEnabled;
+		}
+
+		@Override
+		public int hashCode() {
+			return key.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof BGShort) {
+				BGShort sh = (BGShort)obj;
+				return key != null && key.equals(sh.key);
+			}
+			return false;
+		}
+	}
+	
+	private static class REShort implements RepositoryEntryShort {
+		private final Long key;
+		private final String displayname;
+		public REShort(BGRepositoryEntryRelation rel) {
+			this.key = rel.getRepositoryEntryKey();
+			this.displayname = rel.getRepositoryEntryDisplayName();
+		}
+
+		public Long getKey() {
+			return key;
+		}
+
+		public String getDisplayname() {
+			return displayname;
+		}
+
+		@Override
+		public String getResourceType() {
+			return "CourseModule";
+		}
+
+		@Override
+		public int getStatusCode() {
+			return 0;
+		}
+
+		@Override
+		public int hashCode() {
+			return key.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof REShort) {
+				REShort re = (REShort)obj;
+				return key != null && key.equals(re.key);
+			}
+			return false;
+		}
 	}
 }

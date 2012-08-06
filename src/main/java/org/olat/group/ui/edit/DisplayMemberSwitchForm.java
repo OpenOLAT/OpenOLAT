@@ -124,15 +124,12 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		showWaitingList.select("xx", show);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest)
-	 */
-	public boolean validate() {
-		return true;
-	}
-
 	public void setWaitingListReadOnly(boolean b) {
 		showWaitingList.setEnabled(b);
+	}
+	
+	public void setWaitingListVisible(boolean b) {
+		showWaitingList.setVisible(b);
 	}
 
 	@Override

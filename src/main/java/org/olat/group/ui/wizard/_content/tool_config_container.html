@@ -1,0 +1,15 @@
+$r.render("config.enable.$tool")
+
+#if($r.available("config.enable.hasCalendar"))
+	#if($r.available("calendar"))
+		$r.render("calendar")
+	#end
+#end
+#if($r.available("config.enable.hasFolder"))
+	#if($r.available("folder"))
+		$r.render("folder")
+	#end
+	#if($r.available("quota"))
+		$r.render("quota")
+	#end
+#end

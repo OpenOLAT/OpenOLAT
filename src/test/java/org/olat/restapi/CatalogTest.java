@@ -180,8 +180,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVOes vos = parse(body, CatalogEntryVOes.class);
+		CatalogEntryVOes vos = conn.parse(response, CatalogEntryVOes.class);
 
 		assertNotNull(vos);
 		assertNotNull(vos.getCatalogEntries());
@@ -200,8 +199,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		assertEquals(entry1.getName(), vo.getName());
 		assertEquals(entry1.getDescription(), vo.getDescription());
@@ -237,8 +235,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVOes vos = parse(body, CatalogEntryVOes.class);
+		CatalogEntryVOes vos = conn.parse(response, CatalogEntryVOes.class);
 		assertNotNull(vos);
 		assertNotNull(vos.getCatalogEntries());
 		assertTrue(vos.getCatalogEntries().length <= 2);
@@ -264,8 +261,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -295,8 +291,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -334,8 +329,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -370,8 +364,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -408,8 +401,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -438,8 +430,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -465,8 +456,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -490,8 +480,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -513,8 +502,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
+		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
@@ -582,8 +570,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		UserVO vo = parse(body, UserVO.class);
+		UserVO vo = conn.parse(response, UserVO.class);
 		assertNotNull(vo);
 		
 		//id1 is not owner

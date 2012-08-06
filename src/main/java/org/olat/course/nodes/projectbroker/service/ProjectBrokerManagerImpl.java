@@ -35,10 +35,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -60,15 +61,15 @@ import org.olat.course.nodes.projectbroker.ProjectBrokerDropboxController;
 import org.olat.course.nodes.projectbroker.ProjectBrokerNodeConfiguration;
 import org.olat.course.nodes.projectbroker.ProjectBrokerReturnboxController;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
+import org.olat.course.nodes.projectbroker.datamodel.Project.EventType;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBrokerImpl;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectImpl;
-import org.olat.course.nodes.projectbroker.datamodel.Project.EventType;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.group.DeletableReference;
 import org.olat.properties.Property;
@@ -88,7 +89,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	protected ProjectBrokerManagerImpl() {
 		// cache name should not be too long e.g. 'projectbroker' is too long, use 'pb' instead.
 		projectCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(ProjectBrokerManagerImpl.class, "pb");
-		BusinessGroupManagerImpl.getInstance().registerDeletableGroupDataListener(this);
+		CoreSpringFactory.getImpl(BusinessGroupService.class).registerDeletableGroupDataListener(this);
 		logDebug("ProjectBrokerManagerImpl created");
 	}
 
@@ -131,7 +132,9 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 			public void execute() {
 				DBFactory.getInstance().saveObject(project);
 				ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
-				projectBroker.getProjects().add(project);
+				if(!projectBroker.getProjects().contains(project)) {
+					projectBroker.getProjects().add(project);
+				}
 				projectCache.update(projectBrokerId.toString(), projectBroker);
 			}
 		});	
@@ -503,9 +506,13 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		ProjectBroker projectBroker = (ProjectBroker)projectCache.get(projectBrokerId.toString());
 		if (projectBroker == null) {
 			logDebug("find no projectBroker in the cache => create a new one projectBrokerId=" + projectBrokerId);
-			List projectList = DBFactory.getInstance().find(
-					"select project from org.olat.course.nodes.projectbroker.datamodel.ProjectImpl as project" +
-					" where project.projectBroker.key = ?", projectBrokerId,	Hibernate.LONG);
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct project from ").append(ProjectImpl.class.getName()).append(" as project ")
+			  .append(" where project.projectBroker.key=:projectBrokerKey");
+
+			List<Project> projectList = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), Project.class)
+					.setParameter("projectBrokerKey", projectBrokerId)
+					.getResultList();
 			projectBroker = getProjectBroker(projectBrokerId);
 			projectBroker.setProjects(projectList);
 			projectCache.put(projectBrokerId.toString(), projectBroker);
@@ -594,7 +601,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	private List<Project> getProjectsWith(BusinessGroup group) {
 		List<Project> projectList = DBFactory.getInstance().find(
 				"select project from org.olat.course.nodes.projectbroker.datamodel.ProjectImpl as project" +
-				" where project.projectGroup.key = ?", group.getKey(),	Hibernate.LONG);
+				" where project.projectGroup.key = ?", group.getKey(),	StandardBasicTypes.LONG);
 		return projectList;
 	}
 
@@ -631,7 +638,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		List<Project> projectList = DBFactory.getInstance().find(
 				"select project from org.olat.course.nodes.projectbroker.datamodel.ProjectImpl as project" +
 				" where project.projectBroker = ? and project.title = ?", 
-				new Object[] { projectBrokerId, newProjectTitle }, new Type[] { Hibernate.LONG, Hibernate.STRING });
+				new Object[] { projectBrokerId, newProjectTitle }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING });
 		logDebug("existProjectName projectList.size=" + projectList.size());
 		return !projectList.isEmpty();
 	}

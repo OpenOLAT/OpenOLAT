@@ -25,26 +25,29 @@
 
 package org.olat.group.area;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Locale;
 
-import org.hibernate.Hibernate;
-import org.hibernate.type.Type;
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
+import org.olat.group.BusinessGroupImpl;
+import org.olat.group.manager.BusinessGroupArchiver;
+import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<BR/> Implementation of the business group area manager <P/>
@@ -52,57 +55,31 @@ import org.olat.group.context.BGContext;
  * 
  * @author gnaegi
  */
+@Service("areaManager")
 public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BusinessGroupArchiver businessGroupArchiver;
 
-	private static BGAreaManager INSTANCE;
-	static {
-		INSTANCE = new BGAreaManagerImpl();
+	
+	@Override
+	public BGArea loadArea(Long key) {
+		return dbInstance.getCurrentEntityManager().find(BGAreaImpl.class, key);
 	}
 
-	/**
-	 * @return singleton instance
-	 */
-	public static BGAreaManager getInstance() {
-		return INSTANCE;
-	}
-
-	private BGAreaManagerImpl() {
-	// no public constructor
-	}
-
-
-	/**
-	 * @see org.olat.group.area.BGAreaManager#createAndPersistBGAreaIfNotExists(java.lang.String,
-	 *      java.lang.String, org.olat.group.context.BGContext)
-	 */
-	//o_clusterOK by:cg synchronized on groupContext's olatresourceable
-	public BGArea createAndPersistBGAreaIfNotExists(final String areaName, final String description, final BGContext groupContext) { 
-		BGArea createdBGArea =CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(groupContext, new SyncerCallback<BGArea>(){
-			public BGArea execute() {
-				BGArea area = findBGArea(areaName, groupContext);
-				if (area == null) { 
-					return createAndPersistBGArea(areaName, description, groupContext); 
-				}
-				return null;
-			}
-		});
-		return createdBGArea;
-	}
-
-	/**
-	 * @see org.olat.group.area.BGAreaManager#copyBGAreasOfBGContext(org.olat.group.context.BGContext,
-	 *      org.olat.group.context.BGContext)
-	 */
-	// o_clusterOK by:cg ; must be synchronized too ? => not 100% sure, 
-	public Map copyBGAreasOfBGContext(BGContext origBgContext, final BGContext targetBgContext) {
-		List origAreas = findBGAreasOfBGContext(origBgContext);
-		Map areas = new HashMap();
-		Iterator iterator = origAreas.iterator();
-		while (iterator.hasNext()) {
-			BGArea origArea = (BGArea) iterator.next();
-			BGArea targetArea = createAndPersistBGArea(origArea.getName(), origArea.getDescription(), targetBgContext);
-			areas.put(origArea, targetArea);
-		}
+	@Override
+	public List<BGArea> loadAreas(List<Long> keys) {
+		if(keys == null || keys.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select area from ").append(BGAreaImpl.class.getName()).append(" area ")
+		  .append(" where area.key in (:keys)");
+		
+		List<BGArea> areas = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class)
+				.setParameter("keys", keys)
+				.getResultList();
 		return areas;
 	}
 
@@ -110,19 +87,22 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * @see org.olat.group.area.BGAreaManager#findBGArea(java.lang.String,
 	 *      org.olat.group.context.BGContext)
 	 */
-	public BGArea findBGArea(String areaName, BGContext groupContext) {
-		DB db = DBFactory.getInstance();
-		String q = "select area from org.olat.group.area.BGAreaImpl area " + " where area.name = :areaName"
-				+ " and area.groupContext = :context";
-		DBQuery query = db.createQuery(q);
-		query.setString("areaName", areaName);
-		query.setEntity("context", groupContext);
-		List areas = query.list();
-		if (areas.size() == 0) {
+	public BGArea findBGArea(String areaName, OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select area from ").append(BGAreaImpl.class.getName()).append(" area ")
+		  .append(" where area.name=:areaName and area.resource.key=:resourceKey");
+		
+		List<BGArea> areas = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class)
+				.setParameter("areaName", areaName)
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+
+		if (areas.isEmpty()) {
 			return null;
-		} else if (areas.size() > 1) { throw new OLATRuntimeException(BGAreaManagerImpl.class, "findBGArea(" + areaName
-				+ ") returned more than one row for BGContext with key " + groupContext.getKey(), null); }
-		return (BGAreaImpl) areas.get(0);
+		} else if (areas.size() > 1) {
+			throw new OLATRuntimeException(BGAreaManagerImpl.class, "findBGArea(" + areaName+ ") returned more than one row for BGContext with key " + resource.getKey(), null);
+		}
+		return areas.get(0);
 	}
 
 	/**
@@ -131,24 +111,14 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	//o_clusterOK by:cg synchronized
 	public BGArea updateBGArea(final BGArea area) {
 		// look if an area with such a name does already exist in this context
-		final BGContext groupContext = area.getGroupContext();
+		final OLATResource resource = area.getResource();
 		
-		BGArea updatedBGArea =CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(groupContext, new SyncerCallback<BGArea>(){
+		BGArea updatedBGArea =CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerCallback<BGArea>(){
 			public BGArea execute() {
-				BGArea douplicate = findBGArea(area.getName(), groupContext);
-				if (douplicate == null) {
-					// does not exist, so just update it
-					DBFactory.getInstance().updateObject(area);
-					return area;
-				} else if (douplicate.getKey().equals(area.getKey())) {
-					// name already exists, found the same object (name didn't change)
-					// need to copy description (that has changed) and update the object.
-					// if we updated area at this place we would get a hibernate exception
-					douplicate.setDescription(area.getDescription());
-					DBFactory.getInstance().updateObject(douplicate);
-					return douplicate;
-				}
-				return null; // nothing updated
+				BGArea reloadArea = loadArea(area.getKey());
+				reloadArea.setName(area.getName());
+				reloadArea.setDescription(area.getDescription());
+				return dbInstance.getCurrentEntityManager().merge(reloadArea);
 			}
 		});
 		return updatedBGArea;
@@ -159,18 +129,19 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 */
 	// o_clusterOK by:cg must be synchronized too
 	public void deleteBGArea(final BGArea area) {
-		final BGContext groupContext = area.getGroupContext();
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(groupContext, new SyncerExecutor(){
+		final OLATResource resource = area.getResource();
+		
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerExecutor(){
 			public void execute() {
-				BGArea reloadArea = findBGArea(area.getName(), groupContext);
+				BGArea reloadArea = loadArea(area.getKey());
 				if (reloadArea != null) {
 					// 1) delete all area - group relations
 					deleteBGtoAreaRelations(reloadArea);
 					// 2) delete area itself
-					DBFactory.getInstance().deleteObject(reloadArea);
-					Tracing.logAudit("Deleted Business Group Area", reloadArea.toString(), this.getClass());
+					dbInstance.deleteObject(reloadArea);
+					logAudit("Deleted Business Group Area", reloadArea.toString());
 				} else {
-					Tracing.logAudit("Business Group Area was already deleted", area.toString(), this.getClass());
+					logAudit("Business Group Area was already deleted", area.toString());
 				}
 			}
 		});
@@ -182,8 +153,12 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * @param group
 	 */
 	public void deleteBGtoAreaRelations(BusinessGroup group) {
-		String q = " from org.olat.group.area.BGtoAreaRelationImpl as bgarel where bgarel.businessGroup = ?";
-		DBFactory.getInstance().delete(q, new Object[] { group.getKey() }, new Type[] { Hibernate.LONG });
+		StringBuilder sb = new StringBuilder();
+		sb.append(" delete from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel where bgarel.businessGroup.key=:groupKey");
+		
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+				.setParameter("groupKey", group.getKey())
+				.executeUpdate();
 	}
 
 	/**
@@ -192,7 +167,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 */
 	public void addBGToBGArea(BusinessGroup group, BGArea area) {
 		BGtoAreaRelation bgAreaRel = new BGtoAreaRelationImpl(area, group);
-		DBFactory.getInstance().saveObject(bgAreaRel);
+		dbInstance.saveObject(bgAreaRel);
 	}
 
 	/**
@@ -206,12 +181,37 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	/**
 	 * @see org.olat.group.area.BGAreaManager#findBusinessGroupsOfArea(org.olat.group.area.BGArea)
 	 */
-	public List findBusinessGroupsOfArea(BGArea area) {
-		String q = " select grp from org.olat.group.BusinessGroupImpl as grp," + " org.olat.group.area.BGtoAreaRelationImpl as bgarel"
-				+ " where bgarel.businessGroup = grp" + " and bgarel.groupArea = :area";
-		DBQuery query = DBFactory.getInstance().createQuery(q);
-		query.setEntity("area", area);
-		List result = query.list();
+	public List<BusinessGroup> findBusinessGroupsOfArea(BGArea area) {
+		return findBusinessGroupsOfAreas(Collections.singletonList(area));
+	}
+
+	@Override
+	public List<BusinessGroup> findBusinessGroupsOfAreas(List<BGArea> areas) {
+		if(areas == null || areas.isEmpty()) return Collections.emptyList();
+		List<Long> areaKeys = new ArrayList<Long>();
+		for(BGArea area:areas) {
+			areaKeys.add(area.getKey());
+		}
+		return findBusinessGroupsOfAreaKeys(areaKeys);
+	}
+	
+	@Override
+	public List<BusinessGroup> findBusinessGroupsOfAreaKeys(List<Long> areaKeys) {
+		if(areaKeys == null || areaKeys.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		  .append(" inner join bgarel.businessGroup businessGroup ")
+			.append(" left join fetch businessGroup.ownerGroup ownerGroup")
+			.append(" left join fetch businessGroup.partipiciantGroup participantGroup")
+			.append(" left join fetch businessGroup.waitingGroup waitingGroup")
+			.append(" left join fetch businessGroup.resource resource")
+		  .append(" where  bgarel.groupArea.key in (:areaKeys)");
+
+		List<BusinessGroup> result = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("areaKeys", areaKeys)
+				.getResultList();
 		return result;
 	}
 
@@ -219,70 +219,118 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * @see org.olat.group.area.BGAreaManager#findBusinessGroupsOfAreaAttendedBy(org.olat.core.id.Identity,
 	 *      java.lang.String, org.olat.group.context.BGContext)
 	 */
-	public List findBusinessGroupsOfAreaAttendedBy(Identity identity, String areaName, BGContext context) {
-		String query = "select bgi from " + "  org.olat.group.BusinessGroupImpl as bgi "
-				+ ", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi" + ", org.olat.group.area.BGtoAreaRelationImpl as bgarel"
-				+ ", org.olat.group.area.BGAreaImpl as area" + " where area.name = :name " + " and bgarel.businessGroup = bgi"
-				+ " and bgarel.groupArea = area" + " and bgi.partipiciantGroup = sgmi.securityGroup" + " and sgmi.identity = :identId"
-				+ " and bgi.groupContext = :context";
-		DBQuery dbq = DBFactory.getInstance().createQuery(query);
-		dbq.setEntity("identId", identity);
-		dbq.setString("name", areaName);
-		dbq.setEntity("context", context);
-		List result = dbq.list();
-		return result;
+	@Override
+	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, List<Long> areaKeys, OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
+		  .append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi")
+		  .append(", org.olat.group.area.BGtoAreaRelationImpl as bgarel")
+			.append(", org.olat.group.area.BGAreaImpl as area")
+			.append(" where bgarel.groupArea=area and bgi.partipiciantGroup=sgmi.securityGroup and bgarel.businessGroup=bgi")
+			.append(" and sgmi.identity.key=:identityKey");
+		
+		if(areaKeys != null && !areaKeys.isEmpty()) {
+			sb.append(" and area.key in (:areaKeys)");
+		}
+		if(resource != null) {
+			sb.append(" and area.resource.key=:resourceKey");
+		}
+
+		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("identityKey", identity.getKey());
+		if(areaKeys != null && !areaKeys.isEmpty()) {
+			query.setParameter("areaKeys", areaKeys);
+		}
+		if(resource != null) {
+			query.setParameter("resourceKey", resource.getKey());
+		}
+		
+		List<BusinessGroup> groups = query.getResultList();
+		return groups;
 	}
 
 	/**
 	 * @see org.olat.group.area.BGAreaManager#findBGAreasOfBusinessGroup(org.olat.group.BusinessGroup)
 	 */
-	public List findBGAreasOfBusinessGroup(BusinessGroup group) {
-		String q = " select area from org.olat.group.area.BGAreaImpl as area," + " org.olat.group.area.BGtoAreaRelationImpl as bgarel "
-				+ " where bgarel.groupArea = area" + " and bgarel.businessGroup = :group";
-		DBQuery query = DBFactory.getInstance().createQuery(q);
-		query.setEntity("group", group);
-		List result = query.list();
-		return result;
+	public List<BGArea> findBGAreasOfBusinessGroup(BusinessGroup group) {
+		return findBGAreasOfBusinessGroups(Collections.singletonList(group));
+	}
+
+	@Override
+	public List<BGArea> findBGAreasOfBusinessGroups(List<BusinessGroup> groups) {
+		if(groups == null || groups.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct bgarel.groupArea from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		  .append("where bgarel.businessGroup.key in (:groupKeys)");
+
+		TypedQuery<BGArea> areaQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class);
+		List<Long> groupKeys = new ArrayList<Long>();
+		for(BusinessGroup group:groups) {
+			groupKeys.add(group.getKey());
+		}
+		areaQuery.setParameter("groupKeys", groupKeys);
+		return areaQuery.getResultList();
 	}
 
 	/**
 	 * @see org.olat.group.area.BGAreaManager#countBGAreasOfBGContext(org.olat.group.context.BGContext)
 	 */
-	public int countBGAreasOfBGContext(BGContext groupContext) {
-		String q = " select count(area) from org.olat.group.area.BGAreaImpl area where area.groupContext = :context";
-		DBQuery query = DBFactory.getInstance().createQuery(q);
-		query.setEntity("context", groupContext);
-		return ((Long) query.list().get(0)).intValue();
+	@Override
+	public int countBGAreasInContext(OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(area) from ").append(BGAreaImpl.class.getName()).append(" area where area.resource.key=:resourceKey");
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getSingleResult();
+		return count.intValue();
 	}
 
 	/**
 	 * @see org.olat.group.area.BGAreaManager#findBGAreasOfBGContext(org.olat.group.context.BGContext)
 	 */
-	public List findBGAreasOfBGContext(BGContext groupContext) {
-		String q = " select area from org.olat.group.area.BGAreaImpl area where area.groupContext = :context ";
-		DBQuery query = DBFactory.getInstance().createQuery(q);
-		query.setEntity("context", groupContext);
-		return query.list();
+	@Override
+	public List<BGArea> findBGAreasInContext(OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select area from ").append(BGAreaImpl.class.getName()).append(" area where area.resource.key=:resourceKey");
+		List<BGArea> areas = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class)
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+		return areas;
 	}
 
 	/**
 	 * @see org.olat.group.area.BGAreaManager#isIdentityInBGArea(org.olat.core.id.Identity,
 	 *      java.lang.String, org.olat.group.context.BGContext)
 	 */
-	public boolean isIdentityInBGArea(Identity identity, String areaName, BGContext groupContext) {
-		String q = " select count(grp) from" + " org.olat.group.BusinessGroupImpl as grp," + " org.olat.group.area.BGAreaImpl as area,"
-				+ " org.olat.group.area.BGtoAreaRelationImpl bgarel," + " org.olat.basesecurity.SecurityGroupMembershipImpl as secgmemb"
-				+ " where area.name = :name" + " and bgarel.groupArea = area" + " and bgarel.businessGroup = grp"
-				+ " and grp.groupContext = :context" + " and ((grp.partipiciantGroup = secgmemb.securityGroup and secgmemb.identity = :id) "
-				+ " or (grp.ownerGroup = secgmemb.securityGroup and secgmemb.identity = :id)) ";
-		DBQuery query = DBFactory.getInstance().createQuery(q);
-		query.setEntity("id", identity);
-		query.setEntity("context", groupContext);
-		query.setString("name", areaName);
-		query.setCacheable(true);
-		List result = query.list();
-		if (result.size() == 0) return false;
-		return ( ((Long) result.get(0)).intValue() > 0);
+	public boolean isIdentityInBGArea(Identity identity, String areaName, Long areaKey, OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(grp) from ").append(BusinessGroupImpl.class.getName()).append(" as grp")
+		  .append(", org.olat.group.area.BGAreaImpl as area, org.olat.group.area.BGtoAreaRelationImpl bgarel, org.olat.basesecurity.SecurityGroupMembershipImpl as secgmemb")
+		  .append(" where bgarel.groupArea = area and bgarel.businessGroup = grp");
+		if(StringHelper.containsNonWhitespace(areaName)) {
+			sb.append(" and area.name=:name ");
+		}
+		if(areaKey != null) {
+			sb.append(" and area.key=:areaKey ");
+		}
+		sb.append(" and area.resource.key=:resourceKey ")
+			.append(" and ((grp.partipiciantGroup = secgmemb.securityGroup and secgmemb.identity.key=:identityKey) or (grp.ownerGroup = secgmemb.securityGroup and secgmemb.identity=:identityKey))");
+		
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("resourceKey", resource.getKey());
+		if(StringHelper.containsNonWhitespace(areaName)) {
+			query.setParameter("name", areaName);
+		}
+		if(areaKey != null) {
+			query.setParameter("areaKey", areaKey);
+		}
+		Number count = query
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getSingleResult();
+		return count.intValue() > 0;
 	}
 
 	/**
@@ -292,18 +340,55 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		return (BGArea) DBFactory.getInstance().loadObject(area);
 	}
 
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> allNames, BGContext bgContext) {
-		String q = " select area from org.olat.group.area.BGAreaImpl area "
-			+"where area.groupContext = :context "
-			+"AND area.name in (:names) ";
-		DBQuery query = DBFactory.getInstance().createQuery(q);
-		query.setEntity("context", bgContext);
-		query.setParameterList("names", allNames);
-
-		List result = query.list();
-		if (result.size() == 0) return false;
-		return true;
+	@Override
+	public boolean existArea(String nameOrKey, OLATResource resource) {
+		Long key = null;
+		if(StringHelper.isLong(nameOrKey)) {
+			key = new Long(nameOrKey);
+		}
 		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(area) from ").append(BGAreaImpl.class.getName()).append(" area  ")
+		  .append(" where area.resource.key=:resourceKey and area.");
+		if(key == null) {
+			sb.append("name");
+		} else {
+			sb.append("key");
+		} 
+		sb.append("=:nameOrKey");
+		
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("nameOrKey", key == null ? nameOrKey : key)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getSingleResult();
+		return count.intValue() > 0;
+	}
+	
+	
+
+	@Override
+	public List<Long> toAreaKeys(String areaNames, OLATResource resource) {
+		if(!StringHelper.containsNonWhitespace(areaNames)) return Collections.emptyList();
+		
+		String[] areaNameArr = areaNames.split(",");
+		List<String> areaNameList = new ArrayList<String>();
+		for(String areaName:areaNameArr) {
+			areaNameList.add(areaName.trim());
+		}
+		
+		if(areaNameList.isEmpty()) return Collections.emptyList();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select area.key from ").append(BGAreaImpl.class.getName()).append(" area")
+		  .append(" where area.resource.key=:resourceKey and area.name in (:names)");
+
+		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("names", areaNameList)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return keys;
 	}
 
 	/**
@@ -311,27 +396,35 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * 
 	 * @param areaName The visible area name
 	 * @param description The area description
-	 * @param groupContext The group context of this area
+	 * @param resource The resource of this area
 	 * @return The new area
 	 */
-	private BGArea createAndPersistBGArea(String areaName, String description, BGContext groupContext) {
-		BGArea area = new BGAreaImpl(areaName, description, groupContext);
-		DBFactory.getInstance().saveObject(area);
-		if (area != null) Tracing.logAudit("Created Business Group Area", area.toString(), this.getClass());
-		// else no area created, name douplicate
+	@Override
+	public BGArea createAndPersistBGArea(String areaName, String description, OLATResource resource) {
+		BGArea area = new BGAreaImpl(areaName, description, resource);
+		dbInstance.getCurrentEntityManager().persist(area);
+		if (area != null) {
+			logAudit("Created Business Group Area", area.toString());
+		}
+		// else no area created, name duplicate
 		return area;
 	}
 	
 	/**
 	 * Remove a business group from a business group area. If no such relation
-	 * exists, the mehthod does nothing.
+	 * exists, the method does nothing.
 	 * 
 	 * @param businessGroupKey
 	 * @param bgAreaKey
 	 */
 	private void removeBGFromArea(Long businessGroupKey, Long bgAreaKey) {
-		String q = " from org.olat.group.area.BGtoAreaRelationImpl as bgarel where bgarel.groupArea.key = ? and bgarel.businessGroup = ?";
-		DBFactory.getInstance().delete(q, new Object[] { bgAreaKey, businessGroupKey }, new Type[] { Hibernate.LONG, Hibernate.LONG });
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel where bgarel.groupArea.key=:areaKey and bgarel.businessGroup.key=:groupKey");
+		
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+			.setParameter("areaKey", bgAreaKey)
+			.setParameter("groupKey", businessGroupKey)
+			.executeUpdate();
 	}
 	
 	/**
@@ -341,8 +434,16 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * @param area
 	 */
 	private void deleteBGtoAreaRelations(BGArea area) {
-		String q = " from org.olat.group.area.BGtoAreaRelationImpl as bgarel where bgarel.groupArea = ?";
-		DBFactory.getInstance().delete(q, new Object[] { area.getKey() }, new Type[] { Hibernate.LONG });
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel where bgarel.groupArea.key=:areaKey");
+		
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+			.setParameter("areaKey", area.getKey())
+			.executeUpdate();
 	}
-
+	
+	@Override
+	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType, Locale locale, String charset) {
+		return businessGroupArchiver.archiveAreaMembers(resource, columnList, areaList, archiveType, locale, charset);
+	}
 }

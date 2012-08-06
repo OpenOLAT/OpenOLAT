@@ -209,6 +209,18 @@ public class OresHelper {
 	}
 	
 	/**
+	 * Check whether the given ores is of type aClass
+	 * @param ores
+	 * @param aClass
+	 * @return True if ores is of type aClass
+	 */
+	public static boolean isOfType(OLATResourceable ores, String typeToCompare) {
+		String type = ores.getResourceableTypeName();
+		boolean ok = (type.equals(typeToCompare));
+		return ok;
+	}
+	
+	/**
 	 * 
 	 * @param aClass
 	 * @param subType may only contain a..z and 0..9; and may only be 15 chars long

@@ -5,6 +5,8 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
+	
+
 <bean id="courseModule" class="org.olat.course.CourseModule" 
 	depends-on="userModule, triggerUserModuleInit, org.olat.core.util.WebappHelper, metaInfoFactory, fileresourceManager">
 		
@@ -81,7 +83,7 @@
 	
 </bean>
 				
-<bean id="courseFactory" class="org.olat.course.CourseFactory" depends-on="businessGroupManager">
+<bean id="courseFactory" class="org.olat.course.CourseFactory" depends-on="businessGroupService">
 	<constructor-arg index="0" ref="coordinatorManager" />
 	<constructor-arg index="1" ref="repositoryManager" />
 	<constructor-arg index="2" ref="resourceManager" />

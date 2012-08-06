@@ -22,7 +22,7 @@ package org.olat.restapi.group;
 import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
 import static org.olat.restapi.support.ObjectFactory.getInformation;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -48,6 +48,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
@@ -64,11 +65,9 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.SearchBusinessGroupParams;
-import org.olat.group.properties.BusinessGroupPropertyManager;
-import org.olat.group.ui.BGConfigFlags;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.DisplayMembers;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.modules.wiki.restapi.GroupWikiWebService;
@@ -78,6 +77,7 @@ import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+
 
 /**
  * Description:<br>
@@ -126,20 +126,19 @@ public class LearningGroupWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList(@Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<BusinessGroup> bgs;
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		List<BusinessGroup> groups;
 		if(isGroupManager(request)) {
-			bgs = bgm.getAllBusinessGroups();
+			groups = bgs.loadAllBusinessGroups();
 		} else {
-			bgs = new ArrayList<BusinessGroup>();
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			bgs = bgm.findBusinessGroups(params, identity, true, true, null, 0, -1);
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
+			groups = bgs.findBusinessGroups(params, null, 0, -1);
 		}
 		
 		int count = 0;
-		GroupVO[] groupVOs = new GroupVO[bgs.size()];
-		for(BusinessGroup bg:bgs) {
+		GroupVO[] groupVOs = new GroupVO[groups.size()];
+		for(BusinessGroup bg:groups) {
 			groupVOs[count++] = ObjectFactory.get(bg);
 		}
 		return Response.ok(groupVOs).build();
@@ -161,13 +160,13 @@ public class LearningGroupWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("groupKey") Long groupKey, @Context Request request,
 			@Context HttpServletRequest httpRequest) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		Identity identity = RestSecurityHelper.getIdentity(httpRequest);
-		if(!isGroupManager(httpRequest) && !bgm.isIdentityInBusinessGroup(identity, bg)) {
+		if(!isGroupManager(httpRequest) && !bgs.isIdentityInBusinessGroup(identity, bg)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -206,8 +205,8 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		final BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		final BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -216,20 +215,10 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 
-		BusinessGroup savedBg = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(bg, new SyncerCallback<BusinessGroup>(){
-			public BusinessGroup execute() {
-				BusinessGroup reloadedBG = bgm.loadBusinessGroup(bg);
-				reloadedBG.setName(group.getName());
-				reloadedBG.setDescription(group.getDescription());
-				reloadedBG.setMinParticipants(normalize(group.getMinParticipants()));
-				reloadedBG.setMaxParticipants(normalize(group.getMaxParticipants()));
-				bgm.updateBusinessGroup(reloadedBG);
-				return reloadedBG;
-			}
-		});
-		
+		BusinessGroup mergedBg = bgs.updateBusinessGroup(bg, group.getName(), group.getDescription(),
+				normalize(group.getMinParticipants()), normalize(group.getMaxParticipants()));
 		//save the updated group
-		GroupVO savedVO = ObjectFactory.get(savedBg);
+		GroupVO savedVO = ObjectFactory.get(mergedBg);
 		return Response.ok(savedVO).build();
 	}
 	
@@ -249,12 +238,12 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		bgm.deleteBusinessGroup(bg);
+		bgs.deleteBusinessGroup(bg);
 		return Response.ok().build();
 	}
 	
@@ -273,15 +262,15 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/infos")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getInformations(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
@@ -298,15 +287,15 @@ public class LearningGroupWebService {
 	 */
 	@Path("{groupKey}/forum")
 	public ForumWebService getForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return null;
 		}
 		
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return null;
 			}
 		}
@@ -321,15 +310,15 @@ public class LearningGroupWebService {
 	
 	@Path("{groupKey}/folder")
 	public VFSWebservice getFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return null;
 		}
 		
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return null;
 			}
 		}
@@ -362,15 +351,15 @@ public class LearningGroupWebService {
 	 */
 	@Path("{groupKey}/wiki")
 	public GroupWikiWebService getWiki(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return null;
 		}
 		
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return null;
 			}
 		}
@@ -397,19 +386,19 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/owners")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTutors(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
-			BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(bg);
-			if(!bgpm.showOwners()) {
+			DisplayMembers displayMembers = bgs.getDisplayMembers(bg);
+			if(!displayMembers.isShowOwners()) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
@@ -432,19 +421,19 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/participants")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
-			BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(bg);
-			if(!bgpm.showPartips()) {
+			DisplayMembers displayMembers = bgs.getDisplayMembers(bg);
+			if(!displayMembers.isShowParticipants()) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
@@ -484,18 +473,17 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			final BusinessGroup group = bgm.loadBusinessGroup(groupKey, false);
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			
+		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
-					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgm.addOwnerAndFireEvent(ureq.getIdentity(), identity, group, flags, false);
+					List<Identity> identityToAdd = Collections.singletonList(identity);
+					bgs.addOwners(ureq.getIdentity(), identityToAdd, group);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -544,17 +532,16 @@ public class LearningGroupWebService {
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			final BusinessGroup group = bgm.loadBusinessGroup(groupKey, false);
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			
+		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
-					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgm.removeOwnerAndFireEvent(ureq.getIdentity(), identity, group, flags, false);
+					bgs.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -601,18 +588,16 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			final BusinessGroup group = bgm.loadBusinessGroup(groupKey, false);
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			
+		//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
-					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgm.addParticipantAndFireEvent(ureq.getIdentity(), identity, group, flags, false);
+					bgs.addParticipant(ureq.getIdentity(), identity, group);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -659,18 +644,16 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			final BusinessGroup group = bgm.loadBusinessGroup(groupKey, false);
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			
+			//TODO gsync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 				public void execute() {
-					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgm.removeParticipantAndFireEvent(ureq.getIdentity(), identity, group, flags, false);
+					bgs.removeParticipant(ureq.getIdentity(), identity, group);
 				}
 			});
 

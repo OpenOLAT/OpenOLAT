@@ -25,25 +25,19 @@
 
 package org.olat.group.ui.wizard;
 
-import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.WizardController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContext;
-import org.olat.group.ui.BGConfigFlags;
-import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -57,13 +51,11 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Florian Gnägi
  */
 public class BGMultipleCopyWizardController extends WizardController {
-	private static final String PACKAGE = Util.getPackageName(BGMultipleCopyWizardController.class);
-
 	private BGCopyWizardCopyForm copyForm;
-	private Translator trans;
-	private BGConfigFlags flags;
 	private BusinessGroup originalGroup;
 	private GroupNamesForm groupNamesForm;
+	
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor fot the business group multiple copy wizard
@@ -73,17 +65,16 @@ public class BGMultipleCopyWizardController extends WizardController {
 	 * @param originalGroup original business group: master that should be copied
 	 * @param flags
 	 */
-	public BGMultipleCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup, BGConfigFlags flags) {
+	public BGMultipleCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup) {
 		super(ureq, wControl, 2);
-		this.trans = BGTranslatorFactory.createBGPackageTranslator(PACKAGE, originalGroup.getType(), ureq.getLocale());
-		this.flags = flags;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.originalGroup = originalGroup;
 		// init wizard step 1
-		this.copyForm = new BGCopyWizardCopyForm(ureq, wControl);
-		this.copyForm.addControllerListener(this);
+		copyForm = new BGCopyWizardCopyForm(ureq, wControl);
+		copyForm.addControllerListener(this);
 		// init wizard title and set step 1
-		setWizardTitle(trans.translate("bgcopywizard.multiple.title"));
-		setNextWizardStep(trans.translate("bgcopywizard.copyform.title"), this.copyForm.getInitialComponent());
+		setWizardTitle(translate("bgcopywizard.multiple.title"));
+		setNextWizardStep(translate("bgcopywizard.copyform.title"), copyForm.getInitialComponent());
 	}
 
 	/**
@@ -100,18 +91,16 @@ public class BGMultipleCopyWizardController extends WizardController {
 			if (event == Event.DONE_EVENT) {
 				groupNamesForm = new GroupNamesForm(ureq, wControl, this.originalGroup.getMaxParticipants());
 				groupNamesForm.addControllerListener(this);
-				setNextWizardStep(trans.translate("bgcopywizard.multiple.groupnames.title"), groupNamesForm.getInitialComponent());
+				setNextWizardStep(translate("bgcopywizard.multiple.groupnames.title"), groupNamesForm.getInitialComponent());
 			}
 		}
 		else if (source == groupNamesForm) {
 			if (event == Event.DONE_EVENT) {
-				List groupNames = this.groupNamesForm.getGroupNamesList();
+				List<String> groupNames = groupNamesForm.getGroupNamesList();
 				StringBuilder okGroups = new StringBuilder();
 				StringBuilder nokGroups = new StringBuilder();
-				Integer max = this.groupNamesForm.getGroupMax();
-				Iterator iter = groupNames.iterator();
-				while (iter.hasNext()) {
-					String groupName = (String) iter.next();
+				Integer max = groupNamesForm.getGroupMax();
+				for (String groupName: groupNames) {
 					BusinessGroup newGroup = doCopyGroup(groupName, max);
 					if (newGroup == null) {
 						nokGroups.append("<li>");
@@ -127,7 +116,7 @@ public class BGMultipleCopyWizardController extends WizardController {
 					}
 				}
 				if (nokGroups.length() > 0) {
-					String warning = trans.translate("bgcopywizard.multiple.groupnames.douplicates", new String[] { okGroups.toString(),
+					String warning = translate("bgcopywizard.multiple.groupnames.douplicates", new String[] { okGroups.toString(),
 							nokGroups.toString() });
 					getWindowControl().setWarning(warning);
 				}
@@ -138,15 +127,17 @@ public class BGMultipleCopyWizardController extends WizardController {
 	}
 	
 	private BusinessGroup doCopyGroup(String newGroupName, Integer max) {
-		BusinessGroupManager groupManager = BusinessGroupManagerImpl.getInstance();
+		
 		// reload original group to prevent context proxy problems
-		this.originalGroup = groupManager.loadBusinessGroup(this.originalGroup);
-		BGContext bgContext = this.originalGroup.getGroupContext();
-		boolean copyAreas = (flags.isEnabled(BGConfigFlags.AREAS) && copyForm.isCopyAreas());
+		originalGroup = businessGroupService.loadBusinessGroup(originalGroup);
 
-		BusinessGroup newGroup = groupManager.copyBusinessGroup(this.originalGroup, newGroupName, this.originalGroup.getDescription(), null, max, bgContext, null, copyAreas,
-				copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(), copyForm.isCopyParticipants(), copyForm
-						.isCopyMembersVisibility(), copyForm.isCopyWaitingList());
+		BusinessGroup newGroup = businessGroupService.copyBusinessGroup(originalGroup, newGroupName, originalGroup.getDescription(),
+				null, max, null, null /* areas map */,
+				copyForm.isCopyAreas(), copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(),
+				copyForm.isCopyParticipants(), copyForm.isCopyMembersVisibility(), copyForm.isCopyWaitingList(),
+				true /*copy relations*/);
+		
+		
 		return newGroup;
 	}
 

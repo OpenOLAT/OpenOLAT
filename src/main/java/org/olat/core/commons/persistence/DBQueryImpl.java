@@ -600,6 +600,16 @@ public class DBQueryImpl implements DBQuery {
 		}
 		return this;
 	}
+	
+	public DBQuery setProperties(Map map) {
+		try {
+			query.setProperties(map);
+		}
+		catch (HibernateException e) {
+			throw new DBRuntimeException("DBQuery error. ", e);
+		}
+		return this;
+	}
 
 	/**
 	 * @see org.olat.core.commons.persistence.DBQuery#setSerializable(int, java.io.Serializable)

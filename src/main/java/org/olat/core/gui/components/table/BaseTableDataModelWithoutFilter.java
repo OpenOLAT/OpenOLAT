@@ -35,14 +35,14 @@ import org.olat.core.logging.AssertException;
  * Base class for all non filtered table-data-model.
  * @author Christian Guretzki
  */
-public abstract class BaseTableDataModelWithoutFilter implements TableDataModel {
+public abstract class BaseTableDataModelWithoutFilter<U> implements TableDataModel<U> {
 	@Override
-	public Object getObject(final int row){
+	public U getObject(final int row){
 		throw new AssertException("getObject not supported for this tableDataModel");
 	}
 	
 	@Override
-	public void setObjects(final List objects) {
+	public void setObjects(final List<U> objects) {
 		throw new AssertException("setObjects not supported for this tableDataModel");
 	}
 

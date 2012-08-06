@@ -35,7 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.quota.GenericQuotaEditController;
 import org.olat.admin.sysinfo.SysinfoController;
@@ -49,6 +49,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -248,7 +249,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 					+ " where poi.securityGroup = sgi and poi.permission = ?"
 					+ " and poi.olatResource = ori" 
 					+ " and (ori.resId = ? or ori.resId = 0) and ori.resName = ?",
-				new Object[] { permission, oresid, oresName }, new Type[] { Hibernate.STRING, Hibernate.LONG, Hibernate.STRING });
+				new Object[] { permission, oresid, oresName }, new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.STRING });
 		return res;
 	}
 
@@ -278,7 +279,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 					+ " and poi.olatResource = ori"
 					+ " and (ori.resId = ? or ori.resId = 0) and ori.resName = ?", 
 					// if you have a type right, you autom. have all instance rights
-				new Object[] { permission, oresid, oresName }, new Type[] { Hibernate.STRING, Hibernate.LONG, Hibernate.STRING });
+				new Object[] { permission, oresid, oresName }, new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.STRING });
 		return res;
 	}
 
@@ -288,7 +289,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public List getPoliciesOfSecurityGroup(SecurityGroup secGroup) {
 		List res = DBFactory.getInstance().find(
 				"select poi from org.olat.basesecurity.PolicyImpl as poi where poi.securityGroup = ?", 
-				new Object[] { secGroup.getKey() }, new Type[] { Hibernate.LONG });
+				new Object[] { secGroup.getKey() }, new Type[] { StandardBasicTypes.LONG });
 		return res;
 	}
 	
@@ -422,7 +423,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				+ " org.olat.resource.OLATResourceImpl as ori"
 				+ " where sgmsi.identity = ? and sgmsi.securityGroup = sgi" 
 				+ " and poi.securityGroup = sgi and poi.olatResource = ori", 
-				new Object[] { iimpl.getKey() }, new Type[] { Hibernate.LONG });
+				new Object[] { iimpl.getKey() }, new Type[] { StandardBasicTypes.LONG });
 		// scalar query, we get a List of Object[]'s
 		return res;
 	}
@@ -448,6 +449,26 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		Long cntL = (Long) res.get(0);
 		if (cntL.longValue() != 0 && cntL.longValue() != 1) throw new AssertException("unique n-to-n must always yield 0 or 1");
 		return (cntL.longValue() == 1);
+	}
+
+	@Override
+	public void touchMembership(Identity identity, List<SecurityGroup> secGroups) {
+		if (secGroups == null || secGroups.isEmpty()) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select sgmsi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		  .append("where sgmsi.identity.key=:identityKey and sgmsi.securityGroup in (:securityGroups)");
+		
+		List<ModifiedInfo> infos = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), ModifiedInfo.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("securityGroups", secGroups)
+				.getResultList();
+		
+		for(ModifiedInfo info:infos) {
+			info.setLastModified(new Date());
+			DBFactory.getInstance().getCurrentEntityManager().merge(info);
+		}
 	}
 
 	/**
@@ -482,10 +503,10 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		// nothing about
 		// the membership, modeled manually via many-to-one and not via set)
 		db.delete("from org.olat.basesecurity.SecurityGroupMembershipImpl as msi where msi.securityGroup.key = ?", new Object[] { secGroup
-				.getKey() }, new Type[] { Hibernate.LONG });
+				.getKey() }, new Type[] { StandardBasicTypes.LONG });
 		// 2) delete all policies
 		db.delete("from org.olat.basesecurity.PolicyImpl as poi where poi.securityGroup = ?", new Object[] { secGroup.getKey() },
-				new Type[] { Hibernate.LONG });
+				new Type[] { StandardBasicTypes.LONG });
 		// 3) delete security group
 		db.deleteObject(secGroup);
 	}
@@ -509,7 +530,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		IdentityImpl iimpl = getImpl(identity);
 		DBFactory.getInstance().delete(
 				"from org.olat.basesecurity.SecurityGroupMembershipImpl as msi where msi.identity.key = ? and msi.securityGroup.key = ?",
-				new Object[] { iimpl.getKey(), secGroup.getKey() }, new Type[] { Hibernate.LONG, Hibernate.LONG });
+				new Object[] { iimpl.getKey(), secGroup.getKey() }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.LONG });
 	}
 
 	/**
@@ -578,7 +599,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				" select poi from org.olat.basesecurity.PolicyImpl as poi"
 				+ " where poi.permission = ? and poi.olatResource = ? and poi.securityGroup = ?", 
 				new Object[] { permission, orKey, secKey },
-				new Type[] { Hibernate.STRING, Hibernate.LONG, Hibernate.LONG });
+				new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.LONG });
 		if (res.size() == 0) {
 			return null;
 		}
@@ -924,7 +945,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	   } 
 		 List identAndDate = DBFactory.getInstance().find(queryString.toString(),
          new Object[] { secGroup.getKey() },
-         new Type[] { Hibernate.LONG });
+         new Type[] { StandardBasicTypes.LONG });
      return identAndDate;
 	}
 
@@ -958,6 +979,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		String q = "select count(sgm) from org.olat.basesecurity.SecurityGroupMembershipImpl sgm where sgm.securityGroup = :group";
 		DBQuery query = db.createQuery(q);
 		query.setEntity("group", secGroup);
+		query.setCacheable(true);
 		int result = ((Long) query.list().get(0)).intValue();
 		return result;
 	}
@@ -981,7 +1003,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				+ " org.olat.basesecurity.NamedGroupImpl as ngroup," 
 				+ " org.olat.basesecurity.SecurityGroupImpl as sgi"
 				+ " where ngroup.groupName = ? and ngroup.securityGroup = sgi", new Object[] { securityGroupName },
-				new Type[] { Hibernate.STRING });
+				new Type[] { StandardBasicTypes.STRING });
 		int size = group.size();
 		if (size == 0) return null;
 		if (size != 1) throw new AssertException("non unique name in namedgroup: " + securityGroupName);
@@ -996,7 +1018,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
 		List identities = DBFactory.getInstance().find(
 				"select ident from org.olat.basesecurity.IdentityImpl as ident where ident.name = ?", new Object[] { identityName },
-				new Type[] { Hibernate.STRING });
+				new Type[] { StandardBasicTypes.STRING });
 		int size = identities.size();
 		if (size == 0) return null;
 		if (size != 1) throw new AssertException("non unique name in identites: " + identityName);
@@ -1089,7 +1111,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public List<Authentication> getAuthentications(Identity identity) {
 		return DBFactory.getInstance().find("select auth from  org.olat.basesecurity.AuthenticationImpl as auth " + 
 				"inner join fetch auth.identity as ident where ident.key = ?",
-				new Object[] { identity.getKey() }, new Type[] { Hibernate.LONG });
+				new Object[] { identity.getKey() }, new Type[] { StandardBasicTypes.LONG });
 	}
 
 	/**
@@ -1114,7 +1136,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		}
 		List results = dbInstance.find(
 				"select auth from org.olat.basesecurity.AuthenticationImpl as auth where auth.identity.key = ? and auth.provider = ?",
-				new Object[] { identity.getKey(), provider }, new Type[] { Hibernate.LONG, Hibernate.STRING });
+				new Object[] { identity.getKey(), provider }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING });
 		if (results == null || results.size() == 0) return null;
 		if (results.size() > 1) throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
 		return (Authentication) results.get(0);
@@ -1147,7 +1169,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider) {
 		List results = DBFactory.getInstance().find(
 				"from org.olat.basesecurity.AuthenticationImpl as auth where auth.provider = ? and auth.authusername = ?",
-				new Object[] { provider, authusername }, new Type[] { Hibernate.STRING, Hibernate.STRING });
+				new Object[] { provider, authusername }, new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.STRING });
 		if (results.size() == 0) return null;
 		if (results.size() != 1) throw new AssertException(
 				"more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
@@ -1548,7 +1570,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				+ " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi "
 				+ " where sgmsi.securityGroup = sgi and sgmsi.identity = ?",
 				new Object[] { identity.getKey() },
-				new Type[] { Hibernate.LONG });
+				new Type[] { StandardBasicTypes.LONG });
   	return secGroups;
 	}
 	

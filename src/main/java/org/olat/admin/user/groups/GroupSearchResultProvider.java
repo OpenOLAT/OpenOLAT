@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Policy;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.textboxlist.ResultMapProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -38,10 +39,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -57,19 +56,17 @@ import org.olat.resource.OLATResource;
  */
 public class GroupSearchResultProvider implements ResultMapProvider {
 
-	private BusinessGroupManager bGM;
+	private final BusinessGroupService businessGroupService;
 	private RepositoryManager repoM;
 	private Translator pT;
-	private String typeFilter;
 	private final Identity identity;
 	private static final int MAX_RESULTS = 50;
 
-	public GroupSearchResultProvider(Identity identity, Locale locale, String typeFilter){
+	public GroupSearchResultProvider(Identity identity, Locale locale){
 		this.identity = identity;
-		bGM = BusinessGroupManagerImpl.getInstance();
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		repoM = RepositoryManager.getInstance();
 		pT = Util.createPackageTranslator(this.getClass(), locale);
-		this.typeFilter = typeFilter;
 	}
 	
 	/**
@@ -106,18 +103,15 @@ public class GroupSearchResultProvider implements ResultMapProvider {
 	
 	private void searchForOneTerm(String searchValue, Map<Long, String> tempResult){
 		// search groups itself		
-		List<BusinessGroup> groups = bGM.findBusinessGroup('%' + searchValue + '%', typeFilter);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setNameOrDesc('%' + searchValue + '%');
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		for (BusinessGroup group : groups) {			
 			if (group.getOwnerGroup() != null && group.getPartipiciantGroup() != null) {
-
-				BGContextManager contextManager = BGContextManagerImpl.getInstance();
-				if (group.getGroupContext() != null) {
-					@SuppressWarnings("unchecked")
-					List<RepositoryEntry> repoEntries = contextManager.findRepositoryEntriesForBGContext(group.getGroupContext());
-					for (RepositoryEntry rEntry : repoEntries) {
-						if (!tempResult.containsKey(group.getKey())) {
-							tempResult.put(group.getKey(), getCombinedRepoName(group, rEntry));
-						}
+				List<RepositoryEntry> repoEntries = businessGroupService.findRepositoryEntries(groups, 0, -1);
+				for (RepositoryEntry rEntry : repoEntries) {
+					if (!tempResult.containsKey(group.getKey())) {
+						tempResult.put(group.getKey(), getCombinedRepoName(group, rEntry));
 					}
 				}
 
@@ -128,12 +122,10 @@ public class GroupSearchResultProvider implements ResultMapProvider {
 					if (!tempResult.containsKey(group.getKey())) {
 						tempResult.put(group.getKey(), getCombinedRepoName(group, repoEntry));
 					}
-				}				
-				
-				if (group.getType().equals(BusinessGroup.TYPE_BUDDYGROUP)) {
-					if (!tempResult.containsKey(group.getKey())) {
-						tempResult.put(group.getKey(), prepareGroupName(group));
-					}
+				}
+
+				if (!tempResult.containsKey(group.getKey())) {
+					tempResult.put(group.getKey(), prepareGroupName(group));
 				}
 			}			
 		}
@@ -146,7 +138,7 @@ public class GroupSearchResultProvider implements ResultMapProvider {
 			// no key
 		}
 		if (key != null) {
-			BusinessGroup group = bGM.loadBusinessGroup(key, false);
+			BusinessGroup group = businessGroupService.loadBusinessGroup(key);
 			if (group != null && !tempResult.containsKey(group.getKey())) {
 				tempResult.put(group.getKey(), prepareGroupName(group));
 			}
@@ -163,11 +155,7 @@ public class GroupSearchResultProvider implements ResultMapProvider {
 		
 		for (RepositoryEntry repositoryEntry : allRepoEntries) {
 			ICourse course = CourseFactory.loadCourse(repositoryEntry.getOlatResource());
-			List<BusinessGroup> allCourseGroups = new ArrayList<BusinessGroup>();
-			List<BusinessGroup> courseLGs = course.getCourseEnvironment().getCourseGroupManager().getAllLearningGroupsFromAllContexts();
-			List<BusinessGroup> courseRGs = course.getCourseEnvironment().getCourseGroupManager().getAllRightGroupsFromAllContexts();
-			allCourseGroups.addAll(courseLGs);
-			allCourseGroups.addAll(courseRGs);
+			List<BusinessGroup> allCourseGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
 			for (BusinessGroup group : allCourseGroups) {
 				if (!tempResult.containsKey(group.getKey())) {
 					tempResult.put(group.getKey(), getCombinedRepoName(group, repositoryEntry));

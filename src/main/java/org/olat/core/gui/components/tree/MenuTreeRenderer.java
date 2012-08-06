@@ -82,33 +82,41 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		INode selNode = tree.getSelectedNode();
 		Collection<String> openNodeIds = tree.getOpenNodeIds();
 
-		if (tree.isExpandServerOnly()) { 
-			// render only the expanded path using no javascript
-			List<INode> selPath = new ArrayList<INode>(5);
-			INode cur = selNode;
-			if (cur == null) cur = root; 
-			// if no selection, select the first node to
-			// expand the children
-			// add all elems from selected path to reversed list -> first elem is
-			// selected nodeid of the root node			
-			while (cur != null) {
-				selPath.add(0, cur);
-				cur = cur.getParent();
-			}
-			
-			AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
-			target.append("\n<div id='dd1-ct' class='b_tree");
-			if(tree.isDragAndDropEnabled()) {
-				target.append(" b_dd_ct");
-			}
-			target.append("'>\n");
-			target.append("<ul class=\"b_tree_l0\">");
-			renderLevel(target, 0, root, selPath, openNodeIds, ubu, flags, tree.markingTreeNode, tree);
-			target.append("</ul>");
-			target.append("\n</div>");
-		} else {			
-			throw new RuntimeException("Currently only server side menus implemented, sorry!");
+		List<INode> selPath = new ArrayList<INode>(5);
+		INode cur = selNode;
+		if (cur == null) cur = root; 
+		// if no selection, select the first node to
+		// expand the children
+		// add all elems from selected path to reversed list -> first elem is
+		// selected nodeid of the root node			
+		while (cur != null) {
+			selPath.add(0, cur);
+			cur = cur.getParent();
 		}
+		
+		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
+		target.append("\n<div id='dd1-ct' class='b_tree");
+		if(tree.isDragAndDropEnabled()) {
+			target.append(" b_dd_ct");
+		}
+		if(!tree.isRootVisible()) {
+			target.append(" b_tree_root_hidden");
+		}
+		target.append("'>\n");
+		target.append("<ul class=\"b_tree_l0\">");
+		if(tree.isRootVisible()) {
+			renderLevel(target, 0, root, selPath, openNodeIds, ubu, flags, tree.markingTreeNode, tree);
+		} else {
+			selPath.remove(0);
+			int chdCnt = root.getChildCount();
+			for (int i = 0; i < chdCnt; i++) {
+				TreeNode curChd = (TreeNode)root.getChildAt(i);
+				renderLevel(target, 0, curChd, selPath, openNodeIds, ubu, flags, tree.markingTreeNode, tree);
+			}
+		}
+
+		target.append("</ul>");
+		target.append("\n</div>");
 	}
 
 	private void renderLevel(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, TreeNode markedNode, MenuTree tree) {	
@@ -133,6 +141,9 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		target.append((cssClass == null ? "" : cssClass));
 		if(selected) {
 			target.append(" b_tree_selected");
+		} else if (curSel == curRoot) {
+			// add css class to identify parents of active element
+			target.append(" b_tree_selected_parents");			
 		}
 		String ident = curRoot.getIdent();
 		target.append("\"><div id='dd").append(ident).append("' class=\"b_tree_item_wrapper");

@@ -25,31 +25,34 @@
 
 package org.olat.group.ui.main;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 
 /**
  * @author gnaegi
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupTableModelWithType extends DefaultTableDataModel implements TableDataModel {
+public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTableItem> {
 	private final int columnCount;
 	private Translator trans;
+	
+	private Map<Long, BusinessGroupMembership> memberships;
 
 	/**
 	 * @param owned list of business groups
 	 */
-	public BusinessGroupTableModelWithType(List<BGTableItem> owned, Translator trans, int columnCount) {
-		super(owned);
+	public BusinessGroupTableModelWithType(Translator trans, int columnCount) {
+		super(new ArrayList<BGTableItem>());
 		this.trans = trans;
-		//fxdiff VCRP-1,2: access control of resources
 		this.columnCount = columnCount;
 	}
 
@@ -65,34 +68,65 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel imple
 	 */
 	public Object getValueAt(int row, int col) {
 		BGTableItem wrapped = (BGTableItem)objects.get(row);
-		BusinessGroup businessGroup = wrapped.getBusinessGroup();
-		switch (col) {
-			case 0:
-				String name = businessGroup.getName();
+		switch (Cols.values()[col]) {
+			case name:
+				String name = wrapped.getBusinessGroup().getName();
 				name = StringEscapeUtils.escapeHtml(name).toString();
 				return name;
-			case 1:
-				String description = businessGroup.getDescription();
+			case description:
+				String description = wrapped.getBusinessGroupDescription();
 				description = FilterFactory.getHtmlTagsFilter().filter(description);
 				description = Formatter.truncate(description, 256);
 				return description;
-			case 2:
-				return trans.translate(businessGroup.getType());
-			case 3:
+			case allowLeave:
 				return wrapped.getAllowLeave();
-			case 4:
+			case allowDelete:
 				return wrapped.getAllowDelete();
-			case 5:
+			case resources:
 				return wrapped;
 			//fxdiff VCRP-1,2: access control of resources
-			case 6:
+			case accessControl:
 				return new Boolean(wrapped.isAccessControl());
-			case 7:
-				if(wrapped.isMember()) return trans.translate("select");
-				return trans.translate("table.access");
-			case 8:
+			case accessControlLaunch:
+				if(wrapped.isAccessControl()) {
+					if(wrapped.getMembership() != null) {
+						return trans.translate("select");
+					}
+					return trans.translate("table.access");
+				}
+				return null;
+			case accessTypes:
 				return wrapped.getAccessTypes();
-				
+			case mark:
+				return new Boolean(wrapped.isMarked());
+			case lastUsage:
+				return wrapped.getBusinessGroupLastUsage();
+			case role:
+				return wrapped.getMembership();
+			case firstTime:
+				if(memberships != null) {
+					BusinessGroupMembership membership = memberships.get(wrapped.getBusinessGroupKey());
+					return membership == null ? null : membership.getCreationDate();
+				}
+				return null;
+			case lastTime:
+				if(memberships != null) {
+					BusinessGroupMembership membership = memberships.get(wrapped.getBusinessGroupKey());
+					return membership == null ? null : membership.getLastModified();
+				}
+				return null;
+			case key:
+				return wrapped.getBusinessGroupKey().toString();
+			case freePlaces: {
+				Integer maxParticipants = wrapped.getMaxParticipants();
+				if(maxParticipants != null && maxParticipants.intValue() > 0) {
+					int free = maxParticipants - wrapped.getNumOfParticipants();
+					return Integer.toString(free);
+				}
+				return "&infin;";
+			}
+			case wrapper:
+				return wrapped;
 			default:
 				return "ERROR";
 		}
@@ -101,32 +135,55 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel imple
 	@Override
 	//fxdiff VCRP-1,2: access control of resources
 	public Object createCopyWithEmptyList() {
-		return new BusinessGroupTableModelWithType(Collections.<BGTableItem>emptyList(), trans, columnCount);
+		return new BusinessGroupTableModelWithType(trans, columnCount);
 	}
 
 	/**
 	 * @param owned
 	 */
-	public void setEntries(List<BGTableItem> owned) {
-		this.objects = owned;
-	}
-
-	/**
-	 * @param row
-	 * @return the business group at the given row
-	 */
-	public BusinessGroup getBusinessGroupAt(int row) {
-		BGTableItem wrapped = (BGTableItem)objects.get(row);
-		return wrapped.getBusinessGroup();
+	public void setEntries(List<BGTableItem> owned, Map<Long, BusinessGroupMembership> memberships) {
+		setObjects(owned);
+		this.memberships = memberships;
 	}
 	
 	public void removeBusinessGroup(BusinessGroup bg) {
 		for(int i=objects.size(); i-->0; ) {
 			BGTableItem wrapped = (BGTableItem)objects.get(i);
-			if(bg.equals(wrapped.getBusinessGroup())) {
+			if(bg.getKey().equals(wrapped.getBusinessGroupKey())) {
 				objects.remove(i);
 				return;
 			}
+		}
+	}
+	
+	public enum Cols {
+		name("table.header.bgname"),
+		description("table.header.description"),
+		groupType(""),
+		allowLeave("table.header.leave"),
+		allowDelete("table.header.delete"),
+		resources("table.header.resources"),
+		accessControl(""),
+		accessControlLaunch("table.header.ac"),
+		accessTypes("table.header.ac"),
+		mark("table.header.mark"),
+		lastUsage("table.header.lastUsage"),
+		role("table.header.role"),
+		firstTime("table.header.firstTime"),
+		lastTime("table.header.lastTime"),
+		key("table.header.key"),
+		freePlaces("table.header.freePlaces"),
+		wrapper(""),
+		card("table.header.businesscard");
+		
+		private final String i18n;
+		
+		private Cols(String i18n) {
+			this.i18n = i18n;
+		}
+		
+		public String i18n() {
+			return i18n;
 		}
 	}
 }

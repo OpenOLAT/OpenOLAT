@@ -37,7 +37,8 @@ import org.olat.core.logging.AssertException;
  * 
  * @author gnaegi
  */
-public class BGContextImpl extends PersistentObject implements BGContext {
+public class BGContextImpl extends PersistentObject {
+	private static final long serialVersionUID = -8242401346721569801L;
 
 	private static final int GROUPTYPE_MAXLENGTH = 15;
 
@@ -167,8 +168,8 @@ public class BGContextImpl extends PersistentObject implements BGContext {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof BGContext) {
-			BGContext ctx = (BGContext)obj;
+		if(obj instanceof BGContextImpl) {
+			BGContextImpl ctx = (BGContextImpl)obj;
 			return equalsByPersistableKey(ctx);
 		}
 		return false;

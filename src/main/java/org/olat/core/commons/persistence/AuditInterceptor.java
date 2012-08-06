@@ -31,53 +31,33 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
-import org.hibernate.EntityMode;
-import org.hibernate.Interceptor;
 import org.hibernate.type.Type;
 import org.olat.core.id.CreateInfo;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
  * @author Andreas Ch. Kapp
  *  
  */
-public class AuditInterceptor extends EmptyInterceptor implements Interceptor, Serializable {
+public class AuditInterceptor extends EmptyInterceptor {
+
+	private static final long serialVersionUID = 7210083323938075881L;
+	private final OLog log = Tracing.createLoggerFor(AuditInterceptor.class);
 
 	private int updates;
 	private int creates;
-
-    public Object instantiate(String arg0, EntityMode arg1, Serializable arg2) throws CallbackException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-	/**
-	 * @see org.hibernate.Interceptor#onDelete(java.lang.Object, java.io.Serializable, java.lang.Object[], java.lang.String[], org.hibernate.type.Type[])
-	 */
-	public void onDelete(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
-		// nothing to do here.
-	}
 
 	/**
 	 * @see org.hibernate.Interceptor#onFlushDirty(java.lang.Object, java.io.Serializable, java.lang.Object[], java.lang.Object[], java.lang.String[], org.hibernate.type.Type[])
 	 */
 	public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState,
 			String[] propertyNames, Type[] types) {
-		if (Tracing.isDebugEnabled(AuditInterceptor.class))
-			Tracing.logDebug("\nflush:" + entity + "\npre:"
+		if (log.isDebug())
+			log.debug("\nflush:" + entity + "\npre:"
 					+ (previousState == null ? "-" : Arrays.asList(previousState).toString()) + "\ncur:"
-					+ (currentState == null ? "-" : Arrays.asList(currentState).toString()), AuditInterceptor.class);
-		/*if (entity instanceof Auditable) {
-			updates++;
-			for (int i = 0; i < propertyNames.length; i++) {
-				if ("lastModified".equals(propertyNames[i])) {
-					currentState[i] = new Date();
-					return true;
-				}
-			}
-		}*/
+					+ (currentState == null ? "-" : Arrays.asList(currentState).toString()));
 		return false;
 	}
 
@@ -106,36 +86,23 @@ public class AuditInterceptor extends EmptyInterceptor implements Interceptor, S
 		return false;
 	}
 
-	/**
-	 * @see org.hibernate.Interceptor#findDirty(java.lang.Object, java.io.Serializable, java.lang.Object[], java.lang.Object[], java.lang.String[], org.hibernate.type.Type[])
-	 */
-	public int[] findDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState,
-			String[] propertyNames, Type[] types) {
-		return null;
-	}
 
 	/**
 	 * @see org.hibernate.Interceptor#postFlush(java.util.Iterator)
 	 */
+	@SuppressWarnings("rawtypes")
 	public void postFlush(Iterator entities) {
-		if (Tracing.isDebugEnabled(AuditInterceptor.class)){
-			Tracing.logDebug("AuditInterceptor - Creations: " + creates + ", Updates: " + updates, AuditInterceptor.class);
+		if (log.isDebug()){
+			log.debug("AuditInterceptor - Creations: " + creates + ", Updates: " + updates);
 		}
 	}
 
 	/**
 	 * @see org.hibernate.Interceptor#preFlush(java.util.Iterator)
 	 */
+	@SuppressWarnings("rawtypes")
 	public void preFlush(Iterator entities) {
 		updates = 0;
 		creates = 0;
 	}
-
-	/**
-	 * @see org.hibernate.Interceptor#isUnsaved(java.lang.Object)
-	 */
-	public Boolean isUnsaved(Object entity) {
-		return null;
-	}
-
 }

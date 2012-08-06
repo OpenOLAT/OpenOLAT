@@ -84,11 +84,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
@@ -109,6 +105,7 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.restapi.UserVO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -132,6 +129,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 	private RestConnection conn;
 	
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
 	@Before
 	@Override
 	public void setUp() throws Exception {
@@ -141,6 +141,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//create identities
 		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-zero");
+		assertNotNull(owner1);
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-one-" + UUID.randomUUID().toString().replace("-", ""));
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-two");
 		DBFactory.getInstance().intermediateCommit();
@@ -171,16 +172,13 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 		
 		//create learn group
-
-    BGContextManager cm = BGContextManagerImpl.getInstance();
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
     BaseSecurity secm = BaseSecurityManager.getInstance();
 		
     // 1) context one: learning groups
-    BGContext c1 = cm.createAndAddBGContextToResource("c1name-learn", course, BusinessGroup.TYPE_LEARNINGROUP, owner1, true);
+    OLATResource c1 = JunitTestHelper.createRandomResource();
     // create groups without waiting list
-    g1 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "user-rest-g1", null, new Integer(0), new Integer(10), false, false, c1);
-    g2 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "user-rest-g2", null, new Integer(0), new Integer(10), false, false, c1);
+    g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, 0, 10, false, false, c1);
+    g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, 0, 10, false, false, c1);
     // members g1
     secm.addIdentityToSecurityGroup(id1, g1.getOwnerGroup());
     secm.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
@@ -189,10 +187,10 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     secm.addIdentityToSecurityGroup(id1, g2.getPartipiciantGroup());
 
     // 2) context two: right groups
-    BGContext c2 = cm.createAndAddBGContextToResource("c2name-area", course, BusinessGroup.TYPE_RIGHTGROUP, owner1, true);
+    OLATResource c2 = JunitTestHelper.createRandomResource();
     // groups
-    g3 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "user-rest-g3", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
-    g4 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "user-rest-g4", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
+    g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, -1, -1, false, false, c2);
+    g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, -1, -1, false, false, c2);
     // members
     secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
     secm.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
@@ -374,9 +372,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		UserVO vo = parse(body, UserVO.class);
+		UserVO vo = conn.parse(response, UserVO.class);
 
 		assertNotNull(vo);
 		assertEquals(vo.getKey(), id1.getKey());
@@ -393,9 +389,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		UserVO vo = parse(body, UserVO.class);
+		UserVO vo = conn.parse(response, UserVO.class);
 
 		assertNotNull(vo);
 		assertEquals(vo.getKey(), id2.getKey());
@@ -463,10 +457,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		InputStream body = response.getEntity().getContent();
-		
-		UserVO savedVo = parse(body, UserVO.class);
-		
+		UserVO savedVo = conn.parse(response, UserVO.class);
 		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
 
 		assertNotNull(savedVo);
@@ -504,10 +495,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		InputStream body = response.getEntity().getContent();
-		
-		UserVO savedVo = parse(body, UserVO.class);
-		
+		UserVO savedVo = conn.parse(response, UserVO.class);
 		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
 
 		assertNotNull(savedVo);
@@ -577,18 +565,16 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		ForumVOes forums = parse(body, ForumVOes.class);
+		ForumVOes forums = conn.parse(response, ForumVOes.class);
 		
 		assertNotNull(forums);
 		assertNotNull(forums.getForums());
 		assertTrue(forums.getForums().length > 0);
 
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		for(ForumVO forum:forums.getForums()) {
 			Long groupKey = forum.getGroupKey();
 			if(groupKey != null) {
-				BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(groupKey);
 				assertNotNull(bg);
 				CollaborationTools bgCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
 				assertTrue(bgCTSMngr.isToolEnabled(CollaborationTools.TOOL_FORUM));
@@ -596,7 +582,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 				assertNotNull(forum.getForumKey());
 				assertEquals(bg.getName(), forum.getName());
 				assertEquals(bg.getKey(), forum.getGroupKey());
-				assertTrue(bgm.isIdentityInBusinessGroup(id1, bg));
+				assertTrue(businessGroupService.isIdentityInBusinessGroup(id1, bg));
 			} else {
 				assertNotNull(forum.getCourseKey());
 			}
@@ -614,8 +600,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVOes threads = parse(body, MessageVOes.class);
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
 		
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
@@ -633,8 +618,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVOes threads = parse(body, MessageVOes.class);
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
 		
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
@@ -650,8 +634,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		FolderVOes folders = parse(body, FolderVOes.class);
+		FolderVOes folders = conn.parse(response, FolderVOes.class);
 		
 		assertNotNull(folders);
 		assertNotNull(folders.getFolders());
@@ -659,18 +642,17 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 		boolean matchG2 = false;
 		
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		for(FolderVO folder:folders.getFolders()) {
 			Long groupKey = folder.getGroupKey();
 			if(groupKey != null) {
-				BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(groupKey);
 				assertNotNull(bg);
 				CollaborationTools bgCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
 				assertTrue(bgCTSMngr.isToolEnabled(CollaborationTools.TOOL_FOLDER));
 				
 				assertEquals(bg.getName(), folder.getName());
 				assertEquals(bg.getKey(), folder.getGroupKey());
-				assertTrue(bgm.isIdentityInBusinessGroup(id1, bg));
+				assertTrue(businessGroupService.isIdentityInBusinessGroup(id1, bg));
 				if(g2.getKey().equals(groupKey)) {
 					matchG2 = true;
 				}
@@ -792,7 +774,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		InputStream body = response.getEntity().getContent();
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
-		assertEquals(2, groups.size());//g1 and g2 as g3 and g4 are right groups which are not returned
+		assertEquals(3, groups.size());//g1, g2 and g3
 	}
 	
 	@Test
@@ -806,14 +788,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-
-		InputStream body = response.getEntity().getContent();
-		GroupVOes groups = parse(body, GroupVOes.class);
+		GroupVOes groups = conn.parse(response, GroupVOes.class);
 		
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
-		assertEquals(2, groups.getTotalCount());//g1 and g2 as g3 and g4 are right groups which are not returned
+		assertEquals(3, groups.getTotalCount());//g1, g2 and g3
 	}
 	
 	@Test
@@ -827,14 +807,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-
-		InputStream body = response.getEntity().getContent();
-		GroupInfoVOes groups = parse(body, GroupInfoVOes.class);
+		GroupInfoVOes groups = conn.parse(response, GroupInfoVOes.class);
 		
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
-		assertEquals(2, groups.getTotalCount());//g1 and g2 as g3 and g4 are right groups which are not returned
+		assertEquals(3, groups.getTotalCount());//g1, g2 and g3
 	}
 	
 	@Test
@@ -885,8 +863,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet getMethod2 = conn.createGet(getRequest2.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse getCode2 = conn.execute(getMethod2);
 		assertEquals(200, getCode2.getStatusLine().getStatusCode());
-		InputStream in2 = getCode2.getEntity().getContent();
-		UserVO userVo = parse(in2, UserVO.class);
+		UserVO userVo = conn.parse(getCode2, UserVO.class);
 		assertNotNull(userVo);
 		assertNotNull(userVo.getPortrait());
 		byte[] datas = Base64.decodeBase64(userVo.getPortrait().getBytes());

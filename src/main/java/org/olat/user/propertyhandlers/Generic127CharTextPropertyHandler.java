@@ -99,7 +99,11 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 			if (textElemItem.isEmpty("new.form.mandatory")) {
 				return false;
 			}
-		} 
+		} else {
+			if (textElemItem.getValue().equals("")) {
+				return true;
+			}
+		}
 
 		if (regExp != null) {
 			return regExp.matcher(textElemItem.getValue()).matches();

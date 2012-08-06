@@ -26,13 +26,11 @@
 package org.olat.course.run;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.NewControllerFactory;
 import org.olat.bookmark.AddAndEditBookmarkController;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.core.CoreSpringFactory;
@@ -117,9 +115,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticMainController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.ui.BGControllerFactory;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
@@ -174,13 +170,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private boolean isInEditor = false;
 
-	private Map courseRightsCache = new HashMap();
+	private Map<String, Boolean> courseRightsCache = new HashMap<String, Boolean>();
 	private boolean isCourseAdmin = false;
 	private boolean isCourseCoach = false;
-	private List ownedGroups;
-	private List participatedGroups;
-	private List waitingListGroups;
-	private List rightGroups;
+	private List<BusinessGroup> ownedGroups;
+	private List<BusinessGroup> participatedGroups;
+	private List<BusinessGroup> waitingListGroups;
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
@@ -199,6 +194,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private boolean assessmentChangedEventReceived = false;
 	private Link currentUserCountLink;
 	private int currentUserCount;
+	
+	private final BusinessGroupService businessGroupService;
 	
 	/**
 	 * Constructor for the run main controller
@@ -234,6 +231,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			final boolean offerBookmark, final boolean showCourseConfigLink, final boolean launchFromSite) {
 
 		super(ureq, wControl);
+		
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		this.course = course;
 		addLoggingResourceable(LoggingResourceable.wrap(course));
@@ -249,7 +248,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// log shows who entered which course, this can then be further used to jump
 		// to the courselog
-		Tracing.logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString(), RunMainController.class);
+		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 		
 		// set up the components
 		all = new Panel("allofcourse");
@@ -422,8 +421,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// disposed message controller
 			// must be created beforehand
 			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
-			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl,
-					courseRepositoryEntry.getResourceableId());
+			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, courseRepositoryEntry);
 			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
 					courseCloser.getInitialComponent(), "disposed course" + this.course.getResourceableId());
 			setDisposedMsgController(disposedRestartController);
@@ -771,18 +769,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// launch the group in a new top nav tab
 			String groupIdent = cmd.substring(CMD_START_GROUP_PREFIX.length());
 			Long groupKey = new Long(Long.parseLong(groupIdent));
-			BusinessGroupManager groupManager = BusinessGroupManagerImpl.getInstance();
-			BusinessGroup group = groupManager.loadBusinessGroup(groupKey, false);
+			BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
 			// check if the group still exists and the user is really in this group
 			// (security, changed group)
-			if (group != null && groupManager.isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
-				BaseSecurity securityManager = BaseSecurityManager.getInstance();
-				boolean isCoach = securityManager.isIdentityInSecurityGroup(ureq.getIdentity(), group.getOwnerGroup());
+			if (group != null && businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
 				// create group without admin flag enabled eventhough the user might be
 				// coach. the flag is not needed here
 				// since the groups knows itself if the user is coach and the user sees
 				// only his own groups.
-				BGControllerFactory.getInstance().createRunControllerAsTopNavTab(group, ureq, getWindowControl(), /*ual, */false, null);
+				String bsuinessPath = "[BusinessGroup:" + group.getKey() + "]";
+				NewControllerFactory.getInstance().launch(bsuinessPath, ureq, getWindowControl());
 			} else {
 				// display error and do logging
 				getWindowControl().setError(translate("error.invalid.group"));
@@ -818,7 +814,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		} else if (cmd.equals("groupmngt")) {
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
-				currentToolCtr = new CourseGroupManagementMainController(ureq, getWindowControl(), course, BusinessGroup.TYPE_LEARNINGROUP);
+				currentToolCtr = new CourseGroupManagementMainController(ureq, getWindowControl(), course);
 				listenTo(currentToolCtr);
 				all.setContent(currentToolCtr.getInitialComponent());
 			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
@@ -831,13 +827,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				all.setContent(currentToolCtr.getInitialComponent());
 			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
 			
-		} else if (cmd.equals("rightmngt")) {
-			if (isCourseAdmin) {
-				currentToolCtr = new CourseGroupManagementMainController(ureq, getWindowControl(), course, BusinessGroup.TYPE_RIGHTGROUP);
-				listenTo(currentToolCtr);
-				all.setContent(currentToolCtr.getInitialComponent());
-			} else throw new OLATSecurityException("clicked rightmanagement, but no according right");
-
 		} else if (cmd.equals("statistic")) {
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				currentToolCtr = new StatisticMainController(ureq, getWindowControl(), course);
@@ -1089,7 +1078,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// check if this affects a right group where the user does participate.
 				// if so, we need
 				// to rebuild the toolboxes
-				if (PersistenceHelper.listContainsObjectByKey(rightGroups, bgme.getModifiedGroupKey())) {
+				if (PersistenceHelper.listContainsObjectByKey(participatedGroups, bgme.getModifiedGroupKey()) ||
+						PersistenceHelper.listContainsObjectByKey(ownedGroups, bgme.getModifiedGroupKey())) {
 					// 1) reinitialize all group memberships
 					initGroupMemberships(identity);
 					// 2) reinitialize the users roles and rights
@@ -1144,9 +1134,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				//
 				myTool.addLink("groupmngt", translate("command.opengroupmngt"));
 			}
-			if (isCourseAdmin) {
-				myTool.addLink("rightmngt", translate("command.openrightmngt"));
-			}
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 				myTool.addLink("archiver", translate("command.openarchiver"));
 			}
@@ -1163,21 +1150,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (CourseDBManager.getInstance().isEnabled() && (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin)) {
 				myTool.addLink("customDb", translate("command.opendb"));
 			}
-
-			//
-			/*
-			 * if (isCourseAdmin) { myTool.addLink(TOOLBOX_LINK_COURSECONFIG,
-			 * translate("command.courseconfig")); }
-			 */
-			//
 		}
 
 		// 2) add coached groups
 		if (ownedGroups.size() > 0) {
 			myTool.addHeader(translate("header.tools.ownerGroups"));
-			Iterator iter = ownedGroups.iterator();
-			while (iter.hasNext()) {
-				BusinessGroup group = (BusinessGroup) iter.next();
+			for (BusinessGroup group:ownedGroups) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
 		}
@@ -1185,19 +1163,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 3) add participating groups
 		if (participatedGroups.size() > 0) {
 			myTool.addHeader(translate("header.tools.participatedGroups"));
-			Iterator iter = participatedGroups.iterator();
-			while (iter.hasNext()) {
-				BusinessGroup group = (BusinessGroup) iter.next();
-				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
-			}
-		}
-
-		// 4) add right groups
-		if (rightGroups.size() > 0) {
-			myTool.addHeader(translate("header.tools.rightGroups"));
-			Iterator iter = rightGroups.iterator();
-			while (iter.hasNext()) {
-				BusinessGroup group = (BusinessGroup) iter.next();
+			for (BusinessGroup group: participatedGroups) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
 		}
@@ -1205,11 +1171,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 5) add waiting-list groups
 		if (waitingListGroups.size() > 0) {
 			myTool.addHeader(translate("header.tools.waitingListGroups"));
-			Iterator iter = waitingListGroups.iterator();
-			while (iter.hasNext()) {
-				BusinessGroup group = (BusinessGroup) iter.next();
-				BusinessGroupManager businessGroupManager = BusinessGroupManagerImpl.getInstance();
-				int pos = businessGroupManager.getPositionInWaitingListFor(identity, group);
+			for (BusinessGroup group:waitingListGroups) {
+				int pos = businessGroupService.getPositionInWaitingListFor(identity, group);
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName() + "(" + pos + ")", group
 						.getKey().toString(), null);
 				myTool.setEnabled(group.getKey().toString(), false);
@@ -1324,10 +1287,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	private void initGroupMemberships(Identity identity) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		ownedGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
-		participatedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
-		waitingListGroups = cgm.getWaitingListGroupsFromAllContexts(identity);
-		rightGroups = cgm.getParticipatingRightGroupsFromAllContexts(identity);
+		ownedGroups = cgm.getOwnedBusinessGroups(identity);
+		participatedGroups = cgm.getParticipatingBusinessGroups(identity);
+		waitingListGroups = cgm.getWaitingListGroups(identity);
 	}
 
 	/**

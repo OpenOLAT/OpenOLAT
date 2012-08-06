@@ -377,7 +377,7 @@ public class ScoreAccountingHelper {
 	public static List<Identity> loadUsers(CourseEnvironment courseEnv) {
 		CourseGroupManager gm = courseEnv.getCourseGroupManager();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List<BusinessGroup> groups = gm.getAllLearningGroupsFromAllContexts();
+		List<BusinessGroup> groups = gm.getAllBusinessGroups();
 		
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		for (BusinessGroup group: groups) {

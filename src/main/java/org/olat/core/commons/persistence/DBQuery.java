@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.hibernate.FlushMode;
 import org.hibernate.LockMode;
@@ -430,6 +431,8 @@ public interface DBQuery {
 	 * @see org.hibernate.Query
 	 */
 	public abstract DBQuery setProperties(Object bean);
+	
+	public DBQuery setProperties(Map map);
 
 	/**
 	 * @param position

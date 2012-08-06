@@ -356,7 +356,7 @@ public class CatalogController extends BasicController implements Activateable, 
 				} else if (repoEntry.getCanDownload()) {
 					// else not launchable in olat, but downloadable -> send the document
 					// directly to browser but "downloadable" (pdf, word, excel)
-					MediaResource mr = handler.getAsMediaResource(ores);
+					MediaResource mr = handler.getAsMediaResource(ores, false);
 					RepositoryManager.getInstance().incrementDownloadCounter(repoEntry);
 					ureq.getDispatchResult().setResultingMediaResource(mr);
 					return;
@@ -482,7 +482,7 @@ public class CatalogController extends BasicController implements Activateable, 
 				// an Author gets the list of his repository
 				else {
 					// admin is responsible for not inserting wrong visibility entries!!
-					rsc.doSearchByOwnerLimitAccess(ureq.getIdentity(), RepositoryEntry.ACC_USERS);
+					rsc.doSearchByOwnerLimitAccess(ureq.getIdentity());
 				}
 				// open form in dialog
 				removeAsListenerAndDispose(cmc);
@@ -1008,7 +1008,7 @@ public class CatalogController extends BasicController implements Activateable, 
 			}
 		}
 		
-		List<OLATResourceAccess> resourcesWithOffer = acFrontendManager.getAccessMethodForResources(resourceKeys, true, new Date());
+		List<OLATResourceAccess> resourcesWithOffer = acFrontendManager.getAccessMethodForResources(resourceKeys, null, true, new Date());
 		for ( CatalogEntry entry : childCe ) {
 			if(entry.getType() == CatalogEntry.TYPE_NODE) continue;
 			//fxdiff VCRP-1,2: access control of resources

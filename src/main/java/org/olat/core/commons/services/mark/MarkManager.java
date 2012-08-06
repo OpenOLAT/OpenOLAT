@@ -46,6 +46,10 @@ public abstract class MarkManager extends BasicManager {
 
 	public abstract List<Mark> getMarks(OLATResourceable ores, Identity identity, Collection<String> subPaths);
 	
+	public abstract List<Mark> getMarks(Identity identity, String resourceTypeName, Collection<String> subPaths);
+	
+	public abstract void filterMarks(Identity identity, String resourceTypeName, Collection<Long> resIds);
+	
 	public abstract boolean isMarked(OLATResourceable ores, Identity identity, String subPath);
 	
 	public abstract Mark setMark(OLATResourceable ores, Identity identity, String subPath, String businessPath);

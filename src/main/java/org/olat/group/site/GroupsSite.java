@@ -35,14 +35,14 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.group.ui.main.BGMainController;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description:<br>
@@ -51,11 +51,9 @@ import org.olat.group.ui.main.BGMainController;
  * @author Felix Jost
  */
 public class GroupsSite implements SiteInstance {
-	private static final OLATResourceable ORES_GROUPS = OresHelper.lookupType(BGMainController.class);
+	private static final OLATResourceable ORES_GROUPS = OresHelper.createOLATResourceableInstance("BGMainController", 0l);
 
 	// refer to the definitions in org.olat
-	private static final String PACKAGE = Util.getPackageName(BaseChiefController.class);
-
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
@@ -63,7 +61,7 @@ public class GroupsSite implements SiteInstance {
 	 * 
 	 */
 	public GroupsSite(Locale loc) {
-		Translator trans = new PackageTranslator(PACKAGE, loc);
+		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
 		origNavElem = new DefaultNavElement(trans.translate("topnav.buddygroups"), trans.translate("topnav.buddygroups.alt"), "o_site_groups");
 		origNavElem.setAccessKey("g".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
@@ -82,8 +80,9 @@ public class GroupsSite implements SiteInstance {
 	 */
 	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
 		//fxdiff BAKS-7 Resume function
-		OLATResourceable libraryOres = OresHelper.createOLATResourceableInstance(GroupsSite.class, 0l);
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, libraryOres, new StateSite(this), wControl, true);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(GroupsSite.class, 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
 		MainLayoutController c = ControllerFactory.createLaunchController(ORES_GROUPS, null, ureq, bwControl, true);
 		return c;
 	}

@@ -127,27 +127,24 @@ public class CourseCalendars {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 
 		// add course group calendars
-		boolean isGroupManager = cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
+		boolean isGroupManager = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
+				|| cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
 		if (isGroupManager) {
 			// learning groups
-			List<BusinessGroup> allGroups = cgm.getAllLearningGroupsFromAllContexts();
+			List<BusinessGroup> allGroups = cgm.getAllBusinessGroups();
 			addCalendars(ureq, allGroups, true, clpc, calendars);
-			// right groups
-			allGroups = cgm.getAllRightGroupsFromAllContexts();
-			addCalendars(ureq, allGroups, true, clpc, calendars);
+
 		} else {
 			// learning groups
-			List<BusinessGroup> ownerGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
+			List<BusinessGroup> ownerGroups = cgm.getOwnedBusinessGroups(identity);
 			addCalendars(ureq, ownerGroups, true, clpc, calendars);
-			List<BusinessGroup> attendedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
+			List<BusinessGroup> attendedGroups = cgm.getParticipatingBusinessGroups(identity);
 			for (BusinessGroup ownerGroup : ownerGroups) {
-				if (attendedGroups.contains(ownerGroup)) attendedGroups.remove(ownerGroup);
+				if (attendedGroups.contains(ownerGroup)) {
+					attendedGroups.remove(ownerGroup);
+				}
 			}
 			addCalendars(ureq, attendedGroups, false, clpc, calendars);
-
-			// right groups
-			List<BusinessGroup> rightGroups = cgm.getParticipatingRightGroupsFromAllContexts(identity);
-			addCalendars(ureq, rightGroups, false, clpc, calendars);
 		}
 		return new CourseCalendars(courseKalendarWrapper, calendars);
 	}

@@ -22,12 +22,12 @@ package org.olat.admin.user.bulkChange;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 
 /**
  * 
@@ -44,7 +44,7 @@ public class GroupAddOverviewModel extends DefaultTableDataModel {
 	private List<Long> mailGroupIDs;
 	private List<Long> ownGroupIDs;
 	private List<Long> partGroupIDs;
-	private BusinessGroupManager bGM;
+	private BusinessGroupService bGM;
 
 	public GroupAddOverviewModel(List<Long> allGroupIDs, List<Long> ownGroupIDs, List<Long> partGroupIDs, List<Long> mailGroups, Translator trans) {
 		super(allGroupIDs);
@@ -52,7 +52,7 @@ public class GroupAddOverviewModel extends DefaultTableDataModel {
 		this.ownGroupIDs = ownGroupIDs;
 		this.partGroupIDs = partGroupIDs;
 		this.mailGroupIDs = mailGroups;
-		bGM = BusinessGroupManagerImpl.getInstance();
+		bGM = CoreSpringFactory.getImpl(BusinessGroupService.class);
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class GroupAddOverviewModel extends DefaultTableDataModel {
 	@Override
 	public Object getValueAt(int row, int col) {
 		Long key = (Long) getObject(row);			
-		BusinessGroup group = bGM.loadBusinessGroup(key, false); 
+		BusinessGroup group = bGM.loadBusinessGroup(key); 
 		if (group == null) return "error";
 		
 		switch (col) {

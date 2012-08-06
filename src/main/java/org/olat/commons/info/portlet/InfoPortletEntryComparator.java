@@ -35,7 +35,7 @@ import org.olat.core.util.notifications.items.SubscriptionListItem;
  * Initial Date:  27 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoPortletEntryComparator implements Comparator<InfoPortletEntry> {
+public class InfoPortletEntryComparator implements Comparator<InfoSubscriptionItem> {
 	
 	private final SortingCriteria criteria;
 	
@@ -44,12 +44,7 @@ public class InfoPortletEntryComparator implements Comparator<InfoPortletEntry> 
 	}
 
 	@Override
-	public int compare(InfoPortletEntry e1, InfoPortletEntry e2) {
-		if(e1 == null) return -1;
-		else if(e2 == null) return 1;
-		
-		InfoSubscriptionItem isi1 = e1.getValue();
-		InfoSubscriptionItem isi2 = e2.getValue();
+	public int compare(InfoSubscriptionItem isi1, InfoSubscriptionItem isi2) {
 		if(isi1 == null) return -1;
 		else if(isi2 == null) return 1;
 

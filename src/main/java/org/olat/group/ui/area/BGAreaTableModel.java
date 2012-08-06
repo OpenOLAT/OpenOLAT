@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
@@ -41,7 +40,7 @@ import org.olat.group.area.BGArea;
  * 
  * @author gnaegi
  */
-public class BGAreaTableModel extends DefaultTableDataModel implements TableDataModel {
+public class BGAreaTableModel extends DefaultTableDataModel<BGArea> {
 	private static final int COLUMN_COUNT = 3;
 
 	// package-local to avoid synthetic accessor method.
@@ -51,7 +50,7 @@ public class BGAreaTableModel extends DefaultTableDataModel implements TableData
 	 * @param owned list of group areas
 	 * @param translator
 	 */
-	public BGAreaTableModel(List owned, Translator translator) {
+	public BGAreaTableModel(List<BGArea> owned, Translator translator) {
 		super(owned);
 		this.translator = translator;
 	}
@@ -67,7 +66,7 @@ public class BGAreaTableModel extends DefaultTableDataModel implements TableData
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		BGArea area = (BGArea) objects.get(row);
+		BGArea area = getObject(row);
 		switch (col) {
 			case 0:
 				return StringEscapeUtils.escapeHtml(area.getName()).toString();
@@ -80,13 +79,4 @@ public class BGAreaTableModel extends DefaultTableDataModel implements TableData
 				return "ERROR";
 		}
 	}
-
-	/**
-	 * @param row
-	 * @return the area at this position
-	 */
-	public BGArea getBGAreaAt(int row) {
-		return (BGArea) objects.get(row);
-	}
-
 }

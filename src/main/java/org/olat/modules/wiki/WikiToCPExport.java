@@ -35,6 +35,7 @@ import java.util.Locale;
 import org.jamwiki.parser.ParserDocument;
 import org.jamwiki.parser.ParserInput;
 import org.jamwiki.parser.jflex.JFlexParser;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -53,7 +54,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.ims.cp.CPCore;
 import org.olat.modules.cp.CPOfflineReadableManager;
 import org.olat.modules.wiki.gui.components.wikiToHtml.StaticExportWikiDataHandler;
@@ -246,7 +247,7 @@ public class WikiToCPExport {
 		sb.append("<title>");
 		String name = "";
 		if (WikiManager.getInstance().isGroupContextWiki(ores)) {
-			BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(ores.getResourceableId(), true);
+			BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(ores.getResourceableId());
 			name = group.getName();
 			sb.append(trans.translate("wiki.exported.from.group", new String[] { name }));
 		} else {

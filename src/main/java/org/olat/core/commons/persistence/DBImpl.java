@@ -26,7 +26,6 @@
 
 package org.olat.core.commons.persistence;
 
-import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -43,10 +42,12 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.jmx.StatisticsService;
 import org.hibernate.stat.Statistics;
 import org.hibernate.type.Type;
@@ -74,7 +75,7 @@ import org.springframework.jmx.support.MBeanServerFactoryBean;
 public class DBImpl extends LogDelegator implements DB, Destroyable {
 	private static final int MAX_DB_ACCESS_COUNT = 500;
 	private static DBImpl INSTANCE;
-	private SessionFactory sessionFactory = null;
+	private EntityManagerFactory emf = null;
 
 	private final ThreadLocal<ThreadLocalData> data = new ThreadLocal<ThreadLocalData>();
 	private OLog forcedLogger;
@@ -217,6 +218,18 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		if (isLogDebugEnabled() && dbm == null) logDebug("DB manager ist null.", null); 
 		return (dbm == null) ? null : dbm.getDbSession();
 	}
+	
+	@Override
+	public EntityManager getCurrentEntityManager() {
+		DBImpl current = getInstance(true);
+		DBManager dbm = current.getData().getManager();
+		if (dbm == null) {
+			logDebug("DB manager ist null.", null);
+			return null;
+		}
+		beginTransaction("entityManager");
+		return dbm.getDbSession().getEntityManager();
+	}
 
 	protected void setManager(DBManager manager) {
 		getData().setManager(manager);
@@ -246,25 +259,25 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		DBSession dbs = getDBSession();
 		if (dbs == null) {
 			if (isLogDebugEnabled()) logDebug("createSession start...", null);
-			Session session = null;
+			EntityManager em = null;
 			Codepoint.codepoint(DBImpl.class, "initializeSession");
 			if (isLogDebugEnabled()) logDebug("initializeSession", null);
 			try {
-				session = sessionFactory.openSession();
+				em = emf.createEntityManager();
 			} catch (HibernateException e) {
 				logError("could not open database session!", e);
 			}
-			setManager(new DBManager(session));
+			setManager(new DBManager(em));
 			getData().resetAccessCounter();
 			getData().resetCommitCounter();
 		} else if (!dbs.isOpen()) {
-			Session session = null;
+			EntityManager em = null;
 			try {
-				session  = sessionFactory.openSession();
+				em = emf.createEntityManager();
 			} catch (HibernateException e) {
 				logError("could not open database session!", e);
 			}
-			setManager(new DBManager(session));
+			setManager(new DBManager(em));
 			getData().resetAccessCounter();
 			getData().resetCommitCounter();
 		}
@@ -514,9 +527,9 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param key
 	 * @return Object, if any found. Null, if non exist. 
 	 */
-	public Object findObject(Class theClass, Long key) {
+	public <U> U findObject(Class<U> theClass, Long key) {
 		beginTransaction(key);
-		return getDBManager().findObject(theClass, key);
+		return getCurrentEntityManager().find(theClass, key);
 	}
 	
 	/**
@@ -526,7 +539,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param key
 	 * @return Object.
 	 */
-	public Object loadObject(Class theClass, Long key) {
+	public <U> U loadObject(Class<U> theClass, Long key) {
 		beginTransaction(key);
 		return getDBManager().loadObject(getTransaction(), theClass, key);
 	}
@@ -578,13 +591,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 
 	boolean hasTransaction() {
 		return null == getTransaction() ? false : getTransaction().isInTransaction();
-	}
-
-	/**
-	 * @return a JDBC java.sql.Connection.
-	 */
-	protected Connection getConnection() {
-		return getData().getManager().getConnection();
 	}
 
 	/**
@@ -676,13 +682,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * Call this to commit a transaction opened by beginTransaction().
 	 */
 	public void commit() {
-//		StackTraceElement[] elems = Thread.currentThread().getStackTrace();
-//		if (elems!=null && elems.length>1) {
-//			if (!elems[2].getClassName().equals("org.olat.commons.coordinate.cluster.ClusterSyncer") &&
-//					!elems[2].getClassName().equals("org.olat.core.util.mtx.ManagedTransaction")) {
-//				System.out.println("--> TRANSACTION RULES BROKEN");
-//			}
-//		}
 		if (isLogDebugEnabled()) logDebug("commit start...", null);
 		try {
 			if (isConnectionOpen() && hasTransaction() && getTransaction().isInTransaction()) {
@@ -748,7 +747,10 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return Return Hibernates statistics object.
 	 */
 	public Statistics getStatistics() {
- 		return sessionFactory.getStatistics();
+		if(emf instanceof HibernateEntityManagerFactory) {
+			return ((HibernateEntityManagerFactory)emf).getSessionFactory().getStatistics();
+		}
+ 		return null;
    }
 
 	/**
@@ -875,7 +877,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param sessionFactory
 	 */
 	public void setSessionFactory(SessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
+		//this.sessionFactory = sessionFactory;
+	}
+	
+	public void setEntityManagerFactory(EntityManagerFactory emf) {
+		this.emf = emf;
 	}
 
 	@Override
@@ -896,12 +902,17 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	// fxdiff qti-statistics (praktikum MK)
 	// Extensions used for native SQL queries
 	//
-	String dbVendor = null;
+	private String dbVendor = null;
+	
+	@Override
+	public String getDbVendor() {
+		return dbVendor;
+	}
 	/**
 	 * [used by spring]
 	 * @param dbVendor
 	 */
-	public void setDbvendor(String dbVendor) {
+	public void setDbVendor(String dbVendor) {
 		this.dbVendor = dbVendor;
 	}
 

@@ -35,7 +35,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
 import org.olat.instantMessaging.ui.ConnectedUsersListEntry;
 
@@ -49,15 +48,9 @@ import org.olat.instantMessaging.ui.ConnectedUsersListEntry;
 public interface InstantMessaging {
 	
 	/**
-	 * called when OLAT server is started and needs to sync the buddygroups with the IM server.
-	 * @return true upon success
-	 */
-	public boolean synchronizeAllBuddyGroupsWithIMServer();
-	
-	/**
 	 * called when OLAT server is started and needs to sync the learinggroups with the IM server.
 	 */
-	public boolean synchronizeLearningGroupsWithIMServer();
+	public boolean synchronizeBusinessGroupsWithIMServer();
 
 	/**
 	 * called when OLAT server is started and needs to sync the buddygroups with the IM server.

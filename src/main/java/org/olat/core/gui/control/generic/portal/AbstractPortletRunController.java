@@ -33,7 +33,6 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
@@ -42,7 +41,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.util.prefs.Preferences;
 
 /**
@@ -50,29 +48,26 @@ import org.olat.core.util.prefs.Preferences;
  * @author Lavinia Dumitrescu
  *
  */
-public abstract class AbstractPortletRunController extends BasicController {
+public abstract class AbstractPortletRunController<T> extends BasicController {
 
 	private static final String SORTING_CRITERIA_PREF = "sortingCriteria";
 	protected static final String SORTED_ITEMS_PREF = "sortedItems";
 	
-	protected PortletToolSortingControllerImpl portletToolsController;
+	protected PortletToolSortingControllerImpl<T> portletToolsController;
 	protected final Collator collator;
 	protected SortingCriteria sortingCriteria;
 	protected ArrayList<Integer> sortingTermsList = new ArrayList<Integer>();
 	private final String portletName;
-	private final Preferences guiPreferences; 
-	protected final Identity identity;
-	protected final Locale locale;
+	protected final Preferences guiPreferences; 
+
 	
 	public AbstractPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) {
 		super(ureq, wControl, trans);		
 		collator = Collator.getInstance();
 		this.portletName = portletName;		
 		this.guiPreferences = ureq.getUserSession().getGuiPreferences();
-		this.identity = ureq.getIdentity();
-		this.locale = ureq.getLocale();
 	}
-	
+
 	
 	/**
 	 * Handles portletToolsController events.
@@ -84,7 +79,7 @@ public abstract class AbstractPortletRunController extends BasicController {
 				reloadModel(sortingCriteria);
 				saveSortingConfiguration(ureq, sortingCriteria);
 			} else if(event.getCommand().equals(PortletToolSortingControllerImpl.COMMAND_MANUAL_SORTING)) {
-				List<PortletEntry> sortedItems = portletToolsController.getSortedItems();
+				List<PortletEntry<T>> sortedItems = portletToolsController.getSortedItems();
 				reloadModel(sortedItems);
 				saveManuallySortedItems(ureq, sortedItems);
 				sortingCriteria = new SortingCriteria();
@@ -106,7 +101,7 @@ public abstract class AbstractPortletRunController extends BasicController {
 			if (storedPrefs != null) {
 		    //if auto sorting choosed, remove any manually sorting info
 		    List sortedItems = new ArrayList();
-		    guiPreferences.putAndSave(Map.class, getPreferenceKey(SORTED_ITEMS_PREF),getSortedItemsMap(sortedItems));
+		    guiPreferences.putAndSave(Map.class, getPreferenceKey(SORTED_ITEMS_PREF), getSortedItemsMap(sortedItems));
 			}
 		}
 	}
@@ -125,8 +120,8 @@ public abstract class AbstractPortletRunController extends BasicController {
 		Preferences guiPreferences = ureq.getUserSession().getGuiPreferences();
 		Object storedPrefs = guiPreferences.get(Map.class, getPreferenceKey(SORTING_CRITERIA_PREF));
 		
-		if (storedPrefs != null) {			
-			returnSortingCriteria = new SortingCriteria((Map<String, Integer>) storedPrefs, this.sortingTermsList);
+		if (storedPrefs != null) {
+			returnSortingCriteria = new SortingCriteria((Map<String, Integer>) storedPrefs, sortingTermsList);
 		} else {
 			returnSortingCriteria = createDefaultSortingCriteria();
 		}
@@ -142,7 +137,7 @@ public abstract class AbstractPortletRunController extends BasicController {
    * @param ureq
    * @param sortedItems
    */
-	protected void saveManuallySortedItems(UserRequest ureq, List<PortletEntry> sortedItems) {
+	protected void saveManuallySortedItems(UserRequest ureq, List<PortletEntry<T>> sortedItems) {
   	Preferences guiPreferences = ureq.getUserSession().getGuiPreferences();
   	//store manual sorting type
   	SortingCriteria manualSortingCriteria = new SortingCriteria();
@@ -156,9 +151,9 @@ public abstract class AbstractPortletRunController extends BasicController {
 	 * @param sortedItems
 	 * @return a Map<Long,Integer> with the item persistableKey as key and with the item index as value.
 	 */
-	private static Map<Long,Integer> getSortedItemsMap(List<PortletEntry> sortedItems) {
+	private Map<Long,Integer> getSortedItemsMap(List<PortletEntry<T>> sortedItems) {
 		Hashtable<Long,Integer> persistableMap = new Hashtable<Long,Integer>(); 
-		Iterator<PortletEntry> listIterator = sortedItems.iterator();
+		Iterator<PortletEntry<T>> listIterator = sortedItems.iterator();
 		for(int i=0; listIterator.hasNext(); i++) {
 			persistableMap.put(listIterator.next().getKey(),new Integer(i)); 
 		}
@@ -173,14 +168,14 @@ public abstract class AbstractPortletRunController extends BasicController {
 	 * @param persistableList
 	 * @return the manually sorted persistable list
 	 */
-  protected List<PortletEntry> getPersistentManuallySortedItems(List<PortletEntry> portletEntryList) {
-		List selected = new ArrayList();
-		//Preferences guiPreferences = ureq.getUserSession().getGuiPreferences();
-		Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(this.SORTED_ITEMS_PREF));
+  protected List<PortletEntry<T>> getPersistentManuallySortedItems(List<PortletEntry<T>> portletEntryList) {
+		List<PortletEntry<T>> selected = new ArrayList<PortletEntry<T>>();
+		@SuppressWarnings("unchecked")
+		Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
 		if (storedPrefs != null) {			
-			Iterator<PortletEntry> listIterator = portletEntryList.iterator();
+			Iterator<PortletEntry<T>> listIterator = portletEntryList.iterator();
 			while (listIterator.hasNext()) {
-				PortletEntry portletEntry = listIterator.next();
+				PortletEntry<T> portletEntry = listIterator.next();
 				if (storedPrefs.containsKey(portletEntry.getKey())) {
 					selected.add(portletEntry);
 				}
@@ -208,12 +203,12 @@ public abstract class AbstractPortletRunController extends BasicController {
 	 * @param itemComparator
 	 * @return
 	 */
-	protected List getSortedList(List itemList, SortingCriteria sortingCriteria) {
-		Comparator itemComparator = getComparator(sortingCriteria);
+	protected List<T> getSortedList(List<T> itemList, SortingCriteria sortingCriteria) {
+		Comparator<T> itemComparator = getComparator(sortingCriteria);
 		Collections.sort(itemList, itemComparator);
 		// check here is asscending or descending and return the first max entries
 		int maxEntries = sortingCriteria.getMaxEntries();
-		List returnList = itemList.subList(0, Math.min(itemList.size(), maxEntries));
+		List<T> returnList = itemList.subList(0, Math.min(itemList.size(), maxEntries));
 		return returnList;
 	}
 	
@@ -223,7 +218,7 @@ public abstract class AbstractPortletRunController extends BasicController {
 	 * @return a Comparator used for sorting entries according with the input sortingCriteria.
 	 * 
 	 */
-	protected abstract Comparator getComparator(SortingCriteria sortingCriteria);
+	protected abstract Comparator<T> getComparator(SortingCriteria sortingCriteria);
 	
 	/**
 	 * Reloads the portlet's table tableDataModel according with the sorting criteria.
@@ -237,7 +232,7 @@ public abstract class AbstractPortletRunController extends BasicController {
 	 * @param ureq
 	 * @param sortedItems
 	 */
-	protected abstract void reloadModel(List<PortletEntry> sortedItems);
+	protected abstract void reloadModel(List<PortletEntry<T>> sortedItems);
 
 	/**
 	 * Compares PortletEntrys.
@@ -246,11 +241,9 @@ public abstract class AbstractPortletRunController extends BasicController {
 	 * @param sortedItems
 	 * @return
 	 */
-	protected Comparator getPortletEntryComparator(final Map<Long,Integer> sortedItems) {
-		return new Comparator(){			
-			public int compare(final Object o1, final Object o2) {
-				PortletEntry portletEntry1= (PortletEntry)o1;
-				PortletEntry portletEntry2 = (PortletEntry)o2;		
+	protected Comparator<PortletEntry<T>> getPortletEntryComparator(final Map<Long,Integer> sortedItems) {
+		return new Comparator<PortletEntry<T>>(){			
+			public int compare(final PortletEntry<T> portletEntry1, final PortletEntry<T> portletEntry2) {
 				int comparisonResult = 0;
 				Integer portletEntry1Index = sortedItems.get(portletEntry1.getKey());
 				Integer portletEntry2Index = sortedItems.get(portletEntry2.getKey()); 

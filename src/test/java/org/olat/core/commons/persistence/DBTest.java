@@ -35,6 +35,7 @@ import static org.junit.Assert.fail;
 import org.junit.After;
 import org.junit.Test;
 import org.olat.core.logging.DBRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -48,6 +49,8 @@ import org.olat.test.OlatTestCase;
  *
  */
 public class DBTest extends OlatTestCase {
+	
+	private final OLog log = Tracing.createLoggerFor(DBTest.class);
 
 		
 	/**
@@ -107,11 +110,11 @@ public class DBTest extends OlatTestCase {
 			PropertyManager pm = PropertyManager.getInstance();
 			Property p1 = pm.createPropertyInstance(null, null, null, null, propertyKey, null, null, testValue, null);
 			pm.saveProperty(p1);
-			String propertyKey2 = "testRollback-2";
 			String testValue2 = "testRollback-2";
 			// name is null => generated DB error => rollback
 			Property p2 = pm.createPropertyInstance(null, null, null, null, null, null, null, testValue2, null);
 			pm.saveProperty(p2);
+			db.commit();
 			fail("Should generate error for rollback.");
 		} catch (Exception ex) {
 			db.closeSession();
@@ -129,7 +132,6 @@ public class DBTest extends OlatTestCase {
 		String testValue1 = "testMixed-1";
 		String propertyKey2 = "testMixed-2";
 		String testValue2 = "testMixed-2";
-		String propertyKey3 = "testMixed-3";
 		String testValue3 = "testMixed-3";
 		try {
 			// outside of transaction
@@ -142,6 +144,7 @@ public class DBTest extends OlatTestCase {
 			// name is null => generated DB error => rollback
 			Property p3 = pm.createPropertyInstance(null, null, null, null, null, null, null, testValue3, null);
 			pm.saveProperty(p3);
+			db.commit();
 			fail("Should generate error for rollback.");
 			db.closeSession();
 		} catch (Exception ex) {
@@ -161,7 +164,6 @@ public class DBTest extends OlatTestCase {
 		String testValue1 = "testNonTransactional-1";
 		String propertyKey2 = "testNonTransactional-2";
 		String testValue2 = "testNonTransactional-2";
-		String propertyKey3 = "testNonTransactional-3";
 		String testValue3 = "testNonTransactional-3";
 		try {
 			PropertyManager pm = PropertyManager.getInstance();
@@ -172,6 +174,7 @@ public class DBTest extends OlatTestCase {
 			// name is null => generated DB error => rollback ?
 			Property p3 = pm.createPropertyInstance(null, null, null, null, null, null, null, testValue3, null);
 			pm.saveProperty(p3);
+			db.commit();
 			fail("Should generate error for rollback.");
 			db.closeSession();
 		} catch (Exception ex) {
@@ -193,7 +196,7 @@ public class DBTest extends OlatTestCase {
 	public void testConcurrentUpdate() {
 		int maxWorkers = 5;
 		int loops = 100;
-		Tracing.logInfo("start testConcurrentUpdate maxWorkers=" + maxWorkers + "  loops=" + loops, this.getClass());
+		log.info("start testConcurrentUpdate maxWorkers=" + maxWorkers + "  loops=" + loops);
 		DbWorker[] dbWorkers = new DbWorker[maxWorkers];
 		for (int i=0; i<maxWorkers; i++) {
 			dbWorkers[i] = new DbWorker(i,loops);
@@ -207,21 +210,21 @@ public class DBTest extends OlatTestCase {
 				}
 			}
 			try {
-				Thread.currentThread().sleep(1000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				Tracing.logWarn("testConcurrentUpdate InterruptedException=" + e, this.getClass());
+				log.warn("testConcurrentUpdate InterruptedException=" + e);
 			}
 		}
 		for (int i=0; i<maxWorkers; i++) {
 			assertEquals(0,dbWorkers[i].getErrorCounter());
 		}
-		Tracing.logInfo("finished testConcurrentUpdate " , this.getClass());
+		log.info("finished testConcurrentUpdate ");
 	}
 	@Test
 	public void testDbPerf() {
 		int loops = 1000;
 		long timeWithoutTransction = 0;
-		Tracing.logInfo("start testDbPerf with loops=" + loops, this.getClass());
+		log.info("start testDbPerf with loops=" + loops);
 		try {
 			long startTime = System.currentTimeMillis();
 			for (int loopCounter=0; loopCounter<loops; loopCounter++) {
@@ -237,7 +240,7 @@ public class DBTest extends OlatTestCase {
 			}
 			long endTime = System.currentTimeMillis();
 			timeWithoutTransction = endTime - startTime;
-			Tracing.logInfo("testDbPerf without transaction takes :" + timeWithoutTransction + "ms", this.getClass());
+			log.info("testDbPerf without transaction takes :" + timeWithoutTransction + "ms");
 		} catch (Exception ex) {
 			fail("Exception in testDbPerf without transaction ex="+ ex);
 		}
@@ -258,16 +261,15 @@ public class DBTest extends OlatTestCase {
 			}
 			long endTime = System.currentTimeMillis();
 			long timeWithTransction = endTime - startTime;
-			Tracing.logInfo("testDbPerf with transaction takes :" + timeWithTransction + "ms", this.getClass());
-			Tracing.logInfo("testDbPerf diff between transaction and without transaction :" + (timeWithTransction - timeWithoutTransction) + "ms", this.getClass());
+			log.info("testDbPerf with transaction takes :" + timeWithTransction + "ms");
+			log.info("testDbPerf diff between transaction and without transaction :" + (timeWithTransction - timeWithoutTransction) + "ms");
 		} catch (Exception ex) {
 			fail("Exception in testDbPerf with transaction ex="+ ex);
 		}
 	}
+	
 	@Test
 	public void testDBUTF8capable() {
-		//FIXME:fj: move this test to the db module
-		
 		DB db = DBFactory.getInstance();
 		PropertyManager pm = PropertyManager.getInstance();
 		String unicodetest = "a-greek a\u03E2a\u03EAa\u03E8 arab \u0630a\u0631 chinese:\u3150a\u3151a\u3152a\u3153a\u3173a\u3110-z";
@@ -279,8 +281,8 @@ public class DBTest extends OlatTestCase {
 		Property p2 = pm.findProperty(null, null, null, null, "superbluberkey");
 		String lStr = p2.getStringValue();
 		assertEquals(unicodetest, lStr);
-		
 	}
+	
 	@Test
 	public void testFindObject() {
 		// 1. create a property to have an object  
@@ -307,66 +309,64 @@ public class DBTest extends OlatTestCase {
 	public void tearDown() throws Exception {
 		DBFactory.getInstance().closeSession();
 	}
+	
+	class DbWorker implements Runnable {
 
+		private Thread workerThread = null;
+		private int numberOfLoops;
+		private String workerId;
+		private int errorCounter = 0;
+		private boolean isfinished = false;
 
-}
-
-class DbWorker implements Runnable {
-
-	private Thread workerThread = null;
-	private int numberOfLoops;
-	private String workerId;
-	private int errorCounter = 0;
-	private boolean isfinished = false;
-
-	public DbWorker(int id, int numberOfLoops) {
-		this.numberOfLoops = numberOfLoops;
-		this.workerId = Integer.toString(id);
-		if ( (workerThread == null) || !workerThread.isAlive()) {
-			Tracing.logInfo("start DbWorker thread id=" + id, this.getClass());
-			workerThread = new Thread(this, "TestWorkerThread-" + id);
-			workerThread.setPriority(Thread.MAX_PRIORITY);
-			workerThread.setDaemon(true);
-			workerThread.start();
-		}
-	}
-
-	public void run() {
-		int loopCounter = 0;
-		try {
-			while (loopCounter++ < numberOfLoops ) {
-				String propertyKey = "DbWorkerKey-" + workerId + "-" + loopCounter;
-				DB db = DBFactory.getInstance();
-				PropertyManager pm = PropertyManager.getInstance();
-				String testValue = "DbWorkerValue-" + workerId + "-" + loopCounter;
-				Property p = pm.createPropertyInstance(null, null, null, null, propertyKey, null, null, testValue, null);
-				pm.saveProperty(p);
-				// forget session cache etc.
-				db.closeSession();
-				
-				db = DBFactory.getInstance();
-				Property p2 = pm.findProperty(null, null, null, null, propertyKey);
-				String lStr = p2.getStringValue();
-				if (!testValue.equals(lStr)) {
-					Tracing.logInfo("Property ERROR testValue=" + testValue + ": lStr=" + lStr, this.getClass());
-					errorCounter++;
-				}
-				db.closeSession();
-				
-				Thread.currentThread().sleep(5);
+		public DbWorker(int id, int numberOfLoops) {
+			this.numberOfLoops = numberOfLoops;
+			this.workerId = Integer.toString(id);
+			if ( (workerThread == null) || !workerThread.isAlive()) {
+				log.info("start DbWorker thread id=" + id);
+				workerThread = new Thread(this, "TestWorkerThread-" + id);
+				workerThread.setPriority(Thread.MAX_PRIORITY);
+				workerThread.setDaemon(true);
+				workerThread.start();
 			}
-		} catch (Exception ex) {
-			Tracing.logInfo("ERROR workerId=" + workerId + ": Exception=" + ex, this.getClass());
-			errorCounter++;
 		}
-		isfinished  = true;
-	}
-	
-	protected int getErrorCounter() {
-		return errorCounter;
-	}
-	
-	protected boolean isfinished() {
-		return isfinished;
+
+		public void run() {
+			int loopCounter = 0;
+			try {
+				while (loopCounter++ < numberOfLoops ) {
+					String propertyKey = "DbWorkerKey-" + workerId + "-" + loopCounter;
+					DB db = DBFactory.getInstance();
+					PropertyManager pm = PropertyManager.getInstance();
+					String testValue = "DbWorkerValue-" + workerId + "-" + loopCounter;
+					Property p = pm.createPropertyInstance(null, null, null, null, propertyKey, null, null, testValue, null);
+					pm.saveProperty(p);
+					// forget session cache etc.
+					db.closeSession();
+					
+					db = DBFactory.getInstance();
+					Property p2 = pm.findProperty(null, null, null, null, propertyKey);
+					String lStr = p2.getStringValue();
+					if (!testValue.equals(lStr)) {
+						log.info("Property ERROR testValue=" + testValue + ": lStr=" + lStr);
+						errorCounter++;
+					}
+					db.closeSession();
+					
+					Thread.sleep(5);
+				}
+			} catch (Exception ex) {
+				log.info("ERROR workerId=" + workerId + ": Exception=" + ex);
+				errorCounter++;
+			}
+			isfinished  = true;
+		}
+		
+		protected int getErrorCounter() {
+			return errorCounter;
+		}
+		
+		protected boolean isfinished() {
+			return isfinished;
+		}
 	}
 }

@@ -40,6 +40,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 /**
  * Description:<br>
@@ -224,7 +225,7 @@ public class XStreamHelper {
 	 * writing to a configured XML mapping
 	 */
 	public static XStream createXStreamInstance() {
-		return new XStream();
+		return new EnhancedXStream();
 	}
 
 	/**
@@ -376,6 +377,13 @@ public class XStreamHelper {
 					"Could not write object to stream.", e);
 		} finally {
 			FileUtils.closeSafely(os);
+		}
+	}
+	
+	private static class EnhancedXStream extends XStream {
+		@Override
+		protected MapperWrapper wrapMapper(MapperWrapper next) {
+			return new EnhancedMapper(next);
 		}
 	}
 

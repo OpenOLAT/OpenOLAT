@@ -124,7 +124,7 @@ public class RepositoryEntryImportExport {
 	public boolean exportDoExportContent() {
 		// export resource
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-		MediaResource mr = rh.getAsMediaResource(re.getOlatResource());
+		MediaResource mr = rh.getAsMediaResource(re.getOlatResource(), false);
 		FileOutputStream fOut = null;
 		try {
 			fOut = new FileOutputStream(new File(baseDirectory, CONTENT_FILE));

@@ -329,6 +329,37 @@ public class StringHelper {
 		s = s.replace(' ', '_');
 		return s;
 	}
+	
+	public static boolean isLong(String string) {
+		char[] charArr = string.toCharArray();
+		for(int i=charArr.length; i-->0; ) {
+			char ch = charArr[i];
+			if(ch < 47 || ch > 58) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public static String replaceAllCaseInsensitive(String expression, String name, String replacement) {
+		String lcExpresion = expression.toLowerCase();
+		String lcName = name.toLowerCase();
+
+		int index = 0;
+		while((index = lcExpresion.indexOf(lcName, index)) > 0) {
+			int startIndex = index;
+			int stopIndex = index + lcName.length();
+			
+			String newExpression = expression.substring(0, startIndex);
+			newExpression += replacement;
+			newExpression += expression.substring(stopIndex);
+			
+			expression = newExpression;
+			lcExpresion = expression.toLowerCase();
+			index = startIndex + replacement.length();	
+		}
+		return expression;
+	}
 
 	/**
 	 * @param extractedCharset

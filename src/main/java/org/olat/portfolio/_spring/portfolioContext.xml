@@ -8,6 +8,7 @@
 	<!-- ========================= -->
 	
 	<bean id="portfolioModule" class="org.olat.portfolio.PortfolioModule">
+	    <constructor-arg index="0" ref="businessGroupService"/>
 		<property name="persistedProperties">
 	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
 	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
@@ -99,7 +100,7 @@
 	
 	<bean name="epPolicyManager" class="org.olat.portfolio.manager.EPPolicyManager">
 		<constructor-arg index="0" ref="baseSecurityManager" />
-		<constructor-arg index="1" ref="businessGroupManager" />
+		<constructor-arg index="1" ref="businessGroupService" />
 	</bean>
 	
 		<!--   define notifications handler -->

@@ -67,12 +67,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
-import org.olat.group.properties.BusinessGroupPropertyManager;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.DisplayMembers;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -80,6 +76,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -96,6 +93,9 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	private BusinessGroup g1, g2;
 	private OLATResource course;
 	private RestConnection conn;
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	/**
 	 * Set up a course with learn group and group area
@@ -145,21 +145,17 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 		
 		//create learn group
-	    BGContextManager cm = BGContextManagerImpl.getInstance();
-	    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 	    BaseSecurity secm = BaseSecurityManager.getInstance();
 			
 	    // 1) context one: learning groups
-	    BGContext c1 = cm.createAndAddBGContextToResource("c1name-learn", course, BusinessGroup.TYPE_LEARNINGROUP, owner1, true);
+	    OLATResource c1 = JunitTestHelper.createRandomResource();
 	    // create groups without waiting list
-	    g1 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "rest-g1", null, new Integer(0), new Integer(10), false, false, c1);
-	    g2 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "rest-g2", null, new Integer(0), new Integer(10), false, false, c1);
+	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
+	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
 	    
 	    //permission to see owners and participants
-	    BusinessGroupPropertyManager bgpm1 = new BusinessGroupPropertyManager(g1);
-	    bgpm1.updateDisplayMembers(false, false, false);
-	    BusinessGroupPropertyManager bgpm2 = new BusinessGroupPropertyManager(g2);
-	    bgpm2.updateDisplayMembers(true, true, false);
+	    businessGroupService.updateDisplayMembers(g1, new DisplayMembers(false, false, false));
+	    businessGroupService.updateDisplayMembers(g2, new DisplayMembers(true, true, false));
 	    
 	    // members g1
 	    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
@@ -329,8 +325,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		FileVO file = parse(body, FileVO.class);
+		FileVO file = conn.parse(response, FileVO.class);
 		assertNotNull(file);
 	}
 	
@@ -347,8 +342,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		FileVO file = parse(body, FileVO.class);
+		FileVO file = conn.parse(response, FileVO.class);
 		assertNotNull(file);
 		assertNotNull(file.getHref());
 		assertNotNull(file.getTitle());

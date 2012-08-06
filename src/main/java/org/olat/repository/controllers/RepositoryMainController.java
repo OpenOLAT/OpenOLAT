@@ -72,8 +72,8 @@ import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.fileresource.types.WikiResource;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
@@ -149,7 +149,8 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private WizardController wc;
 	private RepositoryAddChooseStepsController chooseStepsController;
 	private Controller creationWizardController;
-	private PortfolioModule portfolioModule;
+	private final PortfolioModule portfolioModule;
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * The check for author rights is executed on construction time and then
@@ -164,6 +165,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		if (log.isDebug()) {
 			log.debug("Constructing ReposityMainController for user::" + ureq.getIdentity());
 		}
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 
 		// use i18n from RepositoryManager level
@@ -290,7 +292,8 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			node.setCssClass("o_sel_repo_my_student");
 			rootNode.addChild(node);
 			// for authors or users with group rights also show the teacher portlet
-			if (bIsAuthor || BusinessGroupManagerImpl.getInstance().findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, getIdentity(), null).size() > 0) {
+			SearchBusinessGroupParams rightParams = new SearchBusinessGroupParams(getIdentity(), true, false);
+			if (bIsAuthor || businessGroupService.countBusinessGroups(rightParams, null) > 0) {
 				node = new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher");
 				node.setCssClass("o_sel_repo_my_teacher");
 				rootNode.addChild(node);
@@ -609,7 +612,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 						mainPanel.setContent(detailsController.getInitialComponent());
 					}
 				} else if (selectedEntry.getCanDownload()) {
-					detailsController.doDownload(urequest);
+					detailsController.doDownload(urequest, false);
 				} else { // offer details view
 					Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 					columnsLayoutCtr.setCol2(toolComp);

@@ -54,9 +54,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientFactory;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseModule;
-import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -88,6 +87,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	private final DB database;
 	private RepositoryManager repositoryManager;
 	private BaseSecurity securityManager;
+	private BusinessGroupService businessGroupService;
 
 	private static final String REGISTRATION_SERVER = "http://registration.openolat.org/registration/restapi/registration/openolat";
 	//private static final String REGISTRATION_SERVER = "http://localhost:8081/registration/restapi/registration/openolat";
@@ -132,6 +132,14 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	 */
 	public void setSecurityManager(BaseSecurity securityManager) {
 		this.securityManager = securityManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param businessGroupService
+	 */
+	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
+		this.businessGroupService = businessGroupService;
 	}
 
 	/**
@@ -295,13 +303,12 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		msgProperties.put("activeUsersLastMonth", String.valueOf(activeUsersLastMonth));
 		
 		// Groups
-		BGContextManager groupMgr = BGContextManagerImpl.getInstance();
-		int buddyGroups = groupMgr.countGroupsOfType(BusinessGroup.TYPE_BUDDYGROUP);
-		msgProperties.put("buddyGroups", String.valueOf(buddyGroups));
-		int learningGroups = groupMgr.countGroupsOfType(BusinessGroup.TYPE_LEARNINGROUP);
-		msgProperties.put("learningGroups", String.valueOf(learningGroups));
-		int rightGroups = groupMgr.countGroupsOfType(BusinessGroup.TYPE_RIGHTGROUP);
-		msgProperties.put("rightGroups", String.valueOf(rightGroups));
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		int groups = businessGroupService.countBusinessGroups(params, null);
+		msgProperties.put("buddyGroups", String.valueOf(groups));
+		msgProperties.put("learningGroups", String.valueOf(groups));
+		msgProperties.put("rightGroups", String.valueOf(groups));
+		msgProperties.put("groups", String.valueOf(groups));
 			
 		if (website) {
 			// URL

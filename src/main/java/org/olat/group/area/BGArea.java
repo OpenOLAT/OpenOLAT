@@ -28,7 +28,7 @@ package org.olat.group.area;
 import org.olat.core.gui.ShortName;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Persistable;
-import org.olat.group.context.BGContext;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR/> A business group area is used to build a (learning)
@@ -53,16 +53,14 @@ public interface BGArea extends Persistable, CreateInfo, ShortName {
 	 * @param description the group area description
 	 */
 	public abstract void setDescription(String description);
+	
+	public OLATResource getResource();
 
 	/**
 	 * @return The group context
 	 */
-	public abstract BGContext getGroupContext();
+	public Long getGroupContextKey();
 
-	/**
-	 * @param groupContext The group context
-	 */
-	public abstract void setGroupContext(BGContext groupContext);
 
 	/**
 	 * @return The group area name

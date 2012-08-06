@@ -39,7 +39,7 @@ import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.group.DeletableReference;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -71,8 +71,8 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 	private boolean isReflexionStepEnabled;
 	private boolean isCopyrightStepEnabled;
 	
-	public PortfolioModule(){
-		BusinessGroupManagerImpl.getInstance().registerDeletableGroupDataListener(this);
+	public PortfolioModule(BusinessGroupService businessGroupService){
+		businessGroupService.registerDeletableGroupDataListener(this);
 		FrameworkStartupEventChannel.registerForStartupEvent(this);
 	}
 	

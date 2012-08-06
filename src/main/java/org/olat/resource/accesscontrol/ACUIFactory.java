@@ -30,6 +30,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
+import org.olat.resource.accesscontrol.ui.AccessController;
 import org.olat.resource.accesscontrol.ui.AccessListController;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.resource.accesscontrol.ui.OrdersController;
@@ -46,7 +47,7 @@ import org.olat.resource.accesscontrol.ui.OrdersController;
  */
 public class ACUIFactory {
 
-	public static Controller createAccessController(UserRequest ureq, WindowControl wControl, List<OfferAccess> links) {
+	public static AccessController createAccessController(UserRequest ureq, WindowControl wControl, List<OfferAccess> links) {
 		// Always use multi list for layouting purpose
 		AccessListController multiAccessCtrl = new AccessListController(ureq, wControl, links);
 		return multiAccessCtrl;

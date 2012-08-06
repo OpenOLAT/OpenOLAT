@@ -38,14 +38,14 @@ import org.olat.core.logging.AssertException;
  * 
  * @author Felix Jost
  */
-public abstract class DefaultTableDataModel implements TableDataModel {
+public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	private Locale locale;
-	protected List objects;
+	protected List<U> objects;
 
 	/**
 	 * @param objects
 	 */
-	public DefaultTableDataModel(final List objects) {
+	public DefaultTableDataModel(final List<U> objects) {
 		this.objects = objects;
 	}
 
@@ -71,7 +71,7 @@ public abstract class DefaultTableDataModel implements TableDataModel {
 	 * 
 	 * @param objects The objects to set
 	 */
-	public void setObjects(List objects) {
+	public void setObjects(List<U> objects) {
 		this.objects = objects;
 	}
 
@@ -79,7 +79,7 @@ public abstract class DefaultTableDataModel implements TableDataModel {
 	 * @param row
 	 * @return
 	 */
-	public Object getObject(final int row) {
+	public U getObject(final int row) {
 		return objects.get(row);
 	}
 
@@ -94,8 +94,8 @@ public abstract class DefaultTableDataModel implements TableDataModel {
 	 * @param objectMarkers
 	 * @return
 	 */
-	public List getObjects(final BitSet objectMarkers) {
-		List results = new ArrayList();
+	public List<U> getObjects(final BitSet objectMarkers) {
+		List<U> results = new ArrayList<U>();
 		for(int i=objectMarkers.nextSetBit(0); i >= 0; i=objectMarkers.nextSetBit(i+1)) {
 			results.add(getObject(i));
 		}
@@ -121,7 +121,7 @@ public abstract class DefaultTableDataModel implements TableDataModel {
 	/**
 	 * @return List
 	 */
-	public List getObjects() {
+	public List<U> getObjects() {
 		return objects;
 	}
 

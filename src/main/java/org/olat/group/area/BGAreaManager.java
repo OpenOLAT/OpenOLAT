@@ -25,13 +25,13 @@
 
 package org.olat.group.area;
 
+import java.io.File;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR/> Manager to handle business group areas. A business group
@@ -47,30 +47,33 @@ public interface BGAreaManager {
 	 * 
 	 * @param areaName The visible area name
 	 * @param description The area description
-	 * @param groupContext The group context of this area
+	 * @param resource The resource of this area
 	 * @return The new area or null if no area has been created
 	 */
-	public abstract BGArea createAndPersistBGAreaIfNotExists(String areaName, String description, BGContext groupContext);
-
-	/**
-	 * Copies all group areas from the original context to the target context. The
-	 * method returns a hash map with all original areas as key and the newly
-	 * created areas as value.
-	 * 
-	 * @param origBgContext Context containing the orignial areas
-	 * @param targetBgContext Context where the areas should be created
-	 * @return Map mapping the original to the new areas
-	 */
-	public abstract Map copyBGAreasOfBGContext(BGContext origBgContext, BGContext targetBgContext);
+	public abstract BGArea createAndPersistBGArea(String areaName, String description, OLATResource resource);
 
 	/**
 	 * Finds an area in the given context
 	 * 
 	 * @param areaName
-	 * @param groupContext
+	 * @param resource
 	 * @return The area or null if the area does not exists
 	 */
-	public abstract BGArea findBGArea(String areaName, BGContext groupContext);
+	public abstract BGArea findBGArea(String areaName, OLATResource resource);
+	
+	/**
+	 * Load an area by its primary key
+	 * @param key
+	 * @return
+	 */
+	public BGArea loadArea(Long key);
+	
+	/**
+	 * Load a list of areas
+	 * @param keys
+	 * @return
+	 */
+	public List<BGArea> loadAreas(List<Long> keys);
 
 	/**
 	 * Update the given area in the database
@@ -78,7 +81,7 @@ public interface BGAreaManager {
 	 * @param area
 	 * @return the updated area
 	 */
-	public abstract BGArea updateBGArea(BGArea area);
+	public BGArea updateBGArea(BGArea area);
 
 	/**
 	 * Delete the given area form the database
@@ -119,7 +122,25 @@ public interface BGAreaManager {
 	 * @param area
 	 * @return A list of business groups
 	 */
-	public abstract List findBusinessGroupsOfArea(BGArea area);
+	public List<BusinessGroup> findBusinessGroupsOfArea(BGArea area);
+
+	/**
+	 * Searches for all business groups that are associated with the given
+	 * business group areas
+	 * 
+	 * @param area
+	 * @return A list of business groups
+	 */
+	public List<BusinessGroup> findBusinessGroupsOfAreas(List<BGArea> areas);
+	
+	/**
+	 * Searches for all business groups that are associated with the given
+	 * business group areas primary keys
+	 * 
+	 * @param area
+	 * @return A list of business groups
+	 */
+	public List<BusinessGroup> findBusinessGroupsOfAreaKeys(List<Long> areaKeys);
 
 	/**
 	 * Searches for all business groups that are associated with the given
@@ -130,7 +151,7 @@ public interface BGAreaManager {
 	 * @param context
 	 * @return A list of business groups
 	 */
-	public abstract List findBusinessGroupsOfAreaAttendedBy(Identity identity, String areaName, BGContext context);
+	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, List<Long> areaKeys, OLATResource resource);
 
 	/**
 	 * Searches for all business group areas associated with the given business
@@ -139,24 +160,33 @@ public interface BGAreaManager {
 	 * @param group
 	 * @return A list of business group area
 	 */
-	public abstract List findBGAreasOfBusinessGroup(BusinessGroup group);
-
+	public List<BGArea> findBGAreasOfBusinessGroup(BusinessGroup group);
+	
+	/**
+	 * Searches for all business group areas associated with the given business
+	 * groups
+	 * 
+	 * @param group
+	 * @return A list of business group area
+	 */
+	public List<BGArea> findBGAreasOfBusinessGroups(List<BusinessGroup> groups);
+	
 	/**
 	 * Counts the number of business group areas of the given business group
 	 * context
 	 * 
-	 * @param groupContext
-	 * @return Number of business gropu areas
+	 * @param resource
+	 * @return Number of business group areas
 	 */
-	public abstract int countBGAreasOfBGContext(BGContext groupContext);
+	public int countBGAreasInContext(OLATResource resource);
 
 	/**
 	 * Searches for all business group areas in the given business group context
 	 * 
-	 * @param groupContext
+	 * @param resource
 	 * @return A list of business group areas
 	 */
-	public abstract List findBGAreasOfBGContext(BGContext groupContext);
+	public List<BGArea> findBGAreasInContext(OLATResource resource);
 
 	/**
 	 * Checks if an identity is in a business group areas with a given name in the
@@ -164,10 +194,10 @@ public interface BGAreaManager {
 	 * 
 	 * @param identity
 	 * @param areaName
-	 * @param groupContext
-	 * @return true if identity is in such an area, false otherwhise
+	 * @param resource
+	 * @return true if identity is in such an area, false otherwise
 	 */
-	public boolean isIdentityInBGArea(Identity identity, String areaName, BGContext groupContext);
+	public boolean isIdentityInBGArea(Identity identity, String areaName, Long groupKey, OLATResource resource);
 
 	/**
 	 * Reloads the business group area from the database or the hibernate second
@@ -176,13 +206,34 @@ public interface BGAreaManager {
 	 * @param area
 	 * @return The reloaded area
 	 */
-	public abstract BGArea reloadArea(BGArea area);
+	public BGArea reloadArea(BGArea area);
 
 	/**
-	 * checks if one or more of the given names exists already in the context.
-	 * @param allNames
-	 * @param bgContext
+	 * Check if an area exist with this anem or this primary key within the
+	 * context of the resource
+	 * @param nameOrKey
+	 * @param resource
 	 * @return
 	 */
-	public abstract boolean checkIfOneOrMoreNameExistsInContext(Set<String> allNames, BGContext bgContext);
+	public boolean existArea(String nameOrKey, OLATResource resource);
+	
+	/**
+	 * Retrieve the area's primary keys from the name
+	 * @param areaNames
+	 * @return
+	 */
+	public List<Long> toAreaKeys(String areaNames, OLATResource resource);
+	
+	/**
+	 * 
+	 * @param resource
+	 * @param columnList
+	 * @param areaList
+	 * @param archiveType
+	 * @param locale
+	 * @param charset
+	 * @return
+	 */
+	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList,
+			String archiveType, Locale locale, String charset);
 }

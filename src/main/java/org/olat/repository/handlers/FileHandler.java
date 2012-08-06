@@ -67,7 +67,7 @@ public abstract class FileHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
 	}
 
@@ -124,6 +124,6 @@ public abstract class FileHandler {
 	
 	abstract protected String getDeletedFilePrefix();
 
-	abstract protected List getSupportedTypes();
+	abstract protected List<String> getSupportedTypes();
 
 }

@@ -70,7 +70,7 @@ import org.olat.course.assessment.model.UserEfficiencyStatementLight;
  * Initial Date:  11.07.2005 <br>
  * @author gnaegi
  */
-public class EfficiencyStatementsPortletRunController extends AbstractPortletRunController implements GenericEventListener {
+public class EfficiencyStatementsPortletRunController extends AbstractPortletRunController<UserEfficiencyStatementLight> implements GenericEventListener {
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
@@ -128,9 +128,9 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 * @param ureq
 	 * @return the PortletEntry list.
 	 */
-	private List<PortletEntry> getAllPortletEntries() {
-		List<UserEfficiencyStatementLight> efficiencyStatementsList = EfficiencyStatementManager.getInstance().findEfficiencyStatementsLight(identity);	
-		List<PortletEntry> portletEntryList = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
+	private List<PortletEntry<UserEfficiencyStatementLight>> getAllPortletEntries() {
+		List<UserEfficiencyStatementLight> efficiencyStatementsList = EfficiencyStatementManager.getInstance().findEfficiencyStatementsLight(getIdentity());	
+		List<PortletEntry<UserEfficiencyStatementLight>> portletEntryList = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
 		return portletEntryList;
 	}
 	
@@ -139,8 +139,8 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
    * @param items
    * @return
    */
-  private List<PortletEntry> convertEfficiencyStatementToPortletEntryList(List<UserEfficiencyStatementLight> items) {
-		List<PortletEntry> convertedList = new ArrayList<PortletEntry>();
+  private List<PortletEntry<UserEfficiencyStatementLight>> convertEfficiencyStatementToPortletEntryList(List<UserEfficiencyStatementLight> items) {
+		List<PortletEntry<UserEfficiencyStatementLight>> convertedList = new ArrayList<PortletEntry<UserEfficiencyStatementLight>>();
 		for(UserEfficiencyStatementLight item:items) {
 			convertedList.add(new EfficiencyStatementPortletEntry(item));
 		}
@@ -154,10 +154,10 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
   protected void reloadModel(SortingCriteria sortingCriteria) {
   	if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
   		EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-  		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(identity);
+  		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(getIdentity());
 
   		efficiencyStatementsList = getSortedList(efficiencyStatementsList, sortingCriteria);  		
-  		List<PortletEntry> entries = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
+  		List<PortletEntry<UserEfficiencyStatementLight>> entries = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
   		efficiencyStatementsListModel = new EfficiencyStatementsTableDataModel(entries,2);
   		tableCtr.setTableDataModel(efficiencyStatementsListModel);
   		tableCtr.setTableDataModel(efficiencyStatementsListModel);
@@ -170,7 +170,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
    * 
    * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#reloadModel(org.olat.core.gui.UserRequest, java.util.List)
    */
-	protected void reloadModel(List<PortletEntry> sortedItems) {			
+	protected void reloadModel(List<PortletEntry<UserEfficiencyStatementLight>> sortedItems) {			
 		efficiencyStatementsListModel = new EfficiencyStatementsTableDataModel(sortedItems,2);
 		tableCtr.setTableDataModel(efficiencyStatementsListModel);
 	}
@@ -251,14 +251,14 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 * @param wControl
 	 * @return a PortletToolSortingControllerImpl istance.
 	 */
-	protected PortletToolSortingControllerImpl createSortingTool(UserRequest ureq, WindowControl wControl) {
+	protected PortletToolSortingControllerImpl<UserEfficiencyStatementLight> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {			
 			
-			List<PortletEntry> portletEntryList = getAllPortletEntries();		
-			PortletDefaultTableDataModel tableDataModel = new EfficiencyStatementsManualSortingTableDataModel(portletEntryList, 2);
-			List<PortletEntry> sortedItems = getPersistentManuallySortedItems(); 
+			List<PortletEntry<UserEfficiencyStatementLight>> portletEntryList = getAllPortletEntries();		
+			PortletDefaultTableDataModel<UserEfficiencyStatementLight> tableDataModel = new EfficiencyStatementsManualSortingTableDataModel(portletEntryList, 2);
+			List<PortletEntry<UserEfficiencyStatementLight>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<UserEfficiencyStatementLight>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);
@@ -271,8 +271,8 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
    * @param ureq
    * @return
    */
-	private List<PortletEntry> getPersistentManuallySortedItems() {
-		List<PortletEntry> portletEntryList = getAllPortletEntries();		
+	private List<PortletEntry<UserEfficiencyStatementLight>> getPersistentManuallySortedItems() {
+		List<PortletEntry<UserEfficiencyStatementLight>> portletEntryList = getAllPortletEntries();		
 		return this.getPersistentManuallySortedItems(portletEntryList);		
 	}
 	
@@ -308,9 +308,9 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
    * Initial Date:  10.12.2007 <br>
    * @author Lavinia Dumitrescu
    */
-  private class EfficiencyStatementsTableDataModel extends PortletDefaultTableDataModel  {
+  private class EfficiencyStatementsTableDataModel extends PortletDefaultTableDataModel<UserEfficiencyStatementLight>  {
   	
-  	public EfficiencyStatementsTableDataModel(List<PortletEntry> objects, int numCols) {
+  	public EfficiencyStatementsTableDataModel(List<PortletEntry<UserEfficiencyStatementLight>> objects, int numCols) {
   		super(objects, numCols);
   	}
   	  	
@@ -342,12 +342,12 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
    * Initial Date:  05.12.2007 <br>
    * @author Lavinia Dumitrescu
    */
-  private class EfficiencyStatementsManualSortingTableDataModel extends PortletDefaultTableDataModel  {		
+  private class EfficiencyStatementsManualSortingTableDataModel extends PortletDefaultTableDataModel<UserEfficiencyStatementLight>  {		
 		/**
 		 * @param objects
 		 * @param locale
 		 */
-		public EfficiencyStatementsManualSortingTableDataModel(List<PortletEntry> objects, int numCols) {
+		public EfficiencyStatementsManualSortingTableDataModel(List<PortletEntry<UserEfficiencyStatementLight>> objects, int numCols) {
 			super(objects, numCols);
 		}
 
@@ -355,7 +355,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 		 */
 		public final Object getValueAt(int row, int col) {			
-			PortletEntry entry = getObject(row);
+			PortletEntry<UserEfficiencyStatementLight> entry = getObject(row);
 			UserEfficiencyStatementLight statement = (UserEfficiencyStatementLight)entry.getValue();
 			switch (col) {
 				case 0:					

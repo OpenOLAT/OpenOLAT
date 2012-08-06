@@ -28,11 +28,15 @@ package org.olat.resource.lock.pessimistic;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -168,6 +172,8 @@ public class PLockTest extends OlatTestCase {
 		//Ignore Test if DB is PostgreSQL. PostgreSQL has not lock timeout
 		assumeTrue(!isPostgresqlConfigured());
 		
+		final String asset = "testLockWaitTimout";
+		
 		System.out.println("testing if holding a lock timeouts");
 		// make sure all three row entries for the locks are created, otherwise the system-wide locking 
 		// applied on lock-row-creation cannot support row-level-locking by definition. 
@@ -197,7 +203,7 @@ public class PLockTest extends OlatTestCase {
 			public void run() {
 				try {
 					sleep(2500);
-					PLock p3 = PessimisticLockManager.getInstance().findOrPersistPLock("blibli");
+					PLock p3 = PessimisticLockManager.getInstance().findOrPersistPLock(asset);
 					assertNotNull(p3);					
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -214,7 +220,7 @@ public class PLockTest extends OlatTestCase {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					PLock p2 = PessimisticLockManager.getInstance().findOrPersistPLock("blibli");
+					PLock p2 = PessimisticLockManager.getInstance().findOrPersistPLock(asset);
 					assertNotNull(p2);
 					sleep(60000);
 					// holding the lock for more than the transaction timeout (normally 30secs, configured where? hib) should cause a lock timeout
@@ -414,82 +420,66 @@ public class PLockTest extends OlatTestCase {
 		// 1. prepare collection
 		int numthreads = 500;
 		int numores = 1;
-		int maxwait = 12; // seconds to wait for completion (upper performance boundary)
-		class Collector {
-			private int threadsDone = 0;
-			synchronized void incThreadDone() {
-				threadsDone++;
-			}
-			
-			synchronized int getThreadsDoneCnt() {
-				return threadsDone;
-			}
-		};
 		
 		// 2. create 500 threads and start them
 		long start = System.currentTimeMillis();
-		final Collector c = new Collector();
+		final CountDownLatch doneSignal = new CountDownLatch(numthreads);
 		for (int i = 0; i < numthreads; i++) {
 			final String asset = "assetaboutaslongasores"+(i % numores);
 			Runnable r = new Runnable() {
 				public void run() {
-					PessimisticLockManager.getInstance().findOrPersistPLock(asset);
-					c.incThreadDone();
-					DBFactory.getInstance().closeSession();
+					try {
+						PessimisticLockManager.getInstance().findOrPersistPLock(asset);
+						doneSignal.countDown();
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						DBFactory.getInstance().closeSession();
+					}
 				}
 			};
 			new Thread(r).start();
 		}	
 		int i;
 		// 4. wait till all are finished or it takes too long
-		for (i = 0; i < maxwait; i++) {
-			int donecnt = c.getThreadsDoneCnt();
-			if (donecnt < numthreads) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					//
-				}
-			} else { // done
-				break;
-			}
+		try {
+			boolean interrupt = doneSignal.await(20, TimeUnit.SECONDS);
+			System.out.println("perf for Plocktest:testPerf(): "+(System.currentTimeMillis()-start));
+			assertTrue("Test takes too long (more than 20s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
 		}
-		long stop = System.currentTimeMillis();
-		System.out.println("perf for Plocktest:testPerf(): "+(stop-start));
-		assertTrue("performance is not within boundary:"+maxwait, i<maxwait);
 		
 		// repeat the same again - this time it should/could be faster
 		// 2. create 500 threads and start them
 		long start2 = System.currentTimeMillis();
-		final Collector c2 = new Collector();
+		final CountDownLatch doneSignal2 = new CountDownLatch(numthreads);
 		for (int i2 = 0; i2 < numthreads; i2++) {
 			final String asset = "assetaboutaslongasores"+(i2 % numores);
 			Runnable r = new Runnable() {
 				public void run() {
-					PessimisticLockManager.getInstance().findOrPersistPLock(asset);
-					c2.incThreadDone();
-					DBFactory.getInstance().closeSession();
+					try {
+						PessimisticLockManager.getInstance().findOrPersistPLock(asset);
+						doneSignal2.countDown();
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						DBFactory.getInstance().commitAndCloseSession();
+					}
 				}
 			};
 			new Thread(r).start();
 		}	
 
 		// 4. wait till all are finished or it takes too long
-		for (i = 0; i < maxwait; i++) {
-			int donecnt = c2.getThreadsDoneCnt();
-			if (donecnt < numthreads) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					//
-				}
-			} else { // done
-				break;
-			}
+		
+		try {
+			boolean interrupt = doneSignal.await(20, TimeUnit.SECONDS);
+			System.out.println("perf (again) for Plocktest:testPerf(): "+(System.currentTimeMillis()-start2));
+			assertTrue("Test takes too long (more than 20s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
 		}
-		long stop2 = System.currentTimeMillis();
-		System.out.println("perf (again) for Plocktest:testPerf(): "+(stop2-start2));
-		assertTrue("performance is not within boundary:"+maxwait, i<maxwait);
 	}
 	
 	@Test public void testSync() {
@@ -499,22 +489,22 @@ public class PLockTest extends OlatTestCase {
 		//	 create users
 		final List<Identity> identities = new ArrayList<Identity>();
 		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
-			Identity i1 = JunitTestHelper.createAndPersistIdentityAsUser("u"+i);
-			identities.add(i1);
-			System.out.println("testSync: Identity=" + "u"+i + "created");
-			DBFactory.getInstance().closeSession();
+			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("u-" + i + "-" + UUID.randomUUID().toString());
+			identities.add(id);
+			System.out.println("testSync: Identity=" + id.getName() + " created");
 		}
+		DBFactory.getInstance().closeSession();
 
-		
 		final SecurityGroup group2 = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
 		// make sure the lock has been written to the disk (tests for createOrFind see other methods)
 		DBFactory.getInstance().closeSession();
-		//PLock p1 = PessimisticLockManager.getInstance().findOrPersistPLock("befinsert");
-		//assertNotNull(p1);
-
 		
+		//prepare threads
+		int numOfThreads = MAX_COUNT + MAX_USERS_MORE;
+		final CountDownLatch finishCount = new CountDownLatch(numOfThreads);
+
 		// try to enrol all in the same group
-		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
+		for (int i = 0; i < numOfThreads; i++) {
 			final int j = i;
 			new Thread(new Runnable(){
 				public void run() {
@@ -525,14 +515,22 @@ public class PLockTest extends OlatTestCase {
 						PLock p2 = PessimisticLockManager.getInstance().findOrPersistPLock("befinsert");
 						assertNotNull(p2);
 						doNoLockingEnrol(id, group2);
+						DBFactory.getInstance().commit();
 						DBFactory.getInstance().closeSession();
 					} catch (Exception e) {
 						e.printStackTrace();
+					} finally {
+						finishCount.countDown();
 					}
 				}}).start();
-		}		
+		}
 		
-		sleep(20000);
+		try {
+			finishCount.await(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		// now count 
 		DBFactory.getInstance().closeSession();
 		int cnt2 = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(group2);

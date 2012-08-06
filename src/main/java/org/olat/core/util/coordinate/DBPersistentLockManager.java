@@ -24,7 +24,7 @@
 */
 package org.olat.core.util.coordinate;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -128,7 +128,7 @@ public class DBPersistentLockManager extends BasicManager implements PersistentL
 	public void deleteUserData(Identity identity, String newDeletedUserName) {		
 		String query = "from v in class org.olat.properties.Property where v.category = ? and v.longValue = ?";
 		DBFactory.getInstance().delete(query, new Object[] { CATEGORY_PERSISTENTLOCK, identity.getKey() },
-				new Type[] { Hibernate.STRING, Hibernate.LONG });
+				new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG });
 		logDebug("All db-persisting-locks deleted for identity=" + identity);
 	}
 

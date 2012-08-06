@@ -29,6 +29,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
@@ -37,9 +38,7 @@ import org.olat.core.commons.services.commentAndRating.UserCommentsManager;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.context.BGContextImpl;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -50,6 +49,7 @@ import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<br>
@@ -458,11 +458,10 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 	
 	private void migrateRepoEntrySecurityGroups(RepositoryEntry entry) {
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
 
-		List<BGContext> contexts = contextManager.findBGContextsForResource(entry.getOlatResource(), true, true);
-		for(BGContext context:contexts) {
-			List<BusinessGroup> groups = contextManager.getGroupsOfBGContext(context);
+		List<BGContextImpl> contexts = findBGContextsForResource(entry.getOlatResource(), true, true);
+		for(BGContextImpl context:contexts) {
+			List<BusinessGroup> groups = getGroupsOfBGContext(context);
 			for(BusinessGroup group:groups) {
 				//migrate tutors
 				if(group.getOwnerGroup() != null) {
@@ -502,13 +501,46 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 		}
 	}
 	
+	private List<BusinessGroup> getGroupsOfBGContext(BGContextImpl bgContext) {
+		String q = "select bg from org.olat.group.BusinessGroupImpl bg where bg.groupContextKey = :contextKey";
+		DBQuery query = DBFactory.getInstance().createQuery(q);
+		query.setLong("contextKey", bgContext.getKey());
+		@SuppressWarnings("unchecked")
+		List<BusinessGroup> groups = query.list();
+		return groups;
+	}
+	
 	public List<RepositoryEntry> queryEntries(int firstResult) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v inner join fetch v.olatResource as res order by v.key asc");
 		DBQuery dbquery = DBFactory.getInstance().createQuery(sb.toString());
 		dbquery.setFirstResult(firstResult);
 		dbquery.setMaxResults(REPO_ENTRIES_BATCH_SIZE);
-		return dbquery.list();
+		@SuppressWarnings("unchecked")
+		List<RepositoryEntry> entries = dbquery.list();
+		return entries;
+	}
+	
+	private List<BGContextImpl> findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts) {
+		DB db = DBFactory.getInstance();
+		StringBuilder q = new StringBuilder();
+		q.append(" select context from org.olat.group.context.BGContextImpl as context,");
+		q.append(" org.olat.group.context.BGContext2Resource as bgcr");
+		q.append(" where bgcr.resource = :resource");
+		q.append(" and bgcr.groupContext = context");
+
+		boolean checkDefault = defaultContexts != nonDefaultContexts;
+		if (checkDefault){
+			q.append(" and context.defaultContext = :isDefault");
+		}
+		DBQuery query = db.createQuery(q.toString());
+		query.setEntity("resource", resource);
+		if (checkDefault){
+			query.setBoolean("isDefault", defaultContexts ? true : false);
+		}
+		@SuppressWarnings("unchecked")
+		List<BGContextImpl> contexts = query.list();
+		return contexts;
 	}
 
 	

@@ -34,13 +34,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -73,6 +74,7 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 
 	private DB dbInstance;
 	private final AccessControlModule acModule;
+	private BusinessGroupService businessGroupService;
 	
 	public ACMethodManagerImpl(CoordinatorManager coordinatorManager, AccessControlModule acModule) {
 		this.acModule = acModule;
@@ -87,6 +89,14 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		this.dbInstance = dbInstance;
 	}
 	
+	/**
+	 * [used by Spring]
+	 * @param businessGroupService
+	 */
+	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
+		this.businessGroupService = businessGroupService;
+	}
+
 	@Override
 	public void event(Event event) {
 		if (event instanceof FrameworkStartedEvent && ((FrameworkStartedEvent) event).isEventOnThisNode()) {
@@ -242,13 +252,12 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, group.key, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
-			.append(BusinessGroupImpl.class.getName()).append(" group, ")
-			.append(OLATResourceImpl.class.getName()).append(" gResource")
+			.append(BusinessGroupImpl.class.getName()).append(" group ")
 			.append(" inner join access.offer offer")
-			.append(" inner join offer.resource oResource")
 			.append(" where access.valid=").append(valid)
 			.append(" and offer.valid=").append(valid)
-			.append(" and group.key=gResource.resId and gResource.resName='BusinessGroup' and oResource.key=gResource.key");
+			.append(" and group.resource.key=offer.resource.key");
+
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
@@ -271,7 +280,7 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 			rawResultsMap.get(groupKey).add(new PriceMethodBundle(price, method));	
 		}
 		
-		List<BusinessGroup> groups = BusinessGroupManagerImpl.getInstance().findBusinessGroups(rawResultsMap.keySet());
+		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(rawResultsMap.keySet());
 		List<BusinessGroupAccess> groupAccess = new ArrayList<BusinessGroupAccess>();
 		for(BusinessGroup group:groups) {
 			List<PriceMethodBundle> methods = rawResultsMap.get(group.getKey());
@@ -283,17 +292,22 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 	}
 	
 	@Override
-	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, boolean valid, Date atDate) {
-		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptyList();
-		
+	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate) {
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, resource, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
 			.append(" inner join access.offer offer")
 			.append(" inner join offer.resource oResource")
-			.append(" where access.valid=").append(valid)
-			.append(" and offer.valid=").append(valid)
-			.append(" and resource.key in (:resourceKeys) and oResource.key=resource.key");
+			.append(" where access.valid=").append(valid).append(" and offer.valid=").append(valid);
+		if(resourceKeys != null && !resourceKeys.isEmpty()) {
+			sb.append(" and resource.key in (:resourceKeys) and oResource.key=resource.key");
+		}
+		if(StringHelper.containsNonWhitespace(resourceType)) {
+			sb.append(" and oResource.resName =:resourceType and oResource.key=resource.key");
+			
+		}
+			
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
@@ -303,7 +317,13 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		if(atDate != null) {
 			query.setTimestamp("atDate", atDate);
 		}
-		query.setParameterList("resourceKeys", resourceKeys);
+		
+		if(resourceKeys != null && !resourceKeys.isEmpty()) {
+			query.setParameterList("resourceKeys", resourceKeys);
+		}
+		if(StringHelper.containsNonWhitespace(resourceType)) {
+			query.setParameter("resourceType", resourceType);
+		}
 		
 		List<Object[]> rawResults = query.list();
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<Long,OLATResourceAccess>();

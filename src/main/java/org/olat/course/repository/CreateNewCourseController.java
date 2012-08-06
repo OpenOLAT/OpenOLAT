@@ -38,7 +38,6 @@ import org.olat.core.util.Formatter;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
@@ -95,12 +94,7 @@ public class CreateNewCourseController extends BasicController implements IAddCo
 	 */
 	public boolean transactionFinishBeforeCreate() {
 		// Create course and persist course resourceable.
-		course = CourseFactory.createEmptyCourse(
-				newCourseResource, "New Course", "New Course", "");
-		// initialize course groupmanagement
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		cgm.createCourseGroupmanagement(course.getResourceableId().toString());
-
+		course = CourseFactory.createEmptyCourse(newCourseResource, "New Course", "New Course", "");
 		return true;
 	}
 

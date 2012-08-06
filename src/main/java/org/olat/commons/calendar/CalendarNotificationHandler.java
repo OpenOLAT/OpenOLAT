@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.CalendarController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -43,7 +44,7 @@ import org.olat.core.util.notifications.items.TitleItem;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.notifications.NotificationsUpgradeHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -86,7 +87,7 @@ public class CalendarNotificationHandler extends LogDelegator implements Notific
 					calType = CalendarManager.TYPE_COURSE;
 					title = translator.translate("cal.notifications.header.course", new String[]{displayName});
 				} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
-					BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(id, false);
+					BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(id);
 					calType = CalendarManager.TYPE_GROUP;
 					title = translator.translate("cal.notifications.header.group", new String[]{group.getName()});
 				}
@@ -165,7 +166,7 @@ public class CalendarNotificationHandler extends LogDelegator implements Notific
 	private void checkPublisher(Publisher p) {
 		try {
 			if(CalendarController.ACTION_CALENDAR_GROUP.equals(p.getSubidentifier())) {
-				BusinessGroup bg = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(p.getResId(), false);
+				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
 				if(bg == null) {
 					logInfo("deactivating publisher with key; " + p.getKey(), null);
 					NotificationsManager.getInstance().deactivate(p);
@@ -202,7 +203,7 @@ public class CalendarNotificationHandler extends LogDelegator implements Notific
 				String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(id);
 				title = translator.translate("cal.notifications.header.course", new String[]{displayName});
 			} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
-				BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(id, false);
+				BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(id);
 				title = translator.translate("cal.notifications.header.group", new String[]{group.getName()});
 			}
 			return title;

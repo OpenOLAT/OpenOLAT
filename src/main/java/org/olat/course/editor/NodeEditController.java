@@ -46,8 +46,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.group.ui.context.BGContextEvent;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -114,11 +112,11 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		
 		// description and metadata component		
 		descriptionVc = this.createVelocityContainer("nodeedit");
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		Long repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
 		
 		StringBuilder extLink = new StringBuilder();
 		extLink.append(Settings.getServerContextPathURI())
-			.append("/url/RepositoryEntry/").append(re.getKey())
+			.append("/url/RepositoryEntry/").append(repoKey)
 			.append("/CourseNode/").append(luNode.getIdent());
 		StringBuilder intLink = new StringBuilder();
 		intLink.append("javascript:parent.gotonode(").append(luNode.getIdent()).append(")");
@@ -194,9 +192,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 		
-		if (event.getCommand().equals(BGContextEvent.RESOURCE_ADDED)) {
-			System.out.println("nec:resource added");
-		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_EDITED, getClass());
 	}

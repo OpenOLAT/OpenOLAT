@@ -39,12 +39,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
+
+import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.SecurityGroupImpl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
@@ -55,8 +59,7 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.ui.BGConfigFlags;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -84,8 +87,8 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 	@Before public void setup() throws Exception {
 		System.out.println("ProjectBrokerManagerTest.setUp start...");
 		try {
-			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");
-			id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2");
+			id1 = JunitTestHelper.createAndPersistIdentityAsUser("project-id1-" + UUID.randomUUID().toString());
+			id2 = JunitTestHelper.createAndPersistIdentityAsUser("project-id2-" + UUID.randomUUID().toString());
 
 			if (resourceableId == null) {
 				RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
@@ -123,13 +126,15 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		DBFactory.getInstance().closeSession();
 		// get project list and check content
 		List<Project> projectListA = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(idProjectBrokerA);
-		List<Project> projectListB = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(idProjectBrokerB);
 		assertEquals("Wrong projectList.size for project-broker A",2, projectListA.size());
-		assertEquals("Wrong projectList.size for project-broker B",2, projectListB.size());
 		assertTrue("Wrong thema in project list A, title must start with 'thema A'", projectListA.get(0).getTitle().startsWith("thema A"));
 		assertTrue("Wrong thema in project list A, title must start with 'thema A'", projectListA.get(1).getTitle().startsWith("thema A"));
+		
+		List<Project> projectListB = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(idProjectBrokerB);
+		assertEquals("Wrong projectList.size for project-broker B",2, projectListB.size());
 		assertTrue("Wrong thema in project list B, title must start with 'thema B'", projectListB.get(0).getTitle().startsWith("thema B"));
 		assertTrue("Wrong thema in project list B, title must start with 'thema B'", projectListB.get(1).getTitle().startsWith("thema B"));
+		
 		if (projectListA.get(0).getTitle().equals("thema A1")) {
 			assertTrue("Wrong thema in project list A, title must be 'thema A2'", projectListA.get(1).getTitle().equals("thema A2"));
 		} else if (projectListA.get(0).getTitle().equals("thema A2")) {
@@ -234,7 +239,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		for (int i = 0; i < ITERATION; i++) {
 			createProject("thema D1_" + i, id1, idProjectBrokerD, resourceableId );			
 		}
-		List projectListD = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(idProjectBrokerD);
+		List<Project> projectListD = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(idProjectBrokerD);
 		ProjectListTableModel tableModel = new ProjectListTableModel(projectListD, id1, translator, moduleConfig, 0, 0, 0, false);
 		
 		// loop over table like rendering loop
@@ -242,6 +247,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		for (int row = START_PAGE_INDEX; row < START_PAGE_INDEX+PAGE_SIZE; row++) {
 			for (int col = 0; col < tableModel.getColumnCount(); col++) {
 				Object element = tableModel.getValueAt(row, col);
+				Assert.assertNotNull(element);
 			}
 		}
 		long endTime = System.currentTimeMillis();
@@ -257,26 +263,17 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		Project testProjectA = createProject("thema A", id1, idProjectBrokerD, resourceableId );
 		List<Identity> projectManagerList = new ArrayList<Identity>();
 		projectManagerList.add(id1);
-		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 		Project testProjectB = createProject("thema B", id2, idProjectBrokerD, resourceableId );
 		// check project leader in ProjectA
 		assertTrue("Must be project-leader of project A", ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectA));
 		assertFalse("Can not be project leader of project B",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectB));
 		assertTrue("Must be project-leader of project A", ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id2, testProjectB));
 
-		BusinessGroupManagerImpl.getInstance().removeOwnersAndFireEvent(id1, projectManagerList, testProjectA.getProjectGroup(),flags);
+		CoreSpringFactory.getImpl(BusinessGroupService.class).removeOwners(id1, projectManagerList, testProjectA.getProjectGroup());
 		// check no project leader anymore
 		assertFalse("Can not be project leader of project A",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectA));
 		assertFalse("Can not be project leader of project B",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectB));
 		// cleanup
-	}
-	
-	@Test public void testAcceptManuall() throws Exception {
-//		
-	}
-	
-	@Test public void testAcceptAutomaticly() throws Exception {
-	//	
 	}
 
 	@Test public void testExistsProject() throws Exception {

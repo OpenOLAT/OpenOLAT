@@ -30,8 +30,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
@@ -78,8 +78,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContextManagerImpl;
-import org.olat.group.ui.BGConfigFlags;
+import org.olat.group.BusinessGroupService;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
 import org.olat.modules.co.ContactFormController;
@@ -315,7 +314,7 @@ public class CollaborationTools implements Serializable {
 		//final List<Forum> forumHolder = new ArrayList<Forum>();
 		
 		Codepoint.codepoint(CollaborationTools.class, "pre_sync_enter");
-		
+	//TODO gsync
 		Forum forum = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Forum>(){
 			public Forum execute() {
 				
@@ -418,22 +417,19 @@ public class CollaborationTools implements Serializable {
 		CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
 		KalendarRenderWrapper calRenderWrapper = collaborationManager.getCalendar(businessGroup, ureq, isAdmin);
 	
-		if (businessGroup.getType().equals(BusinessGroup.TYPE_LEARNINGROUP)) {
-			// add linking
-			List<OLATResource> resources = BGContextManagerImpl.getInstance().findOLATResourcesForBGContext(businessGroup.getGroupContext());
-			for (Iterator<OLATResource> iter = resources.iterator(); iter.hasNext();) {
-				OLATResource resource = iter.next();
-				if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-					ICourse course = CourseFactory.loadCourse(resource);
-					CourseLinkProviderController clp = new CourseLinkProviderController(course, ureq, wControl);
-					calRenderWrapper.setLinkProvider(clp);
-					// for the time being only internal learning groups are supported, therefore we only get
-					// the first course reference.
-					break;
-				}
+		// add linking
+		List<OLATResource> resources = CoreSpringFactory.getImpl(BusinessGroupService.class).findResources(Collections.singleton(businessGroup), 0, -1);
+		for (OLATResource resource:resources) {
+			if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
+				ICourse course = CourseFactory.loadCourse(resource);
+				CourseLinkProviderController clp = new CourseLinkProviderController(course, ureq, wControl);
+				calRenderWrapper.setLinkProvider(clp);
+				// for the time being only internal learning groups are supported, therefore we only get
+				// the first course reference.
+				break;
 			}
 		}
-		
+
 		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 		calendars.add(calRenderWrapper);
 		
@@ -515,7 +511,7 @@ public class CollaborationTools implements Serializable {
 	public Controller createPortfolioController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group) {
 		final EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
 		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
-		
+	//TODO gsync
 		PortfolioStructureMap map = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<PortfolioStructureMap>(){
 			public PortfolioStructureMap execute() {
 				PortfolioStructureMap aMap;
@@ -654,7 +650,7 @@ public class CollaborationTools implements Serializable {
 		// handle Boolean Values via String Field in Property DB Table
 		final String toolValueStr = toolValue ? TRUE : FALSE;
 		final PropertyManager pm = PropertyManager.getInstance();
-		//
+		//TODO gsync
 		coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
 			public void execute() {				
 				//was: synchronized (CollaborationTools.class) {
@@ -694,8 +690,8 @@ public class CollaborationTools implements Serializable {
 	 * @param ureq
 	 * @return a collaboration tools settings controller
 	 */
-	public CollaborationToolsSettingsController createCollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl, BGConfigFlags flags) {
-		return new CollaborationToolsSettingsController(ureq, wControl, ores, flags);
+	public CollaborationToolsSettingsController createCollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl) {
+		return new CollaborationToolsSettingsController(ureq, wControl, ores);
 	}
 
 	/**

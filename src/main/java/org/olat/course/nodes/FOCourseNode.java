@@ -59,6 +59,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.fo.FOCourseNodeEditController;
 import org.olat.course.nodes.fo.FOCourseNodeRunController;
 import org.olat.course.nodes.fo.FOPeekviewController;
@@ -446,17 +447,33 @@ public class FOCourseNode extends GenericCourseNode {
 		// else node is up-to-date - nothing to do
 		config.remove(NodeEditController.CONFIG_INTEGRATION);
 	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		super.postImport(envMapper);
+		postImportCondition(preConditionReader, envMapper);
+		postImportCondition(preConditionPoster, envMapper);
+		postImportCondition(preConditionModerator, envMapper);
+	}
+
+	@Override
+	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		super.postExport(envMapper, backwardsCompatible);
+		postExportCondition(preConditionReader, envMapper, backwardsCompatible);
+		postExportCondition(preConditionPoster, envMapper, backwardsCompatible);
+		postExportCondition(preConditionModerator, envMapper, backwardsCompatible);
+	}
 
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpressions()
 	 */
-	public List getConditionExpressions() {
-		ArrayList retVal;
-		List parentsConditions = super.getConditionExpressions();
+	public List<ConditionExpression> getConditionExpressions() {
+		List<ConditionExpression> retVal;
+		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList(parentsConditions);
+			retVal = new ArrayList<ConditionExpression>(parentsConditions);
 		}else {
-			retVal = new ArrayList();
+			retVal = new ArrayList<ConditionExpression>();
 		}
 		//
 		String coS = getPreConditionModerator().getConditionExpression();

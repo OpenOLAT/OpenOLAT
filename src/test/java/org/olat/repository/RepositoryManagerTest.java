@@ -27,69 +27,62 @@
 package org.olat.repository;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+
+import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.commons.coordinate.cluster.ClusterSyncer;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.Syncer;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.testutils.codepoints.client.BreakpointStateException;
-import org.olat.testutils.codepoints.client.CodepointClient;
-import org.olat.testutils.codepoints.client.CodepointClientFactory;
-import org.olat.testutils.codepoints.client.CodepointRef;
-import org.olat.testutils.codepoints.client.CommunicationException;
-import org.olat.testutils.codepoints.client.TemporaryPausedThread;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
- * Initial Date:  Mar 26, 2004
- *
- * @author gnaegi
  * 
- * Comment:  
- * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class RepositoryManagerTest extends OlatTestCase {
+	
 	private static final OLog log = Tracing.createLoggerFor(RepositoryManagerTest.class);
 	private static String CODEPOINT_SERVER_ID = "RepositoryManagerTest";
-	
-	private static final String FG_TYPE = UUID.randomUUID().toString().replace("_", "");
-	private static final String CG_TYPE = UUID.randomUUID().toString().replace("-", "");
 
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before public void setup() {
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
+	@Before
+	public void setup() {
 		try {
 			// Setup for code-points
 			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
@@ -97,10 +90,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			log.error("Error while setting up activeMq or Codepointserver", e);
 		}
 	}
-	
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
+
 	@After public void tearDown() {
 		try {
 			JMSCodePointServerJunitHelper.stopServer();
@@ -138,519 +128,407 @@ public class RepositoryManagerTest extends OlatTestCase {
 		}
 	}
 	
-	/**
-	 */
-	@Test public void testQueryReferencableResourcesLimitType() {
-		DB db = DBFactory.getInstance();
-		RepositoryManager rm = RepositoryManager.getInstance();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+	@Test
+	public void lookupRepositoryEntryByOLATResourceable() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
 		
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id1");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsAuthor("id2");
+		RepositoryEntry loadedRe = repositoryManager.lookupRepositoryEntry(re.getOlatResource(), false);
+		
+		Assert.assertNotNull(loadedRe);
+		Assert.assertEquals(re, loadedRe);
+	}
+	
+	@Test
+	public void lookupRepositoryEntryBySoftkey() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry loadedRe = repositoryManager.lookupRepositoryEntryBySoftkey(re.getSoftkey(), false);
+		Assert.assertNotNull(loadedRe);
+		Assert.assertEquals(re, loadedRe);
+	}
+	
+	@Test
+	public void lookupRepositoryEntryKey() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		//check with a return value
+		Long repoKey1 = repositoryManager.lookupRepositoryEntryKey(re.getOlatResource(), false);
+		Assert.assertNotNull(repoKey1);
+		Assert.assertEquals(re.getKey(), repoKey1);
+		
+		//check with a return value
+		Long repoKey2 = repositoryManager.lookupRepositoryEntryKey(re.getOlatResource(), true);
+		Assert.assertNotNull(repoKey2);
+		Assert.assertEquals(re.getKey(), repoKey2);
+		
+		//check with a return value
+		OLATResourceable dummy = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 0l);
+		Long repoKey3 = repositoryManager.lookupRepositoryEntryKey(dummy, false);
+		Assert.assertNull(repoKey3);
+	}
+	
+	@Test(expected=AssertException.class)
+	public void lookupRepositoryEntryKeyStrictFailed() {
+		//check with a return value
+		OLATResourceable dummy = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 0l);
+		Long repoKey3 = repositoryManager.lookupRepositoryEntryKey(dummy, true);
+		Assert.assertNull(repoKey3);
+	}
+	
+	@Test
+	public void lookupDisplayNameByOLATResourceableId() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(re.getOlatResource().getResourceableId());
+		Assert.assertNotNull(displayName);
+		Assert.assertEquals(re.getDisplayname(), displayName);
+	}
+	
+	@Test
+	public void queryByOwnerLimitAccess() {
+		//create a repository entry with an owner
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		securityManager.addIdentityToSecurityGroup(id, re.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntry> entries = repositoryManager.queryByOwnerLimitAccess(id, RepositoryEntry.ACC_OWNERS, Boolean.TRUE);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.contains(re));
+	}
+	
+	@Test
+	public void getLearningResourcesAsStudent() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-la-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		securityManager.addIdentityToSecurityGroup(id, re.getParticipantGroup());
+		dbInstance.commitAndCloseSession();
 
-		// generate 5000 repo entries
-		int numbRes = 5000;
-		long startCreate = System.currentTimeMillis();
-		for (int i = 1; i < numbRes; i++) {
-			// create course and persist as OLATResourceImpl
-			RepositoryEntry re = createRepositoryEntryFG(i);				
-			if ((i % 2 > 0)) {
-				re.setCanReference(true);
-			} else {
-				re.setCanReference(false);
-			}
-			// create security group
-			SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
-			// member of this group may modify member's membership
-			securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_ACCESS, ownerGroup);
-			// members of this group are always authors also
-			securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-			if ((i % 2 > 0)) {
-				securityManager.addIdentityToSecurityGroup(id1, ownerGroup);
-			} else {
-				securityManager.addIdentityToSecurityGroup(id2, ownerGroup);				
-			}
-			re.setOwnerGroup(ownerGroup);
-			// save the repository entry
-			rm.saveRepositoryEntry(re);
-			// Create course admin policy for owner group of repository entry
-			// -> All owners of repository entries are course admins
-			securityManager.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());	
-			
-			// flush database and hibernate session cache after 10 records to improve performance
-			// without this optimization, the first entries will be fast but then the adding new 
-			// entries will slow down due to the fact that hibernate needs to adjust the size of
-			// the session cache permanently. flushing or transactions won't help since the problem
-			// is in the session cache. 
-			if (i%10 == 0) {
-				db.closeSession();
-				db = DBFactory.getInstance();
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		Assert.assertTrue(entries.contains(re));
+		
+		Set<Long> duplicates = new HashSet<Long>();
+		for(RepositoryEntry entry:entries) {
+			Assert.assertTrue(duplicates.add(entry.getKey()));
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
 			}
 		}
-		long endCreate = System.currentTimeMillis();
-		log.debug("created " + numbRes + " repo entries in " + (endCreate - startCreate) + "ms");
-		
-		List<String> typelist = Collections.singletonList(FG_TYPE);
-		// finally the search query
-		long startSearchReferencable = System.currentTimeMillis();
-		List results = rm.queryReferencableResourcesLimitType(id1, new Roles(false, false, false, true, false, false, false), typelist, null, null, null);
-		long endSearchReferencable = System.currentTimeMillis();
-		log.debug("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
+	}
+	
+	@Test
+	public void getLearningResourcesAsStudentWithGroups() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-lb-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studg", "tg", null, null, false, false, re.getOlatResource());
+		securityManager.addIdentityToSecurityGroup(id, group.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
 
-		// only half of the items should be found
-		assertEquals((int) (numbRes / 2), results.size());
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		Assert.assertTrue(entries.contains(re));
 		
-		// inserting must take longer than searching, otherwhise most certainly we have a problem somewhere in the query
-		assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
+		Set<Long> duplicates = new HashSet<Long>();
+		for(RepositoryEntry entry:entries) {
+			Assert.assertTrue(duplicates.add(entry.getKey()));
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+	}
+	
+	@Test
+	public void getLearningResourcesAsTeacher() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-teac-la-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		securityManager.addIdentityToSecurityGroup(id, re.getTutorGroup());
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(id, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		Assert.assertTrue(entries.contains(re));
 		
+		Set<Long> duplicates = new HashSet<Long>();
+		for(RepositoryEntry entry:entries) {
+			Assert.assertTrue(duplicates.add(entry.getKey()));
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+	}
+	
+	@Test
+	public void getLearningResourcesAsTeacherWithGroups() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-teac-lb-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re.getOlatResource());
+		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(id, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		Assert.assertTrue(entries.contains(re));
+		
+		Set<Long> duplicates = new HashSet<Long>();
+		for(RepositoryEntry entry:entries) {
+			Assert.assertTrue(duplicates.add(entry.getKey()));
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+	}
+	
+	@Test
+	public void queryByTypeLimitAccess() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-1-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-1", "tg", null, null, false, false, re.getOlatResource());
+		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<RepositoryEntry> entries = repositoryManager.queryByTypeLimitAccess(id,
+				re.getOlatResource().getResourceableTypeName(), new Roles(false, false, false, false, false, false, false));
+		
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.isEmpty());
+		Assert.assertTrue(entries.contains(re));
+		for(RepositoryEntry entry:entries) {
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+	}
+	
+	@Test
+	public void isMember() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, re.getOlatResource());
+		securityManager.addIdentityToSecurityGroup(id1, group.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+
+		//id1 is member
+		boolean member1 = repositoryManager.isMember(id1, re);
+		Assert.assertTrue(member1);
+		//id2 is not member
+		boolean member2 = repositoryManager.isMember(id2, re);
+		Assert.assertFalse(member2);
+	}
+	
+	@Test
+	public void isOwnerOfRepositoryEntry() {
+		//create a repository entry with an owner and a participant
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
+		Identity part = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		securityManager.addIdentityToSecurityGroup(owner, re.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(part, re.getParticipantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean isOwnerOwner = repositoryManager.isOwnerOfRepositoryEntry(owner, re);
+		Assert.assertTrue(isOwnerOwner);
+		boolean isPartOwner = repositoryManager.isOwnerOfRepositoryEntry(part, re);
+		Assert.assertFalse(isPartOwner);
+	}
+	
+	@Test
+	public void isIdentityInTutorSecurityGroup() {
+		//create a repository entry with an owner and a participant
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("re-tutor-is-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		securityManager.addIdentityToSecurityGroup(identity, re1.getTutorGroup());
+		securityManager.addIdentityToSecurityGroup(identity, re2.getParticipantGroup());
+		securityManager.addIdentityToSecurityGroup(identity, re3.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean isTutor1 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re1.getOlatResource());
+		Assert.assertTrue(isTutor1);
+		boolean isTutor2 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re2.getOlatResource());
+		Assert.assertFalse(isTutor2);
+		boolean isTutor3 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re3.getOlatResource());
+		Assert.assertFalse(isTutor3);
+	}
+	
+	@Test
+	public void isIdentityInParticipantSecurityGroup() {
+		//create a repository entry with an owner and a participant
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("re-tutor-is-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		securityManager.addIdentityToSecurityGroup(identity, re1.getTutorGroup());
+		securityManager.addIdentityToSecurityGroup(identity, re2.getParticipantGroup());
+		securityManager.addIdentityToSecurityGroup(identity, re3.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean isParticipant1 = repositoryManager.isIdentityInParticipantSecurityGroup(identity, re1.getOlatResource());
+		Assert.assertFalse(isParticipant1);
+		boolean isParticipant2 = repositoryManager.isIdentityInParticipantSecurityGroup(identity, re2.getOlatResource());
+		Assert.assertTrue(isParticipant2);
+		boolean isParticipant3 = repositoryManager.isIdentityInParticipantSecurityGroup(identity, re3.getOlatResource());
+		Assert.assertFalse(isParticipant3);
+	}
+	
+
+	@Test
+	public void testCountByTypeLimitAccess() {
+		String TYPE = UUID.randomUUID().toString().replace("-", "");
+		
+		int count = repositoryManager.countByTypeLimitAccess("unkown", RepositoryEntry.ACC_OWNERS_AUTHORS);
+    assertEquals("Unkown type must return 0 elements", 0,count);
+    int countValueBefore = repositoryManager.countByTypeLimitAccess(TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
+    // add 1 entry
+    RepositoryEntry re = createRepositoryEntry(TYPE, 999999l);
+		// create security group
+		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
+		re.setOwnerGroup(ownerGroup);
+    repositoryManager.saveRepositoryEntry(re);
+    count = repositoryManager.countByTypeLimitAccess(TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
+    // check count must be one more element
+    assertEquals("Add one course repository-entry, but countByTypeLimitAccess does NOT return one more element", countValueBefore + 1,count);
+	}
+	
+	@Test
+	public void genericANDQueryWithRolesRestrictionMembersOnly() {
+		//create 2 identities (repo owner and tutor)
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-2-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-3-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		securityManager.addIdentityToSecurityGroup(id1, re.getOwnerGroup());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re.getOlatResource());
+		securityManager.addIdentityToSecurityGroup(id2, group.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+		
+		
+		//check for id 1 (owner of the repository entry)
+		SearchRepositoryEntryParameters params1 = new SearchRepositoryEntryParameters();
+		params1.setIdentity(id1);
+		params1.setRoles(new Roles(false, false, false, false, false, false, false));
+		params1.setOnlyExplicitMember(true);
+		List<RepositoryEntry> entries1 = repositoryManager.genericANDQueryWithRolesRestriction(params1, 0, -1, true);
+		Assert.assertNotNull(entries1);
+		Assert.assertFalse(entries1.isEmpty());
+		Assert.assertTrue(entries1.contains(re));
+		for(RepositoryEntry entry:entries1) {
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+		
+		//check for id2 (tutor)
+		SearchRepositoryEntryParameters params2 = new SearchRepositoryEntryParameters();
+		params2.setIdentity(id2);
+		params2.setRoles(new Roles(false, false, false, false, false, false, false));
+		params2.setOnlyExplicitMember(true);
+		List<RepositoryEntry> entries2 = repositoryManager.genericANDQueryWithRolesRestriction(params2, 0, -1, true);
+		Assert.assertNotNull(entries2);
+		Assert.assertFalse(entries2.isEmpty());
+		Assert.assertTrue(entries2.contains(re));
+		for(RepositoryEntry entry:entries2) {
+			if(!entry.equals(re)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+		
+		//check for id3 (negative test)
+		SearchRepositoryEntryParameters params3 = new SearchRepositoryEntryParameters();
+		params3.setIdentity(id3);
+		params3.setRoles(new Roles(false, false, false, false, false, false, false));
+		params3.setOnlyExplicitMember(true);
+		List<RepositoryEntry> entries3 = repositoryManager.genericANDQueryWithRolesRestriction(params3, 0, -1, true);
+		Assert.assertNotNull(entries3);
+		Assert.assertFalse(entries3.contains(re));
+		for(RepositoryEntry entry:entries3) {
+			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+		}
+	}
+	
+	@Test
+	public void genericANDQueryWithRolesWithStandardUser() {
+		//create 2 identities (repo owner and tutor)
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-2-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		
+		securityManager.addIdentityToSecurityGroup(id1, re2.getParticipantGroup());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re1.getOlatResource());
+		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		
+		//check for guest (negative test)
+		SearchRepositoryEntryParameters params1 = new SearchRepositoryEntryParameters();
+		params1.setRoles(new Roles(false, false, false, false, true, false, false));
+		List<RepositoryEntry> entries1 = repositoryManager.genericANDQueryWithRolesRestriction(params1, 0, -1, true);
+		Assert.assertNotNull(entries1);
+		Assert.assertFalse(entries1.contains(re1));
+		Assert.assertFalse(entries1.contains(re2));
+		for(RepositoryEntry entry:entries1) {
+			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS);
+		}
+		
+		//check for identity 1 (participant re2 + re1 accessible to all users)
+		SearchRepositoryEntryParameters params2 = new SearchRepositoryEntryParameters();
+		params2.setIdentity(id1);
+		params2.setRoles(new Roles(false, false, false, false, false, false, false));
+		List<RepositoryEntry> entries2 = repositoryManager.genericANDQueryWithRolesRestriction(params2, 0, -1, true);
+		Assert.assertNotNull(entries2);
+		Assert.assertFalse(entries2.isEmpty());
+		Assert.assertTrue(entries2.contains(re1));
+		Assert.assertTrue(entries2.contains(re2));
+		for(RepositoryEntry entry:entries2) {
+			if(!entry.equals(re2)) {
+				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			}
+		}
+		
+		//check for identity 1 (re1 accessible to all users)
+		SearchRepositoryEntryParameters params3 = new SearchRepositoryEntryParameters();
+		params3.setIdentity(id2);
+		params3.setRoles(new Roles(false, false, false, false, false, false, false));
+		List<RepositoryEntry> entries3 = repositoryManager.genericANDQueryWithRolesRestriction(params3, 0, -1, true);
+		Assert.assertNotNull(entries3);
+		Assert.assertFalse(entries3.isEmpty());
+		Assert.assertTrue(entries3.contains(re1));
+		Assert.assertFalse(entries3.contains(re2));
+		for(RepositoryEntry entry:entries3) {
+			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+		}
 	}
 
-	private RepositoryEntry createRepositoryEntryFG(final int i) {
-		DB db = DBFactory.getInstance();
-		
-		OLATResourceable resourceable = new OLATResourceable() {
-			public String getResourceableTypeName() {	return FG_TYPE;}
-			public Long getResourceableId() {return new Long(i); }
-		};
-		OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(resourceable);
-		db.saveObject(r);
+	private RepositoryEntry createRepositoryEntry(final String type, long i) {
+		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(type, new Long(i));
+		OLATResource r =  resourceManager.createOLATResourceInstance(resourceable);
+		dbInstance.saveObject(r);
 		
 		// now make a repository entry for this course
-		final RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("Florian Gnägi", "Lernen mit OLAT " + i, "yo man description bla bla + i");
+		final RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("Florian Gnägi", "Lernen mit OLAT " + i, "yo man description bla bla + i");
 		re.setDisplayname("JunitTest_RepositoryEntry_" + i);		
 		re.setOlatResource(r);
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
 		return re;
 	}
-	
-	@Test public void testCountByTypeLimitAccess() {
-		RepositoryManager rm = RepositoryManager.getInstance();
-		int count = rm.countByTypeLimitAccess("unkown", RepositoryEntry.ACC_OWNERS_AUTHORS);
-    assertEquals("Unkown type must return 0 elements", 0,count);
-    int countValueBefore = rm.countByTypeLimitAccess(FG_TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
-    // add 1 entry
-    RepositoryEntry re = createRepositoryEntryFG(999999);
-		// create security group
-		SecurityGroup ownerGroup = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
-		re.setOwnerGroup(ownerGroup);
-    rm.saveRepositoryEntry(re);
-    count = rm.countByTypeLimitAccess(FG_TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
-    // check count must be one more element
-    assertEquals("Add one course repository-entry, but countByTypeLimitAccess does NOT return one more element", countValueBefore + 1,count);
-	}
-	
-	/**
-	 * 
-	 */
-	@Test public void testIncrementLaunchCounter() {
-		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
-		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
-		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
-		final Long keyRepo = repositoryEntry.getKey();
-		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
-		assertNotNull(resourceable);
-		DBFactory.getInstance().closeSession();
-		assertEquals("Launch counter was not 0", 0, repositoryEntry.getLaunchCounter() );
-		final int mainLoop = 10;
-		final int loop = 50;  // 10 * 50 = 500
-		for (int m = 0; m < mainLoop; m++) {
-			long startTime = System.currentTimeMillis();
-			for (int i = 0; i < loop; i++) {
-				// 1. load RepositoryEntry
-				RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-				RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntryT1);
-				DBFactory.getInstance().closeSession();
-			}
-			long endTime = System.currentTimeMillis();
-			System.out.println("testIncrementLaunchCounter time=" + (endTime - startTime) + " for " + loop + " incrementLaunchCounter calls");
-			sleep(2000);
-		}
-		sleep(20000);
-		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertEquals("Wrong value of incrementLaunch counter",mainLoop * loop,repositoryEntry2.getLaunchCounter());
-		System.out.println("testIncrementLaunchCounter finished");
-	}
-	
-	/**
-	 * 
-	 */
-	@Test public void testIncrementDownloadCounter() {
-		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
-		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
-		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
-		final Long keyRepo = repositoryEntry.getKey();
-		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
-		assertNotNull(resourceable);
-		DBFactory.getInstance().closeSession();
-		assertEquals("Download counter was not 0", 0, repositoryEntry.getDownloadCounter() );
-		final int mainLoop = 10;
-		final int loop = 50;  // 10 * 50 = 500
-		for (int m = 0; m < mainLoop; m++) {
-			long startTime = System.currentTimeMillis();
-			for (int i = 0; i < loop; i++) {
-				// 1. load RepositoryEntry
-				RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-				RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT1);
-				DBFactory.getInstance().closeSession();
-			}
-			long endTime = System.currentTimeMillis();
-			System.out.println("testIncrementDownloadCounter time=" + (endTime - startTime) + " for " + loop + " incrementDownloadCounter calls");
-			sleep(2000);
-		}
-		sleep(20000);
-		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertEquals("Wrong value of incrementLaunch counter",mainLoop * loop,repositoryEntry2.getDownloadCounter());
-		System.out.println("testIncrementDownloadCounter finished");
-	}
-
-
-	/**
-	 * Test synchronization between same RepositoryEntry and setLastUsageNowFor, incrementLaunchCounter and incrementDownloadCounter.
-	 * This test starts 4 threads : 
-	 *   2 to call setLastUsageNowFor, 
-	 *   1 to call incrementLaunchCounter 
-	 *   1 to call incrementDownloadCounter 
-	 * Breakpoint is set for 'setLastUsageNowFor', all other calls must wait.
-	 */
-	@Test public void testSetLastUsageNowFor() {
-		Date lastSetLastUsageDate = null;
-		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
-		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
-		final int loop = 500;
-		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
-		final Long keyRepo = repositoryEntry.getKey();
-		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
-		assertNotNull(resourceable);
-		DBFactory.getInstance().closeSession();
-		long startTime = System.currentTimeMillis();
-		for (int i = 0; i < loop; i++) {
-			// 1. load RepositoryEntry
-			RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-			RepositoryManager.setLastUsageNowFor(repositoryEntryT1);
-			lastSetLastUsageDate = Calendar.getInstance().getTime();
-			DBFactory.getInstance().closeSession();
-		}
-		long endTime = System.currentTimeMillis();
-		sleep(20000);
-		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertTrue("Wrong date-value of lastUsage, could not be before ",repositoryEntry2.getLastUsage().after(lastSetLastUsageDate) );
-		System.out.println("testSetLastUsageNowFor time=" + (endTime - startTime) + " for " + loop + " testSetLastUsageNowFor calls");
-		System.out.println("testSetLastUsageNowFor finished");
-	}
-	
-	@Test public void testConcurrentIncrementLaunchCounter() {
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
-
-		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
-		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
-		final int loop = 100;
-		final int numberOfThreads = 3;
-		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
-		final Long keyRepo = repositoryEntry.getKey();
-		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
-		assertNotNull(resourceable);
-		DBFactory.getInstance().closeSession();
-		assertEquals("Launch counter was not 0", 0, repositoryEntry.getLaunchCounter() );
-		long startTime = System.currentTimeMillis();
-		// start thread 1 : incrementLaunchCounter / setAccess
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					for (int i = 1; i <= loop; i++) {
-						// 1. load RepositoryEntry
-						RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-						RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntryT1);
-						if (i % 20 == 0 ) {
-							int ACCESS_VALUE = 4;
-							System.out.println("RepositoryManagerTest: call setAccess i=" + i);
-							//fxdiff VCRP-1,2: access control of resources
-							RepositoryManager.getInstance().setAccess(repositoryEntryT1, ACCESS_VALUE, false);
-							DBFactory.getInstance().closeSession();
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong access value",ACCESS_VALUE,repositoryEntryT1Reloaded.getAccess());
-						} else if (i % 10 == 0 ) {
-							int ACCESS_VALUE = 1;
-							System.out.println("RepositoryManagerTest: call setAccess i=" + i);
-							//fxdiff VCRP-1,2: access control of resources
-							RepositoryManager.getInstance().setAccess(repositoryEntryT1, ACCESS_VALUE, false);
-							DBFactory.getInstance().closeSession();
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong access value",ACCESS_VALUE,repositoryEntryT1Reloaded.getAccess());
-						}
-						DBFactory.getInstance().closeSession();
-					}
-					System.out.println("Thread-1: finished");
-					statusList.add(Boolean.TRUE);
-				} catch (Exception e) {
-					exceptionHolder.add(e);
-				} finally {
-					try {
-						DBFactory.getInstance().closeSession();
-					} catch (Exception e) {
-						// ignore
-					}
-				}	
-			}}).start();
-		// start thread 2 : incrementLaunchCounter / setDescriptionAndName
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					for (int i = 1; i <= loop; i++) {
-						// 1. load RepositoryEntry
-						RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-						RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntryT1);
-						if (i % 25 == 0 ) {
-							String displayName = "DisplayName" + i;
-							String description = "Description" + i;
-							System.out.println("RepositoryManagerTest: call setDescriptionAndName");
-							RepositoryManager.getInstance().setDescriptionAndName(repositoryEntryT1, displayName,description);
-							DBFactory.getInstance().closeSession();
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong displayName value",displayName,repositoryEntryT1Reloaded.getDisplayname());
-							assertEquals("Wrong description value",description,repositoryEntryT1Reloaded.getDescription());
-						}
-						DBFactory.getInstance().closeSession();
-					}
-					System.out.println("Thread-1: finished");
-					statusList.add(Boolean.TRUE);
-				} catch (Exception e) {
-					exceptionHolder.add(e);
-				} finally {
-					try {
-						DBFactory.getInstance().closeSession();
-					} catch (Exception e) {
-						// ignore
-					}
-				}	
-			}}).start();
-		// start thread 3
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					for (int i = 1; i <= loop; i++) {
-						// 1. load RepositoryEntry
-						RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-						RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntryT1);
-						if (i % 30 == 0 ) {
-							System.out.println("RepositoryManagerTest: call setProperties i=" + i);
-							RepositoryManager.getInstance().setProperties(repositoryEntryT1, true, false, true, false);	
-							DBFactory.getInstance().closeSession();
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong canCopy value",true,repositoryEntryT1Reloaded.getCanCopy());
-							assertEquals("Wrong getCanReference value",false,repositoryEntryT1Reloaded.getCanReference());
-							assertEquals("Wrong getCanLaunch value",true,repositoryEntryT1Reloaded.getCanLaunch());
-							assertEquals("Wrong getCanDownload value",false,repositoryEntryT1Reloaded.getCanDownload());
-						} else 	if (i % 15 == 0 ) {
-							System.out.println("RepositoryManagerTest: call setProperties i=" + i);
-							RepositoryManager.getInstance().setProperties(repositoryEntryT1, false, true, false, true);	
-							DBFactory.getInstance().closeSession();
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong canCopy value",false,repositoryEntryT1Reloaded.getCanCopy());
-							assertEquals("Wrong getCanReference value",true,repositoryEntryT1Reloaded.getCanReference());
-							assertEquals("Wrong getCanLaunch value",false,repositoryEntryT1Reloaded.getCanLaunch() );
-							assertEquals("Wrong getCanDownload value",true,repositoryEntryT1Reloaded.getCanDownload());
-						}
-						DBFactory.getInstance().closeSession();
-					}
-					System.out.println("Thread-1: finished");
-					statusList.add(Boolean.TRUE);
-				} catch (Exception e) {
-					exceptionHolder.add(e);
-				} finally {
-					try {
-						DBFactory.getInstance().closeSession();
-					} catch (Exception e) {
-						// ignore
-					}
-				}	
-			}}).start();
-		
-		long endTime = System.currentTimeMillis();
-		sleep(20000);
-		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertEquals("Worng value of incrementLaunch counter",loop * numberOfThreads,repositoryEntry2.getLaunchCounter());
-		System.out.println("testConcurrentIncrementLaunchCounter time=" + (endTime - startTime) + " for " + loop + " incrementLaunchCounter calls");
-		System.out.println("testConcurrentIncrementLaunchCounter finished");
-	}
-
-	/**
-	 * Compare async increment-call with sync 'setDscription' call.
-	 */
-	@Test public void testIncrementLaunchCounterSetDescription() {
-		System.out.println("testIncrementLaunchCounterSetDescription: START...");
-		RepositoryEntry repositoryEntry = createRepositoryCG("testIncrementLaunchCounterSetDescription");
-		DBFactory.getInstance().closeSession();
-		final Long keyRepo = repositoryEntry.getKey();
-		RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		System.out.println("RepositoryManagerTest: call incrementLaunchCounter");
-		long t1 = System.nanoTime();
-		RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntryT1);
-		long t2 = System.nanoTime();
-		System.out.println("RepositoryManagerTest: call incrementLaunchCounter DONE");
-		String displayName = "DisplayName_testIncrementLaunchCounterSetDescription";
-		String description = "Description_testIncrementLaunchCounterSetDescription";
-		System.out.println("RepositoryManagerTest: call setDescriptionAndName");
-		long t3 = System.nanoTime();
-		RepositoryManager.getInstance().setDescriptionAndName(repositoryEntryT1, displayName,description);
-		long t4 = System.nanoTime();
-		System.out.println("RepositoryManagerTest: call setDescriptionAndName DONE");
-		System.out.println("RepositoryManagerTest: increments take=" + (t2 - t1) + " setDescription take=" + (t4 -t3) );
-		DBFactory.getInstance().closeSession();
-		RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertEquals("Wrong displayName value",displayName,repositoryEntryT1Reloaded.getDisplayname());
-		assertEquals("Wrong description value",description,repositoryEntryT1Reloaded.getDescription());
-		System.out.println("testIncrementLaunchCounterSetDescription: FINISHED");
-	}
-	
-	/**
-	 * Modify a repository-entry from three thread to check if the exception does not pop up.  
-	 * Thread 1 : call incrementDownloadCounter after 100ms
-	 * Thread 2 : call incrementDownloadCounter after 300ms
-	 * Thread 3 : update access-value on repository-entry directly after 200ms
-	 * Codepoint-breakpoint at IncrementDownloadCounterBackgroundTask in executeTask before update
-	 */
-	@Ignore //the test works random
-	@Test public void testConcurrentIncrementLaunchCounterWithCodePoints() {
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-
-		RepositoryEntry repositoryEntry = createRepositoryCG("IncCodePoint");		
-		final Long keyRepo = repositoryEntry.getKey();
-		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
-		assertNotNull(resourceable);
-		final int access = 4;
-		DBFactory.getInstance().closeSession();
-		assertEquals("Launch counter was not 0", 0, repositoryEntry.getLaunchCounter() );
-
-		// enable breakpoint
-		CodepointClient codepointClient = null;
-		CodepointRef codepointRef = null;
-		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://localhost?broker.persistent=false", CODEPOINT_SERVER_ID);
-			codepointRef = codepointClient.getCodepoint("org.olat.repository.async.IncrementDownloadCounterBackgroundTask.executeTask-before-update");
-			codepointRef.enableBreakpoint();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Could not initialzed CodepointClient");
-		}
-		
-
-		final CountDownLatch doneSignal = new CountDownLatch(3);
-		
-		// thread 1
-		Thread thread1 = new Thread() {
-			public void run() {
-				try {
-					Thread.sleep(100);
-					RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-					RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT1);
-					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread1 incremented download-counter");
-				} catch (Exception ex) {
-					exceptionHolder.add(ex);// no exception should happen
-				} finally {
-					doneSignal.countDown();
-					DBFactory.getInstance().commitAndCloseSession();
-				}
-			}};
-		
-		// thread 2
-		Thread thread2 = new Thread() {
-			public void run() {
-				try {
-					Thread.sleep(300);
-					RepositoryEntry repositoryEntryT2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-					RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT2);
-					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread2 incremented download-counter");
-				} catch (Exception ex) {
-					exceptionHolder.add(ex);// no exception should happen
-				} finally {
-					doneSignal.countDown();
-					DBFactory.getInstance().commitAndCloseSession();
-				}
-			}};
-
-		// thread 3
-		Thread thread3 = new Thread() {
-			public void run() {
-				try {
-					Thread.sleep(200);
-					RepositoryEntry repositoryEntryT3 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-					// change repository directly and not via RepositoryManager.setAccess(...) for testing
-					repositoryEntryT3.setAccess(access);
-					RepositoryManager.getInstance().updateRepositoryEntry(repositoryEntryT3);
-					DBFactory.getInstance().closeSession();
-					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread3 setAccess DONE");
-				} catch (Exception ex) {
-					exceptionHolder.add(ex);// no exception should happen
-				} finally {
-					doneSignal.countDown();
-					DBFactory.getInstance().commitAndCloseSession();
-				}
-			}};
-			
-		thread1.start();
-		thread2.start();
-		thread3.start();
-
-		try {
-			boolean interrupt = doneSignal.await(10, TimeUnit.SECONDS);
-			assertTrue("Test takes too long (more than 10s)", interrupt);
-		} catch (InterruptedException e) {
-			fail("" + e.getMessage());
-		}
-
-		try {
-			// to see all registered code-points: comment-in next 2 lines
-			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
-			// System.out.println("codepointList=" + codepointList);
-			System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints start waiting for breakpoint reached");
-			TemporaryPausedThread[] threads = codepointRef.waitForBreakpointReached(1000);
-			assertTrue("Did not reach breakpoint", threads.length > 0);
-			System.out.println("threads[0].getCodepointRef()=" + threads[0].getCodepointRef());
-			codepointRef.disableBreakpoint(true);
-			System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints breakpoint reached => continue");
-		} catch (BreakpointStateException e) {
-			e.printStackTrace();
-			fail("Codepoints: BreakpointStateException=" + e.getMessage());
-		} catch (CommunicationException e) {
-			e.printStackTrace();
-			fail("Codepoints: CommunicationException=" + e.getMessage());
-		}
-		sleep(100);
-		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertEquals("Wrong value of incrementLaunch counter",2,repositoryEntry2.getDownloadCounter());
-		assertEquals("Wrong access value",access,repositoryEntry2.getAccess());
-
-		codepointClient.close();
-		System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints finish successful");		
-	}
-
-	private RepositoryEntry createRepositoryCG(String name) {
-		OLATResourceManager rm = OLATResourceManager.getInstance();
-		// create course and persist as OLATResourceImpl
-		OLATResource r =  rm.createOLATResourceInstance(CG_TYPE);
-		DBFactory.getInstance().saveObject(r);
-
-		// now make a repository entry for this course
-		RepositoryEntry d = new RepositoryEntry();
-		d.setOlatResource(r);
-		d.setResourcename(name);
-		d.setInitialAuthor("Christian Guretzki");
-		d.setDisplayname("JunitTest_RepositoryEntry");
-		DBFactory.getInstance().saveObject(d);
-		return d;
-	}
-
-	/**
-	 * 
-	 * @param milis the duration in miliseconds to sleep
-	 */
-	private void sleep(int milis) {
-		try {
-			Thread.sleep(milis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
 }

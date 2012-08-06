@@ -30,9 +30,10 @@ import java.util.Date;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.group.context.BGContext;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.resource.OLATResource;
 
 /**
  * Description: <br>
@@ -44,16 +45,21 @@ import org.olat.core.logging.Tracing;
  */
 
 public class BusinessGroupImpl extends PersistentObject implements BusinessGroup {
+
+	private static final long serialVersionUID = -6977108696910447781L;
+	private static final OLog log = Tracing.createLoggerFor(BusinessGroupImpl.class);
+	
 	private String description;
 	private String name;
 	private String type;
 	private Integer minParticipants;
 	private Integer maxParticipants;
+	private OLATResource resource;
 	private SecurityGroup ownerGroup;
 	private SecurityGroup partipiciantGroup;
 	private SecurityGroup waitingGroup;
 	private Date lastUsage;
-	private BGContext groupContext;
+	private Long groupContextKey;
 	private Boolean waitingListEnabled;
 	private Boolean autoCloseRanksEnabled;
 	private Date lastModified;
@@ -75,17 +81,15 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @param description
 	 * @param ownerGroup
 	 * @param partipiciantGroup
-	 * @param groupContext
 	 */
-	public BusinessGroupImpl(String type, String groupName, String description, SecurityGroup ownerGroup, SecurityGroup partipiciantGroup,
-			SecurityGroup waitingGroup, BGContext groupContext) {
+	public BusinessGroupImpl(String groupName, String description, SecurityGroup ownerGroup, SecurityGroup partipiciantGroup,
+			SecurityGroup waitingGroup) {
 		this.setName(groupName);
 		this.setDescription(description);
 		this.setOwnerGroup(ownerGroup);
 		this.setPartipiciantGroup(partipiciantGroup);
-		this.setGroupContext(groupContext);
 		this.setWaitingGroup(waitingGroup);
-		this.setType(type);
+		this.setType("LearningGroup");
 		// per default no waiting-list
 		Boolean disabled = new Boolean(false);
 		this.setWaitingListEnabled(disabled);
@@ -97,14 +101,14 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	/**
 	 * @param partipiciantGroupP
 	 */
-	private void setPartipiciantGroup(SecurityGroup partipiciantGroupP) {
+	public void setPartipiciantGroup(SecurityGroup partipiciantGroupP) {
 		this.partipiciantGroup = partipiciantGroupP;
 	}
 
 	/**
 	 * @param ownerGroupP
 	 */
-	private void setOwnerGroup(SecurityGroup ownerGroupP) {
+	public void setOwnerGroup(SecurityGroup ownerGroupP) {
 		this.ownerGroup = ownerGroupP;
 	}
 
@@ -135,6 +139,14 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 */
 	public String getName() {
 		return this.name;
+	}
+
+	public OLATResource getResource() {
+		return resource;
+	}
+
+	public void setResource(OLATResource resource) {
+		this.resource = resource;
 	}
 
 	/**
@@ -185,7 +197,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @param type2
 	 */
 	private void setType(String type2) {
-		if (type2.length() > TYPE_MAXLENGTH) throw new AssertException("businessgrouptype in o_bg_business too long.");
+		if (type2 != null && type2.length() > TYPE_MAXLENGTH) throw new AssertException("businessgrouptype in o_bg_business too long.");
 		this.type = type2;
 	}
 
@@ -210,15 +222,15 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	/**
 	 * @see org.olat.group.BusinessGroup#getGroupContext()
 	 */
-	public BGContext getGroupContext() {
-		return this.groupContext;
+	public Long getGroupContextKey() {
+		return this.groupContextKey;
 	}
 
 	/**
 	 * @see org.olat.group.BusinessGroup#setGroupContext(org.olat.group.context.BGContext)
 	 */
-	public void setGroupContext(BGContext groupContext) {
-		this.groupContext = groupContext;
+	public void setGroupContextKey(Long groupContextKey) {
+		this.groupContextKey = groupContextKey;
 	}
 
 	/**
@@ -236,7 +248,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 		int oldMaxParticipants = getMaxParticipants()!=null ? getMaxParticipants() : 0;
 		this.maxParticipants = maxParticipants;
 		if(maxParticipantsChanged) {
-		  Tracing.logAudit("Max participants value changed for group " + this + " was " + oldMaxParticipants + " changed to " + maxParticipants, BusinessGroupImpl.class);
+		  log.audit("Max participants value changed for group " + this + " was " + oldMaxParticipants + " changed to " + maxParticipants);
 		}
 	}
 

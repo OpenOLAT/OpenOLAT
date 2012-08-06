@@ -407,7 +407,7 @@ public class IQRunController extends BasicController implements GenericEventList
 					ICourse course = CourseFactory.loadCourse(callingResId);
 					RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 					Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
-					Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry.getResourceableId());
+					Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry);
 					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + callingResId);
 					displayContainerController.setDisposedMessageController(disposedRestartController);
 					

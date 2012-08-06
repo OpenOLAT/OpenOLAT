@@ -116,8 +116,8 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	 */
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Remove as owner
-		List repoEntries = RepositoryManager.getInstance().queryByOwner(identity, new String[] {}/*no type limit*/);
-		for (Iterator iter = repoEntries.iterator(); iter.hasNext();) {
+		List<RepositoryEntry> repoEntries = RepositoryManager.getInstance().queryByOwner(identity, new String[] {}/*no type limit*/);
+		for (Iterator<RepositoryEntry> iter = repoEntries.iterator(); iter.hasNext();) {
 			RepositoryEntry repositoryEntry = (RepositoryEntry) iter.next();
 			
 			BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, repositoryEntry.getOwnerGroup());
@@ -129,7 +129,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		}
 		// Remove as initial author
 		repoEntries = RepositoryManager.getInstance().queryByInitialAuthor(identity.getName());
-		for (Iterator iter = repoEntries.iterator(); iter.hasNext();) {
+		for (Iterator<RepositoryEntry> iter = repoEntries.iterator(); iter.hasNext();) {
 			RepositoryEntry repositoryEntry = (RepositoryEntry) iter.next();
 			repositoryEntry.setInitialAuthor(deletionModule.getAdminUserIdentity().getName());
 			logInfo("Delete user-data, add Administrator-identity as initial-author of repositoryEntry=" + repositoryEntry.getDisplayname());

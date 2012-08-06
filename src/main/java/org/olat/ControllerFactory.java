@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import org.olat.admin.SystemAdminMainController;
 import org.olat.admin.UserAdminMainController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -45,13 +46,10 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGControllerFactory;
-import org.olat.group.ui.context.BGContextManagementController;
-import org.olat.group.ui.main.BGMainController;
-import org.olat.home.InviteeHomeMainController;
 import org.olat.home.HomeMainController;
+import org.olat.home.InviteeHomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoyUIFactory;
@@ -86,20 +84,19 @@ public class ControllerFactory {
 			// normal home
 			if (ureq.getUserSession().getRoles().isGuestOnly()) return new HomeMainController(ureq, wControl);
 
-		} else if (OresHelper.isOfType(olatResourceable, BGMainController.class)) {
-			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BuddyGroupMainController, but is in guest group " + roles);
-			return BGControllerFactory.getInstance().createBuddyGroupMainController(ureq, wControl, initialViewIdentifier);
+		} else if (OresHelper.isOfType(olatResourceable, "BGMainController")) {
+			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a GroupMainController, but is in guest group " + roles);
+			return BGControllerFactory.getInstance().createGroupMainController(ureq, wControl);
 
 		} else if (OresHelper.isOfType(olatResourceable, BusinessGroup.class)) {
 			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BusinessGroup, but is in guest group " + roles);
-			BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			BusinessGroup bg = bgm.loadBusinessGroup(olatResourceable.getResourceableId(), exceptIfNoneFound);
-			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			BusinessGroup bg = bgs.loadBusinessGroup(olatResourceable.getResourceableId());
 			// check if allowed to start (must be member or admin)
-			if (isOlatAdmin || bgm.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
+			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
+					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
 				// only olatadmins or admins of this group can administer this group
-				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg, isOlatAdmin,
-						initialViewIdentifier);
+				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg);
 			}
 			// else skip
 
@@ -169,10 +166,6 @@ public class ControllerFactory {
 		} else if (OresHelper.isOfType(olatResourceable, UserAdminMainController.class)) {
 			if (!roles.isUserManager()) throw new OLATSecurityException("Tried to launch a UserAdminMainController, but is not in admin group " + roles);
 			return new UserAdminMainController(ureq, wControl);
-		} else if (OresHelper.isOfType(olatResourceable, BGContextManagementController.class)) {
-			if (!roles.isGroupManager()) throw new OLATSecurityException("Tried to launch a BGContextManagementController, but is not in group groupmanager "
-					+ roles);
-			return new BGContextManagementController(ureq, wControl);
 		} else if (OresHelper.isOfType(olatResourceable, InviteeHomeMainController.class)) {
 			if (!roles.isInvitee()) throw new OLATSecurityException("Tried to launch a InviteeMainController, but is not an invitee " + roles);
 			return new InviteeHomeMainController(ureq, wControl);

@@ -23,5 +23,6 @@
 		<constructor-arg index="3" ref="systemRegistrationModule"/>
 		<property name="securityManager" ref="baseSecurityManager" />
 		<property name="repositoryManager" ref="repositoryManager" />
+		<property name="businessGroupService" ref="businessGroupService" />
 	</bean>             
 </beans>

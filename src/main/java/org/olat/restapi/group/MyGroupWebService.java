@@ -33,11 +33,11 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.SearchBusinessGroupParams;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupInfoVO;
@@ -80,13 +80,13 @@ public class MyGroupWebService {
 	public Response getUserGroupList(@QueryParam("start") @DefaultValue("0") Integer start, @QueryParam("limit") @DefaultValue("25") Integer limit,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = bgm.countBusinessGroups(params, retrievedUser, true, true, null);
-			groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, start, limit);
+			int totalCount = bgs.countBusinessGroups(params, null);
+			groups = bgs.findBusinessGroups(params, null, start, limit);
 			
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -98,7 +98,7 @@ public class MyGroupWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
+			groups = bgs.findBusinessGroups(params, null, 0, -1);
 			
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -129,13 +129,13 @@ public class MyGroupWebService {
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = bgm.countBusinessGroups(params, retrievedUser, true, true, null);
-			groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, start, limit);
+			int totalCount = bgs.countBusinessGroups(params, null);
+			groups = bgs.findBusinessGroups(params, null, start, limit);
 			
 			int count = 0;
 			GroupInfoVO[] groupVOs = new GroupInfoVO[groups.size()];

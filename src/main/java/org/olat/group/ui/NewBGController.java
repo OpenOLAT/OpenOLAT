@@ -24,10 +24,13 @@
 */
 package org.olat.group.ui;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -37,10 +40,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContext;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -57,13 +59,12 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class NewBGController extends BasicController {
 
-	private BGContext bgContext;
-	private BusinessGroupManager groupManager;
+	private OLATResource resource;
+	private BusinessGroupService businessGroupService;
 	private VelocityContainer contentVC;
 	private BusinessGroupFormController groupCreateController;
 	private boolean bulkMode = false;
-	private Set<BusinessGroup> newGroups;
-	private boolean minMaxEnabled = false;
+	private List<BusinessGroup> newGroups;
 
 	/**
 	 * @param ureq
@@ -72,8 +73,8 @@ public class NewBGController extends BasicController {
 	 * @param bgContext
 	 * @param bulkMode
 	 */
-	NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, BGContext bgContext){
-		this(ureq,wControl,minMaxEnabled,bgContext,true,null);
+	public NewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
+		this(ureq, wControl, resource, true, null);
 	}
 	/**
 	 * 
@@ -84,23 +85,22 @@ public class NewBGController extends BasicController {
 	 * @param bulkMode
 	 * @param csvGroupNames
 	 */
-	NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, BGContext bgContext, boolean bulkMode, String csvGroupNames) {
+	public NewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvGroupNames) {
 		super(ureq, wControl);
-		this.bgContext = bgContext;
-		this.minMaxEnabled  = minMaxEnabled;
+		this.resource = resource;
 		this.bulkMode = bulkMode;
 		//
-		this.groupManager = BusinessGroupManagerImpl.getInstance();
-		this.contentVC = this.createVelocityContainer("bgform");
-		this.contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		contentVC = createVelocityContainer("bgform");
+		contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
 		
-		this.groupCreateController = new BusinessGroupFormController(ureq, wControl, null, minMaxEnabled, bulkMode);
-		listenTo(this.groupCreateController);
-		this.contentVC.put("groupForm", this.groupCreateController.getInitialComponent());
+		groupCreateController = new BusinessGroupFormController(ureq, wControl, null, bulkMode);
+		listenTo(groupCreateController);
+		contentVC.put("groupForm", groupCreateController.getInitialComponent());
 		if (csvGroupNames != null) {
-			this.groupCreateController.setGroupName(csvGroupNames);
+			groupCreateController.setGroupName(csvGroupNames);
 		}
-		this.putInitialPanel(contentVC);
+		putInitialPanel(contentVC);
 	}
 
 	/**
@@ -118,32 +118,32 @@ public class NewBGController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == this.groupCreateController) {
 			if (event == Event.DONE_EVENT) {
-				String bgDesc = this.groupCreateController.getGroupDescription();
-				Integer bgMax = this.groupCreateController.getGroupMax();
-				Integer bgMin = this.groupCreateController.getGroupMin();
-				Boolean enableWaitingList = this.groupCreateController.isWaitingListEnabled();
-				Boolean enableAutoCloseRanks = this.groupCreateController.isAutoCloseRanksEnabled();
+				String bgDesc = groupCreateController.getGroupDescription();
+				Integer bgMax = groupCreateController.getGroupMax();
+				Integer bgMin = groupCreateController.getGroupMin();
+				boolean enableWaitingList = groupCreateController.isWaitingListEnabled();
+				boolean enableAutoCloseRanks = groupCreateController.isAutoCloseRanksEnabled();
 				
-				Set<String> allNames = new HashSet<String>();
-				if (this.bulkMode) {
-					allNames = this.groupCreateController.getGroupNames();
+				newGroups = new ArrayList<BusinessGroup>();
+				if (bulkMode) {
+					for(String bgName:groupCreateController.getGroupNames()) {
+						BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
+						newGroups.add(group);
+					}
 				} else {
-					allNames.add(this.groupCreateController.getGroupName());
+					String bgName = groupCreateController.getGroupName();
+					BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, resource);
+					newGroups.add(group);
 				}
 
-				this.newGroups = this.groupManager.createUniqueBusinessGroupsFor(allNames, this.bgContext, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks);
-				if(this.newGroups != null){
-						for (Iterator<BusinessGroup> iter = this.newGroups.iterator(); iter.hasNext();) {
-							BusinessGroup bg = iter.next();
+				if(newGroups != null){
+						for (BusinessGroup bg: newGroups) {
 							LoggingResourceable resourceInfo = LoggingResourceable.wrap(bg);
 							ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CREATED, getClass(), resourceInfo);	
 						}						
 					// workflow successfully finished
 					// so far no events on the systembus to inform about new groups in BGContext 
 					fireEvent(ureq, Event.DONE_EVENT);
-				} else {
-					// Could not create any group, because one or groups-name already exist. Set error of non existing name
-					this.groupCreateController.setGroupNameExistsError(null);
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				// workflow cancelled
@@ -169,6 +169,9 @@ public class NewBGController extends BasicController {
 	 * @return
 	 */
 	public BusinessGroup getCreatedGroup() {
+		if(newGroups == null || newGroups.isEmpty()) {
+			return null;
+		}
 		return newGroups.iterator().next();
 	}
 	
@@ -178,7 +181,11 @@ public class NewBGController extends BasicController {
 	 * @return the new groups.
 	 */
 	public Set<BusinessGroup> getCreatedGroups(){
-		return newGroups;
+		Set<BusinessGroup> groupSet = new HashSet<BusinessGroup>(newGroups);
+		if(newGroups == null) {
+			groupSet.addAll(newGroups); 
+		}
+		return groupSet;
 	}
 	
 	/**
@@ -188,10 +195,22 @@ public class NewBGController extends BasicController {
 	 */
 	public Set<String> getCreatedGroupNames(){
 		Set<String> groupNames = new HashSet<String>();
-		for (Iterator<BusinessGroup> iterator = this.newGroups.iterator(); iterator.hasNext();) {
-			 groupNames.add( iterator.next().getName());
+		if(newGroups != null) {
+			for (Iterator<BusinessGroup> iterator = newGroups.iterator(); iterator.hasNext();) {
+				 groupNames.add( iterator.next().getName());
+			}
 		}
 		return groupNames;
+	}
+	
+	public Set<Long> getCreatedGroupKeys(){
+		Set<Long> groupKeys = new HashSet<Long>();
+		if(newGroups != null) {
+			for (BusinessGroup group:newGroups) {
+				 groupKeys.add(group.getKey());
+			}
+		}
+		return groupKeys;
 	}
 	
 	/**
@@ -201,5 +220,4 @@ public class NewBGController extends BasicController {
 	public boolean isBulkMode(){
 		return bulkMode;
 	}
-
 }

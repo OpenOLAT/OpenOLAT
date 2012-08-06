@@ -26,7 +26,7 @@
 package org.olat.group.area;
 
 import org.olat.core.commons.persistence.PersistentObject;
-import org.olat.group.context.BGContext;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR/> Initial Date: Aug 23, 2004
@@ -35,9 +35,11 @@ import org.olat.group.context.BGContext;
  */
 public class BGAreaImpl extends PersistentObject implements BGArea {
 
+	private static final long serialVersionUID = 4452153442327716546L;
 	private String name;
 	private String description;
-	private BGContext groupContext;
+	private Long groupContextKey;
+	private OLATResource resource;
 
 	/**
 	 * Constructor used for Hibernate instanciation.
@@ -45,10 +47,10 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 	protected BGAreaImpl() {
 	// nothing to do
 	}
-
-	BGAreaImpl(String name, String description, BGContext context) {
+	
+	BGAreaImpl(String name, String description, OLATResource resource) {
 		setName(name);
-		setGroupContext(context);
+		setResource(resource);
 		setDescription(description);
 	}
 
@@ -66,18 +68,26 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 		this.description = description;
 	}
 
+	public OLATResource getResource() {
+		return resource;
+	}
+
+	public void setResource(OLATResource resource) {
+		this.resource = resource;
+	}
+
 	/**
 	 * @see org.olat.group.area.BGArea#getGroupContext()
 	 */
-	public BGContext getGroupContext() {
-		return groupContext;
+	public Long getGroupContextKey() {
+		return groupContextKey;
 	}
 
 	/**
 	 * @see org.olat.group.area.BGArea#setGroupContext(org.olat.group.context.BGContext)
 	 */
-	public void setGroupContext(BGContext groupContext) {
-		this.groupContext = groupContext;
+	public void setGroupContextKey(Long groupContextKey) {
+		this.groupContextKey = groupContextKey;
 	}
 
 	/**

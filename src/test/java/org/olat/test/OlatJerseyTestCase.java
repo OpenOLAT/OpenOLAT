@@ -131,28 +131,6 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 			log.error("Cannot start the Grizzly Web Container");
 		}
   }
-
-	protected <T> T parse(String body, Class<T> cl) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			T obj = mapper.readValue(body, cl);
-			return obj;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	protected <T> T parse(InputStream body, Class<T> cl) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			T obj = mapper.readValue(body, cl);
-			return obj;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 	
 	protected List<ErrorVO> parseErrorArray(InputStream body) {
 		try {

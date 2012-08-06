@@ -24,7 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.hibernate.FlushMode;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.mark.Mark;
@@ -32,6 +35,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.mark.MarkResourceStat;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -45,12 +49,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class MarkManagerImpl extends MarkManager {
 	
+	@Autowired
+	private DB dbInstance;
+	
 	/**
 	 * [spring]
 	 */
 	private MarkManagerImpl() {
 		INSTANCE = this;
 	}
+	
+	
 
 	@Override
 	public List<Mark> getMarks(OLATResourceable ores, Identity identity, Collection<String> subPath) {
@@ -71,6 +80,47 @@ public class MarkManagerImpl extends MarkManager {
 		
 		List<Mark> results = query.list();
 		return results;
+	}
+
+	@Override
+	public List<Mark> getMarks(Identity identity, String resourceTypeName, Collection<String> subPath) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mark from ").append(MarkImpl.class.getName()).append(" mark where ")
+			.append("mark.resName=:resName and mark.creator=:creator");
+		if(!subPath.isEmpty()) {
+			sb.append(" and mark.resSubPath in (:resSubPaths)");
+		}
+		
+		TypedQuery<Mark> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Mark.class)
+				.setParameter("resName", resourceTypeName)
+				.setParameter("creator", identity);
+		if(!subPath.isEmpty()) {
+			query.setParameter("resSubPaths", subPath);
+		}
+		
+		List<Mark> results = query.getResultList();
+		return results;
+	}
+
+	@Override
+	public void filterMarks(Identity identity, String resourceTypeName, Collection<Long> resIds) {
+		if(resIds == null || resIds.isEmpty()) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where ")
+			.append("mark.resName=:resName and mark.creator=:creator");
+		if(resIds.size() < 50) {//if there is too much resource to filter, retrieve all the mark
+			sb.append(" and mark.resId in(:resIds)");
+		}
+
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("resName", resourceTypeName)
+				.setParameter("creator", identity);
+		if(resIds.size() < 50) {
+			query.setParameter("resIds", resIds);
+		}
+		List<Long> markedResIds = query.getResultList();
+		resIds.retainAll(markedResIds);
 	}
 
 	@Override

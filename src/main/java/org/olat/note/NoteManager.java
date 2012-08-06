@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DBFactory;
@@ -104,7 +104,7 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 
 		String query = "from org.olat.note.NoteImpl as n where n.owner = ? and n.resourceTypeName = ? and n.resourceTypeId = ?";
 		List notes = DBFactory.getInstance().find(query, new Object[] { owner.getKey(), resourceTypeName, resourceTypeId },
-				new Type[] { Hibernate.LONG, Hibernate.STRING, Hibernate.LONG });
+				new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING, StandardBasicTypes.LONG });
 
 		if (notes == null || notes.size() != 1) {
 			return null;

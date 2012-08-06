@@ -24,7 +24,9 @@
 */
 package org.olat.resource.lock.pessimistic;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.olat.core.commons.persistence.DBFactory;
@@ -77,7 +79,11 @@ public class PessimisticLockManager extends BasicManager implements Initializabl
 	private PLock findPLock(String asset) {	
 		DBQuery q = DBFactory.getInstance().createQuery("select plock from org.olat.resource.lock.pessimistic.PLockImpl as plock where plock.asset = :asset");
 		q.setParameter("asset", asset);
-		q.setLockMode("plock", LockMode.UPGRADE);
+		q.setLockMode("plock", LockMode.PESSIMISTIC_WRITE);
+		
+		Map<String,Object> props = new HashMap<String, Object>();
+		props.put("javax.persistence.lock.timeout", new Integer(30000));
+		q.setProperties(props);
 		List res = q.list();
 		if (res.size() == 0) {
 			return null; 

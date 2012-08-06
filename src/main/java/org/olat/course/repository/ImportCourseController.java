@@ -56,6 +56,7 @@ import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManagerImpl;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.glossary.GlossaryManager;
@@ -83,7 +84,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	private Controller activeImportController;
 	private ImportSharedfolderReferencesController sharedFolderImportController;
 	private ImportGlossaryReferencesController glossaryImportController;
-	private List nodeList = new ArrayList();
+	private List<CourseEditorTreeNode> nodeList = new ArrayList<CourseEditorTreeNode>();
 	private int nodeListPos = 0;
 	private Panel myPanel;
 	private static final VFSItemFileTypeFilter zipTypeFilter = new VFSItemFileTypeFilter(new String[] { "zip" });
@@ -126,10 +127,11 @@ public class ImportCourseController extends BasicController implements IAddContr
 	public boolean transactionFinishBeforeCreate() {
 		// create group management
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		cgm.createCourseGroupmanagement(course.getResourceableId().toString());
 		// import groups
-		cgm.importCourseLearningGroups(getExportDataDir(course));
-		cgm.importCourseRightGroups(getExportDataDir(course));
+		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(getExportDataDir(course));
+		//upgrade to the current version of the course
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseResource());
+		course.postImport(envMapper);
 		return true;
 	}
 
@@ -375,7 +377,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	 * @param rootNode
 	 * @param nl
 	 */
-	public static void collectNodesAsList(CourseEditorTreeNode rootNode, List nl) {
+	private void collectNodesAsList(CourseEditorTreeNode rootNode, List<CourseEditorTreeNode> nl) {
 		nl.add(rootNode);
 		for (int i = 0; i < rootNode.getChildCount(); i++) {
 			collectNodesAsList((CourseEditorTreeNode)rootNode.getChildAt(i), nl);

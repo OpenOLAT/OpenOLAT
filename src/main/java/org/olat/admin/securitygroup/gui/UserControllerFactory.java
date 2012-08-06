@@ -35,6 +35,7 @@ import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
@@ -48,7 +49,7 @@ public class UserControllerFactory {
 
 
 	
-	public static TableController createTableControllerFor(TableGuiConfiguration tableConfig, List identities, UserRequest ureq,
+	public static TableController createTableControllerFor(TableGuiConfiguration tableConfig, List<Identity> identities, UserRequest ureq,
 			WindowControl wControl, String actionCommand) {
 		Locale loc = ureq.getLocale();
 		Translator trans = new PackageTranslator(PACKAGE, loc);

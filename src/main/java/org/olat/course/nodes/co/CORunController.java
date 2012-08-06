@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -43,6 +44,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -50,6 +52,8 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.COCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.co.ContactFormController;
 
@@ -63,7 +67,10 @@ public class CORunController extends BasicController {
 
 	private VelocityContainer myContent;
 	private ContactFormController coFoCtr;
-	private UserCourseEnvironment userCourseEnv;
+	private final CourseGroupManager cgm;
+	
+	private final BGAreaManager areaManager;
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor for the contact form run controller
@@ -76,11 +83,14 @@ public class CORunController extends BasicController {
 	public CORunController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, COCourseNode coCourseNode) {
 		super(ureq, wControl);
-		this.userCourseEnv = userCourseEnv;
+		cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		//set translator with fall back translator.
 		Translator fallback = Util.createPackageTranslator(ContactFormController.class, ureq.getLocale());
 		setTranslator(Util.createPackageTranslator(CORunController.class, ureq.getLocale(), fallback));
 		
+		@SuppressWarnings("unchecked")
 		List<String> emailListConfig = (List<String>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
 		String mSubject = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT);
 		String mBody = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_MBODY_DEFAULT);
@@ -104,35 +114,35 @@ public class CORunController extends BasicController {
 		Boolean coachesConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES);
 
 		Stack<ContactList> contactLists = new Stack<ContactList>();
-		
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		
+
 		String grpNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-		
-		List<String> grpList = splitNames(grpNames);
-		for (int i=0; i<grpList.size(); i++) {
-			if (coachesConfigured) {
-				ContactList cl = retrieveCoachesFromGroup (grpList.get(i));
-				contactLists.push(cl);
-			}
-			if (partipsConfigured) {
-				ContactList cl = retrieveParticipantsFromGroup(grpList.get(i));
-				contactLists.push(cl);
-			}
+		@SuppressWarnings("unchecked")
+		List<Long> groupKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
+		if(groupKeys != null && StringHelper.containsNonWhitespace(grpNames)) {
+			groupKeys = businessGroupService.toGroupKeys(grpNames, cgm.getCourseResource());
 		}
-		
-		String areas = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
-		
-		List<String> areaList = splitNames(areas);
-		for (int i=0; i<areaList.size(); i++) {
-			if (coachesConfigured) {
-				ContactList cl = retrieveCoachesFromArea (areaList.get(i));
-				contactLists.push(cl);
-			}
-			if (partipsConfigured) {
-				ContactList cl = retrieveParticipantsFromArea(areaList.get(i));
-				contactLists.push(cl);
-			}
+		if (coachesConfigured) {
+			ContactList cl = retrieveCoachesFromGroups(groupKeys);
+			contactLists.push(cl);
+		}
+		if (partipsConfigured) {
+			ContactList cl = retrieveParticipantsFromGroups(groupKeys);
+			contactLists.push(cl);
+		} 
+
+		String areaNames = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
+		@SuppressWarnings("unchecked")
+		List<Long> areaKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
+		if(areaKeys == null && StringHelper.containsNonWhitespace(areaNames)) {
+			areaKeys = areaManager.toAreaKeys(areaNames, cgm.getCourseResource());
+		}
+		if (coachesConfigured) {
+			ContactList cl = retrieveCoachesFromAreas(areaKeys);
+			contactLists.push(cl);
+		}
+		if (partipsConfigured) {
+			ContactList cl = retrieveParticipantsFromAreas(areaKeys);
+			contactLists.push(cl);
 		}
 
 		// Adding contact form
@@ -166,38 +176,34 @@ public class CORunController extends BasicController {
 			putInitialPanel(mCtr.getInitialComponent());
 		}
 	}
+	
+	private ContactList retrieveCoachesFromGroups(List<Long> groupKeys) {
+		List<Identity> coaches = cgm.getCoachesFromBusinessGroups(groupKeys);
+		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
+		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
+		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
+		cl.addAllIdentites(coaches);
+		return cl;
+	}
+	
+	private ContactList retrieveCoachesFromAreas(List<Long> areaKeys) {
+		List<Identity> coaches = cgm.getCoachesFromAreas(areaKeys);
+		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
+		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
+		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
+		cl.addAllIdentites(coaches);
+		return cl;
+	}
 
-	private ContactList retrieveCoachesFromGroup(String grpName) {
-		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		List<Identity> coaches = cgm.getCoachesFromLearningGroup(grpName);
-		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
-		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
-		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
-		cl.addAllIdentites(coaches);
-		return cl;
-	}
-	
-	private ContactList retrieveCoachesFromArea(String areaName) {
-		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		List<Identity> coaches = cgm.getCoachesFromArea(areaName);
-		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
-		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
-		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
-		cl.addAllIdentites(coaches);
-		return cl;
-	}
-	
-	private ContactList retrieveParticipantsFromGroup(String grpName) {
-		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		List<Identity> participiants = cgm.getParticipantsFromLearningGroup(grpName);
+	private ContactList retrieveParticipantsFromGroups(List<Long> groupKeys) {
+		List<Identity> participiants = cgm.getParticipantsFromBusinessGroups(groupKeys);
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(participiants);
 		return cl;
 	}
 	
-	private ContactList retrieveParticipantsFromArea(String areaName) {
-		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		List<Identity> participiants = cgm.getParticipantsFromArea(areaName);
+	private ContactList retrieveParticipantsFromAreas(List<Long> areaKeys) {
+		List<Identity> participiants = cgm.getParticipantsFromAreas(areaKeys);
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(participiants);
 		return cl;
@@ -207,7 +213,6 @@ public class CORunController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 * @see org.olat.core.gui.components.Component, @see org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Component source, Event event) {
 	// no components to listen to
 	}
@@ -218,16 +223,4 @@ public class CORunController extends BasicController {
 	protected void doDispose() {
 		//
 	}
-
-	private List<String> splitNames(String namesList) {
-		List<String> names = new ArrayList<String>();
-		if (namesList != null) {
-			String[] name = namesList.split(",");
-			for (int i = 0; i < name.length; i++) {
-				names.add(name[i].trim());
-			}
-		}
-		return names;
-	}
-
 }

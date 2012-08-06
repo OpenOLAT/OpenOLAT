@@ -74,7 +74,7 @@ import org.olat.core.util.resource.OresHelper;
  * Initial Date:  11.07.2005 <br>
  * @author gnaegi
  */
-public class NotesPortletRunController extends AbstractPortletRunController implements GenericEventListener {
+public class NotesPortletRunController extends AbstractPortletRunController<Note> implements GenericEventListener {
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
@@ -125,7 +125,7 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 		putInitialPanel(notesVC);
 		
     //register for events targeted at this Identity - TODO: LD: use SingleUserEventCenter
-		eventBusThisIdentityOres = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());    
+		eventBusThisIdentityOres = OresHelper.createOLATResourceableInstance(Identity.class, getIdentity().getKey());    
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), eventBusThisIdentityOres);
 	}
 	
@@ -134,7 +134,7 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * @param ureq
 	 * @return
 	 */
-	private List<PortletEntry> getAllPortletEntries() {
+	private List<PortletEntry<Note>> getAllPortletEntries() {
 		NoteManager nm = NoteManager.getInstance();
 		List<Note> noteList = nm.listUserNotes(cOwner);
 		return convertNoteToPortletEntryList(noteList);		
@@ -145,8 +145,8 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * @param items
 	 * @return
 	 */
-	private List<PortletEntry> convertNoteToPortletEntryList(List<Note> items) {
-		List<PortletEntry> convertedList = new ArrayList<PortletEntry>();
+	private List<PortletEntry<Note>> convertNoteToPortletEntryList(List<Note> items) {
+		List<PortletEntry<Note>> convertedList = new ArrayList<PortletEntry<Note>>();
 		Iterator<Note> listIterator = items.iterator();
 		while(listIterator.hasNext()) {
 			convertedList.add(new NotePortletEntry(listIterator.next()));
@@ -165,8 +165,8 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 			
 			noteList = getSortedList(noteList, sortingCriteria );
 			
-			List<PortletEntry> entries = convertNoteToPortletEntryList(noteList);
-			notesListModel = new NoteSortingTableDataModel(entries, locale);
+			List<PortletEntry<Note>> entries = convertNoteToPortletEntryList(noteList);
+			notesListModel = new NoteSortingTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(notesListModel);
 		} else {
 			reloadModel(this.getPersistentManuallySortedItems());
@@ -177,8 +177,8 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * 
 	 * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#reloadModel(org.olat.core.gui.UserRequest, java.util.List)
 	 */
-	protected void reloadModel(List<PortletEntry> sortedItems) {
-		notesListModel = new NoteSortingTableDataModel(sortedItems, locale);
+	protected void reloadModel(List<PortletEntry<Note>> sortedItems) {
+		notesListModel = new NoteSortingTableDataModel(sortedItems, getLocale());
 		tableCtr.setTableDataModel(notesListModel);
 	}
 	
@@ -188,7 +188,7 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 */
 	public void event(Event event) {		
 		if(event instanceof NoteEvent) {			
-			if(((NoteEvent)event).getUsername().equals(identity.getName())) {
+			if(((NoteEvent)event).getUsername().equals(getIdentity().getName())) {
 			  reloadModel(sortingCriteria);						  
 			}
 		}		
@@ -256,14 +256,14 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * @param wControl
 	 * @return a PortletToolSortingControllerImpl instance.
 	 */
-	protected PortletToolSortingControllerImpl createSortingTool(UserRequest ureq, WindowControl wControl) {
+	protected PortletToolSortingControllerImpl<Note> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {			
 			
-			List<PortletEntry> entries = getAllPortletEntries();
-			PortletDefaultTableDataModel tableDataModel = new NoteManualSortingTableDataModel(entries);
-			List<PortletEntry> sortedItems = getPersistentManuallySortedItems(); 
+			List<PortletEntry<Note>> entries = getAllPortletEntries();
+			PortletDefaultTableDataModel<Note> tableDataModel = new NoteManualSortingTableDataModel(entries);
+			List<PortletEntry<Note>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<Note>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);
@@ -276,20 +276,18 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * @param ureq
 	 * @return
 	 */
-	private List<PortletEntry> getPersistentManuallySortedItems() {
-		List<PortletEntry> entries = getAllPortletEntries();
-		return this.getPersistentManuallySortedItems(entries);		
+	private List<PortletEntry<Note>> getPersistentManuallySortedItems() {
+		List<PortletEntry<Note>> entries = getAllPortletEntries();
+		return getPersistentManuallySortedItems(entries);		
 	}
 	
 	/**
 	 * 
 	 * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#getComparator(org.olat.core.gui.control.generic.portal.SortingCriteria)
 	 */
-	protected Comparator getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator(){			
-			public int compare(final Object o1, final Object o2) {
-				Note note1= (Note)o1;
-				Note note2 = (Note)o2;		
+	protected Comparator<Note> getComparator(final SortingCriteria sortingCriteria) {
+		return new Comparator<Note>(){			
+			public int compare(final Note note1, final Note note2) {	
 				int comparisonResult = 0;
 			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(StringEscapeUtils.escapeHtml(note1.getNoteTitle()).toString(), StringEscapeUtils.escapeHtml(note2.getNoteTitle()).toString());			  		  	
@@ -312,10 +310,10 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * Initial Date:  18.12.2007 <br>
 	 * @author Lavinia Dumitrescu
 	 */
-	private class NoteSortingTableDataModel extends PortletDefaultTableDataModel {
+	private class NoteSortingTableDataModel extends PortletDefaultTableDataModel<Note> {
 		private Locale locale;
 		
-		public NoteSortingTableDataModel(List<PortletEntry> objects, Locale locale) {
+		public NoteSortingTableDataModel(List<PortletEntry<Note>> objects, Locale locale) {
 			super(objects, 2);
 			this.locale = locale;
 		}
@@ -345,12 +343,12 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * Initial Date:  18.12.2007 <br>
 	 * @author Lavinia Dumitrescu
 	 */
-	private class NoteManualSortingTableDataModel extends PortletDefaultTableDataModel  {				
+	private class NoteManualSortingTableDataModel extends PortletDefaultTableDataModel<Note>  {				
 		/**
 		 * @param objects
 		 * @param locale
 		 */
-		public NoteManualSortingTableDataModel(List<PortletEntry> objects) {
+		public NoteManualSortingTableDataModel(List<PortletEntry<Note>> objects) {
 			super(objects, 2);			
 		}
 
@@ -358,14 +356,13 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 		 */
 		public final Object getValueAt(int row, int col) {				
-			Note note = (Note) getObject(row).getValue();
+			Note note = getObject(row).getValue();
 			switch (col) {
 				case 0:					
 					return StringEscapeUtils.escapeHtml(note.getNoteTitle()).toString();
 				case 1:								
 					Date lastUpdate = note.getLastModified();
 					return lastUpdate;
-					//return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, getTranslator().getLocale()).format(lastUpdate);
 				default:
 					return "error";
 			}
@@ -380,7 +377,7 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * Initial Date:  10.12.2007 <br>
 	 * @author Lavinia Dumitrescu
 	 */
-	class NotePortletEntry implements PortletEntry {
+	class NotePortletEntry implements PortletEntry<Note> {
   	private Note value;
   	private Long key;
   	

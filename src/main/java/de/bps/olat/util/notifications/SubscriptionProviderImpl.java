@@ -22,6 +22,7 @@ package de.bps.olat.util.notifications;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
@@ -31,7 +32,7 @@ import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 
 /**
  * 
@@ -86,7 +87,7 @@ public class SubscriptionProviderImpl implements SubscriptionProvider {
 			Long resId = this.kalendarRenderWrapper.getKalendarConfig().getResId();
 			if (resId == null) resId = Long.parseLong(this.kalendarRenderWrapper.getKalendar().getCalendarID());
 			if (resId != null) {
-				this.businessGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(resId, true);
+				this.businessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(resId);
 				if (businessGroup != null) {
 					subsContext = new SubscriptionContext(OresHelper.calculateTypeName(CalendarManager.class) + "." +  CalendarManager.TYPE_GROUP, businessGroup.getResourceableId(), CalendarController.ACTION_CALENDAR_GROUP);
 				}

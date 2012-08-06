@@ -59,7 +59,7 @@ public class InstantMessagingJob extends JobWithDB {
 				if (InstantMessagingModule.isSyncLearningGroups()) {
 					long start = System.currentTimeMillis();
 					log.info("Start synching learning groups with IM");
-					boolean result = im.synchronizeLearningGroupsWithIMServer();
+					boolean result = im.synchronizeBusinessGroupsWithIMServer();
 					Property property = propertyManager.createPropertyInstance(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_LEARNING_GROUPS), null,  null, Boolean.toString(result), null);
 					propertyManager.saveProperty(property);
 					log.info("Synching learning groups with IM terminated in " + (System.currentTimeMillis() - start) + " (ms)");

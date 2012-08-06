@@ -357,11 +357,11 @@
 	</mime-mapping>
 	<mime-mapping>
 		<extension>m4a</extension>
-		<mime-type>audio/x-aac</mime-type>
+		<mime-type>audio/x-m4a</mime-type>
 	</mime-mapping>
 	<mime-mapping>
 		<extension>m4v</extension>
-		<mime-type>video/mp4</mime-type>
+		<mime-type>video/x-m4v</mime-type>
 	</mime-mapping>
 
 </web-app>

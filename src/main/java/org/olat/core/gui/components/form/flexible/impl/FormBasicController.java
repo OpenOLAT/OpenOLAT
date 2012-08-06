@@ -224,6 +224,11 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	abstract protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq);
 
+	public FormItem getInitialFormItem() {
+		return flc;
+	}
+	
+	
 	protected void removeAsListenerAndDispose(Controller controller) {
 		super.removeAsListenerAndDispose(controller);
 		

@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
@@ -252,18 +252,18 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("from ").append(TagImpl.class.getName()).append(" where resId=? and resName=?");
 		values.add(ores.getResourceableId());
-		types.add(Hibernate.LONG);
+		types.add(StandardBasicTypes.LONG);
 		values.add(ores.getResourceableTypeName());
-		types.add(Hibernate.STRING);
+		types.add(StandardBasicTypes.STRING);
 		if(subPath != null) {
 			sb.append(" and resSubPath=?");
 			values.add(subPath);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		}
 		if(businessPath != null) {
 			sb.append(" and businessPath=?");
 			values.add(businessPath);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		}
 		
 		int tagsDeleted = dbInstance.delete(sb.toString(), values.toArray(new Object[values.size()]),

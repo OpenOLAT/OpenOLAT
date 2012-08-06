@@ -57,6 +57,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
 import org.olat.course.config.CourseConfigManagerImpl;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -69,6 +70,7 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -289,23 +291,46 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 * See OLAT-5368: Course Export can take longer than say 2min.
 	 * <p>
 	 */
-	public void exportToFilesystem(File exportDirectory) {
+	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory, boolean backwardsCompatible) {
 		long s = System.currentTimeMillis();
 		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+"...");
 		File fCourseBase = getCourseBaseContainer().getBasefile();
+		//make the folder structure
+		File fExportedDataDir = new File(exportDirectory, EXPORTED_DATA_FOLDERNAME);
+		fExportedDataDir.mkdirs();
 
+		//export course config
 		FileUtils.copyFileToDir(new File(fCourseBase, CourseConfigManager.COURSECONFIG_XML), exportDirectory, "course export courseconfig");
-		// export editor structure
-		FileUtils.copyFileToDir(new File(fCourseBase, EDITORTREEMODEL_XML), exportDirectory, "course export exitortreemodel");
-		// export run structure
-		FileUtils.copyFileToDir(new File(fCourseBase, RUNSTRUCTURE_XML), exportDirectory, "course export runstructure");
+		
+		//export business groups
+		CourseEnvironmentMapper envMapper = PersistingCourseGroupManager.getInstance(this).getBusinessGroupEnvironment();
+		if(backwardsCompatible) {
+			//prevents duplicate names
+			envMapper.avoidDuplicateNames();
+		}
+		PersistingCourseGroupManager.getInstance(this).exportCourseBusinessGroups(fExportedDataDir, envMapper, backwardsCompatible);
+		if(backwardsCompatible) {
+			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
+
+			Structure exportedStructure = (Structure)XStreamHelper.readObject(xstream, new File(fCourseBase, RUNSTRUCTURE_XML));
+			visit(new NodePostExportVisitor(envMapper, backwardsCompatible), exportedStructure.getRootNode());
+			XStreamHelper.writeObject(xstream, new File(exportDirectory, RUNSTRUCTURE_XML), exportedStructure);
+			
+			CourseEditorTreeModel exportedEditorModel = (CourseEditorTreeModel)XStreamHelper.readObject(xstream, new File(fCourseBase, EDITORTREEMODEL_XML));
+			visit(new NodePostExportVisitor(envMapper, backwardsCompatible), exportedEditorModel.getRootNode());
+			XStreamHelper.writeObject(xstream, new File(exportDirectory, EDITORTREEMODEL_XML), exportedEditorModel);
+		} else {
+			// export editor structure
+			FileUtils.copyFileToDir(new File(fCourseBase, EDITORTREEMODEL_XML), exportDirectory, "course export exitortreemodel");
+			// export run structure
+			FileUtils.copyFileToDir(new File(fCourseBase, RUNSTRUCTURE_XML), exportDirectory, "course export runstructure");
+		}
+		
 		// fxdiff: export layout-folder
 		FileUtils.copyDirToDir(new OlatRootFolderImpl(courseRootContainer.getRelPath() + File.separator + "layout", null).getBasefile(), exportDirectory, "course export layout folder");
 		// export course folder
 		FileUtils.copyDirToDir(getIsolatedCourseFolder().getBasefile(), exportDirectory, "course export folder");
 		// export any node data
-		File fExportedDataDir = new File(exportDirectory, EXPORTED_DATA_FOLDERNAME);
-		fExportedDataDir.mkdirs();
 		log.info("exportToFilesystem: exporting course "+this+": exporting all nodes...");
 		Visitor visitor = new NodeExportVisitor(fExportedDataDir, this);
 		TreeVisitor tv = new TreeVisitor(visitor, getEditorTreeModel().getRootNode(), true);
@@ -363,10 +388,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		log.info("exportToFilesystem: exporting course "+this+": configuration and repo data...");
 		// export configuration file
 		FileUtils.copyFileToDir(new File(fCourseBase, CourseConfigManager.COURSECONFIG_XML), exportDirectory, "course export configuration and repo info");
-		// export learning groups
-		PersistingCourseGroupManager.getInstance(this).exportCourseLeaningGroups(fExportedDataDir);
-		// export right groups
-		PersistingCourseGroupManager.getInstance(this).exportCourseRightGroups(fExportedDataDir);
+		
 		// export repo metadata
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry myRE = rm.lookupRepositoryEntry(this, true);
@@ -382,6 +404,25 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 
 		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+" done.");
 		log.info("finished export course '"+getCourseTitle()+"' in t="+Long.toString(System.currentTimeMillis()-s));
+	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		Structure importedStructure = getRunStructure();
+		visit(new NodePostImportVisitor(envMapper), importedStructure.getRootNode());
+		saveRunStructure();
+		
+		CourseEditorTreeModel importedEditorModel = getEditorTreeModel();
+		visit(new NodePostImportVisitor(envMapper), importedEditorModel.getRootNode());
+		saveEditorTreeModel();
+	}
+	
+	private void visit(Visitor visitor, INode node) {
+		visitor.visit(node);
+		for(int i=node.getChildCount(); i-->0; ) {
+			INode subNode = node.getChildAt(i);
+			visit(visitor, subNode);
+		}
 	}
 
 	/**
@@ -508,6 +549,44 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		return "Course:[" + getResourceableId() + "," + courseTitle + "], " + super.toString();
 	}
 
+}
+
+class NodePostExportVisitor implements Visitor {
+	private final CourseEnvironmentMapper envMapper;
+	private final boolean backwardsCompatible;
+	
+	public NodePostExportVisitor(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+		this.envMapper = envMapper;
+		this.backwardsCompatible = backwardsCompatible;
+	}
+	
+	@Override
+	public void visit(INode node) {
+		if(node instanceof CourseEditorTreeNode) {
+			node = ((CourseEditorTreeNode)node).getCourseNode();
+		}
+		if(node instanceof CourseNode) {
+			((CourseNode)node).postExport(envMapper, backwardsCompatible);
+		}
+	}
+}
+
+class NodePostImportVisitor implements Visitor {
+	private final CourseEnvironmentMapper envMapper;
+	
+	public NodePostImportVisitor(CourseEnvironmentMapper envMapper) {
+		this.envMapper = envMapper;
+	}
+	
+	@Override
+	public void visit(INode node) {
+		if(node instanceof CourseEditorTreeNode) {
+			node = ((CourseEditorTreeNode)node).getCourseNode();
+		}
+		if(node instanceof CourseNode) {
+			((CourseNode)node).postImport(envMapper);
+		}
+	}
 }
 
 class NodeExportVisitor implements Visitor {

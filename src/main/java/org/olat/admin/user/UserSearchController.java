@@ -118,6 +118,7 @@ public class UserSearchController extends BasicController {
 	private UserTableDataModel tdm;
 	private List<Identity> foundIdentities = new ArrayList<Identity>();
 	private boolean useMultiSelect = false;
+	private Object userObject;
 	
 	private AutoCompleterController autocompleterC;
 	private String actionKeyChoose;
@@ -248,6 +249,14 @@ public class UserSearchController extends BasicController {
 		
 		
 		putInitialPanel(myContent);
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	public void event(UserRequest ureq, Component source, Event event) {

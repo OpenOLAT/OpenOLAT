@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DB;
@@ -82,7 +82,7 @@ public class BookmarkManagerImpl extends BookmarkManager implements UserDataDele
 	 */
 	public List<Bookmark> findBookmarksByIdentity(Identity identity) {
 		String query = "from org.olat.bookmark.BookmarkImpl as b where b.owner = ?";
-		return DBFactory.getInstance().find(query, identity.getKey(), Hibernate.LONG);
+		return DBFactory.getInstance().find(query, identity.getKey(), StandardBasicTypes.LONG);
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class BookmarkManagerImpl extends BookmarkManager implements UserDataDele
 	 */
 	public List<Bookmark> findBookmarksByIdentity(Identity identity, String type) {
 		String query = "from org.olat.bookmark.BookmarkImpl as b where b.owner = ? and b.displayrestype = ?";
-		List<Bookmark> found = DBFactory.getInstance().find(query, new Object[] { identity.getKey(), type }, new Type[] { Hibernate.LONG, Hibernate.STRING });
+		List<Bookmark> found = DBFactory.getInstance().find(query, new Object[] { identity.getKey(), type }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING });
 		return found;
 	}
 
@@ -137,7 +137,7 @@ public class BookmarkManagerImpl extends BookmarkManager implements UserDataDele
 	public void deleteAllBookmarksFor(OLATResourceable res) {
 		String query = "from org.olat.bookmark.BookmarkImpl as b where b.olatrestype = ? and b.olatreskey = ?";
 		DBFactory.getInstance().delete(query, new Object[] { res.getResourceableTypeName(), res.getResourceableId() },
-				new Type[] { Hibernate.STRING, Hibernate.LONG });
+				new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG });
 		fireBookmarkEvent(null);
 	}
 
@@ -150,7 +150,7 @@ public class BookmarkManagerImpl extends BookmarkManager implements UserDataDele
 		String query = "from org.olat.bookmark.BookmarkImpl as b where b.olatrestype = ? and b.olatreskey = ? and b.owner.key = ?";
 
 		List results = DBFactory.getInstance().find(query, new Object[] { res.getResourceableTypeName(), res.getResourceableId(), identity.getKey() },
-				new Type[] { Hibernate.STRING, Hibernate.LONG, Hibernate.LONG });
+				new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.LONG });
 		return results.size() != 0;
 	}
 

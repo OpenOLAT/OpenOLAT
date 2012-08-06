@@ -35,6 +35,8 @@ import org.olat.group.BusinessGroup;
  * @author gnaegi
  */
 public class BGtoAreaRelationImpl extends PersistentObject implements BGtoAreaRelation {
+
+	private static final long serialVersionUID = 770758447044422197L;
 	private BGArea groupArea;
 	private BusinessGroup businessGroup;
 

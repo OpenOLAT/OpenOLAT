@@ -25,9 +25,14 @@
 
 package org.olat.course.condition.interpreter;
 
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
 
 /**
  * 
@@ -85,8 +90,16 @@ public class IsLearningGroupFullFunction extends AbstractFunction {
 		 * the real function evaluation which is used during run time
 		 */
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
+		if(StringHelper.isLong(groupName)) {
+			Long groupKey = new Long(groupName);
+			return cgm.isBusinessGroupFull(groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
 		
-		return cgm.isLearningGroupFull(groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseResource());
+		if(!groupKeys.isEmpty()) {
+			return cgm.isBusinessGroupFull(groupKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		return ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {

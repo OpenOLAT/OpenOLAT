@@ -42,12 +42,12 @@ public interface BGRights {
 	/**
 	 * @return A list of right keys
 	 */
-	abstract List getRights();
+	public List<String> getRights();
 
 	/**
 	 * @param right
 	 * @return The translated right
 	 */
-	abstract String transateRight(String right);
+	public String transateRight(String right);
 
 }

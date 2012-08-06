@@ -26,8 +26,9 @@
 
 package org.olat.core.commons.persistence;
 
-import java.sql.Connection;
 import java.util.List;
+
+import javax.persistence.EntityManager;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -35,7 +36,6 @@ import org.hibernate.Session;
 import org.hibernate.type.Type;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 
 /**
@@ -48,8 +48,8 @@ class DBManager extends BasicManager {
 	private boolean error;
 	private  DBSession dbSession = null;
 
-	DBManager(Session hibernateSession) {
-		setDbSession(new DBSession(hibernateSession));
+	DBManager(EntityManager em) {
+		setDbSession(new DBSession(em));
 	}
 	
 	/**
@@ -74,8 +74,8 @@ class DBManager extends BasicManager {
 		}
 		try {
 			getSession().update(o);
-			if (Tracing.isDebugEnabled(DBManager.class)) {
-				Tracing.logDebug("update (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString(),DBManager.class);	
+			if (isLogDebugEnabled()) {
+				logDebug("update (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString());	
 			}									
 		} catch (HibernateException e) { // we have some error
 			trx.setErrorAndRollback(e);
@@ -96,9 +96,10 @@ class DBManager extends BasicManager {
 			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + o);
 		}
 		try {
-			getSession().delete(o);
-			if (Tracing.isDebugEnabled(DBManager.class)) {
-				Tracing.logDebug("delete (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString(),DBManager.class);	
+			Object relaoded = getSession().merge(o);
+			getSession().delete(relaoded);
+			if (isLogDebugEnabled()) {
+				logDebug("delete (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString());	
 			}
 		} catch (HibernateException e) { // we have some error
 			trx.setErrorAndRollback(e);
@@ -120,8 +121,8 @@ class DBManager extends BasicManager {
 		}
 		try {
 			hibernateSession.save(o);
-			if (Tracing.isDebugEnabled(DBManager.class)) {
-				Tracing.logDebug("save (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString(),DBManager.class);	
+			if (isLogDebugEnabled()) {
+				logDebug("save (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString());	
 			}						
 
 		} catch (HibernateException e) { // we have some error
@@ -138,12 +139,12 @@ class DBManager extends BasicManager {
 	 * @param theClass The class for the object to be loaded
 	 * @param pK The primary key for the object
 	 */	
-	Object loadObject(DBTransaction trx, Class theClass, Long pK) {
-		Object o = null;
+	<U> U loadObject(DBTransaction trx, Class<U> theClass, Long pK) {
+		U o = null;
 		try {
-			o = getSession().load(theClass, pK);
-			if (Tracing.isDebugEnabled(DBManager.class)) {
-				Tracing.logDebug("load (res " +(o == null? "null": "ok")+")(trans "+trx.hashCode()+") key "+pK+" class "+theClass.getName(),DBManager.class);	
+			o = getEntityManager().find(theClass, pK);
+			if (isLogDebugEnabled()) {
+				logDebug("load (res " +(o == null? "null": "ok")+")(trans "+trx.hashCode()+") key "+pK+" class "+theClass.getName());	
 			}
 
 		} catch (HibernateException e) {
@@ -165,7 +166,7 @@ class DBManager extends BasicManager {
 	List find(DBTransaction trx, String query, Object value, Type type) {
 		List li = null;
 		try {
-			boolean doLog = Tracing.isDebugEnabled(DBManager.class);
+			boolean doLog = isLogDebugEnabled();
 			long start = 0;
 			if (doLog) start = System.currentTimeMillis();
 
@@ -198,7 +199,7 @@ class DBManager extends BasicManager {
 	List find(DBTransaction trx, String query, Object [] values, Type [] types) {
 		List li = null;
 		try {
-			boolean doLog = Tracing.isDebugEnabled(DBManager.class);
+			boolean doLog = isLogDebugEnabled();
 			long start = 0;
 			if (doLog) start = System.currentTimeMillis();
 			// old: li = getSession().find(query, values, types);
@@ -230,7 +231,7 @@ class DBManager extends BasicManager {
 	List find(DBTransaction trx, String query) {
 		List li = null;
 		try {
-			boolean doLog = Tracing.isDebugEnabled(DBManager.class);
+			boolean doLog = isLogDebugEnabled();
 			long start = 0;
 			if (doLog) start = System.currentTimeMillis();
 			// old: li = getSession().find(query);
@@ -257,9 +258,13 @@ class DBManager extends BasicManager {
 	Session getSession() {
 		return getDbSession().getHibernateSession();
 	}
+	
+	EntityManager getEntityManager() {
+		return getDbSession().getEntityManager();
+	}
 
 	DBTransaction beginTransaction() {
-		return this.getDbSession().beginDbTransaction();
+		return getDbSession().beginDbTransaction();
 	}
 	
 	/**
@@ -270,7 +275,7 @@ class DBManager extends BasicManager {
 		Query q = null;
 		DBQuery dbq = null;
 		try {
-			q = this.getSession().createQuery(query);
+			q = getSession().createQuery(query);
 			dbq = new DBQueryImpl(q);
 		} catch (HibernateException he) {
 			setError(he);
@@ -353,16 +358,6 @@ class DBManager extends BasicManager {
 	boolean isError() {
 		return error;
 	}
-
-	Connection getConnection() {
-		try {
-			return getSession().connection();
-		} catch (HibernateException he) {
-			setError(he);
-			throw new DBRuntimeException("Error in getting sql.Connection.", he); 
-
-		} 
-	}
 	
 	int delete(String query, Object value, Type type) {
 		int deleted = 0;
@@ -379,7 +374,7 @@ class DBManager extends BasicManager {
 			////
 			getSession().flush();
 			
-			if (Tracing.isDebugEnabled(DBManager.class)) {
+			if (isLogDebugEnabled()) {
 				logQuery("delete", new Object[] {value}, new Type[] {type}, query);	
 			}						
 		} catch (HibernateException e) {
@@ -407,7 +402,7 @@ class DBManager extends BasicManager {
 				si.delete( foundToDel.get(i) );
 			}
 			
-			if (Tracing.isDebugEnabled(DBManager.class)) {
+			if (isLogDebugEnabled()) {
 				logQuery("delete (trans "+trx.hashCode()+")",new Object[] {value}, new Type[] {type}, query);	
 			}
 		} catch (HibernateException e) { // we have some error
@@ -434,7 +429,7 @@ class DBManager extends BasicManager {
 				si.delete( foundToDel.get(i) );
 			}
 			
-			if (Tracing.isDebugEnabled(DBManager.class)) {
+			if (isLogDebugEnabled()) {
 				logQuery("delete (trans "+trx.hashCode()+")", values, types, query);	
 			}			
 		} catch (HibernateException e) { // we have some error
@@ -470,8 +465,8 @@ class DBManager extends BasicManager {
 		//try {
 	    	//Object o = getSession().load(theClass, key);
 	    	Object o = getSession().get(theClass, key);
-	    	if (Tracing.isDebugEnabled(DBManager.class)) {
-				Tracing.logDebug("findload (res " +(o == null? "null": "ok")+") key "+key+" class "+theClass.getName(),DBManager.class);	
+	    	if (isLogDebugEnabled()) {
+				logDebug("findload (res " +(o == null? "null": "ok")+") key "+key+" class "+theClass.getName());	
 			}			
             return o;
         //} catch (HibernateException e) {
@@ -507,7 +502,7 @@ class DBManager extends BasicManager {
 			}
 		}
 		sb.append(", query: ").append(query);
-		Tracing.logDebug(sb.toString(),DBManager.class);
+		logDebug(sb.toString());
 	}
 	
 }

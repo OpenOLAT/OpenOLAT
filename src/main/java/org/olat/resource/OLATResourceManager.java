@@ -72,6 +72,12 @@ public class OLATResourceManager extends BasicManager {
 		return new OLATResourceImpl(resource);
 	}
 	
+	public OLATResource createAndPersistOLATResourceInstance(OLATResourceable resource) {
+		OLATResource r = new OLATResourceImpl(resource);
+		saveOLATResource(r);
+		return r;
+	}
+	
 	/**
 	 * Creates a new OLATResource instance (but does not persist the instance)
 	 * @param typeName

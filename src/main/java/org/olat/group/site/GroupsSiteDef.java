@@ -25,9 +25,6 @@
 
 package org.olat.group.site;
 
-import java.util.List;
-
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
@@ -47,7 +44,6 @@ public class GroupsSiteDef extends AbstractSiteDefinition implements SiteDefinit
 	 */
 	public GroupsSiteDef() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -55,22 +51,6 @@ public class GroupsSiteDef extends AbstractSiteDefinition implements SiteDefinit
 	 */
 	public String getName() {
 		return "groupssite";
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionResources()
-	 */
-	public List getExtensionResources() {
-		// no ressources, part of main css
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getExtensionCSS()
-	 */
-	public ExtensionResource getExtensionCSS() {
-		// no ressources, part of main css
-		return null;
 	}
 
 	/**
@@ -85,5 +65,4 @@ public class GroupsSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		}
 		return si;
 	}
-
 }

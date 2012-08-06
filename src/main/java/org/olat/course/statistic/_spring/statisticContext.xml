@@ -230,7 +230,7 @@
 		class="org.springframework.jdbc.core.JdbcTemplate">
 		
 		<property name="dataSource">
-			<ref bean="${db.vendor}DataSource"/>
+			<ref bean="${db.vendor}_${db.source}_DataSource"/>
 		</property>
 		
 	</bean>

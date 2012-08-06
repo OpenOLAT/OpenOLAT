@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -115,9 +114,8 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
 		
-		CourseVO course = parse(body, CourseVO.class);
+		CourseVO course = conn.parse(response, CourseVO.class);
 		assertNotNull(course);
 		assertNotNull(course.getKey());
 		assertNotNull(course.getEditorRootNodeId());
@@ -133,8 +131,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		HttpResponse newStructureCode = conn.execute(newStructureMethod);
 		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
-		String newStructureBody = EntityUtils.toString(newStructureCode.getEntity());
-		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
+		CourseNodeVO structureNode = conn.parse(newStructureCode, CourseNodeVO.class);
 		assertNotNull(structureNode);
 		assertNotNull(structureNode.getId());
 		assertEquals(structureNode.getShortTitle(), "Structure-0");
@@ -164,8 +161,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		HttpResponse newPageCode = conn.execute(newPageMethod);
 		assertTrue(newPageCode.getStatusLine().getStatusCode() == 200 || newPageCode.getStatusLine().getStatusCode() == 201);
-		String newPageBody = EntityUtils.toString(newPageCode.getEntity());
-		CourseNodeVO pageNode = parse(newPageBody, CourseNodeVO.class);
+		CourseNodeVO pageNode = conn.parse(newPageCode, CourseNodeVO.class);
 		assertNotNull(pageNode);
 		assertNotNull(pageNode.getId());
 		assertEquals(pageNode.getShortTitle(), "Single-Page-0");
@@ -190,8 +186,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		HttpResponse newFolderCode = conn.execute(newFolderMethod);
 		assertTrue(newFolderCode.getStatusLine().getStatusCode() == 200 || newFolderCode.getStatusLine().getStatusCode() == 201);
-		String newFolderBody = EntityUtils.toString(newFolderCode.getEntity());
-		CourseNodeVO folderNode = parse(newFolderBody, CourseNodeVO.class);
+		CourseNodeVO folderNode = conn.parse(newFolderCode, CourseNodeVO.class);
 		assertNotNull(folderNode);
 		assertNotNull(folderNode.getId());
 		assertEquals(folderNode.getShortTitle(), "Folder-0");
@@ -210,8 +205,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 				new BasicNameValuePair("objectives", "Forum-objectives-0"));
 		HttpResponse newForumCode = conn.execute(newForumMethod);
 		assertTrue(newForumCode.getStatusLine().getStatusCode() == 200 || newForumCode.getStatusLine().getStatusCode() == 201);
-		String newForumBody = EntityUtils.toString(newForumCode.getEntity());
-		CourseNodeVO forumNode = parse(newForumBody, CourseNodeVO.class);
+		CourseNodeVO forumNode = conn.parse(newForumCode, CourseNodeVO.class);
 		assertNotNull(forumNode);
 		assertNotNull(forumNode.getId());
 		assertEquals(forumNode.getShortTitle(), "Forum-0");
@@ -232,8 +226,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 				new BasicNameValuePair("text", "A very difficult test"));
 		HttpResponse newTaskCode = conn.execute(newTaskMethod);
 		assertTrue(newTaskCode.getStatusLine().getStatusCode() == 200 || newTaskCode.getStatusLine().getStatusCode() == 201);
-		String newTaskBody = EntityUtils.toString(newTaskCode.getEntity());
-		CourseNodeVO taskNode = parse(newTaskBody, CourseNodeVO.class);
+		CourseNodeVO taskNode = conn.parse(newTaskCode, CourseNodeVO.class);
 		assertNotNull(taskNode);
 		assertNotNull(taskNode.getId());
 		assertEquals(taskNode.getShortTitle(), "Task-0");
@@ -275,8 +268,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 				new BasicNameValuePair("objectives", "Assessment-objectives-0"));
 		HttpResponse newAssessmentCode = conn.execute(newAssessmentMethod);
 		assertTrue(newAssessmentCode.getStatusLine().getStatusCode() == 200 || newAssessmentCode.getStatusLine().getStatusCode() == 201);
-		String newAssessmentBody = EntityUtils.toString(newAssessmentCode.getEntity());
-		CourseNodeVO assessmentNode = parse(newAssessmentBody, CourseNodeVO.class);
+		CourseNodeVO assessmentNode = conn.parse(newAssessmentCode, CourseNodeVO.class);
 		assertNotNull(assessmentNode);
 		assertNotNull(assessmentNode.getId());
 		assertEquals(assessmentNode.getShortTitle(), "Assessment-0");
@@ -295,8 +287,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		HttpResponse newContactCode = conn.execute(newContactMethod);
 		assertEquals(200, newContactCode.getStatusLine().getStatusCode());
-		String newContactBody = EntityUtils.toString(newContactCode.getEntity());
-		CourseNodeVO contactNode = parse(newContactBody, CourseNodeVO.class);
+		CourseNodeVO contactNode = conn.parse(newContactCode, CourseNodeVO.class);
 		assertNotNull(contactNode);
 		assertNotNull(contactNode.getId());
 		assertEquals(contactNode.getShortTitle(), "Contact-0");
@@ -315,9 +306,8 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
 		
-		CourseVO course = parse(body, CourseVO.class);
+		CourseVO course = conn.parse(response, CourseVO.class);
 		assertNotNull(course);
 		assertNotNull(course.getKey());
 		assertNotNull(course.getEditorRootNodeId());
@@ -342,9 +332,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		HttpResponse newGrpCode = conn.execute(newGrpMethod);
 		assertEquals(200, newGrpCode.getStatusLine().getStatusCode());
-		InputStream newGrpBody = newGrpCode.getEntity().getContent();
-
-		GroupVO group = parse(newGrpBody, GroupVO.class);
+		GroupVO group = conn.parse(newGrpCode, GroupVO.class);
 		assertNotNull(group);
 		assertNotNull(group.getKey());
 		
@@ -358,8 +346,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut newStructureMethod = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newStructureCode = conn.execute(newStructureMethod);
 		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
-		String newStructureBody = EntityUtils.toString(newStructureCode.getEntity());
-		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
+		CourseNodeVO structureNode = conn.parse(newStructureCode, CourseNodeVO.class);
 		assertNotNull(structureNode);
 		assertNotNull(structureNode.getId());
 		assertEquals(structureNode.getShortTitle(), "Structure-0");
@@ -384,8 +371,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		HttpResponse newPageCode = conn.execute(newPageMethod);
 		assertTrue(newPageCode.getStatusLine().getStatusCode() == 200 || newPageCode.getStatusLine().getStatusCode() == 201);
-		String newPageBody = EntityUtils.toString(newPageCode.getEntity());
-		CourseNodeVO pageNode = parse(newPageBody, CourseNodeVO.class);
+		CourseNodeVO pageNode = conn.parse(newPageCode, CourseNodeVO.class);
 		assertNotNull(pageNode);
 		assertNotNull(pageNode.getId());
 		assertEquals(pageNode.getShortTitle(), "Single-Page-0");
@@ -403,8 +389,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut newFolderMethod = conn.createPut(newFolderUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newFolderCode = conn.execute(newFolderMethod);
 		assertTrue(newFolderCode.getStatusLine().getStatusCode() == 200 || newFolderCode.getStatusLine().getStatusCode() == 201);
-		String newFolderBody = EntityUtils.toString(newFolderCode.getEntity());
-		CourseNodeVO folderNode = parse(newFolderBody, CourseNodeVO.class);
+		CourseNodeVO folderNode = conn.parse(newFolderCode, CourseNodeVO.class);
 		assertNotNull(folderNode);
 		assertNotNull(folderNode.getId());
 		assertEquals(folderNode.getShortTitle(), "Folder-0");
@@ -422,8 +407,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut newForumMethod = conn.createPut(newForumUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newForumCode = conn.execute(newForumMethod);
 		assertTrue(newForumCode.getStatusLine().getStatusCode() == 200 || newForumCode.getStatusLine().getStatusCode() == 201);
-		String newForumBody = EntityUtils.toString(newForumCode.getEntity());
-		CourseNodeVO forumNode = parse(newForumBody, CourseNodeVO.class);
+		CourseNodeVO forumNode = conn.parse(newForumCode, CourseNodeVO.class);
 		assertNotNull(forumNode);
 		assertNotNull(forumNode.getId());
 		assertEquals(forumNode.getShortTitle(), "Forum-0");
@@ -442,8 +426,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut newTaskMethod = conn.createPut(newTaskUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newTaskCode = conn.execute(newTaskMethod);
 		assertTrue(newTaskCode.getStatusLine().getStatusCode() == 200 || newTaskCode.getStatusLine().getStatusCode() == 201);
-		String newTaskBody = EntityUtils.toString(newTaskCode.getEntity());
-		CourseNodeVO taskNode = parse(newTaskBody, CourseNodeVO.class);
+		CourseNodeVO taskNode = conn.parse(newTaskCode, CourseNodeVO.class);
 		assertNotNull(taskNode);
 		assertNotNull(taskNode.getId());
 		assertEquals(taskNode.getShortTitle(), "Task-0");
@@ -467,8 +450,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpGet getTaskConfig = conn.createGet(taskConfigUri, MediaType.APPLICATION_JSON, true);
 		taskConfigCode = conn.execute(getTaskConfig);
 		assertTrue(taskConfigCode.getStatusLine().getStatusCode() == 200 || taskConfigCode.getStatusLine().getStatusCode() == 201);
-		String taskConfigBody = EntityUtils.toString(taskConfigCode.getEntity());
-		TaskConfigVO taskConfig = parse(taskConfigBody, TaskConfigVO.class);
+		TaskConfigVO taskConfig = conn.parse(taskConfigCode, TaskConfigVO.class);
 		assertNotNull(taskConfig);
 		assertTrue(!taskConfig.getIsAssignmentEnabled());//default is true
 		assertTrue(taskConfig.getIsScoringEnabled() & taskConfig.getIsScoringGranted());
@@ -484,8 +466,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut newAssessmentMethod = conn.createPut(newAssessmentUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newAssessmentCode = conn.execute(newAssessmentMethod);
 		assertTrue(newAssessmentCode.getStatusLine().getStatusCode() == 200 || newAssessmentCode.getStatusLine().getStatusCode() == 201);
-		String newAssessmentBody = EntityUtils.toString(newAssessmentCode.getEntity());
-		CourseNodeVO assessmentNode = parse(newAssessmentBody, CourseNodeVO.class);
+		CourseNodeVO assessmentNode = conn.parse(newAssessmentCode, CourseNodeVO.class);
 		assertNotNull(assessmentNode);
 		assertNotNull(assessmentNode.getId());
 		assertEquals(assessmentNode.getShortTitle(), "Assessment-0");
@@ -502,8 +483,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut newContactMethod = conn.createPut(newContactUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newContactCode = conn.execute(newContactMethod);
 		assertEquals(200, newContactCode.getStatusLine().getStatusCode());
-		String newContactBody = EntityUtils.toString(newContactCode.getEntity());
-		CourseNodeVO contactNode = parse(newContactBody, CourseNodeVO.class);
+		CourseNodeVO contactNode = conn.parse(newContactCode, CourseNodeVO.class);
 		assertNotNull(contactNode);
 		assertNotNull(contactNode.getId());
 		assertEquals(contactNode.getShortTitle(), "Contact-0");
@@ -535,9 +515,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		newENCode = conn.execute(newENMethod);
 		assertEquals(200, newENCode.getStatusLine().getStatusCode());
-		
-		String newENBody = EntityUtils.toString(newENCode.getEntity());
-		CourseNodeVO enNode = parse(newENBody, CourseNodeVO.class);
+		CourseNodeVO enNode = conn.parse(newENCode, CourseNodeVO.class);
 		assertNotNull(enNode);
 		assertNotNull(enNode.getId());
 		assertEquals(enNode.getShortTitle(), "Enrollment-0");
@@ -562,9 +540,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		HttpResponse qtiRepoCode = conn.execute(qtiRepoMethod);
 		assertTrue(qtiRepoCode.getStatusLine().getStatusCode() == 200 || qtiRepoCode.getStatusLine().getStatusCode() == 201);
-		
-		String qtiRepoBody = EntityUtils.toString(qtiRepoCode.getEntity());
-		RepositoryEntryVO newTestVO = parse(qtiRepoBody, RepositoryEntryVO.class);
+		RepositoryEntryVO newTestVO = conn.parse(qtiRepoCode, RepositoryEntryVO.class);
 		assertNotNull(newTestVO);
 		
 		Long key = newTestVO.getKey();
@@ -583,8 +559,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut newTestMethod = conn.createPut(newTestUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newTestCode = conn.execute(newTestMethod);
 		assertTrue(newTestCode.getStatusLine().getStatusCode() == 200 || newTestCode.getStatusLine().getStatusCode() == 201);
-		String newTestBody = EntityUtils.toString(newTestCode.getEntity());
-		CourseNodeVO testNode = parse(newTestBody, CourseNodeVO.class);
+		CourseNodeVO testNode = conn.parse(newTestCode, CourseNodeVO.class);
 		assertNotNull(testNode);
 		assertNotNull(testNode.getId());
 		assertEquals(testNode.getShortTitle(), "Test-0");
@@ -617,8 +592,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpGet getTestConfig = conn.createGet(testConfigUri, MediaType.APPLICATION_JSON, true);
 		testConfigCode = conn.execute(getTestConfig);
 		assertTrue(testConfigCode.getStatusLine().getStatusCode() == 200 || testConfigCode.getStatusLine().getStatusCode() == 201);
-		String testConfigBody = EntityUtils.toString(testConfigCode.getEntity());
-		TestConfigVO testConfig = parse(testConfigBody, TestConfigVO.class);
+		TestConfigVO testConfig = conn.parse(testConfigCode, TestConfigVO.class);
 		assertTrue(testConfig.getNumAttempts() == 10);
 		assertTrue(testConfig.getAllowCancel());
 		assertTrue(testConfig.getSummeryPresentation().equals(AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED));
@@ -640,8 +614,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpResponse surveyRepoCode = conn.execute(surveyRepoMethod);
 		assertTrue(surveyRepoCode.getStatusLine().getStatusCode() == 200 || surveyRepoCode.getStatusLine().getStatusCode() == 201);
 		
-		String surveyRepoBody = EntityUtils.toString(surveyRepoCode.getEntity());
-		RepositoryEntryVO newSurveyVO = parse(surveyRepoBody, RepositoryEntryVO.class);
+		RepositoryEntryVO newSurveyVO = conn.parse(surveyRepoCode, RepositoryEntryVO.class);
 		assertNotNull(newSurveyVO);
 		
 		Long surveyKey = newSurveyVO.getKey();
@@ -660,8 +633,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut newSurveyMethod = conn.createPut(newSurveyUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newSurveyCode = conn.execute(newSurveyMethod);
 		assertTrue(newSurveyCode.getStatusLine().getStatusCode() == 200 || newSurveyCode.getStatusLine().getStatusCode() == 201);
-		String newSurveyBody = EntityUtils.toString(newSurveyCode.getEntity());
-		CourseNodeVO surveyNode = parse(newSurveyBody, CourseNodeVO.class);
+		CourseNodeVO surveyNode = conn.parse(newSurveyCode, CourseNodeVO.class);
 		assertNotNull(surveyNode);
 		assertNotNull(surveyNode.getId());
 		assertEquals(surveyNode.getShortTitle(), "Survey-0");
@@ -685,8 +657,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpGet getSurveyConfig = conn.createGet(surveykConfigUri, MediaType.APPLICATION_JSON, true);
 		surveyConfigCode = conn.execute(getSurveyConfig);
 		assertTrue(surveyConfigCode.getStatusLine().getStatusCode() == 200 || surveyConfigCode.getStatusLine().getStatusCode() == 201);
-		String surveyConfigBody =EntityUtils.toString(surveyConfigCode.getEntity());
-		SurveyConfigVO surveyConfig = parse(surveyConfigBody, SurveyConfigVO.class);
+		SurveyConfigVO surveyConfig = conn.parse(surveyConfigCode, SurveyConfigVO.class);
 		assertNotNull(surveyConfig);
 		assertTrue(surveyConfig.getAllowCancel());
 		
@@ -702,9 +673,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		HttpResponse newTUCode = conn.execute(newTUMethod);
 		assertEquals(200, newTUCode.getStatusLine().getStatusCode());
-		
-		String newTUBody = EntityUtils.toString(newTUCode.getEntity());
-		CourseNodeVO tuNode = parse(newTUBody, CourseNodeVO.class);
+		CourseNodeVO tuNode = conn.parse(newTUCode, CourseNodeVO.class);
 		assertNotNull(tuNode);
 		assertNotNull(tuNode.getId());
 		assertEquals(tuNode.getShortTitle(), "ExternalPage-0");
@@ -799,9 +768,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		CourseVO course = parse(body, CourseVO.class);
+		CourseVO course = conn.parse(response, CourseVO.class);
 		assertNotNull(course);
 		assertNotNull(course.getKey());
 		assertNotNull(course.getEditorRootNodeId());
@@ -819,8 +786,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpResponse newStructureCode = conn.execute(updateMethod);
 		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
 		//check the response
-		String newStructureBody = EntityUtils.toString(newStructureCode.getEntity());
-		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
+		CourseNodeVO structureNode = conn.parse(newStructureCode, CourseNodeVO.class);
 		assertNotNull(structureNode);
 		assertNotNull(structureNode.getId());
 		assertEquals(structureNode.getShortTitle(), "Structure-0b");
@@ -850,9 +816,8 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		CourseVO course = parse(body, CourseVO.class);
+
+		CourseVO course = conn.parse(response, CourseVO.class);
 		assertNotNull(course);
 		assertNotNull(course.getKey());
 		assertNotNull(course.getEditorRootNodeId());
@@ -881,8 +846,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpResponse newStructureCode = conn.execute(newStructureMethod);
 		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
 		//check the response
-		String newStructureBody = EntityUtils.toString(newStructureCode.getEntity());
-		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
+		CourseNodeVO structureNode = conn.parse(newStructureCode, CourseNodeVO.class);
 		assertNotNull(structureNode);
 		assertNotNull(structureNode.getId());
 		assertEquals(structureNode.getShortTitle(), "Structure-0-with-file");

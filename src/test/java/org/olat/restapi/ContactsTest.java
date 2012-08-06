@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -45,12 +44,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
-import org.olat.group.properties.BusinessGroupPropertyManager;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.DisplayMembers;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -58,6 +53,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVOes;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ContactsTest extends OlatJerseyTestCase {
 	
@@ -67,6 +63,9 @@ public class ContactsTest extends OlatJerseyTestCase {
 	private static BusinessGroup g1, g2;
 	private static BusinessGroup g3, g4;
 	private static OLATResource course;
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	@Before
 	@Override
@@ -114,53 +113,50 @@ public class ContactsTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 			
 		//create learn group
-	    BGContextManager cm = BGContextManagerImpl.getInstance();
-	    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-	    BaseSecurity secm = BaseSecurityManager.getInstance();
-			
-	    // 1) context one: learning groups
-	    BGContext c1 = cm.createAndAddBGContextToResource("c1name-learn", course, BusinessGroup.TYPE_LEARNINGROUP, owner1, true);
-	    // create groups without waiting list
-	    g1 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "rest-g1", null, new Integer(0), new Integer(10), false, false, c1);
-	    g2 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "rest-g2", null, new Integer(0), new Integer(10), false, false, c1);
-	    
-	    //permission to see owners and participants
-	    BusinessGroupPropertyManager bgpm1 = new BusinessGroupPropertyManager(g1);
-	    bgpm1.updateDisplayMembers(false, false, false);
-	    BusinessGroupPropertyManager bgpm2 = new BusinessGroupPropertyManager(g2);
-	    bgpm2.updateDisplayMembers(true, true, false);
-	    
-	    // members g1
-	    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(owner2, g1.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(part1, g1.getPartipiciantGroup());
-	    secm.addIdentityToSecurityGroup(part2, g1.getPartipiciantGroup());
-	    
-	    // members g2
-	    secm.addIdentityToSecurityGroup(owner1, g2.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(part1, g2.getPartipiciantGroup());
-	    
-	    
-	    // 2) context two: right groups
-	    BGContext c2 = cm.createAndAddBGContextToResource("c2name-area", course, BusinessGroup.TYPE_RIGHTGROUP, owner2, true);
-	    // groups
-	    g3 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "rest-g3", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
-	    g4 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "rest-g4", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
-	    // members -> default participants are visible
-	    secm.addIdentityToSecurityGroup(owner1, g3.getPartipiciantGroup());
-	    secm.addIdentityToSecurityGroup(part3, g3.getPartipiciantGroup());
-	    
-	    secm.addIdentityToSecurityGroup(owner2, g4.getPartipiciantGroup());
-	    secm.addIdentityToSecurityGroup(part3, g4.getPartipiciantGroup());
-	    
-	    DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
-	    initialized = true;
+    BaseSecurity secm = BaseSecurityManager.getInstance();
+		
+    // 1) context one: learning groups
+    OLATResource c1 = JunitTestHelper.createRandomResource();
+    // create groups without waiting list
+    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
+    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
+    
+    //permission to see owners and participants
+    businessGroupService.updateDisplayMembers(g1, new DisplayMembers(false, false, false));
+    businessGroupService.updateDisplayMembers(g2, new DisplayMembers(true, true, false));
+    
+    // members g1
+    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
+    secm.addIdentityToSecurityGroup(owner2, g1.getOwnerGroup());
+    secm.addIdentityToSecurityGroup(part1, g1.getPartipiciantGroup());
+    secm.addIdentityToSecurityGroup(part2, g1.getPartipiciantGroup());
+    
+    // members g2
+    secm.addIdentityToSecurityGroup(owner1, g2.getOwnerGroup());
+    secm.addIdentityToSecurityGroup(part1, g2.getPartipiciantGroup());
+    
+    
+    // 2) context two: right groups
+    OLATResource c2 = JunitTestHelper.createRandomResource();
+    // groups
+    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
+    businessGroupService.updateDisplayMembers(g3, new DisplayMembers(false, true, false));
+    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
+    businessGroupService.updateDisplayMembers(g4, new DisplayMembers(false, true, false));
+    // members -> default participants are visible
+    secm.addIdentityToSecurityGroup(owner1, g3.getPartipiciantGroup());
+    secm.addIdentityToSecurityGroup(part3, g3.getPartipiciantGroup());
+    
+    secm.addIdentityToSecurityGroup(owner2, g4.getPartipiciantGroup());
+    secm.addIdentityToSecurityGroup(part3, g4.getPartipiciantGroup());
+    
+    DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
+    initialized = true;
 	}
 	
 	@Test
 	public void testGetContactsDirectOwner1() throws IOException {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<Identity> identities = bgm.findContacts(owner1, 0, -1);
+		List<Identity> identities = businessGroupService.findContacts(owner1, 0, -1);
 		
 		assertEquals(2, identities.size());
 		assertFalse(identities.contains(owner1));//not a contact of myself
@@ -173,15 +169,13 @@ public class ContactsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCountContactsDirectOwner1() throws IOException {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		int numOfContacts = bgm.countContacts(owner1);
+		int numOfContacts = businessGroupService.countContacts(owner1);
 		assertEquals(2, numOfContacts);
 	}
 	
 	@Test
 	public void testGetContactsDirectOwner2() throws IOException {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<Identity> identities = bgm.findContacts(owner2, 0, -1);
+		List<Identity> identities = businessGroupService.findContacts(owner2, 0, -1);
 		
 		assertEquals(1, identities.size());
 		assertFalse(identities.contains(owner1));//no
@@ -194,8 +188,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCountContactsDirectOwner2() throws IOException {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		int numOfContacts = bgm.countContacts(owner2);
+		int numOfContacts = businessGroupService.countContacts(owner2);
 		assertEquals(1, numOfContacts);
 	}
 	
@@ -208,8 +201,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		UserVOes contacts = parse(body, UserVOes.class);
+		UserVOes contacts = conn.parse(response, UserVOes.class);
 		assertNotNull(contacts);
 		assertNotNull(contacts.getUsers());
 		assertEquals(1, contacts.getUsers().length);

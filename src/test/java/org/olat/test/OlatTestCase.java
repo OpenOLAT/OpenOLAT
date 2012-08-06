@@ -30,10 +30,9 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.hibernate.cfg.Configuration;
+import org.junit.After;
 import org.junit.Before;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.OLATLocalSessionFactoryBean;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.springframework.core.io.ClassPathResource;
@@ -113,27 +112,8 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		
 		FrameworkStartupEventChannel.fireEvent();
 		
-		OLATLocalSessionFactoryBean bean = (OLATLocalSessionFactoryBean)CoreSpringFactory.getBean(OLATLocalSessionFactoryBean.class);
-		Configuration configuration = bean.getConfiguration();
-		
-		Properties properties = configuration.getProperties();
-		
-		String[] propsOfInterest =new String[]{
-				"hibernate.connection.driver_class",
-				"hibernate.connection.provider_class",
-				"hibernate.connection.url",
-				"hibernate.connection.username",
-				};
-		
-		String connectionURL = (String)properties.get("hibernate.connection.url");
-		postgresqlConfigured = connectionURL != null && connectionURL.toLowerCase().indexOf("postgres") > 0; 
-		
-		
-		
-		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-		for (int i = 0; i < propsOfInterest.length; i++) {
-			System.out.println("++" + propsOfInterest[i] + " -> "+properties.getProperty(propsOfInterest[i]));
-		}
+		String dbVendor = DBFactory.getInstance().getDbVendor();
+		postgresqlConfigured = dbVendor != null && dbVendor.startsWith("postgres"); 
 		
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		printOlatLocalProperties();
@@ -142,6 +122,15 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
 		started = true;
+	}
+	
+	@After
+	public void closeConnectionAfter() {
+		try {
+			DBFactory.getInstance().commitAndCloseSession();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

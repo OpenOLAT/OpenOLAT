@@ -110,6 +110,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 
 	private static final String ACTION_CLOSE = "cmd.close";
 	private static final String ACTION_DOWNLOAD = "dl";
+	private static final String ACTION_DOWNLOAD_BACKWARD_COMPAT = "dlcompat";
 	private static final String ACTION_LAUNCH = "lch";
 	private static final String ACTION_COPY = "cp";
 	private static final String ACTION_BOOKMARK = "bm";
@@ -128,6 +129,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private static final String TOOL_BOOKMARK = "b";
 	private static final String TOOL_COPY = "c";
 	private static final String TOOL_DOWNLOAD = "d";
+	private static final String TOOL_DOWNLOAD_BACKWARD_COMPAT = "dcompat";
 	private static final String TOOL_EDIT = "e";
 	private static final String TOOL_CATALOG = "cat";
 	private static final String TOOL_CHDESC = "chd";
@@ -421,6 +423,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			if (isNewController) {
 				//mark as download link
 				detailsToolC.addLink(ACTION_DOWNLOAD, translate("details.download"), TOOL_DOWNLOAD, null, true);
+				detailsToolC.addLink(ACTION_DOWNLOAD_BACKWARD_COMPAT, translate("details.download.compatible"), TOOL_DOWNLOAD_BACKWARD_COMPAT, null, true);
 				detailsToolC.addLink(ACTION_BOOKMARK, translate("details.bookmark"), TOOL_BOOKMARK, null);
 			}
 			boolean canDownload = repositoryEntry.getCanDownload() && handler.supportsDownload(repositoryEntry);
@@ -428,8 +431,12 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			if (repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())
 				&& !(isOwner || isAuthor)) canDownload = false;
 			// always enable download for owners
-			if (isOwner && handler.supportsDownload(repositoryEntry)) canDownload = true;
+			if (isOwner && handler.supportsDownload(repositoryEntry)) {
+				canDownload = true;
+			}
 			detailsToolC.setEnabled(TOOL_DOWNLOAD, canDownload && !corrupted);
+			detailsToolC.setEnabled(TOOL_DOWNLOAD_BACKWARD_COMPAT, canDownload && !corrupted
+					&& "CourseModule".equals(repositoryEntry.getOlatResource().getResourceableTypeName()));
 			boolean canBookmark = true;
 			if (BookmarkManager.getInstance().isResourceableBookmarked(ureq.getIdentity(), repositoryEntry) || !repositoryEntry.getCanLaunch())
 				canBookmark = false;
@@ -543,7 +550,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			doCloseDetailView(ureq);
 			return;
 		} else if (source == downloadButton){
-			doDownload(ureq);
+			doDownload(ureq, false);
 		} else if (source == launchButton){
 			doLaunch(ureq);
 		} else if (source == loginLink){
@@ -736,7 +743,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * 
 	 * @param ureq
 	 */
-	void doDownload(UserRequest ureq) {
+	void doDownload(UserRequest ureq, boolean backwardsCompatible) {
 		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 
 		if (typeToDownload == null){
@@ -754,7 +761,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		try {			
 		  lockResult = typeToDownload.acquireLock(ores, ureq.getIdentity());
 		  if(lockResult==null || (lockResult!=null && lockResult.isSuccess() && !isAlreadyLocked)) {
-		    MediaResource mr = typeToDownload.getAsMediaResource(ores);
+		    MediaResource mr = typeToDownload.getAsMediaResource(ores, backwardsCompatible);
 		    if(mr!=null) {
 		      RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntry);
 		      ureq.getDispatchResult().setResultingMediaResource(mr);
@@ -908,8 +915,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			//
 		} else if (source == detailsToolC) {
 			if (cmd.equals(ACTION_DOWNLOAD)) { // download
-				doDownload(ureq);
+				doDownload(ureq, false);
 				return;
+			} else if (cmd.equals(ACTION_DOWNLOAD_BACKWARD_COMPAT)) {
+				doDownload(ureq, true);
 			} else if (cmd.equals(ACTION_LAUNCH)) { // launch resource
 				doLaunch(ureq);
 				return;

@@ -32,6 +32,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -65,8 +66,7 @@ import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.ui.BGConfigFlags;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
@@ -95,10 +95,13 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 	private VelocityContainer sendNotificationVC;
 	private CloseRessourceOptionForm formStep2;
 	
+	private final BusinessGroupService businessGroupService;
+	
 	public WizardCloseCourseController(UserRequest ureq, WindowControl control, RepositoryEntry repositoryEntry) {
 		super(ureq, control, NUM_STEPS);
 		setBasePackage(RepositoryManager.class);
 		this.repositoryEntry = repositoryEntry;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		this.mainVc = createVelocityContainer("wizard");
 		this.panel = new Panel("panel");
@@ -249,38 +252,32 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 		ICourse course = CourseFactory.loadCourse(repositoryEntry.getOlatResource());
 		if(course != null) {
 			BaseSecurity securityManager = BaseSecurityManager.getInstance();
-			SecurityGroup secGroupOwner = null;
-			SecurityGroup secGroupPartipiciant = null;
-			SecurityGroup secGroupWaiting = null;
+
 			// LearningGroups
-			List allGroups = course.getCourseEnvironment().getCourseGroupManager().getAllLearningGroupsFromAllContexts();
-			BGConfigFlags flagsLearning = BGConfigFlags.createLearningGroupDefaultFlags();
-			for (Object bGroup : allGroups) {
-				secGroupOwner = ((BusinessGroup) bGroup).getOwnerGroup();
-				secGroupPartipiciant = ((BusinessGroup) bGroup).getPartipiciantGroup();
-				BusinessGroupManagerImpl.getInstance().removeOwnersAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupOwner), ((BusinessGroup) bGroup), flagsLearning);
-				BusinessGroupManagerImpl.getInstance().removeParticipantsAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), ((BusinessGroup) bGroup), flagsLearning);
-				if(((BusinessGroup) bGroup).getWaitingListEnabled()) {
-					secGroupWaiting = ((BusinessGroup) bGroup).getWaitingGroup();
-					BusinessGroupManagerImpl.getInstance().removeFromWaitingListAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), ((BusinessGroup) bGroup), flagsLearning);
+			List<BusinessGroup> allGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
+			for (BusinessGroup bGroup : allGroups) {
+				SecurityGroup secGroupOwner = bGroup.getOwnerGroup();
+				SecurityGroup secGroupPartipiciant = bGroup.getPartipiciantGroup();
+				SecurityGroup secGroupWaiting = bGroup.getWaitingGroup();
+				if(secGroupOwner != null) {
+					businessGroupService.removeOwners(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupOwner), bGroup);
+				}
+				if(secGroupPartipiciant != null) {
+					businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), bGroup);
+				}
+				if(secGroupWaiting != null) {
+					businessGroupService.removeFromWaitingList(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), bGroup);
 				}
 			}
-			// RightGroups
-			allGroups.clear();
-			allGroups = course.getCourseEnvironment().getCourseGroupManager().getAllRightGroupsFromAllContexts();
-			BGConfigFlags flagsRightgroup = BGConfigFlags.createRightGroupDefaultFlags();
-			for (Object bGroup : allGroups) {
-				secGroupPartipiciant = ((BusinessGroup) bGroup).getPartipiciantGroup();
-				BusinessGroupManagerImpl.getInstance().removeParticipantsAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), ((BusinessGroup) bGroup), flagsRightgroup);
-			}
+			
 			//fxdiff VCRP-1,2: access control of resources
 			if(repositoryEntry.getParticipantGroup() != null) {
-				secGroupPartipiciant = repositoryEntry.getParticipantGroup();
-				BusinessGroupManagerImpl.getInstance().removeAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), secGroupPartipiciant);
+				SecurityGroup secGroupPartipiciant = repositoryEntry.getParticipantGroup();
+				businessGroupService.removeAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), secGroupPartipiciant);
 			}
 			if(repositoryEntry.getTutorGroup() != null) {
-				secGroupPartipiciant = repositoryEntry.getTutorGroup();
-				BusinessGroupManagerImpl.getInstance().removeAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), secGroupPartipiciant);
+				SecurityGroup secGroupPartipiciant = repositoryEntry.getTutorGroup();
+				businessGroupService.removeAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), secGroupPartipiciant);
 			}
 		}
 	}
@@ -329,13 +326,11 @@ class CloseRessourceOptionForm extends FormBasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void formOK(UserRequest ureq) {
 		// nothing to do
 	}
 	
 	@Override
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(event.getCommand().equals(Form.EVNT_VALIDATION_OK.getCommand())) {
 			fireEvent(ureq, Event.DONE_EVENT);
@@ -345,7 +340,6 @@ class CloseRessourceOptionForm extends FormBasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		String[] keys = new String[] {"form.clean.catalog", "form.clean.groups"};

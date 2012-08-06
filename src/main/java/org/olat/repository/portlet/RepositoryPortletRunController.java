@@ -22,8 +22,9 @@ package org.olat.repository.portlet;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -39,7 +40,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.portal.AbstractPortletRunController;
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
@@ -47,14 +47,12 @@ import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.core.gui.control.generic.portal.PortletToolSortingControllerImpl;
 import org.olat.core.gui.control.generic.portal.SortingCriteria;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryOrder;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.site.RepositorySite;
 
 
@@ -67,13 +65,12 @@ import org.olat.repository.site.RepositorySite;
  * Initial Date:  06.03.2009 <br>
  * @author gnaegi
  */
-public class RepositoryPortletRunController extends AbstractPortletRunController implements GenericEventListener {
+public class RepositoryPortletRunController extends AbstractPortletRunController<RepositoryEntryShort> implements GenericEventListener {
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
 	private TableController tableCtr;
 	private RepositoryPortletTableDataModel repoEntryListModel;
-	private VelocityContainer repoEntriesVC;	
 	private boolean studentView;
 
 	private Link showAllLink;
@@ -91,7 +88,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		this.studentView = studentView;	
 		
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);				
-		repoEntriesVC = this.createVelocityContainer("repositoryPortlet");
+		VelocityContainer repoEntriesVC = this.createVelocityContainer("repositoryPortlet");
 		showAllLink = LinkFactory.createLink("repositoryPortlet.showAll", repoEntriesVC, this);
 			
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -116,28 +113,31 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		repoEntriesVC.put("table", tableCtr.getInitialComponent());
 
 		putInitialPanel(repoEntriesVC);
-
-		// register for businessgroup type events
-//FIXME:RH:repo listen to changes
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(BusinessGroup.class));
 	}
 	
-	private List<PortletEntry> getAllPortletEntries() {
+	private List<RepositoryEntry> getAllEntries(SortingCriteria sortingCriteria) {
+		int maxResults = sortingCriteria == null ? -1 : sortingCriteria.getMaxEntries();
+		RepositoryEntryOrder orderBy = RepositoryEntryOrder.nameAsc;
+		if(sortingCriteria != null && !sortingCriteria.isAscending()) {
+			orderBy = RepositoryEntryOrder.nameDesc;
+		}
 		if (studentView) {
-			List<RepositoryEntry> allRepoEntries = RepositoryManager.getInstance().getLearningResourcesAsStudent(identity);
-			return convertRepositoryEntriesToPortletEntryList(allRepoEntries);
+			return RepositoryManager.getInstance().getLearningResourcesAsStudent(getIdentity(), 0, maxResults, orderBy);
 		} else {
-			List<RepositoryEntry> allRepoEntries = RepositoryManager.getInstance().getLearningResourcesAsTeacher(identity);
-			return convertRepositoryEntriesToPortletEntryList(allRepoEntries);
+			return RepositoryManager.getInstance().getLearningResourcesAsTeacher(getIdentity(), 0, maxResults, orderBy);
 		}
 	}
 
-	private List<PortletEntry> convertRepositoryEntriesToPortletEntryList(List<RepositoryEntry> items) {
-		List<PortletEntry> convertedList = new ArrayList<PortletEntry>();
+	private List<PortletEntry<RepositoryEntryShort>> convertRepositoryEntriesToPortletEntryList(List<RepositoryEntry> items, boolean withDescription) {
+		List<PortletEntry<RepositoryEntryShort>> convertedList = new ArrayList<PortletEntry<RepositoryEntryShort>>();
 		for(RepositoryEntry item:items) {
 			boolean closed = RepositoryManager.getInstance().createRepositoryEntryStatus(item.getStatusCode()).isClosed();
 			if(!closed) {
-				convertedList.add(new RepositoryPortletEntry(item));
+				RepositoryPortletEntry entry = new RepositoryPortletEntry(item);
+				if(withDescription) {
+					entry.setDescription(item.getDescription());
+				}
+				convertedList.add(entry);
 			}
 		}
 		return convertedList;
@@ -145,17 +145,16 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			List<PortletEntry> entries = getAllPortletEntries();
-			entries = getSortedList(entries, sortingCriteria );
-			
+			List<RepositoryEntry> items = getAllEntries(sortingCriteria);
+			List<PortletEntry<RepositoryEntryShort>> entries = convertRepositoryEntriesToPortletEntryList(items, false);
 			repoEntryListModel = new RepositoryPortletTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(repoEntryListModel);
 		} else {
-			reloadModel(this.getPersistentManuallySortedItems());
+			reloadModel(getPersistentManuallySortedItems());
 		}
 	}
 	
-	protected void reloadModel(List<PortletEntry> sortedItems) {						
+	protected void reloadModel(List<PortletEntry<RepositoryEntryShort>> sortedItems) {						
 		repoEntryListModel = new RepositoryPortletTableDataModel(sortedItems, getLocale());
 		tableCtr.setTableDataModel(repoEntryListModel);
 	}
@@ -190,27 +189,8 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_LAUNCH)) {
 					int rowId = te.getRowId();
-					RepositoryEntry repoEntry = repoEntryListModel.getRepositoryEntry(rowId);
-					// refresh repo entry, attach to hibernate session
-					repoEntry = (RepositoryEntry) DBFactory.getInstance().loadObject(repoEntry);
-					// get run controller fro this repo entry and launch it in new tab
-					DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-					//was brasato:: DTabs dts = wControl.getDTabs();
-					DTab dt = dts.getDTab(repoEntry.getOlatResource());
-					if (dt == null) {
-						// does not yet exist -> create and add
-						//fxdiff BAKS-7 Resume function
-						dt = dts.createDTab(repoEntry.getOlatResource(), repoEntry, repoEntry.getDisplayname());
-						// tabs full
-						if (dt != null) {
-							Controller runCtr = RepositoyUIFactory.createLaunchController(repoEntry, null, ureq, dt.getWindowControl());					
-							dt.setController(runCtr);
-							dts.addDTab(dt);
-							dts.activate(ureq, dt, null); // null: do not activate to a certain view
-						}
-					} else {
-						dts.activate(ureq, dt, null);
-					}
+					PortletEntry<RepositoryEntryShort> entry = repoEntryListModel.getObject(rowId);
+					NewControllerFactory.getInstance().launch("[RepositoryEntry:" + entry.getKey() + "]", ureq, getWindowControl());
 				}
 			}
 		}	
@@ -222,30 +202,10 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	protected void doDispose() {
 		super.doDispose();
 //FIXME:RH:repo listen to changes
-		// de-register for businessgroup type events
-//		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(BusinessGroup.class));
-		// POST: all firing event for the source just deregistered are finished
-		// (listeners lock in EventAgency)
 	}
 
 	public void event(Event event) {
 //FIXME:RH:repo listen to changes
-//		if (event instanceof BusinessGroupModifiedEvent) {
-//			BusinessGroupModifiedEvent mev = (BusinessGroupModifiedEvent) event;
-//			// TODO:fj:b this operation should not be too expensive since many other
-//			// users have to be served also
-//			// store the event and apply it only when the component validate event is
-//			// fired.
-//			// FIXME:fj:a check all such event that they do not say, execute more than
-//			// 1-2 db queries : 100 listening users -> 100-200 db queries!
-//			// TODO:fj:b concept of defering that event if this controller here is in
-//			// the dispatchEvent - code (e.g. DefaultController implements
-//			// GenericEventListener)
-//			// -> to avoid rare race conditions like e.g. dispose->deregister and null
-//			// controllers, but queue is still firing events
-//			boolean modified = mev.updateBusinessGroupList(groupList, ident);
-//			if (modified) tableCtr.modelChanged();
-//		}
 	}
 	
 	/**
@@ -255,13 +215,14 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @param wControl
 	 * @return a PortletToolSortingControllerImpl instance.
 	 */
-	protected PortletToolSortingControllerImpl createSortingTool(UserRequest ureq, WindowControl wControl) {
+	protected PortletToolSortingControllerImpl<RepositoryEntryShort> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {			
-			List<PortletEntry> portletEntryList = getAllPortletEntries();			
-			PortletDefaultTableDataModel tableDataModel = new RepositoryPortletTableDataModel(portletEntryList, ureq.getLocale());
-			List sortedItems = getPersistentManuallySortedItems(); 
+			List<RepositoryEntry> items = getAllEntries(null);
+			List<PortletEntry<RepositoryEntryShort>> entries = convertRepositoryEntriesToPortletEntryList(items, false);
+			PortletDefaultTableDataModel<RepositoryEntryShort> tableDataModel = new RepositoryPortletTableDataModel(entries, ureq.getLocale());
+			List<PortletEntry<RepositoryEntryShort>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<RepositoryEntryShort>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);
@@ -274,9 +235,15 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
    * @param ureq
    * @return
    */
-  private List<PortletEntry> getPersistentManuallySortedItems() {  	
-  	List<PortletEntry> portletEntryList = getAllPortletEntries();
-		return this.getPersistentManuallySortedItems(portletEntryList);
+  private List<PortletEntry<RepositoryEntryShort>> getPersistentManuallySortedItems() {
+		@SuppressWarnings("unchecked")
+		Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
+		if(storedPrefs == null) {
+			return new ArrayList<PortletEntry<RepositoryEntryShort>>();
+		}
+		List<RepositoryEntry> items = RepositoryManager.getInstance().lookupRepositoryEntries(storedPrefs.keySet());
+  	List<PortletEntry<RepositoryEntryShort>> entries = convertRepositoryEntriesToPortletEntryList(items, false);
+		return getPersistentManuallySortedItems(entries);
 	}
   
   /**
@@ -286,11 +253,9 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @param sortingCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-  protected Comparator getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator(){			
-			public int compare(final Object o1, final Object o2) {
-				RepositoryEntry repoEntry1= ((RepositoryPortletEntry)o1).getValue();
-				RepositoryEntry repoEntry2 = ((RepositoryPortletEntry)o2).getValue();		
+  protected Comparator<RepositoryEntryShort> getComparator(final SortingCriteria sortingCriteria) {
+		return new Comparator<RepositoryEntryShort>(){			
+			public int compare(final RepositoryEntryShort repoEntry1, final RepositoryEntryShort repoEntry2) {
 				int comparisonResult = 0;
 			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(repoEntry1.getDisplayname(), repoEntry2.getDisplayname());			  		  	

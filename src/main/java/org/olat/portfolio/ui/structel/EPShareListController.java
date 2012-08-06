@@ -69,8 +69,8 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.portfolio.manager.EPMapPolicy.Type;
@@ -94,7 +94,7 @@ public class EPShareListController extends FormBasicController {
 	private final EPFrontendManager ePFMgr;
 	private final BaseSecurity securityManager;
 	private final UserManager userManager;
-	private final BusinessGroupManager groupManager;
+	private final BusinessGroupService businessGroupService;
 	private final String[] targetKeys = EPMapPolicy.Type.names();
 	private final String[] targetValues = new String[targetKeys.length];
 	protected final List<BusinessGroup> groupList = new ArrayList<BusinessGroup>();
@@ -105,9 +105,9 @@ public class EPShareListController extends FormBasicController {
 		super(ureq, wControl, "shareList");
 		
 		this.map = map;
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		securityManager = BaseSecurityManager.getInstance();
-		groupManager = BusinessGroupManagerImpl.getInstance();
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		userManager = UserManager.getInstance();
 		for(int i=targetKeys.length; i-->0; ) {
 			targetValues[i] = translate("map.share.to." + targetKeys[i]);
@@ -607,8 +607,8 @@ public class EPShareListController extends FormBasicController {
 		
 		public GroupMapperProvider() {
 			if(groupList.isEmpty()) {
-				groupList.addAll(groupManager.findBusinessGroupsAttendedBy(null, getIdentity(), null));
-				groupList.addAll(groupManager.findBusinessGroupsOwnedBy(null, getIdentity(), null));
+				SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+				groupList.addAll(businessGroupService.findBusinessGroups(params, null, 0, -1));
 			}
 		}
 

@@ -33,7 +33,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 
@@ -47,21 +46,18 @@ import org.olat.resource.accesscontrol.model.OfferAccess;
  * Initial Date:  27 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class AccessListController extends BasicController {
+public class AccessListController extends BasicController implements AccessController {
 	
 	private final VelocityContainer mainVC;
 	private final List<Controller> accessCtrls = new ArrayList<Controller>();
 	
 	private final AccessControlModule acModule;
-	private final ACFrontendManager acFrontendManager;
-
-
+	private Object userObject;
 
 	public AccessListController(UserRequest ureq, WindowControl wControl, List<OfferAccess> links) {
 		super(ureq, wControl);
 		
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
 		
 		mainVC = createVelocityContainer("access_method_list");
 		
@@ -85,6 +81,14 @@ public class AccessListController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	@Override

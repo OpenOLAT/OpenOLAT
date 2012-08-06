@@ -64,9 +64,9 @@ public class Choice extends Component {
 	private String submitKey;
 	private String cancelKey;
 	private boolean displayOnly = false;
-	private List selectedRows = new ArrayList();
-	private List removedRows = new ArrayList();
-	private List addedRows = new ArrayList();
+	private List<Integer> selectedRows = new ArrayList<Integer>();
+	private List<Integer> removedRows = new ArrayList<Integer>();
+	private List<Integer> addedRows = new ArrayList<Integer>();
 	private TableDataModel tableDataModel;
 
 	/**
@@ -181,7 +181,7 @@ public class Choice extends Component {
 	/**
 	 * @return the List of the selected rows indexes (List of Integers).
 	 */
-	public List getSelectedRows() {
+	public List<Integer> getSelectedRows() {
 		return selectedRows;
 	}
 
@@ -208,14 +208,14 @@ public class Choice extends Component {
 	 * @return Returns the addedRows (a List of Integers, one Integer stands for
 	 *         the position in the model of the element added).
 	 */
-	public List getAddedRows() {
+	public List<Integer> getAddedRows() {
 		return addedRows;
 	}
 
 	/**
 	 * @return Returns the removedRows.
 	 */
-	public List getRemovedRows() {
+	public List<Integer> getRemovedRows() {
 		return removedRows;
 	}
 

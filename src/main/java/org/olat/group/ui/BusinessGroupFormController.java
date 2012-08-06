@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -39,7 +40,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupFactory;
 
 /**
  * Implements a Business group creation dialog using FlexiForms.
@@ -72,16 +72,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	/**
 	 * Decides whether minimum and maximum number of group members can be applied.
 	 */
-	private boolean minMaxEnabled = false;
-
-	/**
-	 * 
-	 */
 	private MultipleSelectionElement enableWaitingList;
-
-	/**
-	 * 
-	 */
 	private MultipleSelectionElement enableAutoCloseRanks;
 
 	/**
@@ -89,28 +80,23 @@ public class BusinessGroupFormController extends FormBasicController {
 	 */
 	private BusinessGroup businessGroup;
 
-	/**
-	 * 
-	 */
 	private boolean bulkMode = false;
+	private boolean embbeded = false;
 
-	/**
-	 * 
-	 */
-	private HashSet<String> validNames;
+	private Set<String> validNames;
 
 	/** The key for the waiting list checkbox. */
-	String[] waitingListKeys = new String[] { "create.form.enableWaitinglist" };
+	private final String[] waitingListKeys = new String[] { "create.form.enableWaitinglist" };
 
 	/** The value for the waiting list checkbox. */
-	String[] waitingListValues = new String[] { translate("create.form.enableWaitinglist") };
+	private final String[] waitingListValues = new String[] { translate("create.form.enableWaitinglist") };
 
 	/** The key for the autoCloseRanks checkbox. */
-	String[] autoCloseKeys = new String[] { "create.form.enableAutoCloseRanks" };
+	private final String[] autoCloseKeys = new String[] { "create.form.enableAutoCloseRanks" };
 
 	/** The value for the autoCloseRanks checkbox. */
-	String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
-
+	private final String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
+	
 	/**
 	 * Creates this controller.
 	 * 
@@ -119,10 +105,9 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @param businessGroup The group object which will be modified by this dialog.
 	 * @param minMaxEnabled Decides whether to limit the number of people that can enrol to a group or not
 	 */
-	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean minMaxEnabled) {
+	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
-		this.minMaxEnabled = minMaxEnabled;
 		initForm(ureq);
 	}
 	
@@ -134,11 +119,18 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @param minMaxEnabled Decides whether to limit the number of people that can enrol to a group or not
 	 * @param bulkMode when passing group names as CSV you have to set this to true and all groups will be created at once
 	 */
-	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean minMaxEnabled, boolean bulkMode) {
+	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean bulkMode) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
-		this.minMaxEnabled = minMaxEnabled;
 		this.bulkMode = bulkMode;
+		initForm(ureq); // depends on bulkMode flag
+	}
+	
+	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, Form rootForm) {
+		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, rootForm);
+		this.businessGroup = businessGroup;
+		bulkMode = false;
+		embbeded = true;
 		initForm(ureq); // depends on bulkMode flag
 	}
 
@@ -147,7 +139,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused") Controller listener, UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Create the business group name input text element
 		if (bulkMode) {
 			businessGroupName = uifactory.addTextElement("create.form.title.bgnames", "create.form.title.bgnames", 10 * BusinessGroup.MAX_GROUP_NAME_LENGTH, "", formLayout);
@@ -166,7 +158,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		if(businessGroup != null && !bulkMode) {
 			BusinessControlFactory bcf = BusinessControlFactory.getInstance();
 			List<ContextEntry> entries = bcf.createCEListFromString("[BusinessGroup:" + businessGroup.getKey() + "]");
-			String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+			String url = bcf.getAsURIString(entries, true);
 			uifactory.addStaticTextElement("create.form.businesspath", url, formLayout);
 		}
 		
@@ -188,25 +180,18 @@ public class BusinessGroupFormController extends FormBasicController {
 				autoCloseValues, null);
 
 		// Enable only if specification of min and max members is possible
-		if (minMaxEnabled) {
-			businessGroupMinimumMembers.setVisible(false); // currently the minimum feature is not enabled
-			businessGroupMaximumMembers.setVisible(true);
-			enableWaitingList.setVisible(true);
-			enableAutoCloseRanks.setVisible(true);
-		} else {
-			businessGroupMinimumMembers.setVisible(false);
-			businessGroupMaximumMembers.setVisible(false);
-			enableWaitingList.setVisible(false);
-			enableAutoCloseRanks.setVisible(false);
-		}
+		businessGroupMinimumMembers.setVisible(false); // currently the minimum feature is not enabled
+		businessGroupMaximumMembers.setVisible(true);
+		enableWaitingList.setVisible(true);
+		enableAutoCloseRanks.setVisible(true);
 
 		if ((businessGroup != null) && (!bulkMode)) {
 			businessGroupName.setValue(businessGroup.getName());
 			businessGroupDescription.setValue(businessGroup.getDescription());
 			Integer minimumMembers = businessGroup.getMinParticipants();
 			Integer maximumMembers = businessGroup.getMaxParticipants();
-			businessGroupMinimumMembers.setValue(minimumMembers == null ? "" : minimumMembers.toString());
-			businessGroupMaximumMembers.setValue(maximumMembers == null ? "" : maximumMembers.toString());
+			businessGroupMinimumMembers.setValue(minimumMembers == null || minimumMembers.intValue() <= 0 ? "" : minimumMembers.toString());
+			businessGroupMaximumMembers.setValue(maximumMembers == null || maximumMembers.intValue() <= 0 ? "" : maximumMembers.toString());
 			if (businessGroup.getWaitingListEnabled() != null) {
 				enableWaitingList.select("create.form.enableWaitinglist", businessGroup.getWaitingListEnabled());
 			}
@@ -214,20 +199,21 @@ public class BusinessGroupFormController extends FormBasicController {
 				enableAutoCloseRanks.select("create.form.enableAutoCloseRanks", businessGroup.getAutoCloseRanksEnabled());
 			}
 		}
-
-		// Create submit and cancel buttons
-		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("finish", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		
+		if(!embbeded) {
+			// Create submit and cancel buttons
+			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+			formLayout.add(buttonLayout);
+			uifactory.addFormSubmitButton("finish", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		// 1) Check valid group names
 		if (!StringHelper.containsNonWhitespace(businessGroupName.getValue())) {
 			businessGroupName.setErrorKey("form.legende.mandatory", new String[] {});
@@ -295,14 +281,16 @@ public class BusinessGroupFormController extends FormBasicController {
 		}
 		enableAutoCloseRanks.clearError();
 		
-		if (minMaxEnabled && disableWaitingListOk) {
+		if (disableWaitingListOk) {
 			// 4) Check min / max settings
 			String maxValue = null;
-			if (StringHelper.containsNonWhitespace(businessGroupMaximumMembers.getValue())) maxValue = businessGroupMaximumMembers
-					.getValue();
+			if (StringHelper.containsNonWhitespace(businessGroupMaximumMembers.getValue())) {
+				maxValue = businessGroupMaximumMembers.getValue();
+			}
 			String minValue = null;
-			if (StringHelper.containsNonWhitespace(businessGroupMinimumMembers.getValue())) minValue = businessGroupMinimumMembers
-					.getValue();
+			if (StringHelper.containsNonWhitespace(businessGroupMinimumMembers.getValue())){
+				minValue = businessGroupMinimumMembers.getValue();
+			}
 			if (isWaitingListEnabled() && (maxValue == null || minValue == "")) {
 				enableWaitingList.setErrorKey("create.form.error.enableWaitinglist", new String[] {});
 				return false;
@@ -327,34 +315,11 @@ public class BusinessGroupFormController extends FormBasicController {
 			}
 			businessGroupMaximumMembers.clearError();
 		}
-		
-		//7) check for name duplication			  
-		if(checkIfDuplicateGroupName()) {			
-			businessGroupName.setErrorKey("error.group.name.exists", new String[] {});
-			return false;
-		}
 	  // group name duplication test passed
 		businessGroupName.clearError();
 		
 		// all checks passed
 		return true;
-	}
-	
-	/**
-	 * Checks if this a learning group or right group, 
-	 * if the group name changes, 
-	 * and if the name is already used in this context.
-	 * @return
-	 */
-	private boolean checkIfDuplicateGroupName() {
-		Set names = new HashSet();
-		names.add(businessGroupName.getValue());
-	  //group name changes to an already used name, and is a learning group
-		if(businessGroup!=null && businessGroup.getGroupContext()!=null && !businessGroup.getName().equals(businessGroupName.getValue())
-				&& BusinessGroupFactory.checkIfOneOrMoreNameExistsInContext(names, businessGroup.getGroupContext())) {	
-			return true;
-		}
-		return false;
 	}
 
 	/**
@@ -392,7 +357,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		String result = businessGroupMaximumMembers.getValue();
 		if (StringHelper.containsNonWhitespace(result)) {
 			result = result.replaceAll(" ", "");
-			return new Integer(Integer.parseInt(result));
+			return Integer.parseInt(result);
 		} else {
 			return null;
 		}
@@ -405,50 +370,42 @@ public class BusinessGroupFormController extends FormBasicController {
 		String result = businessGroupMinimumMembers.getValue();
 		if (StringHelper.containsNonWhitespace(result)) {
 			result = result.replaceAll(" ", "");
-			return new Integer(Integer.parseInt(result));
+			return Integer.parseInt(result);
 		} else {
 			return null;
 		}
 	}
 
 	/**
-	 * @param nonexistingnames
-	 */
-	public void setGroupNameExistsError(Set<String> nonexistingnames) {
-		if (nonexistingnames == null || nonexistingnames.size() == 0) {
-			businessGroupName.setErrorKey("error.group.name.exists", new String[] {});
-		} else {
-			String[] args = new String[] { StringHelper.formatAsCSVString(nonexistingnames) };
-			businessGroupName.setErrorKey("error.group.name.exists", args);
-		}
-	}
-
-	/**
 	 * @return
 	 */
-	public Boolean isAutoCloseRanksEnabled() {
-		return new Boolean(enableAutoCloseRanks.getSelectedKeys().size() != 0);
+	public boolean isAutoCloseRanksEnabled() {
+		return enableAutoCloseRanks.getSelectedKeys().size() != 0;
 	}
 
 	/**
 	 * @param enableAutoCloseRanks
 	 */
 	public void setEnableAutoCloseRanks(Boolean enableAutoCloseRanks) {
-		this.enableAutoCloseRanks.select("create.form.enableAutoCloseRanks", enableAutoCloseRanks);
+		if(enableAutoCloseRanks != null) {
+			this.enableAutoCloseRanks.select("create.form.enableAutoCloseRanks", enableAutoCloseRanks.booleanValue());
+		}
 	}
 
 	/**
 	 * @return
 	 */
-	public Boolean isWaitingListEnabled() {
-		return new Boolean(enableWaitingList.getSelectedKeys().size() != 0);
+	public boolean isWaitingListEnabled() {
+		return enableWaitingList.getSelectedKeys().size() != 0;
 	}
 
 	/**
 	 * @param enableWaitingList
 	 */
 	public void setEnableWaitingList(Boolean enableWaitingList) {
-		this.enableWaitingList.select("create.form.enableWaitinglist", enableWaitingList);
+		if(enableWaitingList != null) {
+			this.enableWaitingList.select("create.form.enableWaitinglist", enableWaitingList.booleanValue());
+		}
 	}
 
 	/**

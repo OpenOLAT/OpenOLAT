@@ -43,7 +43,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.group.ui.context.BGContextEvent;
 
 /**
  * Initial Date: Apr 7, 2004

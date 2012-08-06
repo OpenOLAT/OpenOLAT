@@ -25,21 +25,20 @@
 
 package org.olat.group.ui;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 
 /**
  * Description:<BR>
@@ -50,14 +49,16 @@ import org.olat.group.BusinessGroupManagerImpl;
  * 
  * @author gnaegi
  */
-public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel implements TableDataModel {
+public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<BusinessGroup> {
+	private static final OLog log = Tracing.createLoggerFor(BusinessGroupTableModelWithMaxSize.class);
+	
 	private static final int COLUMN_COUNT = 7;
-	private List members;
+	private List<Integer> members;
 	private Translator trans;
 	private Identity identity;
 	private boolean cancelEnrollEnabled;
 	private BaseSecurity securityManager;
-	private BusinessGroupManager businessGroupManager;
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * @param groups List of business groups
@@ -65,13 +66,13 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
 	 *          The index of the list corresponds with the index of the group list
 	 * @param trans
 	 */
-	public BusinessGroupTableModelWithMaxSize(List groups, List members, Translator trans, Identity identity, boolean cancelEnrollEnabled) {
+	public BusinessGroupTableModelWithMaxSize(List<BusinessGroup> groups, List<Integer> members, Translator trans, Identity identity, boolean cancelEnrollEnabled) {
 		super(groups);
 		this.members = members;
 		this.trans = trans;
 		this.identity = identity;
 		securityManager =	BaseSecurityManager.getInstance();
-		businessGroupManager = BusinessGroupManagerImpl.getInstance();
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.cancelEnrollEnabled = cancelEnrollEnabled;
 	}
 
@@ -87,7 +88,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
 	 */
 	public Object getValueAt(int row, int col) {
 		BusinessGroup businessGroup = (BusinessGroup) objects.get(row);
-		Integer numbParts = (Integer) members.get(row);
+		Integer numbParts = members.get(row);
 		Integer max = businessGroup.getMaxParticipants();
 		switch (col) {
 			case 0:
@@ -109,7 +110,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
 				buf.append(trans.translate("grouplist.table.partipiciant.delimiter"));
 				buf.append(businessGroup.getMaxParticipants());
 				if(numbParts>businessGroup.getMaxParticipants()) {
-				  Tracing.logInfo("Group overflow detected for the group: " + businessGroup + ", participants: " + numbParts + " maxParticipamts: " + businessGroup.getMaxParticipants(), BusinessGroupTableModelWithMaxSize.class);
+				  log.info("Group overflow detected for the group: " + businessGroup + ", participants: " + numbParts + " maxParticipamts: " + businessGroup.getMaxParticipants());
 				}
 				return buf.toString();
 			case 3:
@@ -122,10 +123,10 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
 				return trans.translate("grouplist.table.noWaitingList");
 			case 4:
 				// Status
-				if (securityManager.isIdentityInSecurityGroup(this.identity,businessGroup.getPartipiciantGroup())) {
+				if (securityManager.isIdentityInSecurityGroup(identity,businessGroup.getPartipiciantGroup())) {
 					return trans.translate("grouplist.table.state.onPartipiciantList"); 
-				} else if (securityManager.isIdentityInSecurityGroup(this.identity,businessGroup.getWaitingGroup())) {
-					int pos = businessGroupManager.getPositionInWaitingListFor(identity,businessGroup);
+				} else if (securityManager.isIdentityInSecurityGroup(identity,businessGroup.getWaitingGroup())) {
+					int pos = businessGroupService.getPositionInWaitingListFor(identity,businessGroup);
 					String[] onWaitingListArgs = new String[] { Integer.toString(pos) };
 					return trans.translate("grouplist.table.state.onWaitingList",onWaitingListArgs); 
 				} else if (max != null && !businessGroup.getWaitingListEnabled().booleanValue() && (numbParts.intValue() >= max.intValue()) ) {
@@ -167,7 +168,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
 	/**
 	 * @param owned
 	 */
-	public void setEntries(List owned) {
+	public void setEntries(List<BusinessGroup> owned) {
 		this.objects = owned;
 	}
 
@@ -198,10 +199,8 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
  * @param identity
  * @return true: Found identity in any security-group of this table model.
  */	private boolean isEnrolledInAnyGroup(Identity identity) {
-		BusinessGroup businessGroup;
 		// loop over all business-groups
-		for (Iterator iter = objects.iterator(); iter.hasNext() ;) {
-			businessGroup = (BusinessGroup)iter.next();
+		for (BusinessGroup businessGroup:objects) {
 			if (isEnrolledIn(businessGroup, identity) ) {
 				return true;
 			}

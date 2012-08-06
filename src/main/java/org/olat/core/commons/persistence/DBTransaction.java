@@ -27,9 +27,11 @@
 package org.olat.core.commons.persistence;
 
 
+import javax.persistence.EntityTransaction;
+
 import org.hibernate.HibernateException;
-import org.hibernate.Transaction;
 import org.olat.core.logging.DBRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -41,13 +43,15 @@ import org.olat.core.logging.Tracing;
  */
 final class DBTransaction  {
 	
-	private Transaction hibernateTransaction = null;
+	private final OLog log = Tracing.createLoggerFor(DBTransaction.class);
+	
+	private EntityTransaction hibernateTransaction = null;
 	private boolean rolledBack = false;
 	private boolean committed = false;
 	private Exception error = null;
 	private boolean inTransaction = false;
 
-	DBTransaction(Transaction t) {
+	DBTransaction(EntityTransaction t) {
 		this.hibernateTransaction = t;
 		setInTransaction(true);
 	}
@@ -55,10 +59,10 @@ final class DBTransaction  {
 	protected void commit() {
 		try {
 			if (hibernateTransaction.isActive()
-					&& !hibernateTransaction.wasCommitted()) {
+				/*	&& !hibernateTransaction.wasCommitted() */) {
 				hibernateTransaction.commit();
 			} else {
-				Tracing.logWarn("Could not call hibernateTransaction.commit() because is not Active or already committed",this.getClass());
+				log.warn("Could not call hibernateTransaction.commit() because is not Active or already committed");
 			}
 			setInTransaction(false);
 			this.committed = true;
@@ -74,11 +78,11 @@ final class DBTransaction  {
 	protected void rollback() {
 		try {
 			if (hibernateTransaction.isActive()
-					&& !hibernateTransaction.wasRolledBack()) {
+				/*	&& !hibernateTransaction.wasRolledBack() */) {
 				hibernateTransaction.rollback();
 			}else {
 				// OLAT-3621: raising log level from WARN to ERROR to have this pop up in tests more. plus added a stacktrace for debugging ease.
-				Tracing.logError("Could not call hibernateTransaction.rollback() because is not Active or already rolledback", new Exception("DBTransaction.rollback()"), this.getClass());
+				log.error("Could not call hibernateTransaction.rollback() because is not Active or already rolledback", new Exception("DBTransaction.rollback()"));
 			}
 			this.rolledBack = true;
 		} catch (HibernateException e) {
@@ -120,7 +124,7 @@ final class DBTransaction  {
 	 */
 	protected void setErrorAndRollback(Exception exception) {
 		error = exception;
-		Tracing.logDebug("Hibernate Error, rolling back", error.toString(), DBTransaction.class);
+		log.debug("Hibernate Error, rolling back", error.toString());
 		rollback();
 	}
 

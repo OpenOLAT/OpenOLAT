@@ -23,7 +23,8 @@ import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.olat.group.site.GroupsManagementSite;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.group.site.GroupsSite;
 
 /**
@@ -36,6 +37,22 @@ import org.olat.group.site.GroupsSite;
  * @author gnaegi
  */
 public class BusinessGroupModule extends AbstractOLATModule {
+
+	public static String ORES_TYPE_GROUP = OresHelper.calculateTypeName(BusinessGroup.class);
+	
+	private static final String USER_ALLOW_CREATE_BG = "user.allowed.create";
+	private static final String AUTHOR_ALLOW_CREATE_BG = "author.allowed.create";
+	private static final String CONTACT_BUSINESS_CARD = "contact.business.card";
+	
+	public static final String CONTACT_BUSINESS_CARD_NEVER = "never";
+	public static final String CONTACT_BUSINESS_CARD_ALWAYS = "always";
+	public static final String CONTACT_BUSINESS_CARD_GROUP_CONFIG = "groupconfig";
+
+
+	private boolean userAllowedCreate;
+	private boolean authorAllowedCreate;
+	private String contactBusinessCard;
+	
 	
 	/**
 	 * [used by spring]
@@ -52,11 +69,25 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		// Add controller factory extension point to launch groups
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(BusinessGroup.class.getSimpleName(),
 				new BusinessGroupContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("GroupCard",
+				new BusinessGroupCardContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(GroupsSite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(GroupsSite.class));
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(GroupsManagementSite.class.getSimpleName(),
-				new SiteContextEntryControllerCreator(GroupsManagementSite.class));
 		
+		//set properties
+		String userAllowed = getStringPropertyValue(USER_ALLOW_CREATE_BG, true);
+		if(StringHelper.containsNonWhitespace(userAllowed)) {
+			userAllowedCreate = "true".equals(userAllowed);
+		}
+		String authorAllowed = getStringPropertyValue(AUTHOR_ALLOW_CREATE_BG, true);
+		if(StringHelper.containsNonWhitespace(authorAllowed)) {
+			authorAllowedCreate = "true".equals(authorAllowed);
+		}
+		
+		String contactAllowed = getStringPropertyValue(CONTACT_BUSINESS_CARD, true);
+		if(StringHelper.containsNonWhitespace(contactAllowed)) {
+			contactBusinessCard = contactAllowed;
+		}
 	}
 
 	/**
@@ -64,20 +95,44 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	 */
 	@Override
 	protected void initDefaultProperties() {
-	// nothing to init
+		userAllowedCreate = getBooleanConfigParameter(USER_ALLOW_CREATE_BG, true);
+		authorAllowedCreate = getBooleanConfigParameter(AUTHOR_ALLOW_CREATE_BG, true);
+		contactBusinessCard = getStringConfigParameter(CONTACT_BUSINESS_CARD, CONTACT_BUSINESS_CARD_NEVER, true);
 	}
 
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#initFromChangedProperties()
-	 */
 	@Override
 	protected void initFromChangedProperties() {
-	// nothing to init
+		init();
 	}
-
+	
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
 	}
 
+	public boolean isUserAllowedCreate() {
+		return userAllowedCreate;
+	}
+
+	public void setUserAllowedCreate(boolean userAllowedCreate) {
+		setStringProperty(USER_ALLOW_CREATE_BG, Boolean.toString(userAllowedCreate), true);
+	}
+
+	public boolean isAuthorAllowedCreate() {
+		return authorAllowedCreate;
+	}
+
+	public void setAuthorAllowedCreate(boolean authorAllowedCreate) {
+		setStringProperty(AUTHOR_ALLOW_CREATE_BG, Boolean.toString(authorAllowedCreate), true);
+	}
+
+	public String getContactBusinessCard() {
+		return contactBusinessCard;
+	}
+
+	public void setContactBusinessCard(String contactBusinessCard) {
+		setStringProperty(CONTACT_BUSINESS_CARD, contactBusinessCard, true);
+	}
+	
+	
 }

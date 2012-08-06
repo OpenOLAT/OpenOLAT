@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,7 +45,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.ui.BusinessGroupTableModel;
 
 /**
@@ -66,10 +68,13 @@ public class GroupSearchController extends StepFormBasicController {
 	private ArrayList<MultipleSelectionElement> owners;
 	private FormItem errorComp;
 	private String lastSearchValue;
+	
+	private final BusinessGroupService businessGroupService;
 
 	// constructor to be used like a normal FormBasicController
 	public GroupSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		Translator pT = Util.createPackageTranslator(BusinessGroupTableModel.class, ureq.getLocale(), getTranslator());
 		this.flc.setTranslator(pT);
 		initForm(ureq);
@@ -78,6 +83,7 @@ public class GroupSearchController extends StepFormBasicController {
 	// constructor for use in steps-wizzard
 	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext, int layoutVertical, String pageName) {
 		super(ureq, wControl, form, stepsRunContext, layoutVertical, pageName);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		Translator pT = Util.createPackageTranslator(BusinessGroupTableModel.class, ureq.getLocale(), getTranslator());
 		this.flc.setTranslator(pT);
 		initForm(ureq);
@@ -96,7 +102,7 @@ public class GroupSearchController extends StepFormBasicController {
 		
 		resTable = FormLayoutContainer.createCustomFormLayout("resultsTable", getTranslator(), this.velocity_root	+ "/resulttable.html");
 		formLayout.add(resTable);
-		resTable.contextPut("bGM", BusinessGroupManagerImpl.getInstance());
+		resTable.contextPut("bGM", businessGroupService);
 		
 		if (!isUsedInStepWizzard()) uifactory.addSpacerElement("space", formLayout, false);
 		errorComp = uifactory.createSimpleErrorText("error", "");
@@ -124,7 +130,7 @@ public class GroupSearchController extends StepFormBasicController {
 	 */
 	private void doSearchGroups(String searchValue, UserRequest ureq) {	
 		if (StringHelper.containsNonWhitespace(searchValue)){
-			GroupSearchResultProvider searchProvider = new GroupSearchResultProvider(ureq.getIdentity(), getLocale(), null);
+			GroupSearchResultProvider searchProvider = new GroupSearchResultProvider(ureq.getIdentity(), getLocale());
 			Map<String, String> resMap = new HashMap<String, String>();
 			searchProvider.getAutoCompleteContent(searchValue, resMap);
 			updateResultTable(resMap);

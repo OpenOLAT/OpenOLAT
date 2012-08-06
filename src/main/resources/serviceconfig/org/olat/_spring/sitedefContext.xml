@@ -25,9 +25,6 @@
 	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef" scope="prototype" >
 	   <property name="order" value="3" />
 	</bean>
-	<bean id="olatsites_groupman" class="org.olat.group.site.GroupsManagementSiteDef" scope="prototype" >
-	   <property name="order" value="4" />
-	</bean>
 	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef" scope="prototype" >
 	   <property name="order" value="5" />
 	</bean>
@@ -38,9 +35,5 @@
 	   <property name="order" value="7" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
 	</bean>
-	<!-- <bean id="olatsites_testing" class="org.olat.test.site.TestSiteDef" scope="prototype" > 
-	   <property name="order" value="8" />
-	</bean>
-	-->
 
 </beans>

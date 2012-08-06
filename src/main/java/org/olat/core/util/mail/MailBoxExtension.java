@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -41,7 +42,7 @@ import org.olat.core.util.mail.manager.MailManager;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.ui.MailContextResolver;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.home.HomeSite;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -130,7 +131,7 @@ public class MailBoxExtension extends BasicManager implements MailContextResolve
 				String resourceTypeName = entry.getOLATResourceable().getResourceableTypeName();
 				Long resourceId = entry.getOLATResourceable().getResourceableId();
 				if("BusinessGroup".equals(resourceTypeName)) {
-					BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(resourceId, false);
+					BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(resourceId);
 					if(group == null) {
 						return null;
 					}

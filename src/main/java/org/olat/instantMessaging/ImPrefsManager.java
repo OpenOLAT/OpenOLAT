@@ -140,6 +140,20 @@ public class ImPrefsManager extends BasicManager {
 				});
 	
 	}
+	
+	/**
+	 * Delete must be synched too
+	 * 
+	 */
+	public void deleteProperties(final Identity identity, final ImPreferences prefs) {
+		//o_clusterOK by guido
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(
+			OresHelper.createOLATResourceableInstanceWithoutCheck(LOCK_KEY, identity.getKey()), new SyncerExecutor(){
+				public void execute() {
+					PropertyManager.getInstance().deleteProperty(prefs.getDbProperty());
+				}
+			});
+	}
 
 	/**
 	 * 

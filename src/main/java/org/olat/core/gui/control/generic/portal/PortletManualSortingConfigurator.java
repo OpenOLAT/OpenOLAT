@@ -55,7 +55,7 @@ import org.olat.core.gui.translator.Translator;
  *  4					Type					4 columns in model
  * 
  */
-public class PortletManualSortingConfigurator extends BasicController {
+public class PortletManualSortingConfigurator<T> extends BasicController {
 
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
 	private static final String ACTION_MULTISELECT_CANCEL = "cancel";
@@ -63,9 +63,9 @@ public class PortletManualSortingConfigurator extends BasicController {
 	private Panel tablePanel;
 	private VelocityContainer mainVC;		
 	private TableController tableController;
-	private PortletDefaultTableDataModel tableDataModel;
+	private PortletDefaultTableDataModel<T> tableDataModel;
 	
-	private List<PortletEntry> sortedItems = new ArrayList<PortletEntry>();
+	private List<PortletEntry<T>> sortedItems = new ArrayList<PortletEntry<T>>();
 	
 	/**
 	 * 
@@ -76,7 +76,7 @@ public class PortletManualSortingConfigurator extends BasicController {
 	 * @param sortedItems
 	 */
 	public PortletManualSortingConfigurator(UserRequest ureq, WindowControl wControl, Translator fallBackTranslator, 
-			PortletDefaultTableDataModel tableDataModel, List<PortletEntry> sortedItems) {
+			PortletDefaultTableDataModel<T> tableDataModel, List<PortletEntry<T>> sortedItems) {
 		super(ureq, wControl, fallBackTranslator);
     this.tableDataModel = tableDataModel;
 		this.sortedItems = sortedItems; //select the items in table!!!
@@ -138,7 +138,7 @@ public class PortletManualSortingConfigurator extends BasicController {
 		}		
 	}
 
-	public List<PortletEntry> getSortedItems() {
+	public List<PortletEntry<T>> getSortedItems() {
 		return sortedItems;
 	}
 	

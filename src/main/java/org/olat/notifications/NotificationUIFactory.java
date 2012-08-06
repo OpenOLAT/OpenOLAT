@@ -46,7 +46,7 @@ import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupModule;
 
 /**
  * Description:<br>
@@ -140,9 +140,8 @@ public class NotificationUIFactory {
 		// Special case update course and group name for calendars (why?) 
 		if (subidentifier.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
 			resName = CourseModule.ORES_TYPE_COURSE;
-		}
-		if (subidentifier.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
-			resName = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(pub.getResId(), true).getResourceableTypeName();
+		} else if (subidentifier.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
+			resName = BusinessGroupModule.ORES_TYPE_GROUP;
 		}
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);

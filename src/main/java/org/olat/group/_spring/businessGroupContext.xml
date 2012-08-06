@@ -1,17 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd
+  http://www.springframework.org/schema/tx
+  http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
-<bean id="businessGroupModule" class="org.olat.group.BusinessGroupModule" 
-		init-method="init" depends-on="userModule"/>
-		
-<bean id="businessGroupManager" class="org.olat.group.BusinessGroupManagerImpl" depends-on="collaborationToolsFactory">
-<constructor-arg index="0" ref="baseSecurityManager" />
-<constructor-arg index="1" ref="userDeletionManager" />
-<property name="dbVendor" value="${db.vendor}" />
-</bean>
+	<context:annotation-config />
+	<context:component-scan base-package="org.olat.group.manager,org.olat.group.area,org.olat.group.right" />
+	<tx:annotation-driven transaction-manager="txManager"/>
+
+	<bean id="businessGroupModule" class="org.olat.group.BusinessGroupModule" 
+		init-method="init" depends-on="userModule">
+		<property name="persistedProperties">
+	  		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
+	  				depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
+	    		<constructor-arg index="0" ref="coordinatorManager"/>
+	    		<constructor-arg index="1" ref="businessGroupModule" />
+	  		</bean>
+		</property>
+	</bean>
+	
+	<!-- default configuration -->
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="businessGroupModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				user.allowed.create=${group.user.create}
+				author.allowed.create=${group.author.create}
+				<!-- Show the contact form in the business group card.
+				     Values are: never,always,groupconfig -->
+				contact.business.card=${group.card.contact}
+			</value>
+		</property>
+	</bean>
+	
+	<!-- Business group admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8205" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.BusinessGroupModuleAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="group" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.group.ui"/>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean> 
+	
+	<!-- Menu of the business group main controller -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="groups.my" init-method="initExtensionPoints">
+		<property name="order" value="8200" />
+		<property name="navigationKey" value="MyGroups" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.main.OverviewBusinessGroupListController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.group.ui.main" />
+		<property name="i18nActionKey" value="menu.groups" />
+		<property name="i18nDescriptionKey" value="menu.groups.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.group.ui.main.BusinessGroupMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- List of open groups -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="groups.open" init-method="initExtensionPoints">
+		<property name="order" value="8201" />
+		<property name="navigationKey" value="OpenGroups" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.main.OpenBusinessGroupsController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.group.ui.main" />
+		<property name="i18nActionKey" value="menu.opengroups" />
+		<property name="i18nDescriptionKey" value="menu.opengroups.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.group.ui.main.BusinessGroupMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Administration groups -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="groups.admin" init-method="initExtensionPoints">
+		<property name="order" value="8202" />
+		<property name="navigationKey" value="AdminGroups" />
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.GroupManagerOnlyExtensionSecurityCallback" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.main.AdminBusinessGroupsController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.group.ui.main" />
+		<property name="i18nActionKey" value="menu.group.admin" />
+		<property name="i18nDescriptionKey" value="menu.group.admin.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.group.ui.main.BusinessGroupMainController</value>
+			</list>
+		</property>
+	</bean>
 
 </beans>

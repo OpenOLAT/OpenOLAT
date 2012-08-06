@@ -25,10 +25,15 @@
 
 package org.olat.course.condition.interpreter;
 
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
 
 /**
  * Description:<BR/>
@@ -72,7 +77,7 @@ public class InRightGroupFunction extends AbstractFunction {
 		 */
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
-			if (!cev.existsRightGroup(groupName)) { return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, groupName,
+			if (!cev.existsGroup(groupName)) { return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, groupName,
 					"error.notfound.name", "solution.checkgroupmanagement")); }
 			// remember the reference to the node id for this condtion
 			cev.addSoftReference("groupId", groupName);
@@ -86,8 +91,16 @@ public class InRightGroupFunction extends AbstractFunction {
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 		
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
-		
-		return cgm.isIdentityInRightGroup(ident,groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		if(StringHelper.isLong(groupName)) {
+			Long groupKey = new Long(groupName);
+			return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		//TODO gm
+		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseResource());
+		if(!groupKeys.isEmpty()) {
+			return cgm.isIdentityInGroup(ident, groupKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		return ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {

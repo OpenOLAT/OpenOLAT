@@ -25,10 +25,10 @@
 
 package org.olat.group.ui.area;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
@@ -38,19 +38,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -63,12 +57,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author gnaegi
  */
 public class BGAreaEditController extends BasicController {
-	private static final String PACKAGE = Util.getPackageName(BGAreaEditController.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
 
-	// helpers
-
-	private Translator trans;
 	// GUI components
 	private TabbedPane tabbedPane;
 	private VelocityContainer editVC, detailsTabVC, groupsTabVC;
@@ -77,11 +66,11 @@ public class BGAreaEditController extends BasicController {
 	private Choice groupsChoice;
 	// area, context and group references
 	private BGArea area;
-	private BGContext bgContext;
-	private List allGroups, inAreaGroups;
+	private OLATResource resource;
+	private List<BusinessGroup> allGroups, inAreaGroups;
 	// managers
-	private BGAreaManager areaManager;
-	private BGContextManager contextManager;
+	private final BGAreaManager areaManager;
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor for the business group area edit controller
@@ -93,11 +82,10 @@ public class BGAreaEditController extends BasicController {
 	public BGAreaEditController(UserRequest ureq, WindowControl wControl, BGArea area) {
 		super(ureq, wControl);
 
-		this.trans = new PackageTranslator(PACKAGE, ureq.getLocale());
 		this.area = area;
-		this.areaManager = BGAreaManagerImpl.getInstance();
-		this.bgContext = area.getGroupContext();
-		this.contextManager = BGContextManagerImpl.getInstance();
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		resource = area.getResource();
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		// tabbed pane
 		tabbedPane = new TabbedPane("tabbedPane", ureq.getLocale());
@@ -115,44 +103,41 @@ public class BGAreaEditController extends BasicController {
 	 * initialize the main velocity wrapper container
 	 */
 	private void initEditVC() {
-		editVC = new VelocityContainer("edit", VELOCITY_ROOT + "/edit.html", trans, this);
+		editVC = createVelocityContainer("edit");
 		editVC.put("tabbedpane", tabbedPane);
-		editVC.contextPut("title", trans.translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(this.area.getName()).toString() }));
+		editVC.contextPut("title", translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(area.getName()).toString() }));
 	}
 
 	/**
 	 * initialize the area details tab
 	 */
 	private void initAndAddDetailsTab(UserRequest ureq, WindowControl wControl) {
-		this.detailsTabVC = new VelocityContainer("detailstab", VELOCITY_ROOT + "/detailstab.html", this.trans, this);
-		//TODO:pb: refactor BGControllerFactory.create..AreaController to be
-		//usefull here
-		if (this.areaController != null) {
-			removeAsListenerAndDispose(this.areaController);
-		}
-		this.areaController = new BGAreaFormController(ureq, wControl, this.area, false);
-		listenTo(this.areaController);
-		this.detailsTabVC.put("areaForm", this.areaController.getInitialComponent());
-		this.tabbedPane.addTab(this.trans.translate("tab.details"), this.detailsTabVC);
+		detailsTabVC = createVelocityContainer("detailstab");
+
+		removeAsListenerAndDispose(areaController);
+		areaController = new BGAreaFormController(ureq, wControl, area, false);
+		listenTo(areaController);
+		detailsTabVC.put("areaForm", areaController.getInitialComponent());
+		tabbedPane.addTab(translate("tab.details"), detailsTabVC);
 	}
 
 	/**
 	 * initalize the group to area association tab
 	 */
 	private void initAndAddGroupsTab() {
-		groupsTabVC = new VelocityContainer("groupstab", VELOCITY_ROOT + "/groupstab.html", trans, this);
-		tabbedPane.addTab(trans.translate("tab.groups"), groupsTabVC);
+		groupsTabVC = createVelocityContainer("groupstab");
+		tabbedPane.addTab(translate("tab.groups"), groupsTabVC);
 
-		this.allGroups = contextManager.getGroupsOfBGContext(this.bgContext);
-		this.inAreaGroups = areaManager.findBusinessGroupsOfArea(this.area);
-		this.groupsDataModel = new GroupsToAreaDataModel(this.allGroups, this.inAreaGroups);
+		allGroups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
+		inAreaGroups = areaManager.findBusinessGroupsOfArea(area);
+		groupsDataModel = new GroupsToAreaDataModel(allGroups, inAreaGroups);
 
-		groupsChoice = new Choice("groupsChoice", trans);
+		groupsChoice = new Choice("groupsChoice", getTranslator());
 		groupsChoice.setSubmitKey("submit");
 		groupsChoice.setCancelKey("cancel");
 		groupsChoice.setTableDataModel(groupsDataModel);
 		groupsChoice.addListener(this);
-		groupsTabVC.put(groupsChoice);
+		groupsTabVC.put("groupsChoice", groupsChoice);
 		groupsTabVC.contextPut("noGroupsFound", (allGroups.size() > 0 ? Boolean.FALSE : Boolean.TRUE));
 	}
 
@@ -162,15 +147,14 @@ public class BGAreaEditController extends BasicController {
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == this.groupsChoice) {
+		if (source == groupsChoice) {
 			if (event == Choice.EVNT_VALIDATION_OK) {
 				doUpdateGroupAreaRelations();
 				// do logging
-				if (this.inAreaGroups.size()==0) {
+				if (inAreaGroups.isEmpty()) {
 					ThreadLocalUserActivityLogger.log(GroupLoggingAction.BGAREA_UPDATED_NOW_EMPTY, getClass());
 				} else {
-					for (Iterator it = inAreaGroups.iterator(); it.hasNext();) {
-						BusinessGroup aGroup = (BusinessGroup) it.next();
+					for (BusinessGroup aGroup : inAreaGroups) {
 						ThreadLocalUserActivityLogger.log(GroupLoggingAction.BGAREA_UPDATED_MEMBER_GROUP, getClass(), 
 								LoggingResourceable.wrap(aGroup));
 					}
@@ -185,24 +169,19 @@ public class BGAreaEditController extends BasicController {
 			if (event == Event.DONE_EVENT) {
 				BGArea updatedArea = doAreaUpdate();
 				if (updatedArea == null) {
-					this.areaController.resetAreaName();
-					getWindowControl().setWarning(this.trans.translate("error.area.name.exists"));
+					areaController.resetAreaName();
+					getWindowControl().setWarning(translate("error.area.name.exists"));
 				} else {
-					this.area = updatedArea;
-					this.editVC.contextPut("title", this.trans.translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(this.area.getName()).toString() }));
+					area = updatedArea;
+					editVC.contextPut("title", translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(area.getName()).toString() }));
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				// area might have been changed, reload from db
-				this.area = this.areaManager.reloadArea(this.area);
-				//TODO:pb: refactor BGControllerFactory.create..AreaController to be
-				//usefull here
-				
-				if (this.areaController != null) {
-					removeAsListenerAndDispose(this.areaController);
-				}
-				this.areaController = new BGAreaFormController(ureq, getWindowControl(), this.area, false);
-				listenTo(this.areaController);
-				this.detailsTabVC.put("areaForm", this.areaController.getInitialComponent());
+				area = areaManager.reloadArea(area);
+				removeAsListenerAndDispose(areaController);
+				areaController = new BGAreaFormController(ureq, getWindowControl(), area, false);
+				listenTo(areaController);
+				detailsTabVC.put("areaForm", areaController.getInitialComponent());
 			}
 		}
 	}
@@ -213,9 +192,9 @@ public class BGAreaEditController extends BasicController {
 	 * @return the updated area
 	 */
 	public BGArea doAreaUpdate() {
-		this.area.setName(this.areaController.getAreaName());
-		this.area.setDescription(this.areaController.getAreaDescription());
-		return this.areaManager.updateBGArea(this.area);
+		area.setName(areaController.getAreaName());
+		area.setDescription(areaController.getAreaDescription());
+		return areaManager.updateBGArea(area);
 	}
 
 	/**
@@ -223,26 +202,22 @@ public class BGAreaEditController extends BasicController {
 	 */
 	public void doUpdateGroupAreaRelations() {
 		// 1) add groups to area
-		List addedGroups = groupsChoice.getAddedRows();
-		Iterator iterator = addedGroups.iterator();
-		while (iterator.hasNext()) {
-			Integer position = (Integer) iterator.next();
-			BusinessGroup group = groupsDataModel.getGroup(position.intValue());
+		List<Integer> addedGroups = groupsChoice.getAddedRows();
+		for (Integer position:addedGroups) {
+			BusinessGroup group = groupsDataModel.getObject(position.intValue());
 			// refresh group to prevent stale object exception and context proxy
 			// issues
-			group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(group);
+			group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(group);
 			// refresh group also in table model
-			this.allGroups.set(position.intValue(), group);
+			allGroups.set(position.intValue(), group);
 			// add group now to area and update in area group list
 			areaManager.addBGToBGArea(group, area);
-			this.inAreaGroups.add(group);
+			inAreaGroups.add(group);
 		}
 		// 2) remove groups from area
-		List removedGroups = groupsChoice.getRemovedRows();
-		iterator = removedGroups.iterator();
-		while (iterator.hasNext()) {
-			Integer position = (Integer) iterator.next();
-			BusinessGroup group = groupsDataModel.getGroup(position.intValue());
+		List<Integer> removedGroups = groupsChoice.getRemovedRows();
+		for (Integer position:removedGroups) {
+			BusinessGroup group = groupsDataModel.getObject(position.intValue());
 			areaManager.removeBGFromArea(group, area);
 			this.inAreaGroups.remove(group);
 		}

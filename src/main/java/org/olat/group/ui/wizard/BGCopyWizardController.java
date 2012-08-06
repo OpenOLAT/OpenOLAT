@@ -25,6 +25,7 @@
 
 package org.olat.group.ui.wizard;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -33,14 +34,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.WizardController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContext;
-import org.olat.group.ui.BGConfigFlags;
-import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.BusinessGroupFormController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -55,14 +51,12 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Florian Gnägi
  */
 public class BGCopyWizardController extends WizardController {
-	
-	private static final String PACKAGE = Util.getPackageName(BGCopyWizardController.class);
-
 	private BGCopyWizardCopyForm copyForm;
 	private BusinessGroupFormController groupController;
 	private Translator trans;
-	private BGConfigFlags flags;
 	private BusinessGroup originalGroup, copiedGroup;
+	
+	private final BusinessGroupService bgs;
 
 	/**
 	 * Constructor fot the business group copy wizard
@@ -72,11 +66,10 @@ public class BGCopyWizardController extends WizardController {
 	 * @param originalGroup original business group: master that should be copied
 	 * @param flags
 	 */
-	public BGCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup, BGConfigFlags flags) {
+	public BGCopyWizardController(UserRequest ureq, WindowControl wControl, BusinessGroup originalGroup) {
 		super(ureq, wControl, 2);
 		setBasePackage(BGCopyWizardController.class);
-		this.trans = BGTranslatorFactory.createBGPackageTranslator(PACKAGE, originalGroup.getType(), ureq.getLocale());
-		this.flags = flags;
+		bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.originalGroup = originalGroup;
 		// init wizard step 1
 		copyForm = new BGCopyWizardCopyForm(ureq, wControl);
@@ -90,26 +83,21 @@ public class BGCopyWizardController extends WizardController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == this.groupController) {
 			if (event == Event.DONE_EVENT) {
-				BusinessGroup newGroup = doCopyGroup();
-				if (newGroup == null) {
-					this.groupController.setGroupNameExistsError(null);
-				} else {
-					this.copiedGroup = newGroup;
-					// finished event
-					fireEvent(ureq, Event.DONE_EVENT);
-					// do logging
-					ThreadLocalUserActivityLogger.log(GroupLoggingAction.BG_GROUP_COPIED, getClass(), 
-							LoggingResourceable.wrap(originalGroup), LoggingResourceable.wrap(copiedGroup));
-				}
+				copiedGroup = doCopyGroup();
+				// finished event
+				fireEvent(ureq, Event.DONE_EVENT);
+				// do logging
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.BG_GROUP_COPIED, getClass(), 
+						LoggingResourceable.wrap(originalGroup), LoggingResourceable.wrap(copiedGroup));
 			}
 		}
 		else if (source == copyForm) {
 			if (event == Event.DONE_EVENT) {
 				removeAsListenerAndDispose(groupController);
-				groupController = new BusinessGroupFormController(ureq, getWindowControl(), this.originalGroup, this.flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
+				groupController = new BusinessGroupFormController(ureq, getWindowControl(), originalGroup);
 				listenTo(groupController);
 				
-				groupController.setGroupName(this.originalGroup.getName() + " " + this.trans.translate("bgcopywizard.copyform.name.copy"));
+				groupController.setGroupName(originalGroup.getName() + " " + trans.translate("bgcopywizard.copyform.name.copy"));
 				
 				setNextWizardStep(this.trans.translate("bgcopywizard.detailsform.title"), this.groupController.getInitialComponent());
 			}
@@ -129,19 +117,17 @@ public class BGCopyWizardController extends WizardController {
 	}
 
 	private BusinessGroup doCopyGroup() {
-		BusinessGroupManager groupManager = BusinessGroupManagerImpl.getInstance();
-		// reload original group to prevent context proxy problems
-		this.originalGroup = groupManager.loadBusinessGroup(this.originalGroup);
-		BGContext bgContext = this.originalGroup.getGroupContext();
-		String bgName = this.groupController.getGroupName();
-		String bgDesc = this.groupController.getGroupDescription();
-		Integer bgMax = this.groupController.getGroupMax();
-		Integer bgMin = this.groupController.getGroupMin();
-		boolean copyAreas = (this.flags.isEnabled(BGConfigFlags.AREAS) && this.copyForm.isCopyAreas());
+		originalGroup = bgs.loadBusinessGroup(originalGroup);
+		String bgName = groupController.getGroupName();
+		String bgDesc = groupController.getGroupDescription();
+		Integer bgMax = groupController.getGroupMax();
+		Integer bgMin = groupController.getGroupMin();
 
-		BusinessGroup newGroup = groupManager.copyBusinessGroup(this.originalGroup, bgName, bgDesc, bgMin, bgMax, bgContext, null, copyAreas,
-				copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(), copyForm.isCopyParticipants(), copyForm
-						.isCopyMembersVisibility(), copyForm.isCopyWaitingList());
+		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, bgName, bgDesc,
+				bgMin, bgMax, null, null,
+				copyForm.isCopyAreas(), copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(),
+				copyForm.isCopyParticipants(), copyForm.isCopyMembersVisibility(), copyForm.isCopyWaitingList(),
+				true /*copy resources */ );
 		return newGroup;
 	}
 
@@ -150,14 +136,6 @@ public class BGCopyWizardController extends WizardController {
 	 *         group
 	 */
 	public BusinessGroup getNewGroup() {
-		return this.copiedGroup;
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.WizardController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		super.doDispose();
+		return copiedGroup;
 	}
 }

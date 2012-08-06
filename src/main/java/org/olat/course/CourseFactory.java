@@ -425,9 +425,7 @@ public class CourseFactory extends BasicManager {
 		CalendarManager calMan = CalendarManagerFactory.getInstance().getCalendarManager();
 		NotificationsManager nfm = NotificationsManager.getInstance();
 		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);
-		List<BusinessGroup> learningGroups = courseGroupManager.getAllLearningGroupsFromAllContexts();
-		List<BusinessGroup> rightGroups = courseGroupManager.getAllRightGroupsFromAllContexts();
-		learningGroups.addAll(rightGroups);
+		List<BusinessGroup> learningGroups = courseGroupManager.getAllBusinessGroups();
 		//all learning and right group calendars
 		for (BusinessGroup bg : learningGroups) {
 			KalendarRenderWrapper calRenderWrapper = calMan.getGroupCalendar(bg);
@@ -512,9 +510,6 @@ public class CourseFactory extends BasicManager {
 					DBFactory.getInstance(false).intermediateCommit();
 				}
 			}
-			CourseGroupManager sourceCgm = sourceCourse.getCourseEnvironment().getCourseGroupManager();
-			CourseGroupManager targetCgm = targetCourse.getCourseEnvironment().getCourseGroupManager();
-			targetCgm.createCourseGroupmanagementAsCopy(sourceCgm, sourceCourse.getCourseTitle());
 		}
 		return targetRes;			
 	}
@@ -526,14 +521,15 @@ public class CourseFactory extends BasicManager {
 	 * @param fTargetZIP
 	 * @return true if successfully exported, false otherwise.
 	 */
-	public static void exportCourseToZIP(OLATResourceable sourceRes, File fTargetZIP) {
+	public static void exportCourseToZIP(OLATResourceable sourceRes, File fTargetZIP, boolean backwardsCompatible) {
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl) loadCourse(sourceRes);
 
 		// add files to ZIP
 		File fExportDir = new File(System.getProperty("java.io.tmpdir")+File.separator+CodeHelper.getRAMUniqueID());
 		fExportDir.mkdirs();
 		synchronized (sourceCourse) { //o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
-			sourceCourse.exportToFilesystem(fExportDir);
+			OLATResource courseResource = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+			sourceCourse.exportToFilesystem(courseResource, fExportDir, backwardsCompatible);
 			Codepoint.codepoint(CourseFactory.class, "longExportCourseToZIP");
 			Set<String> fileSet = new HashSet<String>();
 			String[] files = fExportDir.list();
@@ -632,10 +628,8 @@ public class CourseFactory extends BasicManager {
 		course = openCourseEditSession(course.getResourceableId());
 		// create group management
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		cgm.createCourseGroupmanagement(course.getResourceableId().toString());
 		// import groups
-		cgm.importCourseLearningGroups(courseExportData);
-		cgm.importCourseRightGroups(courseExportData);
+		cgm.importCourseBusinessGroups(courseExportData);
 
 		// create security group
 		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
@@ -1042,10 +1036,9 @@ public class CourseFactory extends BasicManager {
 		//close courseEditSession if not already closed
 		closeCourseEditSession(resourceableId, false);
 	}
-
-	public static Controller createDisposedCourseRestartController(UserRequest ureq, WindowControl wControl, long resId) {
-		RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resId);
-		return new DisposedCourseRestartController(ureq, wControl, courseRepositoryEntry);
+	
+	public static Controller createDisposedCourseRestartController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
+		return new DisposedCourseRestartController(ureq, wControl, re);
 	}
 
 	/**
@@ -1127,7 +1120,6 @@ public class CourseFactory extends BasicManager {
 			course.setReadAndWrite(true);
 			courseEditSessionMap.put(resourceableId, course);
 			log.debug("getCourseEditSession - put course in courseEditSessionMap: " + resourceableId);
-			//System.out.println("put course in courseEditSessionMap: " + resourceableId);
 		}	
 		return course;
 	}
@@ -1162,7 +1154,6 @@ public class CourseFactory extends BasicManager {
 		  course.setReadAndWrite(false);
 		  courseEditSessionMap.remove(resourceableId);
 		  log.debug("removeCourseEditSession for course: " + resourceableId);
-		  //System.out.println("removeCourseEditSession for course: " + resourceableId);
 		}
 	}
 	

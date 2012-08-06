@@ -25,10 +25,15 @@
 
 package org.olat.course.condition.interpreter;
 
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.area.BGAreaManager;
 
 /**
  * Initial Date:  Jun 16, 2004
@@ -69,26 +74,32 @@ public class InLearningAreaFunction extends AbstractFunction {
 		 */
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
-			if (!cev.existsArea(areaName)) { return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, areaName,
-					"error.notfound.name", "solution.checkgroupmanagement")); }
+			if (!cev.existsArea(areaName)) { 
+				return handleException(new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, areaName,
+						"error.notfound.name", "solution.checkgroupmanagement"));
+			}
 			// remember the reference to the node id for this condtion
 			cev.addSoftReference("areaId", areaName);
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}
 
-		/*
-		 * the real function evaluation which is used during run time
-		 */
+		//The real function evaluation which is used during run time
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-		
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
+		if(StringHelper.isLong(areaName)) {
+			Long areaKey = new Long(areaName);
+			return cgm.isIdentityInLearningArea(ident,areaKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
 		
-		return cgm.isIdentityInLearningArea(ident,areaName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		List<Long> areaKeys = CoreSpringFactory.getImpl(BGAreaManager.class).toAreaKeys(areaName, cgm.getCourseResource());
+		if(!areaKeys.isEmpty()) {
+			return cgm.isIdentityInLearningArea(ident, areaKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
+		return ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_TRUE;
 	}
-
 }

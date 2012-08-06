@@ -30,8 +30,10 @@ import java.io.File;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR/>
@@ -62,7 +64,9 @@ public interface ICourse extends OLATResourceable {
 	 * Export course to file system.
 	 * @param exportDirecotry The directory to export files to.
 	 */
-	public void exportToFilesystem(File exportDirecotry);
+	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirecotry, boolean backwardsCompatible);
+	
+	public void postImport(CourseEnvironmentMapper envMapper);
 	
 	/**
 	 * Return the container to files for this course.

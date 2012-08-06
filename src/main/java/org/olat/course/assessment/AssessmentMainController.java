@@ -69,7 +69,6 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -82,7 +81,6 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
-import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
@@ -102,7 +100,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
-import org.olat.group.ui.context.BGContextTableModel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -406,7 +403,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				if (actionid.equals(CMD_CHOOSE_GROUP)) {
 					int rowid = te.getRowId();
 					GroupAndContextTableModel groupListModel = (GroupAndContextTableModel) groupListCtr.getTableDataModel();
-					this.currentGroup = groupListModel.getBusinessGroupAt(rowid);
+					this.currentGroup = groupListModel.getObject(rowid);
 					this.identitiesList = getGroupIdentitiesFromGroupmanagement(this.currentGroup);
 					// Init the user list with this identitites list
 					doUserChooseWithData(ureq, this.identitiesList, this.currentGroup, this.currentCourseNode);
@@ -634,9 +631,9 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
 		if (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments()) {
-			return gm.getAllLearningGroupsFromAllContexts();
+			return gm.getAllBusinessGroups();
 		} else if (callback.mayAssessCoachedUsers()) {
-			return  gm.getOwnedLearningGroupsFromAllContexts(identity);
+			return  gm.getOwnedBusinessGroups(identity);
 		} else {
 			throw new OLATSecurityException("No rights to assess or even view any groups");
 		}
@@ -668,7 +665,6 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 * @param ureq The user request
 	 */
 	private void doGroupChoose(UserRequest ureq) {
-		ICourse course = CourseFactory.loadCourse(ores);
 		removeAsListenerAndDispose(groupListCtr);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("groupchoose.nogroups"));
@@ -678,22 +674,15 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		listenTo(groupListCtr);
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.name", 0, CMD_CHOOSE_GROUP, ureq.getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.desc", 1, null, ureq.getLocale()));
-		CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
-		if (gm.getLearningGroupContexts().size() > 1) {
-		// show groupcontext row only if multiple contexts are found
-			groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.context", 2, null, ureq.getLocale()));
-		}
-		
-		Translator defaultContextTranslator = new PackageTranslator(Util.getPackageName(BGContextTableModel.class), ureq.getLocale());
+
 		// loop over all groups to filter depending on condition
 		List<BusinessGroup> currentGroups = new ArrayList<BusinessGroup>();
-		for (Iterator<BusinessGroup> iter = this.coachedGroups.iterator(); iter.hasNext();) {
-			BusinessGroup group = iter.next();
+		for (BusinessGroup group:coachedGroups) {
 			if ( !isFiltering || isVisibleAndAccessable(this.currentCourseNode, group) ) {
 				currentGroups.add(group);
 			}
 		}
-		GroupAndContextTableModel groupTableDataModel = new GroupAndContextTableModel(currentGroups, defaultContextTranslator);
+		GroupAndContextTableModel groupTableDataModel = new GroupAndContextTableModel(currentGroups);
 		groupListCtr.setTableDataModel(groupTableDataModel);
 		groupChoose.put("grouplisttable", groupListCtr.getInitialComponent());
 		

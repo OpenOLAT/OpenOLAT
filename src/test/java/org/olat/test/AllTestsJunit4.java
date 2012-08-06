@@ -74,16 +74,19 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,//ok
 	org.olat.commons.coordinate.CoordinatorTest.class,//ok
 	org.olat.admin.user.delete.service.UserDeletionManagerTest.class,//ok
-	org.olat.group.BusinessGroupTest.class,//fail
-	org.olat.group.BGAreaManagerTest.class,//ok
-	org.olat.group.BusinessGroupManagerImplTest.class,//ok
+	org.olat.group.test.BGRightManagerTest.class,//ok
+	org.olat.group.test.BGAreaManagerTest.class,//ok
+	org.olat.group.test.BusinessGroupServiceTest.class,//ok
+	org.olat.group.test.BusinessGroupDAOTest.class,//ok
+	org.olat.group.test.BusinessGroupRelationDAOTest.class,//ok
 	org.olat.resource.lock.pessimistic.PLockTest.class,//ok
 	org.olat.resource.references.ReferenceManagerTest.class,//ok
 	org.olat.resource.OLATResourceManagerTest.class,//ok
 	org.olat.basesecurity.SecurityManagerTest.class,//ok
 	org.olat.basesecurity.BaseSecurityTest.class,//ok
 	org.olat.repository.RepositoryManagerTest.class,//ok
-	org.olat.repository.RepositoryManagerQueryTest.class,
+	org.olat.repository.RepositoryManagerConcurrentTest.class,//ok
+	org.olat.repository.RepositoryManagerQueryTest.class,//ok
 	org.olat.instantMessaging.IMUnitTest.class,//ok
 	org.olat.instantMessaging.IMPrefsUnitTest.class,//ok
 	org.olat.course.nodes.en.EnrollmentManagerTest.class,//ok
@@ -145,7 +148,8 @@ import org.junit.runners.Suite;
 	org.olat.restapi.UserMgmtTest.class,
 	org.olat.restapi.ContactsTest.class,
 	de.bps.olat.portal.institution.InstitutionPortletTest.class,
-	org.olat.group.GroupImportExportTest.class,
+	org.olat.group.manager.BusinessGroupImportExportXStreamTest.class,
+	org.olat.group.test.BusinessGroupImportExportTest.class,
 	org.olat.resource.accesscontrol.ACFrontendManagerTest.class,
 	org.olat.resource.accesscontrol.ACMethodManagerTest.class,
 	org.olat.resource.accesscontrol.ACOfferManagerTest.class,

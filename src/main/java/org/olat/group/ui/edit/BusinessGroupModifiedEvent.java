@@ -25,18 +25,20 @@
 
 package org.olat.group.ui.edit;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -50,6 +52,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class BusinessGroupModifiedEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = 6234290505358324180L;
 	/** event: group has been modified */
 	public static final String CONFIGURATION_MODIFIED_EVENT = "configuration.modified.event";
 	/** event: an identity has been added to the group */
@@ -127,7 +130,7 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	 *          only update the list if the identity is affected)
 	 * @return true if the list was modified
 	 */
-	public boolean updateBusinessGroupList(List businessGroups, Identity identity) {
+	public boolean updateBusinessGroupList(List<BusinessGroup> businessGroups, Identity identity) {
 		boolean added = wasMyselfAdded(identity);
 		boolean removed = wasMyselfRemoved(identity);
 		// we are only interested in added and removed-events here
@@ -136,14 +139,16 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 
 		if (added) {
 			// load the business group and add it to the groups list
-			BusinessGroup nGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(modKey, true);
+			BusinessGroup nGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(modKey);
 			// if (SyncHelper.)
-			businessGroups.add(nGroup);
+			if(nGroup != null) {
+				businessGroups.add(nGroup);
+			}
 			return true;
 		}
 		// else : removed
-		for (Iterator it_groups = businessGroups.iterator(); it_groups.hasNext();) {
-			BusinessGroup group = (BusinessGroup) it_groups.next();
+		for (Iterator<BusinessGroup> it_groups = businessGroups.iterator(); it_groups.hasNext();) {
+			BusinessGroup group = it_groups.next();
 			if (modKey.equals(group.getKey())) {
 				// our list is affected by the modified event
 				it_groups.remove();
@@ -164,19 +169,15 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	 */
 	public static void fireModifiedGroupEvents(String command, BusinessGroup group, Identity identity) {
 		BusinessGroupModifiedEvent modifiedEvent = new BusinessGroupModifiedEvent(command, group, identity);
+		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
 		// 1) notify listeners of group events
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, group);
+		eventBus.fireEventToListenersOf(modifiedEvent, group);
+		eventBus.fireEventToListenersOf(modifiedEvent, OresHelper.lookupType(BusinessGroup.class));
 		// 2) notify listeners of learning resources of this group
-		if (group.getGroupContext() != null) {
-			if (group.getGroupContext() != null) {
-				BGContextManager contextManager = BGContextManagerImpl.getInstance();
-				List repoEntries = contextManager.findRepositoryEntriesForBGContext(group.getGroupContext());
-				Iterator iter = repoEntries.iterator();
-				while (iter.hasNext()) {
-					RepositoryEntry entry = (RepositoryEntry) iter.next();
-					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);
-				}
-			}
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		List<RepositoryEntry> repoEntries = bgs.findRepositoryEntries(Collections.singletonList(group), 0, -1);
+		for (RepositoryEntry entry:repoEntries) {
+			eventBus.fireEventToListenersOf(modifiedEvent, entry);
 		}
 	}
 	
