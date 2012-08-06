@@ -261,10 +261,12 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 	 *   1 to call incrementDownloadCounter 
 	 * Breakpoint is set for 'setLastUsageNowFor', all other calls must wait.
 	 */
-	@Test public void testSetLastUsageNowFor() {
+	@Test @Ignore //this test doesn't test anything, and result is fully random
+	public void testSetLastUsageNowFor() {
 		Date lastSetLastUsageDate = null;
 		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
 		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
+		
 		final int loop = 500;
 		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
 		final Long keyRepo = repositoryEntry.getKey();
@@ -281,6 +283,7 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 		}
 		long endTime = System.currentTimeMillis();
 		sleep(20000);
+		
 		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 		assertTrue("Wrong date-value of lastUsage, could not be before ",repositoryEntry2.getLastUsage().after(lastSetLastUsageDate) );
 		System.out.println("testSetLastUsageNowFor time=" + (endTime - startTime) + " for " + loop + " testSetLastUsageNowFor calls");
