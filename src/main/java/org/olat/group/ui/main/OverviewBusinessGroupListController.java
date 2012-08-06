@@ -93,6 +93,11 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -121,6 +126,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl);
 		}
+		favoritGroupsCtrl.updateMarkedGroups();
 		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, favoritGroupsCtrl);
 		return favoritGroupsCtrl;
