@@ -69,9 +69,10 @@ public class BusinessGroupImportExport {
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	
 	
-	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, boolean backwardsCompatible) {
-		if (groups == null || groups.isEmpty())
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, BusinessGroupEnvironment env, boolean backwardsCompatible) {
+		if (groups == null || groups.isEmpty()) {
 			return; // nothing to do... says Florian.
+		}
 
 		OLATGroupExport root = new OLATGroupExport();
 		// export areas
@@ -81,6 +82,12 @@ public class BusinessGroupImportExport {
 			Area newArea = new Area();
 			newArea.key = backwardsCompatible ? null : area.getKey();
 			newArea.name = area.getName();
+			if(backwardsCompatible && env != null) {
+				String newName = env.getAreaName(area.getKey());
+				if(StringHelper.containsNonWhitespace(newName)) {
+					newArea.name = newName;
+				}
+			}
 			newArea.description = Collections.singletonList(area.getDescription());
 			root.getAreas().getGroups().add(newArea);
 		}
@@ -89,7 +96,11 @@ public class BusinessGroupImportExport {
 		root.setGroups(new GroupCollection());
 		root.getGroups().setGroups(new ArrayList<Group>());
 		for (BusinessGroup group : groups) {
-			Group newGroup = exportGroup(fExportFile, group, backwardsCompatible);
+			String groupName = null;
+			if(backwardsCompatible && env != null) {
+				groupName = env.getGroupName(group.getKey());
+			}
+			Group newGroup = exportGroup(fExportFile, group, groupName, backwardsCompatible);
 			root.getGroups().getGroups().add(newGroup);
 		}
 		saveGroupConfiguration(fExportFile, root);
@@ -97,17 +108,17 @@ public class BusinessGroupImportExport {
 	
 	public void exportGroup(BusinessGroup group, File fExportFile, boolean backwardsCompatible) {
 		OLATGroupExport root = new OLATGroupExport();
-		Group newGroup = exportGroup(fExportFile, group, backwardsCompatible);
+		Group newGroup = exportGroup(fExportFile, group, null, backwardsCompatible);
 		root.setGroups(new GroupCollection());
 		root.getGroups().setGroups(new ArrayList<Group>());
 		root.getGroups().getGroups().add(newGroup);
 		saveGroupConfiguration(fExportFile, root);
 	}
 	
-	private Group exportGroup(File fExportFile, BusinessGroup group, boolean backwardsCompatible) {
+	private Group exportGroup(File fExportFile, BusinessGroup group, String groupName, boolean backwardsCompatible) {
 		Group newGroup = new Group();
 		newGroup.key = backwardsCompatible ? null : group.getKey();
-		newGroup.name = group.getName();
+		newGroup.name = StringHelper.containsNonWhitespace(groupName) ? groupName : group.getName();
 		if (group.getMinParticipants() != null) {
 			newGroup.minParticipants = group.getMinParticipants();
 		}

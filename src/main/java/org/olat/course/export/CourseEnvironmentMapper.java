@@ -20,7 +20,11 @@
 package org.olat.course.export;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.olat.core.util.StringHelper;
 import org.olat.group.model.BGAreaReference;
@@ -49,6 +53,38 @@ public class CourseEnvironmentMapper {
 		groups.addAll(env.getGroups());
 	}
 	
+	public void avoidDuplicateNames() {
+		Set<String> names = new HashSet<String>();
+		for(BusinessGroupReference ref:getGroups()) {
+			if(names.contains(ref.getName())) {
+				String newName = generateName(ref.getName(), names);
+				names.add(newName);
+				ref.setName(newName);
+			} else {
+				names.add(ref.getName());
+			}
+		}
+		names.clear();
+		for(BGAreaReference ref:getAreas()) {
+			if(names.contains(ref.getName())) {
+				String newName = generateName(ref.getName(), names);
+				names.add(newName);
+				ref.setName(newName);
+			} else {
+				names.add(ref.getName());
+			}
+		}
+	}
+	
+	private String generateName(String name, Collection<String> names) {
+		for(int i=1; i<100; i++) {
+			String newName = name + "_" + i;
+			if(!names.contains(newName)) {
+				return newName;
+			}
+		}
+		return name + "_" + UUID.randomUUID().toString();
+	}
 	
 	public List<Long> toGroupKeyFromOriginalNames(String groupNames) {
 		if(!StringHelper.containsNonWhitespace(groupNames)) return null;

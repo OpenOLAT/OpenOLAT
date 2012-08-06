@@ -295,13 +295,23 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		long s = System.currentTimeMillis();
 		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+"...");
 		File fCourseBase = getCourseBaseContainer().getBasefile();
+		//make the folder structure
+		File fExportedDataDir = new File(exportDirectory, EXPORTED_DATA_FOLDERNAME);
+		fExportedDataDir.mkdirs();
 
+		//export course config
 		FileUtils.copyFileToDir(new File(fCourseBase, CourseConfigManager.COURSECONFIG_XML), exportDirectory, "course export courseconfig");
 		
+		//export business groups
+		CourseEnvironmentMapper envMapper = PersistingCourseGroupManager.getInstance(this).getBusinessGroupEnvironment();
+		if(backwardsCompatible) {
+			//prevents duplicate names
+			envMapper.avoidDuplicateNames();
+		}
+		PersistingCourseGroupManager.getInstance(this).exportCourseBusinessGroups(fExportedDataDir, envMapper, backwardsCompatible);
 		if(backwardsCompatible) {
 			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
-			CourseEnvironmentMapper envMapper = PersistingCourseGroupManager.getInstance(this).getBusinessGroupEnvironment();
-			
+
 			Structure exportedStructure = (Structure)XStreamHelper.readObject(xstream, new File(fCourseBase, RUNSTRUCTURE_XML));
 			visit(new NodePostExportVisitor(envMapper, backwardsCompatible), exportedStructure.getRootNode());
 			XStreamHelper.writeObject(xstream, new File(exportDirectory, RUNSTRUCTURE_XML), exportedStructure);
@@ -321,8 +331,6 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		// export course folder
 		FileUtils.copyDirToDir(getIsolatedCourseFolder().getBasefile(), exportDirectory, "course export folder");
 		// export any node data
-		File fExportedDataDir = new File(exportDirectory, EXPORTED_DATA_FOLDERNAME);
-		fExportedDataDir.mkdirs();
 		log.info("exportToFilesystem: exporting course "+this+": exporting all nodes...");
 		Visitor visitor = new NodeExportVisitor(fExportedDataDir, this);
 		TreeVisitor tv = new TreeVisitor(visitor, getEditorTreeModel().getRootNode(), true);
@@ -380,11 +388,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		log.info("exportToFilesystem: exporting course "+this+": configuration and repo data...");
 		// export configuration file
 		FileUtils.copyFileToDir(new File(fCourseBase, CourseConfigManager.COURSECONFIG_XML), exportDirectory, "course export configuration and repo info");
-		// export learning groups
 		
-		PersistingCourseGroupManager.getInstance(this).exportCourseBusinessGroups(fExportedDataDir, backwardsCompatible);
-		// export right groups
-		//PersistingCourseGroupManager.getInstance(this).exportCourseRightGroups(fExportedDataDir);
 		// export repo metadata
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry myRE = rm.lookupRepositoryEntry(this, true);

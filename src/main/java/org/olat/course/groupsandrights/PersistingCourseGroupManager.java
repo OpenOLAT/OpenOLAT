@@ -309,11 +309,16 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#exportCourseBusinessGroups(java.io.File)
 	 */
-	public void exportCourseBusinessGroups(File fExportDirectory, boolean backwardsCompatible) {
+	@Override
+	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper courseEnv, boolean backwardsCompatible) {
 		File fExportFile = new File(fExportDirectory, LEARNINGGROUPEXPORT_XML);
 		List<BGArea> areas = getAllAreas();
 		List<BusinessGroup> groups = getAllBusinessGroups();
-		businessGroupService.exportGroups(groups, areas, fExportFile, backwardsCompatible);
+
+		BusinessGroupEnvironment bgEnv = new BusinessGroupEnvironment();
+		bgEnv.getGroups().addAll(courseEnv.getGroups());
+		bgEnv.getAreas().addAll(courseEnv.getAreas());
+		businessGroupService.exportGroups(groups, areas, fExportFile, bgEnv, backwardsCompatible);
 	}
 	
 	/**

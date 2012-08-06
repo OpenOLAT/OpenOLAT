@@ -38,4 +38,22 @@ public class BusinessGroupEnvironment {
 	public List<BusinessGroupReference> getGroups() {
 		return groups;
 	}
+	
+	public String getGroupName(Long groupKey) {
+		for(BusinessGroupReference ref:getGroups()) {
+			if(ref.getKey().equals(groupKey)) {
+				return ref.getName();
+			}
+		}
+		return null;
+	}
+	
+	public String getAreaName(Long areaKey) {
+		for(BGAreaReference ref:getAreas()) {
+			if(ref.getKey().equals(areaKey)) {
+				return ref.getName();
+			}
+		}
+		return null;
+	}
 }

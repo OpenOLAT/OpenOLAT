@@ -32,7 +32,6 @@ import org.olat.core.id.Identity;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
-import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.resource.OLATResource;
 
 /**
@@ -184,7 +183,7 @@ public interface CourseGroupManager {
 	 * 
 	 * @param fExportDirectory
 	 */
-	public void exportCourseBusinessGroups(File fExportDirectory, boolean backwardsCompatible);
+	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env, boolean backwardsCompatible);
 
 	/**
 	 * Import course internal groups fa previous export.
