@@ -523,6 +523,22 @@ create table o_info_message (
   primary key (info_id)
 ) ;
 
+create table o_co_db_entry (
+   id int8 not null,
+   version int8 not null,
+   lastmodified timestamp,
+   creationdate timestamp,
+   courseid int8,
+   identity int8,
+   category varchar(32),
+   name varchar(255) not null,
+   floatvalue decimal(65,30),
+   longvalue int8,
+   stringvalue varchar(255),
+   textvalue TEXT,
+   primary key (id)
+);
+
 -- eportfolio arteafcts
 create table o_ep_artefact (
   artefact_id int8 not null,
@@ -1079,6 +1095,107 @@ create or replace view o_bs_gp_membership_v as (
    left join o_gp_business as participant_gp on (membership.secgroup_id = participant_gp.fk_partipiciantgroup)
    left join o_gp_business as waiting_gp on (membership.secgroup_id = waiting_gp.fk_waitinggroup)
    where (owned_gp.group_id is not null or participant_gp.group_id is not null or waiting_gp.group_id is not null)
+);
+
+create or replace view o_gp_business_v  as (
+   select
+      gp.group_id as group_id,
+      gp.groupname as groupname,
+      gp.lastmodified as lastmodified,
+      gp.creationdate as creationdate,
+      gp.lastusage as lastusage,
+      gp.descr as descr,
+      gp.minparticipants as minparticipants,
+      gp.maxparticipants as maxparticipants,
+      gp.waitinglist_enabled as waitinglist_enabled,
+      gp.autocloseranks_enabled as autocloseranks_enabled,
+      (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
+      (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = gp.fk_resource
+         and offer.is_valid=true
+         and (offer.validfrom is null or offer.validfrom >= current_timestamp)
+         and (offer.validto is null or offer.validto <= current_timestamp)
+      ) as num_of_valid_offers,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = gp.fk_resource
+         and offer.is_valid=true
+      ) as num_of_offers,
+      (select count(relation.fk_resource) from o_gp_business_to_resource as relation 
+         where relation.fk_group = gp.group_id
+      ) as num_of_relations,
+      gp.fk_resource as fk_resource,
+      gp.fk_ownergroup as fk_ownergroup,
+      gp.fk_partipiciantgroup as fk_partipiciantgroup,
+      gp.fk_waitinggroup as fk_waitinggroup
+   from o_gp_business as gp
+);
+
+create or replace view o_re_member_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re.membersonly as re_membersonly,
+      re.accesscode as re_accesscode,
+      re_part_member.identity_id as re_part_member_id,
+      re_tutor_member.identity_id as re_tutor_member_id,
+      re_owner_member.identity_id as re_owner_member_id,
+      bg_part_member.identity_id as bg_part_member_id,
+      bg_owner_member.identity_id as bg_owner_member_id
+   from o_repositoryentry as re
+   left join o_bs_membership as re_part_member on (re_part_member.secgroup_id = re.fk_participantgroup)
+   left join o_bs_membership as re_tutor_member on (re_tutor_member.secgroup_id = re.fk_tutorgroup)
+   left join o_bs_membership as re_owner_member on (re_owner_member.secgroup_id = re.fk_ownergroup)
+   left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   left join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
+   left join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
+);
+
+create or replace view o_re_strict_member_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re_part_member.identity_id as re_part_member_id,
+      re_tutor_member.identity_id as re_tutor_member_id,
+      re_owner_member.identity_id as re_owner_member_id,
+      bg_part_member.identity_id as bg_part_member_id,
+      bg_owner_member.identity_id as bg_owner_member_id
+   from o_repositoryentry as re
+   left join o_bs_membership as re_part_member on (re_part_member.secgroup_id = re.fk_participantgroup)
+   left join o_bs_membership as re_tutor_member on (re_tutor_member.secgroup_id = re.fk_tutorgroup)
+   left join o_bs_membership as re_owner_member on (re_owner_member.secgroup_id = re.fk_ownergroup)
+   left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   left join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
+   left join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
+   where re.membersonly=true and re.accesscode=1
+);
+
+create or replace view o_re_strict_participant_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re_part_member.identity_id as re_part_member_id,
+      bg_part_member.identity_id as bg_part_member_id
+   from o_repositoryentry as re
+   left join o_bs_membership as re_part_member on (re_part_member.secgroup_id = re.fk_participantgroup)
+   left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   left join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
+   where re.membersonly=true and re.accesscode=1
+);
+
+create or replace view o_re_strict_tutor_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re_tutor_member.identity_id as re_tutor_member_id,
+      re_owner_member.identity_id as re_owner_member_id,
+      bg_owner_member.identity_id as bg_owner_member_id
+   from o_repositoryentry as re
+   left join o_bs_membership as re_tutor_member on (re_tutor_member.secgroup_id = re.fk_tutorgroup)
+   left join o_bs_membership as re_owner_member on (re_owner_member.secgroup_id = re.fk_ownergroup)
+   left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
+   left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
+   left join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
+   where re.membersonly=true and re.accesscode=1
 );
 
 create or replace view o_gp_business_v  as (

@@ -512,6 +512,22 @@ create table if not exists o_userrating (
 	primary key (rating_id)
 );
 
+create table o_co_db_entry (
+   id int8 not null,
+   version int8 not null,
+   lastmodified timestamp,
+   creationdate timestamp,
+   courseid int8,
+   identity int8,
+   category varchar(32),
+   name varchar(255) not null,
+   floatvalue decimal(65,30),
+   longvalue int8,
+   stringvalue varchar(255),
+   textvalue TEXT,
+   primary key (id)
+);
+
 create table if not exists o_stat_lastupdated (
 
 	lastupdated datetime not null
@@ -1238,6 +1254,7 @@ alter table o_ep_collect_restriction ENGINE = InnoDB;
 alter table o_ep_struct_el ENGINE = InnoDB;
 alter table o_ep_struct_struct_link ENGINE = InnoDB;
 alter table o_ep_struct_artefact_link ENGINE = InnoDB;
+alter table o_co_db_entry ENGINE = InnoDB;
 alter table o_mail ENGINE = InnoDB;
 alter table o_mail_to_recipient ENGINE = InnoDB;
 alter table o_mail_recipient ENGINE = InnoDB;
@@ -1370,6 +1387,12 @@ create index imsg_author_idx on o_info_message (fk_author_id);
 alter table o_info_message add constraint FKF85553465A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
 create index imsg_modifier_idx on o_info_message (fk_modifier_id);
 alter table o_info_message add constraint FKF85553465A4FA5EF foreign key (fk_modifier_id) references o_bs_identity (id);
+
+create index o_co_db_course_idx on o_co_db_entry (courseid);
+create index o_co_db_cat_idx on o_co_db_entry (category);
+create index o_co_db_name_idx on o_co_db_entry (name);
+alter table o_co_db_entry add constraint FK_DB_ENTRY_TO_IDENT foreign key (identity) references o_bs_identity (id);
+
 
 alter table o_ep_artefact add constraint FKF26C8375236F28X foreign key (fk_artefact_auth_id) references o_bs_identity (id);
 alter table o_ep_struct_el add constraint FKF26C8375236F26X foreign key (fk_olatresource) references o_olatresource (resource_id);

@@ -140,8 +140,7 @@ public class NotificationUIFactory {
 		// Special case update course and group name for calendars (why?) 
 		if (subidentifier.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
 			resName = CourseModule.ORES_TYPE_COURSE;
-		}
-		if (subidentifier.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
+		} else if (subidentifier.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
 			resName = BusinessGroupModule.ORES_TYPE_GROUP;
 		}
 

@@ -65,7 +65,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.Quota;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
@@ -486,11 +485,6 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 							tools.setToolEnabled(enabledTool, true);
 							if(CollaborationTools.TOOL_FOLDER.equals(enabledTool)) {
 								tools.saveFolderAccess(new Long(configuration.getFolderAccess()));
-								
-								Quota quota = configuration.getQuota();
-								System.out.println(quota);
-								
-								
 							} else if (CollaborationTools.TOOL_CALENDAR.equals(enabledTool)) {
 								tools.saveCalendarAccess(new Long(configuration.getCalendarAccess()));
 							}

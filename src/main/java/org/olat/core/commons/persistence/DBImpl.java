@@ -682,13 +682,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * Call this to commit a transaction opened by beginTransaction().
 	 */
 	public void commit() {
-//		StackTraceElement[] elems = Thread.currentThread().getStackTrace();
-//		if (elems!=null && elems.length>1) {
-//			if (!elems[2].getClassName().equals("org.olat.commons.coordinate.cluster.ClusterSyncer") &&
-//					!elems[2].getClassName().equals("org.olat.core.util.mtx.ManagedTransaction")) {
-//				System.out.println("--> TRANSACTION RULES BROKEN");
-//			}
-//		}
 		if (isLogDebugEnabled()) logDebug("commit start...", null);
 		try {
 			if (isConnectionOpen() && hasTransaction() && getTransaction().isInTransaction()) {

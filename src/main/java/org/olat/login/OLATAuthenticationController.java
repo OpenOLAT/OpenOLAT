@@ -211,7 +211,6 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			// Check if disclaimer has been accepted
 			if (RegistrationManager.getInstance().needsToConfirmDisclaimer(authenticatedIdentity)) {
 				// accept disclaimer first
-				RegistrationManager.getInstance().setHasConfirmedDislaimer(authenticatedIdentity);
 				
 				removeAsListenerAndDispose(disclaimerCtr);
 				disclaimerCtr = new DisclaimerController(ureq, getWindowControl());

@@ -122,15 +122,13 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 				success = emailer.sendEmailCC(context, contactForm.getEmailFrom(), contactForm.getSubject(), contactForm.getBody(), attachments);
 			}
 		} catch (AddressException e) {
-			e.printStackTrace();
+			logError(null, e);
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			logError(null, e);
 		}
 		
 		if(success) {
-			System.out.println("Youppi");
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
-		
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

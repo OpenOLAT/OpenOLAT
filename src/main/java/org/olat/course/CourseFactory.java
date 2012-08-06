@@ -1120,7 +1120,6 @@ public class CourseFactory extends BasicManager {
 			course.setReadAndWrite(true);
 			courseEditSessionMap.put(resourceableId, course);
 			log.debug("getCourseEditSession - put course in courseEditSessionMap: " + resourceableId);
-			//System.out.println("put course in courseEditSessionMap: " + resourceableId);
 		}	
 		return course;
 	}
@@ -1155,7 +1154,6 @@ public class CourseFactory extends BasicManager {
 		  course.setReadAndWrite(false);
 		  courseEditSessionMap.remove(resourceableId);
 		  log.debug("removeCourseEditSession for course: " + resourceableId);
-		  //System.out.println("removeCourseEditSession for course: " + resourceableId);
 		}
 	}
 	

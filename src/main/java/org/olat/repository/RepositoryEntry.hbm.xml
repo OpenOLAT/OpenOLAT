@@ -96,7 +96,7 @@
 		</property>
 		
 		<property name="statusCode" column="statuscode" unique="false" type="int"/>
-		<!-- 
+		
 		<list name="metaDataElements" table="o_repositorymetadata" lazy="true">
 	   	    <key column="fk_repositoryentry"/>
 	   	    <index column="metadataelement_id"/>
@@ -111,6 +111,6 @@
 				</property>
    	 	    </composite-element>
 		</list>
-		-->
+		
 	</class>
 </hibernate-mapping>

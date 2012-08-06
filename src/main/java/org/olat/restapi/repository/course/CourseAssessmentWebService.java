@@ -53,6 +53,8 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -97,6 +99,8 @@ import org.olat.restapi.support.vo.AssessableResultsVO;
  */
 @Path("repo/courses/{courseId}/assessments")
 public class CourseAssessmentWebService {
+	
+	private static final OLog log = Tracing.createLoggerFor(CourseAssessmentWebService.class);
 	
 	private static final String VERSION  = "1.0";
 	
@@ -389,7 +393,6 @@ public class CourseAssessmentWebService {
 								Info info = navigator.getInfo();
 								if (info.containsError()) {
 									// some items cannot processed twice
-									System.out.println("Error");
 								} else {
 									iips.addItemInput(datas.get(it.getIdent()));
 									navigator.submitItems(iips);
@@ -440,10 +443,10 @@ public class CourseAssessmentWebService {
 				boolean incrementUserAttempts = true;
 				acn.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementUserAttempts);
 			} else {
-				System.out.println("Result set already saved");
+				log.error("Result set already saved");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 	}
 
