@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.manager.BasicManager;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
@@ -89,10 +88,10 @@ public class ACTransactionManagerImpl extends BasicManager implements ACTransact
 		sb.append("select trx from ").append(AccessTransactionImpl.class.getName()).append(" trx")
 			.append(" where trx.key=:transactionKey");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("transactionKey", transactionKey);
-	
-		List<AccessTransaction> transactions = query.list();
+		List<AccessTransaction> transactions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AccessTransaction.class)
+				.setParameter("transactionKey", transactionKey)
+				.getResultList();
 		if(transactions.isEmpty()) return null;
 		return transactions.get(0);
 	}
@@ -105,10 +104,10 @@ public class ACTransactionManagerImpl extends BasicManager implements ACTransact
 		sb.append("select trx from ").append(AccessTransactionImpl.class.getName()).append(" trx")
 			.append(" where trx.order in (:orders)");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setParameterList("orders", orders);
-	
-		List<AccessTransaction> transactions = query.list();
+		List<AccessTransaction> transactions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AccessTransaction.class)
+				.setParameter("orders", orders)
+				.getResultList();
 		return transactions;
 	}
 }

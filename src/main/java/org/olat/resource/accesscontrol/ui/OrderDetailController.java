@@ -254,7 +254,7 @@ public class OrderDetailController extends FormBasicController {
 		}
 	}
 	
-	public class OrderItemsDataModel implements TableDataModel {
+	public class OrderItemsDataModel implements TableDataModel<OrderItemWrapper> {
 		
 		private List<OrderItemWrapper> items;
 		
@@ -299,7 +299,7 @@ public class OrderDetailController extends FormBasicController {
 		}
 
 		@Override
-		public void setObjects(List objects) {
+		public void setObjects(List<OrderItemWrapper> objects) {
 			this.items = objects;
 		}
 

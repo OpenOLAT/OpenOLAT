@@ -223,7 +223,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 
 		BaseSecurity secManager = BaseSecurityManager.getInstance();
 		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_COACH, courseResource)
-				|| businessGroupService.isIdentityInBusinessGroup(identity, true, false, courseResource);
+				|| businessGroupService.isIdentityInBusinessGroup(identity, null, true, false, courseResource);
 		return isParticipant;
 	}
 	
@@ -239,7 +239,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		
 		BaseSecurity secManager = BaseSecurityManager.getInstance();
 		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_PARTI, courseResource)
-				|| businessGroupService.isIdentityInBusinessGroup(identity, false, true, courseResource);
+				|| businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, courseResource);
 		return isParticipant;
 	}
 

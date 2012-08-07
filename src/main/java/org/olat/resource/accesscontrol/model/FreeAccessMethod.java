@@ -33,9 +33,9 @@ import org.olat.resource.accesscontrol.method.FreeAccessHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class FreeAccessMethod extends AbstractAccessMethod {
-	
-	
-	
+
+	private static final long serialVersionUID = -6028245920419886453L;
+
 	@Override
 	public String getType() {
 		return FreeAccessHandler.METHOD_TYPE;

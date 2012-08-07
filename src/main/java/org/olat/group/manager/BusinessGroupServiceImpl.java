@@ -42,7 +42,6 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.DBRuntimeException;
@@ -896,7 +895,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					// Check if identity is already in group. make a db query in case
 					// someone in another workflow already added this user to this group. if
 					// found, add user to model
-					else if (securityManager.isIdentityInSecurityGroup(identity, currBusinessGroup.getWaitingGroup())) {
+					else if (securityManager.isIdentityInSecurityGroup(ureqIdentity, currBusinessGroup.getWaitingGroup()) 
+							|| securityManager.isIdentityInSecurityGroup(ureqIdentity, currBusinessGroup.getPartipiciantGroup()) ) {
 						response.getIdentitiesAlreadyInGroup().add(identity);
 					} else {
 						// identity has permission and is not already in group => add it
@@ -936,15 +936,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup) {
 		// get position in waiting-list
 		List<Object[]> identities = securityManager.getIdentitiesAndDateOfSecurityGroup(businessGroup.getWaitingGroup(), true);
-		int pos = 0;
 		for (int i = 0; i<identities.size(); i++) {
 		  Object[] co = identities.get(i);
 		  Identity waitingListIdentity = (Identity) co[0];
-		  if (waitingListIdentity.getName().equals(identity.getName()) ) {
-		  	pos = i+1;// '+1' because list begins with 0 
+		  if (waitingListIdentity.equals(identity) ) {
+		  	return i+1;// '+1' because list begins with 0 
 		  }
 		}
-		return pos;
+		return -1;
 	}
 
 	@Override
@@ -1076,8 +1075,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			// Check if participant is not full
 			Integer maxSize = group.getMaxParticipants();
 			int waitingPartipiciantSize = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
-			if ( (maxSize != null) && (waitingPartipiciantSize < maxSize.intValue()) ) {
-				// ok it has free places => get first idenity from Waitinglist
+			if (maxSize != null && waitingPartipiciantSize < maxSize.intValue()) {
+				// ok it has free places => get first identity from Waitinglist
 				List<Object[]> identities = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup(), true/*sortedByAddedDate*/);
 				int i = 0;
 				boolean transferNotDone = true;
@@ -1086,7 +1085,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					Object[] co = (Object[])identities.get(i++);
 					Identity firstWaitingListIdentity = (Identity) co[0];
 					//reload group
-					group = (BusinessGroup)DBFactory.getInstance().loadObject(group, true);
+					group = loadBusinessGroup(group);
 					// Check if firstWaitingListIdentity is not allready in participant-group
 					if (!securityManager.isIdentityInSecurityGroup(firstWaitingListIdentity,group.getPartipiciantGroup())) {
 						// move the identity from the waitinglist to the participant group
@@ -1254,18 +1253,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, Collection<Long> businessGroups) {
 		return businessGroupDAO.getMembershipInfoInBusinessGroups(identity, businessGroups);
 	}
-
-	@Override
-	@Transactional(readOnly=true)
-	public boolean isIdentityInBusinessGroup(Identity identity, boolean ownedById, boolean attendedById, OLATResource resource) {
-		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, null, resource);
-	}
 	
 	@Override
 	@Transactional(readOnly=true)
 	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey,
 			boolean ownedById, boolean attendedById, OLATResource resource) {
-		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupKey, resource);
+		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupKey, ownedById, attendedById, resource);
 	}
 	
 	@Override

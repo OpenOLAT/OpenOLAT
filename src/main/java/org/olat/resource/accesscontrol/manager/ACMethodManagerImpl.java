@@ -28,8 +28,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -58,6 +61,7 @@ import org.olat.resource.accesscontrol.model.OfferAccessImpl;
 import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
+import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 
 /**
  * 
@@ -102,6 +106,7 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		if (event instanceof FrameworkStartedEvent && ((FrameworkStartedEvent) event).isEventOnThisNode()) {
 			enableMethod(TokenAccessMethod.class, acModule.isTokenEnabled());
 			enableMethod(FreeAccessMethod.class, acModule.isFreeEnabled());
+			enableMethod(PaypalAccessMethod.class, acModule.isPaypalEnabled());
 			dbInstance.commitAndCloseSession();
 		}
 	}
@@ -112,8 +117,8 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName())
 			.append(" method where method.class=").append(type.getName());
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		List<AccessMethod> methods = query.list();
+		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
+		List<AccessMethod> methods = query.getResultList();
 		if(methods.isEmpty() && enable) {
 			try {
 				dbInstance.saveObject(type.newInstance());
@@ -146,13 +151,13 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("resourceKey", resource.getKey());
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class);
+		query.setParameter("resourceKey", resource.getKey());
 		if(atDate != null) {
-			query.setTimestamp("atDate", atDate);
+			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
 
-		Number methods = (Number)query.uniqueResult();
+		Number methods = query.getSingleResult();
 		return methods.intValue() > 0;
 	}
 
@@ -162,12 +167,12 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
 			.append(" where method.valid=true and method.enabled=true");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
 		if(identity != null) {
 			//query.setLong("identityKey", identity.getKey());
 		}
 	
-		List<AccessMethod> methods = query.list();
+		List<AccessMethod> methods = query.getResultList();
 		List<AccessMethod> allowedMethods = new ArrayList<AccessMethod>();
 		for(AccessMethod method:methods) {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
@@ -178,15 +183,16 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		}
 		return allowedMethods;
 	}
-	
+
+	@Override
 	public List<AccessMethod> getAvailableMethodsByType(Class<? extends AccessMethod> type) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
 			.append(" where method.valid=true")
 			.append(" and method.class=").append(type.getName());
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		List<AccessMethod> methods = query.list();
+		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
+		List<AccessMethod> methods = query.getResultList();
 		return methods;
 	}
 
@@ -197,10 +203,10 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 			.append(" where access.offer=:offer")
 			.append(" and access.valid=").append(valid);
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("offer", offer);
+		TypedQuery<OfferAccess> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), OfferAccess.class);
+		query.setParameter("offer", offer);
 		
-		List<OfferAccess> methods = query.list();
+		List<OfferAccess> methods = query.getResultList();
 		return methods;
 	}
 	
@@ -214,10 +220,10 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 			.append(" and access.valid=").append(valid);
 		
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setParameterList("offers", offers);
+		TypedQuery<OfferAccess> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), OfferAccess.class);
+		query.setParameter("offers", offers);
 		
-		List<OfferAccess> methods = query.list();
+		List<OfferAccess> methods = query.getResultList();
 		return methods;
 	}
 	
@@ -237,13 +243,13 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setParameterList("resourceKeys", resourceKeys);
+		TypedQuery<OfferAccess> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), OfferAccess.class);
+		query.setParameter("resourceKeys", resourceKeys);
 		if(atDate != null) {
-			query.setTimestamp("atDate", atDate);
+			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
 		
-		List<OfferAccess> methods = query.list();
+		List<OfferAccess> methods = query.getResultList();
 		return methods;
 	}
 	
@@ -263,12 +269,13 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		Query query = dbInstance.getCurrentEntityManager().createQuery(sb.toString());
 		if(atDate != null) {
-			query.setTimestamp("atDate", atDate);
+			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
 		
-		List<Object[]> rawResults = query.list();
+		@SuppressWarnings("unchecked")
+		List<Object[]> rawResults = query.getResultList();
 		Map<Long,List<PriceMethodBundle>> rawResultsMap = new HashMap<Long,List<PriceMethodBundle>>();
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
@@ -313,19 +320,20 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		Query query = dbInstance.getCurrentEntityManager().createQuery(sb.toString());
 		if(atDate != null) {
-			query.setTimestamp("atDate", atDate);
+			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
 		
 		if(resourceKeys != null && !resourceKeys.isEmpty()) {
-			query.setParameterList("resourceKeys", resourceKeys);
+			query.setParameter("resourceKeys", resourceKeys);
 		}
 		if(StringHelper.containsNonWhitespace(resourceType)) {
 			query.setParameter("resourceType", resourceType);
 		}
 		
-		List<Object[]> rawResults = query.list();
+		@SuppressWarnings("unchecked")
+		List<Object[]> rawResults = query.getResultList();
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<Long,OLATResourceAccess>();
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
@@ -377,8 +385,8 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName())
 			.append(" method where method.class=").append(TokenAccessMethod.class.getName());
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		List<AccessMethod> methods = query.list();
+		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
+		List<AccessMethod> methods = query.getResultList();
 		if(methods.isEmpty() && enable) {
 			dbInstance.saveObject(new TokenAccessMethod());
 		} else {
@@ -396,8 +404,8 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName())
 			.append(" method where method.class=").append(FreeAccessMethod.class.getName());
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		List<AccessMethod> methods = query.list();
+		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
+		List<AccessMethod> methods = query.getResultList();
 		if(methods.isEmpty() && enable) {
 			dbInstance.saveObject(new FreeAccessMethod());
 		} else {

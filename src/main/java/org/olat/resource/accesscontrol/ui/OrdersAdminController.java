@@ -46,7 +46,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;

@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
  */
 public class AccessEvent extends Event {
 	
+	private static final long serialVersionUID = -9220571332758113408L;
 	public static final String ACCESS_FAILED = "access-failed";
 	public static final String ACCESS_OK = "access-ok";
 	

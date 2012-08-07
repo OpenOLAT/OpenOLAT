@@ -25,8 +25,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.resource.OLATResource;
@@ -148,17 +150,18 @@ public class ACOrderManagerImpl extends BasicManager implements ACOrderManager {
 			sb.append(" and order.orderStatusStr in (:status)");
 		}
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("deliveryKey", delivery.getKey());
+		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Order.class)
+				.setParameter("deliveryKey", delivery.getKey());
 		if(status != null && status.length > 0) {
 			List<String> statusStr = new ArrayList<String>();
 			for(OrderStatus s:status) {
 				statusStr.add(s.name());
 			}
-			query.setParameterList("status", statusStr);
+			query.setParameter("status", statusStr);
 		}
 	
-		List<Order> orders = query.list();
+		List<Order> orders = query.getResultList();
 		return orders;
 	}
 
@@ -174,17 +177,18 @@ public class ACOrderManagerImpl extends BasicManager implements ACOrderManager {
 			sb.append(" and o.orderStatusStr in (:status)");
 		}
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("resourceKey", resource.getKey());
+		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Order.class)
+				.setParameter("resourceKey", resource.getKey());
 		if(status != null && status.length > 0) {
 			List<String> statusStr = new ArrayList<String>();
 			for(OrderStatus s:status) {
 				statusStr.add(s.name());
 			}
-			query.setParameterList("status", statusStr);
+			query.setParameter("status", statusStr);
 		}
 	
-		List<Order> orders = query.list();
+		List<Order> orders = query.getResultList();
 		return orders;
 	}
 	
@@ -224,22 +228,22 @@ public class ACOrderManagerImpl extends BasicManager implements ACOrderManager {
 			sb.append("o.key=:orderNr");
 		}
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<Order> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Order.class);
 		if(status != null && status.length > 0) {
 			List<String> statusStr = new ArrayList<String>();
 			for(OrderStatus s:status) {
 				statusStr.add(s.name());
 			}
-			query.setParameterList("status", statusStr);
+			query.setParameter("status", statusStr);
 		}
 		if(resource != null) {
-			query.setLong("resourceKey", resource.getKey());
+			query.setParameter("resourceKey", resource.getKey());
 		}
 		if(delivery != null) {
-			query.setLong("deliveryKey", delivery.getKey());
+			query.setParameter("deliveryKey", delivery.getKey());
 		}
 		if(orderNr != null) {
-			query.setLong("orderNr", orderNr);
+			query.setParameter("orderNr", orderNr);
 		}
 		if(from != null) {
 			Calendar cal = Calendar.getInstance();
@@ -248,7 +252,7 @@ public class ACOrderManagerImpl extends BasicManager implements ACOrderManager {
 			cal.set(Calendar.MINUTE, 0);
 			cal.set(Calendar.SECOND, 0);
 			cal.set(Calendar.MILLISECOND, 0);
-			query.setTimestamp("from", cal.getTime());
+			query.setParameter("from", cal.getTime(), TemporalType.TIMESTAMP);
 		}
 		if(to != null) {
 			Calendar cal = Calendar.getInstance();
@@ -257,10 +261,10 @@ public class ACOrderManagerImpl extends BasicManager implements ACOrderManager {
 			cal.set(Calendar.MINUTE, 59);
 			cal.set(Calendar.SECOND, 59);
 			cal.set(Calendar.MILLISECOND, 0);
-			query.setTimestamp("to", cal.getTime());
+			query.setParameter("to", cal.getTime(), TemporalType.TIMESTAMP);
 		}
 	
-		List<Order> orders = query.list();
+		List<Order> orders = query.getResultList();
 		return orders;
 	}
 	
@@ -276,10 +280,10 @@ public class ACOrderManagerImpl extends BasicManager implements ACOrderManager {
 		sb.append("select order from ").append(OrderImpl.class.getName()).append(" order")
 			.append(" where order.key=:orderKey");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("orderKey", orderKey);
-	
-		List<Order> orders = query.list();
+		List<Order> orders = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Order.class)
+				.setParameter("orderKey", orderKey)
+				.getResultList();
 		if(orders.isEmpty()) return null;
 		return orders.get(0);
 	}

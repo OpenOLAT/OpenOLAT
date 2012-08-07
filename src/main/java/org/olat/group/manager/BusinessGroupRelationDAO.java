@@ -88,7 +88,8 @@ public class BusinessGroupRelationDAO {
 		}
 	}
 
-	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, OLATResource resource) {
+	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, boolean ownedById, boolean attendeeById,
+			OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi");
 		boolean and = false;
@@ -97,17 +98,24 @@ public class BusinessGroupRelationDAO {
 			sb.append(" bgi.key=:groupKey");
 		}
 		and(sb, and);
-		sb.append(" (")
-		  .append("   bgi.partipiciantGroup in (")
-		  .append("     select participantMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantMemberShip ")
-		  .append("       where participantMemberShip.identity.key=:identityKey")
-		  .append("   )")
-		  .append("   or")
-		  .append("   bgi.ownerGroup in (")
-		  .append("     select ownerMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
-		  .append("       where ownerMemberShip.identity.key=:identityKey")
-		  .append("   )")
-		  .append(" )")
+		sb.append(" (");
+		if(ownedById) {
+			sb.append("   bgi.ownerGroup in (")
+			  .append("     select ownerMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
+			  .append("       where ownerMemberShip.identity.key=:identityKey")
+			  .append("   )");
+		}
+		if(attendeeById) {
+			if(ownedById) {
+				sb.append(" or");
+			}
+			sb.append("   bgi.partipiciantGroup in (")
+			  .append("     select participantMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantMemberShip ")
+			  .append("       where participantMemberShip.identity.key=:identityKey")
+			  .append("   )");
+		}
+		  
+		sb.append(" )")
 			.append(" and bgi in (")
 			.append("   select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
 			.append(" )");

@@ -434,25 +434,13 @@ public interface BusinessGroupService {
 	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, Collection<Long> businessGroups);
 
 	/**
-	 * Checks if an identity is in a business group with a specific name (exact match), either as owner or
-	 * as participant
-	 * @param identity
-	 * @param groupName
-	 * @param ownedById
-	 * @param attendedById
-	 * @param resource
-	 * @return
-	 */
-	public boolean isIdentityInBusinessGroup(Identity identity, boolean ownedById, boolean attendedById, OLATResource resource);
-
-	/**
 	 * Checks if an identity is in a business group with a specific key, either as owner or
 	 * as participant
 	 * @param identity
-	 * @param groupKey
+	 * @param groupKey The group key (optional)
 	 * @param ownedById
 	 * @param attendedById
-	 * @param resource
+	 * @param resource The resource context (mandatory)
 	 * @return
 	 */
 	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, boolean ownedById, boolean attendedById, OLATResource resource);

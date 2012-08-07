@@ -42,6 +42,7 @@ import org.olat.core.util.StringHelper;
  */
 public class OrderImpl extends PersistentObject implements Order, ModifiedInfo {
 
+	private static final long serialVersionUID = 2982829081818496553L;
 	private boolean valid;
 	private Date lastModified;
 	private Identity delivery;

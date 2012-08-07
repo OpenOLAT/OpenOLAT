@@ -34,7 +34,8 @@ import org.olat.core.commons.persistence.PersistentObject;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OfferAccessImpl extends PersistentObject implements OfferAccess {
-	
+
+	private static final long serialVersionUID = 2538200023418491237L;
 	private Offer offer;
 	private AccessMethod method;
 	private boolean valid;

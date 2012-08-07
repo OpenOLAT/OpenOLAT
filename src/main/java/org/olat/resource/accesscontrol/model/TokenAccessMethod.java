@@ -33,7 +33,9 @@ import org.olat.resource.accesscontrol.method.TokenAccessHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class TokenAccessMethod extends AbstractAccessMethod {
-	
+
+	private static final long serialVersionUID = -8066110993424490600L;
+
 	@Override
 	public String getType() {
 		return TokenAccessHandler.METHOD_TYPE;

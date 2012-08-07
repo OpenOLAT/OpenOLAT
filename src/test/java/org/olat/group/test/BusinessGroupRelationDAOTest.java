@@ -232,16 +232,16 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		boolean test1 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, resource1); 
+		boolean test1 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, true, true, resource1); 
 		Assert.assertTrue(test1);
 		//name doesn't exist 
-		boolean test2 = businessGroupRelationDao.isIdentityInBusinessGroup(id, 1l, resource1); 
+		boolean test2 = businessGroupRelationDao.isIdentityInBusinessGroup(id, 1l, true, true, resource1); 
 		Assert.assertFalse(test2);
 		//wrong resource
-		boolean test4 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, resource3); 
+		boolean test4 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, true, true, resource3); 
 		Assert.assertFalse(test4);
 		//check null
-		boolean test5 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, resource1); 
+		boolean test5 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, true, true, resource1); 
 		Assert.assertTrue(test5);
 	}
 	
@@ -260,15 +260,15 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		boolean test1 = businessGroupRelationDao.isIdentityInBusinessGroup(id, group1.getKey(), resource1); 
+		boolean test1 = businessGroupRelationDao.isIdentityInBusinessGroup(id, group1.getKey(), true, true, resource1); 
 		Assert.assertTrue(test1);
 		//key doesn't exist 
-		boolean test2 = businessGroupRelationDao.isIdentityInBusinessGroup(id, 1l, resource1); 
+		boolean test2 = businessGroupRelationDao.isIdentityInBusinessGroup(id, 1l, true, true, resource1); 
 		Assert.assertFalse(test2);
-		boolean test3 = businessGroupRelationDao.isIdentityInBusinessGroup(id, group1.getKey(), resource3); 
+		boolean test3 = businessGroupRelationDao.isIdentityInBusinessGroup(id, group1.getKey(),true, true,  resource3); 
 		Assert.assertFalse(test3);
 		//check null
-		boolean test5 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, resource1); 
+		boolean test5 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, true, true, resource1); 
 		Assert.assertTrue(test5);
 	}
 	
@@ -287,10 +287,10 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		boolean test1 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, resource1); 
+		boolean test1 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, true, true, resource1); 
 		Assert.assertTrue(test1);
 		//wrong resource
-		boolean test4 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, resource3); 
+		boolean test4 = businessGroupRelationDao.isIdentityInBusinessGroup(id, null, true, true, resource3); 
 		Assert.assertFalse(test4);
 	}
 

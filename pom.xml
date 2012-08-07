@@ -1642,6 +1642,19 @@
 			<version>1.5.1</version>
 		</dependency>
 		<!-- end jersey -->
+		
+		<!-- paypal -->
+		<dependency>
+			<groupId>com.paypal</groupId>
+			<artifactId>paypal_platform_base_AP</artifactId>
+			<version>0.76</version>
+		</dependency>
+		<dependency>
+			<groupId>com.paypal</groupId>
+			<artifactId>paypal_platform_stubs_AP</artifactId>
+			<version>0.76</version>
+		</dependency>
+		<!-- end Paypal -->
 
 		<!-- Start test dependencies -->
 		<dependency>

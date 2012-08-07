@@ -933,6 +933,37 @@ create table if not exists o_ac_transaction (
 	primary key (transaction_id)
 );
 
+create table if not exists o_ac_paypal_transaction (
+   transaction_id int8 not null,
+   version int8 not null,
+   creationdate timestamp,
+   ref_no varchar(255),
+   order_id int8 not null,
+   order_part_id int8 not null,
+   method_id int8 not null,
+   success_uuid varchar(32) not null,
+	 cancel_uuid varchar(32) not null,
+	 amount_amount DECIMAL(12,4),
+	 amount_currency_code VARCHAR(3),
+   pay_response_date timestamp,
+   pay_key varchar(255),
+	 ack varchar(255),
+	 build varchar(255),
+	 coorelation_id varchar(255),
+	 payment_exec_status varchar(255),
+	 ipn_transaction_id varchar(255),
+	 ipn_transaction_status varchar(255),
+	 ipn_sender_transaction_id varchar(255),
+	 ipn_sender_transaction_status varchar(255),
+	 ipn_sender_email varchar(255),
+	 ipn_verify_sign varchar(255),
+	 ipn_pending_reason varchar(255),
+	 trx_status VARCHAR(32) not null default 'NEW',
+	 trx_amount DECIMAL(12,4),
+	 trx_currency_code VARCHAR(3),
+   primary key (transaction_id)
+);
+
 -- assessment tables
 -- efficiency statments
 create table if not exists o_as_eff_statement (
@@ -1266,6 +1297,7 @@ alter table o_ac_order ENGINE = InnoDB;
 alter table o_ac_order_part ENGINE = InnoDB;
 alter table o_ac_order_line ENGINE = InnoDB;
 alter table o_ac_transaction ENGINE = InnoDB;
+alter table o_ac_paypal_transaction ENGINE = InnoDB;
 alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;
 
@@ -1424,6 +1456,9 @@ alter table o_ac_order_line add constraint ord_item_offer_ctx foreign key (fk_of
 alter table o_ac_transaction add constraint trans_ord_ctx foreign key (fk_order_id) references o_ac_order (order_id);
 alter table o_ac_transaction add constraint trans_ord_part_ctx foreign key (fk_order_part_id) references o_ac_order_part (order_part_id);
 alter table o_ac_transaction add constraint trans_method_ctx foreign key (fk_method_id) references o_ac_method (method_id);
+create index paypal_pay_key_idx on o_ac_paypal_transaction (pay_key);
+create index paypal_pay_trx_id_idx on o_ac_paypal_transaction (ipn_transaction_id);
+create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_transaction_id);
 
 
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

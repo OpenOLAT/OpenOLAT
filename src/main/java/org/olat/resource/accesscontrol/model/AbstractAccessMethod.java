@@ -36,7 +36,8 @@ import org.olat.core.id.ModifiedInfo;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public abstract class AbstractAccessMethod extends PersistentObject implements AccessMethod, ModifiedInfo  {
-	
+
+	private static final long serialVersionUID = 5656490927761461774L;
 	private boolean valid = true;
 	private boolean enabled = true;
 	

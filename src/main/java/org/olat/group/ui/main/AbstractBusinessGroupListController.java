@@ -254,7 +254,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", businessGroup.getName()), leaveDialogBox);
 					leaveDialogBox.setUserObject(businessGroup);
 				} else if (actionid.equals(TABLE_ACTION_ACCESS)) {
-					doLaunch(ureq, businessGroup);
+					doAccess(ureq, businessGroup);
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
@@ -351,6 +351,16 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		deleteDialogBox = null;
 		groupCreateController = null;
 		businessGroupWizard = null;
+	}
+	
+	/**
+	 * Launch a business group with its business path
+	 * @param ureq
+	 * @param group
+	 */
+	protected void doAccess(UserRequest ureq, BusinessGroup group) {
+		String businessPath = "[BusinessGroup:" + group.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	/**

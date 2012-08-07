@@ -28,8 +28,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.manager.BasicManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.Offer;
@@ -71,13 +73,14 @@ public class ACOfferManagerImpl extends BasicManager implements ACOfferManager {
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("resourceKey", resource.getKey());
+		TypedQuery<Offer> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Offer.class)
+				.setParameter("resourceKey", resource.getKey());
 		if(atDate != null) {
-			query.setTimestamp("atDate", atDate);
+			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
 	
-		List<Offer> offers = query.list();
+		List<Offer> offers = query.getResultList();
 		return offers;
 	}
 
@@ -87,11 +90,10 @@ public class ACOfferManagerImpl extends BasicManager implements ACOfferManager {
 		sb.append("select offer from ").append(OfferImpl.class.getName()).append(" offer")
 			.append(" where offer.key=:offerKey");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("offerKey", key);
-
-	
-		List<Offer> offers = query.list();
+		List<Offer> offers = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Offer.class)
+				.setParameter("offerKey", key)
+				.getResultList();
 		if(offers.isEmpty()) return null;
 		return offers.get(0);
 	}
@@ -103,7 +105,7 @@ public class ACOfferManagerImpl extends BasicManager implements ACOfferManager {
 		sb.append("select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer")
 			.append(" inner join offer.resource resource")
 			.append(" where resource.key in (:resourceKeys)");
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
 
 		Set<Long> resourceWithOffers = new HashSet<Long>();
 		List<Long> keys = new ArrayList<Long>(resourceKeys);
@@ -114,10 +116,10 @@ public class ACOfferManagerImpl extends BasicManager implements ACOfferManager {
 		do {
 			int toIndex = Math.min(firstResult + hibernateInBatch, keys.size());
 			List<Long> inParameter = keys.subList(firstResult, toIndex);
-			query.setParameterList("resourceKeys", inParameter);
+			query.setParameter("resourceKeys", inParameter);
 			firstResult += inParameter.size();
 			
-			List<Long> offerKeys = query.list();
+			List<Long> offerKeys = query.getResultList();
 			resourceWithOffers.addAll(offerKeys);
 		} while(firstResult < keys.size());
 

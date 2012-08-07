@@ -33,6 +33,8 @@ import org.olat.core.commons.persistence.PersistentObject;
  */
 public class OrderLineImpl extends PersistentObject implements OrderLine {
 
+	private static final long serialVersionUID = -2630817206449967033L;
+	
 	private Offer offer;
 	private Price unitPrice;
 	private Price totalPrice;

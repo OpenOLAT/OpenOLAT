@@ -37,7 +37,8 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OfferImpl extends PersistentObject implements Offer, ModifiedInfo {
-	
+	private static final long serialVersionUID = 4734372430854498130L;
+
 	private boolean valid = true;
 	
 	private Date lastModified;

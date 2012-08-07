@@ -37,6 +37,7 @@ import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
+import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 
 /**
  * 
@@ -55,12 +56,14 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 	private static final String VAT_RATE = "vat.rate";
 	private static final String VAT_NR = "vat.number";
 	
-	public static final String TOKEN_ENABLED = "method.token.enabled";
-	public static final String FREE_ENABLED = "method.free.enabled";
+	private static final String TOKEN_ENABLED = "method.token.enabled";
+	private static final String FREE_ENABLED = "method.free.enabled";
+	private static final String PAYPAL_ENABLED = "method.paypal.enabled";
 
 	private boolean enabled;
 	private boolean freeEnabled;
 	private boolean tokenEnabled;
+	private boolean paypalEnabled;
 	private boolean homeOverviewEnabled;
 	
 	private boolean vatEnabled;
@@ -112,6 +115,11 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 		if(StringHelper.containsNonWhitespace(tokenEnabledObj)) {
 			tokenEnabled = "true".equals(tokenEnabledObj);
 		}
+
+		String paypalEnabledObj = getStringPropertyValue(PAYPAL_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(paypalEnabledObj)) {
+			paypalEnabled = "true".equals(paypalEnabledObj);
+		}
 		
 		String freeEnabledObj = getStringPropertyValue(FREE_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(freeEnabledObj)) {
@@ -156,6 +164,7 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 		enabled = getBooleanConfigParameter(AC_ENABLED, true);
 		freeEnabled = getBooleanConfigParameter(FREE_ENABLED, true);
 		tokenEnabled = getBooleanConfigParameter(TOKEN_ENABLED, true);
+		paypalEnabled = getBooleanConfigParameter(PAYPAL_ENABLED, false);
 		homeOverviewEnabled = getBooleanConfigParameter(AC_HOME_ENABLED, true);
 		vatEnabled = getBooleanConfigParameter(VAT_ENABLED, true);
 		String vatRateStr = getStringConfigParameter(VAT_RATE, "", true);
@@ -212,6 +221,19 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 		}
 	}
 	
+	public boolean isPaypalEnabled() {
+		return paypalEnabled;
+	}
+
+	public void setPaypalEnabled(boolean paypalEnabled) {
+		if(this.paypalEnabled != paypalEnabled) {
+			setStringProperty(PAYPAL_ENABLED, Boolean.toString(paypalEnabled), true);
+		}
+		if(acFrontendManager != null) {
+			acFrontendManager.enableMethod(PaypalAccessMethod.class, paypalEnabled);
+		}
+	}
+
 	public boolean isHomeOverviewEnabled() {
 		return homeOverviewEnabled;
 	}

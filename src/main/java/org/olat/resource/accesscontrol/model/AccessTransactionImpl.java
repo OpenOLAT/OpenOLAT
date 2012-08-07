@@ -24,6 +24,8 @@ import org.olat.core.util.StringHelper;
 
 public class AccessTransactionImpl extends PersistentObject implements AccessTransaction {
 
+	private static final long serialVersionUID = -5420630862571680567L;
+	
 	private Price amount;
 	private Order order;
 	private OrderPart orderPart;

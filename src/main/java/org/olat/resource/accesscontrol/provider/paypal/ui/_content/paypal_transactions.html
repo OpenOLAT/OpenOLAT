@@ -1,0 +1,7 @@
+#if($r.available("details"))
+	$r.render("back")
+	$r.render("details")
+#else
+	$r.render("search-fields")
+	$r.render("results")
+#end

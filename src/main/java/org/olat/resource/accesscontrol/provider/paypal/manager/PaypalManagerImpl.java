@@ -1,0 +1,739 @@
+/**
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+ * <p>
+ */
+package org.olat.resource.accesscontrol.provider.paypal.manager;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
+
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
+import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
+import org.olat.resource.accesscontrol.manager.ACOrderManager;
+import org.olat.resource.accesscontrol.manager.ACTransactionManager;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.AccessTransaction;
+import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
+import org.olat.resource.accesscontrol.model.Offer;
+import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.model.Order;
+import org.olat.resource.accesscontrol.model.OrderLine;
+import org.olat.resource.accesscontrol.model.OrderPart;
+import org.olat.resource.accesscontrol.model.OrderStatus;
+import org.olat.resource.accesscontrol.model.PSPTransaction;
+import org.olat.resource.accesscontrol.model.Price;
+import org.olat.resource.accesscontrol.provider.paypal.PaypalModule;
+import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
+import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
+import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionStatus;
+
+import adaptivepayments.AdaptivePayments;
+
+import com.paypal.svcs.services.PPFaultMessage;
+import com.paypal.svcs.types.ap.ConvertCurrencyRequest;
+import com.paypal.svcs.types.ap.ConvertCurrencyResponse;
+import com.paypal.svcs.types.ap.CurrencyCodeList;
+import com.paypal.svcs.types.ap.CurrencyConversionList;
+import com.paypal.svcs.types.ap.CurrencyList;
+import com.paypal.svcs.types.ap.PayRequest;
+import com.paypal.svcs.types.ap.PayResponse;
+import com.paypal.svcs.types.ap.PaymentDetailsRequest;
+import com.paypal.svcs.types.ap.PaymentDetailsResponse;
+import com.paypal.svcs.types.ap.Receiver;
+import com.paypal.svcs.types.ap.ReceiverList;
+import com.paypal.svcs.types.common.AckCode;
+import com.paypal.svcs.types.common.ClientDetailsType;
+import com.paypal.svcs.types.common.CurrencyType;
+import com.paypal.svcs.types.common.DetailLevelCode;
+import com.paypal.svcs.types.common.RequestEnvelope;
+import com.paypal.svcs.types.common.ResponseEnvelope;
+import common.com.paypal.platform.sdk.exceptions.FatalException;
+import common.com.paypal.platform.sdk.exceptions.SSLConnectionException;
+
+/**
+ * 
+ * Description:<br>
+ * 
+ * <P>
+ * Initial Date:  23 mai 2011 <br>
+ *
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
+public class PaypalManagerImpl extends BasicManager implements PaypalManager {
+	
+	private static final String X_PAYPAL_SECURITY_USERID = "X-PAYPAL-SECURITY-USERID";
+	private static final String X_PAYPAL_SECURITY_PASSWORD = "X-PAYPAL-SECURITY-PASSWORD";
+	private static final String X_PAYPAL_SECURITY_SIGNATURE = "X-PAYPAL-SECURITY-SIGNATURE";
+	private static final String X_PAYPAL_APPLICATION_ID = "X-PAYPAL-APPLICATION-ID";
+	private static final String X_PAYPAL_SANDBOX_EMAIL_ADDRESS = "X-PAYPAL-SANDBOX-EMAIL-ADDRESS";
+	private static final String X_PAYPAL_DEVICE_IPADDRESS = "X-PAYPAL-DEVICE-IPADDRESS";
+	
+	private static final String API_BASE_ENDPOINT = "API_BASE_ENDPOINT";
+	
+	private static final String CLIENT_AUTH_SSL = "CLIENT_AUTH_SSL";
+	private static final String JSSE_PROVIDER = "JSSE_PROVIDER";
+	private static final String TRUST_ALL_CONNECTION = "TRUST_ALL_CONNECTION";
+	
+	private static final String LOGFILENAME = "LOGFILENAME";
+	private static final String LOGENABLED = "LOGENABLED";
+	
+	private static final String USE_PROXY = "USE_PROXY";
+	private static final String PROXY_HOST = "PROXY_HOST";
+	private static final String PROXY_PORT = "PROXY_PORT";
+
+	private static final String X_PAYPAL_REQUEST_DATA_FORMAT = "X-PAYPAL-REQUEST-DATA-FORMAT";
+	private static final String X_PAYPAL_RESPONSE_DATA_FORMAT = "X-PAYPAL-RESPONSE-DATA-FORMAT";
+	
+	private static final String SANDBOX_API_BASE_ENDPOINT = "https://svcs.sandbox.paypal.com";
+	private static final String LIFE_API_BASE_ENDPOINT = "https://svcs.paypal.com";
+	
+	private DB dbInstance;
+	private ACOrderManager orderManager;
+	private ACFrontendManager acFrontendManager;
+	private ACTransactionManager transactionManager;
+	private PaypalModule paypalModule;
+
+	/**
+	 * [used by Spring]
+	 * @param dbInstance
+	 */
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param paypalModule
+	 */
+	public void setPaypalModule(PaypalModule paypalModule) {
+		this.paypalModule = paypalModule;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param orderManager
+	 */
+	public void setOrderManager(ACOrderManager orderManager) {
+		this.orderManager = orderManager;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param acFrontendManager
+	 */
+	public void setAcFrontendManager(ACFrontendManager acFrontendManager) {
+		this.acFrontendManager = acFrontendManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param transactionManager
+	 */
+	public void setTransactionManager(ACTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+	}
+	
+	private Properties getAccountProperties() {
+		boolean sandboxed = paypalModule.isSandbox();
+		
+		Properties accountProps = new Properties();
+		accountProps.setProperty(X_PAYPAL_SECURITY_USERID, paypalModule.getPaypalSecurityUserId());
+		accountProps.setProperty(X_PAYPAL_SECURITY_PASSWORD, paypalModule.getPaypalSecurityPassword());
+		accountProps.setProperty(X_PAYPAL_SECURITY_SIGNATURE, paypalModule.getPaypalSecuritySignature());
+		accountProps.setProperty(CLIENT_AUTH_SSL, "false");
+		accountProps.setProperty(X_PAYPAL_APPLICATION_ID, paypalModule.getPaypalApplicationId());
+		
+		try {
+			accountProps.setProperty(X_PAYPAL_DEVICE_IPADDRESS, paypalModule.getDeviceIpAddress());
+		} catch (Exception e) {
+			logError("Cannot resolve the ip address from the server domain name", e);
+		}
+		
+		if(sandboxed) {
+			accountProps.setProperty(X_PAYPAL_SANDBOX_EMAIL_ADDRESS, paypalModule.getPaypalSandboxEmailAddress());
+			accountProps.setProperty(API_BASE_ENDPOINT, SANDBOX_API_BASE_ENDPOINT);
+			accountProps.setProperty(TRUST_ALL_CONNECTION, "true");
+		} else {
+			accountProps.setProperty(API_BASE_ENDPOINT, LIFE_API_BASE_ENDPOINT);
+			accountProps.setProperty(TRUST_ALL_CONNECTION, "false");
+		}
+
+		accountProps.setProperty(JSSE_PROVIDER, "SunJSSE");
+		accountProps.setProperty(LOGFILENAME, "/HotCoffee/paypal_sdk.log");
+		accountProps.setProperty(LOGENABLED, "true");
+		
+		accountProps.setProperty(USE_PROXY, paypalModule.isUseProxy() ? "TRUE" : "FALSE");
+		accountProps.setProperty(PROXY_HOST, "");
+		accountProps.setProperty(PROXY_PORT, "8080");
+
+		accountProps.setProperty(X_PAYPAL_REQUEST_DATA_FORMAT, paypalModule.getPaypalDataFormat());
+		accountProps.setProperty(X_PAYPAL_RESPONSE_DATA_FORMAT, paypalModule.getPaypalDataFormat());  
+
+		return accountProps;
+	}
+	
+	private ClientDetailsType getAppDetails() {
+		ClientDetailsType cl = new ClientDetailsType();
+		cl.setDeviceId(Settings.getNodeInfo());
+		cl.setIpAddress("127.0.0.1");
+		cl.setApplicationId(paypalModule.getPaypalApplicationId());
+		return cl;
+	}
+
+	private RequestEnvelope getAppRequestEnvelope() {
+		RequestEnvelope en = new RequestEnvelope();
+		en.setDetailLevel(DetailLevelCode.RETURN_ALL);
+		en.setErrorLanguage("en");
+		return en;
+	}
+	
+	private void save(PaypalAccessMethod accessMethod) {
+		if(accessMethod.getKey() == null) {
+			dbInstance.saveObject(accessMethod);
+		} else {
+			dbInstance.updateObject(accessMethod);
+		}
+	}
+	
+	private PaypalAccessMethod getMethodSecure(Long key) {
+		PaypalAccessMethod smethod = null;
+		List<PaypalAccessMethod> methods = getPaypalMethods();
+		if(methods.size() > 0) {
+			smethod = methods.get(0);
+		} else {
+			smethod = new PaypalAccessMethod();
+			save(smethod);
+		}
+		for(PaypalAccessMethod method:methods) {
+			if(key != null && key.equals(method.getKey())) {
+				smethod = method;
+			}
+		}
+		return smethod;
+	}
+
+	private List<PaypalAccessMethod> getPaypalMethods() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select method from ").append(PaypalAccessMethod.class.getName()).append(" method");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		List<PaypalAccessMethod> methods = query.list();
+		return methods;
+	}
+	
+	@Override
+	public PaypalTransaction loadTransactionByUUID(String uuid) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
+		sb.append("(trx.secureCancelUUID=:uuid or trx.secureSuccessUUID=:uuid)");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		if(StringHelper.containsNonWhitespace(uuid)) {
+			query.setString("uuid", uuid);
+		}
+		List<PaypalTransaction> transactions = query.list();
+		if(transactions.isEmpty()) return null;
+		return transactions.get(0);
+	}
+	
+	public PaypalTransaction loadTransactionByInvoiceId(String invoiceId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
+		sb.append("trx.refNo=:invoiceId");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		query.setString("invoiceId", invoiceId);
+		List<PaypalTransaction> transactions = query.list();
+		if(transactions.isEmpty()) return null;
+		return transactions.get(0);
+	}
+	
+	@Override
+	public PaypalTransaction loadTransaction(Order order, OrderPart part) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
+		sb.append("(trx.orderId=:orderId and trx.orderPartId=:orderPartId)");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		query.setLong("orderId", order.getKey());
+		query.setLong("orderPartId", part.getKey());
+
+		List<PaypalTransaction> transactions = query.list();
+		if(transactions.isEmpty()) return null;
+		return transactions.get(0);
+	}
+	
+	@Override
+	public List<PSPTransaction> loadTransactions(List<Order> orders) {
+		if(orders == null || orders.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
+		sb.append("trx.orderId in (:orderIds)");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		List<Long> orderIds = new ArrayList<Long>(orders.size());
+		for(Order order:orders) {
+			orderIds.add(order.getKey());
+		}
+		query.setParameterList("orderIds", orderIds);
+
+		List<PSPTransaction> transactions = query.list();
+		return transactions;
+	}
+
+	@Override
+	public List<PaypalTransaction> findTransactions(String transactionId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx ");
+		
+		boolean where = false;
+		if(StringHelper.containsNonWhitespace(transactionId)) {
+			where = appendAnd(sb, where);
+			sb.append(" (trx.transactionId=:transactionId or trx.senderTransactionId=:transactionId or trx.refNo=:transactionId) ");
+		}
+		sb.append(" order by trx.payResponseDate asc");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		if(StringHelper.containsNonWhitespace(transactionId)) {
+			query.setString("transactionId", transactionId);
+		}
+
+		List<PaypalTransaction> transactions = query.list();
+		return transactions;
+	}
+	
+	private boolean appendAnd(StringBuilder sb, boolean where) {
+		if(where) sb.append(" and ");
+		else sb.append(" where ");
+		return true;
+	}
+
+	private void updateTransaction(PayResponse payResp, PaypalTransaction trx) {
+		trx.setPayKey(payResp.getPayKey());
+		trx.setPaymentExecStatus(payResp.getPaymentExecStatus());
+		
+		ResponseEnvelope resEnv = payResp.getResponseEnvelope();
+		AckCode ack = resEnv.getAck();
+		trx.setAck(ack == null ? null : ack.value());
+		trx.setBuild(resEnv.getBuild());
+		trx.setCoorelationId(resEnv.getCorrelationId());
+		Date responseTime = resEnv.getTimestamp().toGregorianCalendar().getTime();
+		trx.setPayResponseDate(responseTime);
+
+		dbInstance.updateObject(trx);
+	}
+	
+	@Override
+	public void updateTransaction(String uuid) {
+		PaypalTransaction trx = loadTransactionByUUID(uuid);
+		
+		if(uuid.equals(trx.getSecureSuccessUUID())) {
+			logAudit("Paypal transaction success: " + trx);
+			completeTransaction(trx, null);
+		} else if (uuid.equals(trx.getSecureCancelUUID())) {
+			//cancel -> return to the access panel
+			logAudit("Paypal transaction canceled by user: " + trx);
+			cancelTransaction(trx);
+		}
+	}
+	
+	@Override
+	public void updateTransactionByNotification(Map<String,String> values, boolean verified) {
+		if(verified) {
+			
+			//CREATED - The payment request was received; funds will be transferred
+			//COMPLETED - The payment was successful
+			//INCOMPLETE - Some transfers succeeded and some failed for a parallel payment or, for a delayed chained payment, secondary receivers have not been paid
+			//ERROR - The payment failed and all attempted transfers failed or all
+			//REVERSALERROR - One or more transfers failed when attempting to
+			//PROCESSING - The payment is in progress
+			//PENDING - The payment is awaiting processing
+			//String status = values.get("status");
+			//if("COMPLETED".equals(status))
+			String invoiceId = values.get("transaction[0].invoiceId");
+			PaypalTransaction trx = loadTransactionByInvoiceId(invoiceId);
+			if(trx != null) {
+				completeTransaction(trx, values);
+			} else {
+				logError("Paypal IPN Transaction not found: " + values, null);
+			}
+		} else {
+			String invoiceId = values.get("transaction[0].invoiceId");
+			logError("Paypal IPN Transaction not verified: " + invoiceId + " raw values: " + values, null);
+		}
+	}
+	
+	private synchronized void cancelTransaction(PaypalTransaction trx) {
+		if(trx.getStatus() == PaypalTransactionStatus.SUCCESS || trx.getStatus() == PaypalTransactionStatus.CANCELED) {
+			//already completed: if successed -> let it in this state
+			return;
+		}
+		
+		updateTransaction(trx, PaypalTransactionStatus.CANCELED);
+		Order order = orderManager.loadOrderByNr(trx.getRefNo());
+		orderManager.save(order, OrderStatus.CANCELED);
+	}
+	
+	/**
+	 * Success -> save order and authorize the access
+	 * Pending -> save order and authorize the access
+	 * Denied  -> save order and revert authorization to the access
+	 * @param trx
+	 */
+	private synchronized void completeTransaction(PaypalTransaction trx, Map<String,String> values) {
+		//access already authorized
+		if(trx.getStatus() == PaypalTransactionStatus.SUCCESS || trx.getStatus() == PaypalTransactionStatus.PENDING) {
+			if(appendInfos(trx, values)) {
+				dbInstance.updateObject(trx);
+			}
+			
+			//check if the status changes
+			String trxStatus = trx.getTransactionStatus();
+			if(trxStatus.equalsIgnoreCase("DENIED")) {
+				completeDeniedTransaction(trx);
+			} else {
+				return;//already completed
+			}
+		}
+		
+		appendInfos(trx, values);
+		
+		//SUCCESS – The sender’s transaction has completed
+		//PENDING – The transaction is awaiting further processing
+		//CREATED – The payment request was received; funds will be transferred
+		//PARTIALLY_REFUNDED– Transaction was partially refunded
+		//DENIED – The transaction was rejected by the receiver
+		//PROCESSING – The transaction is in progress
+		//REVERSED – The payment was returned to the sender
+		//null, Success, Pending -> authorize
+		String trxStatus = trx.getTransactionStatus();
+		if(trxStatus != null && "DENIED".equalsIgnoreCase(trxStatus)) {
+			completeDeniedTransaction(trx);
+		} else {
+			completeTransactionSucessfully(trx, trxStatus);
+		}
+	}
+	
+	private void completeDeniedTransaction(PaypalTransaction trx) {
+		updateTransaction(trx, PaypalTransactionStatus.DENIED);
+		Order order = orderManager.loadOrderByNr(trx.getRefNo());
+		order = orderManager.save(order, OrderStatus.ERROR);
+		
+		PaypalAccessMethod method = getMethodSecure(trx.getMethodId());
+		if(order.getKey().equals(trx.getOrderId())) {
+			//make accessible
+			Identity identity = order.getDelivery();
+			for(OrderPart part:order.getParts()) {
+				if(part.getKey().equals(trx.getOrderPartId())) {
+					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
+					transaction = transactionManager.save(transaction);
+					transactionManager.update(transaction, AccessTransactionStatus.ERROR);
+					for(OrderLine line:part.getOrderLines()) {
+						acFrontendManager.denyAccesToResource(identity, line.getOffer());
+						logAudit("Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity, null);
+					}
+				}
+			}
+		} else {
+			logError("Order not in sync with PaypalTransaction", null);
+		}
+	}
+	
+	private void completeTransactionSucessfully(PaypalTransaction trx, String trxStatus) {
+		Order order = orderManager.loadOrderByNr(trx.getRefNo());
+		if("PENDING".equalsIgnoreCase(trxStatus)) {
+			updateTransaction(trx, PaypalTransactionStatus.PENDING);
+		} else {
+			updateTransaction(trx, PaypalTransactionStatus.SUCCESS);
+		}
+		order = orderManager.save(order, OrderStatus.PAYED);
+
+		PaypalAccessMethod method = getMethodSecure(trx.getMethodId());
+		if(order.getKey().equals(trx.getOrderId())) {
+			//make accessible
+			Identity identity = order.getDelivery();
+			for(OrderPart part:order.getParts()) {
+				if(part.getKey().equals(trx.getOrderPartId())) {
+					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
+					transaction = transactionManager.save(transaction);
+					for(OrderLine line:part.getOrderLines()) {
+						if(acFrontendManager.allowAccesToResource(identity, line.getOffer())) {
+							logAudit("Paypal payed access granted for: " + buildLogMessage(line, method) + " to " + identity, null);
+							transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
+						} else {
+							logError("Paypal payed access refused for: " + buildLogMessage(line, method) + " to " + identity, null);
+							transactionManager.update(transaction, AccessTransactionStatus.ERROR);
+						}
+					}
+				}
+			}
+		} else {
+			logError("Order not in sync with PaypalTransaction", null);
+		}
+	}
+	
+	private String buildLogMessage(OrderLine line, PaypalAccessMethod method) {
+		StringBuilder sb = new StringBuilder();
+		Offer offer = line.getOffer();
+		sb.append("OrderLine[key=").append(line.getKey()).append("]")
+			.append("[method=").append(method.getClass().getSimpleName()).append("]");
+		if(offer == null) {
+			sb.append("[resource=null]");
+		} else {
+			sb.append("[resource=").append(offer.getResourceId()).append(":").append(offer.getResourceTypeName()).append(":").append(offer.getResourceDisplayName()).append("]");
+		}
+		return sb.toString();
+	}
+	
+	private boolean appendInfos(PaypalTransaction trx, Map<String,String> values) {
+		if(values == null) return false;
+
+		boolean append = false;
+		String senderTrxId = values.get("transaction[0].id_for_sender_txn");
+		if(StringHelper.containsNonWhitespace(senderTrxId)) {
+			trx.setSenderTransactionId(senderTrxId);
+			append = true;
+		}
+
+		String statusSenderTrx = values.get("transaction[0].status_for_sender_txn");
+		if(StringHelper.containsNonWhitespace(statusSenderTrx)) {
+			trx.setSenderTransactionStatus(statusSenderTrx);
+			append = true;
+		}
+
+		String receiverTrxId = values.get("transaction[0].id");
+		if(StringHelper.containsNonWhitespace(receiverTrxId)) {
+			trx.setTransactionId(receiverTrxId);
+			append = true;
+		}
+		
+		String senderEmail = values.get("sender_email");
+		if(StringHelper.containsNonWhitespace(senderEmail)) {
+			trx.setSenderEmail(senderEmail);
+			append = true;
+		}
+		
+		String verifySign = values.get("verify_sign");
+		if(StringHelper.containsNonWhitespace(verifySign)) {
+			trx.setVerifySign(verifySign);
+			append = true;
+		}
+		
+		String pendingReason = values.get("transaction[0].pending_reason");
+		if(StringHelper.containsNonWhitespace(pendingReason)) {
+			trx.setPendingReason(pendingReason);
+			append = true;
+		}
+		
+		String transactionStatus = values.get("transaction[0].status");
+		if(StringHelper.containsNonWhitespace(transactionStatus)) {
+			trx.setTransactionStatus(transactionStatus);
+			append = true;
+		}
+
+		return append;
+	}
+
+	@Override
+	public void updateTransaction(PaypalTransaction transaction, PaypalTransactionStatus status) {
+		transaction.setStatus(status);
+		dbInstance.updateObject(transaction);
+	}
+
+	/*
+	 * @return
+	 */
+	private PaypalTransaction createAndPersistTransaction(Price amount, Order order, OrderPart part, AccessMethod method) {
+		PaypalTransaction transaction = new PaypalTransaction();
+		transaction.setRefNo(order.getOrderNr());
+		transaction.setSecureSuccessUUID(UUID.randomUUID().toString().replace("-", ""));
+		transaction.setSecureCancelUUID(UUID.randomUUID().toString().replace("-", ""));
+		transaction.setStatus(PaypalTransactionStatus.NEW);
+		transaction.setOrderId(order.getKey());
+		transaction.setOrderPartId(part.getKey());
+		transaction.setMethodId(method.getKey());
+		transaction.setSecurePrice(amount);
+		dbInstance.saveObject(transaction);
+		return transaction;
+	}
+
+	@Override
+	public boolean convertCurrency() {
+		try {
+			String[] fromcodes = new String[]{"CHF"};
+			String[] tocodes = new String[]{"USD"};
+			BigDecimal[] amountItems = new BigDecimal[]{ new BigDecimal("20.00")};
+			CurrencyList list = new CurrencyList();
+
+			CurrencyCodeList cclist = new CurrencyCodeList();
+			for (int i = 0; i < amountItems.length; i++) {
+				CurrencyType ct = new CurrencyType();
+				ct.setAmount(amountItems[i]);
+				ct.setCode(fromcodes[i]);
+				list.getCurrency().add(ct);
+
+			}
+			for (int i = 0; i < tocodes.length; i++) {
+				cclist.getCurrencyCode().add(tocodes[i]);
+
+			}
+			
+			ConvertCurrencyRequest req = new ConvertCurrencyRequest();
+			req.setBaseAmountList(list);
+			req.setConvertToCurrencyList(cclist);
+			req.setRequestEnvelope(getAppRequestEnvelope());
+			
+			AdaptivePayments ap = new AdaptivePayments(getAccountProperties());
+			ConvertCurrencyResponse resp = ap.convertCurrency(req);
+
+			for (Iterator<CurrencyConversionList> iterator = resp.getEstimatedAmountTable().getCurrencyConversionList().iterator(); iterator.hasNext();) {
+				CurrencyConversionList ccclist = iterator.next();
+				logInfo(ccclist.getBaseAmount().getCode() + " :: "+ ccclist.getBaseAmount().getAmount());
+
+				List<CurrencyType> l = ccclist.getCurrencyList().getCurrency();
+				for (int i = 0; i < l.size(); i++) {
+					CurrencyType ct = l.get(i);
+					logInfo(ct.getCode() + " :: "+ ct.getAmount());
+				}
+			}
+			return true;
+			
+		} catch (FatalException e) {
+			logError("", e);
+			return false;
+		} catch (SSLConnectionException e) {
+			logError("Error with the SSL connection", e);
+			return false;
+		} catch (PPFaultMessage e) {
+			logError("", e);
+			return false;
+		} catch (Exception e) {
+			logError("", e);
+			return false;
+		}
+	}
+	
+	@Override
+	public String getPayRedirectUrl(PayResponse response) {
+		String testEnv = "";
+		if(paypalModule.isSandbox()) {
+			testEnv = "sandbox.";
+		}
+		
+		String payKey = response.getPayKey();
+		String nextUrl= "https://www." + testEnv + "paypal.com/cgi-bin/webscr?cmd=_ap-payment&paykey=" + payKey;
+		return nextUrl;
+	}
+	
+	@Override
+	public String getIpnVerificationUrl() {
+		String testEnv = "";
+		if(paypalModule.isSandbox()) {
+			testEnv = "sandbox.";
+		}
+		String verificationUrl= "https://www." + testEnv + "paypal.com/cgi-bin/webscr";
+		return verificationUrl;
+	}
+	
+	@Override
+	public PaymentDetailsResponse paymentDetails(String key) {
+		try {
+			PaymentDetailsRequest paydetailReq = new PaymentDetailsRequest();
+			paydetailReq.setPayKey(key);
+			paydetailReq.setRequestEnvelope(getAppRequestEnvelope());
+			adaptivepayments.AdaptivePayments apd = new adaptivepayments.AdaptivePayments(getAccountProperties());
+			PaymentDetailsResponse paydetailsResp = apd.paymentDetails(paydetailReq);
+			return paydetailsResp;
+		} catch (Exception fe) {
+			logError("", fe);
+			return null;
+		}
+	}
+
+	public PayResponse request(Identity delivery, OfferAccess offerAccess, String mapperUri, String sessionId) {
+		StringBuilder url = new StringBuilder();
+		url.append(Settings.createServerURI()).append(mapperUri);
+		
+		Offer offer = offerAccess.getOffer();
+		Price amount = offer.getPrice();
+
+		Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT);
+		PaypalTransaction trx = createAndPersistTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
+
+		//!!!! make a trace of the process
+		dbInstance.commit();
+
+		ReceiverList list = new ReceiverList();
+		Receiver rec1 = new Receiver();
+		rec1.setAmount(amount.getAmount());
+		rec1.setEmail(paypalModule.getPaypalFirstReceiverEmailAddress());
+		rec1.setInvoiceId(order.getOrderNr());
+		list.getReceiver().add(rec1);
+		
+		String returnURL = url.toString() + "/" + trx.getSecureSuccessUUID() + ".html;jsessionid=" + sessionId + "?status=success";
+		String cancelURL = url.toString() + "/" + trx.getSecureCancelUUID() + ".html;jsessionid=" + sessionId + "?status=cancel";
+
+		PayRequest payRequest = new PayRequest();
+		payRequest.setCancelUrl(cancelURL);
+		payRequest.setReturnUrl(returnURL);
+		payRequest.setTrackingId(order.getOrderNr());
+		payRequest.setCurrencyCode(amount.getCurrencyCode());
+		payRequest.setClientDetails(getAppDetails());
+		payRequest.setReceiverList(list);
+		payRequest.setRequestEnvelope(getAppRequestEnvelope());
+		payRequest.setActionType("PAY");
+		payRequest.setIpnNotificationUrl(Settings.getServerContextPathURI() + "/paypal/ipn");
+
+		PayResponse payResp = null;
+		try {
+			AdaptivePayments ap = new AdaptivePayments(getAccountProperties());
+			payResp = ap.pay(payRequest);
+			logAudit("Paypal send PayRequest: " + (payResp == null ? "no response" : payResp.getPayKey() + "/" + payResp.getPaymentExecStatus()));
+			return payResp;
+		} catch (FatalException e) {
+			logError("Paypal error", e);
+		} catch (SSLConnectionException e) {
+			logError("Paypal error ssl", e);
+		} catch (PPFaultMessage e) {
+			logError("Paypal error PPFaultMessage", e);
+		} catch (Exception e) {
+			logError("Paypal error", e);
+		} finally {
+			if(payResp == null) {
+				updateTransaction(trx, PaypalTransactionStatus.ERROR);
+			} else {
+				updateTransaction(payResp, trx);
+			}
+		}
+		return null;
+	}
+}

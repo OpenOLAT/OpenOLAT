@@ -19,6 +19,7 @@
 			<list>
 				<ref bean="freeAccessHandler"/>
 				<ref bean="tokenAccessHandler"/>
+				<ref bean="paypalAccessHandler"/>
 			</list>
 		</property>
 		<property name="acFrontendManager" ref="acFrontendManager"/>
@@ -33,6 +34,7 @@
 				resource.accesscontrol.home.overview=${resource.accesscontrol.home.overview}
 				method.token.enabled=${method.token.enabled}
 				method.free.enabled=${method.free.enabled}
+				method.paypal.enabled=${method.paypal.enabled}
 			</value>
 		</property>
 	</bean>
@@ -90,18 +92,7 @@
 	
 	<bean id="freeAccessHandler" class="org.olat.resource.accesscontrol.method.FreeAccessHandler"/>
 	<bean id="tokenAccessHandler" class="org.olat.resource.accesscontrol.method.TokenAccessHandler"/>
-	
-	<bean id="resourceAccessDBMappings" class="org.olat.core.commons.persistence.AdditionalDBMappings">
-		<property name="xmlFiles">
-			<list>								
-				<value>org/olat/resource/accesscontrol/model/Offer.hbm.xml</value>
-				<value>org/olat/resource/accesscontrol/model/AccessMethod.hbm.xml</value>
-				<value>org/olat/resource/accesscontrol/model/AccessTransaction.hbm.xml</value>
-				<value>org/olat/resource/accesscontrol/model/OfferAccess.hbm.xml</value>
-				<value>org/olat/resource/accesscontrol/model/Order.hbm.xml</value>
-			</list>
-		</property>
-	</bean>
+
 	
 	
 	<!--  Orders admin panel -->

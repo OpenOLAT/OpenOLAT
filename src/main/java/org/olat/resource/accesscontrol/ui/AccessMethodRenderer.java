@@ -56,6 +56,7 @@ public class AccessMethodRenderer implements CustomCellRenderer {
 			Set<String> uniqueType = new HashSet<String>(3);
 			render(sb, transaction, uniqueType, locale);
 		} else if (val instanceof List) {
+			@SuppressWarnings("unchecked")
 			List<AccessTransaction> transactions = (List<AccessTransaction>)val;
 			Set<String> uniqueType = new HashSet<String>((transactions.size() * 2) + 1);
 			for(AccessTransaction transaction : transactions) {
