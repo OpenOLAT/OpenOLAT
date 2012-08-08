@@ -52,7 +52,7 @@ public class GroupsPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl,
 	 *      org.olat.core.gui.UserRequest, java.util.Map)
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(BGControllerFactory.class, ureq.getLocale());
 		Portlet p = new GroupsPortlet();
 		p.setName(this.getName());

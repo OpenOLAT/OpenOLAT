@@ -184,7 +184,7 @@ create index paypal_pay_key_idx on o_ac_paypal_transaction (pay_key);
 create index paypal_pay_trx_id_idx on o_ac_paypal_transaction (ipn_transaction_id);
 create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_transaction_id);
 
-create table  if not exists o_ac_reservation (
+create table o_ac_reservation (
    reservation_id int8 NOT NULL,
    creationdate timestamp,
    lastmodified timestamp,

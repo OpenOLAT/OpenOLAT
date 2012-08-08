@@ -525,7 +525,7 @@ create table o_info_message (
 
 create table o_co_db_entry (
    id int8 not null,
-   version int8 not null,
+   version int4 not null,
    lastmodified timestamp,
    creationdate timestamp,
    courseid int8,
@@ -797,7 +797,7 @@ create table o_ac_transaction (
 	primary key (transaction_id)
 );
 
-create table  if not exists o_ac_reservation (
+create table o_ac_reservation (
    reservation_id int8 NOT NULL,
    creationdate timestamp,
    lastmodified timestamp,
@@ -809,32 +809,32 @@ create table  if not exists o_ac_reservation (
 
 create table o_ac_paypal_transaction (
    transaction_id int8 not null,
-   version int8 not null,
+   version int4 not null,
    creationdate timestamp,
    ref_no varchar(255),
    order_id int8 not null,
    order_part_id int8 not null,
    method_id int8 not null,
    success_uuid varchar(32) not null,
-	 cancel_uuid varchar(32) not null,
-	 amount_amount DECIMAL,
-	 amount_currency_code VARCHAR(3),
+   cancel_uuid varchar(32) not null,
+   amount_amount DECIMAL,
+   amount_currency_code VARCHAR(3),
    pay_response_date timestamp,
    pay_key varchar(255),
-	 ack varchar(255),
-	 build varchar(255),
-	 coorelation_id varchar(255),
-	 payment_exec_status varchar(255),
-	 ipn_transaction_id varchar(255),
-	 ipn_transaction_status varchar(255),
-	 ipn_sender_transaction_id varchar(255),
-	 ipn_sender_transaction_status varchar(255),
-	 ipn_sender_email varchar(255),
-	 ipn_verify_sign varchar(255),
-	 ipn_pending_reason varchar(255),
-	 trx_status VARCHAR(32) not null default 'NEW',
-	 trx_amount DECIMAL,
-	 trx_currency_code VARCHAR(3),
+   ack varchar(255),
+   build varchar(255),
+   coorelation_id varchar(255),
+   payment_exec_status varchar(255),
+   ipn_transaction_id varchar(255),
+   ipn_transaction_status varchar(255),
+   ipn_sender_transaction_id varchar(255),
+   ipn_sender_transaction_status varchar(255),
+   ipn_sender_email varchar(255),
+   ipn_verify_sign varchar(255),
+   ipn_pending_reason varchar(255),
+   trx_status VARCHAR(32) not null default 'NEW',
+   trx_amount DECIMAL,
+   trx_currency_code VARCHAR(3),
    primary key (transaction_id)
 );
 

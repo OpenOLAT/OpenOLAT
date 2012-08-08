@@ -42,21 +42,21 @@ import org.olat.core.gui.translator.Translator;
  * @author gnaegi
  */
 public abstract class AbstractPortlet extends AbstractConfigOnOff implements Portlet {
-	private Map configuration = new HashMap();
+	private Map<String,String> configuration = new HashMap<String,String>();
 	private String name;
 	private Translator trans;
 
 	/**
 	 * @return The configuration map
 	 */
-	public Map getConfiguration() {
+	public Map<String,String> getConfiguration() {
 		return this.configuration;
 	}
 
 	/**
 	 * @param configuration The configuration map
 	 */
-	public void setConfiguration(Map configuration) {
+	public void setConfiguration(Map<String,String> configuration) {
 		this.configuration = configuration;
 	}
 

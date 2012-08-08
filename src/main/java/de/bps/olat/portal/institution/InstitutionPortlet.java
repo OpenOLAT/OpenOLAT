@@ -31,7 +31,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
 import org.olat.core.gui.control.generic.portal.Portlet;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.StartupException;
 import org.olat.core.util.Util;
@@ -79,12 +78,12 @@ public class InstitutionPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest, java.util.Map)
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		if (institutions == null) init();
 		InstitutionPortlet p = new InstitutionPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
-		p.setTranslator(new PackageTranslator(Util.getPackageName(InstitutionPortlet.class), ureq.getLocale()));
+		p.setTranslator(Util.createPackageTranslator(InstitutionPortlet.class, ureq.getLocale()));
 		// override css class if configured
 		String cssClass = (String) configuration.get("cssWrapperClass");
 		if (cssClass != null) p.setCssWrapperClass(cssClass);

@@ -85,7 +85,7 @@ public class LinksPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest, java.util.Map)
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		if(content == null) init();
 		LinksPortlet p = new LinksPortlet();
 		p.setName(this.getName());

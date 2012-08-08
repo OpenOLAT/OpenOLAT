@@ -28,14 +28,11 @@ package org.olat.core.commons.portlets.iframe;
 
 import java.util.Map;
 
-import org.olat.core.commons.portlets.iframe.IframePortlet;
-import org.olat.core.commons.portlets.iframe.IframePortletRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
 import org.olat.core.gui.control.generic.portal.Portlet;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 
 /**
@@ -76,11 +73,11 @@ public class IframePortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		IframePortlet p = new IframePortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
-		p.setTranslator(new PackageTranslator(Util.getPackageName(IframePortlet.class), ureq.getLocale()));
+		p.setTranslator(Util.createPackageTranslator(IframePortlet.class, ureq.getLocale()));
 		// override css class if configured
 		String cssClass = (String)configuration.get("cssWrapperClass");
 		if (cssClass != null) p.setCssWrapperClass(cssClass);

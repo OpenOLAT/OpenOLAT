@@ -29,15 +29,13 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
-import org.olat.core.gui.control.generic.portal.AbstractPortletRunController;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.generic.portal.PortletToolController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 
 /**
  * Description:<br>
@@ -52,8 +50,8 @@ public class EfficiencyStatementsPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
-		Translator translator = new PackageTranslator(Util.getPackageName(EfficiencyStatementsPortlet.class), ureq.getLocale());
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
+		Translator translator = Util.createPackageTranslator(EfficiencyStatementsPortlet.class, ureq.getLocale());
 		Portlet p = new EfficiencyStatementsPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
@@ -108,7 +106,7 @@ public class EfficiencyStatementsPortlet extends AbstractPortlet {
 		}
 	}
 	
-	public PortletToolController getTools(UserRequest ureq, WindowControl wControl) {
+	public PortletToolController<UserEfficiencyStatementLight> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtr == null) {
 			this.runCtr = new EfficiencyStatementsPortletRunController(wControl, ureq, getTranslator(), this.getName());
 		}

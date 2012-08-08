@@ -60,7 +60,7 @@ public interface Portlet extends ConfigOnOff,Disposable{
 	 * @param configuration
 	 * @return AbstractPortlet
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map portletConfig);
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> portletConfig);
 
 	/**
 	 * Get the run component of this portlet
@@ -78,12 +78,12 @@ public interface Portlet extends ConfigOnOff,Disposable{
 	/**
 	 * @return The configuration map
 	 */
-	public Map getConfiguration();
+	public Map<String,String> getConfiguration();
 
 	/**
 	 * @param configuration The configuration map
 	 */
-	public void setConfiguration(Map configuration);
+	public void setConfiguration(Map<String,String> configuration);
 
 	/**
 	 * @return The unique name of this portlet. 

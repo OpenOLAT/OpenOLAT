@@ -33,7 +33,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.generic.portal.PortletToolController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
@@ -50,9 +49,8 @@ public class NotesPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
 	 */
-	@SuppressWarnings("unused")
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
-		Translator translator = new PackageTranslator(Util.getPackageName(NotesPortlet.class), ureq.getLocale());
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
+		Translator translator = Util.createPackageTranslator(NotesPortlet.class, ureq.getLocale());
 		Portlet p = new NotesPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
@@ -107,7 +105,7 @@ public class NotesPortlet extends AbstractPortlet {
 		}
 	}
 
-	public PortletToolController getTools(UserRequest ureq, WindowControl wControl) {
+	public PortletToolController<Note> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtr == null) {
 			this.runCtr = new NotesPortletRunController(wControl, ureq, getTranslator(), this.getName());
 		}

@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.generic.portal.PortletToolController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.notifications.Subscriber;
 
 /**
  * Description:<br>
@@ -49,7 +50,7 @@ public class NotificationsPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(NotificationsPortlet.class, ureq.getLocale());
 		Portlet p = new NotificationsPortlet();
 		p.setName(this.getName());
@@ -105,7 +106,7 @@ public class NotificationsPortlet extends AbstractPortlet {
 		}
 	}
 	
-	public PortletToolController getTools(UserRequest ureq, WindowControl wControl) {
+	public PortletToolController<Subscriber> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtr == null) {
 			this.runCtr = new NotificationsPortletRunController(wControl, ureq, getTranslator(), this.getName());
 		}

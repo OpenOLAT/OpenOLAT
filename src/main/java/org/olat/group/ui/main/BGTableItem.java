@@ -82,7 +82,7 @@ public class BGTableItem {
 		return businessGroup.getName();
 	}
 	
-	public int getNumOfParticipants() {
+	public long getNumOfParticipants() {
 		return businessGroup.getNumOfParticipants();
 	}
 	
@@ -186,7 +186,7 @@ public class BGTableItem {
 		private final Long key;
 		private final String name;
 		private final Integer maxParticipants;
-		private int numOfParticipants;
+		private long numOfParticipants;
 		private final boolean waitingListEnabled;
 		
 		public BGShort(BusinessGroup group) {
@@ -228,7 +228,7 @@ public class BGTableItem {
 			return maxParticipants;
 		}
 
-		public int getNumOfParticipants() {
+		public long getNumOfParticipants() {
 			return numOfParticipants;
 		}
 		

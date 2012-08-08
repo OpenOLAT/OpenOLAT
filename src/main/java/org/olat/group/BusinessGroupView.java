@@ -50,15 +50,15 @@ public interface BusinessGroupView extends BusinessGroupShort, Persistable, Crea
 	public OLATResource getResource();
 	
 	
-	public int getNumOfRelations();
+	public long getNumOfRelations();
 	
-	public int getNumOfOwners();
+	public long getNumOfOwners();
 	
-	public int getNumOfParticipants();
+	public long getNumOfParticipants();
 	
-	public int getNumOfOffers();
+	public long getNumOfOffers();
 	
-	public int getNumOfValidOffers();
+	public long getNumOfValidOffers();
 
 	/**
 	 * The BusinessGroup has 1..n Owners acting as <i>administrators </i>.

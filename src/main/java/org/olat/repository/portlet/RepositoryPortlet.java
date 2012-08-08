@@ -30,6 +30,7 @@ import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.generic.portal.PortletToolController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.repository.RepositoryEntryShort;
 
 /**
  * Description:<br>
@@ -44,14 +45,14 @@ public class RepositoryPortlet extends AbstractPortlet {
 	private RepositoryPortletRunController runCtr;
 	private static final String CONFIG_KEY_ROLE = "role";
 	private static final String CONFIG_KEY_ROLE_STUDENT = "student";
-	private static final String CONFIG_KEY_ROLE_TEACHER = "teacher";
+	protected static final String CONFIG_KEY_ROLE_TEACHER = "teacher";
 	
 	
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl,
 	 *      org.olat.core.gui.UserRequest, java.util.Map)
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(RepositoryPortlet.class, ureq.getLocale());
 		Portlet p = new RepositoryPortlet();
 		p.setName(this.getName());
@@ -121,7 +122,7 @@ public class RepositoryPortlet extends AbstractPortlet {
 		}
 	}
 	
-	public PortletToolController getTools(UserRequest ureq, WindowControl wControl) {
+	public PortletToolController<RepositoryEntryShort> getTools(UserRequest ureq, WindowControl wControl) {
 		//portlet was not yet visible
 		if ( runCtr == null ) {
 			boolean studentView = CONFIG_KEY_ROLE_STUDENT.equals(getConfiguration().get(CONFIG_KEY_ROLE));

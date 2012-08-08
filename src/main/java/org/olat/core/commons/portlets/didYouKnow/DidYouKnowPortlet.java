@@ -34,7 +34,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
 import org.olat.core.gui.control.generic.portal.Portlet;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 
 /**
@@ -58,11 +57,11 @@ public class DidYouKnowPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
 	 */
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map configuration) {
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Portlet p = new DidYouKnowPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
-		p.setTranslator(new PackageTranslator(Util.getPackageName(DidYouKnowPortlet.class), ureq.getLocale()));
+		p.setTranslator(Util.createPackageTranslator(DidYouKnowPortlet.class, ureq.getLocale()));
 		return p;
 	}
 

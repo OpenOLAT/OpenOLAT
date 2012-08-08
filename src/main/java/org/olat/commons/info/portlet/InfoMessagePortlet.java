@@ -54,7 +54,7 @@ public class InfoMessagePortlet extends AbstractPortlet {
 	}
 
 	@Override
-	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map portletConfig) {
+	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> portletConfig) {
 		Translator translator = Util.createPackageTranslator(InfoMessagePortlet.class, ureq.getLocale());
 		Portlet p = new InfoMessagePortlet();
 		p.setName(getName());			
@@ -88,7 +88,7 @@ public class InfoMessagePortlet extends AbstractPortlet {
 	}
 
 	@Override
-	public PortletToolController getTools(UserRequest ureq, WindowControl wControl) {
+	public PortletToolController<InfoSubscriptionItem> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtrl == null ) {
 			runCtrl = new InfoMessagePortletRunController(wControl, ureq, getTranslator(), getName());
 		}
