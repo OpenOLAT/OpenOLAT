@@ -79,7 +79,7 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 		return numOfParticipants;
 	}
 
-	public void setNumOfParticipants(int numOfParticipants) {
+	public void setNumOfParticipants(long numOfParticipants) {
 		this.numOfParticipants = numOfParticipants;
 	}
 
