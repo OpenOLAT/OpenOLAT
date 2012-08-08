@@ -797,6 +797,16 @@ create table o_ac_transaction (
 	primary key (transaction_id)
 );
 
+create table  if not exists o_ac_reservation (
+   reservation_id bigint NOT NULL,
+   creationdate datetime,
+   lastmodified datetime,
+   version mediumint unsigned not null,
+   fk_identity bigint not null,
+   fk_resource bigint not null,
+   primary key (reservation_id)
+);
+
 create table o_ac_paypal_transaction (
    transaction_id int8 not null,
    version int8 not null,

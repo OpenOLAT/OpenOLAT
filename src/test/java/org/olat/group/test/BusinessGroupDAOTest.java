@@ -22,6 +22,7 @@ package org.olat.group.test;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -923,6 +924,44 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 			Assert.assertFalse(offers.isEmpty());
 		}
 	}
+	
+	@Test
+	public void findPublicGroupsLimitedDate() {
+		//create a group with an access control limited by a valid date
+		BusinessGroup groupVisible = businessGroupDao.createAndPersist(null, "access-grp-2", "access-grp-2-desc", 0, 5, true, false, true, false, false);
+		//create and save an offer
+		Offer offer = acService.createOffer(groupVisible.getResource(), "TestBGWorkflow");
+
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR_OF_DAY, -1);
+		offer.setValidFrom(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 2);
+		offer.setValidTo(cal.getTime());
+		assertNotNull(offer);
+		acService.save(offer);
+
+		//create a group with an access control limited by dates in the past
+		BusinessGroup oldGroup = businessGroupDao.createAndPersist(null, "access-grp-3", "access-grp-3-desc", 0, 5, true, false, true, false, false);
+		//create and save an offer
+		Offer oldOffer = acService.createOffer(oldGroup.getResource(), "TestBGWorkflow");
+		cal.add(Calendar.HOUR_OF_DAY, -5);
+		oldOffer.setValidFrom(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, -5);
+		oldOffer.setValidTo(cal.getTime());
+		assertNotNull(oldOffer);
+		acService.save(oldOffer);
+
+		dbInstance.commitAndCloseSession();
+			
+		//retrieve the offer
+		SearchBusinessGroupParams paramsAll = new SearchBusinessGroupParams();
+		paramsAll.setPublicGroups(Boolean.TRUE);
+		List<BusinessGroup> accessGroups = businessGroupDao.findBusinessGroups(paramsAll, null, 0, 0);
+		Assert.assertNotNull(accessGroups);
+		Assert.assertTrue(accessGroups.size() >= 1);
+		Assert.assertTrue(accessGroups.contains(groupVisible));
+		Assert.assertFalse(accessGroups.contains(oldGroup));
+	}	
 	
 	@Test
 	public void findBusinessGroupsWithResources() {

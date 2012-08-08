@@ -155,6 +155,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACOfferManagerTest.class,
 	org.olat.resource.accesscontrol.ACOrderManagerTest.class,
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
+	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
 	org.olat.core.util.vfs.VersionManagerTest.class,
 	/**
 	 * Pure JUnit test without need of framework

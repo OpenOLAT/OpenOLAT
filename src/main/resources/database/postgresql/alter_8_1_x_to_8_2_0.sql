@@ -159,27 +159,41 @@ create table o_ac_paypal_transaction (
    order_part_id int8 not null,
    method_id int8 not null,
    success_uuid varchar(32) not null,
-	 cancel_uuid varchar(32) not null,
-	 amount_amount DECIMAL,
-	 amount_currency_code VARCHAR(3),
+   cancel_uuid varchar(32) not null,
+   amount_amount DECIMAL,
+   amount_currency_code VARCHAR(3),
    pay_response_date timestamp,
    pay_key varchar(255),
-	 ack varchar(255),
-	 build varchar(255),
-	 coorelation_id varchar(255),
-	 payment_exec_status varchar(255),
-	 ipn_transaction_id varchar(255),
-	 ipn_transaction_status varchar(255),
-	 ipn_sender_transaction_id varchar(255),
-	 ipn_sender_transaction_status varchar(255),
-	 ipn_sender_email varchar(255),
-	 ipn_verify_sign varchar(255),
-	 ipn_pending_reason varchar(255),
-	 trx_status VARCHAR(32) not null default 'NEW',
-	 trx_amount DECIMAL,
-	 trx_currency_code VARCHAR(3),
+   ack varchar(255),
+   build varchar(255),
+   coorelation_id varchar(255),
+   payment_exec_status varchar(255),
+   ipn_transaction_id varchar(255),
+   ipn_transaction_status varchar(255),
+   ipn_sender_transaction_id varchar(255),
+   ipn_sender_transaction_status varchar(255),
+   ipn_sender_email varchar(255),
+   ipn_verify_sign varchar(255),
+   ipn_pending_reason varchar(255),
+   trx_status VARCHAR(32) not null default 'NEW',
+   trx_amount DECIMAL,
+   trx_currency_code VARCHAR(3),
    primary key (transaction_id)
 );
 create index paypal_pay_key_idx on o_ac_paypal_transaction (pay_key);
 create index paypal_pay_trx_id_idx on o_ac_paypal_transaction (ipn_transaction_id);
 create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_transaction_id);
+
+create table  if not exists o_ac_reservation (
+   reservation_id int8 NOT NULL,
+   creationdate timestamp,
+   lastmodified timestamp,
+   version int4 not null,
+   fk_identity int8 not null,
+   fk_resource int8 not null,
+   primary key (reservation_id)
+);
+
+
+
+

@@ -933,6 +933,16 @@ create table if not exists o_ac_transaction (
 	primary key (transaction_id)
 );
 
+create table  if not exists o_ac_reservation (
+   reservation_id bigint NOT NULL,
+   creationdate datetime,
+   lastmodified datetime,
+   version mediumint unsigned not null,
+   fk_identity bigint not null,
+   fk_resource bigint not null,
+   primary key (reservation_id)
+);
+
 create table if not exists o_ac_paypal_transaction (
    transaction_id int8 not null,
    version int8 not null,
@@ -1297,6 +1307,7 @@ alter table o_ac_order ENGINE = InnoDB;
 alter table o_ac_order_part ENGINE = InnoDB;
 alter table o_ac_order_line ENGINE = InnoDB;
 alter table o_ac_transaction ENGINE = InnoDB;
+alter table o_ac_offer ENGINE = InnoDB;
 alter table o_ac_paypal_transaction ENGINE = InnoDB;
 alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;

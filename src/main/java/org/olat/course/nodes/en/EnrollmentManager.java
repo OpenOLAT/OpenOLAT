@@ -108,7 +108,7 @@ public class EnrollmentManager extends BasicManager {
 						//reservation has the highest priority over max participant
 						ResourceReservation reservation = acService.getReservation(identity, reloadedGroup.getResource());
 						logInfo("doEnroll - participantsCounter: " + participantsCounter + ", reservations: " + reservations + " maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getName());
-						if (reservation == null || (participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
+						if (reservation == null && (participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
 							// already full, show error and updated choose page again
 							if (!reloadedGroup.getWaitingListEnabled().booleanValue()) {
 								// No Waiting List => List is full
