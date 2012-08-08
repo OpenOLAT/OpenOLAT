@@ -59,6 +59,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -77,6 +78,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private boolean hasResources;
 	private BusinessGroup currBusinessGroup;
 	private final BusinessGroupService businessGroupService;
+	private final AccessControlModule acModule;
 
 	private TabbedPane tabbedPane;
 	private VelocityContainer mainVC;
@@ -112,6 +114,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		
 		// Initialize managers
+		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		// Initialize translator:
@@ -177,7 +180,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private void setAllTabs(UserRequest ureq) {
 		hasResources = businessGroupService.hasResources(currBusinessGroup);
 		
+		tabAccessCtrl = getAccessController(ureq);
+
 		tabbedPane.removeAll();
+		editDetailsController.setAllowWaitingList(tabAccessCtrl == null || !tabAccessCtrl.isPaymentMethodInUse());
 		tabbedPane.addTab(translate("group.edit.tab.details"), editDetailsController.getInitialComponent());
 		tabbedPane.addTab(translate("group.edit.tab.collabtools"), collaborationToolsController.getInitialComponent());
 		
@@ -199,7 +205,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			tabbedPane.addTab(translate("group.edit.tab.rights"), rightsController.getInitialComponent());
 		}
 
-		tabAccessCtrl = getAccessController(ureq);
 		if(tabAccessCtrl != null) {
 			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
 		}
@@ -255,9 +260,12 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	}
 	
 	private BusinessGroupEditAccessController getAccessController(UserRequest ureq) {
-		if(tabAccessCtrl == null) { 
+		if(tabAccessCtrl == null && acModule.isEnabled()) { 
 			tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
 	  	listenTo(tabAccessCtrl);
+		}
+		if(tabAccessCtrl != null) {
+			tabAccessCtrl.updateBusinessGroup(currBusinessGroup);
 		}
 		return tabAccessCtrl;
 	}
@@ -309,6 +317,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				// do logging
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
 			}
+		} 
+		else if (source == tabAccessCtrl) {
+			setAllTabs(ureq);
+			fireEvent(ureq, event);
 		} else if (source == resourceController) {
 			setAllTabs(ureq);
 			fireEvent(ureq, event);

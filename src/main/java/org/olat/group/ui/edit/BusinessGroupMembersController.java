@@ -88,11 +88,7 @@ public class BusinessGroupMembersController extends BasicController {
 		dmsForm = new DisplayMemberSwitchForm(ureq, getWindowControl(), true, true, hasWaitingList);
 		listenTo(dmsForm);
 		// set if the checkboxes are checked or not.
-		dmsForm.setShowOwnersChecked(displayMembers.isShowOwners());
-		dmsForm.setShowPartipsChecked(displayMembers.isShowParticipants());
-		if (hasWaitingList) {
-			dmsForm.setShowWaitingListChecked(displayMembers.isShowWaitingList());
-		}
+		dmsForm.setDisplayMembers(displayMembers);
 		
 		mainVC.put("displayMembers", dmsForm.getInitialComponent());
 		Roles roles = ureq.getUserSession().getRoles();
@@ -168,8 +164,7 @@ public class BusinessGroupMembersController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == dmsForm) {
 			if(event == Event.CHANGED_EVENT) {
-				businessGroupService.updateDisplayMembers(businessGroup,
-						new DisplayMembers(dmsForm.getShowOwners(), dmsForm.getShowPartipiciants(), dmsForm.getShowWaitingList()));
+				businessGroupService.updateDisplayMembers(businessGroup, dmsForm.getDisplayMembers());
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, businessGroup, null);
 				// do loggin

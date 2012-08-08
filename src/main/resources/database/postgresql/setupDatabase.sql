@@ -798,12 +798,12 @@ create table o_ac_transaction (
 );
 
 create table  if not exists o_ac_reservation (
-   reservation_id bigint NOT NULL,
-   creationdate datetime,
-   lastmodified datetime,
-   version mediumint unsigned not null,
-   fk_identity bigint not null,
-   fk_resource bigint not null,
+   reservation_id int8 NOT NULL,
+   creationdate timestamp,
+   lastmodified timestamp,
+   version int4 not null,
+   fk_identity int8 not null,
+   fk_resource int8 not null,
    primary key (reservation_id)
 );
 

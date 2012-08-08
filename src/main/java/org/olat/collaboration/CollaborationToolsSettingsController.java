@@ -46,6 +46,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.instantMessaging.InstantMessagingModule;
 
 /**
  * Description: <BR>
@@ -265,7 +266,7 @@ class ChoiceOfToolsForm extends FormBasicController {
 		
 		for (int i=0; i<CollaborationTools.TOOLS.length; i++) {
 			String k = CollaborationTools.TOOLS[i];
-			if (k.equals(CollaborationTools.TOOL_CHAT)) {
+			if (k.equals(CollaborationTools.TOOL_CHAT) && !InstantMessagingModule.isEnabled()) {
 				continue;
 			}
 			theKeys.add(""+i);

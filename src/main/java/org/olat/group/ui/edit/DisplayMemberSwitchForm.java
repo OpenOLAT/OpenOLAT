@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.model.DisplayMembers;
 
 
 
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 public class DisplayMemberSwitchForm extends FormBasicController {
 
 	private SelectionElement showOwners, showPartips, showWaitingList;
+	private SelectionElement openOwners, openPartips, openWaitingList;
 	private boolean hasOwners, hasPartips, hasWaitingList;
 
 	/**
@@ -66,70 +68,35 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		
 		initForm(ureq);
 	}
-
-	/**
-	 * wheter the Show Owners checkbox is checked or not
-	 * 
-	 * @return boolean
-	 */
-	public boolean getShowOwners() {
-		if (showOwners == null) return false;
-		return showOwners.isSelected(0);
+	
+	public DisplayMembers getDisplayMembers() {
+		DisplayMembers displayMembers = new DisplayMembers();
+		displayMembers.setShowOwners(showOwners.isSelected(0));
+		displayMembers.setShowParticipants(showPartips.isSelected(0));
+		displayMembers.setShowWaitingList(showWaitingList.isVisible() && showWaitingList.isEnabled() && showWaitingList.isSelected(0));
+		displayMembers.setOwnersPublic(openOwners.isSelected(0));
+		displayMembers.setParticipantsPublic(openPartips.isSelected(0));
+		displayMembers.setWaitingListPublic(openWaitingList.isVisible() && openWaitingList.isEnabled() && openWaitingList.isSelected(0));
+		return displayMembers;
 	}
-
-	/**
-	 * wheter the Show Partipicants checkbox is checked or not
-	 * 
-	 * @return boolean
-	 */
-	public boolean getShowPartipiciants() {
-		if (showPartips == null) return false;
-		return showPartips.isSelected(0);
+	
+	public void setDisplayMembers(DisplayMembers displayMembers) {
+		showOwners.select("xx", displayMembers.isShowOwners());
+		showPartips.select("xx", displayMembers.isShowParticipants());
+		showWaitingList.select("xx", displayMembers.isShowWaitingList());
+		openOwners.select("xx", displayMembers.isOwnersPublic());
+		openPartips.select("xx", displayMembers.isParticipantsPublic());
+		openWaitingList.select("xx", displayMembers.isWaitingListPublic());
 	}
-
-	/**
-	 * whether the Show WaitingList checkbox is checked or not
-	 * 
-	 * @return boolean
-	 */
-	public boolean getShowWaitingList() {
-		if (showWaitingList == null) return false;
-		return showWaitingList.isSelected(0);
-	}
-
-	/**
-	 * wheter the Show Owners checkbox is checked or not
-	 * 
-	 * @param show
-	 */
-	public void setShowOwnersChecked(boolean show) {
-		showOwners.select("xx", show);
-	}
-
-	/**
-	 * wheter the Show Partipicants checkbox is checked or not
-	 * 
-	 * @param show
-	 */
-	public void setShowPartipsChecked(boolean show) {
-		showPartips.select("xx", show);
-	}
-
-	/**
-	 * wheter the Show WaitingList checkbox is checked or not
-	 * 
-	 * @param show
-	 */
-	public void setShowWaitingListChecked(boolean show) {
-		showWaitingList.select("xx", show);
-	}
-
+	
 	public void setWaitingListReadOnly(boolean b) {
 		showWaitingList.setEnabled(b);
+		openWaitingList.setEnabled(b);
 	}
 	
 	public void setWaitingListVisible(boolean b) {
 		showWaitingList.setVisible(b);
+		openWaitingList.setVisible(b);
 	}
 
 	@Override
@@ -151,10 +118,20 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		showPartips.setVisible(hasPartips);
 		showWaitingList = uifactory.addCheckboxesVertical("ShowWaitingList", "chkBox.show.waitingList", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
 		showWaitingList.setVisible(hasWaitingList);
-		
+
+		openOwners = uifactory.addCheckboxesVertical("OpenOwners", "chkBox.open.owners", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		openOwners.setVisible(hasOwners);
+		openPartips = uifactory.addCheckboxesVertical("OpenPartips", "chkBox.open.partips", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		openPartips.setVisible(hasPartips);
+		openWaitingList = uifactory.addCheckboxesVertical("OpenWaitingList", "chkBox.open.waitingList", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		openWaitingList.setVisible(hasWaitingList);
+
 		showOwners.addActionListener(this, FormEvent.ONCLICK);
 		showPartips.addActionListener(this, FormEvent.ONCLICK);
 		showWaitingList.addActionListener(this, FormEvent.ONCLICK);
+		openOwners.addActionListener(this, FormEvent.ONCLICK);
+		openPartips.addActionListener(this, FormEvent.ONCLICK);
+		openWaitingList.addActionListener(this, FormEvent.ONCLICK);
 	}
 
 	@Override

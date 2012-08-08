@@ -29,6 +29,10 @@ public class DisplayMembers {
 	private boolean showParticipants;
 	private boolean showWaitingList;
 	
+	private boolean ownersPublic;
+	private boolean participantsPublic;
+	private boolean waitingListPublic;
+	
 	public DisplayMembers() {
 		//
 	}
@@ -61,5 +65,29 @@ public class DisplayMembers {
 	
 	public void setShowWaitingList(boolean showWaitingList) {
 		this.showWaitingList = showWaitingList;
+	}
+
+	public boolean isOwnersPublic() {
+		return ownersPublic;
+	}
+
+	public void setOwnersPublic(boolean ownersPublic) {
+		this.ownersPublic = ownersPublic;
+	}
+
+	public boolean isParticipantsPublic() {
+		return participantsPublic;
+	}
+
+	public void setParticipantsPublic(boolean participantsPublic) {
+		this.participantsPublic = participantsPublic;
+	}
+
+	public boolean isWaitingListPublic() {
+		return waitingListPublic;
+	}
+
+	public void setWaitingListPublic(boolean waitingListPublic) {
+		this.waitingListPublic = waitingListPublic;
 	}
 }

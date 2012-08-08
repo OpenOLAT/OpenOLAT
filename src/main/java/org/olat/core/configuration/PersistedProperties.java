@@ -150,7 +150,8 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	private OLATResourceable PROPERTIES_CHANGED_EVENT_CHANNEL;
 	private CoordinatorManager coordinatorManager;
 	
-	private boolean secured;
+	private final boolean secured;
+	private final String filename;
 	
 	static {
   	Security.insertProviderAt(new BouncyCastleProvider(), 1);
@@ -159,6 +160,14 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener, boolean secured) {
 		this.coordinatorManager = coordinatorManager;
 		this.propertiesChangedEventListener = listener;
+		this.filename = propertiesChangedEventListener.getClass().getCanonicalName() + ".properties";
+		this.secured = secured;
+	}
+	
+	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener, String filename, boolean secured) {
+		this.coordinatorManager = coordinatorManager;
+		this.propertiesChangedEventListener = listener;
+		this.filename = filename + ".properties";
 		this.secured = secured;
 	}
 	
@@ -171,6 +180,8 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 		this.coordinatorManager = coordinatorManager;
 		// Keep handle for dispose process
 		this.propertiesChangedEventListener = listener;
+		this.filename= propertiesChangedEventListener.getClass().getCanonicalName()	+ ".properties";
+		this.secured = false;
 	}
 	
 	// fxdiff: backward compatibility
@@ -186,8 +197,7 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	 */
 	public void init() {
 		// Load configured properties from properties file
-		configurationPropertiesFile = new File(SYSTEM_CONFIG_DIRECTORY, propertiesChangedEventListener.getClass().getCanonicalName()
-				+ ".properties");
+		configurationPropertiesFile = new File(SYSTEM_CONFIG_DIRECTORY, filename);
 		loadPropertiesFromFile();
 		// Finally add listener to configuration changes done in other nodes
 		PROPERTIES_CHANGED_EVENT_CHANNEL = OresHelper.createOLATResourceableType(propertiesChangedEventListener.getClass().getSimpleName()

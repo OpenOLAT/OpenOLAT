@@ -83,12 +83,15 @@ public class AccessConfigurationController extends FormBasicController {
 	
 	private final boolean embbed;
 	private final boolean emptyConfigGrantsFullAccess;
+	private boolean allowPaymentMethod;
 	
-	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource, String displayName) {
+	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
+			String displayName, boolean allowPaymentMethod) {
 		super(ureq, wControl, "access_configuration");
 		
 		this.resource = resource;
 		this.displayName = displayName;
+		this.allowPaymentMethod = allowPaymentMethod;
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		embbed = false;
@@ -97,12 +100,14 @@ public class AccessConfigurationController extends FormBasicController {
 		initForm(ureq);
 	}
 		
-	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource, String displayName, Form form) {
+	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
+			String displayName, boolean allowPaymentMethod, Form form) {
 		super(ureq, wControl, FormBasicController.LAYOUT_CUSTOM, "access_configuration", form);
 		
 		this.resource = resource;
 		this.displayName = displayName;
-		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
+		this.allowPaymentMethod = allowPaymentMethod;
+		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		embbed = true;
 		emptyConfigGrantsFullAccess = false;
@@ -143,6 +148,18 @@ public class AccessConfigurationController extends FormBasicController {
 		confControllerContainer.contextPut("emptyConfigGrantsFullAccess", Boolean.valueOf(emptyConfigGrantsFullAccess));		
 	}
 	
+	public void setAllowPaymentMethod(boolean allowPayment) {
+		this.allowPaymentMethod = allowPayment;
+	}
+	
+	public boolean isPaymentMethodInUse() {
+		boolean paymentMethodInUse = false;
+		for(AccessInfo info:confControllers) {
+			paymentMethodInUse |= info.isPaymentMethod();
+		}
+		return paymentMethodInUse;
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -165,6 +182,7 @@ public class AccessConfigurationController extends FormBasicController {
 				OfferAccess newLink = newMethodCtrl.commitChanges();
 				newLink = acService.saveOfferAccess(newLink);
 				addConfiguration(newLink);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			removeAsListenerAndDispose(newMethodCtrl);
@@ -228,6 +246,10 @@ public class AccessConfigurationController extends FormBasicController {
 		List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
 		for(AccessMethod method:methods) {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
+			if(handler.isPaymentMethod() && !allowPaymentMethod) {
+				continue;
+			}
+			
 			Link add = LinkFactory.createLink("create." + handler.getType(), mapCreateVC, this);
 			add.setCustomDisplayText(handler.getMethodName(getLocale()));
 			add.setUserObject(method);
@@ -257,7 +279,7 @@ public class AccessConfigurationController extends FormBasicController {
 	
 	protected void addConfiguration(OfferAccess link) {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), null, link);
+		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), handler.isPaymentMethod(), null, link);
 		confControllers.add(infos);
 
 		DateChooser dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", "", confControllerContainer);
@@ -303,9 +325,11 @@ public class AccessConfigurationController extends FormBasicController {
 		private String name;
 		private String infos;
 		private OfferAccess link;
+		private final boolean paymentMethod;
 		
-		public AccessInfo(String name, String infos, OfferAccess link) {
+		public AccessInfo(String name, boolean paymentMethod, String infos, OfferAccess link) {
 			this.name = name;
+			this.paymentMethod = paymentMethod;
 			this.infos = infos;
 			this.link = link;
 		}
@@ -318,6 +342,10 @@ public class AccessConfigurationController extends FormBasicController {
 			this.name = name;
 		}
 		
+		public boolean isPaymentMethod() {
+			return paymentMethod;
+		}
+
 		public String getInfos() {
 			if(infos == null && link.getOffer() != null) {
 				OfferImpl casted = (OfferImpl)link.getOffer();

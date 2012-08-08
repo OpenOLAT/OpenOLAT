@@ -315,7 +315,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			return true;//don't need reservation
 		} else if("BusinessGroup".equals(resourceType)) {
 			final BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
-			if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled() != null) {
+			if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()) {
 				return true; //don't need reservation
 			}
 			if(group.getMaxParticipants() == null && group.getMaxParticipants() <= 0) {

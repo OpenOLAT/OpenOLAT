@@ -206,7 +206,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		rootNode.setDelegate(childNode);
 		
 		DisplayMembers members = businessGroupService.getDisplayMembers(businessGroup);
-		if(members.isShowOwners() || members.isShowParticipants()) {
+		if(members.isOwnersPublic() || members.isParticipantsPublic()) {
 			childNode = new GenericTreeNode();
 			childNode.setTitle(translate("main.menu.members"));
 			childNode.setUserObject(COMMAND_MENU_GROUPMEMBERS);

@@ -208,6 +208,10 @@ public class BusinessGroupFormController extends FormBasicController {
 			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
 	}
+	
+	public void setAllowWaitingList(boolean allowWaitingList) {
+		enableWaitingList.setEnabled(allowWaitingList);
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
@@ -396,7 +400,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @return
 	 */
 	public boolean isWaitingListEnabled() {
-		return enableWaitingList.getSelectedKeys().size() != 0;
+		return enableWaitingList.isEnabled() && enableWaitingList.getSelectedKeys().size() != 0;
 	}
 
 	/**

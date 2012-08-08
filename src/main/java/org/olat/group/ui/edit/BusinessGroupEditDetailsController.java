@@ -84,6 +84,10 @@ public class BusinessGroupEditDetailsController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
+	public void setAllowWaitingList(boolean allowWaitingList) {
+		editController.setAllowWaitingList(allowWaitingList);	
+	}
+	
 	/**
 	 * persist the updates
 	 */

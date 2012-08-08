@@ -47,7 +47,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPFrontendManager;

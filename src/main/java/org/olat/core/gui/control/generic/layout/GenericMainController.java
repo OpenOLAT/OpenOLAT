@@ -395,6 +395,10 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 		if (viewIdentifier != null && viewIdentifier.startsWith(GMCMT)) {
 			Long extensionID = Long.parseLong(viewIdentifier.substring(viewIdentifier.indexOf(':') + 1));
 			Extension ee = ExtManager.getInstance().getExtensionByID(extensionID);
+			if(ee == null){
+				logWarn("ExtManager did not find an Extension for extensionID '"+extensionID+"'. Activate canceled..." , null);
+				return;
+			}
 			ae = (ActionExtension) ee.getExtensionFor(className, ureq);
 		} else {
 			int vwindex = viewIdentifier.lastIndexOf(":"); 

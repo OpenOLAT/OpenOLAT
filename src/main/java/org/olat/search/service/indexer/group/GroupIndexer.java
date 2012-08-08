@@ -41,7 +41,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.search.service.SearchResourceContext;
@@ -113,7 +112,7 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 			if(acModule.isEnabled()) {
 				ACService acService = CoreSpringFactory.getImpl(ACService.class);
-				OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
+				OLATResource resource = group.getResource();
 				if(acService.isResourceAccessControled(resource, new Date())) {
 					return super.checkAccess(contextEntry, businessControl, identity, roles)
 							&& super.checkAccess(businessControl, identity, roles);

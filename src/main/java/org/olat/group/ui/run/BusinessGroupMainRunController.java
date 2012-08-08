@@ -92,7 +92,6 @@ import org.olat.portfolio.PortfolioModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -660,7 +659,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	//fxdiff VCRP-1,2: access control of resources
 	private void doAccessControlHistory(UserRequest ureq) {
 		removeAsListenerAndDispose(bgACHistoryCtrl);
-		OLATResource resource = OLATResourceManager.getInstance().findResourceable(businessGroup);
+		OLATResource resource = businessGroup.getResource();
 		bgACHistoryCtrl = ACUIFactory.createOrdersAdminController(ureq, getWindowControl(), resource);
 		listenTo(bgACHistoryCtrl);
 		mainPanel.setContent(bgACHistoryCtrl.getInitialComponent());
@@ -852,7 +851,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				// reset business group property manager
 				// update reference to update business group object
 				businessGroup = businessGroupService.loadBusinessGroup(this.businessGroup);
-				main.contextPut("BuddyGroup", this.businessGroup);
+				main.contextPut("BuddyGroup", businessGroup);
 				TreeModel trMdl = buildTreeModel();
 				bgTree.setTreeModel(trMdl);
 				if (bgEditCntrllr == null) {

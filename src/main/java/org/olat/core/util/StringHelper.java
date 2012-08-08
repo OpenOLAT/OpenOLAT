@@ -209,7 +209,7 @@ public class StringHelper {
 	 * @param m The (hash) map with the key and values
 	 * @return The string array containing all keys for this map
 	 */
-	public static String[] getMapKeysAsStringArray(Map m) {
+	public static String[] getMapKeysAsStringArray(Map<String,?> m) {
 		return (String[]) m.keySet().toArray(new String[m.size()]);
 	}
 
@@ -219,7 +219,7 @@ public class StringHelper {
 	 * @param m The (hash) map with the key and values
 	 * @return The string array containing all values for this map
 	 */
-	public static String[] getMapValuesAsStringArray(Map m) {
+	public static String[] getMapValuesAsStringArray(Map<?,String> m) {
 		return (String[]) m.values().toArray(new String[m.size()]);
 	}
 
@@ -293,12 +293,12 @@ public class StringHelper {
 	 * @return "email1, email2, email3," or null if emailRecipientIdentites was
 	 *         null
 	 */
-	public static String formatIdentitesAsEmailToString(final List emailRecipients, String delimiter) {
+	public static String formatIdentitesAsEmailToString(final List<String> emailRecipients, String delimiter) {
 		int elCnt = emailRecipients.size();
 		//2..n recipients
 		StringBuilder tmpDET = new StringBuilder();
 		for (int i = 0; i < elCnt; i++) {
-			tmpDET.append((String) emailRecipients.get(i));
+			tmpDET.append(emailRecipients.get(i));
 			if (i < elCnt - 1) {
 				tmpDET.append(delimiter);
 			}
@@ -331,6 +331,9 @@ public class StringHelper {
 	}
 	
 	public static boolean isLong(String string) {
+		if(string == null || string.length() == 0) {
+			return false;
+		}
 		char[] charArr = string.toCharArray();
 		for(int i=charArr.length; i-->0; ) {
 			char ch = charArr[i];

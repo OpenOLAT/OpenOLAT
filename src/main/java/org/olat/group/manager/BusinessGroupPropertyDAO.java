@@ -25,6 +25,7 @@
 
 package org.olat.group.manager;
 
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyConstants;
@@ -80,14 +81,21 @@ public class BusinessGroupPropertyDAO {
 	 * @param showOwners
 	 * @param showPartips
 	 */
-	public void updateDisplayMembers(BusinessGroup group, boolean showOwners, boolean showPartips, boolean showWaitingList) {
+	public void updateDisplayMembers(BusinessGroup group, boolean showOwners, boolean showPartips, boolean showWaitingList,
+			boolean ownrsPublic, boolean partipsPublic, boolean waitingListPublic) {
 		long showXXX = 0;
 		if (showOwners) showXXX += showOwnersVal;
 		if (showPartips) showXXX += showPartipsVal;
 		if (showWaitingList) showXXX += showWaitingListVal;
 		
+		long publicXXX = 0;
+		if (ownrsPublic) publicXXX += showOwnersVal;
+		if (partipsPublic) publicXXX += showPartipsVal;
+		if (waitingListPublic) publicXXX += showWaitingListVal;
+		
 		Property property = findProperty(group);
 		property.setLongValue(new Long(showXXX));
+		property.setStringValue(Long.toString(publicXXX));
 		propertyManager.updateProperty(property);
 	}
 
@@ -120,7 +128,6 @@ public class BusinessGroupPropertyDAO {
 	public boolean showPartips(Property prop) {
 		return ((getDisplayMembersValue(prop) & showPartipsVal) == showPartipsVal);
 	}
-	
 
 	/**
 	 * true if Members can see the Waiting, false otherwise. If the property
@@ -132,10 +139,30 @@ public class BusinessGroupPropertyDAO {
 	public boolean showWaitingList(Property prop) {
 		return ((getDisplayMembersValue(prop) & showWaitingListVal) == showWaitingListVal);
 	}
+	
+	public boolean isOwnersPublic(Property prop) {
+		return ((getPublicMembersValue(prop) & showOwnersVal) == showOwnersVal);
+	}
+
+	public boolean isPartipsPublic(Property prop) {
+		return ((getPublicMembersValue(prop) & showPartipsVal) == showPartipsVal);
+	}
+
+	public boolean isWaitingListPublic(Property prop) {
+		return ((getPublicMembersValue(prop) & showWaitingListVal) == showWaitingListVal);
+	}
 
 	private int getDisplayMembersValue(Property prop) {
 		int showXXX = prop.getLongValue().intValue();
 		return showXXX;
+	}
+	
+	private long getPublicMembersValue(Property prop) {
+		String publicXXX = prop.getStringValue();
+		if(StringHelper.isLong(publicXXX)) {
+			return Long.parseLong(publicXXX);
+		}
+		return 0;
 	}
 
 	/**
@@ -165,8 +192,9 @@ public class BusinessGroupPropertyDAO {
 		boolean showOwners = showOwners(sourceGPM);
 		boolean showPartips = showPartips(sourceGPM);
 		boolean showWaitingList = showWaitingList(sourceGPM);
-		updateDisplayMembers(targetGroup, showOwners, showPartips, showWaitingList);
+		boolean ownersPublic = this.isOwnersPublic(sourceGPM);
+		boolean partipsPublic = this.isPartipsPublic(sourceGPM);
+		boolean waitingListPublic = this.isWaitingListPublic(sourceGPM);
+		updateDisplayMembers(targetGroup, showOwners, showPartips, showWaitingList, ownersPublic, partipsPublic, waitingListPublic);
 	}
-
-
 }

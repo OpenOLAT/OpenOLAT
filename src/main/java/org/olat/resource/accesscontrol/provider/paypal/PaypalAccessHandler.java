@@ -62,6 +62,11 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 	public static final String METHOD_CSS_CLASS = "fx_access_method_paypal";
 
 	@Override
+	public boolean isPaymentMethod() {
+		return true;
+	}
+
+	@Override
 	public String getType() {
 		return METHOD_TYPE;
 	}

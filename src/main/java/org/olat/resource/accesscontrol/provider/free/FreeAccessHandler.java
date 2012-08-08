@@ -59,6 +59,11 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	public static final String METHOD_CSS_CLASS = "b_access_method_free";
 
 	@Override
+	public boolean isPaymentMethod() {
+		return false;
+	}
+
+	@Override
 	public String getType() {
 		return METHOD_TYPE;
 	}

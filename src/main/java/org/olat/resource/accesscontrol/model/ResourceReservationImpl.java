@@ -23,7 +23,6 @@ import java.util.Date;
 
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
 import org.olat.resource.OLATResource;
 
 /**

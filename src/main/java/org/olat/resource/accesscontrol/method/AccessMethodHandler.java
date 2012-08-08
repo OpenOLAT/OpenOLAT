@@ -48,6 +48,8 @@ import org.olat.resource.accesscontrol.ui.FormController;
  */
 public interface AccessMethodHandler {
 	
+	public boolean isPaymentMethod();
+	
 	public String getType();
 	
 	public String getMethodName(Locale locale);

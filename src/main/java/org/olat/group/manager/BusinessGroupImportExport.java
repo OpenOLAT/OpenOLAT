@@ -304,7 +304,7 @@ public class BusinessGroupImportExport {
 				if (group.showWaitingList != null) {
 					showWaitingList = group.showWaitingList;
 				}
-				businessGroupPropertyManager.updateDisplayMembers(newGroup, showOwners, showParticipants, showWaitingList);
+				businessGroupPropertyManager.updateDisplayMembers(newGroup, showOwners, showParticipants, showWaitingList, false, false, false);
 			}
 		}
 		return env;

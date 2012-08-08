@@ -59,6 +59,11 @@ public class TokenAccessHandler implements AccessMethodHandler {
 	
 	public static final String METHOD_TYPE = "token.method";
 	public static final String METHOD_CSS_CLASS = "b_access_method_token";
+	
+	@Override
+	public boolean isPaymentMethod() {
+		return false;
+	}
 
 	@Override
 	public String getType() {

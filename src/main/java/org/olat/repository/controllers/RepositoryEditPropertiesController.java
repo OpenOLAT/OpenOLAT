@@ -164,7 +164,7 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 		editproptabpubVC.put("proppupform", propPupForm.getInitialComponent());
 		
 		//fxdiff VCRP-1,2: access control of resources
-	  acCtr = new AccessConfigurationController(ureq, getWindowControl(), repositoryEntry.getOlatResource(), repositoryEntry.getDisplayname());
+	  acCtr = new AccessConfigurationController(ureq, getWindowControl(), repositoryEntry.getOlatResource(), repositoryEntry.getDisplayname(), true);
 	  int access = propPupForm.getAccess();
 	  if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
 	  	editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());

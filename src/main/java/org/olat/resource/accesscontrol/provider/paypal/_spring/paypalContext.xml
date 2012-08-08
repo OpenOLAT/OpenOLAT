@@ -10,7 +10,8 @@
 				depends-on="org.olat.core.util.WebappHelper">
 				<constructor-arg index="0" ref="coordinatorManager" />
 				<constructor-arg index="1" ref="paypalModule" />
-				<constructor-arg index="2" value="true" />
+				<constructor-arg index="2" value="com.frentix.olat.accesscontrol.paypal.PaypalModule" />
+				<constructor-arg index="3" value="true" />
 			</bean>
 		</property>
   </bean>
