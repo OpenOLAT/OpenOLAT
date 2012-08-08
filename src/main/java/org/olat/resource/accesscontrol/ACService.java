@@ -1,0 +1,148 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.resource.accesscontrol;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.AccessTransaction;
+import org.olat.resource.accesscontrol.model.BusinessGroupAccess;
+import org.olat.resource.accesscontrol.model.OLATResourceAccess;
+import org.olat.resource.accesscontrol.model.Offer;
+import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.model.Order;
+import org.olat.resource.accesscontrol.model.OrderStatus;
+import org.olat.resource.accesscontrol.model.PSPTransaction;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
+
+/**
+ * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
+public interface ACService {
+	
+	/**
+	 * 
+	 * @param resource
+	 * @param atDate 
+	 * @return
+	 */
+	public boolean isResourceAccessControled(OLATResource resource, Date atDate);
+	
+	/**
+	 * The rule to access a business group:<br/>
+	 * -No offer, access is free<br/>
+	 * -Owners have always access to the resource<br/>
+	 * -Tutors have access to the resource<br/>
+	 * -Participants have access to the resource<br/>
+	 * @param group
+	 * @param forId
+	 * @return
+	 */
+	public AccessResult isAccessible(BusinessGroup group, Identity forId, boolean allowNonInteractiveAccess);
+	
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, boolean allowNonInteractiveAccess);
+
+	
+	public Offer createOffer(OLATResource resource, String resourceName);
+	
+	public void save(Offer offer);
+	
+	public void deleteOffer(Offer offer);
+	
+	
+	public List<OLATResourceAccess> filterRepositoryEntriesWithAC(List<RepositoryEntry> repoEntries);
+	
+	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys);
+	
+	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate);
+	
+	public List<BusinessGroupAccess> getOfferAccessForBusinessGroup(boolean valid, Date atDate);
+	
+	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate);
+
+	/**
+	 * Get the list of access methods for a business group that are currently available
+	 * @param group 
+	 * @param valid 
+	 * @param atDate
+	 * @return The list of OfferAccess objects that represent available access methods
+	 */
+	public List<OfferAccess> getAccessMethodForBusinessGroup(BusinessGroup group, boolean valid, Date atDate);
+	
+	public List<OfferAccess> getOfferAccessByResource(Collection<Long> resourceKeys, boolean valid, Date atDate);
+	
+
+	
+	public OfferAccess saveOfferAccess(OfferAccess link);
+	
+	public void saveOfferAccess(List<OfferAccess> links);
+	
+	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument);
+
+	public boolean allowAccesToResource(Identity identity, Offer offer);
+	
+	public boolean denyAccesToResource(Identity identity, Offer offer);
+	
+	
+	public void removeReservation(ResourceReservation reservation);
+	
+	public ResourceReservation getReservation(Identity identity, OLATResource resource);
+	
+	public boolean reserveAccessToResource(Identity identity, OfferAccess offer);
+	
+	public int countReservations(OLATResource resource);
+	
+	public void cleanupReservations();
+	
+	
+	public String resolveDisplayName(OLATResource resource);
+	
+	public void enableMethod(Class<? extends AccessMethod> type, boolean enable);
+	
+	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles);
+	
+	public OfferAccess createOfferAccess(Offer offer, AccessMethod method);
+	
+	public void deletedLinkToMethod(OfferAccess link);
+	
+	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid);
+	
+	public List<Order> findOrders(Identity delivery, OrderStatus... status);
+	
+	public List<AccessTransaction> findAccessTransactions(List<Order> orders);
+	
+	public List<PSPTransaction> findPSPTransactions(List<Order> orders);
+	
+	public List<Order> findOrders(OLATResource resource, Identity delivery, Long orderNr, Date from, Date to, OrderStatus... status);
+	
+	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
+
+
+
+}

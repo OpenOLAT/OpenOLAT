@@ -71,8 +71,8 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 
 /**
  * 
@@ -334,7 +334,7 @@ public class CalendarWebService {
 		calVisitor.visit(personalWrapper);
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
-		ACFrontendManager acManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
 		repoParams.setOnlyExplicitMember(true);
 		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(repoParams, 0, -1, true);

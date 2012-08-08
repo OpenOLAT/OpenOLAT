@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
@@ -72,14 +71,14 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 	
 	private final List<AccessMethodHandler> methodHandlers = new ArrayList<AccessMethodHandler>();
 	
-	private ACFrontendManager acFrontendManager;
+	private ACService acService;
 
 	/**
 	 * [Used by Spring]
 	 * @param methodManager
 	 */
-	public void setAcFrontendManager(ACFrontendManager acFrontendManager) {
-		this.acFrontendManager = acFrontendManager;
+	public void setAcService(ACService acService) {
+		this.acService = acService;
 	}
 
 	public AccessControlModule(){
@@ -203,8 +202,8 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 		if(this.tokenEnabled != tokenEnabled) {
 			setStringProperty(TOKEN_ENABLED, Boolean.toString(tokenEnabled), true);
 		}
-		if(acFrontendManager != null) {
-			acFrontendManager.enableMethod(TokenAccessMethod.class, tokenEnabled);
+		if(acService != null) {
+			acService.enableMethod(TokenAccessMethod.class, tokenEnabled);
 		}
 	}
 
@@ -216,8 +215,8 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 		if(this.freeEnabled != freeEnabled) {
 			setStringProperty(FREE_ENABLED, Boolean.toString(freeEnabled), true);
 		}
-		if(acFrontendManager != null) {
-			acFrontendManager.enableMethod(FreeAccessMethod.class, freeEnabled);
+		if(acService != null) {
+			acService.enableMethod(FreeAccessMethod.class, freeEnabled);
 		}
 	}
 	
@@ -229,8 +228,8 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 		if(this.paypalEnabled != paypalEnabled) {
 			setStringProperty(PAYPAL_ENABLED, Boolean.toString(paypalEnabled), true);
 		}
-		if(acFrontendManager != null) {
-			acFrontendManager.enableMethod(PaypalAccessMethod.class, paypalEnabled);
+		if(acService != null) {
+			acService.enableMethod(PaypalAccessMethod.class, paypalEnabled);
 		}
 	}
 

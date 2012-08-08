@@ -95,7 +95,7 @@ import org.olat.repository.controllers.RepositorySearchController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -198,7 +198,7 @@ public class CatalogController extends BasicController implements Activateable, 
 	private VelocityContainer myContent;
 
 	private final CatalogManager cm;
-	private final ACFrontendManager acFrontendManager;
+	private final ACService acService;
 	private final RepositoryManager repositoryManager;
 	private CatalogEntry currentCatalogEntry;
 	private CatalogEntry newLinkNotPersistedYet;
@@ -252,7 +252,7 @@ public class CatalogController extends BasicController implements Activateable, 
 		
 		cm = CatalogManager.getInstance();
 		//fxdiff VCRP-1,2: access control of resources
-		acFrontendManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 
 		List<CatalogEntry> rootNodes = cm.getRootCatalogEntries();
@@ -1008,7 +1008,7 @@ public class CatalogController extends BasicController implements Activateable, 
 			}
 		}
 		
-		List<OLATResourceAccess> resourcesWithOffer = acFrontendManager.getAccessMethodForResources(resourceKeys, null, true, new Date());
+		List<OLATResourceAccess> resourcesWithOffer = acService.getAccessMethodForResources(resourceKeys, null, true, new Date());
 		for ( CatalogEntry entry : childCe ) {
 			if(entry.getType() == CatalogEntry.TYPE_NODE) continue;
 			//fxdiff VCRP-1,2: access control of resources

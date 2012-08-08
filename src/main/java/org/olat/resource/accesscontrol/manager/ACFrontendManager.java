@@ -21,6 +21,7 @@
 package org.olat.resource.accesscontrol.manager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -31,12 +32,15 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
@@ -49,6 +53,9 @@ import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Order;
 import org.olat.resource.accesscontrol.model.OrderStatus;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -59,84 +66,28 @@ import org.olat.resource.accesscontrol.model.PSPTransaction;
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ACFrontendManager extends BasicManager {
+@Service("acService")
+public class ACFrontendManager extends BasicManager implements ACService {
 	
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
 	private AccessControlModule accessModule;
+	@Autowired
 	private ACOfferManager accessManager;
+	@Autowired
 	private ACMethodManager methodManager;
+	@Autowired
 	private ACOrderManager orderManager;
+	@Autowired
+	private ACReservationDAO reservationDao;
+	@Autowired
 	private ACTransactionManager transactionManager;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	private ACFrontendManager() {
-		//
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param accessModule
-	 */
-	public void setAccessModule(AccessControlModule accessModule) {
-		this.accessModule = accessModule;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param repositoryManager
-	 */
-	public void setRepositoryManager(RepositoryManager repositoryManager) {
-		this.repositoryManager = repositoryManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param accessmanager
-	 */
-	public void setAccessManager(ACOfferManager accessManager) {
-		this.accessManager = accessManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param securityManager
-	 */
-	public void setSecurityManager(BaseSecurity securityManager) {
-		this.securityManager = securityManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param methodManager
-	 */
-	public void setMethodManager(ACMethodManager methodManager) {
-		this.methodManager = methodManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param orderManager
-	 */
-	public void setOrderManager(ACOrderManager orderManager) {
-		this.orderManager = orderManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param transactionManager
-	 */
-	public void setTransactionManager(ACTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param businessGroupService
-	 */
-	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
-		this.businessGroupService = businessGroupService;
-	}
 
 	/**
 	 * The rule to access the repository entry:<br/>
@@ -339,8 +290,73 @@ public class ACFrontendManager extends BasicManager {
 		}
 		return new AccessResult(false);
 	}
+	
+	@Override
+	public void removeReservation(ResourceReservation reservation) {
+		reservationDao.deleteReservation(reservation);
+	}
 
-	public boolean allowAccesToResource(Identity identity, Offer offer) {
+	@Override
+	public ResourceReservation getReservation(Identity identity, OLATResource resource) {
+		return reservationDao.loadReservation(identity, resource);
+	}
+
+	@Override
+	public int countReservations(OLATResource resource) {
+		return reservationDao.countReservations(resource);
+	}
+
+	@Override
+	public boolean reserveAccessToResource(final Identity identity, final OfferAccess offer) {
+		final OLATResource resource = offer.getOffer().getResource();
+		
+		String resourceType = resource.getResourceableTypeName();
+		if("CourseModule".equals(resourceType)) {
+			return true;//don't need reservation
+		} else if("BusinessGroup".equals(resourceType)) {
+			final BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
+			if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled() != null) {
+				return true; //don't need reservation
+			}
+			if(group.getMaxParticipants() == null && group.getMaxParticipants() <= 0) {
+				return true;//don't need reservation
+			}
+
+			ResourceReservation reservation = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<ResourceReservation>() {
+				public ResourceReservation execute() {
+					BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(resource);
+					ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
+					if(reservation != null) {
+						return reservation;
+					}
+					
+					int currentCount = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
+					int reservations = reservationDao.countReservations(resource);
+					if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
+						return reservationDao.createReservation(identity, resource);
+					} else {
+						return null;
+					}
+				}});
+			
+			return reservation != null;
+		}
+		return false;
+	}
+
+	@Override
+	public void cleanupReservations() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR_OF_DAY, -1);
+		Date oneHourTimeout = cal.getTime();
+		List<ResourceReservation> oldReservations = reservationDao.loadReservationOlderThan(oneHourTimeout);
+		for(ResourceReservation reservation:oldReservations) {
+			logAudit("Remove reservation:" + reservation);
+			reservationDao.deleteReservation(reservation);
+		}
+	}
+
+	public boolean allowAccesToResource(final Identity identity, final Offer offer) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {
 			return false;
@@ -362,12 +378,35 @@ public class ACFrontendManager extends BasicManager {
 				return true;
 			}
 		} else if("BusinessGroup".equals(resourceType)) {
-			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
+			final BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
-				if(!securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
-					securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
-				}
-				return true;
+				Boolean success = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>() {
+					public Boolean execute() {
+						
+						ResourceReservation reservation = reservationDao.loadReservation(identity, group.getResource());
+						if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()) {
+							if(!securityManager.isIdentityInSecurityGroup(identity, group.getWaitingGroup())) {
+								securityManager.addIdentityToSecurityGroup(identity, group.getWaitingGroup());
+							}
+						} else {
+							if(reservation != null
+									|| (group.getMaxParticipants() == null && group.getMaxParticipants().intValue() <=0)
+									|| (group.getMaxParticipants() != null && (group.getMaxParticipants().intValue() > 
+									   (countReservations(group.getResource()) + securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup()))))) {
+								if(!securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
+									securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+								}
+							} else {
+								return Boolean.FALSE;
+							}
+						}
+						
+						if(reservation != null) {
+							reservationDao.deleteReservation(reservation);
+						}
+						return Boolean.TRUE;
+					}});
+				return success.booleanValue();
 			}
 		}
 		return false;

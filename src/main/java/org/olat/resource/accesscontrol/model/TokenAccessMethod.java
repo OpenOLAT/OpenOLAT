@@ -20,7 +20,7 @@
 
 package org.olat.resource.accesscontrol.model;
 
-import org.olat.resource.accesscontrol.method.TokenAccessHandler;
+import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 
 
 /**

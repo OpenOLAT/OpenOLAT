@@ -86,7 +86,7 @@ import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
 import org.olat.repository.RepositoryEntryShort;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -127,7 +127,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 	protected final MarkManager markManager;
 	protected final BaseSecurity securityManager;
 	protected final BusinessGroupModule groupModule;
-	protected final ACFrontendManager acFrontendManager;
+	protected final ACService acService;
 	protected final BusinessGroupService businessGroupService;
 	protected final CollaborationToolsFactory collaborationTools;
 	
@@ -136,7 +136,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		
 		admin = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		acFrontendManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
@@ -725,9 +725,9 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		}
 		List<OLATResourceAccess> resourcesWithAC;
 		if(groupWithOfferKeys.size() > 50) {
-			resourcesWithAC	= acFrontendManager.getAccessMethodForResources(null, "BusinessGroup", true, new Date());
+			resourcesWithAC	= acService.getAccessMethodForResources(null, "BusinessGroup", true, new Date());
 		} else {
-			resourcesWithAC	= acFrontendManager.getAccessMethodForResources(groupWithOfferKeys, "BusinessGroup", true, new Date());
+			resourcesWithAC	= acService.getAccessMethodForResources(groupWithOfferKeys, "BusinessGroup", true, new Date());
 		}
 		
 		Set<Long> markedResources = new HashSet<Long>(groups.size() * 2 + 1);

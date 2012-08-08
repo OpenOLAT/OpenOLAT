@@ -132,8 +132,8 @@ create or replace view o_gp_business_v  as (
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = gp.fk_resource
          and offer.is_valid=1
-         and (offer.validfrom is null or offer.validfrom >= curtime())
-         and (offer.validto is null or offer.validto <= curtime())
+         and (offer.validfrom is null or offer.validfrom <= current_timestamp())
+         and (offer.validto is null or offer.validto >= current_timestamp())
       ) as num_of_valid_offers,
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = gp.fk_resource
@@ -159,30 +159,47 @@ create table if not exists o_ac_paypal_transaction (
    order_part_id int8 not null,
    method_id int8 not null,
    success_uuid varchar(32) not null,
-	 cancel_uuid varchar(32) not null,
-	 amount_amount DECIMAL(12,4),
-	 amount_currency_code VARCHAR(3),
+   cancel_uuid varchar(32) not null,
+   amount_amount DECIMAL(12,4),
+   amount_currency_code VARCHAR(3),
    pay_response_date timestamp,
    pay_key varchar(255),
-	 ack varchar(255),
-	 build varchar(255),
-	 coorelation_id varchar(255),
-	 payment_exec_status varchar(255),
-	 ipn_transaction_id varchar(255),
-	 ipn_transaction_status varchar(255),
-	 ipn_sender_transaction_id varchar(255),
-	 ipn_sender_transaction_status varchar(255),
-	 ipn_sender_email varchar(255),
-	 ipn_verify_sign varchar(255),
-	 ipn_pending_reason varchar(255),
-	 trx_status VARCHAR(32) not null default 'NEW',
-	 trx_amount DECIMAL(12,4),
-	 trx_currency_code VARCHAR(3),
+   ack varchar(255),
+   build varchar(255),
+   coorelation_id varchar(255),
+   payment_exec_status varchar(255),
+   ipn_transaction_id varchar(255),
+   ipn_transaction_status varchar(255),
+   ipn_sender_transaction_id varchar(255),
+   ipn_sender_transaction_status varchar(255),
+   ipn_sender_email varchar(255),
+   ipn_verify_sign varchar(255),
+   ipn_pending_reason varchar(255),
+   trx_status VARCHAR(32) not null default 'NEW',
+   trx_amount DECIMAL(12,4),
+   trx_currency_code VARCHAR(3),
    primary key (transaction_id)
 );
 alter table o_ac_paypal_transaction ENGINE = InnoDB;
 create index paypal_pay_key_idx on o_ac_paypal_transaction (pay_key);
 create index paypal_pay_trx_id_idx on o_ac_paypal_transaction (ipn_transaction_id);
 create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_transaction_id);
+
+create table  if not exists o_ac_reservation (
+   reservation_id bigint NOT NULL,
+   creationdate datetime,
+   lastmodified datetime,
+   version mediumint unsigned not null,
+   fk_identity bigint not null,
+   fk_resource bigint not null,
+   primary key (reservation_id)
+);
+alter table o_ac_offer ENGINE = InnoDB;
+
+
+
+
+
+
 
 

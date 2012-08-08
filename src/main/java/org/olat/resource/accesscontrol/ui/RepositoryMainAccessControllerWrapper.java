@@ -40,9 +40,9 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 
 /**
  * 
@@ -74,8 +74,8 @@ public class RepositoryMainAccessControllerWrapper extends MainLayoutBasicContro
 			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && ureq.getUserSession().getRoles().isGuestOnly()) {
 				contentP.setContent(resController.getInitialComponent());
 			} else {
-				ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
-				AccessResult acResult = acFrontendManager.isAccessible(re, getIdentity(), false);
+				ACService acService = CoreSpringFactory.getImpl(ACService.class);
+				AccessResult acResult = acService.isAccessible(re, getIdentity(), false);
 				if(acResult.isAccessible()) {
 					contentP.setContent(resController.getInitialComponent());
 				} else if (re != null && acResult.getAvailableMethods().size() > 0) {

@@ -60,8 +60,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.Order;
 import org.olat.resource.accesscontrol.model.OrderLine;
@@ -81,7 +81,7 @@ public class OrderDetailController extends FormBasicController {
 	private Collection<AccessTransaction> transactions;
 	
 	private final AccessControlModule acModule;
-	private final ACFrontendManager acFrontendManager;
+	private final ACService acService;
 	
 	public OrderDetailController(UserRequest ureq, WindowControl wControl, Order order, Collection<AccessTransaction> transactions) {
 		super(ureq, wControl, "order");
@@ -89,7 +89,7 @@ public class OrderDetailController extends FormBasicController {
 		this.order = order;
 		this.transactions = transactions;
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		
 		initForm(ureq);
 	}
@@ -176,7 +176,7 @@ public class OrderDetailController extends FormBasicController {
 				if(resource == null) {
 					displayName = line.getOffer().getResourceDisplayName();
 				} else {
-					displayName = acFrontendManager.resolveDisplayName(resource);
+					displayName = acService.resolveDisplayName(resource);
 				}
 				OrderItemWrapper wrapper = new OrderItemWrapper(part, line, transaction, displayName, first);
 				items.add(wrapper);

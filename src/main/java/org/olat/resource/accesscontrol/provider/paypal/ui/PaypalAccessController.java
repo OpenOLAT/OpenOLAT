@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
@@ -56,12 +57,14 @@ public class PaypalAccessController extends FormBasicController implements FormC
 	
 	private final String mapperUri;
 	private final OfferAccess link;
+	private final ACService acService;
 	private final PaypalManager paypalManager;
 	
 	public PaypalAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		super(ureq, wControl);
 
 		this.link = link;
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		paypalManager = CoreSpringFactory.getImpl(PaypalManager.class);
 		
 		String businessPath = wControl.getBusinessControl().getAsString();
@@ -74,6 +77,7 @@ public class PaypalAccessController extends FormBasicController implements FormC
 		super(ureq, wControl, LAYOUT_DEFAULT, null, form);
 		
 		this.link = link;
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		paypalManager = CoreSpringFactory.getImpl(PaypalManager.class);
 
 		String businessPath = wControl.getBusinessControl().getAsString();
@@ -121,16 +125,19 @@ public class PaypalAccessController extends FormBasicController implements FormC
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//paypalManager.convertCurrency();
-		PayResponse response = paypalManager.request(ureq.getIdentity(), link, mapperUri, ureq.getHttpReq().getSession().getId());
-		if(response == null) {
-			setFormWarning("paypal.before.redirect.error");
-		} else if (response.getResponseEnvelope().getAck().equals(AckCode.SUCCESS)){
-			redirectToPaypal(ureq, response);
-		} else if (response.getResponseEnvelope().getAck().equals(AckCode.SUCCESS_WITH_WARNING)){
-			redirectToPaypal(ureq, response);
+		if(acService.reserveAccessToResource(getIdentity(), link)) {
+			PayResponse response = paypalManager.request(getIdentity(), link, mapperUri, ureq.getHttpReq().getSession().getId());
+			if(response == null) {
+				setFormWarning("paypal.before.redirect.error");
+			} else if (response.getResponseEnvelope().getAck().equals(AckCode.SUCCESS)){
+				redirectToPaypal(ureq, response);
+			} else if (response.getResponseEnvelope().getAck().equals(AckCode.SUCCESS_WITH_WARNING)){
+				redirectToPaypal(ureq, response);
+			} else {
+				setFormWarning("paypal.before.redirect.error");
+			}
 		} else {
-			setFormWarning("paypal.before.redirect.error");
+			setFormWarning("reservation.failed");
 		}
 	}
 

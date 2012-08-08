@@ -65,8 +65,8 @@ import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.support.vo.FolderVO;
@@ -111,7 +111,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		final UserRequest ureq = getUserRequest(httpRequest);
 		
 		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		ACFrontendManager acManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		AccessResult result = acManager.isAccessible(entry, ureq.getIdentity(), false);
 		if(!result.isAccessible()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

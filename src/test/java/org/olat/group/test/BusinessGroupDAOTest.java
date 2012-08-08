@@ -49,7 +49,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -74,7 +74,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	@Autowired
-	private ACFrontendManager acFrontendManager;
+	private ACService acService;
 	@Autowired
 	private MarkManager markManager;
 	
@@ -891,9 +891,9 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//create a group with an access control
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "access-grp-1", "access-grp-1-desc", 0, 5, true, false, true, false, false);
 		//create and save an offer
-		Offer offer = acFrontendManager.createOffer(group.getResource(), "TestBGWorkflow");
+		Offer offer = acService.createOffer(group.getResource(), "TestBGWorkflow");
 		assertNotNull(offer);
-		acFrontendManager.save(offer);
+		acService.save(offer);
 			
 		dbInstance.commitAndCloseSession();
 			
@@ -906,7 +906,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(accessGroups.contains(group));
 		
 		for(BusinessGroup accessGroup:accessGroups) {
-			List<Offer> offers = acFrontendManager.findOfferByResource(accessGroup.getResource(), true, new Date());
+			List<Offer> offers = acService.findOfferByResource(accessGroup.getResource(), true, new Date());
 			Assert.assertNotNull(offers);
 			Assert.assertFalse(offers.isEmpty());
 		}
@@ -918,7 +918,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(contains(accessGroupViews, group));
 		
 		for(BusinessGroupView accessGroup:accessGroupViews) {
-			List<Offer> offers = acFrontendManager.findOfferByResource(accessGroup.getResource(), true, new Date());
+			List<Offer> offers = acService.findOfferByResource(accessGroup.getResource(), true, new Date());
 			Assert.assertNotNull(offers);
 			Assert.assertFalse(offers.isEmpty());
 		}

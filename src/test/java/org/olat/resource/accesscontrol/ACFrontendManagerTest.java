@@ -36,7 +36,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.manager.ACOfferManager;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.test.OlatTestCase;
@@ -60,7 +59,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	private ACOfferManager acOfferManager;
 	
 	@Autowired
-	private ACFrontendManager acFrontendManager;
+	private ACService acService;
 	
 	@Autowired
 	private OLATResourceManager resourceManager;
@@ -74,7 +73,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Test
 	public void testManagers() {
 		assertNotNull(acOfferManager);
-		assertNotNull(acFrontendManager);
+		assertNotNull(acService);
 		assertNotNull(dbInstance);
 		assertNotNull(resourceManager);
 		assertNotNull(repositoryManager);
@@ -88,14 +87,14 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		assertNotNull(re);
 		
 		//create and save an offer
-		Offer offer = acFrontendManager.createOffer(re.getOlatResource(), "TestRepoWorkflow");
+		Offer offer = acService.createOffer(re.getOlatResource(), "TestRepoWorkflow");
 		assertNotNull(offer);
-		acFrontendManager.save(offer);
+		acService.save(offer);
 		
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the offer
-		List<Offer> offers = acFrontendManager.findOfferByResource(re.getOlatResource(), true, null);
+		List<Offer> offers = acService.findOfferByResource(re.getOlatResource(), true, null);
 		assertEquals(1, offers.size());
 		Offer savedOffer = offers.get(0);
 		assertNotNull(savedOffer);

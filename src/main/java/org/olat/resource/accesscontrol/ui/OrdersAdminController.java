@@ -47,8 +47,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.Order;
 import org.olat.resource.accesscontrol.model.OrderStatus;
@@ -75,7 +75,7 @@ public class OrdersAdminController extends BasicController implements Activateab
 	private OrderDetailController detailController;
 	
 	private final AccessControlModule acModule;
-	private final ACFrontendManager acFrontendManager;
+	private final ACService acService;
 	private final OLATResource resource;
 	
 	public OrdersAdminController(UserRequest ureq, WindowControl wControl) {
@@ -86,7 +86,7 @@ public class OrdersAdminController extends BasicController implements Activateab
 		super(ureq, wControl);
 
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		this.resource = resource;
 		
 		if(resource == null) {
@@ -154,12 +154,12 @@ public class OrdersAdminController extends BasicController implements Activateab
 			Date from = searchForm.getFrom();
 			Date to = searchForm.getTo();
 			Long orderNr = searchForm.getRefNo();
-			orders = acFrontendManager.findOrders(null, null, orderNr, from, to, filter.getStatus());
+			orders = acService.findOrders(null, null, orderNr, from, to, filter.getStatus());
 		} else {
-			orders = acFrontendManager.findOrders(resource, filter.getStatus());
+			orders = acService.findOrders(resource, filter.getStatus());
 		}
-		List<AccessTransaction> transactions = acFrontendManager.findAccessTransactions(orders);
-		List<PSPTransaction> pspTransactions = acFrontendManager.findPSPTransactions(orders);
+		List<AccessTransaction> transactions = acService.findAccessTransactions(orders);
+		List<PSPTransaction> pspTransactions = acService.findPSPTransactions(orders);
 		List<OrderTableItem> items = OrdersDataModel.create(orders, transactions, pspTransactions);
 		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale()));
 	}

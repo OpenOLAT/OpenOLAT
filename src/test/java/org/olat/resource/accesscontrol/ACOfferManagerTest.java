@@ -21,10 +21,10 @@
 package org.olat.resource.accesscontrol;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,7 +38,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.manager.ACOfferManager;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.resource.accesscontrol.model.OfferImpl;
@@ -63,12 +62,12 @@ public class ACOfferManagerTest extends OlatTestCase {
 	private ACOfferManager acOfferManager;
 	
 	@Autowired
-	private ACFrontendManager acFrontendManager;
+	private ACService acService;
 	
 	@Test
 	public void testManagers() {
 		assertNotNull(acOfferManager);
-		assertNotNull(acFrontendManager);
+		assertNotNull(acService);
 	}
 	
 	@Test

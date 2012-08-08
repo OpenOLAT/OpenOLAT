@@ -75,8 +75,8 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.ObjectFactory;
@@ -655,7 +655,7 @@ public class CourseWebService {
 
 		Identity identity = getIdentity(request);
 		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		ACFrontendManager acManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		AccessResult result = acManager.isAccessible(entry, identity, false);
 		if(result.isAccessible()) {
 			return true;

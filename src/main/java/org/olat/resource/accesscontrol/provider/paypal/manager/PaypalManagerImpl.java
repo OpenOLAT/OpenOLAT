@@ -30,14 +30,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.manager.ACOrderManager;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.manager.ACTransactionManager;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
@@ -50,10 +53,13 @@ import org.olat.resource.accesscontrol.model.OrderPart;
 import org.olat.resource.accesscontrol.model.OrderStatus;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.model.Price;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalModule;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import adaptivepayments.AdaptivePayments;
 
@@ -87,6 +93,8 @@ import common.com.paypal.platform.sdk.exceptions.SSLConnectionException;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+
+@Service("paypalManager")
 public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 	
 	private static final String X_PAYPAL_SECURITY_USERID = "X-PAYPAL-SECURITY-USERID";
@@ -115,51 +123,18 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 	private static final String SANDBOX_API_BASE_ENDPOINT = "https://svcs.sandbox.paypal.com";
 	private static final String LIFE_API_BASE_ENDPOINT = "https://svcs.paypal.com";
 	
+	@Autowired
 	private DB dbInstance;
+	@Autowired
 	private ACOrderManager orderManager;
-	private ACFrontendManager acFrontendManager;
+	@Autowired
+	private ACService acService;
+	@Autowired
 	private ACTransactionManager transactionManager;
+	@Autowired
 	private PaypalModule paypalModule;
-
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param paypalModule
-	 */
-	public void setPaypalModule(PaypalModule paypalModule) {
-		this.paypalModule = paypalModule;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param orderManager
-	 */
-	public void setOrderManager(ACOrderManager orderManager) {
-		this.orderManager = orderManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param acFrontendManager
-	 */
-	public void setAcFrontendManager(ACFrontendManager acFrontendManager) {
-		this.acFrontendManager = acFrontendManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param transactionManager
-	 */
-	public void setTransactionManager(ACTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-	}
+	@Autowired
+	private ACReservationDAO reservationDao;
 	
 	private Properties getAccountProperties() {
 		boolean sandboxed = paypalModule.isSandbox();
@@ -244,8 +219,9 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(PaypalAccessMethod.class.getName()).append(" method");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		List<PaypalAccessMethod> methods = query.list();
+		List<PaypalAccessMethod> methods = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PaypalAccessMethod.class)
+				.getResultList();
 		return methods;
 	}
 	
@@ -255,11 +231,11 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
 		sb.append("(trx.secureCancelUUID=:uuid or trx.secureSuccessUUID=:uuid)");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<PaypalTransaction> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), PaypalTransaction.class);
 		if(StringHelper.containsNonWhitespace(uuid)) {
-			query.setString("uuid", uuid);
+			query.setParameter("uuid", uuid);
 		}
-		List<PaypalTransaction> transactions = query.list();
+		List<PaypalTransaction> transactions = query.getResultList();
 		if(transactions.isEmpty()) return null;
 		return transactions.get(0);
 	}
@@ -269,9 +245,10 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
 		sb.append("trx.refNo=:invoiceId");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("invoiceId", invoiceId);
-		List<PaypalTransaction> transactions = query.list();
+		List<PaypalTransaction> transactions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PaypalTransaction.class)
+				.setParameter("invoiceId", invoiceId)
+				.getResultList();
 		if(transactions.isEmpty()) return null;
 		return transactions.get(0);
 	}
@@ -282,11 +259,11 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
 		sb.append("(trx.orderId=:orderId and trx.orderPartId=:orderPartId)");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("orderId", order.getKey());
-		query.setLong("orderPartId", part.getKey());
-
-		List<PaypalTransaction> transactions = query.list();
+		List<PaypalTransaction> transactions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PaypalTransaction.class)
+				.setParameter("orderId", order.getKey())
+				.setParameter("orderPartId", part.getKey())
+				.getResultList();
 		if(transactions.isEmpty()) return null;
 		return transactions.get(0);
 	}
@@ -299,14 +276,14 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
 		sb.append("trx.orderId in (:orderIds)");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
 		List<Long> orderIds = new ArrayList<Long>(orders.size());
 		for(Order order:orders) {
 			orderIds.add(order.getKey());
 		}
-		query.setParameterList("orderIds", orderIds);
-
-		List<PSPTransaction> transactions = query.list();
+		List<PSPTransaction> transactions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PSPTransaction.class)
+				.setParameter("orderIds", orderIds)
+				.getResultList();
 		return transactions;
 	}
 
@@ -322,12 +299,12 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		}
 		sb.append(" order by trx.payResponseDate asc");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<PaypalTransaction> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), PaypalTransaction.class);
 		if(StringHelper.containsNonWhitespace(transactionId)) {
-			query.setString("transactionId", transactionId);
+			query.setParameter("transactionId", transactionId);
 		}
 
-		List<PaypalTransaction> transactions = query.list();
+		List<PaypalTransaction> transactions = query.getResultList();
 		return transactions;
 	}
 	
@@ -401,6 +378,21 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		updateTransaction(trx, PaypalTransactionStatus.CANCELED);
 		Order order = orderManager.loadOrderByNr(trx.getRefNo());
 		orderManager.save(order, OrderStatus.CANCELED);
+		
+		//cancel the reservations
+		Identity identity = order.getDelivery();
+		for(OrderPart part:order.getParts()) {
+			if(part.getKey().equals(trx.getOrderPartId())) {
+				for(OrderLine line:part.getOrderLines()) {
+					OLATResource resource = line.getOffer().getResource();
+					ResourceReservation reservation = acService.getReservation(identity, resource);
+					if(reservation != null) {
+						acService.removeReservation(reservation);
+						logAudit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -458,8 +450,14 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 					transaction = transactionManager.save(transaction);
 					transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 					for(OrderLine line:part.getOrderLines()) {
-						acFrontendManager.denyAccesToResource(identity, line.getOffer());
+						acService.denyAccesToResource(identity, line.getOffer());
 						logAudit("Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity, null);
+
+						ResourceReservation reservation = reservationDao.loadReservation(identity, line.getOffer().getResource());
+						if(reservation != null) {
+							acService.removeReservation(reservation);
+							logAudit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
+						}
 					}
 				}
 			}
@@ -486,7 +484,7 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
 					transaction = transactionManager.save(transaction);
 					for(OrderLine line:part.getOrderLines()) {
-						if(acFrontendManager.allowAccesToResource(identity, line.getOffer())) {
+						if(acService.allowAccesToResource(identity, line.getOffer())) {
 							logAudit("Paypal payed access granted for: " + buildLogMessage(line, method) + " to " + identity, null);
 							transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 						} else {
@@ -712,6 +710,7 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		payRequest.setRequestEnvelope(getAppRequestEnvelope());
 		payRequest.setActionType("PAY");
 		payRequest.setIpnNotificationUrl(Settings.getServerContextPathURI() + "/paypal/ipn");
+		System.out.println(Settings.getServerContextPathURI() + "/paypal/ipn");
 
 		PayResponse payResp = null;
 		try {

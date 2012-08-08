@@ -18,70 +18,76 @@
  * <p>
  */
 
-package org.olat.resource.accesscontrol.ui;
+package org.olat.resource.accesscontrol.provider.token.ui;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.ui.AccessEvent;
+import org.olat.resource.accesscontrol.ui.FormController;
 
 
 /**
  * 
  * Description:<br>
- * Free access
+ * Ask for the token
  * 
  * <P>
  * Initial Date:  15 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class FreeAccessController extends FormBasicController implements FormController {
+public class TokenAccessController extends FormBasicController implements FormController {
 	
+	private TextElement tokenEl;
 	private final OfferAccess link;
-	private final ACFrontendManager acFrontendManager;
+	private final ACService acService;
 
-	public FreeAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+	public TokenAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		super(ureq, wControl);
 		
 		this.link = link;
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acService = CoreSpringFactory.getImpl(ACService.class);
 			
 		initForm(ureq);
 	}
 	
-	public FreeAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
+	public TokenAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, form);
 		
 		this.link = link;
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acService = CoreSpringFactory.getImpl(ACService.class);
 			
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("access.free.title");
-		setFormDescription("access.free.desc");
+		setFormTitle("access.token.title");
+		setFormDescription("access.token.desc");
 		
 		String description = link.getOffer().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {
 			uifactory.addStaticTextElement("offer.description", description, formLayout);
 		}
-		
+			
+		tokenEl = uifactory.addTextElement("token", "accesscontrol.token", 255, "", formLayout);
+			
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		formLayout.add(buttonGroupLayout);
 			
-		uifactory.addFormSubmitButton("access.button", buttonGroupLayout);
+		uifactory.addFormSubmitButton("access.button", formLayout);
 	}
 		
 	@Override
@@ -91,17 +97,28 @@ public class FreeAccessController extends FormBasicController implements FormCon
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		return true;
+		boolean allOk = true;
+		
+		String token = tokenEl.getValue();
+		tokenEl.clearError();
+		if(token == null || token.length() < 2) {
+			tokenEl.setErrorKey("invalid.token.format", null);
+			allOk = false;
+		}
+		
+		return allOk && super.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AccessResult result = acFrontendManager.accessResource(getIdentity(), link, null);
+		String token = tokenEl.getValue();
+		AccessResult result = acService.accessResource(getIdentity(), link, token);
 		
 		if(result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
 		} else {
-			fireEvent(ureq, new AccessEvent(AccessEvent.ACCESS_FAILED));
+			String msg = translate("invalid.token");
+			fireEvent(ureq, new AccessEvent(AccessEvent.ACCESS_FAILED, msg));
 		}
 	}
 

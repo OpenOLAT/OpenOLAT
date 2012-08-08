@@ -18,7 +18,7 @@
  * <p>
  */
 
-package org.olat.resource.accesscontrol.ui;
+package org.olat.resource.accesscontrol.provider.token.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 
 /**
  * 

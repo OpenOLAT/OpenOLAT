@@ -29,8 +29,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.group.ui.homepage.GroupInfoMainController;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 
 /**
  * 
@@ -91,8 +91,8 @@ public class BusinessGroupCardContextEntryControllerCreator extends DefaultConte
 	private boolean isAccessControlled(BusinessGroup bgroup) {
 		AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 		if(acModule.isEnabled()) {
-			ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
-			if(acFrontendManager.isResourceAccessControled(bgroup.getResource(), new Date())) {
+			ACService acService = CoreSpringFactory.getImpl(ACService.class);
+			if(acService.isResourceAccessControled(bgroup.getResource(), new Date())) {
 				return true;
 			}
 		}

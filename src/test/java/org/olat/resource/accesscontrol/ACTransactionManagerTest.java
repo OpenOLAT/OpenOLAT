@@ -35,11 +35,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.manager.ACMethodManager;
+import org.olat.resource.accesscontrol.manager.ACOfferManager;
 import org.olat.resource.accesscontrol.manager.ACOrderManager;
 import org.olat.resource.accesscontrol.manager.ACTransactionManager;
-import org.olat.resource.accesscontrol.manager.ACOfferManager;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.Offer;
@@ -72,7 +71,7 @@ public class ACTransactionManagerTest extends OlatTestCase {
 	private ACOfferManager acOfferManager;
 	
 	@Autowired
-	private ACFrontendManager acFrontendManager;
+	private ACService acService;
 	
 	@Autowired
 	private ACMethodManager acMethodManager;
@@ -101,7 +100,7 @@ public class ACTransactionManagerTest extends OlatTestCase {
 	@Test
 	public void testManagers() {
 		assertNotNull(acOfferManager);
-		assertNotNull(acFrontendManager);
+		assertNotNull(acService);
 		assertNotNull(dbInstance);
 		assertNotNull(acMethodManager);
 		assertNotNull(acOrderManager);
@@ -118,8 +117,8 @@ public class ACTransactionManagerTest extends OlatTestCase {
 		
 		//create an offer to buy
 		OLATResource randomOres = createResource();
-		Offer offer = acFrontendManager.createOffer(randomOres, "TestSaveTransaction");
-		acFrontendManager.save(offer);
+		Offer offer = acService.createOffer(randomOres, "TestSaveTransaction");
+		acService.save(offer);
 		
 		dbInstance.commitAndCloseSession();
 		

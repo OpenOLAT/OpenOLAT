@@ -36,9 +36,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 
@@ -58,7 +58,7 @@ public class MainAccessController extends FormBasicController {
 	private final List<OfferAccess> links;
 	private final List<FormLink> accessButtons = new ArrayList<FormLink>();
 	private final AccessControlModule acModule;
-	private final ACFrontendManager acFrontendManager;
+	private final ACService acService;
 	
 	private FormController accessCtrl;
 
@@ -67,7 +67,7 @@ public class MainAccessController extends FormBasicController {
 		
 		this.links = links;
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acService = CoreSpringFactory.getImpl(ACService.class);
 			
 		initForm(ureq);
 	}
@@ -145,7 +145,7 @@ public class MainAccessController extends FormBasicController {
 	}
 	
 	protected void doAccessResource(UserRequest ureq, OfferAccess link) {
-		AccessResult result = acFrontendManager.accessResource(getIdentity(), link, null);
+		AccessResult result = acService.accessResource(getIdentity(), link, null);
 		if(result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
 		} else {

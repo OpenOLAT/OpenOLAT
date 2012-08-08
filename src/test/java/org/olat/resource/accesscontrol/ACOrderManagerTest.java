@@ -37,7 +37,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.manager.ACMethodManager;
 import org.olat.resource.accesscontrol.manager.ACOfferManager;
 import org.olat.resource.accesscontrol.manager.ACOrderManager;
@@ -78,7 +77,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 	private ACOfferManager acOfferManager;
 	
 	@Autowired
-	private ACFrontendManager acFrontendManager;
+	private ACService acService;
 	
 	@Autowired
 	private ACMethodManager acMethodManager;
@@ -111,7 +110,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 	@Test
 	public void testManagers() {
 		assertNotNull(acOfferManager);
-		assertNotNull(acFrontendManager);
+		assertNotNull(acService);
 		assertNotNull(dbInstance);
 		assertNotNull(acMethodManager);
 		assertNotNull(acOrderManager);
@@ -121,8 +120,8 @@ public class ACOrderManagerTest extends OlatTestCase {
 	public void testSaveOrder() {
 		//create an offer to buy
 		OLATResource randomOres = createResource();
-		Offer offer = acFrontendManager.createOffer(randomOres, "TestSaveOrder");
-		acFrontendManager.save(offer);
+		Offer offer = acService.createOffer(randomOres, "TestSaveOrder");
+		acService.save(offer);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -164,12 +163,12 @@ public class ACOrderManagerTest extends OlatTestCase {
 	public void testSaveOneClickOrders() {
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
-		Offer offer1 = acFrontendManager.createOffer(randomOres1, "TestSaveOneClickOrders 1");
-		acFrontendManager.save(offer1);
+		Offer offer1 = acService.createOffer(randomOres1, "TestSaveOneClickOrders 1");
+		acService.save(offer1);
 		
 		OLATResource randomOres2 = createResource();
-		Offer offer2 = acFrontendManager.createOffer(randomOres2, "TestSaveOneClickOrders 2");
-		acFrontendManager.save(offer2);
+		Offer offer2 = acService.createOffer(randomOres2, "TestSaveOneClickOrders 2");
+		acService.save(offer2);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -211,8 +210,8 @@ public class ACOrderManagerTest extends OlatTestCase {
 	//make extensiv test on one order
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
-		Offer offer1 = acFrontendManager.createOffer(randomOres1, "TestSaveOneClickOrder 1");
-		acFrontendManager.save(offer1);
+		Offer offer1 = acService.createOffer(randomOres1, "TestSaveOneClickOrder 1");
+		acService.save(offer1);
 
 		dbInstance.commitAndCloseSession();
 		
@@ -259,10 +258,10 @@ public class ACOrderManagerTest extends OlatTestCase {
 	//make extensiv test on one order
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
-		Offer offer1 = acFrontendManager.createOffer(randomOres1, "TestSaveOneClickOrder 1");
+		Offer offer1 = acService.createOffer(randomOres1, "TestSaveOneClickOrder 1");
 		Price price1 = new PriceImpl(new BigDecimal("20.00"), "CHF");
 		offer1.setPrice(price1);
-		acFrontendManager.save(offer1);
+		acService.save(offer1);
 
 		dbInstance.commitAndCloseSession();
 		
@@ -330,12 +329,12 @@ public class ACOrderManagerTest extends OlatTestCase {
 	public void testLoadBy() {
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
-		Offer offer1 = acFrontendManager.createOffer(randomOres1, "TestLoadBy 1");
-		acFrontendManager.save(offer1);
+		Offer offer1 = acService.createOffer(randomOres1, "TestLoadBy 1");
+		acService.save(offer1);
 		
 		OLATResource randomOres2 = createResource();
-		Offer offer2 = acFrontendManager.createOffer(randomOres2, "TestLoadBy 2");
-		acFrontendManager.save(offer2);
+		Offer offer2 = acService.createOffer(randomOres2, "TestLoadBy 2");
+		acService.save(offer2);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -403,8 +402,8 @@ public class ACOrderManagerTest extends OlatTestCase {
 	public void testDeleteResource() {
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
-		Offer offer1 = acFrontendManager.createOffer(randomOres1, "TestDeleteResource 1");
-		acFrontendManager.save(offer1);
+		Offer offer1 = acService.createOffer(randomOres1, "TestDeleteResource 1");
+		acService.save(offer1);
 
 		dbInstance.commitAndCloseSession();
 		

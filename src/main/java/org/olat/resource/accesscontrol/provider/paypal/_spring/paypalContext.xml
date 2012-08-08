@@ -45,13 +45,6 @@
 	
 	<bean id="paypalAccessHandler" class="org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler"/>
 	
-	<bean id="paypalManager" class="org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManagerImpl">
-		<property name="dbInstance" ref="database"/>
-		<property name="paypalModule" ref="paypalModule"/>
-		<property name="orderManager" ref="acOrderManager"/>
-		<property name="acFrontendManager" ref="acFrontendManager"/>
-		<property name="transactionManager" ref="acTransactionManager"/>
-	</bean>
 	
 	<!--  Paypal admin panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.paypal" init-method="initExtensionPoints">

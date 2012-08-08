@@ -93,10 +93,10 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -289,8 +289,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		//check managed
 		//fxdiff VCRP-1,2: access control of resources
-		ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
-		AccessResult acResult = acFrontendManager.isAccessible(businessGroup, getIdentity(), false);
+		ACService acService = CoreSpringFactory.getImpl(ACService.class);
+		AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
 		if(acResult.isAccessible()) {
 			needActivation = false;
 		}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {

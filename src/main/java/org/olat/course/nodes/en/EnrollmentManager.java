@@ -51,6 +51,8 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -72,6 +74,8 @@ public class EnrollmentManager extends BasicManager {
 	private BGAreaManager areaManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -100,9 +104,11 @@ public class EnrollmentManager extends BasicManager {
 					BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(group);					
 					if (reloadedGroup.getMaxParticipants() != null) {
 						int participantsCounter = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
-						
-						logInfo("doEnroll - participantsCounter: " + participantsCounter + ", maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getName());
-						if (participantsCounter >= reloadedGroup.getMaxParticipants().intValue()) {
+						int reservations = acService.countReservations(reloadedGroup.getResource());
+						//reservation has the highest priority over max participant
+						ResourceReservation reservation = acService.getReservation(identity, reloadedGroup.getResource());
+						logInfo("doEnroll - participantsCounter: " + participantsCounter + ", reservations: " + reservations + " maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getName());
+						if (reservation == null || (participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
 							// already full, show error and updated choose page again
 							if (!reloadedGroup.getWaitingListEnabled().booleanValue()) {
 								// No Waiting List => List is full
@@ -116,6 +122,9 @@ public class EnrollmentManager extends BasicManager {
 							Codepoint.codepoint(EnrollmentManager.class, "doInSync2");
 							enrollStatus.setIsEnrolled(done);
 							logInfo("doEnroll - setIsEnrolled ", identity.getName());
+							if(reservation != null) {
+								acService.removeReservation(reservation);
+							}
 						}
 					} else {
 						if (isLogDebugEnabled()) logDebug("doEnroll beginTransaction");

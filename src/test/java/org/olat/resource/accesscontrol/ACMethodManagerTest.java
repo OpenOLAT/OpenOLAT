@@ -36,7 +36,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.manager.ACMethodManager;
 import org.olat.resource.accesscontrol.manager.ACOfferManager;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -70,7 +69,7 @@ public class ACMethodManagerTest extends OlatTestCase {
 	private ACOfferManager acOfferManager;
 	
 	@Autowired
-	private ACFrontendManager acFrontendManager;
+	private ACService acService;
 	
 	@Autowired
 	private ACMethodManager acMethodManager;
@@ -88,7 +87,7 @@ public class ACMethodManagerTest extends OlatTestCase {
 	@Test
 	public void testManagers() {
 		assertNotNull(acOfferManager);
-		assertNotNull(acFrontendManager);
+		assertNotNull(acService);
 		assertNotNull(dbInstance);
 		assertNotNull(acMethodManager);
 	}
@@ -131,8 +130,8 @@ public class ACMethodManagerTest extends OlatTestCase {
 	public void testOfferAccess() {
 		//create a resource and an offer
 		OLATResource randomOres = createResource();
-		Offer offer = acFrontendManager.createOffer(randomOres, "TestOfferAccess");
-		acFrontendManager.save(offer);
+		Offer offer = acService.createOffer(randomOres, "TestOfferAccess");
+		acService.save(offer);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -163,16 +162,16 @@ public class ACMethodManagerTest extends OlatTestCase {
 	public void testSeveralOfferAccess() {
 		//create some resources and offers
 		OLATResource randomOres1 = createResource();
-		Offer offer1 = acFrontendManager.createOffer(randomOres1, "TestSeveralOfferAccess 1");
-		acFrontendManager.save(offer1);
+		Offer offer1 = acService.createOffer(randomOres1, "TestSeveralOfferAccess 1");
+		acService.save(offer1);
 		
 		OLATResource randomOres2 = createResource();
-		Offer offer2 = acFrontendManager.createOffer(randomOres2, "TestSeveralOfferAccess 2");
-		acFrontendManager.save(offer2);
+		Offer offer2 = acService.createOffer(randomOres2, "TestSeveralOfferAccess 2");
+		acService.save(offer2);
 		
 		OLATResource randomOres3 = createResource();
-		Offer offer3 = acFrontendManager.createOffer(randomOres3, "TestSeveralOfferAccess 3");
-		acFrontendManager.save(offer3);
+		Offer offer3 = acService.createOffer(randomOres3, "TestSeveralOfferAccess 3");
+		acService.save(offer3);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -262,8 +261,8 @@ public class ACMethodManagerTest extends OlatTestCase {
 	public void testDeleteOfferAccess() {
 		//create some resources and offers
 		OLATResource randomOres1 = createResource();
-		Offer offer = acFrontendManager.createOffer(randomOres1, "TestDeleteOfferAccess");
-		acFrontendManager.save(offer);
+		Offer offer = acService.createOffer(randomOres1, "TestDeleteOfferAccess");
+		acService.save(offer);
 
 		dbInstance.commitAndCloseSession();
 		

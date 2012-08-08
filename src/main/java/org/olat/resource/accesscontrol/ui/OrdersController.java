@@ -46,8 +46,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.Order;
 import org.olat.resource.accesscontrol.model.OrderStatus;
@@ -73,13 +73,13 @@ public class OrdersController extends BasicController implements Activateable2 {
 	private OrderDetailController detailController;
 	
 	private final AccessControlModule acModule;
-	private final ACFrontendManager acFrontendManager;
+	private final ACService acService;
 	
 	public OrdersController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acService = CoreSpringFactory.getImpl(ACService.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(true);
@@ -126,9 +126,9 @@ public class OrdersController extends BasicController implements Activateable2 {
 	
 	private void loadModel() {
 		OrderStatusContextShortName filter = (OrderStatusContextShortName)tableCtr.getActiveFilter();
-		List<Order> orders = acFrontendManager.findOrders(getIdentity(), filter.getStatus());
-		List<AccessTransaction> transactions = acFrontendManager.findAccessTransactions(orders);
-		List<PSPTransaction> pspTransactions = acFrontendManager.findPSPTransactions(orders);
+		List<Order> orders = acService.findOrders(getIdentity(), filter.getStatus());
+		List<AccessTransaction> transactions = acService.findAccessTransactions(orders);
+		List<PSPTransaction> pspTransactions = acService.findPSPTransactions(orders);
 		List<OrderTableItem> items = OrdersDataModel.create(orders, transactions, pspTransactions);
 		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale()));
 	}

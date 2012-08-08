@@ -47,9 +47,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.Offer;
@@ -71,7 +71,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private final String displayName;
 	private final OLATResource resource;
 	private final AccessControlModule acModule;
-	private final ACFrontendManager acFrontendManager;
+	private final ACService acService;
 	
 	private FormLink createLink;
 	private FormLayoutContainer confControllerContainer;
@@ -90,7 +90,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.resource = resource;
 		this.displayName = displayName;
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		embbed = false;
 		emptyConfigGrantsFullAccess = true; 
 		
@@ -103,7 +103,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.resource = resource;
 		this.displayName = displayName;
 		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		embbed = true;
 		emptyConfigGrantsFullAccess = false;
 		
@@ -163,7 +163,7 @@ public class AccessConfigurationController extends FormBasicController {
 		if(newMethodCtrl == source) {
 			if(event.equals(Event.DONE_EVENT)) {
 				OfferAccess newLink = newMethodCtrl.commitChanges();
-				newLink = acFrontendManager.saveOfferAccess(newLink);
+				newLink = acService.saveOfferAccess(newLink);
 				addConfiguration(newLink);
 			}
 			cmc.deactivate();
@@ -190,7 +190,7 @@ public class AccessConfigurationController extends FormBasicController {
 			popupCallout(ureq);
 		} else if (source.getName().startsWith("del_")) {
 			AccessInfo infos = (AccessInfo)source.getUserObject();
-			acFrontendManager.deleteOffer(infos.getLink().getOffer());
+			acService.deleteOffer(infos.getLink().getOffer());
 			confControllers.remove(infos);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -218,14 +218,14 @@ public class AccessConfigurationController extends FormBasicController {
 			
 			links.add(info.getLink());
 		}
-		acFrontendManager.saveOfferAccess(links);
+		acService.saveOfferAccess(links);
 	}
 	
 	protected void popupCallout(UserRequest ureq) {
 		addMethods.clear();
 		
 		VelocityContainer mapCreateVC = createVelocityContainer("createAccessCallout");
-		List<AccessMethod> methods = acFrontendManager.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
+		List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
 		for(AccessMethod method:methods) {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
 			Link add = LinkFactory.createLink("create." + handler.getType(), mapCreateVC, this);
@@ -246,9 +246,9 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 	
 	protected void loadConfigurations() {
-		List<Offer> offers = acFrontendManager.findOfferByResource(resource, true, null);
+		List<Offer> offers = acService.findOfferByResource(resource, true, null);
 		for(Offer offer:offers) {
-			List<OfferAccess> offerAccess = acFrontendManager.getOfferAccess(offer, true);
+			List<OfferAccess> offerAccess = acService.getOfferAccess(offer, true);
 			for(OfferAccess access:offerAccess) {
 				addConfiguration(access);
 			}
@@ -279,8 +279,8 @@ public class AccessConfigurationController extends FormBasicController {
 	protected void addMethod(UserRequest ureq, AccessMethod method) {
 		createCalloutCtrl.deactivate();
 		
-		Offer offer = acFrontendManager.createOffer(resource, displayName);
-		OfferAccess link = acFrontendManager.createOfferAccess(offer, method);
+		Offer offer = acService.createOffer(resource, displayName);
+		OfferAccess link = acService.createOfferAccess(offer, method);
 		
 		removeAsListenerAndDispose(newMethodCtrl);
 		newMethodCtrl = ACUIFactory.createAccessConfigurationController(ureq, getWindowControl(), link);
@@ -294,7 +294,7 @@ public class AccessConfigurationController extends FormBasicController {
 			cmc.activate();
 			listenTo(cmc);
 		} else {
-			OfferAccess newLink = acFrontendManager.saveOfferAccess(link);
+			OfferAccess newLink = acService.saveOfferAccess(link);
 			addConfiguration(newLink);
 		}
 	}

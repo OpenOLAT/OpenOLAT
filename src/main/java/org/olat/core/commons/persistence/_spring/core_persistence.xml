@@ -33,6 +33,7 @@
 		<mapping-file>org/olat/resource/accesscontrol/model/AccessTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/model/OfferAccess.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/model/Order.hbm.xml</mapping-file>
+		<mapping-file>org/olat/resource/accesscontrol/model/Reservation.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalAccessMethod.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/AuthenticationImpl.hbm.xml</mapping-file>

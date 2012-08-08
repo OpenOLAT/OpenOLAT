@@ -90,6 +90,7 @@ import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.user.UserDataDeletable;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -124,6 +125,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
+	@Autowired
+	private ACService acService;
 	
 	private List<DeletableGroupData> deleteListeners = new ArrayList<DeletableGroupData>();
 
@@ -1074,8 +1077,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		if (group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue()) {
 			// Check if participant is not full
 			Integer maxSize = group.getMaxParticipants();
+			int reservations = acService.countReservations(group.getResource());
 			int waitingPartipiciantSize = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
-			if (maxSize != null && waitingPartipiciantSize < maxSize.intValue()) {
+			if (maxSize != null && (waitingPartipiciantSize + reservations) < maxSize.intValue()) {
 				// ok it has free places => get first identity from Waitinglist
 				List<Object[]> identities = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup(), true/*sortedByAddedDate*/);
 				int i = 0;
