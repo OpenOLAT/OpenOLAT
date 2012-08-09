@@ -115,6 +115,7 @@ public class EPMapRunController extends BasicController implements Activateable,
 		vC = createVelocityContainer("mymapsmain");
 		if(create) {
 			createMapLink = LinkFactory.createButton("create.map", vC, this);	
+			createMapLink.setElementCssClass("o_sel_create_map");
 		}
 		
 		String documentType = null;
@@ -184,7 +185,6 @@ public class EPMapRunController extends BasicController implements Activateable,
 		multiMapCtrl.activate(ureq, entries, state);
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == createMapLink){
@@ -192,7 +192,9 @@ public class EPMapRunController extends BasicController implements Activateable,
 			if(option.equals(EPMapRunViewOption.MY_DEFAULTS_MAPS)) {
 				VelocityContainer mapCreateVC = createVelocityContainer("createMapCallout");
 				createMapCalloutLink = LinkFactory.createLink("create.map.default", mapCreateVC, this);	
+				createMapCalloutLink.setElementCssClass("o_sel_create_default_map");
 				createMapFromTemplateLink = LinkFactory.createLink("create.map.fromTemplate", mapCreateVC, this);
+				createMapFromTemplateLink.setElementCssClass("o_sel_create_template_map");
 				String title = translate("create.map");
 				
 				removeAsListenerAndDispose(mapCreateCalloutCtrl);
