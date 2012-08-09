@@ -125,7 +125,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 			
 			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, CourseModule.getCourseTypeName(), translate("resources.add"));
 			listenTo(repoSearchCtr);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), this.repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -145,7 +145,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 				cmc.deactivate();
 				if (re != null && !repoTableModelEntries.contains(re)) {
 					// check if already in model
-					boolean alreadyAssociated = PersistenceHelper.listContainsObjectByKey(this.repoTableModelEntries, re);
+					boolean alreadyAssociated = PersistenceHelper.listContainsObjectByKey(repoTableModelEntries, re);
 					if (!alreadyAssociated) {
 						doAddRepositoryEntry(re);
 						fireEvent(ureq, Event.CHANGED_EVENT);

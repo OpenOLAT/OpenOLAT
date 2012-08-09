@@ -27,7 +27,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -100,13 +99,7 @@ public class BusinessGroupRightsController extends BasicController {
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT, businessGroup, null);
 			}
-		//fxdiff BAKS-7 Resume function
 		}
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		super.event(ureq, source, event);
 	}
 	
 	/**

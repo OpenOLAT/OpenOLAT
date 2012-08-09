@@ -165,7 +165,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		resources("table.header.resources"),
 		accessControl(""),
 		accessControlLaunch("table.header.ac"),
-		accessTypes("table.header.ac"),
+		accessTypes("table.header.ac.method"),
 		mark("table.header.mark"),
 		lastUsage("table.header.lastUsage"),
 		role("table.header.role"),

@@ -30,7 +30,7 @@ div.b_access_method_list div.b_access_method_token div.b_form_element_wrapper:nt
 div.b_access_method_list div.b_form_element_wrapper:nth-last-of-type(4) label { background-image: url('../openolat/images/information-white.png'); background-repeat: no-repeat; padding-left: 20px; }
 
 /*  paypal */
-.fx_access_method_paypal_icon { background-image: url('../openolat/images/ac/credit-cards.png'); }
+.b_access_method_paypal_icon { background-image: url('../openolat/images/ac/credit-cards.png'); }
 
 /* access panel */
 #b_main_access_control { margin:0 20% 0 20%; padding: 20px 0 0 20px;}
@@ -48,3 +48,7 @@ div.b_access_method_list div.b_form_element_wrapper:nth-last-of-type(4) label { 
 .b_transaction_status_error_icon { background-image: url(../openolat/images/cross.png); }
 .b_transaction_status_canceled_icon { background-image: url(../openolat/images/ac/canceled.png); }
 .b_transaction_status_new_icon { background-image: url(../openolat/images/new-text.png); }
+
+div.b_form div.b_form_element_wrapper table.b_access_method div.b_form_element { margin-left: 0; }
+div.b_form table.b_access_method div.b_form_element span.b_form_datechooser { background-position:0 50%; }
+

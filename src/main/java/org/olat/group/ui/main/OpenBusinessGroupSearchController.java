@@ -48,10 +48,13 @@ import org.olat.core.util.StringHelper;
  */
 public class OpenBusinessGroupSearchController extends FormBasicController implements Activateable2 {
 
+	private TextElement id; // only for admins
 	private TextElement displayName;
 	private TextElement owner;
 	private TextElement description;
 	private FormSubmit searchButton;
+	
+	private final boolean showId;
 
 	/**
 	 * Generic search form.
@@ -61,13 +64,19 @@ public class OpenBusinessGroupSearchController extends FormBasicController imple
 	 * @param isAdmin Is calling identity an administrator? If yes, allow search by ID
 	 * @param limitTypes Limit searches to specific types.
 	 */
-	public OpenBusinessGroupSearchController(UserRequest ureq, WindowControl wControl) {
+	public OpenBusinessGroupSearchController(UserRequest ureq, WindowControl wControl, boolean showId) {
 		super(ureq, wControl);
+		this.showId = showId;
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(showId) {
+			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", formLayout);
+			id.setRegexMatchCheck("\\d*", "search.id.format");
+		}
+		
 		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", formLayout);
 		displayName.setFocus(true);
 		

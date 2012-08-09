@@ -49,7 +49,7 @@ public class SearchOpenBusinessGroupListController extends AbstractBusinessGroup
 		super(ureq, wControl, "open_group_list");
 
 		//search controller
-		searchController = new OpenBusinessGroupSearchController(ureq, wControl);
+		searchController = new OpenBusinessGroupSearchController(ureq, wControl, isAdmin());
 		listenTo(searchController);
 		mainVC.put("search", searchController.getInitialComponent());
 	}

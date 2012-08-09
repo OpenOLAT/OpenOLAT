@@ -28,6 +28,7 @@ package org.olat.core.gui.components.table;
 
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description: <BR>
@@ -82,7 +83,9 @@ public class BooleanColumnDescriptor extends DefaultColumnDescriptor {
 			return;
 		}
 		String val = (bool.booleanValue() ? trueValue : falseValue);
-		sb.append(val);
+		if(StringHelper.containsNonWhitespace(val)) {
+			sb.append(val);
+		}
 	}
 
 	/**

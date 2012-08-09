@@ -71,7 +71,7 @@ public class BusinessGroupEditAccessController extends FormBasicController {
 		}
 
 		setFormTitle("accesscontrol.title");
-		setFormDescription("accesscontrol.desc");
+		setFormDescription("accesscontrol_group.desc");
 		setFormContextHelp(AccessConfigurationController.class.getPackage().getName(), "accesscontrol_group.html", "chelp.accesscontrol_group.hover");
 
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());

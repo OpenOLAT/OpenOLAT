@@ -1096,7 +1096,7 @@ public class RepositoryManager extends BasicManager {
 			dbQuery.setParameterList("resourcetypes", resourceTypes, StandardBasicTypes.STRING);
 		}
 		if(setIdentity) {
-			dbQuery.setEntity("identity", identity);
+			dbQuery.setParameter("identityKey", identity.getKey());
 		}
 		
 		

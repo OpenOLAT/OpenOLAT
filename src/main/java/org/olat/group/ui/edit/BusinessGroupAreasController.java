@@ -67,7 +67,7 @@ public class BusinessGroupAreasController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("fieldset.legend.areas");
-		setFormContextHelp("org.olat.group.ui.edit", "grp-${type}-select-area.html", "help.hover.bgArea-${type}");
+		setFormContextHelp("org.olat.group.ui.edit", "grp-select-area.html", "help.hover.bgArea");
 	}
 	
 	private void updateBusinessGroup(BusinessGroup businessGroup) {
@@ -77,10 +77,10 @@ public class BusinessGroupAreasController extends FormBasicController {
 		}
 		
 		List<BGArea> selectedAreas = areaManager.findBGAreasOfBusinessGroup(businessGroup);
-		
 		List<RepositoryEntry> entries = businessGroupService.findRepositoryEntries(Collections.singletonList(businessGroup), 0, -1);
 		for(RepositoryEntry entry:entries) {
 			List<BGArea> areas = areaManager.findBGAreasInContext(entry.getOlatResource());
+			if(areas.isEmpty()) continue;
 			String[] keys = new String[areas.size()];
 			String[] values = new String[areas.size()];
 			for(int i=areas.size(); i-->0; ) {
