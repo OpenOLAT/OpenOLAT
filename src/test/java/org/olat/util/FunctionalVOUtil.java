@@ -42,9 +42,8 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.olat.restapi.RepositoryEntriesTest;
+import org.olat.restapi.CoursesTest;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -133,49 +132,60 @@ public class FunctionalVOUtil {
 		//TODO:JK: implement me
 	}
 	
+	/**
+	 * @param deploymentUrl
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * 
+	 * Imports the "All Elements Course" via REST.
+	 */
 	public CourseVO importAllElementsCourse(URL deploymentUrl) throws URISyntaxException, IOException{
-		URL courseUrl = FunctionalVOUtil.class.getResource("/org/olat/course/All_Elements_Course.zip");
-		Assert.assertNotNull(courseUrl);
-		
-		File course = new File(courseUrl.toURI());
-		
-		RestConnection restConnection = new RestConnection(deploymentUrl);
+		URL cpUrl = FunctionalVOUtil.class.getResource("/org/olat/course/All_Elements_Course.zip");
+		assertNotNull(cpUrl);
+		File cp = new File(cpUrl.toURI());
 
-		assertTrue(restConnection.login(getUsername(), getPassword()));
+		RestConnection conn = new RestConnection(deploymentUrl);
+		assertTrue(conn.login(getUsername(), getPassword()));
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/courses").build();
-		HttpPost method = restConnection.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(course));
+		entity.addPart("file", new FileBody(cp));
 		entity.addPart("filename", new StringBody("All_Elements_Course.zip"));
 		entity.addPart("resourcename", new StringBody("All Elements Course"));
-		entity.addPart("displayname", new StringBody(getAllElementsCourseDisplayname()));
+		entity.addPart("displayname", new StringBody("All Elements Course"));
 		entity.addPart("access", new StringBody("3"));
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
 		entity.addPart("softkey", new StringBody(softKey));
 		method.setEntity(entity);
 		
-		HttpResponse response = restConnection.execute(method);
+		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
-		InputStream body = response.getEntity().getContent();
-		
-		CourseVO vo = restConnection.parse(body, CourseVO.class);
+		CourseVO vo = conn.parse(response, CourseVO.class);
 		assertNotNull(vo);
 		assertNotNull(vo.getRepoEntryKey());
 		assertNotNull(vo.getKey());
 		
-//		Long repoKey = vo.getRepoEntryKey();
-//		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(repoKey);
-//		assertNotNull(re);
-//		assertNotNull(re.getOwnerGroup());
-//		assertNotNull(re.getOlatResource());
-//		assertEquals("All Elements Course", re.getDisplayname());
-//		assertEquals(softKey, re.getSoftkey());
-		
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			//TODO:JK Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		return(vo);
 	}
 
+	/**
+	 * @param deploymentUrl
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * 
+	 * imports a wiki via REST.
+	 */
 	public RepositoryEntryVO importWiki(URL deploymentUrl) throws URISyntaxException, IOException{
 		URL wikiUrl = FunctionalVOUtil.class.getResource("/org/olat/portfolio/wiki.zip");
 		Assert.assertNotNull(wikiUrl);
@@ -188,12 +198,12 @@ public class FunctionalVOUtil {
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/entries").build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(wiki));
 		entity.addPart("filename", new StringBody("wiki.zip"));
 		entity.addPart("resourcename", new StringBody("Wiki"));
 		entity.addPart("displayname", new StringBody("Wiki"));
+		entity.addPart("access", new StringBody("3"));
 		method.setEntity(entity);
 		
 		HttpResponse response = restConnection.execute(method);
@@ -207,7 +217,17 @@ public class FunctionalVOUtil {
 		return(vo);
 	}
 	
-	public RepositoryEntryVO importBlog(URL deploymentUrl) throws URISyntaxException, IOException{
+	/**
+	 * @param deploymentUrl
+	 * @param login
+	 * @param password
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * 
+	 * Imports a blog via REST.
+	 */
+	public RepositoryEntryVO importBlog(URL deploymentUrl, String login, String password) throws URISyntaxException, IOException{
 		URL blogUrl = FunctionalVOUtil.class.getResource("/org/olat/portfolio/blog.zip");
 		Assert.assertNotNull(blogUrl);
 		
@@ -215,16 +235,16 @@ public class FunctionalVOUtil {
 		
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 
-		assertTrue(restConnection.login(getUsername(), getPassword()));
+		assertTrue(restConnection.login(login, password));
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/entries").build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(blog));
 		entity.addPart("filename", new StringBody("blog.zip"));
 		entity.addPart("resourcename", new StringBody("Blog"));
 		entity.addPart("displayname", new StringBody("Blog"));
+		entity.addPart("access", new StringBody("3"));
 		method.setEntity(entity);
 		
 		HttpResponse response = restConnection.execute(method);

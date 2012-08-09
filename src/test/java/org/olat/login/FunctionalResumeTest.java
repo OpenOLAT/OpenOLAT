@@ -52,6 +52,9 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @RunWith(Arquillian.class)
 public class FunctionalResumeTest {
+	
+	
+	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();

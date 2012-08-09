@@ -70,8 +70,12 @@ public class FunctionalUtil {
 	public final static String ACTIVE_CONTENT_TAB_CSS = "b_active";
 	
 	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
+	
+	public final static String WIZARD_CSS = "b_wizard";
 	public final static String WIZARD_NEXT_CSS = "b_wizard_button_next";
 	public final static String WIZARD_FINISH_CSS = "b_wizard_button_finish";
+	
+	public final static String MCE_CONTENT_BODY_CSS = "mceContentBody";
 	
 	private String username;
 	private String password;
@@ -101,8 +105,12 @@ public class FunctionalUtil {
 	private String activeContentTabCss;
 	
 	private String formSaveXPath;
+	
+	private String wizardCss;
 	private String wizardNextCss;
 	private String wizardFinishCss;
+	
+	private String mceContentBodyCss;
 	
 	public FunctionalUtil(){
 		Properties properties = new Properties();
@@ -147,8 +155,12 @@ public class FunctionalUtil {
 		activeContentTabCss = ACTIVE_CONTENT_TAB_CSS;
 		
 		formSaveXPath = FORM_SAVE_XPATH;
+		
+		wizardCss = WIZARD_CSS;
 		wizardNextCss = WIZARD_NEXT_CSS;
 		wizardFinishCss = WIZARD_FINISH_CSS;
+		
+		mceContentBodyCss = MCE_CONTENT_BODY_CSS;
 	}
 	
 	/**
@@ -195,7 +207,7 @@ public class FunctionalUtil {
 			}
 			
 			try {
-				Thread.sleep(100);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -293,7 +305,7 @@ public class FunctionalUtil {
 			
 			if(timeout != -1){
 				try {
-					Thread.sleep(100);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					//TODO:JK: Auto-generated catch block
 					e.printStackTrace();
@@ -587,6 +599,18 @@ public class FunctionalUtil {
 		return(true);
 	}
 	
+	public boolean typeMCE(Selenium browser, String content){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("dom=document.getElementsByClassName('")
+		.append("mceIframeContainer")
+		.append("')[0].getElementsByTagName('iframe')[0].contentDocument.body");
+		
+		browser.type(selectorBuffer.toString(), content);
+		
+		return(true);
+	}
+	
 	/**
 	 * @param browser
 	 * @param entryCss
@@ -644,9 +668,9 @@ public class FunctionalUtil {
 	public boolean clickWizardNext(Selenium browser){
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//form//a[contains(@class, ")
+		locatorBuffer.append("xpath=//form//a[contains(@class, '")
 		.append(getWizardNextCss())
-		.append(")]");
+		.append("')]");
 		
 		browser.click(locatorBuffer.toString());
 		
@@ -832,6 +856,14 @@ public class FunctionalUtil {
 		this.formSaveXPath = formSaveXPath;
 	}
 
+	public String getWizardCss() {
+		return wizardCss;
+	}
+
+	public void setWizardCss(String wizardCss) {
+		this.wizardCss = wizardCss;
+	}
+
 	public String getWizardNextCss() {
 		return wizardNextCss;
 	}
@@ -846,5 +878,13 @@ public class FunctionalUtil {
 
 	public void setWizardFinishCss(String wizardFinishCss) {
 		this.wizardFinishCss = wizardFinishCss;
+	}
+
+	public String getMceContentBodyCss() {
+		return mceContentBodyCss;
+	}
+
+	public void setMceContentBodyCss(String mceContentBodyCss) {
+		this.mceContentBodyCss = mceContentBodyCss;
 	}
 }

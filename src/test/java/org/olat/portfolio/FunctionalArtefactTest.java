@@ -65,22 +65,22 @@ public class FunctionalArtefactTest {
 	public final static String BLOG_POST_DESCRIPTION = "Where you may find useful information about multiplexing.";
 	public final static String BLOG_POST_CONTENT = "Operating Systems: Design & Implementation (by Andrew S. Tanenbaum)";
 	
-	public final static String TEXT_ARTEFACT_CONTENT = "";
-	public final static String TEXT_ARTEFACT_TITLE = "";
-	public final static String TEXT_ARTEFACT_DESCRIPTION = "";
-	public final static String TEXT_ARTEFACT_TAGS = "";
-	public final static String TEXT_ARTEFACT_BINDERPATH = "";
+	public final static String TEXT_ARTEFACT_CONTENT = "Bufferbloat is a phenomenon in a packet-switched computer network whereby excess buffering of packets inside the network causes high latency and jitter, as well as reducing the overall network throughput.";
+	public final static String TEXT_ARTEFACT_TITLE = "Definition bufferbloat";
+	public final static String TEXT_ARTEFACT_DESCRIPTION = "Definition bufferbloat";
+	public final static String TEXT_ARTEFACT_TAGS = "bufferbloat network latency jitter";
+	public final static String TEXT_ARTEFACT_BINDERPATH = "/My Binders";
 	
-	public final static String FILE_ARTEFACT_PATH = "";
-	public final static String FILE_ARTEFACT_TITLE = "";
-	public final static String FILE_ARTEFACT_DESCRIPTION = "";
-	public final static String FILE_ARTEFACT_TAGS = "";
-	public final static String FILE_ARTEFACT_BINDERPATH = "";
+	public final static String FILE_ARTEFACT_PATH = "/org/olat/portfolio/sfqcodel.cc";
+	public final static String FILE_ARTEFACT_TITLE = "CoDel";
+	public final static String FILE_ARTEFACT_DESCRIPTION = "CoDel Algorithm";
+	public final static String FILE_ARTEFACT_TAGS = "codel";
+	public final static String FILE_ARTEFACT_BINDERPATH = "/My Binders";
 
-	public final static String LEARNING_JOURNAL_TITLE = "";
-	public final static String LEARNING_JOURNAL_DESCRIPTION = "";
-	public final static String LEARNING_JOURNAL_TAGS = "";
-	public final static String LEARNING_JOURNAL_BINDERPATH = "";
+	public final static String LEARNING_JOURNAL_TITLE = "Programming Topics";
+	public final static String LEARNING_JOURNAL_DESCRIPTION = "Some hot programming topics";
+	public final static String LEARNING_JOURNAL_TAGS = "programming c c++";
+	public final static String LEARNING_JOURNAL_BINDERPATH = "/My Binders";
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -156,7 +156,7 @@ public class FunctionalArtefactTest {
 	@RunAsClient
 	public void checkCollectBlogPost() throws URISyntaxException, IOException{
 		/* import blog via rest */
-		RepositoryEntryVO vo = functionalVOUtil.importBlog(deploymentUrl);
+		RepositoryEntryVO vo = functionalVOUtil.importBlog(deploymentUrl, user.getLogin(), user.getPassword());
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));

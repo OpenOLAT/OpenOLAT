@@ -34,14 +34,20 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalEportfolioUtil {
-
+	
+	public final static String HOME_PORTAL_EDIT_LINK_CSS = "o_sel_add_artfeact";
 	public final static String ADD_TEXT_ARTEFACT_CSS = "o_sel_add_text_artfeact";
 	public final static String UPLOAD_FILE_ARTEFACT_CSS = "o_sel_add_upload_artfeact";
 	public final static String CREATE_LEARNING_JOURNAL_CSS = "o_sel_add_liveblog_artfeact";
 	
+	public final static String CREATE_FOLDER_CSS = "b_ep_add_artefact";
+	
+	private String homePortalEditLinkCss;
 	private String addTextArtefactCss;
 	private String uploadFileArtefactCss;
 	private String createLearningJournalCss;
+	
+	private String createFolderCss;
 	
 	private FunctionalUtil functionalUtil;
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
@@ -49,6 +55,13 @@ public class FunctionalEportfolioUtil {
 	public FunctionalEportfolioUtil(FunctionalUtil functionalUtil, FunctionalHomeSiteUtil functionalHomeSiteUtil){
 		this.functionalUtil = functionalUtil;
 		this.functionalHomeSiteUtil = functionalHomeSiteUtil;
+		
+		setHomePortalEditLinkCss(HOME_PORTAL_EDIT_LINK_CSS);
+		setAddTextArtefactCss(ADD_TEXT_ARTEFACT_CSS);
+		setUploadFileArtefactCss(UPLOAD_FILE_ARTEFACT_CSS);
+		setCreateLearningJournalCss(CREATE_LEARNING_JOURNAL_CSS);
+		
+		setCreateFolderCss(CREATE_FOLDER_CSS);
 	}
 
 	/**
@@ -82,10 +95,79 @@ public class FunctionalEportfolioUtil {
 			prevSeparator = currentSeparator;
 		}
 		
-		selectorBuffer.append("/..");
+		if(prevSeparator > 0){
+			selectorBuffer.append("/..");
+				
+			return(selectorBuffer.toString());
+		}else{
+			return(null);
+		}
+	}
+	
+	/**
+	 * @param browser
+	 * @param binderPath
+	 * @return the xpath selector
+	 * 
+	 * Create a binder of given path.
+	 */
+	public String createBinderPath(Selenium browser, String binderPath){
+		if(binderPath == null)
+			return(null);
 		
+		if(!binderPath.startsWith("/")){
+			binderPath = "/" + binderPath;
+		}
 		
-		return(selectorBuffer.toString());
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=");
+		
+		int prevSeparator = 0;
+		int currentSeparator = -1;
+		
+		while(prevSeparator != binderPath.length() && (currentSeparator = binderPath.indexOf('/', prevSeparator + 1)) != -1){
+			String current = binderPath.substring(prevSeparator + 1, currentSeparator);
+			
+			selectorBuffer.append("//ul//li//a//span[text()=")
+			.append(current)
+			.append("]");
+			
+			
+			
+			
+			
+			
+			prevSeparator = currentSeparator;
+		}
+		
+		if(prevSeparator > 0){
+			selectorBuffer.append("/..");
+				
+			return(selectorBuffer.toString());
+		}else{
+			return(null);
+		}
+	}
+	
+	/**
+	 * @param browser
+	 * @return
+	 * 
+	 * Clicks the edit link.
+	 */
+	private boolean openEditLink(Selenium browser){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getHomePortalEditLinkCss())
+		.append("')]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		return(true);
 	}
 	
 	/**
@@ -99,15 +181,13 @@ public class FunctionalEportfolioUtil {
 	private boolean fillInTitleAndDescription(Selenium browser, String title, String description){
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//form//input[type='text']");
+		locatorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(functionalUtil.getWizardCss())
+		.append("')]//input[@type='text']");
 		
 		browser.type(locatorBuffer.toString(), title);
 		
-		locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//form//textarea");
-		
-		browser.type(locatorBuffer.toString(), description);
+		functionalUtil.typeMCE(browser, description);
 
 		functionalUtil.clickWizardNext(browser);
 		
@@ -124,7 +204,9 @@ public class FunctionalEportfolioUtil {
 	private boolean fillInTags(Selenium browser, String tags){
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//form//input[type='text']");
+		locatorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(functionalUtil.getWizardCss())
+		.append("')]//input[@type='text']");
 		
 		browser.type(locatorBuffer.toString(), tags);
 		
@@ -132,7 +214,7 @@ public class FunctionalEportfolioUtil {
 		
 		return(true);
 	}
-	
+
 	/**
 	 * @param browser
 	 * @param content
@@ -152,20 +234,18 @@ public class FunctionalEportfolioUtil {
 			return(false);
 		
 		/* open wizard */
+		openEditLink(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//a[contains(@class, ")
+		locatorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getAddTextArtefactCss())
-		.append(")]");
+		.append("')]");
 		
 		browser.click(locatorBuffer.toString());
 		
 		/* fill in wizard - content */
-		locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//form//textarea");
-		
-		browser.type(locatorBuffer.toString(), content);
+		functionalUtil.typeMCE(browser, description);
 		
 		functionalUtil.clickWizardNext(browser);
 		
@@ -204,20 +284,24 @@ public class FunctionalEportfolioUtil {
 			return(false);
 		
 		/* open wizard */
+		openEditLink(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//a[contains(@class, ")
+		locatorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getUploadFileArtefactCss())
-		.append(")]");
+		.append("')]");
 		
 		browser.click(locatorBuffer.toString());
 		
 		/* fill in wizard - file */
 		locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//form//input[type='file']");
+		locatorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(functionalUtil.getWizardCss())
+		.append("')]//input[@type='file']");
 		
-		browser.attachFile(locatorBuffer.toString(), file.toURL().toExternalForm());
+		browser.attachFile(locatorBuffer.toString(), file.toURL().toString());
 		
 		functionalUtil.clickWizardNext(browser);
 		
@@ -247,6 +331,21 @@ public class FunctionalEportfolioUtil {
 	 * Create a learnig journal for a e-portfolio.
 	 */
 	public boolean createLearningJournal(Selenium browser, String title, String description, String tags, String binderPath){
+		return(createLearningJournal(browser, title, description, tags, binderPath, true));
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @param tags
+	 * @param binderPath
+	 * @param create
+	 * @return
+	 * 
+	 * Create a learnig journal for a e-portfolio.
+	 */
+	public boolean createLearningJournal(Selenium browser, String title, String description, String tags, String binderPath, boolean create){
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
 		
@@ -254,13 +353,17 @@ public class FunctionalEportfolioUtil {
 			return(false);
 		
 		/* open wizard */
+		openEditLink(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//a[contains(@class, ")
-		.append(getAddTextArtefactCss())
-		.append(")]");
+		locatorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getCreateLearningJournalCss())
+		.append("')]");
 		
 		browser.click(locatorBuffer.toString());
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		/* fill in wizard - title & description */
 		fillInTitleAndDescription(browser, title, description);
@@ -269,7 +372,15 @@ public class FunctionalEportfolioUtil {
 		fillInTags(browser, tags);
 		
 		/* fill in wizard - select binder path */
-		browser.click(createSelectorOfBinderPath(binderPath));
+		String selector = createSelectorOfBinderPath(binderPath);
+		
+		if(selector == null){
+			selector = createBinderPath(browser, binderPath);
+			
+			browser.click(selector);
+		}else{
+			browser.click(selector);
+		}
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
@@ -293,7 +404,15 @@ public class FunctionalEportfolioUtil {
 			FunctionalHomeSiteUtil functionalHomeSiteUtil) {
 		this.functionalHomeSiteUtil = functionalHomeSiteUtil;
 	}
+	
+	public String getHomePortalEditLinkCss() {
+		return homePortalEditLinkCss;
+	}
 
+	public void setHomePortalEditLinkCss(String homePortalEditLinkCss) {
+		this.homePortalEditLinkCss = homePortalEditLinkCss;
+	}
+	
 	public String getAddTextArtefactCss() {
 		return addTextArtefactCss;
 	}
@@ -316,5 +435,13 @@ public class FunctionalEportfolioUtil {
 
 	public void setCreateLearningJournalCss(String createLearningJournalCss) {
 		this.createLearningJournalCss = createLearningJournalCss;
+	}
+
+	public String getCreateFolderCss() {
+		return createFolderCss;
+	}
+
+	public void setCreateFolderCss(String createFolderCss) {
+		this.createFolderCss = createFolderCss;
 	}
 }

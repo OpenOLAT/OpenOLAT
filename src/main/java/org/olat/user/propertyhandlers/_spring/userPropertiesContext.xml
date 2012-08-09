@@ -711,6 +711,7 @@
 				<!-- fxdiff: FXOLAT-227 user properties used for group-mail-function -->
 				<entry key="org.olat.group.ui.run.BusinessGroupSendToChooserForm">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value=" " />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyLastName" />														

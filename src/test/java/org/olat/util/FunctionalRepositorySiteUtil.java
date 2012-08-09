@@ -335,7 +335,7 @@ public class FunctionalRepositorySiteUtil {
 	 * 
 	 * Opens a course by using business path.
 	 */
-	public boolean openCourse(Selenium browser, Long key){
+	public boolean openCourse(Selenium browser, long key){
 		browser.open(functionalUtil.getDeploymentUrl() + "url/RepositoryEntry/" + key);
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		

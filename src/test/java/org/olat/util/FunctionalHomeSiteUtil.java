@@ -56,6 +56,7 @@ public class FunctionalHomeSiteUtil {
 	public final static String HOME_ACTION_NOTES_CSS = "o_sel_notelist";
 	public final static String HOME_ACTION_EVIDENCES_OF_ACHIEVEMENT_CSS = "o_sel_effstatements";
 
+	public final static String EPORTFOLIO_PARENT_ID = "ddportfolioParent";
 	public final static String EPORTFOLIO_ACTION_MY_ARTIFACTS_CSS = "o_sel_EPArtefacts";
 	public final static String EPORTFOLIO_ACTION_MY_BINDERS_CSS = "o_sel_EPMaps";
 	public final static String EPORTFOLIO_ACTION_MY_PORTFOLIO_TASKS_CSS = "o_sel_EPStructuredMaps";
@@ -285,6 +286,7 @@ public class FunctionalHomeSiteUtil {
 	private String homeActionNotesCss;
 	private String homeActionEvidencesOfAchievementCss;
 
+	private String ePortfolioParentId;
 	private String ePortfolioActionMyArtifactsCss;
 	private String ePortfolioActionMyBindersCss;
 	private String ePortfolioActionMyPortfolioTasksCss;
@@ -347,6 +349,7 @@ public class FunctionalHomeSiteUtil {
 		setHomeActionNotesCss(HOME_ACTION_NOTES_CSS);
 		setHomeActionEvidencesOfAchievementCss(HOME_ACTION_EVIDENCES_OF_ACHIEVEMENT_CSS);
 
+		setEPortfolioParentId(EPORTFOLIO_PARENT_ID);
 		setEPortfolioActionMyArtifactsCss(EPORTFOLIO_ACTION_MY_ARTIFACTS_CSS);
 		setEPortfolioActionMyBindersCss(EPORTFOLIO_ACTION_MY_BINDERS_CSS);
 		setEPortfolioActionMyPortfolioTasksCss(EPORTFOLIO_ACTION_MY_PORTFOLIO_TASKS_CSS);
@@ -506,7 +509,7 @@ public class FunctionalHomeSiteUtil {
 
 			if(timeout != -1){
 				try {
-					Thread.sleep(100);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					//TODO:JK: Auto-generated catch block
 					e.printStackTrace();
@@ -534,11 +537,22 @@ public class FunctionalHomeSiteUtil {
 		}
 
 		if(!checkCurrentAction(browser, action, 15000)){
+			if(action instanceof EPortfolioAction){
+				StringBuffer selectorBuffer = new StringBuffer();
+
+				selectorBuffer.append("xpath=//ul//div[@id='")
+				.append(getEPortfolioParentId())
+				.append("']//a");
+
+				browser.click(selectorBuffer.toString());
+				browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			}
+			
 			StringBuffer selectorBuffer = new StringBuffer();
 
-			selectorBuffer.append("css=ul * .")
+			selectorBuffer.append("xpath=//ul//li[contains(@class, '")
 			.append(selectedCss)
-			.append(" * a");
+			.append("')]//a");
 
 			browser.click(selectorBuffer.toString());
 			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
@@ -1158,6 +1172,14 @@ public class FunctionalHomeSiteUtil {
 	public void setHomeActionEvidencesOfAchievementCss(
 			String homeActionEvidencesOfAchievementCss) {
 		this.homeActionEvidencesOfAchievementCss = homeActionEvidencesOfAchievementCss;
+	}
+
+	public String getEPortfolioParentId() {
+		return ePortfolioParentId;
+	}
+
+	public void setEPortfolioParentId(String ePortfolioParentId) {
+		this.ePortfolioParentId = ePortfolioParentId;
 	}
 
 	public String getEPortfolioActionMyArtifactsCss() {
