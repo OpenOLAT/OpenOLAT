@@ -81,6 +81,7 @@ public class RepositoryAddChooseStepsController extends BasicController {
 			chooser = uifactory.addRadiosVertical("csc.label", formLayout, keys, labels);
 			chooser.select(this.keys[0], true);
 			uifactory.addFormSubmitButton("cmd.forward", formLayout);
+			formLayout.setElementCssClass("o_sel_repo_add_template_forward");
 		}
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {	return chooser.isOneSelected(); }

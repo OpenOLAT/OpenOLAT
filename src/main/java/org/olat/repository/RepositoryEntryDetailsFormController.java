@@ -101,6 +101,7 @@ public class RepositoryEntryDetailsFormController extends FormBasicController {
 		//
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
+		buttonContainer.setElementCssClass("o_sel_repo_save_details");
 
 		uifactory.addFormSubmitButton("submit", buttonContainer);
 		if (!isSubWorkflow) {
