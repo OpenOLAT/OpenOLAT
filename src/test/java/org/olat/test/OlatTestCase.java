@@ -65,7 +65,6 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 	"classpath:/org/olat/core/logging/_spring/loggingCorecontext.xml",
 	"classpath:/org/olat/core/logging/activity/_spring/activityCorecontext.xml",
 	"classpath:/org/olat/core/_spring/mainCorecontext.xml",
-	"classpath:/org/olat/core/dispatcher/jumpin/_spring/jumpinCorecontext.xml",
 
 	"classpath:/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml",
 	"classpath:/serviceconfig/org/olat/core/commons/scheduler/_spring/schedulerCorecontext.xml",

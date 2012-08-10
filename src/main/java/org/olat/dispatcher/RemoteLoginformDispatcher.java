@@ -74,7 +74,7 @@ import org.olat.login.OLATAuthenticationController;
  *  <input type="password" name="pwd">
  *  <button>login</button>
  * </form>
- * <p>An optional parameter named redirect allow a redirect using a businesspath or a jumping url:
+ * <p>An optional parameter named redirect allow a redirect using a businesspath:
  *  <input type="hidden" name="redirect" value="/olat/url/RepositoryEntry/917504/CourseNode/81254724902921"/>
  * <p>
  * Initial Date: 05.08.2008 <br>

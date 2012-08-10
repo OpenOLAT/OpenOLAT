@@ -174,7 +174,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		translationPackageNameDerived = contentControllerClassName.substring(0, contentControllerClassName.lastIndexOf("."));
 	}
 
-	public void setActionController(ControllerCreator actionControllerCreator, String contentControllerClassName){
+	public void setActionControllerWithClassname(ControllerCreator actionControllerCreator, String contentControllerClassName){
 		this.actionControllerCreator = actionControllerCreator;
 		this.contentControllerClassName = contentControllerClassName; 
 		translationPackageNameDerived = contentControllerClassName.substring(0, contentControllerClassName.lastIndexOf("."));

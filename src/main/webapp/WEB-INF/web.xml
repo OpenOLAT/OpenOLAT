@@ -47,7 +47,6 @@
 					classpath:/org/olat/core/logging/_spring/loggingCorecontext.xml
 					classpath:/org/olat/core/logging/activity/_spring/activityCorecontext.xml
 					classpath:/org/olat/core/_spring/mainCorecontext.xml
-					classpath:/org/olat/core/dispatcher/jumpin/_spring/jumpinCorecontext.xml
 					classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml
 					
 					classpath:/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml

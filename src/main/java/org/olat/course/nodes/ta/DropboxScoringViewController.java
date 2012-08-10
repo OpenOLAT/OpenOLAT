@@ -35,7 +35,6 @@ import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.dispatcher.jumpin.JumpInManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
@@ -66,7 +65,6 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.servlets.URLEncoder;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -329,7 +327,7 @@ public class DropboxScoringViewController extends BasicController {
 	 */
 	private void removeAssignedTask(UserCourseEnvironment courseEnv, Identity identity, String task) {
 		CoursePropertyManager cpm = courseEnv.getCourseEnvironment().getCoursePropertyManager();
-		List properties = cpm.findCourseNodeProperties(node, identity, null, TaskController.PROP_ASSIGNED);
+		List<Property> properties = cpm.findCourseNodeProperties(node, identity, null, TaskController.PROP_ASSIGNED);
 		if(properties!=null && properties.size()>0) {
 		  Property propety = (Property)properties.get(0);
 		  cpm.deleteProperty(propety);
@@ -407,12 +405,8 @@ class ReadOnlyAndDeleteCallback implements VFSSecurityCallback {
 class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 
 	private Quota quota;
-	private UserCourseEnvironment userCourseEnv;
-	private CourseNode courseNode;
 
 	public ReturnboxFullAccessCallback(String relPath, UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
-		this.userCourseEnv = userCourseEnv;
-		this.courseNode = courseNode;
 		QuotaManager qm = QuotaManager.getInstance();
 		quota = qm.getCustomQuota(relPath);
 		if (quota == null) { // if no custom quota set, use the default quotas...

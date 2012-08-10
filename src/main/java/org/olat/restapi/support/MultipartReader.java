@@ -51,7 +51,7 @@ public class MultipartReader {
 	private Map<String, String> fields = new HashMap<String, String>();
 
 	public MultipartReader(HttpServletRequest request) {
-		long uploadLimit = -1l;
+		long uploadLimit = 500000l;
 		apache(request, uploadLimit);
 	}
 
@@ -72,7 +72,13 @@ public class MultipartReader {
 					// File item, store it to temp location
 					filename = item.getName();
 					contentType = item.getContentType();
-					file = new File(System.getProperty("java.io.tmpdir"), "upload-" + UUID.randomUUID().toString().replace("-", ""));
+					
+					if(filename != null) {
+						filename = UUID.randomUUID().toString().replace("-", "") + "_" + filename;
+					} else {
+						filename = "upload-" + UUID.randomUUID().toString().replace("-", "");
+					}
+					file = new File(System.getProperty("java.io.tmpdir"), filename);
 					try {
 						save(itemStream, file);
 					} catch (Exception e) {
