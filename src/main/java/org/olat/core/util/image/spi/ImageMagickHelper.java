@@ -153,23 +153,28 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 	
 	private final FinalSize executeProcess(File thumbnailFile, Process proc) {
 
+		FinalSize rv = null;
+		StringBuilder errors = new StringBuilder();
+		StringBuilder output = new StringBuilder();
+		String line;
+
 		InputStream stderr = proc.getErrorStream();
 		InputStreamReader iserr = new InputStreamReader(stderr);
 		BufferedReader berr = new BufferedReader(iserr);
-		String l = null;
-		StringBuilder errors = new StringBuilder();
-		StringBuilder output = new StringBuilder();
-
+		line = null;
 		try {
-			while ((l = berr.readLine()) != null) {
-				errors.append(l);
+			while ((line = berr.readLine()) != null) {
+				errors.append(line);
 			}
-
-			InputStream stdout = proc.getInputStream();
-			InputStreamReader isr = new InputStreamReader(stdout);
-			BufferedReader br = new BufferedReader(isr);
-			String line = null;
-
+		} catch (IOException e) {
+			//
+		}
+		
+		InputStream stdout = proc.getInputStream();
+		InputStreamReader isr = new InputStreamReader(stdout);
+		BufferedReader br = new BufferedReader(isr);
+		line = null;
+		try {
 			while ((line = br.readLine()) != null) {
 				output.append(line);
 			}
@@ -185,13 +190,17 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		try {
 			int exitValue = proc.waitFor();
 			if (exitValue == 0) {
-				return extractSizeFromOutput(thumbnailFile, output);
+				rv = extractSizeFromOutput(thumbnailFile, output);
+				if (rv == null) {
+					// sometimes verbose info of convert is in stderr
+					rv = extractSizeFromOutput(thumbnailFile, errors);
+				}
 			}
 		} catch (InterruptedException e) {
 			//
 		}
 		logWarn("Could not generate thumbnail: "+thumbnailFile, null);
-		return null;
+		return rv;
 	}
 	/**
 	 * Extract informations from the process:<br/>
