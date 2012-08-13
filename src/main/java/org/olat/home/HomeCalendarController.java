@@ -26,7 +26,6 @@
 package org.olat.home;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,7 +46,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -72,7 +70,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
-public class HomeCalendarController extends BasicController implements Activateable, Activateable2, GenericEventListener {
+public class HomeCalendarController extends BasicController implements Activateable2, GenericEventListener {
 
 	private static final OLog log = Tracing.createLoggerFor(HomeCalendarController.class);
 	
@@ -92,22 +90,6 @@ public class HomeCalendarController extends BasicController implements Activatea
 		listenTo(calendarController);
 		
 		putInitialPanel(calendarController.getInitialComponent());
-	}
-
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		String[] splitted = viewIdentifier.split("\\.");
-		if (splitted.length != 3) {
-			// do nothing for user, just ignore it maybe this is a javascript
-			// problem of the browser. However, log the problem
-			log.warn("Can't parse date from user request: " + viewIdentifier);
-			return;
-		}
-		String year = splitted[0];
-		String month = splitted[1];
-		String day = splitted[2];
-		Calendar cal = Calendar.getInstance();
-		cal.set(Integer.parseInt(year), Integer.parseInt(month) - 1, Integer.parseInt(day));
-		calendarController.setFocus(cal.getTime());
 	}
 
 	@Override

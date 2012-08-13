@@ -34,11 +34,11 @@ import org.olat.core.gui.control.Controller;
  * Initial Date: 19.07.2005 <br>
  * 
  * @author Felix Jost
+ * @deprecated Use Activateable2 instead
  */
+@Deprecated
 public interface Activateable extends Controller {
 	/**
-	 * FIXME:pb:discussion FJ should we return boolean if activation was
-	 * successful?
 	 * 
 	 * @param ureq
 	 * @param viewIdentifier

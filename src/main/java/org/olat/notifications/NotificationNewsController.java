@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -37,7 +36,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -61,7 +59,7 @@ import org.olat.core.util.notifications.SubscriptionItem;
  * 
  * @author gnaegi
  */
-class NotificationNewsController extends BasicController implements Activateable, Activateable2 {
+class NotificationNewsController extends BasicController implements Activateable2 {
 	private VelocityContainer newsVC;
 	private Date compareDate;
 	private String newsType;
@@ -163,38 +161,6 @@ class NotificationNewsController extends BasicController implements Activateable
 		}
 	}
 
-	/**
-	 * Can set type and date of the controller: identifier in the ofrm of [type=Type:0][date=yyyyMMdd:0]
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest, java.lang.String)
-	 */
-	@Override
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if(viewIdentifier == null) return;
-		
-		boolean changed = false;
-		for(StringTokenizer tokenizer = new StringTokenizer(viewIdentifier, "[]"); tokenizer.hasMoreTokens(); ) {
-			String token = tokenizer.nextToken();
-			if(token.startsWith("type=")) {
-				newsType = extractValue("type=", token);
-				dateChooserCtr.setType(newsType);
-				changed = true;
-			} else if(token.startsWith("date=")) {
-				try {
-					String date = extractValue("date=", token);
-					DateFormat format = new SimpleDateFormat("yyyyMMdd");
-					compareDate = format.parse(date);
-					dateChooserCtr.setDate(compareDate);
-					changed = true;
-				} catch (ParseException e) {
-					logWarn("Error parsing the date after activate: " + token, e);
-				}
-			}
-		}
-		
-		if(changed) {
-			updateNewsDataModel();
-		}
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

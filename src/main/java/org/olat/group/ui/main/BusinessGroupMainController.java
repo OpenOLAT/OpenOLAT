@@ -52,11 +52,6 @@ public class BusinessGroupMainController extends GenericMainController implement
 	}
 
 	@Override
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		super.activate(ureq, viewIdentifier);
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		super.activate(ureq, entries, state);
 	}

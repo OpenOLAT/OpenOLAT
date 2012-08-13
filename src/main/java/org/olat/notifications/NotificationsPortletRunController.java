@@ -35,9 +35,7 @@ import java.util.Map;
 
 import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
-import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -52,15 +50,12 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.portal.AbstractPortletRunController;
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.core.gui.control.generic.portal.PortletToolSortingControllerImpl;
 import org.olat.core.gui.control.generic.portal.SortingCriteria;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.event.GenericEventListener;
@@ -71,9 +66,6 @@ import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.notifications.SubscriptionInfo;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseModule;
-import org.olat.group.BusinessGroupModule;
 
 /**
  * Description:<br>
@@ -239,61 +231,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 					int rowid = te.getRowId();
 					Subscriber sub = notificationListModel.getSubscriberAt(rowid);
 					if (actionid.equals(CMD_LAUNCH)) {
-						Publisher pub = sub.getPublisher();
-						if (!man.isPublisherValid(pub)) {
-							getWindowControl().setError(getTranslator().translate("error.publisherdeleted"));
-						} else {						
-							String resName = pub.getResName();
-							Long resId = pub.getResId();
-							String subidentifier = pub.getSubidentifier();
-							if (subidentifier.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
-								resName = CourseModule.ORES_TYPE_COURSE;
-							}
-							if (subidentifier.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
-								resName = BusinessGroupModule.ORES_TYPE_GROUP;
-							}
-							OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
-							String title = NotificationsManager.getInstance().getNotificationsHandler(pub).createTitleInfo(sub, getLocale());
-							DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-							//was brasato:: DTabs dts = getWindowControl().getDTabs();
-							DTab dt = dts.getDTab(ores);
-							if (dt == null) {
-								// does not yet exist -> create and add
-								dt = dts.createDTab(ores, title);
-								if (dt == null) return;
-								Controller launchController = ControllerFactory.createLaunchController(ores, subidentifier, ureq, dt.getWindowControl(),
-										false);
-								
-							//try with the new factory controller too
-								boolean newFactory = false;
-								if(launchController == null) {
-									try  {
-										String resourceUrl = "[" + resName + ":0][notifications]";
-										BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
-									  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dt.getWindowControl());
-									  NewControllerFactory.getInstance().launch(ureq, bwControl);
-										newFactory = true;
-									} catch (Exception ex) {
-										//fail silently
-									}
-								}
-								
-								if(newFactory) {
-									//hourra
-								}
-								else if (launchController == null) { 
-									// not possible to launch anymore
-									getWindowControl().setWarning(getTranslator().translate("warn.nolaunch"));
-								} else {
-									dt.setController(launchController);
-									dts.addDTab(dt);
-									// null: do not reactivate to a certain view here, this happened in ControllerFactory.createLaunchController
-									dts.activate(ureq, dt, null);
-								}
-							} else {
-								dts.activate(ureq, dt, subidentifier);
-							}
-						}
+						NotificationUIFactory.launchSubscriptionResource(ureq, getWindowControl(), sub);
 					}
 				}
 			}

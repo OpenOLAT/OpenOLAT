@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed.ui;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
@@ -33,7 +35,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
@@ -51,7 +55,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author gwassmann
  */
-public class ItemController extends BasicController implements Activateable {
+public class ItemController extends BasicController implements Activateable2 {
 	public static final String ACTIVATION_KEY_COMMENTS = "comments";
 	private Link backLink;
 	private UserCommentsAndRatingsController commentsCtr;
@@ -116,12 +120,12 @@ public class ItemController extends BasicController implements Activateable {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest, java.lang.String)
-	 */
 	@Override
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if (ACTIVATION_KEY_COMMENTS.equals(viewIdentifier)) {
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries != null && entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if (ACTIVATION_KEY_COMMENTS.equals(type)) {
 			// show comments
 			if (commentsCtr != null) {
 				commentsCtr.expandComments(ureq);

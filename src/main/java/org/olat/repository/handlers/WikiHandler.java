@@ -46,6 +46,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -55,6 +56,7 @@ import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
@@ -86,12 +88,14 @@ import org.olat.resource.references.ReferenceManager;
  * @author guido
  */
 public class WikiHandler implements RepositoryHandler {
+	
+	private static final OLog log = Tracing.createLoggerFor(WikiHandler.class);
 
 	private static final boolean LAUNCHEABLE = true;
 	private static final boolean DOWNLOADEABLE = true;
 	private static final boolean EDITABLE = false;
 	private static final boolean WIZARD_SUPPORT = false;
-	private static final List supportedTypes;
+	private static final List<String> supportedTypes;
 
 	/**
 	 * Comment for <code>PROCESS_CREATENEW</code>
@@ -105,11 +109,11 @@ public class WikiHandler implements RepositoryHandler {
 	
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(1);
+		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(WikiResource.TYPE_NAME);
 	}
 
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
@@ -260,16 +264,16 @@ public class WikiHandler implements RepositoryHandler {
 		//copy media files to folders
 		VFSContainer origRootContainer = frm.getFileResourceRootImpl(res);
 		VFSContainer origMediaCont = (VFSContainer)origRootContainer.resolve(WikiContainer.MEDIA_FOLDER_NAME);
-		List mediaFiles = origMediaCont.getItems();
-		for (Iterator iter = mediaFiles.iterator(); iter.hasNext();) {
+		List<VFSItem> mediaFiles = origMediaCont.getItems();
+		for (Iterator<VFSItem> iter = mediaFiles.iterator(); iter.hasNext();) {
 			VFSLeaf element = (VFSLeaf) iter.next();
 			newMediaCont.copyFrom(element);
 		}
 
 		//reset properties files to default values
 		VFSContainer wikiCont = (VFSContainer)rootContainer.resolve(WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		List leafs = wikiCont.getItems(new VFSItemSuffixFilter(new String[]{WikiManager.WIKI_PROPERTIES_SUFFIX}));
-		for (Iterator iter = leafs.iterator(); iter.hasNext();) {
+		List<VFSItem> leafs = wikiCont.getItems(new VFSItemSuffixFilter(new String[]{WikiManager.WIKI_PROPERTIES_SUFFIX}));
+		for (Iterator<VFSItem> iter = leafs.iterator(); iter.hasNext();) {
 			VFSLeaf leaf = (VFSLeaf) iter.next();
 			WikiPage page = Wiki.assignPropertiesToPage(leaf);
 			//reset the copied pages to a the default values
@@ -308,9 +312,9 @@ public class WikiHandler implements RepositoryHandler {
 		try {
 			FileUtils.bcopy(wikiZip.getInputStream(), fExportZIP, "archive wiki");
 		} catch (FileNotFoundException e) {
-			Tracing.logWarn("Can not archive wiki repoEntry=" + repoEntry, this.getClass());
+			log.warn("Can not archive wiki repoEntry=" + repoEntry);
 		} catch (IOException ioe) {
-			Tracing.logWarn("Can not archive wiki repoEntry=" + repoEntry, this.getClass());
+			log.warn("Can not archive wiki repoEntry=" + repoEntry);
 		} finally {
 			FileUtils.closeSafely(fis);
 		}

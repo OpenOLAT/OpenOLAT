@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -36,9 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
@@ -47,7 +45,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.home.HomeSite;
 import org.olat.portfolio.EPLoggingAction;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackFactory;
@@ -75,7 +72,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class EPMultipleMapController extends BasicController implements Activateable, Activateable2 {
+public class EPMultipleMapController extends BasicController implements Activateable2 {
 	private static final String RESTRICT_LINK = "restrictLink";
 	private static final String VIEW_LINK_PREFIX = "viewLink";
 	private static final String DELETE_LINK_PREFIX = "deleteLink";
@@ -347,52 +344,6 @@ public class EPMultipleMapController extends BasicController implements Activate
 	}
 
 	@Override
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		
-		// fix OO-37 by supporting different "syntax" of given viewIdentifier
-		// still check for the "old" [map:12345] syntax
-		int index = -1;
-		Long key = null;
-		boolean viewIdisNumerical = true;
-		
-		try {
-			key = Long.parseLong(viewIdentifier);
-		} catch (Exception e) {
-			viewIdisNumerical = false;
-		} 
-		
-		// viewIdentifier is not numerical, check for old and new "syntax"
-		if (!viewIdisNumerical) {
-			String keyStr = "a";
-
-			if (viewIdentifier.contains("[map:")) {
-				// old BusinessPath
-				index = viewIdentifier.indexOf("[map:");
-				int lastIndex = viewIdentifier.indexOf("]", index);
-				if (lastIndex < viewIdentifier.length()) {
-					keyStr = viewIdentifier.substring(index + 5, lastIndex);
-				}
-			} else if (viewIdentifier.contains("EPStructuredMap:")) {
-				// new genericMainController activation with navigation key
-				index = viewIdentifier.indexOf("EPStructuredMap:");
-				keyStr = viewIdentifier.substring(index + 16);
-			} else if (viewIdentifier.contains("GMCMenuTree:")) {
-				// new genericMainController activation
-				index = viewIdentifier.indexOf("GMCMenuTree:");
-				keyStr = viewIdentifier.substring(index + 12);
-			}
-
-			try {
-				key = Long.parseLong(keyStr);
-			} catch (Exception e) {
-				logError("could not parse eportfolio mapId from viewIdentifier: " + viewIdentifier, null);
-			}
-		}
-		
-		activateMap(ureq, key);
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 
@@ -410,7 +361,6 @@ public class EPMultipleMapController extends BasicController implements Activate
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
@@ -557,9 +507,8 @@ public class EPMultipleMapController extends BasicController implements Activate
 			String title = targetMap.getTitle();
 			showInfo("copy.map.success", title);
 			initOrUpdateMaps(ureq);
-			String activationCmd = targetMap.getClass().getSimpleName() + ":" + targetMap.getResourceableId();
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			dts.activateStatic(ureq, HomeSite.class.getName(), activationCmd);
+			String businessPath = "[" +  targetMap.getClass().getSimpleName() + ":" + targetMap.getResourceableId() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} else if (source == mapViewCtrl) {
 			if(EPStructureEvent.CLOSE.equals(event.getCommand())) {
 				myPanel.popContent();

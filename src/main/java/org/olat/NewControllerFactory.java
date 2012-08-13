@@ -196,19 +196,9 @@ public class NewControllerFactory extends LogDelegator {
 			// use special activation key to trigger the activate method
 			//fxdiff BAKS-7 Resume function
 			List<ContextEntry> entries = new ArrayList<ContextEntry>();
-			String viewIdentifyer = null;
 			if (bc.hasContextEntry()) {
 				ContextEntry subContext = bc.popLauncherContextEntry();
 				if (subContext != null) {
-					OLATResourceable subResource = subContext.getOLATResourceable();
-					if (subResource != null) {
-						viewIdentifyer = subResource.getResourceableTypeName();
-						if (subResource.getResourceableId() != null) {
-							// add resource instance id if available. The ':' is a common
-							// separator in the activatable interface
-							viewIdentifyer = viewIdentifyer + ":" + subResource.getResourceableId();
-						}
-					}
 					entries.add(subContext);
 					while(bc.hasContextEntry()) {
 						entries.add(bc.popLauncherContextEntry());
@@ -217,17 +207,12 @@ public class NewControllerFactory extends LogDelegator {
 			} else if (!ceConsumed) {
 				//the olatresourceable is not in a dynamic tab but in a fix one
 				if(ores != null) {
-					viewIdentifyer = ores.getResourceableTypeName();
-					if (ores.getResourceableId() != null) {
-						// add resource instance id if available. The ':' is a common
-						// separator in the activatable interface
-						viewIdentifyer = viewIdentifyer + ":" + ores.getResourceableId();
-					}
+					entries.add(BusinessControlFactory.getInstance().createContextEntry(ores));
 				}
 			}
 
 			TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
-			dts.activateStatic(ureq, siteClassName, viewIdentifyer, context.getContext());
+			dts.activateStatic(ureq, siteClassName, context.getContext());
 		} else {
 			List<ContextEntry> entries = new ArrayList<ContextEntry>();
 			while(bc.hasContextEntry()) {
@@ -251,7 +236,7 @@ public class NewControllerFactory extends LogDelegator {
 
 				dt.setController(launchC);
 				dts.addDTab(dt);
-				dts.activate(ureq, dt, null, context.getContext()); // null: do not activate to a certain view
+				dts.activate(ureq, dt, context.getContext()); // null: do not activate to a certain view
 			}
 		}
 	}

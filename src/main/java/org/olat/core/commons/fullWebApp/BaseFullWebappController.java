@@ -59,7 +59,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.WindowControlInfoImpl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabImpl;
@@ -79,7 +78,6 @@ import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.prefs.Preferences;
@@ -241,23 +239,14 @@ public class BaseFullWebappController extends BasicController implements Generic
 		// if this is controller the controller is locked instead of only the DTabs part.
 		myDTabsImpl = new DTabs() {
 
-			public void activate(UserRequest ureq, DTab dTab, String viewIdentifier) {
-				BaseFullWebappController.this.activate(ureq, dTab, viewIdentifier, null);
+			@Override
+			public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
+				BaseFullWebappController.this.activate(ureq, dTab, null, entries);
 			}
 
 			@Override
-			//fxdiff BAKS-7 Resume function
-			public void activate(UserRequest ureq, DTab dTab, String viewIdentifier, List<ContextEntry> entries) {
-				BaseFullWebappController.this.activate(ureq, dTab, viewIdentifier, entries);
-			}
-
-			public void activateStatic(UserRequest ureq, String className, String viewIdentifier) {
-				BaseFullWebappController.this.activateStatic(ureq, className, viewIdentifier, null);
-			}
-			@Override
-			//fxdiff BAKS-7 Resume function
-			public void activateStatic(UserRequest ureq, String className, String viewIdentifier, List<ContextEntry> entries) {
-				BaseFullWebappController.this.activateStatic(ureq, className, viewIdentifier, entries);
+			public void activateStatic(UserRequest ureq, String className, List<ContextEntry> entries) {
+				BaseFullWebappController.this.activateStatic(ureq, className, null, entries);
 			}
 
 			public void addDTab(DTab dt) {
@@ -630,13 +619,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 			}
 			// reset site and create new controller
 			s.reset();
-			/*PB
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SiteInstance.class, Long.valueOf(sites.indexOf(s)));
-			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
-			
-			resC = s.createController(ureq, bwControl);
-			*/
 			resC = s.createController(ureq, getWindowControl());
 			gs = getWindowControl().getWindowBackOffice().createGuiStack(resC.getInitialComponent());
 			//PB//site_wControl = bwControl;			
@@ -645,17 +627,13 @@ public class BaseFullWebappController extends BasicController implements Generic
 		}
 		doActivateSite(s, gs);
 		//fxdiff BAKS-7 Resume function
-		if(entries != null && !entries.isEmpty() && resC instanceof Activateable2) {
+		if(resC instanceof Activateable2) {
 			((Activateable2)resC).activate(ureq, entries, null);
-		} else if(viewIdentifier != null && resC instanceof Activateable) {
-			((Activateable)resC).activate(ureq, viewIdentifier);
 		}
 		//fxdiff perhaps has activation changed the gui stack and it need to be updated
 		setGuiStack(gs);
 
 		//set current BusPath for extraction in the TopNav Controller
-		//FIXME:pb:2009-06-21:move core
-		//PB//getWindowControl().getWindowBackOffice().getWindow().setAttribute("BUSPATH", site_wControl);
 		getWindowControl().getWindowBackOffice().getWindow().setAttribute("BUSPATH", getWindowControl());
 	}
 
@@ -917,15 +895,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 		if(entries != null && !entries.isEmpty() && c instanceof Activateable2) {
 			final Activateable2 activateable = ((Activateable2) c);
 			activateable.activate(ureq, entries, null);
-		} else if (viewIdentifier != null && c instanceof Activateable) {
-			final Activateable activateable = ((Activateable) c);
-			ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
-
-				public void run() {
-					activateable.activate(ureq, viewIdentifier);
-				}
-				
-			}, activateable.getUserActivityLogger());
 		}
 		//fxdiff BAKS-7 Resume function
 		//update the panels after activation

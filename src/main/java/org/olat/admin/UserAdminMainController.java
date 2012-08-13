@@ -59,7 +59,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
@@ -90,7 +89,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * To append predefined searches use ActionExtensions and register them for UserAdminMainController.EXTENSIONPOINT_MENU_MENUQUERIES.
  * </pre>
  */
-public class UserAdminMainController extends MainLayoutBasicController implements Activateable, Activateable2 {
+public class UserAdminMainController extends MainLayoutBasicController implements Activateable2 {
 	public static final String EXTENSIONPOINT_MENU_MENUQUERIES = ".menu.menuqueries";
 	private static boolean extensionLogged = false;
 	OLog log = Tracing.createLoggerFor(this.getClass());
@@ -186,8 +185,10 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				userAdminCtr = new UserAdminController(ureq, bwControl, identity);
 				listenTo(userAdminCtr);
 				// activate a special pane in the tabbed pane when set
-				if (	activatePaneInDetailView != null)
-					userAdminCtr.activate(ureq, activatePaneInDetailView);
+				if (activatePaneInDetailView != null) {
+					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(activatePaneInDetailView);
+					userAdminCtr.activate(ureq, entries, null);
+				}
 				content.setContent(userAdminCtr.getInitialComponent());
 				// deactivate back button for user create controller, kames no sense there
 				if (contentCtr instanceof UserCreateController) {

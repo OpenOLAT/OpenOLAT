@@ -26,27 +26,16 @@ package org.olat.notifications;
 
 import java.util.Date;
 
-import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
-import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.Subscriber;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseModule;
-import org.olat.group.BusinessGroupModule;
 
 /**
  * Description:<br>
@@ -134,63 +123,13 @@ public class NotificationUIFactory {
 			windowControl.setError(trans.translate("error.publisherdeleted"));
 			return;
 		}
-		String resName = pub.getResName();
-		Long resId = pub.getResId();
-		String subidentifier = pub.getSubidentifier();
-		// Special case update course and group name for calendars (why?) 
-		if (subidentifier.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
-			resName = CourseModule.ORES_TYPE_COURSE;
-		} else if (subidentifier.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
-			resName = BusinessGroupModule.ORES_TYPE_GROUP;
-		}
-
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
-		String title = NotificationsManager.getInstance().getNotificationsHandler(sub.getPublisher()).createTitleInfo(sub, ureq.getLocale());
-		// Launch in dtab
-		DTabs dts = (DTabs) Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-		DTab dt = dts.getDTab(ores);
-		if (dt == null) {
-			// Does not yet exist -> create and add
-			dt = dts.createDTab(ores, title);
-			if (dt == null) {
-				// huh, no tabs available? don't know what to do here
-				return;
-			}
-			Controller launchController = ControllerFactory.createLaunchController(ores, subidentifier, ureq, dt.getWindowControl(), false);
-			// Try with the new factory controller too
-			boolean newFactory = false;
-			if (launchController == null) {
-				try {
-					String resourceUrl;
-					if("Inbox".equals(resName)) {
-						resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][" + resName + ":0]";
-					} else {
-						resourceUrl = "[" + resName + ":0][notifications]";
-					}
-					BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
-					WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, windowControl);
-					NewControllerFactory.getInstance().launch(ureq, bwControl);
-					newFactory = true;
-				} catch (Exception ex) {
-					// fail silently
-				}
-			}
-			if (newFactory) {
-				// hourra
-			} else if (launchController == null) { // not possible to launch anymore
-				Translator trans = Util.createPackageTranslator(NotificationUIFactory.class, ureq.getLocale());
-				windowControl.setWarning(trans.translate("warn.nolaunch"));
-			} else {
-				dt.setController(launchController);
-				dts.addDTab(dt);
-				dts.activate(ureq, dt, null); // null: do not reactivate to a
-				// certain view here, this
-				// happened in
-				// ControllerFactory.createLaunchController
-			}
-		} else {
-			dts.activate(ureq, dt, subidentifier);
+		if("Inbox".equals(pub.getResName())) {
+			String businessPath = "[HomeSite:" + ureq.getIdentity().getKey() + "][Inbox:0]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, windowControl);
+			return;
+		} else if(StringHelper.containsNonWhitespace(pub.getBusinessPath())) {
+			NewControllerFactory.getInstance().launch(pub.getBusinessPath(), ureq, windowControl);
+			return;
 		}
 	}
-
 }

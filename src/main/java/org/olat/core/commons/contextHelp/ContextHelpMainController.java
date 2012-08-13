@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.breadcrumb.BreadCrumbController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.OlatLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
@@ -149,7 +148,7 @@ class ContextHelpMainController extends MainLayoutBasicController implements Gen
 	 * @param ureq
 	 * @param activateableController
 	 */
-	private void activatePageFromURL(String[] uriParts, UserRequest ureq, Activateable activateableController) {
+	private void activatePageFromURL(String[] uriParts, UserRequest ureq, ContextHelpTOCCrumbController activateableController) {
 		// Initialize active page
 		// add context help page
 		// Try to extract requested help page from URI
@@ -173,7 +172,7 @@ class ContextHelpMainController extends MainLayoutBasicController implements Gen
 		}
 
 		if (page != null || bundleName != null) {
-			activateableController.activate(ureq, bundleName + ":" + page);
+			activateableController.activatePage(ureq, bundleName, page);
 		}
 
 	}

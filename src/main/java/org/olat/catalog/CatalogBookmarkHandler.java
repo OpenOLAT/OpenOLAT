@@ -21,17 +21,16 @@ package org.olat.catalog;
 
 import java.util.Collections;
 
+import org.olat.NewControllerFactory;
 import org.olat.bookmark.Bookmark;
 import org.olat.bookmark.BookmarkHandler;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.repository.site.RepositorySite;
 
 /**
  * Description:<br>
@@ -53,10 +52,8 @@ public class CatalogBookmarkHandler implements BookmarkHandler {
 		OLATResourceable reores = BookmarkManager.getInstance().getLaunchOlatResourceable(bookmark);
 		// only launch bookmarks of type catalog entry
 		if(reores.getResourceableTypeName().equals(CatalogManager.CATALOGENTRY)){
-			// set catalog param to same syntax as used in jumpin activation process
-			DTabs dts = (DTabs) wControl.getWindowBackOffice().getWindow().getAttribute("DTabs");
-			// encode sub view identifyer using ":" character
-			dts.activateStatic(ureq, RepositorySite.class.getName(),"search.catalog:" + bookmark.getOlatreskey());		
+			String businessPath = "[CatalogEntry:" + bookmark.getOlatreskey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, wControl);
 			return true;
 		}
 		return false;

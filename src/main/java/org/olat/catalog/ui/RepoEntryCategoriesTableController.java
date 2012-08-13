@@ -33,6 +33,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.site.RepositorySite;
 
@@ -111,8 +115,9 @@ public class RepoEntryCategoriesTableController extends BasicController {
 			if (action.equals(CategoriesListModel.ACTION_GOTO)) {
 				// select repo site and activate catalog entry in catalog
 				DTabs dts = (DTabs) getWindowControl().getWindowBackOffice().getWindow().getAttribute("DTabs");
-				dts.activateStatic(ureq, RepositorySite.class.getName(), "search.catalog:" + selectedCategoryLevel.getKey());
-				
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("CatalogEntry", selectedCategoryLevel.getKey());
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
+				dts.activateStatic(ureq, RepositorySite.class.getName(), entries);
 			} else if (action.equals(CategoriesListModel.ACTION_DELETE)) {
 				// remove selected entry from the data model
 				CatalogManager cm = CatalogManager.getInstance();

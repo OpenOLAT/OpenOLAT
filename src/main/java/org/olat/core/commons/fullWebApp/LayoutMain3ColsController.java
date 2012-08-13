@@ -35,7 +35,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 import org.olat.core.id.context.ContextEntry;
@@ -69,7 +68,7 @@ import org.olat.core.id.context.StateEntry;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public class LayoutMain3ColsController extends MainLayoutBasicController implements MainLayout3ColumnsController, Activateable, Activateable2 {
+public class LayoutMain3ColsController extends MainLayoutBasicController implements MainLayout3ColumnsController, Activateable2 {
 	private VelocityContainer layoutMainVC;
 	// current columns components
 	private Component[] columns = new Component[3];
@@ -78,7 +77,6 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	private LayoutMain3ColsConfig localLayoutConfig;
 	private String layoutConfigKey = null;
 	private Panel panel1, panel2, panel3;
-	private Activateable activateableDelegate;	//fxdiff BAKS-7 Resume function
 	private Activateable2 activateableDelegate2;	//fxdiff BAKS-7 Resume function
 	private boolean fullScreen = false;
 	private BaseChiefController thebaseChief;
@@ -187,19 +185,8 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	}
 	
 	//fxdiff BAKS-7 Resume function
-	public void addActivateableDelegate(Activateable delegate) {
-		this.activateableDelegate = delegate;
-	}
-	//fxdiff BAKS-7 Resume function
 	public void addActivateableDelegate(Activateable2 delegate) {
 		this.activateableDelegate2 = delegate;
-	}
-	//fxdiff BAKS-7 Resume function
-	@Override
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if(activateableDelegate != null) {
-			activateableDelegate.activate(ureq, viewIdentifier);
-		}
 	}
 	//fxdiff BAKS-7 Resume function
 	@Override

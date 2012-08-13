@@ -25,9 +25,9 @@
 
 package org.olat.portal.quickstart;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -37,16 +37,12 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
-import org.olat.group.site.GroupsSite;
-import org.olat.home.HomeSite;
-import org.olat.repository.site.RepositorySite;
 
 /**
  * Description:<br>
@@ -58,8 +54,8 @@ import org.olat.repository.site.RepositorySite;
 public class QuickstartPortletRunController extends DefaultController {
 
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(QuickstartPortletRunController.class);
-	private Translator trans;
-	private VelocityContainer quickstartVC;
+	private final Translator trans;
+	private final VelocityContainer quickstartVC;
 	private Link helpLink;
 	
 	/**
@@ -69,7 +65,7 @@ public class QuickstartPortletRunController extends DefaultController {
 	 */
 	protected QuickstartPortletRunController(UserRequest ureq, WindowControl wControl) {
 		super(wControl);
-		this.trans = new PackageTranslator(Util.getPackageName(QuickstartPortletRunController.class), ureq.getLocale());
+		this.trans = Util.createPackageTranslator(QuickstartPortletRunController.class, ureq.getLocale());
 
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
@@ -87,20 +83,19 @@ public class QuickstartPortletRunController extends DefaultController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == quickstartVC) {
 			String cmd = event.getCommand();
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+			String businessPath = null;
 			if (cmd.equals("cmd.repo.course")) {
-				//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, RepositorySite.class.getName(), "search.course");
-				dts.activateStatic(ureq, RepositorySite.class.getName(), "search.course");
+				businessPath = "[RepositorySite:0][search.course:0]";
 			} else if (cmd.equals("cmd.repo.catalog")) {
-				//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, RepositorySite.class.getName(), "search.catalog");
-				dts.activateStatic(ureq, RepositorySite.class.getName(), "search.catalog");
+				businessPath = "[RepositorySite:0][search.catalog:0]";
 			} else if (cmd.equals("cmd.settings")) {
-				//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, HomeSite.class.getName(), "mysettings");
-				dts.activateStatic(ureq, HomeSite.class.getName(), "mysettings");
+				businessPath = "[HomeSite:" + ureq.getIdentity().getKey() + "][mysettings:0]";
 			}	else if (cmd.equals("cmd.buddygroup.new")) {
-				//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, GroupsSite.class.getName(), "addBuddyGroup");
-				dts.activateStatic(ureq, GroupsSite.class.getName(), "addBuddyGroup");
-			} 
+				businessPath = "[GroupsSite:0]";
+			}
+			if(StringHelper.containsNonWhitespace(businessPath)) {
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
 		} else if (source == helpLink) {
 			ControllerCreator ctrlCreator = new ControllerCreator() {
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {

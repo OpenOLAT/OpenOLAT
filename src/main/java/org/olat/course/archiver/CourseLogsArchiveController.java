@@ -146,7 +146,7 @@ public class CourseLogsArchiveController extends BasicController {
 				if (!relPath.endsWith("/")) {
 					relPath = relPath + "/";
 				}
-				bcrun.activate(ureq, relPath);
+				bcrun.activatePath(ureq, relPath);
 			}
 			
 			String personalFolder = Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale(), null).translate("menu.bc");

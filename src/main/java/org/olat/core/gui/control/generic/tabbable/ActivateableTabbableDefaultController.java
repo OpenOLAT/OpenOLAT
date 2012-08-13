@@ -26,12 +26,14 @@
 
 package org.olat.core.gui.control.generic.tabbable;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 
 /**
  * Description:<br>
@@ -41,7 +43,7 @@ import org.olat.core.logging.OLATRuntimeException;
  * 
  * @author patrick
  */
-public abstract class ActivateableTabbableDefaultController extends TabbableDefaultController implements Activateable {
+public abstract class ActivateableTabbableDefaultController extends TabbableDefaultController implements Activateable2 {
 
 	public ActivateableTabbableDefaultController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -66,36 +68,35 @@ public abstract class ActivateableTabbableDefaultController extends TabbableDefa
 		return new ActivateableTabbableDefaultController[] {};
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest,
-	 *      java.lang.String)
-	 */
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		// viewIdentifier contains key of tab to be activated
-		TabbedPane myTabbedPane = getTabbedPane();
-		Translator translator = getTranslator();
-		String[] paneKeys = getPaneKeys();
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
 
-		if (myTabbedPane == null) { throw new OLATRuntimeException("tabs not yet added!", new IllegalStateException()); }
+		//viewIdentifier contains key of tab to be activated
+		TabbedPane myTabbedPane = getTabbedPane();
+		if (myTabbedPane == null) return;
+
+
+		String[] paneKeys = getPaneKeys();
+		String tabKey = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		boolean foundKey = false;
 		if (paneKeys.length > 0) {
 			int i = 0;
 			while (!foundKey && i<paneKeys.length) {
-				foundKey = viewIdentifier.equals(paneKeys[i]);
+				foundKey = tabKey.equals(paneKeys[i]);
 				i++;
 			}
 		}
 		if (foundKey) {
 			// it is a tab which we know
-			myTabbedPane.setSelectedPane(translator.translate(viewIdentifier));
+			myTabbedPane.setSelectedPane(translate(tabKey));
 		} else {
 			// it may be a tab of our children
 			ActivateableTabbableDefaultController[] children = getChildren();
 			for (int j = 0; j < children.length; j++) {
-				children[j].activate(ureq, viewIdentifier);
+				children[j].activate(ureq, entries, state);
 			}
 		}
 		// if no activation happened, at least the first tab is selected.
 	}
-
 }

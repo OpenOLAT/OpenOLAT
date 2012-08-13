@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.wiki;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -43,6 +45,8 @@ import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.course.ICourse;
@@ -51,6 +55,7 @@ import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -232,7 +237,8 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 				dt.setController(editorController);
 				dts.addDTab(dt);
 			}
-			dts.activate(ureq, dt, RepositoryDetailsController.ACTIVATE_EDITOR);
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
+			dts.activate(ureq, dt, entries);
 		}
 
 	}

@@ -64,7 +64,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
@@ -114,7 +113,7 @@ import org.olat.user.UserManager;
  * It provides a menu that allows three different access paths to the same data: user centric, group 
  * centric or course node centric.
  */
-public class AssessmentMainController extends MainLayoutBasicController implements Activateable, Activateable2, GenericEventListener {
+public class AssessmentMainController extends MainLayoutBasicController implements Activateable2, GenericEventListener {
 	OLog log = Tracing.createLoggerFor(AssessmentMainController.class);
 
 	private static final String CMD_INDEX 			= "cmd.index";
@@ -1188,28 +1187,17 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		}
 		}
 	}
-	
-	/**
-	 * 
-	 * @param ureq
-	 * @param viewIdentifier if 'node-choose' does activate node-choose view
-	 */
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if (viewIdentifier != null && viewIdentifier.equals("node-choose")) {
-      // jump to state node-choose
-			doNodeChoose(ureq);
-		}
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		
+
 		ContextEntry firstEntry = entries.get(0);
 		String type = firstEntry.getOLATResourceable().getResourceableTypeName();
 		Long resId = firstEntry.getOLATResourceable().getResourceableId();
-		if("Identity".equals(type)) {
-			
+		if("node-choose".equals(type)) {
+			doNodeChoose(ureq);
+		} else if("Identity".equals(type)) {
 			TreeNode userNode = TreeHelper.findNodeByUserObject(CMD_USERFOCUS, menuTree.getTreeModel().getRootNode());
 			if(userNode != null) {
 

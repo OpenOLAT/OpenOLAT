@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 
@@ -42,7 +41,7 @@ import org.olat.core.util.vfs.VFSContainer;
  * 
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
-public class GlossaryItemEditorController extends BasicController implements Activateable{
+public class GlossaryItemEditorController extends BasicController {
 
 	private TabbedPane glossEditTabP;
 	private GlossaryDefinitionController defCtrl;
@@ -132,10 +131,4 @@ public class GlossaryItemEditorController extends BasicController implements Act
 			}	
 		}
 	}
-
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		// nothing		
-	}
-	
-	
 }

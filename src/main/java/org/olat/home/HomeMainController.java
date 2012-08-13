@@ -24,7 +24,6 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
 import org.olat.core.id.context.ContextEntry;
@@ -38,7 +37,7 @@ import org.olat.core.id.context.StateEntry;
  * 
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
-public class HomeMainController extends GenericMainController implements Activateable, Activateable2 {
+public class HomeMainController extends GenericMainController implements Activateable2 {
 
 	public HomeMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -53,11 +52,6 @@ public class HomeMainController extends GenericMainController implements Activat
 	@Override
 	protected Controller handleOwnMenuTreeEvent(Object uobject, UserRequest ureq) {
 		return null;
-	}
-
-	@Override
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		super.activate(ureq, viewIdentifier);
 	}
 
 	@Override

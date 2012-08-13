@@ -37,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -47,7 +46,7 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  3 dec. 2009 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class ResultsSearchController extends SearchInputController implements Activateable {
+public class ResultsSearchController extends SearchInputController {
 
 	private boolean extendedSearch;
 	private FormLink simpleSearchLink;
@@ -245,19 +244,5 @@ public class ResultsSearchController extends SearchInputController implements Ac
 	@Override
 	protected void doDispose() {
 		//
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest, java.lang.String)
-	 * 
-	 * The given string is interpreted as a search string
-	 * 
-	 */
-	@Override
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if (StringHelper.containsNonWhitespace(viewIdentifier)) {
-			searchInput.setValue(viewIdentifier);
-			doSearch(ureq);
-		}
 	}
 }

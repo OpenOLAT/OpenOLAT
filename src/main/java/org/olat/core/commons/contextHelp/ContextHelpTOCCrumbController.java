@@ -40,7 +40,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.breadcrumb.CrumbBasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.translator.PackageTranslator;
 
 /**
@@ -57,7 +56,7 @@ import org.olat.core.gui.translator.PackageTranslator;
  * 
  * @author gnaegi
  */
-class ContextHelpTOCCrumbController extends CrumbBasicController implements Activateable {	
+class ContextHelpTOCCrumbController extends CrumbBasicController {	
 	private VelocityContainer tocVC;
 	private List<String> pageIdentifyers;
 	private List<Link> pageLinks;
@@ -119,7 +118,7 @@ class ContextHelpTOCCrumbController extends CrumbBasicController implements Acti
 			Link link = (Link) source;
 			// Get requested page from link
 			String pageIdentifyer = (String) link.getUserObject();
-			activate(ureq, pageIdentifyer);
+			activatePage(ureq, pageIdentifyer);
 		}
 	}
 	
@@ -181,14 +180,14 @@ class ContextHelpTOCCrumbController extends CrumbBasicController implements Acti
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest,
-	 *      java.lang.String)
-	 */
-	public void activate(UserRequest ureq, String pageIdentifyer) {
+	public void activatePage(UserRequest ureq, String pageIdentifyer) {
 		int splitPos = pageIdentifyer.indexOf(":");
 		String bundleName = pageIdentifyer.substring(0, splitPos);
 		String page = pageIdentifyer.substring(splitPos+1);
+		activatePage(ureq, bundleName, page);
+	}
+
+	public void activatePage(UserRequest ureq, String bundleName, String page) {
 		// Add new crumb controller now. Old one is disposed automatically
 		ContextHelpPageCrumbController pageCrumController = new ContextHelpPageCrumbController(ureq, getWindowControl(), bundleName, page, getLocale());
 		activateAndListenToChildCrumbController(pageCrumController);

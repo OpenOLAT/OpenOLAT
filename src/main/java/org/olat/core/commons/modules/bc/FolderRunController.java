@@ -61,7 +61,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -99,7 +98,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  * 
  * @author Felix Jost, Florian Gnägi
  */
-public class FolderRunController extends BasicController implements Activateable, Activateable2 {
+public class FolderRunController extends BasicController implements Activateable2 {
 
 	private OLog log = Tracing.createLoggerFor(this.getClass());
 	
@@ -263,7 +262,7 @@ public class FolderRunController extends BasicController implements Activateable
 			if(path.endsWith(":0")) {
 				path = path.substring(0, path.length() - 2);
 			}
-			activate(ureq, path);
+			activatePath(ureq, path);
 		}
 		    
 		enableDisableQuota(ureq);		
@@ -479,15 +478,11 @@ public class FolderRunController extends BasicController implements Activateable
 			folderComponent.setCurrentContainerPath(path);
 			updatePathResource(ureq);
 		} else {
-			activate(ureq, path);
+			activatePath(ureq, path);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest,
-	 *      java.lang.String)
-	 */
-	public void activate(UserRequest ureq, String path) {
+	public void activatePath(UserRequest ureq, String path) {
 		if (path != null && path.length() > 0) {
 			// Check if there is something after path= e.g. '/test1/test2/readme.txt'
 			if (path.lastIndexOf("/") > 0) {

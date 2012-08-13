@@ -29,8 +29,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
-import org.olat.core.id.Identity;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.PublisherData;
@@ -51,7 +50,7 @@ public class AssessmentControllerCreatorOlat implements AssessmentControllerCrea
 	
 	
 	@Override
-	public Activateable createAssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
+	public Activateable2 createAssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
 		return new AssessmentMainController(ureq, wControl, ores, assessmentCallback);
 	}
 	

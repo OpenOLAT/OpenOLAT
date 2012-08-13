@@ -72,6 +72,8 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -493,7 +495,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private void jumpToNodeEditor(String activatorIdent, UserRequest ureq, CourseNode chosenNode, CourseGroupManager groupMgr) {
 		initNodeEditor(ureq, chosenNode);
 		if (nodeEditCntrllr instanceof ActivateableTabbableDefaultController) {
-			((ActivateableTabbableDefaultController) nodeEditCntrllr).activate(ureq, activatorIdent);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(activatorIdent, 0l);
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
+			((ActivateableTabbableDefaultController) nodeEditCntrllr).activate(ureq, entries, null);
 		}
 	}
 

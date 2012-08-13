@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -40,7 +39,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.portal.AbstractPortletRunController;
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
@@ -53,7 +51,6 @@ import org.olat.repository.RepositoryEntryOrder;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.site.RepositorySite;
 
 
 /**
@@ -166,14 +163,8 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink){
-			// activate learning resource tab in top navigation and active my courses menu item
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			//attach controller / action extension dynamically to lr-site
-			if (studentView) {
-				dts.activateStatic(ureq, RepositorySite.class.getName(), "search.mycourses.student");
-			} else {
-				dts.activateStatic(ureq, RepositorySite.class.getName(), "search.mycourses.teacher");
-			}			
+			String target = studentView ? "search.mycourses.student" : "search.mycourses.teacher";
+			NewControllerFactory.getInstance().launch("[RepositorySite:0][" + target + ":0]", ureq, getWindowControl());
 		} 
 	}
 

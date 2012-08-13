@@ -39,12 +39,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -63,7 +65,7 @@ import org.olat.core.util.vfs.VFSContainer;
  * 
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
-public class GlossaryMainController extends BasicController implements Activateable {
+public class GlossaryMainController extends BasicController implements Activateable2 {
 
 	private VelocityContainer glistVC;
 	private Link addButton;
@@ -258,12 +260,11 @@ public class GlossaryMainController extends BasicController implements Activatea
 
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest,
-	 *      java.lang.String)
-	 */
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		// if already open from LR and tab gets activated from course:
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String viewIdentifier = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if (viewIdentifier != null){
 			boolean allowEdit = Boolean.parseBoolean(viewIdentifier);
 			initEditView(ureq, allowEdit);

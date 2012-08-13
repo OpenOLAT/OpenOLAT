@@ -660,7 +660,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				dt.setController(ctrl);
 				dts.addDTab(dt);
 			}
-			dts.activate(ureq, dt, RepositoryDetailsController.ACTIVATE_RUN);	
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_RUN);
+			dts.activate(ureq, dt, entries);	
 			/**
 			 * close detail page after resource is closed
 			 * DONE_EVENT will be catched by RepositoryMainController
@@ -677,29 +678,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private boolean checkIsRepositoryEntryLaunchable(UserRequest ureq) {
 		RepositoryHandler type = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		RepositoryManager rm = RepositoryManager.getInstance();
-		
+
 		if (rm.isAllowedToLaunch(ureq, repositoryEntry) || (type.supportsLaunch(repositoryEntry) && ureq.getUserSession().getRoles().isOLATAdmin())) {
 			return true;
-		}// else if(!rm.isAllowedToLaunch(ureq, repositoryEntry)){
-			return false;
-		//}
-		// OLAT-5571: noticed while reviewing OLAT-5571: below code was never called due to if statement above
-/*		if (type instanceof CourseHandler) {
-			// course
-			ICourse course = CourseFactory.loadCourse(repositoryEntry.getOlatResource());
-			CourseNode rootNode = course.getRunStructure().getRootNode();
-			UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course
-					.getCourseEnvironment());
-			NodeEvaluation nodeEval = rootNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
-			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);
-			if (!mayAccessWholeTreeUp || !nodeEval.isVisible()) {
-				String explan = rootNode.getNoAccessExplanation();
-				String sExplan = (explan == null ? translate("launch.noaccess") : Formatter.formatLatexFormulas(explan));
-				main.contextPut("disabledlaunchreason", sExplan);
-				return false;
-			}
 		}
-		return repositoryEntry.getCanLaunch(); */
+		return false;
 	}
 
 	private boolean checkIsRepositoryEntryTypeLaunchable() {
@@ -846,7 +829,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			dt.setController(editorController);
 			dts.addDTab(dt);
 		}
-		dts.activate(ureq, dt, RepositoryDetailsController.ACTIVATE_EDITOR);
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
+		dts.activate(ureq, dt, entries);
 	}
 
 

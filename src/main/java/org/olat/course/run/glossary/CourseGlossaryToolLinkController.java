@@ -24,6 +24,8 @@
 */
 package org.olat.course.run.glossary;
 
+import java.util.List;
+
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -46,6 +48,8 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -147,7 +151,8 @@ public class CourseGlossaryToolLinkController extends BasicController {
 			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(cc.getGlossarySoftKey(), false);
 			DTab dt = dts.getDTab(repoEntry.getOlatResource());
 			if (dt != null) {
-				dts.activate(ureq, dt, ((Boolean)allowGlossaryEditing).toString());
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(allowGlossaryEditing ? "true" : "false");
+				dts.activate(ureq, dt, entries);
 			} else {
 				ControllerCreator ctrlCreator = new ControllerCreator() {
 					public Controller createController(UserRequest lureq, WindowControl lwControl) {

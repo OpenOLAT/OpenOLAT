@@ -38,7 +38,6 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
@@ -55,9 +54,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
@@ -74,9 +71,9 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.GenericEventListener;
@@ -125,9 +122,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
-import org.olat.repository.controllers.RepositoryDetailsController;
-import org.olat.repository.controllers.RepositoryMainController;
-import org.olat.repository.site.RepositorySite;
 import org.olat.resource.accesscontrol.ui.SecurityGroupsRepositoryMainController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -136,7 +130,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Felix Jost
  */
-public class RunMainController extends MainLayoutBasicController implements GenericEventListener, Activateable, Activateable2 {
+public class RunMainController extends MainLayoutBasicController implements GenericEventListener, Activateable2 {
 	private static final String COMMAND_EDIT = "gotoeditor";
 	private static final String TOOLBOX_LINK_COURSECONFIG = "courseconfig";
 
@@ -302,18 +296,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				showAssessmentTool = true;
 			}
 		}
-		/*
-		 * ContextEntry curCe = bc.getCurrentEntryAndAdvance(); if (curCe != null) { //
-		 * e.g something like FOCourseNode:3243 or AssementTool:0 or AssmentTool:1
-		 * (0,1 must be dokumented) OLATResourceable ores =
-		 * curCe.getOLATResourceable(); if (OresHelper.isOfType(ores,
-		 * CourseNode.class)) { // TODO, don't use CourseNode.class, but a lookup
-		 * using the ClassToId class // jump to the coursenode with id Long nodeId =
-		 * ores.getResourceableId(); String nodeIdS = nodeId.toString();
-		 * currentCourseNode = course.getRunStructure().getNode(nodeIdS); } else {
-		 * //TODO assessment tool } }
-		 */
-		
 		
 		String subsubId = null;
 		String assessmentViewIdentifier = null;
@@ -401,7 +383,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// decide what is show fist - a tool since activaded this way or the regular
 		// course view
 		if (showAssessmentTool) {
-			launchAssessmentTool(ureq, assessmentViewIdentifier);
+			List<ContextEntry> entries = null;
+			if(StringHelper.containsNonWhitespace(assessmentViewIdentifier)) {
+				entries = BusinessControlFactory.getInstance().createCEListFromResourceType(assessmentViewIdentifier);
+			}
+			launchAssessmentTool(ureq, entries);
 			coursemain = createVelocityContainer("index");
 			coursemain.put("coursemain", all);
 		} else {
@@ -922,16 +908,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			openInNewBrowserWindow(ureq, popupLayoutCtr);
 			//
 		} else if (cmd.equals(TOOLBOX_LINK_COURSECONFIG)) {
-			//FIXME:pb:a better workflows to link a course detail page from course run
-			//was brasato getWindowControl().getDTabs().activateStatic(ureq, RepositorySite.class.getName(),RepositoryMainController.JUMPFROMEXTERN + RepositoryMainController.JUMPFROMCOURSE + courseRepositoryEntry.getKey().toString());
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			if(dts != null){
-				dts.activateStatic(ureq, RepositorySite.class.getName(),RepositoryMainController.JUMPFROMEXTERN + RepositoryMainController.JUMPFROMCOURSE + courseRepositoryEntry.getKey().toString());
-			}else{
-				//help course in popup window can not display detail page
-				getWindowControl().setInfo("detail can not be displayed here");
-			}
-			return;
+			String businessPath = "[RepositorySite:0][RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} else if (cmd.equals(ACTION_BOOKMARK)) { // add bookmark
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 			bookmarkController = new AddAndEditBookmarkController(ureq, getWindowControl(), re.getDisplayname(), "", re, re.getOlatResource()
@@ -960,27 +938,27 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} 
 	}
 
-	private Activateable launchAssessmentTool(UserRequest ureq, String viewIdentifier) {
+	private Activateable2 launchAssessmentTool(UserRequest ureq, List<ContextEntry> entries) {
 		OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentTool");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		
 		// 1) course admins and users with tool right: full access
 		if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin) {
-			Activateable assessmentToolCtr = 
+			Activateable2 assessmentToolCtr = 
 				AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course, new FullAccessAssessmentCallback(isCourseAdmin));
-			assessmentToolCtr.activate(ureq, viewIdentifier);
-			currentToolCtr = assessmentToolCtr;
+			assessmentToolCtr.activate(ureq, null, null);
+			currentToolCtr = (Controller)assessmentToolCtr;
 			listenTo(currentToolCtr);
 			all.setContent(currentToolCtr.getInitialComponent());
 			return assessmentToolCtr;
 		}
 		// 2) users with coach right: limited access to coached groups
 		else if (isCourseCoach) {
-			Activateable assessmentToolCtr = AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course,
+			Activateable2 assessmentToolCtr = AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course,
 					new CoachingGroupAccessAssessmentCallback());
-			assessmentToolCtr.activate(ureq, viewIdentifier);
-			currentToolCtr = assessmentToolCtr;
+			assessmentToolCtr.activate(ureq, null, null);
+			currentToolCtr = (Controller)assessmentToolCtr;
 			listenTo(currentToolCtr);
 			all.setContent(currentToolCtr.getInitialComponent());
 			return assessmentToolCtr;
@@ -1333,10 +1311,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		logAudit("Leaving course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest,
-	 *      java.lang.String)
-	 */
+	/*
 	public void activate(UserRequest ureq, String viewIdentifier) {
 		if(isDisposed()) {
 			return;
@@ -1402,7 +1377,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		glossaryToolCtr = new CourseGlossaryToolLinkController(getWindowControl(), ureq, course, getTranslator(), hasGlossaryRights, 
 				uce.getCourseEnvironment(), glossaryMarkerCtr);
 		listenTo(glossaryToolCtr);
-	}
+	}*/
 
 	@Override
 	//fxdiff BAKS-7 Resume function
@@ -1432,11 +1407,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			//check the security before, the link is perhaps in the wrong hands
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
-					Activateable assessmentCtrl = launchAssessmentTool(ureq, null);
-					if(assessmentCtrl instanceof Activateable2) {
-						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						((Activateable2)assessmentCtrl).activate(ureq, subEntries, firstEntry.getTransientState());
-					}
+					Activateable2 assessmentCtrl = launchAssessmentTool(ureq, null);
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					assessmentCtrl.activate(ureq, subEntries, firstEntry.getTransientState());
 				} catch (OLATSecurityException e) {
 					//the wrong link to the wrong person
 				}

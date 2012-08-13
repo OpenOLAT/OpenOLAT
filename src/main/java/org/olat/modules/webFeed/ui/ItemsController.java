@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -56,6 +57,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.coordinate.LockResult;
@@ -81,9 +84,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author gwassmann
  */
-// ClosableModalController is deprecated. No alternative implemented.
-@SuppressWarnings("deprecation")
-public class ItemsController extends BasicController {
+public class ItemsController extends BasicController implements Activateable2 {
 
 	private VelocityContainer vcItems;
 	private ArrayList<Link> editButtons;
@@ -383,7 +384,7 @@ public class ItemsController extends BasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	protected void event(UserRequest ureq, Component source, @SuppressWarnings("unused") Event event) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		FeedManager feedManager = FeedManager.getInstance();
 		Feed feed = feedManager.getFeed(feedResource);
 		if (source == addItemButton) {
@@ -660,7 +661,8 @@ public class ItemsController extends BasicController {
 				// go to details page
 				Item item = (Item) commentsRatingsCtr.getUserObject();
 				ItemController myItemCtr = displayItemController(ureq, item);
-				myItemCtr.activate(ureq, ItemController.ACTIVATION_KEY_COMMENTS);
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(ItemController.ACTIVATION_KEY_COMMENTS);
+				myItemCtr.activate(ureq, entries, null);
 			}
 		}
 		
@@ -737,6 +739,21 @@ public class ItemsController extends BasicController {
 		listenTo(itemCtr);
 		mainPanel.setContent(itemCtr.getInitialComponent());
 		return itemCtr;
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty() || feedResource == null) return;
+		
+		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(itemId != null && itemId.startsWith("item=")) {
+			itemId = itemId.substring(5, itemId.length());
+		}
+		int index = feedResource.getItemIds().indexOf(itemId);
+		if (index >= 0) {
+			Item item = feedResource.getItems().get(index);
+			activate(ureq, item);
+		}
 	}
 
 	/**

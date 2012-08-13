@@ -26,6 +26,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -105,7 +107,8 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(this));
 		FeedMainController podcastCtr = PodcastUIFactory.getInstance(ureq.getLocale()).createMainController(entry.getOlatResource(), ureq, control,
 				callback, courseId, nodeId);
-		podcastCtr.activate(ureq, nodecmd);
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(nodecmd);
+		podcastCtr.activate(ureq, entries, null);
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, control, podcastCtr, this, "o_podcast_icon");
 		NodeRunConstructionResult result = new NodeRunConstructionResult(wrapperCtrl);
 		return result;

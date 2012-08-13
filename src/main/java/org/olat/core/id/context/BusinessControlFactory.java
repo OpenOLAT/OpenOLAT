@@ -281,11 +281,43 @@ public class BusinessControlFactory {
 		return bc;
 	}
 	
-	public List<ContextEntry> createCEListFromString(String businessControlString) {
-		// e.g. [repo:123][CourseNode:345][folder][path=/sdfsd/sdfd:0]
+	public List<ContextEntry> createCEListFromString(OLATResourceable... resources) {
 		List<ContextEntry> entries = new ArrayList<ContextEntry>();
-		BusinessControlFactory bcf = BusinessControlFactory.getInstance();
-		
+		if(resources != null && resources.length > 0) {
+			for(OLATResourceable resource:resources) {
+				ContextEntry entry = createContextEntry(resource);
+				entries.add(entry);
+			}
+		}
+		return entries;
+	}
+	
+	/**
+	 * helloworld will be an entry helloworld:0
+	 * @param resourceType
+	 * @return
+	 */
+	public List<ContextEntry> createCEListFromResourceType(String resourceType) {
+		List<ContextEntry> entries = new ArrayList<ContextEntry>(3);
+		if(StringHelper.containsNonWhitespace(resourceType)) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(resourceType, 0l);
+			ContextEntry entry = createContextEntry(ores);
+			entries.add(entry);
+		}
+		return entries;
+	}
+	
+	/**
+	 * e.g. [repo:123][CourseNode:345][folder][path=/sdfsd/sdfd:0]
+	 * @param businessControlString
+	 * @return
+	 */
+	public List<ContextEntry> createCEListFromString(String businessControlString) {
+		List<ContextEntry> entries = new ArrayList<ContextEntry>();
+		if(!StringHelper.containsNonWhitespace(businessControlString)) {
+			return entries;
+		}
+
 		Matcher m = PAT_CE.matcher(businessControlString);
 		while (m.find()) {
 			String ces = m.group(1);
@@ -312,7 +344,7 @@ public class BusinessControlFactory {
 					return Collections.emptyList();
 				}
 			}
-			ContextEntry ce = bcf.createContextEntry(ores);
+			ContextEntry ce = createContextEntry(ores);
 			entries.add(ce);
 		}
 		return entries;

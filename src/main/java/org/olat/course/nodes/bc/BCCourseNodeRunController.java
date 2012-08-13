@@ -34,7 +34,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -58,7 +57,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author gnaegi
  */
-public class BCCourseNodeRunController extends DefaultController implements Activateable, Activateable2 {
+public class BCCourseNodeRunController extends DefaultController implements Activateable2 {
 
 	private FolderRunController frc;
 
@@ -122,23 +121,15 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 			frc.dispose();
 			frc = null;
 		}
-
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest,
-	 *      java.lang.String)
-	 */
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		// delegate to real controller
+	
+	public void activatePath(UserRequest ureq, String path) {
 		if (frc != null) {
-			frc.activate(ureq, viewIdentifier);
+			frc.activatePath(ureq, path);
 		}
-		
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if (frc != null) {
 			frc.activate(ureq, entries, state);

@@ -24,14 +24,12 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
-
-import de.bps.course.assessment.AssessmentMainController;
-
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentControllerCreatorOlat;
 import org.olat.course.assessment.IAssessmentCallback;
+
 import de.bps.ims.qti.export.QTIArchiveWizardController;
 
 public class AssessmentControllerCreatorOnyx extends AssessmentControllerCreatorOlat {
@@ -40,7 +38,7 @@ public class AssessmentControllerCreatorOnyx extends AssessmentControllerCreator
 	 * @see org.olat.course.assessment.AssessmentMainControllerCreator#create(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.id.OLATResourceable, org.olat.course.assessment.IAssessmentCallback)
 	 */
 	@Override
-	public Activateable createAssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
+	public Activateable2 createAssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
 		return new AssessmentMainController(ureq, wControl, ores, assessmentCallback);
 	}
 	

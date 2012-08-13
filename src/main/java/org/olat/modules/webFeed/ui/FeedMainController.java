@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -31,8 +33,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -54,9 +58,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author gwassmann
  */
-// ClosableModalController is deprecated. No alternative implemented.
-@SuppressWarnings("deprecation")
-public class FeedMainController extends BasicController implements Activateable, GenericEventListener {
+public class FeedMainController extends BasicController implements Activateable2, GenericEventListener {
 
 	private static final FeedManager feedManager = FeedManager.getInstance();
 	private Feed feed;
@@ -165,7 +167,6 @@ public class FeedMainController extends BasicController implements Activateable,
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == editFeedButton) {
 			lock = feedManager.acquireLock(feed, ureq.getIdentity());
@@ -282,10 +283,14 @@ public class FeedMainController extends BasicController implements Activateable,
 		cmc.activate();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest, java.lang.String)
-	 */
-	public void activate(UserRequest ureq, String itemId) {
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(itemId != null && itemId.startsWith("item=")) {
+			itemId = itemId.substring(5, itemId.length());
+		}
 		int index = feed.getItemIds().indexOf(itemId);
 		if (index >= 0) {
 			Item item = feed.getItems().get(index);

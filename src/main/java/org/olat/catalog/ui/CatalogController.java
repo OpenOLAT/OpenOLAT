@@ -60,7 +60,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
@@ -147,7 +146,7 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  * Date: 2005/10/14 12:35:40 <br>
  * @author Felix Jost
  */
-public class CatalogController extends BasicController implements Activateable, Activateable2 {
+public class CatalogController extends BasicController implements Activateable2 {
 
 	// catalog actions
 	
@@ -246,7 +245,7 @@ public class CatalogController extends BasicController implements Activateable, 
 	 * @param wControl
 	 * @param rootce
 	 */
-	public CatalogController(UserRequest ureq, WindowControl wControl, String jumpToNode) {
+	public CatalogController(UserRequest ureq, WindowControl wControl) {
 		// fallback translator to repository package to reduce redundant translations
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 		
@@ -281,13 +280,8 @@ public class CatalogController extends BasicController implements Activateable, 
 		historyStack.add(rootce);
 		updateContent(ureq, rootce, 0);
 		
-		// jump to a specific node in the catalog structure, build corresponding
-		// historystack and update tool access
-		if (jumpToNode != null) {
-			activate(ureq, jumpToNode);
-		}
 		loginLink = LinkFactory.createLink("cat.login", myContent, this);
-		
+	
 		putInitialPanel(myContent);
 	}
 
@@ -1233,7 +1227,7 @@ public class CatalogController extends BasicController implements Activateable, 
 
 	/**
 	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest, java.lang.String)
-	 */
+	 *//*
 	public void activate(UserRequest ureq, String viewIdentifier){
 		 // transforms the parameter jumpToNode into a long value and calls jumpToNode(UserRequest, long)
 		try{
@@ -1242,7 +1236,7 @@ public class CatalogController extends BasicController implements Activateable, 
 		} catch(Exception e){
 			logWarn("Could not activate catalog entry with ID::" + viewIdentifier, null);
 		}
-	}
+	}*/
 	
 	/**
 	 * Internal helper: Get's the requested catalog node and set it as active

@@ -65,7 +65,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
@@ -76,6 +76,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -127,8 +128,8 @@ import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
  * It provides a menu that allows three different access paths to the same data: user centric, group
  * centric or course node centric.
  */
-public class AssessmentMainController extends MainLayoutBasicController implements Activateable, GenericEventListener {
-	OLog log = Tracing.createLoggerFor(AssessmentMainController.class);
+public class AssessmentMainController extends MainLayoutBasicController implements Activateable2, GenericEventListener {
+	private static final OLog log = Tracing.createLoggerFor(AssessmentMainController.class);
 
 	private static final String CMD_INDEX 			= "cmd.index";
 	private static final String CMD_USERFOCUS 	= "cmd.userfocus";
@@ -1367,7 +1368,11 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 * @param ureq
 	 * @param viewIdentifier if 'node-choose' does activate node-choose view
 	 */
-	public void activate(UserRequest ureq, String viewIdentifier) {
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String viewIdentifier = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if (viewIdentifier != null && viewIdentifier.equals("node-choose")) {
       // jump to state node-choose
 			doNodeChoose(ureq);

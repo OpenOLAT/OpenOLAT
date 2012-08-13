@@ -29,7 +29,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.ICourse;
 
@@ -50,7 +50,7 @@ public class AssessmentUIFactory {
 	}
 	
 	
-	public static Activateable createAssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
+	public static Activateable2 createAssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
 		return controllerCreator.createAssessmentMainController(ureq, wControl, ores, assessmentCallback);
 	}
 	

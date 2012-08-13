@@ -40,6 +40,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -89,7 +91,7 @@ public class CourseNodeFactory {
 		courseNodeConfigurationsAliases = new ArrayList<String>();
 		courseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
 		allCourseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
-		Map sortedMap = new TreeMap(); 
+		Map<Integer,CourseNodeConfiguration> sortedMap = new TreeMap<Integer,CourseNodeConfiguration>(); 
 		Map<String, Object> courseNodeConfigurationMap = CoreSpringFactory.getBeansOfType(OlatBeanTypes.courseNodeConfiguration);
 		Collection<Object> courseNodeConfigurationValues = courseNodeConfigurationMap.values();
 		for (Object object : courseNodeConfigurationValues) {
@@ -111,7 +113,7 @@ public class CourseNodeFactory {
 		}
 		
 		for (Object key : sortedMap.keySet()) {
-			CourseNodeConfiguration courseNodeConfiguration = (CourseNodeConfiguration)sortedMap.get(key);
+			CourseNodeConfiguration courseNodeConfiguration = sortedMap.get(key);
 			courseNodeConfigurationsAliases.add(courseNodeConfiguration.getAlias());
 			courseNodeConfigurations.put(courseNodeConfiguration.getAlias(), courseNodeConfiguration);
 		}
@@ -182,7 +184,8 @@ public class CourseNodeFactory {
 			dt.setController(editorController);
 			dts.addDTab(dt);
 		}
-		dts.activate(ureq, dt, RepositoryDetailsController.ACTIVATE_EDITOR);
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
+		dts.activate(ureq, dt, entries);
 	}
 
 }

@@ -50,7 +50,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -79,7 +78,7 @@ import org.olat.core.util.resource.OresHelper;
  * Initial Date:  24 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MailListController extends BasicController implements Activateable, Activateable2 {
+public class MailListController extends BasicController implements Activateable2 {
 	
 	private static final String CMD_READ_TOGGLE = "creadt";
 	private static final String CMD_READ = "cread";
@@ -383,22 +382,7 @@ public class MailListController extends BasicController implements Activateable,
 	protected void doDispose() {
 		//
 	}
-	
-	@Override
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if(!StringHelper.containsNonWhitespace(viewIdentifier) || "0".equals(viewIdentifier)) return;
-		
-		try {
-			Long mailKey = Long.parseLong(viewIdentifier);
-			selectMail(ureq, mailKey);
-		} catch(NumberFormatException e) {
-			//not a key
-			logWarn("Cannot activate with this identifier: " + viewIdentifier, e);
-		}
-	}
-	
-	
-	
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;

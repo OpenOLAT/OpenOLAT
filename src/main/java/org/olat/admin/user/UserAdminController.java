@@ -49,7 +49,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -79,7 +78,7 @@ import org.olat.user.UserPropertiesController;
  *  
  * </pre>
  */
-public class UserAdminController extends BasicController implements Activateable, Activateable2 {
+public class UserAdminController extends BasicController implements Activateable2 {
 
 		
 	// NLS support
@@ -144,33 +143,17 @@ public class UserAdminController extends BasicController implements Activateable
 			this.putInitialPanel(new Panel("empty"));
 		}
 	}
-
-	/**
-	 * Possible activation parameters are:
-	 * edit.uprofile
-	 * edit.uprefs
-	 * edit.upwd
-	 * edit.uauth
-	 * edit.uprop
-	 * edit.upolicies
-	 * edit.uroles
-	 * edit.uquota
-	 * @param ureq
-	 * @param viewIdentifier
-	 */
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if (userTabP != null) userTabP.setSelectedPane(translate(viewIdentifier));
-		// do nothing if not initialized
-	}
 	
 	@Override
 	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
 		String entryPoint = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("tab".equals(entryPoint)) {
 			userTabP.activate(ureq, entries, state);
-		} else {
-			activate(ureq, entryPoint);
+		} else if (userTabP != null) {
+				userTabP.setSelectedPane(translate(entryPoint));
 		}
 	}
 

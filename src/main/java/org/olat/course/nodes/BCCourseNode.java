@@ -112,7 +112,7 @@ public class BCCourseNode extends GenericCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		BCCourseNodeRunController bcCtrl = new BCCourseNodeRunController(ne, userCourseEnv.getCourseEnvironment(), ureq, wControl);
 		if (StringHelper.containsNonWhitespace(nodecmd)) {
-			bcCtrl.activate(ureq, nodecmd);			
+			bcCtrl.activatePath(ureq, nodecmd);			
 		}
 		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, bcCtrl, this, "o_bc_icon");
 		return new NodeRunConstructionResult(titledCtrl);

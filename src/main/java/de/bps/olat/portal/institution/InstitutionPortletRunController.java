@@ -25,8 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.ControllerFactory;
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -45,7 +44,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.site.RepositorySite;
 
 public class InstitutionPortletRunController extends BasicController {
 	
@@ -202,9 +200,9 @@ public class InstitutionPortletRunController extends BasicController {
 				}
 			} else if (polyLink.getLinkType().equals(InstitutionPortlet.TYPE_CATALOG)) {
 				try {
-					CatalogEntry ce = CatalogManager.getInstance().loadCatalogEntry(resultIDForUser != null ? resultIDForUser : defaultID);
-					DTabs dts = (DTabs) getWindowControl().getWindowBackOffice().getWindow().getAttribute("DTabs");
-					dts.activateStatic(ureq, RepositorySite.class.getName(), "search.catalog:" + ce.getKey());
+					Long ceKey = resultIDForUser != null ? resultIDForUser : defaultID;
+					String businessPath = "[CatalogEntry:" + ceKey + "]";
+					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 				} catch (Exception e) {
 					Tracing.createLoggerFor(InstitutionPortletRunController.class).error(e.getMessage());
 					getWindowControl().setWarning(translate("warn.cantlaunch"));

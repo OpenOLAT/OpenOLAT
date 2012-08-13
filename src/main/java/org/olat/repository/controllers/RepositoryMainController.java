@@ -46,7 +46,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -58,7 +57,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -102,13 +100,11 @@ import de.bps.olat.repository.controllers.WizardAddOwnersController;
  * @date Initial Date: Oct 21, 2004 <br>
  * @author Felix Jost
  */
-public class RepositoryMainController extends MainLayoutBasicController implements Activateable, Activateable2 {
+public class RepositoryMainController extends MainLayoutBasicController implements Activateable2 {
 
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(RepositoryMainController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(RepositoryManager.class);
 
-	public static final String JUMPFROMEXTERN = "jumpfromextern";
-	public static final String JUMPFROMCOURSE = "jumpfromcourse";
 	static final String ACTION_NEW_CREATECOURSE = "cco";
 	static final String ACTION_NEW_CREATETEST = "cte";
 	static final String ACTION_NEW_CREATESURVEY = "csu";
@@ -199,19 +195,23 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 
 		menuTree = new MenuTree("repoTree");
 		menuTree.setTreeModel(buildTreeModel(isAuthor));
-		menuTree.setSelectedNodeId(menuTree.getTreeModel().getRootNode().getIdent());
+		TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+		menuTree.setSelectedNode(rootNode);
 		menuTree.addListener(this);
 
 		Component toolComp = (mainToolC == null ? null : mainToolC.getInitialComponent());
 		columnsLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, toolComp, mainPanel, "repomain");
 		columnsLayoutCtr.addCssClassToMain("o_repository");
-		
 		listenTo(columnsLayoutCtr);
 		
 		if (isAuthor || ureq.getUserSession().getRoles().isOLATAdmin()) {
-			activate(ureq, "search.my");
+			activateContent(ureq, "search.my", null, null);
+			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.my", rootNode);
+			menuTree.setSelectedNode(activatedNode);
 		} else {
-			activate(ureq, "search.catalog");
+			activateContent(ureq, "search.catalog", null, null);
+			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.catalog", rootNode);
+			menuTree.setSelectedNode(activatedNode);
 		}
 		
 		putInitialPanel(columnsLayoutCtr.getInitialComponent());
@@ -327,7 +327,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 				Object userObject = clickedNode.getUserObject();
 				long duration1 = System.currentTimeMillis() - start;
 				log.info("Repo-Perf: duration1=" + duration1);
-				activateContent(ureq, userObject, null);
+				activateContent(ureq, userObject, null, null);
 			}
 		}
 		long duration = System.currentTimeMillis() - start;
@@ -342,7 +342,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	 * @param uObj
 	 * @param subViewIdentifyer optional view identifyer for a sub controller
 	 */
-	private void activateContent(UserRequest ureq, Object userObject, String subViewIdentifyer) {
+	private void activateContent(UserRequest ureq, Object userObject, List<ContextEntry> entries, StateEntry state) {
 		log.info("activateContent userObject=" + userObject);
 		if (userObject.equals("search.home")) { // the
 			// home
@@ -356,7 +356,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			searchController.enableBackToSearchFormLink(true);
 		} else if (userObject.equals("search.catalog")) {
 			// enter catalog browsing
-			activateCatalogController(ureq, subViewIdentifyer);
+			activateCatalogController(ureq, entries, state);
 			mainPanel.setContent(catalogCntrllr.getInitialComponent());
 		} else if (userObject.equals("search.my")) { // search
 			// own resources
@@ -452,7 +452,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		searchWindowControl = addToHistory(ureq, ores, null);
 	}
 
-	private void activateCatalogController(UserRequest ureq, String nodeId) {
+	private void activateCatalogController(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		// create new catalog controller with given node if none exists
 		// create also new catalog controller when the user clicked twice on the
 		// catalog link in the menu
@@ -461,14 +461,11 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			//fxdiff BAKS-7 Resume function
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("search.catalog", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			catalogCntrllr = new CatalogController(ureq, bwControl, nodeId);
+			catalogCntrllr = new CatalogController(ureq, bwControl);
 			listenTo(catalogCntrllr);
-		} else {
-			// just activate the existing catalog
-			if (nodeId != null) {
-				catalogCntrllr.activate(ureq, nodeId);
-			}
 		}
+		catalogCntrllr.activate(ureq, entries, state);
+
 		// set correct tool controller
 		ToolController ccToolCtr = catalogCntrllr.createCatalogToolController();
 		Component toolComp = (ccToolCtr == null ? null : ccToolCtr.getInitialComponent());
@@ -816,11 +813,10 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	}
 	
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		ContextEntry entry = entries.remove(0);
+		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
 		//activate the catalog
 		if(CatalogEntry.class.getSimpleName().equals(type)) {
@@ -828,85 +824,34 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.catalog", rootNode);
 			if (activatedNode != null) {
 				menuTree.setSelectedNodeId(activatedNode.getIdent());
-				String catId = entry.getOLATResourceable().getResourceableId().toString();
-				activateContent(ureq, "search.catalog", catId);
+				activateContent(ureq, "search.catalog", entries, entry.getTransientState());
+			}
+		} else if (RepositoryEntry.class.getSimpleName().equals(type)) {
+			Long key = entry.getOLATResourceable().getResourceableId();
+			RepositoryEntry selectedEntry = RepositoryManager.getInstance().lookupRepositoryEntry(key);
+			if (selectedEntry != null) {
+				ToolController toolC = detailsController.setEntry(selectedEntry, ureq, true);
+				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
+				columnsLayoutCtr.setCol2(toolComp);
+				mainPanel.setContent(detailsController.getInitialComponent());
 			}
 		} else {
 			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject(type, rootNode);
 			if (activatedNode != null) {
 				menuTree.setSelectedNodeId(activatedNode.getIdent());
-				long resId = entry.getOLATResourceable().getResourceableId();
-				activateContent(ureq, type, resId != 0 ? Long.toString(resId) : null);
-				if(!entries.isEmpty()) {
-					ContextEntry nextEntry = entries.get(0);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				activateContent(ureq, type, subEntries, entry.getTransientState());
+				if(!subEntries.isEmpty()) {
+					ContextEntry nextEntry = subEntries.get(0);
 					String subType = nextEntry.getOLATResourceable().getResourceableTypeName();
 					if(RepositoryEntry.class.getSimpleName().equals(subType)) {
-						searchController.activate(ureq, entries, entry.getTransientState());
-						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						detailsController.activate(ureq, subEntries, nextEntry.getTransientState());
+						searchController.activate(ureq, subEntries, nextEntry.getTransientState());
+						detailsController.activate(ureq, subEntries.subList(1, subEntries.size()), nextEntry.getTransientState());
 					} else if(CatalogEntry.class.getSimpleName().equals(subType)) {
-						catalogCntrllr.activate(ureq, entries, entry.getTransientState());
+						catalogCntrllr.activate(ureq, subEntries, entry.getTransientState());
 					}
 				}
-			}
-		}
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest,
-	 *      java.lang.String)
-	 */
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		// REVIEW:pb: activate is now also used for course details activation
-		// REVIEW:pb:concept for jumping between activateables, instead of
-		// hardcoding each dependency
-		// REVIEW:pb:like jumpfromcourse, backtocatalog, etc.
-		if (viewIdentifier.startsWith(JUMPFROMEXTERN)) {
-			viewIdentifier = viewIdentifier.replaceFirst(JUMPFROMEXTERN, "").trim();
-			boolean jumpfromcourse = false;
-
-			if (viewIdentifier.startsWith(JUMPFROMCOURSE)) {
-				viewIdentifier = viewIdentifier.replaceFirst(JUMPFROMCOURSE, "").trim();
-				jumpfromcourse = true;
-			}
-
-			Long key = new Long(0);
-			try {
-				key = Long.valueOf(viewIdentifier);
-			} catch (NumberFormatException e) {
-				throw new AssertException(e.getMessage());
-			}
-			RepositoryEntry selectedEntry = RepositoryManager.getInstance().lookupRepositoryEntry(key);
-			if (selectedEntry != null) {
-				ToolController toolC = detailsController.setEntry(selectedEntry, ureq, jumpfromcourse);
-				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-				columnsLayoutCtr.setCol2(toolComp);
-				mainPanel.setContent(detailsController.getInitialComponent());
-			}
-		} else if (viewIdentifier.startsWith(CatalogEntry.class.getSimpleName())) {
-			String catId = viewIdentifier.substring(viewIdentifier.indexOf(':') + 1);
-			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
-			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.catalog", rootNode);
-			if (activatedNode != null) {
-				menuTree.setSelectedNodeId(activatedNode.getIdent());
-				activateContent(ureq, "search.catalog", catId);
-			}
-		} else {
-			// find the menu node that has the user object that represents the
-			// viewIdentifyer
-			// sub view identifyers are separated with ":" characters
-			String[] parsedViewIdentifyers = viewIdentifier.split(":");
-
-			TreeNode rootNode = this.menuTree.getTreeModel().getRootNode();
-			TreeNode activatedNode = TreeHelper.findNodeByUserObject(parsedViewIdentifyers[0], rootNode);
-			if (activatedNode != null) {
-				this.menuTree.setSelectedNodeId(activatedNode.getIdent());
-				activateContent(ureq, parsedViewIdentifyers[0], (parsedViewIdentifyers.length > 1 ? parsedViewIdentifyers[1] : null));
-			} else {
-				// not found, activate the root node
-				this.menuTree.setSelectedNodeId(rootNode.getIdent());
-				activateContent(ureq, parsedViewIdentifyers[0], null);
 			}
 		}
 	}
