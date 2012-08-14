@@ -19,9 +19,16 @@
  */
 package org.olat.util;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.exception.MethodInvocationException;
+import org.apache.velocity.exception.ParseErrorException;
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.olat.util.FunctionalHomeSiteUtil.EPortfolioAction;
 import org.olat.util.FunctionalUtil.OlatSite;
 
@@ -47,7 +54,9 @@ public class FunctionalEPortfolioUtil {
 	public final static String CREATE_TEMPLATE_BINDER_CSS = "o_sel_create_template_map";
 	public final static String OPEN_BINDER_ICON_CSS = "b_open_icon";
 	
-	public final static String EPORTFOLIO_TABLE_OF_CONTENTS = "b_portfolio_toc";
+	public final static String EPORTFOLIO_TABLE_OF_CONTENTS_CSS = "b_portfolio_toc";
+	public final static String EPORTFOLIO_TOC_LEVEL1_CSS = "level1";
+	public final static String EPORTFOLIO_TOC_LEVEL2_CSS = "level2";
 	
 	public final static String ADD_PAGE_CSS = "b_eportfolio_add_link";
 	public final static String PAGE_TABS_CSS = "b_pagination";
@@ -71,7 +80,9 @@ public class FunctionalEPortfolioUtil {
 	private String createTemplateBinderCss;
 	private String openBinderCss;
 	
-	private String eportfolioTableOfContents;
+	private String eportfolioTableOfContentsCss;
+	private String eportfolioTOCLevel1Css;
+	private String eportfolioTOCLevel2Css;
 	
 	private String addPageCss;
 	private String pageTabsCss;
@@ -96,6 +107,10 @@ public class FunctionalEPortfolioUtil {
 		setCreateDefaultBinderCss(CREATE_DEFAULT_BINDER_CSS);
 		setCreateTemplateBinderCss(CREATE_TEMPLATE_BINDER_CSS);
 		setOpenBinderCss(OPEN_BINDER_ICON_CSS);
+		
+		setEPortfolioTableOfContentsCss(EPORTFOLIO_TABLE_OF_CONTENTS_CSS);
+		setEPortfolioTOCLevel1Css(EPORTFOLIO_TOC_LEVEL1_CSS);
+		setEPortfolioTOCLevel2Css(EPORTFOLIO_TOC_LEVEL2_CSS);
 		
 		setAddPageCss(ADD_PAGE_CSS);
 		setPageTabsCss(PAGE_TABS_CSS);
@@ -291,8 +306,10 @@ public class FunctionalEPortfolioUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getEPortfolioTableOfContents())
-		.append("')]//ul//li//a//span[contains(text(), '")
+		.append(getEPortfolioTableOfContentsCss())
+		.append("')]//ul//li[contains(@class, '")
+		.append(getEPortfolioTOCLevel1Css())
+		.append("')]//a//span[contains(text(), '")
 		.append(title)
 		.append("')]");
 		
@@ -378,13 +395,50 @@ public class FunctionalEPortfolioUtil {
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		//TODO:JK: implement me
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getEPortfolioTableOfContentsCss())
+		.append("')]//ul//li");
 		
-		if(browser.isElementPresent(selectorBuffer.toString())){
-			return(true);
-		}else{
-			return(false);
+		VelocityContext context = new VelocityContext();
+
+		context.put("tocSelector", selectorBuffer.toString());
+		context.put("level1", getEPortfolioTOCLevel1Css());
+		context.put("level2", getEPortfolioTOCLevel2Css());
+		context.put("page", page);
+		context.put("structure", title);
+
+		VelocityEngine engine = null;
+
+		engine = new VelocityEngine();
+
+		StringWriter sw = new StringWriter();
+
+		try {
+			engine.evaluate(context, sw, "eportfolioTOCStructurePosition", FunctionalHomeSiteUtil.class.getResourceAsStream("EPortfolioTOCStructurePosition.vm"));
+
+			Integer i = new Integer(browser.getEval(sw.toString()));
+
+			if(i.intValue() != -1){
+				return(true);
+			}else{
+				return(false);
+			}
+
+		} catch (ParseErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MethodInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ResourceNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
+		return(false);
 	}
 	
 	/**
@@ -770,21 +824,33 @@ public class FunctionalEPortfolioUtil {
 		return openBinderCss;
 	}
 
-
 	public void setOpenBinderCss(String openBinderCss) {
 		this.openBinderCss = openBinderCss;
 	}
 
-
-	public String getEPortfolioTableOfContents() {
-		return eportfolioTableOfContents;
+	public String getEPortfolioTableOfContentsCss() {
+		return eportfolioTableOfContentsCss;
 	}
 
-
-	public void setEPortfolioTableOfContents(String eportfolioTableOfContents) {
-		this.eportfolioTableOfContents = eportfolioTableOfContents;
+	public void setEPortfolioTableOfContentsCss(String eportfolioTableOfContentsCss) {
+		this.eportfolioTableOfContentsCss = eportfolioTableOfContentsCss;
 	}
 
+	public String getEPortfolioTOCLevel1Css() {
+		return eportfolioTOCLevel1Css;
+	}
+
+	public void setEPortfolioTOCLevel1Css(String eportfolioTOCLevel1Css) {
+		this.eportfolioTOCLevel1Css = eportfolioTOCLevel1Css;
+	}
+
+	public String getEPortfolioTOCLevel2Css() {
+		return eportfolioTOCLevel2Css;
+	}
+
+	public void setEPortfolioTOCLevel2Css(String eportfolioTOCLevel2Css) {
+		this.eportfolioTOCLevel2Css = eportfolioTOCLevel2Css;
+	}
 
 	public String getAddPageCss() {
 		return addPageCss;
@@ -794,11 +860,9 @@ public class FunctionalEPortfolioUtil {
 		this.addPageCss = addPageCss;
 	}
 
-
 	public String getPageTabsCss() {
 		return pageTabsCss;
 	}
-
 
 	public void setPageTabsCss(String pageTabsCss) {
 		this.pageTabsCss = pageTabsCss;

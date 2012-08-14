@@ -1,0 +1,38 @@
+position = -1;
+
+if(document.querySelector){
+    var selector = "${tocSelector}";
+    var level1 = "${level1}";
+    var level2 = "${level2}";
+    var page = "${page}";
+    var structure = "${structure}";
+    
+    var selection = window.document.querySelectorAll(selector);
+    
+    for(i = 0; i < selection.length; i++){
+        var current = selection.item(i);
+        
+        if(current.className.indexOf(level1) >= 0){
+            var currentPage = document.evaluate('//a//span[contains(text(), \'' + page + '\')]', current, null, XPathResult.ANY_TYPE, null);
+            
+            if(currentPage != null){
+                current = selection.item(i + 1);
+                
+                for(j = 0; current.className.indexOf(level2) >= 0; j++){
+                    current = selection.item(i + 1 + j);
+                    
+                    var currentStructure = document.evaluate('//a//span[contains(text(), \'' + structure + '\')]', current, null, XPathResult.ANY_TYPE, null);
+                    
+                    if(currentStructure != null){
+                        position = i + 1 + j;
+                        break;
+                    }
+                }
+                
+                break;
+            }
+        }
+    }
+}
+
+position;
