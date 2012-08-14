@@ -31,7 +31,7 @@ import com.thoughtworks.selenium.Selenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-public class FunctionalEportfolioUtil {
+public class FunctionalEPortfolioUtil {
 	
 	public final static String EPORTFOLIO_CSS = "b_eportfolio";
 	public final static String EPORTFOLIO_MAP_CSS = "b_eportfolio_map";
@@ -79,7 +79,7 @@ public class FunctionalEportfolioUtil {
 	private FunctionalUtil functionalUtil;
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	
-	public FunctionalEportfolioUtil(FunctionalUtil functionalUtil, FunctionalHomeSiteUtil functionalHomeSiteUtil){
+	public FunctionalEPortfolioUtil(FunctionalUtil functionalUtil, FunctionalHomeSiteUtil functionalHomeSiteUtil){
 		this.functionalUtil = functionalUtil;
 		this.functionalHomeSiteUtil = functionalHomeSiteUtil;
 		
@@ -373,6 +373,9 @@ public class FunctionalEportfolioUtil {
 	 * Checks if structural element exists.
 	 */
 	public boolean structureExists(Selenium browser, String binder, String page, String title){
+		if(!openBinder(browser, binder))
+			return(false);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		//TODO:JK: implement me
@@ -460,7 +463,7 @@ public class FunctionalEportfolioUtil {
 	 * 
 	 * Fills in the open wizard's title and description fields. 
 	 */
-	private boolean fillInTitleAndDescription(Selenium browser, String title, String description){
+	protected boolean fillInTitleAndDescription(Selenium browser, String title, String description){
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//form//div[contains(@class, '")
@@ -483,7 +486,7 @@ public class FunctionalEportfolioUtil {
 	 * 
 	 * Fills in the open wizard's tags.
 	 */
-	private boolean fillInTags(Selenium browser, String tags){
+	protected boolean fillInTags(Selenium browser, String tags){
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//form//div[contains(@class, '")
@@ -509,9 +512,11 @@ public class FunctionalEportfolioUtil {
 	 */
 	public boolean addTextArtefact(Selenium browser, String binder, String page, String structure,
 			String content, String title, String description, String tags){
+		/* create binder, page or structure if necessary */
+		if(!createElements(browser, binder, page, structure))
+			return(false);
 		
-		
-		/* add text artefact */
+		/* navigate to the right place */
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
 		
@@ -542,10 +547,7 @@ public class FunctionalEportfolioUtil {
 		/* fill in wizard - tags */
 		fillInTags(browser, tags);
 		
-		/* fill in wizard - select destination and create it if doesn't exist */
-		if(!createElements(browser, binder, page, structure))
-			return(false);
-		
+		/* fill in wizard - select destination */
 		browser.click(createSelector(binder, page, structure));
 		
 		/* click finish */

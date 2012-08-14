@@ -141,7 +141,13 @@ public class FunctionalCourseUtil {
 	 * button.
 	 */
 	public boolean addToEportfolio(Selenium browser, String binder, String page, String structure,
+			String title, String description, String tags,
 			FunctionalEPortfolioUtil functionalEPortfolioUtil){
+		/* create binder, page or structure if necessary */
+		if(!functionalEPortfolioUtil.createElements(browser, binder, page, structure))
+			return(false);
+		
+		/* open wizard */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
@@ -151,7 +157,17 @@ public class FunctionalCourseUtil {
 		browser.click(selectorBuffer.toString());
 		
 		if(binder != null){
-			//TODO:JK: implement me
+			/* fill in wizard - title & description */
+			functionalEPortfolioUtil.fillInTitleAndDescription(browser, title, description);
+			
+			/* fill in wizard - tags */
+			functionalEPortfolioUtil.fillInTags(browser, tags);
+			
+			/* fill in wizard - destination */
+			browser.click(functionalEPortfolioUtil.createSelector(binder, page, structure));
+			
+			/* click finish */
+			functionalUtil.clickWizardFinish(browser);
 		}
 
 		return(true);

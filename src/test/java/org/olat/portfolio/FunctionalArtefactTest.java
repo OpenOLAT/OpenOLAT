@@ -59,12 +59,18 @@ public class FunctionalArtefactTest {
 	
 	public final static String FORUM_POST_TITLE = "question about multiplexing";
 	public final static String FORUM_POST_MESSAGE = "What multiplexing exists in operating systems?";
+	public final static String FORUM_ARTEFACT_TITLE = "multiplexing forum post";
+	public final static String FORUM_ARTEFACT_DESCRIPTION = "Thread about multiplexing.";
+	public final static String FORUM_TAGS = "networking multiplexing operating systems virtual machine forum post";
 	public final static String FORUM_BINDER = BINDER_PROGRAMMING_THEORIE;
 	public final static String FORUM_PAGE = "operating systems";
 	public final static String FORUM_STRUCTURE = "issue 1";
 	
 	public final static String WIKI_ARTICLE_PAGENAME = "Multiplexing";
 	public final static String WIKI_ARTICLE_CONTENT = "==Time Multiplexing==\nscheduling a serially-reusable resource among several users\n\n==Space multiplexing==\ndividing a multiple-use resource up among several users";
+	public final static String WIKI_ARTEFACT_TITLE = "multiplexing wiki";
+	public final static String WIKI_ARTEFACT_DESCRIPTION = "wiki page about multiplexing";
+	public final static String WIKI_TAGS = "networking multiplexing operating systems virtual machine wiki";
 	public final static String WIKI_BINDER = BINDER_PROGRAMMING_THEORIE;
 	public final static String WIKI_PAGE = "operating systems";
 	public final static String WIKI_STRUCTURE = "issue 2";
@@ -74,6 +80,9 @@ public class FunctionalArtefactTest {
 	public final static String BLOG_POST_TITLE = "Multiplexing articles";
 	public final static String BLOG_POST_DESCRIPTION = "Where you may find useful information about multiplexing.";
 	public final static String BLOG_POST_CONTENT = "Operating Systems: Design & Implementation (by Andrew S. Tanenbaum)";
+	public final static String BLOG_ARTEFACT_TITLE = "blog";
+	public final static String BLOG_ARTEFACT_DESCRIPTION = "my personal blog";
+	public final static String BLOG_TAGS = "john smith blog";
 	public final static String BLOG_BINDER = BINDER_PROGRAMMING_THEORIE;
 	public final static String BLOG_PAGE = "operating systems";
 	public final static String BLOG_STRUCTURE = "issue 3";
@@ -152,7 +161,9 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
 		
 		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE));
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE,
+				FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS,
+				functionalEportfolioUtil));
 	}
 	
 	@Test
@@ -168,7 +179,9 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
 		
 		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE));
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE,
+				WIKI_ARTEFACT_TITLE, WIKI_ARTEFACT_DESCRIPTION, WIKI_TAGS,
+				functionalEportfolioUtil));
 	}
 	
 	@Test
@@ -184,7 +197,9 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, repoKey, BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
 		
 		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE));
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE,
+				BLOG_ARTEFACT_TITLE, BLOG_ARTEFACT_DESCRIPTION, BLOG_TAGS,
+				functionalEportfolioUtil));
 	}
 	
 	@Test
