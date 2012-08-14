@@ -140,15 +140,20 @@ public class FunctionalCourseUtil {
 	 * Adds an artefact to eportfolio by clicking the appropriate
 	 * button.
 	 */
-	public boolean addToEportfolio(Selenium browser){
+	public boolean addToEportfolio(Selenium browser, String binder, String page, String structure,
+			FunctionalEPortfolioUtil functionalEPortfolioUtil){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//a[contains(@class, ")
+		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getEportfolioAddCss())
-		.append(")]");
+		.append("')]");
 		
 		browser.click(selectorBuffer.toString());
 		
+		if(binder != null){
+			//TODO:JK: implement me
+		}
+
 		return(true);
 	}
 	
@@ -174,6 +179,8 @@ public class FunctionalCourseUtil {
 		.append("]");
 		
 		browser.click(selectorBuffer.toString());
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		return(true);
 	}
@@ -207,25 +214,27 @@ public class FunctionalCourseUtil {
 		/* fill in form - title */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class '")
+		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getCourseRunCss())
 		.append("')]//form//input[@type='text']");
 		
 		browser.type(selectorBuffer.toString(), title);
 		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
 		/* fill in form - post */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//form//textarea");
-		
-		browser.type(selectorBuffer.toString(), message);
+		functionalUtil.typeMCE(browser, message);
 		
 		/* save form */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//form//button[last()]");
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getCourseRunCss())
+		.append("')]//form//button[last()]");
 		
 		browser.click(selectorBuffer.toString());
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		return(true);
 	}
@@ -275,6 +284,8 @@ public class FunctionalCourseUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
 		/* edit content */
 		selectorBuffer = new StringBuffer();
 		
@@ -283,6 +294,7 @@ public class FunctionalCourseUtil {
 		.append("')]//a");
 		
 		browser.click(selectorBuffer.toString());
+
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		
@@ -299,7 +311,7 @@ public class FunctionalCourseUtil {
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getWikiArticleBoxCss())
+		.append(getWikiEditFormWrapperCss())
 		.append("')]//button[last()]");
 		
 		browser.click(selectorBuffer.toString());

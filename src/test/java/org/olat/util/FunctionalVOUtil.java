@@ -167,13 +167,6 @@ public class FunctionalVOUtil {
 		assertNotNull(vo);
 		assertNotNull(vo.getRepoEntryKey());
 		assertNotNull(vo.getKey());
-		
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			//TODO:JK Auto-generated catch block
-			e.printStackTrace();
-		}
 
 		return(vo);
 	}
@@ -227,7 +220,7 @@ public class FunctionalVOUtil {
 	 * 
 	 * Imports a blog via REST.
 	 */
-	public RepositoryEntryVO importBlog(URL deploymentUrl, String login, String password) throws URISyntaxException, IOException{
+	public RepositoryEntryVO importBlog(URL deploymentUrl) throws URISyntaxException, IOException{
 		URL blogUrl = FunctionalVOUtil.class.getResource("/org/olat/portfolio/blog.zip");
 		Assert.assertNotNull(blogUrl);
 		
@@ -235,7 +228,7 @@ public class FunctionalVOUtil {
 		
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 
-		assertTrue(restConnection.login(login, password));
+		assertTrue(restConnection.login(getUsername(), getPassword()));
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/entries").build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);

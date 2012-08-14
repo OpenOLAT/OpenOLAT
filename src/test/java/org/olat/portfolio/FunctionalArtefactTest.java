@@ -19,7 +19,6 @@
  */
 package org.olat.portfolio;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -41,7 +40,7 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
-import org.olat.util.FunctionalEportfolioUtil;
+import org.olat.util.FunctionalEPortfolioUtil;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
@@ -55,32 +54,52 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @RunWith(Arquillian.class)
 public class FunctionalArtefactTest {
+	public final static String BINDER_PROGRAMMING_THEORIE = "programming (theorie)";
+	public final static String BINDER_PROGRAMMING_SAMPLES = "programming (code samples)";
+	
 	public final static String FORUM_POST_TITLE = "question about multiplexing";
 	public final static String FORUM_POST_MESSAGE = "What multiplexing exists in operating systems?";
+	public final static String FORUM_BINDER = BINDER_PROGRAMMING_THEORIE;
+	public final static String FORUM_PAGE = "operating systems";
+	public final static String FORUM_STRUCTURE = "issue 1";
 	
 	public final static String WIKI_ARTICLE_PAGENAME = "Multiplexing";
 	public final static String WIKI_ARTICLE_CONTENT = "==Time Multiplexing==\nscheduling a serially-reusable resource among several users\n\n==Space multiplexing==\ndividing a multiple-use resource up among several users";
+	public final static String WIKI_BINDER = BINDER_PROGRAMMING_THEORIE;
+	public final static String WIKI_PAGE = "operating systems";
+	public final static String WIKI_STRUCTURE = "issue 2";
 	
+	public final static String BLOG_TITLE = "My Blog";
+	public final static String BLOG_DESCRIPTION = "Blog created with Selenium";
 	public final static String BLOG_POST_TITLE = "Multiplexing articles";
 	public final static String BLOG_POST_DESCRIPTION = "Where you may find useful information about multiplexing.";
 	public final static String BLOG_POST_CONTENT = "Operating Systems: Design & Implementation (by Andrew S. Tanenbaum)";
+	public final static String BLOG_BINDER = BINDER_PROGRAMMING_THEORIE;
+	public final static String BLOG_PAGE = "operating systems";
+	public final static String BLOG_STRUCTURE = "issue 3";
 	
 	public final static String TEXT_ARTEFACT_CONTENT = "Bufferbloat is a phenomenon in a packet-switched computer network whereby excess buffering of packets inside the network causes high latency and jitter, as well as reducing the overall network throughput.";
 	public final static String TEXT_ARTEFACT_TITLE = "Definition bufferbloat";
 	public final static String TEXT_ARTEFACT_DESCRIPTION = "Definition bufferbloat";
 	public final static String TEXT_ARTEFACT_TAGS = "bufferbloat network latency jitter";
-	public final static String TEXT_ARTEFACT_BINDERPATH = "/My Binders";
+	public final static String TEXT_ARTEFACT_BINDER = BINDER_PROGRAMMING_THEORIE;
+	public final static String TEXT_ARTEFACT_PAGE = "networking";
+	public final static String TEXT_ARTEFACT_STRUCTURE = "issue 1";
 	
 	public final static String FILE_ARTEFACT_PATH = "/org/olat/portfolio/sfqcodel.cc";
 	public final static String FILE_ARTEFACT_TITLE = "CoDel";
 	public final static String FILE_ARTEFACT_DESCRIPTION = "CoDel Algorithm";
 	public final static String FILE_ARTEFACT_TAGS = "codel";
-	public final static String FILE_ARTEFACT_BINDERPATH = "/My Binders";
-
+	public final static String FILE_ARTEFACT_BINDER = BINDER_PROGRAMMING_SAMPLES;
+	public final static String FILE_ARTEFACT_PAGE = "cpp";
+	public final static String FILE_ARTEFACT_STRUCTURE = "issue 1";
+	
 	public final static String LEARNING_JOURNAL_TITLE = "Programming Topics";
 	public final static String LEARNING_JOURNAL_DESCRIPTION = "Some hot programming topics";
 	public final static String LEARNING_JOURNAL_TAGS = "programming c c++";
-	public final static String LEARNING_JOURNAL_BINDERPATH = "/My Binders";
+	public final static String LEARNING_JOURNAL_BINDER = BINDER_PROGRAMMING_THEORIE;
+	public final static String LEARNING_JOURNAL_PAGE = "journal";
+	public final static String LEARNING_JOURNAL_STRUCTURE = "2012/08/13";
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -97,7 +116,7 @@ public class FunctionalArtefactTest {
 	FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	FunctionalCourseUtil functionalCourseUtil;
-	FunctionalEportfolioUtil functionalEportfolioUtil;
+	FunctionalEPortfolioUtil functionalEportfolioUtil;
 	FunctionalVOUtil functionalVOUtil;
 	
 	UserVO user;
@@ -110,7 +129,7 @@ public class FunctionalArtefactTest {
 
 		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
 		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
-		functionalEportfolioUtil = new FunctionalEportfolioUtil(functionalUtil, functionalHomeSiteUtil);
+		functionalEportfolioUtil = new FunctionalEPortfolioUtil(functionalUtil, functionalHomeSiteUtil);
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 		
@@ -133,7 +152,7 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
 		
 		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser));
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE));
 	}
 	
 	@Test
@@ -149,23 +168,23 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
 		
 		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser));
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE));
 	}
 	
 	@Test
 	@RunAsClient
 	public void checkCollectBlogPost() throws URISyntaxException, IOException{
 		/* import blog via rest */
-		RepositoryEntryVO vo = functionalVOUtil.importBlog(deploymentUrl, user.getLogin(), user.getPassword());
+		long repoKey = functionalRepositorySiteUtil.createBlog(browser, BLOG_TITLE, BLOG_DESCRIPTION);
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
 		/* blog */
-		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, vo.getKey(), BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
+		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, repoKey, BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
 		
 		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser));
+		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE));
 	}
 	
 	@Test
@@ -175,10 +194,10 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
 		/* add text artefact */
-		Assert.assertTrue(functionalEportfolioUtil.addTextArtefact(browser, TEXT_ARTEFACT_CONTENT,
+		Assert.assertTrue(functionalEportfolioUtil.addTextArtefact(browser, TEXT_ARTEFACT_BINDER, TEXT_ARTEFACT_PAGE, TEXT_ARTEFACT_STRUCTURE,
+				TEXT_ARTEFACT_CONTENT,
 				TEXT_ARTEFACT_TITLE, TEXT_ARTEFACT_DESCRIPTION,
-				TEXT_ARTEFACT_TAGS,
-				TEXT_ARTEFACT_BINDERPATH));
+				TEXT_ARTEFACT_TAGS));
 	}
 	
 	@Test
@@ -188,10 +207,10 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 
 		/* upload file artefact */
-		Assert.assertTrue(functionalEportfolioUtil.uploadFileArtefact(browser, FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_PATH).toURI(),
+		Assert.assertTrue(functionalEportfolioUtil.uploadFileArtefact(browser, FILE_ARTEFACT_BINDER, FILE_ARTEFACT_PAGE, FILE_ARTEFACT_STRUCTURE,
+				FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_PATH).toURI(),
 				FILE_ARTEFACT_TITLE, FILE_ARTEFACT_DESCRIPTION,
-				FILE_ARTEFACT_TAGS,
-				FILE_ARTEFACT_BINDERPATH));
+				FILE_ARTEFACT_TAGS));
 	}
 	
 	@Test
@@ -201,9 +220,8 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
 		/* create learning journal */
-		Assert.assertTrue(functionalEportfolioUtil.createLearningJournal(browser,
+		Assert.assertTrue(functionalEportfolioUtil.createLearningJournal(browser, LEARNING_JOURNAL_BINDER, LEARNING_JOURNAL_PAGE, LEARNING_JOURNAL_STRUCTURE,
 				LEARNING_JOURNAL_TITLE, LEARNING_JOURNAL_DESCRIPTION,
-				LEARNING_JOURNAL_TAGS,
-				LEARNING_JOURNAL_BINDERPATH));
+				LEARNING_JOURNAL_TAGS));
 	}
 }

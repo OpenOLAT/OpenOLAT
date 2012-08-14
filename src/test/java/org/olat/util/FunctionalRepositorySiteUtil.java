@@ -19,6 +19,7 @@
  */
 package org.olat.util;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Assert;
@@ -124,6 +125,18 @@ public class FunctionalRepositorySiteUtil {
 		GLOSSARY;
 	}
 	
+	public final static String TOOLBOX_CONTENT_CSS = "b_toolbox_content";
+	public final static String TOOLBOX_COURSE_CSS = "o_toolbox_course";
+	public final static String TOOLBOX_CONTENT_PACKAGE_CSS = "o_toolbox_content";
+	public final static String TOOLBOX_WIKI_CSS = "o_toolbox_wiki";
+	public final static String TOOLBOX_PODCAST_CSS = "o_toolbox_podcast";
+	public final static String TOOLBOX_BLOG_CSS = "o_toolbox_blog";
+	public final static String TOOLBOX_PORTFOLIO_CSS = "o_toolbox_portfolio";
+	public final static String TOOLBOX_IQTEST_CSS = "o_toolbox_test";
+	public final static String TOOLBOX_QUESTIONNAIRE_CSS = "o_toolbox_questionnaire";
+	public final static String TOOLBOX_SHAREDFOLDER_CSS = "o_toolbox_sharedfolder";
+	public final static String TOOLBOX_GLOSSARY_CSS = "o_toolbox_glossary";
+	
 	private String repositorySiteMenuTreeSelectedCss;
 	
 	private String repositorySiteCatalogCss;
@@ -142,7 +155,18 @@ public class FunctionalRepositorySiteUtil {
 	private String repositorySiteQuestionairesCss;
 	private String repositorySiteResourceFolderCss;
 	private String repositorySiteGlossaryCss;
-	
+
+	private String toolboxContentCss;
+	private String toolboxCourseCss;
+	private String toolboxContentPackageCss;
+	private String toolboxWikiCss;
+	private String toolboxPodcastCss;
+	private String toolboxBlogCss;
+	private String toolboxPortfolioCss;
+	private String toolboxIQTestCss;
+	private String toolboxQuestionnaireCss;
+	private String toolboxSharedfolderCss;
+	private String toolboxGlossaryCss;
 	
 	private FunctionalUtil functionalUtil;
 	
@@ -166,6 +190,18 @@ public class FunctionalRepositorySiteUtil {
 		setRepositorySiteQuestionairesCss(REPOSITORY_SITE_QUESTIONAIRES_CSS);
 		setRepositorySiteResourceFolderCss(REPOSITORY_SITE_RESOURCE_FOLDER_CSS);
 		setRepositorySiteGlossaryCss(REPOSITORY_SITE_GLOSSARY_CSS);
+		
+		setToolboxContentCss(TOOLBOX_CONTENT_CSS);
+		setToolboxCourseCss(TOOLBOX_COURSE_CSS);
+		setToolboxContentPackageCss(TOOLBOX_CONTENT_PACKAGE_CSS);
+		setToolboxWikiCss(TOOLBOX_WIKI_CSS);
+		setToolboxPodcastCss(TOOLBOX_PODCAST_CSS);
+		setToolboxBlogCss(TOOLBOX_BLOG_CSS);
+		setToolboxPortfolioCss(TOOLBOX_PORTFOLIO_CSS);
+		setToolboxIQTestCss(TOOLBOX_IQTEST_CSS);
+		setToolboxQuestionnaireCss(TOOLBOX_QUESTIONNAIRE_CSS);
+		setToolboxSharedfolderCss(TOOLBOX_SHAREDFOLDER_CSS);
+		setToolboxGlossaryCss(TOOLBOX_GLOSSARY_CSS);
 		
 		setFunctionalUtil(functionalUtil);
 	}
@@ -394,10 +430,98 @@ public class FunctionalRepositorySiteUtil {
 		return(null);
 	}
 	
-	public boolean createCourseNode(Selenium browser, String descriptor, String title, String description){
+	public boolean createCourseNode(Selenium browser, String alias, String title, String description){
 		//TODO:JK: implement me
 		
 		return(false);
+	}
+	
+	/**
+	 * @param browser
+	 * @param nodeCss
+	 * @return
+	 * 
+	 * Clicks create course node of given CSS class.
+	 */
+	private boolean clickCreate(Selenium browser, String nodeCss){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getToolboxContentCss())
+		.append("')]//ul//li//a[contains(@class, '")
+		.append(nodeCss)
+		.append("')]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	private long readId(Selenium browser){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=");
+		//TODO:JK: implement me		
+		
+		long id = Long.parseLong(browser.getText(selectorBuffer.toString()));
+		
+		return(id);
+	}
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return true on success
+	 */
+	private boolean fillInTitleAndDescription(Selenium browser, String title, String description){
+		/* fill in wizard - title */
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(functionalUtil.getWizardCss())
+		.append("')]//input[@type='text']");
+		
+		browser.type(locatorBuffer.toString(), title);
+		
+		/* fill in wizard - description */
+		functionalUtil.typeMCE(browser, description);
+
+		/* fill in wizard - click save */
+		functionalUtil.saveForm(browser, 0);
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return the learning resource's id
+	 * @throws IOException
+	 * 
+	 * Creates a new blog in the repository.
+	 */
+	public long createBlog(Selenium browser, String title, String description) throws IOException{
+		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
+			throw(new IOException("can't open olat site of learning resources"));
+		
+		/* open wizard */
+		if(!clickCreate(browser, getToolboxBlogCss()))
+			throw(new IOException());
+		
+		long id = readId(browser);
+		
+		/* fill in wizard - title and description */
+		if(!fillInTitleAndDescription(browser, title, description))
+			throw(new IOException("failed to fill in title and description"));
+		
+		/* fill in wizard - click next */
+		
+		/* click no, we don't want to open the editor */
+		
+		//TODO:JK: implement me
+		
+		return(id);
 	}
 	
 	public String getRepositorySiteMenuTreeSelectedCss() {
@@ -544,6 +668,94 @@ public class FunctionalRepositorySiteUtil {
 
 	public void setRepositorySiteGlossaryCss(String repositorySiteGlossaryCss) {
 		this.repositorySiteGlossaryCss = repositorySiteGlossaryCss;
+	}
+
+	public String getToolboxContentCss() {
+		return toolboxContentCss;
+	}
+
+	public void setToolboxContentCss(String toolboxContentCss) {
+		this.toolboxContentCss = toolboxContentCss;
+	}
+
+	public String getToolboxCourseCss() {
+		return toolboxCourseCss;
+	}
+
+	public void setToolboxCourseCss(String toolboxCourseCss) {
+		this.toolboxCourseCss = toolboxCourseCss;
+	}
+
+	public String getToolboxContentPackageCss() {
+		return toolboxContentPackageCss;
+	}
+
+	public void setToolboxContentPackageCss(String toolboxContentPackageCss) {
+		this.toolboxContentPackageCss = toolboxContentPackageCss;
+	}
+
+	public String getToolboxWikiCss() {
+		return toolboxWikiCss;
+	}
+
+	public void setToolboxWikiCss(String toolboxWikiCss) {
+		this.toolboxWikiCss = toolboxWikiCss;
+	}
+
+	public String getToolboxPodcastCss() {
+		return toolboxPodcastCss;
+	}
+
+	public void setToolboxPodcastCss(String toolboxPodcastCss) {
+		this.toolboxPodcastCss = toolboxPodcastCss;
+	}
+
+	public String getToolboxBlogCss() {
+		return toolboxBlogCss;
+	}
+
+	public void setToolboxBlogCss(String toolboxBlogCss) {
+		this.toolboxBlogCss = toolboxBlogCss;
+	}
+
+	public String getToolboxPortfolioCss() {
+		return toolboxPortfolioCss;
+	}
+
+	public void setToolboxPortfolioCss(String toolboxPortfolioCss) {
+		this.toolboxPortfolioCss = toolboxPortfolioCss;
+	}
+
+	public String getToolboxIQTestCss() {
+		return toolboxIQTestCss;
+	}
+
+	public void setToolboxIQTestCss(String toolboxIQTestCss) {
+		this.toolboxIQTestCss = toolboxIQTestCss;
+	}
+
+	public String getToolboxQuestionnaireCss() {
+		return toolboxQuestionnaireCss;
+	}
+
+	public void setToolboxQuestionnaireCss(String toolboxQuestionnaireCss) {
+		this.toolboxQuestionnaireCss = toolboxQuestionnaireCss;
+	}
+
+	public String getToolboxSharedfolderCss() {
+		return toolboxSharedfolderCss;
+	}
+
+	public void setToolboxSharedfolderCss(String toolboxSharedfolderCss) {
+		this.toolboxSharedfolderCss = toolboxSharedfolderCss;
+	}
+
+	public String getToolboxGlossaryCss() {
+		return toolboxGlossaryCss;
+	}
+
+	public void setToolboxGlossaryCss(String toolboxGlossaryCss) {
+		this.toolboxGlossaryCss = toolboxGlossaryCss;
 	}
 
 	public FunctionalUtil getFunctionalUtil() {
