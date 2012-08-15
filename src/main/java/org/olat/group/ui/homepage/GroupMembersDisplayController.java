@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.group.BusinessGroup;
+import org.olat.group.model.DisplayMembers;
 
 /**
  * 
@@ -36,22 +37,23 @@ import org.olat.group.BusinessGroup;
  */
 public class GroupMembersDisplayController extends BasicController {
 
-	/** The business group we're dealing with */
-	private BusinessGroup businessGroup;
 
 	private final VelocityContainer content;
 
-	public GroupMembersDisplayController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
+	public GroupMembersDisplayController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, DisplayMembers members) {
 		super(ureq, wControl);
-		this.businessGroup = businessGroup;
 		// display owners and participants
-		this.content = createVelocityContainer("groupmembersdisplay");
-		GroupController groupOwnersController = new GroupController(ureq, wControl, false, true, false, this.businessGroup.getOwnerGroup());
-		this.content.put("owners", groupOwnersController.getInitialComponent());
-		GroupController groupParticipantsController = new GroupController(ureq, wControl, false, true, false, this.businessGroup
-				.getPartipiciantGroup());
-		this.content.put("participants", groupParticipantsController.getInitialComponent());
-		putInitialPanel(this.content);
+		content = createVelocityContainer("groupmembersdisplay");
+
+		if(members.isOwnersPublic()) {
+			GroupController groupOwnersController = new GroupController(ureq, wControl, false, true, false, businessGroup.getOwnerGroup());
+			content.put("owners", groupOwnersController.getInitialComponent());
+		}
+		if(members.isParticipantsPublic()) {
+			GroupController groupParticipantsController = new GroupController(ureq, wControl, false, true, false, businessGroup.getPartipiciantGroup());
+			content.put("participants", groupParticipantsController.getInitialComponent());
+		}
+		putInitialPanel(content);
 	}
 
 	@Override

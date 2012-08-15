@@ -60,6 +60,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 	
 	/** The business group we're dealing with */
 	private BusinessGroup businessGroup;
+	private DisplayMembers members;
 	
 	/** The navigation tree */
 	private MenuTree menuTree;
@@ -77,6 +78,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		this.businessGroup = businessGroup;
 		module = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		members = businessGroupService.getDisplayMembers(businessGroup);
 
 		menuTree = new MenuTree("menuTree");
 		menuTree.setRootVisible(false);
@@ -168,7 +170,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		if(groupMembersDisplayController == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Members", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			groupMembersDisplayController = new GroupMembersDisplayController(ureq, bwControl, businessGroup);
+			groupMembersDisplayController = new GroupMembersDisplayController(ureq, bwControl, businessGroup, members);
 			listenTo(groupMembersDisplayController);
 		}
 		
@@ -205,7 +207,6 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		rootNode.addChild(childNode);
 		rootNode.setDelegate(childNode);
 		
-		DisplayMembers members = businessGroupService.getDisplayMembers(businessGroup);
 		if(members.isOwnersPublic() || members.isParticipantsPublic()) {
 			childNode = new GenericTreeNode();
 			childNode.setTitle(translate("main.menu.members"));

@@ -3,6 +3,10 @@
 	<p>$!description</p>
 	<div class="o_visitingcard_content">
 		<div class="o_visitingcard_image o_bcard_portrait o_bcard_portrait_group"></div>
-		$!numMembers $r.translate("GroupInfoDisplayController.content.numParticipants")
+		#if($!numMembers == 1)
+			$!numMembers $r.translate("GroupInfoDisplayController.content.numParticipant")
+		#else
+			$!numMembers $r.translate("GroupInfoDisplayController.content.numParticipants")
+		#end
 	</div>
 </div>
