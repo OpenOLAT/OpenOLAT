@@ -180,6 +180,49 @@ public class LearningGroupWebService {
 	}
 	
 	/**
+	 * Create a group.
+	 * @response.representation.qname {http://www.example.com}groupVO
+   * @response.representation.mediaType application/xml, application/json
+   * @response.representation.doc A business group in the OLAT system
+   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
+	 * @response.representation.200.qname {http://www.example.com}groupVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The saved business group
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The business group cannot be found
+	 * @param groupKey The key of the group
+	 * @param group The group
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@PUT
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response createGroup(final GroupVO group, @Context HttpServletRequest request) {
+		Identity identity = RestSecurityHelper.getIdentity(request);
+		if(identity == null || !isGroupManager(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		if(group.getKey() != null && group.getKey().longValue() > 0) {
+			return postGroup(group.getKey(), group, request);
+		}
+		
+		if(!StringHelper.containsNonWhitespace(group.getName())) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		}
+
+
+		Integer minPart = normalize(group.getMinParticipants());
+		Integer maxPart = normalize(group.getMaxParticipants());
+		BusinessGroup newBG = bgs.createBusinessGroup(identity, group.getName(), group.getDescription(), minPart, maxPart, false, false, null);
+		GroupVO savedVO = ObjectFactory.get(newBG);
+		return Response.ok(savedVO).build();
+	}
+	
+	/**
 	 * Updates a group.
 	 * @response.representation.qname {http://www.example.com}groupVO
    * @response.representation.mediaType application/xml, application/json

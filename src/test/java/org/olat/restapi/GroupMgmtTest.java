@@ -416,6 +416,33 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testCreateCourseGroup() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		GroupVO vo = new GroupVO();
+		vo.setName("rest-g5-new");
+		vo.setDescription("rest-g5 description");
+		vo.setType("BuddyGroup");
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("groups").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		GroupVO newGroupVo = conn.parse(response, GroupVO.class); 
+    assertNotNull(newGroupVo);
+
+    BusinessGroup bg = businessGroupService.loadBusinessGroup(newGroupVo.getKey());
+    assertNotNull(bg);
+    assertEquals(bg.getKey(), newGroupVo.getKey());
+    assertEquals(bg.getName(), "rest-g5-new");
+    assertEquals(bg.getDescription(), "rest-g5 description");
+	}
+	
+	
+	@Test
 	public void testDeleteCourseGroup() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		
