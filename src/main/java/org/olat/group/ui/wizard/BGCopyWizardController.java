@@ -72,7 +72,7 @@ public class BGCopyWizardController extends WizardController {
 		bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.originalGroup = originalGroup;
 		// init wizard step 1
-		copyForm = new BGCopyWizardCopyForm(ureq, wControl);
+		copyForm = new BGCopyWizardCopyForm(ureq, wControl, true, true, true);
 		listenTo(copyForm);
 		// init wizard title and set step 1
 		setWizardTitle(trans.translate("bgcopywizard.title"));

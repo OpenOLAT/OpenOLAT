@@ -191,6 +191,21 @@ public class BusinessGroupRelationDAO {
 				.getSingleResult();
 		return count.intValue();
 	}
+	
+	public int countResources(List<BusinessGroup> groups) {
+		if(groups == null || groups.isEmpty()) return 0;
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(bgcr) from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key in (:groupKeys)");
+		List<Long> groupKeys = new ArrayList<Long>();
+		for(BusinessGroup group: groups) {
+			groupKeys.add(group.getKey());
+		}
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("groupKeys", groupKeys)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getSingleResult();
+		return count.intValue();
+	}
 
 	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		if(groups == null || groups.isEmpty()) {

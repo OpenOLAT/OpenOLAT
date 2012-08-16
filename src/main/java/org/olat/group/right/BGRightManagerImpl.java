@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Policy;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
@@ -58,6 +59,7 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	 * @see org.olat.group.right.BGRightManager#addBGRight(java.lang.String,
 	 *      org.olat.group.BusinessGroup)
 	 */
+	@Override
 	public void addBGRight(String bgRight, BusinessGroup rightGroup) {
 		List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(rightGroup), 0, -1);
 		for(OLATResource resource:resources) {
@@ -69,6 +71,7 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	 * @see org.olat.group.right.BGRightManager#removeBGRight(java.lang.String,
 	 *      org.olat.group.BusinessGroup)
 	 */
+	@Override
 	public void removeBGRight(String bgRight, BusinessGroup rightGroup) {
 		List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(rightGroup), 0, -1);
 		for(OLATResource resource:resources) {
@@ -76,6 +79,7 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 		}
 	}
 
+	@Override
 	public boolean hasBGRight(String bgRight, Identity identity, OLATResource resource) {
 		return securityManager.isIdentityPermittedOnResourceable(identity, bgRight, resource);
 	}
@@ -83,6 +87,7 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	/**
 	 * @see org.olat.group.right.BGRightManager#findBGRights(org.olat.group.BusinessGroup)
 	 */
+	@Override
 	public List<String> findBGRights(BusinessGroup rightGroup) {
 		List<Policy> results = securityManager.getPoliciesOfSecurityGroup(rightGroup.getPartipiciantGroup());
 		// filter all business group rights permissions. group right permissions
@@ -93,5 +98,27 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 			if (right.indexOf(BG_RIGHT_PREFIX) == 0) rights.add(right);
 		}
 		return rights;
+	}
+
+	@Override
+	public int countBGRight(List<BusinessGroup> groups) {
+		if(groups == null || groups.isEmpty()) return 0;
+		
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>(groups.size());
+		for(BusinessGroup group:groups) {
+			secGroups.add(group.getPartipiciantGroup());
+		}
+		
+		List<Policy> results = securityManager.getPoliciesOfSecurityGroup(secGroups);
+		// filter all business group rights permissions. group right permissions
+		// start with bgr.
+		int count = 0;
+		for (Policy rightPolicy:results) {
+			String right = rightPolicy.getPermission();
+			if (right.indexOf(BG_RIGHT_PREFIX) == 0) {
+				count++;
+			}
+		}
+		return count;
 	}
 }

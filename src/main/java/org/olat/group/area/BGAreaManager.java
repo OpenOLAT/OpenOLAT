@@ -172,6 +172,13 @@ public interface BGAreaManager {
 	public List<BGArea> findBGAreasOfBusinessGroups(List<BusinessGroup> groups);
 	
 	/**
+	 * 
+	 * @param groups
+	 * @return
+	 */
+	public int countBGAreasOfBusinessGroups(List<BusinessGroup> groups);
+	
+	/**
 	 * Counts the number of business group areas of the given business group
 	 * context
 	 * 

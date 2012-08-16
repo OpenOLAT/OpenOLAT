@@ -29,6 +29,7 @@ package org.olat.group.test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -107,16 +108,7 @@ public class BGRightManagerTest extends OlatTestCase {
 			throw e;
 		}
 	}
-	
-	
-	/*
-	
 
-	public abstract void removeBGRight(String bgRight, BusinessGroup rightGroup);
-
-
-	*/
-	
 	/**
 	 * Test if the add right doesn't generate errors
 	 */
@@ -163,6 +155,26 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, rights.size());
 		Assert.assertTrue(rights.contains("bgr.findright1"));
 		Assert.assertTrue(rights.contains("bgr.findright2"));
+	}
+	
+	@Test
+	public void countBGRights() {
+		//create 2 rights for the identity
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("find-rights-" + UUID.randomUUID().toString());
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "findBGRights", null, -1, -1, false, false, resource);
+		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		rightManager.addBGRight("bgr.findright1", group);
+		rightManager.addBGRight("bgr.findright2", group);
+		dbInstance.commitAndCloseSession();
+		
+		//check with an empty list
+		int numOfRights1 = rightManager.countBGRight(Collections.<BusinessGroup>emptyList());
+		Assert.assertEquals(0, numOfRights1);
+		
+		//check if the rights are set
+		int numOfRights2 = rightManager.countBGRight(Collections.singletonList(group));
+		Assert.assertEquals(2, numOfRights2);
 	}
 	
 	@Test

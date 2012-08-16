@@ -272,6 +272,23 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		areaQuery.setParameter("groupKeys", groupKeys);
 		return areaQuery.getResultList();
 	}
+	
+	@Override
+	public int countBGAreasOfBusinessGroups(List<BusinessGroup> groups) {
+		if(groups == null || groups.isEmpty()) return 0;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(distinct bgarel.groupArea.key) from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		  .append("where bgarel.businessGroup.key in (:groupKeys)");
+
+		TypedQuery<Number> areaQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class);
+		List<Long> groupKeys = new ArrayList<Long>();
+		for(BusinessGroup group:groups) {
+			groupKeys.add(group.getKey());
+		}
+		areaQuery.setParameter("groupKeys", groupKeys);
+		return areaQuery.getSingleResult().intValue();
+	}
 
 	/**
 	 * @see org.olat.group.area.BGAreaManager#countBGAreasOfBGContext(org.olat.group.context.BGContext)

@@ -408,6 +408,13 @@ public interface BaseSecurity {
 	 * @return a list of Policy objects
 	 */
 	public List<Policy> getPoliciesOfSecurityGroup(SecurityGroup secGroup);
+	
+	/**
+	 * 
+	 * @param secGroups
+	 * @return
+	 */
+	public List<Policy> getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups);
 
 /**
  * Return the policies

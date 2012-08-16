@@ -19,7 +19,8 @@
  */
 package org.olat.group.ui.wizard;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,31 +39,46 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 public class BGCopyPreparationStepController extends StepFormBasicController {
 	
 	private SelectionElement ce;
-	private String[] keys = new String[] {
-			"Tools",
-			"Areas",
-			"Rights",
-			"Owners",
-			"Participants",
-			"MembersVisibility",
-			"WaitingList"
-	}; 
-	private String[] values;
+	private String[] keys, values;
+	private final boolean coursesEnabled;
+	private final boolean rightsEnabled;
+	private final boolean areasEnabled;
 	
-	public BGCopyPreparationStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public BGCopyPreparationStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, boolean coursesEnabled, boolean areasEnabled, boolean rightsEnabled) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 
-		values = new String[] {
-				translate("bgcopywizard.copyform.tools"),
-				translate("bgcopywizard.copyform.areas"),
-				translate("bgcopywizard.copyform.rights"),
-				translate("bgcopywizard.copyform.owners"),
-				translate("bgcopywizard.copyform.participants"),
-				translate("bgcopywizard.copyform.membersvisibility"),
-				translate("bgcopywizard.copyform.waitingList")
+		this.coursesEnabled = coursesEnabled;
+		this.rightsEnabled = rightsEnabled;
+		this.areasEnabled = areasEnabled;
+		
+		List<String> keyList = new ArrayList<String>(8);
+		keyList.add("Tools");
+		if(coursesEnabled) {
+			keyList.add("Courses");
+		}
+		if(areasEnabled) {
+			keyList.add("Areas");
+		}
+		if(rightsEnabled) {
+			keyList.add("Rights");
+		}
+		keyList.add("Owners");
+		keyList.add("Participants");
+		keyList.add("WaitingList");
+		keyList.add("MembersVisibility");
+		
+		keys = keyList.toArray(new String[keyList.size()]);
+		values = new String[keys.length];
+		for(int i=keys.length; i-->0; ) {
+				values[i] = translate("bgcopywizard.copyform." + keys[i].toLowerCase());
 		};
 		
 		initForm(ureq);
+	}
+	
+	public Boolean getCopyCourses() {
+		return getBool("Courses");
 	}
 
 	public Boolean getCopyTools() {
@@ -92,13 +108,24 @@ public class BGCopyPreparationStepController extends StepFormBasicController {
 	public Boolean getCopyWaitingList() {
 		return getBool("WaitingList");
 	}
-
+	
 	private Boolean getBool (String k) {
-		return new Boolean(ce.isSelected(Arrays.asList(keys).indexOf(k)));
+		int index = -1;
+		for(int i=keys.length; i-->0; ) {
+			if(k.equals(keys[i])) {
+				index = i;
+				break;
+			}
+		}
+		if(index >= 0) {
+			return new Boolean(ce.isSelected(index));
+		}
+		return Boolean.FALSE;
 	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		addToRunContext("resources", getCopyCourses());
 		addToRunContext("tools", getCopyTools());
 		addToRunContext("areas", getCopyAreas());
 		addToRunContext("rights", getCopyRights());
@@ -112,6 +139,20 @@ public class BGCopyPreparationStepController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		ce = uifactory.addCheckboxesVertical("toCopy", "bgcopywizard.copyform.label", formLayout, keys, values, null, 1);
+		ce.select("Tools", true);
+		if(coursesEnabled) {
+			ce.select("Courses", true);
+		}
+		if(areasEnabled) {
+			ce.select("Areas", true);
+		}
+		if(rightsEnabled) {
+			ce.select("Rights", false);
+		}
+		ce.select("Owners", false);
+		ce.select("Participants", false);
+		ce.select("WaitingList", false);
+		ce.select("MembersVisibility", true);
 	}
 
 	@Override

@@ -460,6 +460,41 @@ public class BGAreaManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void countBGAreasOfBusinessGroups() {
+		//create a resource, 3 area and 2 group
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		String areaName = UUID.randomUUID().toString();
+		BGArea area1 = areaManager.createAndPersistBGArea("count-1-" + areaName, "description:" + areaName, resource);
+		BGArea area2 = areaManager.createAndPersistBGArea("count-2-" + areaName, "description:" + areaName, resource);
+		BGArea area3 = areaManager.createAndPersistBGArea("count-3-" + areaName, "description:" + areaName, resource);
+		//create 2 groups
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "count-1-group", "count-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "count-2-group", "count-group-desc", 0, -1, false, false, resource);
+		dbInstance.commitAndCloseSession();
+		//add the relations
+		areaManager.addBGToBGArea(group1, area1);
+		areaManager.addBGToBGArea(group1, area2);
+		areaManager.addBGToBGArea(group1, area3);
+		areaManager.addBGToBGArea(group2, area1);
+		dbInstance.commitAndCloseSession();
+		
+		//check with empty list
+		int numOfAreas1 = areaManager.countBGAreasOfBusinessGroups(Collections.<BusinessGroup>emptyList());
+		Assert.assertEquals(0, numOfAreas1);
+		
+		//num of areas of group2 -> only area1
+		int numOfAreas2 = areaManager.countBGAreasOfBusinessGroups(Collections.singletonList(group2));
+		Assert.assertEquals(1, numOfAreas2);
+		
+		//num of areas of group 1 and 2
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>(2);
+		groups.add(group1);
+		groups.add(group2);
+		int numOfAreas3 = areaManager.countBGAreasOfBusinessGroups(groups);
+		Assert.assertEquals(3, numOfAreas3);
+	}
+	
+	@Test
 	public void addAndDeleteRelations() {
 		//create a resource, an area, a group
 		OLATResource resource = JunitTestHelper.createRandomResource();

@@ -36,8 +36,17 @@ import org.olat.group.BusinessGroup;
  */
 public class BGCopyPreparationStep extends BasicStep {
 	
-	public BGCopyPreparationStep(UserRequest ureq, List<BusinessGroup> groups) {
+
+	private final boolean coursesEnabled;
+	private final boolean rightsEnabled;
+	private final boolean areasEnabled;
+	
+	public BGCopyPreparationStep(UserRequest ureq, List<BusinessGroup> groups,
+			boolean coursesEnabled, boolean areasEnabled, boolean rightsEnabled) {
 		super(ureq);
+		this.coursesEnabled = coursesEnabled;
+		this.rightsEnabled = rightsEnabled;
+		this.areasEnabled = areasEnabled;
 		
 		setI18nTitleAndDescr("bgcopywizard.title", "bgcopywizard.title");
 		setNextStep(new BGCopySingleGroupStep(ureq, groups));
@@ -50,7 +59,8 @@ public class BGCopyPreparationStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		BGCopyPreparationStepController copyForm = new BGCopyPreparationStepController(ureq, windowControl, form, stepsRunContext);
+		BGCopyPreparationStepController copyForm = new BGCopyPreparationStepController(ureq, windowControl, form,
+				stepsRunContext, coursesEnabled, areasEnabled, rightsEnabled);
 		return copyForm;
 	}
 }

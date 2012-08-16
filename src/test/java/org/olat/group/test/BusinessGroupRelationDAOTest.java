@@ -521,4 +521,28 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		}
 		Assert.assertEquals(3, count);
 	}
+	
+	@Test
+	public void countResourcesOfBusinessGroups() {
+		//create 3 entries and 1 group
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		businessGroupRelationDao.addRelationToResource(group, re1.getOlatResource());
+		businessGroupRelationDao.addRelationToResource(group, re2.getOlatResource());
+		businessGroupRelationDao.addRelationToResource(group, re3.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		//check with empty list of groups
+		int numOfResources1 = businessGroupRelationDao.countResources(Collections.<BusinessGroup>emptyList()); 
+		Assert.assertEquals(0, numOfResources1);
+		
+		//check with the group
+		int numOfResources2 = businessGroupRelationDao.countResources(Collections.singletonList(group)); 
+		Assert.assertEquals(3, numOfResources2);
+	}
+	
 }

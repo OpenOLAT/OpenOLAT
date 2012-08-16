@@ -250,6 +250,8 @@ public interface BusinessGroupService {
 
 	public boolean hasResources(BusinessGroup group);
 	
+	public boolean hasResources(List<BusinessGroup> groups);
+	
 	public void addResourceTo(BusinessGroup group, OLATResource resource);
 	
 	public void addResourcesTo(List<BusinessGroup> groups, List<OLATResource> resources);

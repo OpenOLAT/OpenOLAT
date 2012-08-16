@@ -25,7 +25,8 @@
 
 package org.olat.group.ui.wizard;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -45,45 +46,81 @@ import org.olat.core.gui.control.WindowControl;
  */
 class BGCopyWizardCopyForm extends FormBasicController {
 	
-	SelectionElement ce;
-	String[] keys, values;
+	private SelectionElement ce;
+	private String[] keys, values;
+	private final boolean coursesEnabled;
+	private final boolean rightsEnabled;
+	private final boolean areasEnabled;
 	
-	BGCopyWizardCopyForm(UserRequest ureq, WindowControl wControl) {
+	BGCopyWizardCopyForm(UserRequest ureq, WindowControl wControl, boolean coursesEnabled, boolean areasEnabled, boolean rightsEnabled) {
 		super(ureq, wControl);
 		
-		keys = new String[] {
-				"Tools",
-				"Areas",
-				"Rights",
-				"Owners",
-				"Participants",
-				"MembersVisibility",
-				"WaitingList"
-		};
+		this.coursesEnabled = coursesEnabled;
+		this.rightsEnabled = rightsEnabled;
+		this.areasEnabled = areasEnabled;
 		
-		values = new String[] {
-				translate("bgcopywizard.copyform.tools"),
-				translate("bgcopywizard.copyform.areas"),
-				translate("bgcopywizard.copyform.rights"),
-				translate("bgcopywizard.copyform.owners"),
-				translate("bgcopywizard.copyform.participants"),
-				translate("bgcopywizard.copyform.membersvisibility"),
-				translate("bgcopywizard.copyform.waitingList")
+		List<String> keyList = new ArrayList<String>(8);
+		keyList.add("Tools");
+		if(coursesEnabled) {
+			keyList.add("Courses");
+		}
+		if(areasEnabled) {
+			keyList.add("Areas");
+		}
+		if(rightsEnabled) {
+			keyList.add("Rights");
+		}
+		keyList.add("Owners");
+		keyList.add("Participants");
+		keyList.add("WaitingList");
+		keyList.add("MembersVisibility");
+		
+		keys = keyList.toArray(new String[keyList.size()]);
+		values = new String[keys.length];
+		for(int i=keys.length; i-->0; ) {
+				values[i] = translate("bgcopywizard.copyform." + keys[i].toLowerCase());
 		};
 		
 		initForm(ureq);
 	}
 
-	boolean isCopyTools() {return getBool("Tools"); }
-	boolean isCopyAreas() {return getBool("Areas");}
-	boolean isCopyOwners() {return getBool("Owners");}
-	boolean isCopyRights() {return getBool("Rights");}
-	boolean isCopyParticipants() {return getBool("Participants");}
-	boolean isCopyMembersVisibility() {return getBool("MembersVisibility");}
-	boolean isCopyWaitingList() {return getBool("WaitingList");}
+	public boolean isCopyCourses() {
+		return getBool("Courses");
+	}
+	public boolean isCopyTools() {
+		return getBool("Tools");
+	}
+	public boolean isCopyAreas() {
+		return getBool("Areas");
+	}
+	public boolean isCopyOwners() {
+		return getBool("Owners");
+	}
+	public boolean isCopyRights() {
+		return getBool("Rights");
+	}
+	public boolean isCopyParticipants() {
+		return getBool("Participants");
+	}
+	public boolean isCopyMembersVisibility() {
+		return getBool("MembersVisibility");
+	}
+	public boolean isCopyWaitingList() {
+		return getBool("WaitingList");
+	}
 
 	private boolean getBool (String k) {
-		return ce.isSelected(Arrays.asList(keys).indexOf(k));
+		int index = -1;
+		for(int i=keys.length; i-->0; ) {
+			if(k.equals(keys[i])) {
+				index = i;
+				break;
+			}
+		}
+		if(index >= 0) {
+			return ce.isSelected(index);
+		}
+		return false;
 	}
 	
 	@Override
@@ -93,8 +130,21 @@ class BGCopyWizardCopyForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		ce = uifactory.addCheckboxesVertical("toCopy", "bgcopywizard.copyform.label", formLayout, keys, values, null, 1);
+		ce.select("Tools", true);
+		if(coursesEnabled) {
+			ce.select("Courses", true);
+		}
+		if(areasEnabled) {
+			ce.select("Areas", true);
+		}
+		if(rightsEnabled) {
+			ce.select("Rights", false);
+		}
+		ce.select("Owners", false);
+		ce.select("Participants", false);
+		ce.select("WaitingList", false);
+		ce.select("MembersVisibility", true);
 		uifactory.addFormSubmitButton("continue", formLayout);
 	}
 

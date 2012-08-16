@@ -72,10 +72,12 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.GroupLoggingAction;
+import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.NewBGController;
 import org.olat.group.ui.wizard.BGConfigBusinessGroup;
 import org.olat.group.ui.wizard.BGConfigToolsStep;
@@ -128,6 +130,8 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 	protected final BaseSecurity securityManager;
 	protected final BusinessGroupModule groupModule;
 	protected final ACService acService;
+	protected final BGAreaManager areaManager;
+	protected final BGRightManager rightManager;
 	protected final BusinessGroupService businessGroupService;
 	protected final CollaborationToolsFactory collaborationTools;
 	
@@ -136,6 +140,8 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		
 		admin = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
@@ -425,8 +431,12 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		if(items == null || items.isEmpty()) return;
 		
 		List<BusinessGroup> groups = toBusinessGroups(items);
+		
+		boolean enableCoursesCopy = businessGroupService.hasResources(groups);
+		boolean enableAreasCopy = areaManager.countBGAreasOfBusinessGroups(groups) > 0;
+		boolean enableRightsCopy = rightManager.countBGRight(groups) > 0;
 
-		Step start = new BGCopyPreparationStep(ureq, groups);
+		Step start = new BGCopyPreparationStep(ureq, groups, enableCoursesCopy, enableAreasCopy, enableRightsCopy);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {

@@ -79,5 +79,12 @@ public interface BGRightManager {
 	 * @return a list of all business group rights associated with the given
 	 *         business group
 	 */
-	public List<String> findBGRights(BusinessGroup rightGroup);
+	public List<String> findBGRights(BusinessGroup group);
+	
+	/**
+	 * 
+	 * @param groups
+	 * @return
+	 */
+	public int countBGRight(List<BusinessGroup> groups);
 }

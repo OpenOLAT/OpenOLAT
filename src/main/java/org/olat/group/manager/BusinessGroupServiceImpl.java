@@ -1195,6 +1195,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public boolean hasResources(BusinessGroup group) {
 		return businessGroupRelationDAO.countResources(group) > 0;
 	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public boolean hasResources(List<BusinessGroup> groups) {
+		return businessGroupRelationDAO.countResources(groups) > 0;
+	}
 
 	@Override
 	@Transactional

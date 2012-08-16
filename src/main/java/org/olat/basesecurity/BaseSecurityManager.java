@@ -25,6 +25,7 @@
 
 package org.olat.basesecurity;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -286,13 +287,38 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#getPoliciesOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
 	 */
-	public List getPoliciesOfSecurityGroup(SecurityGroup secGroup) {
-		List res = DBFactory.getInstance().find(
-				"select poi from org.olat.basesecurity.PolicyImpl as poi where poi.securityGroup = ?", 
-				new Object[] { secGroup.getKey() }, new Type[] { StandardBasicTypes.LONG });
-		return res;
+	@Override
+	public List<Policy> getPoliciesOfSecurityGroup(SecurityGroup secGroup) {
+		if(secGroup == null ) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi where poi.securityGroup.key=:secGroupKey");
+
+		List<Policy> policies = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Policy.class)
+				.setParameter("secGroupKey", secGroup.getKey())
+				.getResultList();
+		return policies;
 	}
 	
+	@Override
+	public List<Policy> getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups) {
+		if(secGroups == null || secGroups.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi where poi.securityGroup.key in (:secGroupKeys)");
+
+		List<Long> secGroupKeys = new ArrayList<Long>(secGroups.size());
+		for(SecurityGroup secGroup:secGroups) {
+			secGroupKeys.add(secGroup.getKey());
+		}
+
+		List<Policy> policies = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Policy.class)
+				.setParameter("secGroupKeys", secGroupKeys)
+				.getResultList();
+		return policies;
+	}
 
 	/**
 	 * @see org.olat.basesecurity.BaseSecurity#getPoliciesOfResource(org.olat.core.id.OLATResourceable)
