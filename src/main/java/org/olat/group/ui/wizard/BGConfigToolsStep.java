@@ -32,17 +32,28 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BGConfigToolsStep extends BasicStep {
+	
+	private final boolean isAuthor;
 
-	public BGConfigToolsStep(UserRequest ureq) {
+	public BGConfigToolsStep(UserRequest ureq, boolean isAuthor) {
 		super(ureq);
+		this.isAuthor = isAuthor;
 		
-		setNextStep(new BGConfigResourcesStep(ureq));
+		if(isAuthor) {
+			setNextStep(new BGConfigResourcesStep(ureq));
+		} else {
+			setNextStep(NOSTEP);
+		}
 		setI18nTitleAndDescr("config.tools.title", "config.tools.desc");
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, true);
+		if(isAuthor) {
+			return new PrevNextFinishConfig(false, true, true);
+		} else {
+			return new PrevNextFinishConfig(false, false, true);
+		}
 	}
 
 	@Override

@@ -76,6 +76,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.MembershipModification;
@@ -206,8 +207,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				BusinessGroup bg = loadBusinessGroup(group);
 				bg.setName(name);
 				bg.setDescription(description);
-				bg.setMaxParticipants(minParticipants);
-				bg.setMinParticipants(maxParticipants);
+				bg.setMaxParticipants(maxParticipants);
+				bg.setMinParticipants(minParticipants);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
 				return businessGroupDAO.merge(bg);
 			}
@@ -223,8 +224,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				BusinessGroup bg = loadBusinessGroup(group);
 				bg.setName(name);
 				bg.setDescription(description);
-				bg.setMaxParticipants(minParticipants);
-				bg.setMinParticipants(maxParticipants);
+				bg.setMaxParticipants(maxParticipants);
+				bg.setMinParticipants(minParticipants);
 				bg.setWaitingListEnabled(waitingList);
 				if (waitingList != null && waitingList.booleanValue() && bg.getWaitingGroup() == null) {
 					// Waitinglist is enabled but not created => Create waitingGroup
@@ -1216,9 +1217,25 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public void addResourcesTo(List<BusinessGroup> groups, List<OLATResource> resources) {
 		if(groups == null || groups.isEmpty()) return;
 		if(resources == null || resources.isEmpty()) return;
+		
+		List<Long> groupKeys = new ArrayList<Long>();
+		for(BusinessGroup group:groups) {
+			groupKeys.add(group.getKey());
+		}
+
+		//check for duplicate entries
+		List<BGResourceRelation> relations = businessGroupRelationDAO.findRelations(groupKeys, 0, -1);
 		for(BusinessGroup group:groups) {
 			for(OLATResource resource:resources) {
-				addResourceTo(group, resource);
+				boolean relationExists = false;
+				for(BGResourceRelation relation:relations) {
+					if(relation.getGroup().equals(group) && relation.getResource().equals(resource)) {
+						relationExists = true;
+					}
+				}
+				if(!relationExists) {
+					addResourceTo(group, resource);
+				}
 			}
 		}
 	}

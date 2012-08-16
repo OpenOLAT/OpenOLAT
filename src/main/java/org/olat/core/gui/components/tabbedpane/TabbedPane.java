@@ -59,8 +59,8 @@ public class TabbedPane extends Container implements Activateable2 {
 	 */
 	protected static final String PARAM_PANE_ID = "taid";
 
-	private List tabbedPanes = new ArrayList(4);
-	private List displayNames = new ArrayList(4);
+	private List<Component> tabbedPanes = new ArrayList<Component>(4);
+	private List<String> displayNames = new ArrayList<String>(4);
 	private BitSet disabledPanes = new BitSet(4);
 	private int selectedPane = -1;
 	
@@ -188,7 +188,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * 
 	 * @return int
 	 */
-	protected int getSelectedPane() {
+	public int getSelectedPane() {
 		return selectedPane;
 	}
 

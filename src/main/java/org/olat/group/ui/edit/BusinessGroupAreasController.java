@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -54,40 +55,46 @@ public class BusinessGroupAreasController extends FormBasicController {
 	private final BusinessGroupService businessGroupService;
 	
 	public BusinessGroupAreasController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
-		super(ureq, wControl);
+		super(ureq, wControl, "tab_bgAreas");
 		
 		this.businessGroup = businessGroup;
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		initForm(ureq);
-		updateBusinessGroup(businessGroup);
+		updateBusinessGroup(ureq, businessGroup);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("fieldset.legend.areas");
-		setFormContextHelp("org.olat.group.ui.edit", "grp-select-area.html", "help.hover.bgArea");
+		//
 	}
 	
-	private void updateBusinessGroup(BusinessGroup businessGroup) {
+	private void updateBusinessGroup(UserRequest ureq, BusinessGroup businessGroup) {
 		this.businessGroup = businessGroup;
 		for(FormItem item: flc.getFormComponents().values()) {
 			flc.remove(item);
 		}
 		
+		FormLayoutContainer choiceContainer = FormLayoutContainer.createDefaultFormLayout("areasChoice", getTranslator());
+		choiceContainer.setRootForm(mainForm);
+		flc.add(choiceContainer);
+		
+		boolean hasAreas = false;
 		List<BGArea> selectedAreas = areaManager.findBGAreasOfBusinessGroup(businessGroup);
 		List<RepositoryEntry> entries = businessGroupService.findRepositoryEntries(Collections.singletonList(businessGroup), 0, -1);
 		for(RepositoryEntry entry:entries) {
 			List<BGArea> areas = areaManager.findBGAreasInContext(entry.getOlatResource());
 			if(areas.isEmpty()) continue;
+			
+			hasAreas |= true;
 			String[] keys = new String[areas.size()];
 			String[] values = new String[areas.size()];
 			for(int i=areas.size(); i-->0; ) {
 				keys[i] = areas.get(i).getKey().toString();
 				values[i] = areas.get(i).getName();
 			}
-			MultipleSelectionElement el = uifactory.addCheckboxesVertical("repo_" + entry.getKey(), null, flc, keys, values, null, 1);
+			MultipleSelectionElement el = uifactory.addCheckboxesVertical("repo_" + entry.getKey(), null, choiceContainer, keys, values, null, 1);
 			el.setLabel(entry.getDisplayname(), null, false);
 			el.showLabel(true);
 			el.setUserObject(entry.getOlatResource());
@@ -102,6 +109,10 @@ public class BusinessGroupAreasController extends FormBasicController {
 				}
 			}
 		}
+		
+		flc.contextPut("noAreasFound", new Boolean(!hasAreas));
+		boolean isAdmin = (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager());
+		flc.contextPut("noAreasFound", new Boolean(isAdmin));
 	}
 
 	@Override

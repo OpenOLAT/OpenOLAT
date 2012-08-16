@@ -50,6 +50,11 @@ public class TokenAccessMethod extends AbstractAccessMethod {
 	public boolean isNeedUserInteraction() {
 		return true;
 	}
+	
+	@Override
+	public boolean isPaymentMethod() {
+		return false;
+	}
 
 	@Override
 	public int hashCode() {

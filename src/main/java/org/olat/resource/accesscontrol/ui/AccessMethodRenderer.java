@@ -19,8 +19,8 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -55,9 +55,9 @@ public class AccessMethodRenderer implements CustomCellRenderer {
 			AccessTransaction transaction = (AccessTransaction)val;
 			Set<String> uniqueType = new HashSet<String>(3);
 			render(sb, transaction, uniqueType, locale);
-		} else if (val instanceof List) {
+		} else if (val instanceof Collection) {
 			@SuppressWarnings("unchecked")
-			List<AccessTransaction> transactions = (List<AccessTransaction>)val;
+			Collection<AccessTransaction> transactions = (Collection<AccessTransaction>)val;
 			Set<String> uniqueType = new HashSet<String>((transactions.size() * 2) + 1);
 			for(AccessTransaction transaction : transactions) {
 				render(sb, transaction, uniqueType, locale);

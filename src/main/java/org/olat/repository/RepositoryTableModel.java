@@ -180,6 +180,11 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 			repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
 		}
 	}
+	
+	public void removeObject(RepositoryEntry object) {
+		getObjects().remove(object);
+		repoEntriesWithOffer.remove(object.getOlatResource().getKey());
+	}
 
 	/**
 	 * Get displayname of a repository entry. If repository entry a course 

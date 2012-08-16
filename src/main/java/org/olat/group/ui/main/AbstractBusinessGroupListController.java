@@ -430,7 +430,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		removeAsListenerAndDispose(businessGroupWizard);
 		if(items == null || items.isEmpty()) return;
 		
-		List<BusinessGroup> groups = toBusinessGroups(items);
+		List<BusinessGroup> groups = toBusinessGroups(ureq, items, false);
 		
 		boolean enableCoursesCopy = businessGroupService.hasResources(groups);
 		boolean enableAreasCopy = areaManager.countBGAreasOfBusinessGroups(groups) > 0;
@@ -489,9 +489,16 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		removeAsListenerAndDispose(businessGroupWizard);
 		if(selectedItems == null || selectedItems.isEmpty()) return;
 		
-		final List<BusinessGroup> groups = toBusinessGroups(selectedItems);
+		final List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		
+		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor()
+				|| ureq.getUserSession().getRoles().isInstitutionalResourceManager();
 
-		Step start = new BGConfigToolsStep(ureq);
+		Step start = new BGConfigToolsStep(ureq, isAuthor);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
@@ -535,7 +542,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		removeAsListenerAndDispose(businessGroupWizard);
 		if(selectedItems == null || selectedItems.isEmpty()) return;
 		
-		List<BusinessGroup> groups = toBusinessGroups(selectedItems);
+		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, false);
 
 		Step start = new BGEmailSelectReceiversStep(ureq, groups);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -561,7 +568,11 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		removeAsListenerAndDispose(userManagementController);
 		if(selectedItems == null || selectedItems.isEmpty()) return;
 		
-		List<BusinessGroup> groups = toBusinessGroups(selectedItems);
+		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
 		
 		userManagementController = new BGUserManagementController(ureq, getWindowControl(), groups);
 		listenTo(userManagementController);
@@ -598,7 +609,11 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		removeAsListenerAndDispose(businessGroupWizard);
 		if(selectedItems == null || selectedItems.isEmpty()) return;
 
-		final List<BusinessGroup> groups = toBusinessGroups(selectedItems);
+		final List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
 
 		Step start = new BGMergeStep(ureq, groups);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -624,7 +639,12 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 	 */
 	private void confirmDelete(UserRequest ureq, List<BGTableItem> selectedItems) {
 		StringBuilder names = new StringBuilder();
-		List<BusinessGroup> groups = toBusinessGroups(selectedItems);
+		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+
 		for(BusinessGroup group:groups) {
 			if(names.length() > 0) names.append(", ");
 			names.append(group.getName());
@@ -638,10 +658,13 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		listenTo(cmc);
 	}
 	
-	private List<BusinessGroup> toBusinessGroups(List<BGTableItem> items) {
+	private List<BusinessGroup> toBusinessGroups(UserRequest ureq, List<BGTableItem> items, boolean editableOnly) {
 		List<Long> groupKeys = new ArrayList<Long>();
 		for(BGTableItem item:items) {
 			groupKeys.add(item.getBusinessGroupKey());
+		}
+		if(editableOnly) {
+			groupListModel.filterEditableGroupKeys(ureq, groupKeys);
 		}
 		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
 		return groups;

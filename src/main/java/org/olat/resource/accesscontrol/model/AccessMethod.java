@@ -45,6 +45,8 @@ public interface AccessMethod {
 	public String getType();
 	
 	public boolean isNeedUserInteraction();
+	
+	public boolean isPaymentMethod();
 
 	public String getMethodCssClass();
 }

@@ -384,23 +384,21 @@ public class ACFrontendManager extends BasicManager implements ACService {
 					public Boolean execute() {
 						
 						ResourceReservation reservation = reservationDao.loadReservation(identity, group.getResource());
-						if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()) {
+						if(reservation != null
+								|| (group.getMaxParticipants() == null || group.getMaxParticipants().intValue() <=0)
+								|| (group.getMaxParticipants() != null && (group.getMaxParticipants().intValue() > 
+								   (countReservations(group.getResource()) + securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup()))))) {
+							if(!securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
+								securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+							}
+						} else if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()) {
 							if(!securityManager.isIdentityInSecurityGroup(identity, group.getWaitingGroup())) {
 								securityManager.addIdentityToSecurityGroup(identity, group.getWaitingGroup());
 							}
 						} else {
-							if(reservation != null
-									|| (group.getMaxParticipants() == null && group.getMaxParticipants().intValue() <=0)
-									|| (group.getMaxParticipants() != null && (group.getMaxParticipants().intValue() > 
-									   (countReservations(group.getResource()) + securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup()))))) {
-								if(!securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
-									securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
-								}
-							} else {
-								return Boolean.FALSE;
-							}
+							return Boolean.FALSE;
 						}
-						
+
 						if(reservation != null) {
 							reservationDao.deleteReservation(reservation);
 						}

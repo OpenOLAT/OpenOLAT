@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -74,7 +73,6 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 
 	private TableController resourcesCtr;
 	private RepositoryTableModel repoTableModel;
-	private List<RepositoryEntry> repoTableModelEntries;
 	private ReferencableEntriesSearchController repoSearchCtr;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmRemoveResource;
@@ -102,7 +100,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		listenTo(resourcesCtr);
 
 		repoTableModel = new RepositoryTableModel(resourceTrans);
-		repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
+		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		repoTableModel.addColumnDescriptors(resourcesCtr, translate("resources.remove"), false);
 		resourcesCtr.setTableDataModel(repoTableModel);
@@ -143,13 +141,10 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 				RepositoryEntry re = repoSearchCtr.getSelectedEntry();
 				removeAsListenerAndDispose(repoSearchCtr);
 				cmc.deactivate();
-				if (re != null && !repoTableModelEntries.contains(re)) {
+				if (re != null && !repoTableModel.getObjects().contains(re)) {
 					// check if already in model
-					boolean alreadyAssociated = PersistenceHelper.listContainsObjectByKey(repoTableModelEntries, re);
-					if (!alreadyAssociated) {
-						doAddRepositoryEntry(re);
-						fireEvent(ureq, Event.CHANGED_EVENT);
-					}
+					doAddRepositoryEntry(re);
+					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
 		} else if (source == resourcesCtr) {
@@ -175,13 +170,13 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	
 	private void doRemoveResource(RepositoryEntry entry) {
 		businessGroupService.removeResourceFrom(group, entry.getOlatResource());
-		repoTableModelEntries.remove(entry);
+		repoTableModel.getObjects().remove(entry);
 		resourcesCtr.modelChanged();
 	}
 
 	private void doAddRepositoryEntry(RepositoryEntry entry) {
 		businessGroupService.addResourceTo(group, entry.getOlatResource());
-		repoTableModelEntries.add(entry);
+		repoTableModel.addObject(entry);
 		resourcesCtr.modelChanged();
 	}
 	

@@ -78,6 +78,7 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.DisplayMembers;
@@ -232,6 +233,19 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			return;
 		}
+		
+
+		List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(getIdentity(), Collections.singletonList(bGroup.getKey()));
+		if(isOnWaitinglist(memberships)) {
+			VelocityContainer vc = createVelocityContainer("waiting");
+			vc.contextPut("name", bGroup.getName());
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, vc, "grouprun");
+			listenTo(columnLayoutCtr); // cleanup on dispose
+			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			return;
+		}
+		
+		
 
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
@@ -305,6 +319,18 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			needActivation = true;
 			return;
 		}
+	}
+	
+	private boolean isOnWaitinglist(List<BusinessGroupMembership> memberships) {
+		boolean waiting = false;
+		for(BusinessGroupMembership membership:memberships) {
+			if(membership.getOwnerGroupKey() != null || membership.getParticipantGroupKey() != null) {
+				return false;
+			} else if (membership.getWaitingGroupKey() != null) {
+				waiting = true;
+			}
+		}
+		return waiting;
 	}
 
 	private void exposeGroupDetailsToVC(BusinessGroup currBusinessGroup) {

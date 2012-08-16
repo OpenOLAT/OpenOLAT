@@ -21,6 +21,7 @@
 package org.olat.resource.accesscontrol.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -81,9 +82,17 @@ public class OrdersDataModel implements TableDataModel<OrderTableItem> {
 				return order.getTransactions();
 			}
 			case total: {
-				String total = PriceFormat.fullFormat(order.getOrder().getTotal());
-				if(StringHelper.containsNonWhitespace(total)) {
-					return total;
+				boolean paymentMethod = false;
+				Collection<AccessTransaction> transactions = order.getTransactions();
+				for(AccessTransaction transaction:transactions) {
+					paymentMethod |= transaction.getMethod().isPaymentMethod();
+				}
+				
+				if(paymentMethod) {
+					String total = PriceFormat.fullFormat(order.getOrder().getTotal());
+					if(StringHelper.containsNonWhitespace(total)) {
+						return total;
+					}
 				}
 				return "-";
 			}

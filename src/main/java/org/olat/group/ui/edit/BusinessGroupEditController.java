@@ -181,6 +181,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		hasResources = businessGroupService.hasResources(currBusinessGroup);
 		
 		tabAccessCtrl = getAccessController(ureq);
+		
+		int currentSelectedPane = tabbedPane.getSelectedPane();
 
 		tabbedPane.removeAll();
 		editDetailsController.setAllowWaitingList(tabAccessCtrl == null || !tabAccessCtrl.isPaymentMethodInUse());
@@ -207,6 +209,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 
 		if(tabAccessCtrl != null) {
 			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
+		}
+		
+		if(currentSelectedPane > 0) {
+			tabbedPane.setSelectedPane(currentSelectedPane);
 		}
 	}
 	

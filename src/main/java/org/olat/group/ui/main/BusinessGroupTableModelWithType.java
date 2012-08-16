@@ -26,10 +26,12 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
@@ -136,6 +138,38 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	//fxdiff VCRP-1,2: access control of resources
 	public Object createCopyWithEmptyList() {
 		return new BusinessGroupTableModelWithType(trans, columnCount);
+	}
+	
+	public boolean filterEditableGroups(UserRequest ureq, List<BusinessGroup> groups) {
+		if(ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()) {
+			return false;
+		}
+		
+		int countBefore = groups.size();
+		for(Iterator<BusinessGroup> it=groups.iterator(); it.hasNext(); ) {
+			BusinessGroup group = it.next();
+			BusinessGroupMembership membership = memberships.get(group.getKey());
+			if(membership == null || membership.getOwnerGroupKey() == null) {
+				it.remove();
+			}
+		}
+		return groups.size() != countBefore;
+	}
+	
+	public boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
+		if(ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()) {
+			return false;
+		}
+		
+		int countBefore = groupKeys.size();
+		for(Iterator<Long> it=groupKeys.iterator(); it.hasNext(); ) {
+			Long groupKey = it.next();
+			BusinessGroupMembership membership = memberships.get(groupKey);
+			if(membership == null || membership.getOwnerGroupKey() == null) {
+				it.remove();
+			}
+		}
+		return groupKeys.size() != countBefore;
 	}
 
 	/**

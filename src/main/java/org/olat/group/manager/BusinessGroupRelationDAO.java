@@ -277,6 +277,24 @@ public class BusinessGroupRelationDAO {
 		return query.getResultList();
 	}
 	
+	public List<BGResourceRelation> findRelations(Collection<Long> groupKeys, int firstResult, int maxResults) {
+		if(groupKeys == null || groupKeys.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+			.append(" where rel.group.key in (:groupKeys)");
+
+		TypedQuery<BGResourceRelation> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGResourceRelation.class);
+		query.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		query.setParameter("groupKeys", groupKeys);
+		return query.getResultList();
+	}
+	
 	private boolean and(StringBuilder sb, boolean and) {
 		if(and) sb.append(" and ");
 		else sb.append(" where ");

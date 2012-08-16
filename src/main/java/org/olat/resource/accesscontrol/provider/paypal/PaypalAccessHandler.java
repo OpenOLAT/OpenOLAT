@@ -59,7 +59,7 @@ import org.olat.resource.accesscontrol.ui.FormController;
 public class PaypalAccessHandler implements AccessMethodHandler {
 	
 	public static final String METHOD_TYPE = "paypal.method";
-	public static final String METHOD_CSS_CLASS = "fx_access_method_paypal";
+	public static final String METHOD_CSS_CLASS = "b_access_method_paypal";
 
 	@Override
 	public boolean isPaymentMethod() {

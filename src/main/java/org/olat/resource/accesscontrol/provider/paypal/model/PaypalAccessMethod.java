@@ -51,6 +51,11 @@ public class PaypalAccessMethod extends AbstractAccessMethod {
 	public boolean isNeedUserInteraction() {
 		return true;
 	}
+	
+	@Override
+	public boolean isPaymentMethod() {
+		return true;
+	}
 
 	@Override
 	public int hashCode() {

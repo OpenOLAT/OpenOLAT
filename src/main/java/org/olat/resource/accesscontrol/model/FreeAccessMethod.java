@@ -50,6 +50,11 @@ public class FreeAccessMethod extends AbstractAccessMethod {
 	public boolean isNeedUserInteraction() {
 		return false;
 	}
+	
+	@Override
+	public boolean isPaymentMethod() {
+		return false;
+	}
 
 	@Override
 	public int hashCode() {

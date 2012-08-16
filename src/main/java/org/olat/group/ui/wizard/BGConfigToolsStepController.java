@@ -107,11 +107,13 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 				config.configContainer.add("folder", config.folderCtrl.getInitialFormItem());
 				config.folderCtrl.getInitialFormItem().setVisible(false);
 				
-				//add quota configuration
-				Quota quota = quotaManager.createQuota(null, null, null);
-				config.quotaCtrl = new BGConfigQuotaController(ureq, getWindowControl(), quota);
-				config.configContainer.add("quota", config.quotaCtrl.getInitialFormItem());
-				config.quotaCtrl.getInitialFormItem().setVisible(false);
+				//add quota configuration for admin only
+				if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+					Quota quota = quotaManager.createQuota(null, null, null);
+					config.quotaCtrl = new BGConfigQuotaController(ureq, getWindowControl(), quota);
+					config.configContainer.add("quota", config.quotaCtrl.getInitialFormItem());
+					config.quotaCtrl.getInitialFormItem().setVisible(false);
+				}
 			}
 
 			selectEl.setUserObject(config);		
@@ -158,8 +160,11 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 					configuration.setCalendarAccess(config.calendarCtrl.getCalendarAccess());
 				} else if (tool.equals(CollaborationTools.TOOL_FOLDER)) {
 					configuration.setFolderAccess(config.folderCtrl.getFolderAccess());
-					Quota quota = quotaManager.createQuota(null, config.quotaCtrl.getQuotaKB(), config.quotaCtrl.getULLimit());
-					configuration.setQuota(quota);
+					//only admin are allowed to configure quota
+					if(ureq.getUserSession().getRoles().isOLATAdmin() && config.quotaCtrl != null) {
+						Quota quota = quotaManager.createQuota(null, config.quotaCtrl.getQuotaKB(), config.quotaCtrl.getULLimit());
+						configuration.setQuota(quota);
+					}
 				}
 			}
 		}
