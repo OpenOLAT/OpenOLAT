@@ -43,7 +43,9 @@ import org.olat.group.BusinessGroup;
  */
 public class Property extends PersistentObject implements ModifiedInfo {
 
-  /** max length of a category */
+	private static final long serialVersionUID = -7029205250635324093L;
+
+	/** max length of a category */
   public static int CATEGORY_MAX_LENGHT = 33;
     
 	private Identity identity;
@@ -225,4 +227,20 @@ public class Property extends PersistentObject implements ModifiedInfo {
 		this.lastModified = date;
 	}
 
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 82526 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof Property) {
+			Property prop = (Property)obj;
+			return getKey() != null && getKey().equals(prop.getKey());
+		}
+		return false;
+	}
 }

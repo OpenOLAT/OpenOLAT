@@ -25,22 +25,19 @@
 
 package org.olat.properties;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
@@ -154,19 +151,23 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @return Found property or null if no match.
 	 */
 	public Property findUserProperty(Identity identity, String category, String name) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(Property.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.identity identity ")
+		  .append(" where identity.key=:identityKey and v.category=:cat and v.name=:name and v.grp is null and v.resourceTypeName is null and v.resourceTypeId is null");
 		
-		List props = DBFactory.getInstance().find(
-			"from v in class org.olat.properties.Property where v.identity=? and v.category=? and v.name=? and v.grp is null and v.resourceTypeName is null and v.resourceTypeId is null", 
-			new Object[] {identity.getKey(), category, name},
-			new Type[] {StandardBasicTypes.LONG, StandardBasicTypes.STRING, StandardBasicTypes.STRING}
-		);
+		List<Property> props = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Property.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("cat", category)
+				.setParameter("name", name)
+				.getResultList();
 
 		if (props == null || props.size() != 1) {
-			if(Tracing.isDebugEnabled(PropertyManager.class)) Tracing.logDebug("Could not find property: " + name, PropertyManager.class);
+			if(isLogDebugEnabled()) logDebug("Could not find property: " + name);
 			return null;
 		}
-	
-		return (Property)props.get(0);
+		return props.get(0);
 	}
 
 	
@@ -188,7 +189,6 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			return listProperties(identity, grp, resourceable.getResourceableTypeName(), resourceable.getResourceableId(), category, name);
 	}
 	
-	
 	/**
 	 * Only to use if no OLATResourceable Object is available.
 	 * @param identity
@@ -200,60 +200,62 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @return a list of Property objects
 	 */
 	public List<Property> listProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId, String category, String name) {
-		StringBuilder query = new StringBuilder();
-		ArrayList objs = new ArrayList();
-		ArrayList types = new ArrayList();
-		query.append("from v in class org.olat.properties.Property where ");
-
-		boolean previousParam = false;
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(Property.class.getName()).append(" as v ");
 		if (identity != null) {
-			query.append("v.identity = ?");
-			objs.add(identity.getKey());
-			types.add(StandardBasicTypes.LONG);
-			previousParam = true;
+			sb.append(" inner join fetch v.identity identity ");
 		}
-		
 		if (grp != null) {
-			if (previousParam) query.append(" and ");
-			query.append("v.grp = ?");
-			objs.add(grp.getKey());
-			types.add(StandardBasicTypes.LONG);
-			previousParam = true;
+			sb.append(" inner join fetch v.grp grp ");
 		}
-		
+		sb.append(" where ");
+
+		boolean and = false;
+		if (identity != null) {
+			and = and(sb, and);
+			sb.append("identity.key=:identityKey");
+		}
+		if (grp != null) {
+			and = and(sb, and);
+			sb.append("grp.key=:groupKey");
+		}
 		if (resourceTypeName != null) {
-			if (previousParam) query.append(" and ");
-			query.append("v.resourceTypeName = ?");
-			objs.add(resourceTypeName);
-			types.add(StandardBasicTypes.STRING);
-			previousParam = true;
+			and = and(sb, and);
+			sb.append("v.resourceTypeName=:resName");
 		}
-		
 		if (resourceTypeId != null) {
-			if (previousParam) query.append(" and ");
-			query.append(" v.resourceTypeId = ?");
-			objs.add(resourceTypeId);
-			types.add(StandardBasicTypes.LONG);
-			previousParam = true;
+			and = and(sb, and);
+			sb.append(" v.resourceTypeId=:resId");
 		}
-				
 		if (category != null) {
-			if (previousParam) query.append(" and ");
-			query.append("v.category = ?");
-			objs.add(category);
-			types.add(StandardBasicTypes.STRING);
-			previousParam = true;
+			and = and(sb, and);
+			sb.append("v.category=:cat");
 		}
-		
 		if (name != null) {
-			if (previousParam) query.append(" and ");
-			query.append("v.name = ?");
-			objs.add(name);
-			types.add(StandardBasicTypes.STRING);
+			and = and(sb, and);
+			sb.append("v.name=:name");
 		}
 		
-		return DBFactory.getInstance().find(query.toString(), objs.toArray(), (Type[])types.toArray(new Type[types.size()]));
-		
+		TypedQuery<Property> queryProps = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), Property.class);
+		if (identity != null) {
+			queryProps.setParameter("identityKey", identity.getKey());
+		}
+		if (grp != null) {
+			queryProps.setParameter("groupKey", grp.getKey());
+		}
+		if (resourceTypeName != null) {
+			queryProps.setParameter("resName", resourceTypeName);
+		}
+		if (resourceTypeId != null) {
+			queryProps.setParameter("resId", resourceTypeId);
+		}	
+		if (category != null) {
+			queryProps.setParameter("cat", category);
+		}
+		if (name != null) {
+			queryProps.setParameter("name", name);
+		}
+		return queryProps.getResultList();
 	}
 	
 	/**
@@ -264,61 +266,58 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @param category
 	 * @param name
 	 */
-	public void deleteProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
-		StringBuilder query = new StringBuilder();
-		ArrayList objs = new ArrayList();
-		ArrayList types = new ArrayList();
-		query.append("from v in class org.olat.properties.Property where ");
+	public int deleteProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(Property.class.getName()).append(" as v where ");
 
-		boolean previousParam = false;
+		boolean and = false;
 		if (identity != null) {
-			query.append("v.identity = ?");
-			objs.add(identity.getKey());
-			types.add(StandardBasicTypes.LONG);
-			previousParam = true;
+			and = and(sb, and);
+			sb.append("identity.key=:identityKey");
 		}
-		
 		if (grp != null) {
-			if (previousParam) query.append(" and ");
-			query.append("v.grp = ?");
-			objs.add(grp.getKey());
-			types.add(StandardBasicTypes.LONG);
-			previousParam = true;
+			and = and(sb, and);
+			sb.append("v.grp.key=:groupKey");
 		}
-		
 		if (resourceable != null) {
-			if (previousParam) query.append(" and ");
-			query.append("v.resourceTypeName = ?");
-			objs.add(resourceable.getResourceableTypeName());
-			types.add(StandardBasicTypes.STRING);
-
-			query.append(" and v.resourceTypeId");
+			and = and(sb, and);
+			sb.append("v.resourceTypeName=:resName and v.resourceTypeId");
 			if (resourceable.getResourceableId() == null) {
-				query.append(" is null");
+				sb.append(" is null");
 			} else {
-				query.append(" = ?");
-				objs.add(resourceable.getResourceableId());
-				types.add(StandardBasicTypes.LONG);
+				sb.append(" =:resId");
 			}
-			previousParam = true;
 		}
-		
 		if (category != null) {
-			if (previousParam) query.append(" and ");
-			query.append("v.category = ?");
-			objs.add(category);
-			types.add(StandardBasicTypes.STRING);
-			previousParam = true;
+			and = and(sb, and);
+			sb.append("v.category=:cat");
 		}
-		
 		if (name != null) {
-			if (previousParam) query.append(" and ");
-			query.append("v.name = ?");
-			objs.add(name);
-			types.add(StandardBasicTypes.STRING);
+			and = and(sb, and);
+			sb.append("v.name=:name");
 		}
 		
-		DBFactory.getInstance().delete(query.toString(), objs.toArray(), (Type[])types.toArray(new Type[types.size()]));	
+		Query queryProps = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString());
+		if (identity != null) {
+			queryProps.setParameter("identityKey", identity.getKey());
+		}
+		if (grp != null) {
+			queryProps.setParameter("groupKey", grp.getKey());
+		}
+		if (resourceable != null) {
+			queryProps.setParameter("resName", resourceable.getResourceableTypeName());
+			if (resourceable.getResourceableId() != null) {
+				queryProps.setParameter("resId", resourceable.getResourceableId());
+			}
+		}
+		if (category != null) {
+			queryProps.setParameter("cat", category);
+		}
+		if (name != null) {
+			queryProps.setParameter("name", name);
+		}
+		
+		return queryProps.executeUpdate();
 	}
 
 	
@@ -351,55 +350,55 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @return List of properties
 	 */
 	public List<Property> findProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId, String category, String name) {
-		StringBuilder query = new StringBuilder();
-		ArrayList objs = new ArrayList();
-		ArrayList types = new ArrayList();
-		query.append("from v in class org.olat.properties.Property where ");
-
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(Property.class.getName()).append(" as v ");
+		  
 		if (identity != null) {
-			query.append("v.identity = ?");
-			objs.add(identity.getKey());
-			types.add(StandardBasicTypes.LONG);
-		} else query.append("v.identity is null");
+			sb.append(" inner join fetch v.identity identity where identity.key=:identityKey");
+		} else {
+			sb.append(" where v.identity is null");
+		}
 
-		query.append(" and ");
+		sb.append(" and v.grp ");
+		if (grp != null) sb.append(".key=:groupKey");
+		else sb.append(" is null");
+		
+		sb.append(" and v.resourceTypeName ");
+		if (resourceTypeName != null) sb.append("=:resName");
+		else sb.append(" is null");
+
+		sb.append(" and v.resourceTypeId");
+		if (resourceTypeId != null) sb.append("=:resId");
+		else sb.append(" is null");
+		
+		sb.append(" and v.category");
+		if (category != null) sb.append("=:cat");
+		else sb.append(" is null");
+		
+		sb.append(" and v.name");
+		if (name != null) sb.append("=:name");
+		else sb.append(" is null");
+		
+		TypedQuery<Property> queryProps = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), Property.class);
+		if (identity != null) {
+			queryProps.setParameter("identityKey", identity.getKey());
+		}
 		if (grp != null) {
-			query.append("v.grp = ?");
-			objs.add(grp.getKey());
-			types.add(StandardBasicTypes.LONG);
-		} else query.append("v.grp is null");
-		
-		query.append(" and ");
+			queryProps.setParameter("groupKey", grp.getKey());
+		}
 		if (resourceTypeName != null) {
-			query.append("v.resourceTypeName = ?");
-			objs.add(resourceTypeName);
-			types.add(StandardBasicTypes.STRING);
+			queryProps.setParameter("resName", resourceTypeName);
 		}
-		else query.append("v.resourceTypeName is null");
-
-		query.append(" and ");
 		if (resourceTypeId != null) {
-			query.append("v.resourceTypeId = ?");
-			objs.add(resourceTypeId);
-			types.add(StandardBasicTypes.LONG);
+			queryProps.setParameter("resId", resourceTypeId);
 		}
-		else query.append("v.resourceTypeId is null");
-		
-		query.append(" and ");
 		if (category != null) {
-			query.append("v.category = ?");
-			objs.add(category);
-			types.add(StandardBasicTypes.STRING);
-		} else query.append("v.category is null");
-		
-		query.append(" and ");
+			queryProps.setParameter("cat", category);
+		}
 		if (name != null) {
-			query.append("v.name = ?");
-			objs.add(name);
-			types.add(StandardBasicTypes.STRING);
-		} else query.append("v.name is null");
-		
-		return DBFactory.getInstance().find(query.toString(), objs.toArray(), (Type[])types.toArray(new Type[types.size()]));
+			queryProps.setParameter("name", name);
+		} 
+		return queryProps.getResultList();
 	}
 
 	/**
@@ -431,50 +430,50 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @return List of identities
 	 */
 	public List<Identity> findIdentitiesWithProperty(String resourceTypeName, Long resourceTypeId, String category, String name, boolean matchNullValues) {
-		StringBuilder query = new StringBuilder();
-		ArrayList objs = new ArrayList();
-		ArrayList types = new ArrayList();
-		query.append("select distinct i from org.olat.basesecurity.IdentityImpl as i");
-		query.append(", org.olat.properties.Property as p");
-		query.append(" where p.identity = i");
-
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct i from ").append(Property.class.getName()).append(" as p")
+		  .append(" inner join p.identity i");
+		
+		boolean and = false;
 		if (resourceTypeName != null) {
-			query.append(" and ");
-			query.append("p.resourceTypeName = ?");
-			objs.add(resourceTypeName);
-			types.add(StandardBasicTypes.STRING);
+			and = appendAnd(sb, "p.resourceTypeName=:resName", and);
 		} else if (matchNullValues) {
-			query.append(" and p.resourceTypeName is null");
+			and = appendAnd(sb, "p.resourceTypeName is null", and);
+		}
+	
+		if (resourceTypeId != null) {
+			and = appendAnd(sb, "p.resourceTypeId =:resId", and);
+		} else if (matchNullValues) {
+			and = appendAnd(sb, "p.resourceTypeId is null", and);
 		}
 
-		if (resourceTypeId != null) {
-			query.append(" and ");
-			query.append("p.resourceTypeId = ?");
-			objs.add(resourceTypeId);
-			types.add(StandardBasicTypes.LONG);
-		} else if (matchNullValues) {
-			query.append(" and p.resourceTypeId is null");
-		}
-		
 		if (category != null) {
-			query.append(" and ");
-			query.append("p.category = ?");
-			objs.add(category);
-			types.add(StandardBasicTypes.STRING);
+			and = appendAnd(sb, "p.category=:cat", and);
 		} else if (matchNullValues) {
-			query.append(" and p.category is null");
+			and = appendAnd(sb, "p.category is null", and);
 		}
-		
+
 		if (name != null) {
-			query.append(" and ");
-			query.append("p.name = ?");
-			objs.add(name);
-			types.add(StandardBasicTypes.STRING);
+			and = appendAnd(sb, "p.name=:name", and);
 		} else if (matchNullValues) {
-			query.append(" and p.name is null");
+			and = appendAnd(sb, "p.name is null", and);
 		}
 		
-		return DBFactory.getInstance().find(query.toString(), objs.toArray(), (Type[])types.toArray(new Type[types.size()]));
+		TypedQuery<Identity> queryIdentities = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class);
+		if (resourceTypeName != null) {
+			queryIdentities.setParameter("resName", resourceTypeName);
+		}
+		if (resourceTypeId != null) {
+			queryIdentities.setParameter("resId", resourceTypeId);
+		}
+		if (category != null) {
+			queryIdentities.setParameter("cat", category);
+		}
+		if (name != null) {
+			queryIdentities.setParameter("name", name);
+		}
+		return queryIdentities.getResultList();
 	}
 	
 	/**
@@ -492,7 +491,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		
 		List<Property> props = findProperties(identity, grp, resourceable, category, name);
 		if (props == null || props.size() == 0) {
-			if(Tracing.isDebugEnabled(PropertyManager.class)) Tracing.logDebug("Could not find property: " + name, PropertyManager.class);
+			if(isLogDebugEnabled()) logDebug("Could not find property: " + name);
 			return null;
 		}
 		else if (props.size() > 1) {
@@ -500,7 +499,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		            + ", group::" + grp + ", resourceable::" + resourceable + ", category::" + category 
 		            + ", name::" + name);
 		}
-		return (Property)props.get(0);
+		return props.get(0);
 	}
 	
 	/**
@@ -518,7 +517,8 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 
 		StringBuilder query = new StringBuilder();
 		query.append("select p from ").append(Property.class.getName()).append(" as p")
-			.append(" where p.identity in (:identities)");
+			.append(" inner join fetch p.identity identity ")
+			.append(" where identity in (:identities)");
 		if (resourceable != null) {
 			query.append(" and p.resourceTypeName=:resourceTypeName and p.resourceTypeId=:resourceableId");
 		}
@@ -529,20 +529,20 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			query.append(" and p.name=:name");
 		}
 		
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		TypedQuery<Property> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(query.toString(), Property.class)
+				.setParameter("identities", identities);;
 		if (resourceable != null) {
-			dbQuery.setString("resourceTypeName", resourceable.getResourceableTypeName());
-			dbQuery.setLong("resourceableId", resourceable.getResourceableId());
+			dbQuery.setParameter("resourceTypeName", resourceable.getResourceableTypeName());
+			dbQuery.setParameter("resourceableId", resourceable.getResourceableId());
 		}
 		if (category != null) {
-			dbQuery.setString("category", category);
+			dbQuery.setParameter("category", category);
 		}
 		if (name != null) {
-			dbQuery.setString("name", name);
+			dbQuery.setParameter("name", name);
 		}
-		dbQuery.setParameterList("identities", identities);
-		
-		List<Property> props = dbQuery.list();
+		List<Property> props = dbQuery.getResultList();
 		return props;
 	}
 	
@@ -569,17 +569,18 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			query.append(" and p.name=:name");
 		}
 		
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
-		dbQuery.setString("resourceTypeName", resourceableTypeName);
-		dbQuery.setParameterList("resourceableIds", resourceableIds);
+		TypedQuery<Property> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(query.toString(), Property.class)
+				.setParameter("resourceTypeName", resourceableTypeName)
+				.setParameter("resourceableIds", resourceableIds);
 		if (category != null) {
-			dbQuery.setString("category", category);
+			dbQuery.setParameter("category", category);
 		}
 		if (name != null) {
-			dbQuery.setString("name", name);
+			dbQuery.setParameter("name", name);
 		}
 
-		List<Property> props = dbQuery.list();
+		List<Property> props = dbQuery.getResultList();
 		return props;
 	}
 	
@@ -588,19 +589,24 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @return a list of all available resource type names
 	 */
 	public List<String> getAllResourceTypeNames() {
-		return DBFactory.getInstance().find("select distinct v.resourceTypeName from org.olat.properties.Property as v where v.resourceTypeName is not null");
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct v.resourceTypeName from ").append(Property.class.getName()).append(" as v where v.resourceTypeName is not null");
+		return DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), String.class).getResultList();
 	}
 
 	/**
 	 * Delete all properties of a certain identity.
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
+	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		List userProperterties = listProperties(identity, null, null, null, null, null);
-		for (Iterator iter = userProperterties.iterator(); iter.hasNext();) {
-			deleteProperty( (Property)iter.next() );
+		List<Property> userProperterties = listProperties(identity, null, null, null, null, null);
+		for (Iterator<Property> iter = userProperterties.iterator(); iter.hasNext(); ) {
+			deleteProperty( iter.next());
 		}
-		Tracing.logDebug("All properties deleted for identity=" + identity, this.getClass());
+		if(isLogDebugEnabled()) {
+			logDebug("All properties deleted for identity=" + identity);
+		}
 	}
 
 	public Property createProperty() {
@@ -608,5 +614,15 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		return p;
 	}
 
-
+	private boolean and(StringBuilder sb, boolean and) {
+		if(and) sb.append(" and ");
+		return true;
+	}
+	
+	private boolean appendAnd(StringBuilder sb, String content, boolean and) {
+		if(and) sb.append(" and ");
+		else sb.append(" where ");
+		sb.append(content).append(" ");
+		return true;
+	}
 }
