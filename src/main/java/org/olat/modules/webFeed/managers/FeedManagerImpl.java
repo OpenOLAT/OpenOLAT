@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
@@ -94,7 +95,7 @@ import com.thoughtworks.xstream.XStream;
  * 
  * @author Gregor Wassmann
  */
-public abstract class FeedManagerImpl extends FeedManager {
+public class FeedManagerImpl extends FeedManager {
 	private static final int PICTUREWIDTH = 570; // same as in repository metadata image upload
 	
 	private RepositoryManager repositoryManager;
@@ -206,7 +207,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 	public void delete(OLATResourceable feed) {
 		fileResourceManager.deleteFileResource(feed);
 		// Delete comments and ratings
-		CommentAndRatingService commentAndRatingService = getCommentAndRatingService();
+		CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
 		if (commentAndRatingService != null) {				
 			commentAndRatingService.init(null, feed, null, true, false);
 			commentAndRatingService.deleteAllIgnoringSubPath();
@@ -593,7 +594,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 				update(reloadedFeed, false);
 				
 				// Delete comments and ratings
-				CommentAndRatingService commentAndRatingService = getCommentAndRatingService();
+				CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
 				if (commentAndRatingService != null) {				
 					commentAndRatingService.init(null, feed, item.getGuid(), true, false);
 					commentAndRatingService.deleteAll();

@@ -29,6 +29,7 @@
 package org.olat.test;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -66,6 +67,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class JunitTestHelper {
 
+	private static final Random randomResId = new Random();
 	static String maildomain = System.getProperty("junit.maildomain");
 	static {
 		if (maildomain == null) {
@@ -75,7 +77,8 @@ public class JunitTestHelper {
 	
 	public static final OLATResource createRandomResource() {
 		String resName = UUID.randomUUID().toString().replace("-", "");
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, 0l);
+		long resId = randomResId.nextInt(Integer.MAX_VALUE - 10) + 1;
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, new Long(resId));
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(ores);
 		OLATResourceManager.getInstance().saveOLATResource(resource);
 		return resource;

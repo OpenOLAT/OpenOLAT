@@ -27,8 +27,6 @@ package org.olat.core.commons.services.commentAndRating.impl;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -231,33 +229,38 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 	@Override
 	public int deleteAllRatings() {
 		DB db = DBFactory.getInstance();
-		String query;
-		Object[] values;
-		Type[] types;
 		// special query when sub path is null
 		if (getOLATResourceableSubPath() == null) {
-			query = "from UserRatingImpl where resName=? AND resId=? AND resSubPath is NULL";
-			values = new Object[] { getOLATResourceable().getResourceableTypeName(),  getOLATResourceable().getResourceableId() };
-			types = new Type[] {StandardBasicTypes.STRING, StandardBasicTypes.LONG};
+			StringBuilder sb = new StringBuilder();
+			sb.append("delete from ").append(UserRatingImpl.class.getName()).append(" where resName=:resName and resId=:resId and resSubPath is null");
+			return db.getCurrentEntityManager().createQuery(sb.toString())
+					.setParameter("resName", getOLATResourceable().getResourceableTypeName())
+					.setParameter("resId", getOLATResourceable().getResourceableId())
+					.executeUpdate();
 		} else {
-			query = "from UserRatingImpl where resName=? AND resId=? AND resSubPath=?";
-			values = new Object[] { getOLATResourceable().getResourceableTypeName(),  getOLATResourceable().getResourceableId(), getOLATResourceableSubPath() };
-			types = new Type[] {StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.STRING};
+			StringBuilder sb = new StringBuilder();
+			sb.append("delete from ").append(UserRatingImpl.class.getName()).append(" where resName=:resName and resId=:resId and resSubPath=:resSubPath");
+			return db.getCurrentEntityManager().createQuery(sb.toString())
+					.setParameter("resName", getOLATResourceable().getResourceableTypeName())
+					.setParameter("resId", getOLATResourceable().getResourceableId())
+					.setParameter("resSubPath",  getOLATResourceableSubPath())
+					.executeUpdate();
 		}
-		return db.delete(query, values, types);
 	}
 
 	/**
+	 * Don't limit to subpath. Ignore if null or not, just delete on the resource
 	 * @see org.olat.core.commons.services.commentAndRating.UserRatingsManager#deleteAllRatingsIgnoringSubPath()
 	 */
 	@Override
 	public int deleteAllRatingsIgnoringSubPath() {
-		// Don't limit to subpath. Ignore if null or not, just delete on the resource
-		String query = "from UserRatingImpl where resName=? AND resId=?";
-		Object[] values = new Object[] { getOLATResourceable().getResourceableTypeName(),  getOLATResourceable().getResourceableId() };
-		Type[] types = new Type[] {StandardBasicTypes.STRING, StandardBasicTypes.LONG};
 		DB db = DBFactory.getInstance();
-		return db.delete(query, values, types);		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(UserRatingImpl.class.getName()).append(" where resName=:resName and resId=:resId");
+		return db.getCurrentEntityManager().createQuery(sb.toString())
+				.setParameter("resName", getOLATResourceable().getResourceableTypeName())
+				.setParameter("resId", getOLATResourceable().getResourceableId())
+				.executeUpdate();	
 	}
 
 	/**

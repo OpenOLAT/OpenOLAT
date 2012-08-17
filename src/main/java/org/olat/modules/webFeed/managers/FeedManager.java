@@ -23,8 +23,6 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingServiceFactory;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -50,7 +48,7 @@ import org.olat.modules.webFeed.models.Item;
  * 
  * @author gwassmann
  */
-public abstract class FeedManager extends BasicManager implements CommentAndRatingServiceFactory {
+public abstract class FeedManager extends BasicManager {
 
 	protected static FeedManager INSTANCE;
 
@@ -350,7 +348,5 @@ public abstract class FeedManager extends BasicManager implements CommentAndRati
 	public abstract Feed readFeedFile(VFSContainer root);
 
 	public abstract Item loadItem(VFSItem itemContainer);
-	
-	public abstract CommentAndRatingService getCommentAndRatingService();
 
 }

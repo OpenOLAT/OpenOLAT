@@ -27,6 +27,7 @@ package org.olat.modules.webFeed;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
@@ -60,7 +61,8 @@ public class FeedManagerImplTest extends OlatTestCase {
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	@Before public void setup() {
+	@Before
+	public void setup() {
 		// Create a feed that can be read, updated or deleted.
 		OLATResourceable podcastResource = feedManager.createPodcastResource();
 		feed = feedManager.getFeed(podcastResource);
@@ -79,14 +81,22 @@ public class FeedManagerImplTest extends OlatTestCase {
 	/**
 	 * @see junit.framework.TestCase#tearDown()
 	 */
-	@After public void tearDown() {
+	@After
+	public void tearDown() {
 		 if (feed != null) feedManager.delete(feed);
+	}
+	
+	@Test
+	public void should_service_present() {
+		Assert.assertNotNull(feedManager);
+		Assert.assertNotNull(feed);
 	}
 
 	/**
 	 * Test method create
 	 */
-	@Test public void testCreatePodcast() {
+	@Test
+	public void testCreatePodcast() {
 		OLATResourceable podcastResource = feedManager.createPodcastResource();
 		Feed newPodcast = feedManager.getFeed(podcastResource);
 		assertNotNull(newPodcast);

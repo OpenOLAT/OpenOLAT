@@ -113,7 +113,8 @@ import org.junit.runners.Suite;
 //	org.olat.test.OlatJerseyTestCase.class, // NO TEST METHODS 
 	org.olat.test.SpringInitDestroyVerficationTest.class,
 	org.olat.course.statistic.TestLoggingVersionManagerImpl.class,
-	org.olat.core.commons.service.usercomments.UserCommentsAndRatingsTest.class,
+	org.olat.core.commons.service.usercomments.UserCommentsTest.class,
+	org.olat.core.commons.service.usercomments.UserRatingsTest.class,
 	org.olat.course.auditing.UserNodeAuditManagerTest.class,
 	org.olat.shibboleth.util.ShibbolethAttributeTest.class,
 	org.olat.portfolio.PortfolioModuleTest.class,
