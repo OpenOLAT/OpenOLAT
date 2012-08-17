@@ -129,7 +129,7 @@ public class ImportPortfolioReferencesController extends BasicController {
 		if (source == reattachButton) {
 			String type = EPTemplateMapResource.TYPE_NAME;
 			searchController = new RepositorySearchController(translate("command.linkresource"), ureq, getWindowControl(), true,
-					false, type);
+					false, false, type);
 			searchController.addControllerListener(this);
 			searchController.doSearchByOwnerLimitType(ureq.getIdentity(), type);
 			mainPanel.setContent(searchController.getInitialComponent());

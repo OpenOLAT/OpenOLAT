@@ -106,6 +106,23 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 					resourcesCtr.modelChanged();
 					flc.setDirty(true);
 				}
+			}else if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
+				// repository search controller done
+				List<RepositoryEntry> res = repoSearchCtr.getSelectedEntries();
+				removeAsListenerAndDispose(repoSearchCtr);
+				cmc.deactivate();
+				if (res != null && !res.isEmpty()) {
+					// check if already in model
+					List<RepositoryEntry> entries = new ArrayList<RepositoryEntry>(res.size());
+					for(RepositoryEntry re:res) {
+						if(!repoTableModel.getObjects().contains(re)) {
+							entries.add(re);
+						}
+					}
+					repoTableModel.addObjects(entries);
+					resourcesCtr.modelChanged();
+					flc.setDirty(true);
+				}
 			}
 		} else if (source == resourcesCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
@@ -129,7 +146,8 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 			removeAsListenerAndDispose(repoSearchCtr);
 			removeAsListenerAndDispose(cmc);
 			
-			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, CourseModule.getCourseTypeName(), translate("resources.add"));
+			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{CourseModule.getCourseTypeName()},
+					translate("resources.add"), true, true, true, true);
 			listenTo(repoSearchCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), this.repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
 			listenTo(cmc);

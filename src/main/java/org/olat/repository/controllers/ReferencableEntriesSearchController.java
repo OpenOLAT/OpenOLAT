@@ -68,6 +68,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 public class ReferencableEntriesSearchController extends BasicController {
 	
 	public static final Event EVENT_REPOSITORY_ENTRY_SELECTED = new Event("event.repository.entry.selected");
+	public static final Event EVENT_REPOSITORY_ENTRIES_SELECTED = new Event("event.repository.entries.selected");
 
 	private static final String CMD_SEARCH = "cmd.search";
 	private static final String CMD_SEARCH_ENTRIES = "cmd.searchEntries";
@@ -84,39 +85,40 @@ public class ReferencableEntriesSearchController extends BasicController {
 
 	private Link myEntriesLink, allEntriesLink;
 	private Link searchEntriesLink;
-	private String commandLabel;
+
 	private Link createRessourceButton;
 	private Link importRessourceButton;
 	private RepositoryAddController addController;
 	private CloseableModalController cmc;
+	
 	private RepositoryEntry selectedRepositoryEntry;
+	private List<RepositoryEntry> selectedRepositoryEntries;
 	
 	private final boolean canImport;
 	private final boolean canCreate;
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{limitType},commandLabel, true, true, true);
+		this(wControl, ureq, new String[]{limitType},commandLabel, true, true, true, false);
 		setBasePackage(RepositoryManager.class);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
-		this(wControl, ureq, limitTypes,commandLabel, true, true, true);
+		this(wControl, ureq, limitTypes,commandLabel, true, true, true, false);
 	}
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel,
-			boolean canImport, boolean canCreate, boolean canDirectLaunch) {
+			boolean canImport, boolean canCreate, boolean canDirectLaunch, boolean multiSelect) {
 		super(ureq, wControl);
 		this.canImport = canImport;
 		this.canCreate = canCreate;
 		this.limitTypes = limitTypes;
-		this.commandLabel = commandLabel;
 		setBasePackage(RepositoryManager.class);
 		mainVC = createVelocityContainer("referencableSearch");
 		// add all link to velocity
 		initLinks();
 
 		// add repo search controller
-		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(), false, canDirectLaunch, limitTypes);
+		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(), false, canDirectLaunch, multiSelect, limitTypes);
 		listenTo(searchCtr);
 		
 		// do instantiate buttons
@@ -277,6 +279,16 @@ public class ReferencableEntriesSearchController extends BasicController {
 	public RepositoryEntry getSelectedEntry() {
 		return selectedRepositoryEntry;
 	}
+	
+	/**
+	 * @return Returns the selected entries
+	 */
+	public List<RepositoryEntry> getSelectedEntries() {
+		if(selectedRepositoryEntries == null && selectedRepositoryEntry != null) {
+			return Collections.singletonList(selectedRepositoryEntry);
+		}
+		return selectedRepositoryEntries;
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
@@ -372,10 +384,15 @@ public class ReferencableEntriesSearchController extends BasicController {
 			} else if (cmd.equals(RepositoryTableModel.TABLE_ACTION_SELECT_LINK)) {
 				// done, user selected a repo entry
 				selectedRepositoryEntry = searchCtr.getSelectedEntry();
+				selectedRepositoryEntries = null;
 				fireEvent(ureq, EVENT_REPOSITORY_ENTRY_SELECTED);
+			} else if (cmd.equals(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRIES)) {
+				selectedRepositoryEntry = null;
+				selectedRepositoryEntries = searchCtr.getSelectedEntries();
+				fireEvent(ureq, EVENT_REPOSITORY_ENTRIES_SELECTED);
 			}
 			initLinks();
-		} else if (source == addController) { 
+		}  else if (source == addController) { 
 				if (event.equals(Event.DONE_EVENT)) {
 					cmc.deactivate();
 					

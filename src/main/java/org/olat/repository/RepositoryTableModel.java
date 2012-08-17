@@ -64,6 +64,10 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * Identifies a table launch event (if clicked on an item in the name column).
 	 */
 	public static final String TABLE_ACTION_SELECT_ENTRY = "rtbSelectEntry";
+	/**
+	 * Identifies a multi selection
+	 */
+	public static final String TABLE_ACTION_SELECT_ENTRIES = "rtbSelectEntrIES";
 	//fxdiff VCRP-1,2: access control of resources
 	private static final int COLUMN_COUNT = 7;
 	Translator translator; // package-local to avoid synthetic accessor method.
@@ -176,6 +180,14 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		getObjects().add(object);
 		List<RepositoryEntry> repoList = Collections.singletonList(object);
 		List<OLATResourceAccess> withOffers = acService.filterRepositoryEntriesWithAC(repoList);
+		for(OLATResourceAccess withOffer:withOffers) {
+			repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
+		}
+	}
+	
+	public void addObjects(List<RepositoryEntry> objects) {
+		getObjects().addAll(objects);
+		List<OLATResourceAccess> withOffers = acService.filterRepositoryEntriesWithAC(objects);
 		for(OLATResourceAccess withOffer:withOffers) {
 			repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
 		}

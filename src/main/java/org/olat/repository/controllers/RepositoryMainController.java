@@ -181,7 +181,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		mainPanel = new Panel("repopanel");
 		mainPanel.setContent(main);
 
-		searchController = new RepositorySearchController(translate("details.header"), ureq, getWindowControl(), false, true);
+		searchController = new RepositorySearchController(translate("details.header"), ureq, getWindowControl(), false, true, false);
 		listenTo(searchController);
 		main.put("searchcomp", searchController.getInitialComponent());
 

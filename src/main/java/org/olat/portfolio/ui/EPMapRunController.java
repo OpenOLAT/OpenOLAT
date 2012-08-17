@@ -277,7 +277,7 @@ public class EPMapRunController extends BasicController implements Activateable2
 		String commandLabel = translate("create.map.selectTemplate");
 		removeAsListenerAndDispose(searchTemplateCtrl);
 		searchTemplateCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{EPTemplateMapResource.TYPE_NAME}, commandLabel, false, false, false);			
+				new String[]{EPTemplateMapResource.TYPE_NAME}, commandLabel, false, false, false, false);			
 		listenTo(searchTemplateCtrl);
 		createMapBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, searchTemplateCtrl.getInitialComponent(), "addMapFromTemplateBox");
 		listenTo(createMapBox);

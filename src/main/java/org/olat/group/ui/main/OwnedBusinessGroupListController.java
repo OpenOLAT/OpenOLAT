@@ -77,6 +77,8 @@ public class OwnedBusinessGroupListController extends AbstractBusinessGroupListC
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setIdentity(getIdentity());
 		params.setOwner(true);
+		params.setAttendee(false);
+		params.setWaiting(false);
 		updateTableModel(params, false);
 	}
 }

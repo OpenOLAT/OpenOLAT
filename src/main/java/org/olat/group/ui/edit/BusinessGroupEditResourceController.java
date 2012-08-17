@@ -25,6 +25,7 @@
 
 package org.olat.group.ui.edit;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,6 +55,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR>
@@ -121,7 +123,8 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 			removeAsListenerAndDispose(repoSearchCtr);
 			removeAsListenerAndDispose(cmc);
 			
-			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, CourseModule.getCourseTypeName(), translate("resources.add"));
+			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{ CourseModule.getCourseTypeName() },
+					translate("resources.add"), true, true, true, true);
 			listenTo(repoSearchCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
 			listenTo(cmc);
@@ -141,9 +144,17 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 				RepositoryEntry re = repoSearchCtr.getSelectedEntry();
 				removeAsListenerAndDispose(repoSearchCtr);
 				cmc.deactivate();
-				if (re != null && !repoTableModel.getObjects().contains(re)) {
-					// check if already in model
-					doAddRepositoryEntry(re);
+				if (re != null) {
+					doAddRepositoryEntry(Collections.singletonList(re));
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
+			} else if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
+				// repository search controller done
+				List<RepositoryEntry> res = repoSearchCtr.getSelectedEntries();
+				removeAsListenerAndDispose(repoSearchCtr);
+				cmc.deactivate();
+				if (res != null && !res.isEmpty()) {
+					doAddRepositoryEntry(res);
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
@@ -174,9 +185,18 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		resourcesCtr.modelChanged();
 	}
 
-	private void doAddRepositoryEntry(RepositoryEntry entry) {
-		businessGroupService.addResourceTo(group, entry.getOlatResource());
-		repoTableModel.addObject(entry);
+	private void doAddRepositoryEntry(List<RepositoryEntry> entries) {
+		List<OLATResource> resources = new ArrayList<OLATResource>();
+		List<RepositoryEntry> repoEntries = new ArrayList<RepositoryEntry>();
+		for(RepositoryEntry entry:entries) {
+			if(!repoTableModel.getObjects().contains(entry)) {
+				resources.add(entry.getOlatResource());
+				repoEntries.add(entry);
+			}
+			
+		}
+		businessGroupService.addResourcesTo(Collections.singletonList(group), resources);
+		repoTableModel.addObjects(repoEntries);
 		resourcesCtr.modelChanged();
 	}
 	

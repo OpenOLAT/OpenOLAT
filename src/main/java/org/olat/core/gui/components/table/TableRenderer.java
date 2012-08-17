@@ -143,27 +143,33 @@ public class TableRenderer implements ComponentRenderer {
 
 	private void appendMultiselectFormActions(final StringOutput target, final Translator translator, final Table table) {
 		// add multiselect form actions
-		List multiSelectActionsi18nKeys = table.getMultiSelectActionsI18nKeys();
-		List multiSelectActionsIdentifiers = table.getMultiSelectActionsIdentifiers();
-		if (table.isMultiSelect() && multiSelectActionsi18nKeys.size() == 0) {
+		List<TableMultiSelect> multiSelectActions = table.getMultiSelectActions();
+		if (table.isMultiSelect() && multiSelectActions.isEmpty()) {
 			throw new OLATRuntimeException(null, "Action key in multiselect table is undefined. Use addMultiSelectI18nAction(\"i18nkey\", \"action\"); to set an action for this multiselect table.",
 					null);
 		}
 
 		target.append("<div class=\"b_table_buttons\">");
-		for (int i = 0; i < multiSelectActionsi18nKeys.size(); i++) {
-			String multiSelectActionsi18nKey = (String) multiSelectActionsi18nKeys.get(i);
-			String multiSelectActionIdentifer = (String) multiSelectActionsIdentifiers.get(i);
-			target.append("<input type=\"submit\" name=\"" + multiSelectActionIdentifer + "\" value=\"" + StringEscapeUtils.escapeHtml(translator.translate(multiSelectActionsi18nKey))
-					+ "\" class=\"b_button\" />");
+		for (TableMultiSelect action: multiSelectActions) {
+
+			String multiSelectActionIdentifer = action.getAction();
+			String value;
+			if(action.getI18nKey() != null) {
+				value = StringEscapeUtils.escapeHtml(translator.translate(action.getI18nKey()));
+			} else {
+				value = action.getLabel();
+			}
+
+			target.append("<input type=\"submit\" name=\"").append(multiSelectActionIdentifer)
+			      .append("\" value=\"").append(value).append("\" class=\"b_button\" />");
 		}
 		target.append(CLOSE_DIV);
 		// add hidden action command placeholders to the form. these will be manipulated when
 		// the user clicks on a regular link within the table to e.g. re-sort the columns.
-		target.append("<input type=\"hidden\" name=\"cmd\" value=\"\" />");
-		target.append("<input type=\"hidden\" name=\"param\" value=\"\" />");
+		target.append("<input type=\"hidden\" name=\"cmd\" value=\"\" />")
+		      .append("<input type=\"hidden\" name=\"param\" value=\"\" />")
 		// close multiselect form
-		target.append("</form>");
+		      .append("</form>");
 	}
 
 	private void appendTablePageing(final StringOutput target, final Translator translator, final Table table, final String formName, final int rows, int resultsPerPage, final Integer currentPageId,

@@ -143,8 +143,7 @@ public class Table extends Component implements Comparator {
 	private int resultsPerPage;
 	private boolean isShowAllSelected;
 
-	private List multiSelectActionsI18nKeys = new ArrayList();
-	private List multiSelectActionsIdentifiers = new ArrayList();
+	private List<TableMultiSelect> multiSelectActions = new ArrayList<TableMultiSelect>();
 	private BitSet multiSelectSelectedRows = new BitSet();
 	private BitSet multiSelectReadonlyRows = new BitSet();
 
@@ -350,8 +349,8 @@ public class Table extends Component implements Comparator {
 			}
 		} else {
 			// check for multiselect actions
-			for (Iterator iter = multiSelectActionsIdentifiers.iterator(); iter.hasNext();) {
-				String actionIdentifier = (String)iter.next();
+			for (TableMultiSelect action: multiSelectActions) {
+				String actionIdentifier = action.getAction();
 				if (ureq.getParameter(actionIdentifier) != null) {
 					// get the multiselect command
 					cmd = TableReplayableEvent.MULTISELECT_ACTION;
@@ -850,17 +849,12 @@ public class Table extends Component implements Comparator {
 		this.multiSelect = multiSelect;
 	}
 
-	protected void addMultiSelectAction(final String actionKeyi18n, final String actionIdentifier) {
-		multiSelectActionsI18nKeys.add(actionKeyi18n);
-		multiSelectActionsIdentifiers.add(actionIdentifier);
+	protected void addMultiSelectAction(String label, String actionKeyi18n, String actionIdentifier) {
+		multiSelectActions.add(new TableMultiSelect(label, actionKeyi18n, actionIdentifier));
 	}
 
-	protected List getMultiSelectActionsI18nKeys() {
-		return multiSelectActionsI18nKeys;
-	}
-
-	protected List getMultiSelectActionsIdentifiers() {
-		return multiSelectActionsIdentifiers;
+	protected List<TableMultiSelect> getMultiSelectActions() {
+		return multiSelectActions;
 	}
 
 	protected BitSet getMultiSelectSelectedRows() {

@@ -42,13 +42,13 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -78,7 +78,6 @@ import org.olat.repository.SearchForm;
 */
 public class RepositorySearchController extends BasicController implements Activateable2 {
 
-	private static final String PACKAGE = Util.getPackageName(RepositoryManager.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(RepositoryManager.class);
 
 	protected VelocityContainer vc;
@@ -88,7 +87,8 @@ public class RepositorySearchController extends BasicController implements Activ
 	protected TableController tableCtr;
 	
 	private Link backLink, cancelButton;
-	private RepositoryEntry selectedEntry = null;
+	private RepositoryEntry selectedEntry;
+	private List<RepositoryEntry> selectedEntries;
 	private boolean enableSearchforAllReferencalbeInSearchForm = false;
 	private Link loginLink;
 	private SearchType searchType;
@@ -102,10 +102,11 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param withCancel
 	 * @param enableDirectLaunch
 	 */
-	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl, boolean withCancel, boolean enableDirectLaunch) {
+	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl,
+			boolean withCancel, boolean enableDirectLaunch, boolean multiSelect) {
 		//fxdiff VCRP-10: repository search with type filter
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
-		init(selectButtonLabel, ureq, withCancel, enableDirectLaunch, new String[]{});
+		init(selectButtonLabel, ureq, withCancel, enableDirectLaunch, multiSelect, new String[]{});
 	}
 	
 	/**
@@ -117,15 +118,16 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param enableDirectLaunch
 	 * @param limitType
 	 */
-	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl, boolean withCancel, boolean enableDirectLaunch, String limitType) {
-		this(selectButtonLabel, ureq,  myWControl,  withCancel,  enableDirectLaunch, new String[]{limitType});
+	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl,
+			boolean withCancel, boolean enableDirectLaunch, boolean multiSelect, String limitType) {
+		this(selectButtonLabel, ureq,  myWControl,  withCancel,  enableDirectLaunch, multiSelect, new String[]{limitType});
 	}
 
-	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl, boolean withCancel, boolean enableDirectLaunch,
-			String[] limitTypes) {
+	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl,
+			boolean withCancel, boolean enableDirectLaunch, boolean multiSelect, String[] limitTypes) {
 		//fxdiff VCRP-10: repository search with type filter
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
-		init(selectButtonLabel, ureq, withCancel, enableDirectLaunch, limitTypes);
+		init(selectButtonLabel, ureq, withCancel, enableDirectLaunch, multiSelect, limitTypes);
 	}
 	
 	/**
@@ -136,8 +138,8 @@ public class RepositorySearchController extends BasicController implements Activ
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 	}
 
-	private void init(String selectButtonLabel, UserRequest ureq, boolean withCancel, boolean enableDirectLaunch, String[] limitTypes) {
-		translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+	private void init(String selectButtonLabel, UserRequest ureq, boolean withCancel, boolean enableDirectLaunch, boolean multiSelect, String[] limitTypes) {
+		translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 		Roles roles = ureq.getUserSession().getRoles();
 		
 		vc = new VelocityContainer("reposearch", VELOCITY_ROOT + "/search.html", translator, this);
@@ -156,8 +158,10 @@ public class RepositorySearchController extends BasicController implements Activ
 		String filterTitle = translator.translate("search.filter.type");
 		String noFilterOption = translator.translate("search.filter.showAll");
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), null, null, filterTitle, noFilterOption, true, translator);
-		
-		
+		if(multiSelect) {
+			tableCtr.setMultiSelect(multiSelect);
+			tableCtr.addLabeledMultiSelectAction(selectButtonLabel, "mselect");
+		}
 		listenTo(tableCtr);
 		
 		repoTableModel = new RepositoryTableModel(translator);
@@ -309,7 +313,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		else {
 			restrictedTypes.addAll(Arrays.asList(limitTypes));
 		}
-		List entries = rm.queryReferencableResourcesLimitType(owner, roles, restrictedTypes, null, null, null);
+		List<RepositoryEntry> entries = rm.queryReferencableResourcesLimitType(owner, roles, restrictedTypes, null, null, null);
 		
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
@@ -466,6 +470,13 @@ public class RepositorySearchController extends BasicController implements Activ
 	public RepositoryEntry getSelectedEntry() {
 		return selectedEntry;
 	}
+	
+	public List<RepositoryEntry> getSelectedEntries() {
+		if(selectedEntries == null && selectedEntry != null) {
+			return Collections.singletonList(selectedEntry);
+		}
+		return selectedEntries;
+	}
 
 	/**
 	 * Will reset the controller to display the search form again.
@@ -498,13 +509,21 @@ public class RepositorySearchController extends BasicController implements Activ
 			//fxdiff VCRP-10: repository search with type filter
 			if(event instanceof TableEvent) {
 				TableEvent te = (TableEvent)event;
-				selectedEntry =  (RepositoryEntry)tableCtr.getTableDataModel().getObject(te.getRowId());
+				selectedEntry =  repoTableModel.getObject(te.getRowId());
+				selectedEntries = null;
 				if (te.getActionId().equals(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY)) {
 					fireEvent(urequest, new Event(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY));
 					return;
 				} else if (te.getActionId().equals(RepositoryTableModel.TABLE_ACTION_SELECT_LINK)) {
 					fireEvent(urequest, new Event(RepositoryTableModel.TABLE_ACTION_SELECT_LINK));
 					return;
+				}
+			} else if (event instanceof TableMultiSelectEvent) {
+				TableMultiSelectEvent mse = (TableMultiSelectEvent)event;	
+				if(!mse.getSelection().isEmpty()) {
+					selectedEntry = null;
+					selectedEntries = repoTableModel.getObjects(mse.getSelection());
+					fireEvent(urequest, new Event(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRIES));
 				}
 			} else if (TableController.EVENT_FILTER_SELECTED.equals(event)) {
 				TypeFilter typeFilter = (TypeFilter) tableCtr.getActiveFilter();

@@ -192,7 +192,7 @@ public class ImportReferencesController extends BasicController {
 			}
 			removeAsListenerAndDispose(searchController);
 			searchController = new RepositorySearchController(translator.translate("command.linkresource"), ureq, getWindowControl(), true,
-					false, type);
+					false, false, type);
 			listenTo(searchController);
 			searchController.doSearchByOwnerLimitType(ureq.getIdentity(), type);
 			// brasato:: check in gui
@@ -231,7 +231,6 @@ public class ImportReferencesController extends BasicController {
 				default:
 					throw new AssertException("Declared import type is not supported.");
 			}
-			Translator repoTranslator = new PackageTranslator(Util.getPackageName(RepositoryManager.class), ureq.getLocale());
 			removeAsListenerAndDispose(repoDetailsForm);
 			repoDetailsForm = new DetailsReadOnlyForm(ureq, getWindowControl(), importedRepositoryEntry, typeName, false);
 			listenTo(repoDetailsForm);
