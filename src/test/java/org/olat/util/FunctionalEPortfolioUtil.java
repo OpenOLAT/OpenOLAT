@@ -48,18 +48,23 @@ public class FunctionalEPortfolioUtil {
 	public final static String UPLOAD_FILE_ARTEFACT_CSS = "o_sel_add_upload_artfeact";
 	public final static String CREATE_LEARNING_JOURNAL_CSS = "o_sel_add_liveblog_artfeact";
 	
-	public final static String ADD_BINDER_BOX_CSS = "o_addMapBox";
+	public final static String ADD_BINDER_BOX_ID = "o_addMapBox";
 	public final static String CREATE_BINDER_CSS = "o_sel_create_map";
 	public final static String CREATE_DEFAULT_BINDER_CSS = "o_sel_create_default_map";
 	public final static String CREATE_TEMPLATE_BINDER_CSS = "o_sel_create_template_map";
 	public final static String OPEN_BINDER_ICON_CSS = "b_open_icon";
 	
+	public final static String EDIT_LINK_CSS = "b_eportfolio_edit_link";
+	
 	public final static String EPORTFOLIO_TABLE_OF_CONTENTS_CSS = "b_portfolio_toc";
 	public final static String EPORTFOLIO_TOC_LEVEL1_CSS = "level1";
 	public final static String EPORTFOLIO_TOC_LEVEL2_CSS = "level2";
 	
-	public final static String ADD_PAGE_CSS = "b_eportfolio_add_link";
+	public final static String ADD_LINK_CSS = "b_eportfolio_add_link";
 	public final static String PAGE_TABS_CSS = "b_pagination";
+	
+	public final static String PAGE_ICON_CSS = "b_eportfolio_link";
+	public final static String STRUCT_ICON_CSS = "b_ep_struct_icon";
 	
 	public enum ArtefactDisplay {
 		TABLE,
@@ -74,18 +79,23 @@ public class FunctionalEPortfolioUtil {
 	private String uploadFileArtefactCss;
 	private String createLearningJournalCss;
 	
-	private String addBinderBoxCss;
+	private String addBinderBoxId;
 	private String createBinderCss;
 	private String createDefaultBinderCss;
 	private String createTemplateBinderCss;
 	private String openBinderCss;
 	
+	private String editLinkCss;
+	
 	private String eportfolioTableOfContentsCss;
 	private String eportfolioTOCLevel1Css;
 	private String eportfolioTOCLevel2Css;
 	
-	private String addPageCss;
+	private String addLinkCss;
 	private String pageTabsCss;
+	
+	private String pageIconCss;
+	private String structIconCss;
 	
 	private FunctionalUtil functionalUtil;
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
@@ -102,18 +112,23 @@ public class FunctionalEPortfolioUtil {
 		setUploadFileArtefactCss(UPLOAD_FILE_ARTEFACT_CSS);
 		setCreateLearningJournalCss(CREATE_LEARNING_JOURNAL_CSS);
 		
-		setAddBinderBoxCss(ADD_BINDER_BOX_CSS);
+		setAddBinderBoxId(ADD_BINDER_BOX_ID);
 		setCreateBinderCss(CREATE_BINDER_CSS);
 		setCreateDefaultBinderCss(CREATE_DEFAULT_BINDER_CSS);
 		setCreateTemplateBinderCss(CREATE_TEMPLATE_BINDER_CSS);
 		setOpenBinderCss(OPEN_BINDER_ICON_CSS);
 		
+		setEditLinkCss(EDIT_LINK_CSS);
+		
 		setEPortfolioTableOfContentsCss(EPORTFOLIO_TABLE_OF_CONTENTS_CSS);
 		setEPortfolioTOCLevel1Css(EPORTFOLIO_TOC_LEVEL1_CSS);
 		setEPortfolioTOCLevel2Css(EPORTFOLIO_TOC_LEVEL2_CSS);
 		
-		setAddPageCss(ADD_PAGE_CSS);
+		setAddLinkCss(ADD_LINK_CSS);
 		setPageTabsCss(PAGE_TABS_CSS);
+		
+		setPageIconCss(PAGE_ICON_CSS);
+		setStructIconCss(STRUCT_ICON_CSS);
 	}
 
 
@@ -134,12 +149,12 @@ public class FunctionalEPortfolioUtil {
 		selectorBuffer.append("xpath=");
 		selectorBuffer.append("//ul//li//a//span[text()='")
 		.append(binder)
-		.append("']/../..//ul//li//a//span[text()='")
+		.append("']/../../..//ul//li//a//span[text()='")
 		.append(page)
 		.append("']");
 		
 		if(structure != null && !structure.isEmpty()){
-			selectorBuffer.append("/../..//ul//li//a//span[text()='")
+			selectorBuffer.append("/../../..//ul//li//a//span[text()='")
 			.append(structure)
 			.append("']");
 		}
@@ -220,7 +235,7 @@ public class FunctionalEPortfolioUtil {
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
 		
-		if(!functionalHomeSiteUtil.openActionByMenuTree(browser, EPortfolioAction.MY_BINDERS))
+		if(!functionalHomeSiteUtil.openActionByMenuTree(browser, EPortfolioAction.MY_BINDERS, false))
 			return(false);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -230,6 +245,27 @@ public class FunctionalEPortfolioUtil {
 		.append("']/..//a[contains(@class, '")
 		.append(getOpenBinderCss())
 		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @return true on success
+	 * 
+	 * Opens the editor of open binder.
+	 */
+	private boolean openEditor(Selenium browser){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getEditLinkCss())
+		.append("')]//a");
 		
 		browser.click(selectorBuffer.toString());
 		
@@ -264,6 +300,8 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
+		selectorBuffer = new StringBuffer();
+		
 		selectorBuffer.append("//a[contains(@class, '")
 		.append(getCreateDefaultBinderCss())
 		.append("')]");
@@ -275,9 +313,9 @@ public class FunctionalEPortfolioUtil {
 		/* fill in dialog - title */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getAddBinderBoxCss())
-		.append("')]");
+		selectorBuffer.append("xpath=//div[@id='")
+		.append(getAddBinderBoxId())
+		.append("']//form//input[@type='text']");
 		
 		browser.type(selectorBuffer.toString(), title);
 		
@@ -288,9 +326,9 @@ public class FunctionalEPortfolioUtil {
 		/* fill in dialog - save */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getAddBinderBoxCss())
-		.append("')]//button[last()]");
+		selectorBuffer.append("xpath=//div[@id='")
+		.append(getAddBinderBoxId())
+		.append("']//form//button[last()]");
 		
 		browser.click(selectorBuffer.toString());
 		
@@ -338,7 +376,7 @@ public class FunctionalEPortfolioUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append(getAddPageCss())
+		.append(getAddLinkCss())
 		.append("')]");
 		
 		browser.click(selectorBuffer.toString());
@@ -357,11 +395,11 @@ public class FunctionalEPortfolioUtil {
 		/* fill in wizard - display */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
 		.append(getEPortfolioMapCss())
-		.append("')]//form//input[@type='radio' and position='")
+		.append("')]//form//input[@type='radio'])[")
 		.append(display.ordinal() + 1)
-		.append("']");
+		.append("]");
 		
 		browser.click(selectorBuffer.toString());
 		
@@ -456,16 +494,38 @@ public class FunctionalEPortfolioUtil {
 		if(!openBinder(browser, binder))
 			return(false);
 		
-		//TODO:JK: implement me
-		
 		/* open editor */
+		openEditor(browser);
 		
+		/* select page and click create structure */
+		StringBuffer selectorBuffer = new StringBuffer();
 		
-		/* click create structure */
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append("x-tree-node-anchor")
+		.append("')]/span[text()='")
+		.append(page)
+		.append("']/..");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getAddLinkCss())
+		.append("') and contains(@class, '")
+		.append(getStructIconCss())
+		.append("')]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		/* fill in wizard - title */
-		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getEPortfolioMapCss())
@@ -524,11 +584,15 @@ public class FunctionalEPortfolioUtil {
 		.append(functionalUtil.getWizardCss())
 		.append("')]//input[@type='text']");
 		
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+		
 		browser.type(locatorBuffer.toString(), title);
 		
 		functionalUtil.typeMCE(browser, description);
-
+		
 		functionalUtil.clickWizardNext(browser);
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		return(true);
 	}
@@ -595,6 +659,8 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.clickWizardNext(browser);
 		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
 		/* fill in wizard - title & description */
 		fillInTitleAndDescription(browser, title, description);
 		
@@ -602,7 +668,11 @@ public class FunctionalEPortfolioUtil {
 		fillInTags(browser, tags);
 		
 		/* fill in wizard - select destination */
-		browser.click(createSelector(binder, page, structure));
+		String selector = createSelector(binder, page, structure);
+		
+		functionalUtil.waitForPageToLoadElement(browser, selector);
+		
+		browser.click(selector);
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
@@ -624,6 +694,9 @@ public class FunctionalEPortfolioUtil {
 	 */
 	public boolean uploadFileArtefact(Selenium browser, String binder, String page, String structure,
 			URI file, String title, String description, String tags) throws MalformedURLException{
+		if(!createElements(browser, binder, page, structure))
+			return(false);
+		
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
 		
@@ -650,9 +723,18 @@ public class FunctionalEPortfolioUtil {
 		.append(functionalUtil.getWizardCss())
 		.append("')]//input[@type='file']");
 		
-		browser.attachFile(locatorBuffer.toString(), file.toURL().toString());
+		browser.type(locatorBuffer.toString(), file.toURL().getPath());
+		//browser.attachFile(locatorBuffer.toString(), file.toURL().toString());
+		
+		//TODO:JK: find a solution for IE
+		/* IE may don't like the following script */
+		//browser.runScript("$(\"form ." + functionalUtil.getWizardCss() + " input[type='file']\").trigger(\"change\")");
+
+//		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		functionalUtil.clickWizardNext(browser);
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		/* fill in wizard - title & description */
 		fillInTitleAndDescription(browser, title, description);
@@ -661,10 +743,11 @@ public class FunctionalEPortfolioUtil {
 		fillInTags(browser, tags);
 		
 		/* fill in wizard - select binder path */
-		if(!createElements(browser, binder, page, structure))
-			return(false);
+		String selector = createSelector(binder, page, structure);
 		
-		browser.click(createSelector(binder, page, structure));
+		functionalUtil.waitForPageToLoadElement(browser, selector);
+		
+		browser.click(selector);
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
@@ -685,6 +768,9 @@ public class FunctionalEPortfolioUtil {
 	 */
 	public boolean createLearningJournal(Selenium browser, String binder, String page, String structure,
 			String title, String description, String tags){
+		if(!createElements(browser, binder, page, structure))
+			return(false);
+		
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
 		
@@ -712,10 +798,11 @@ public class FunctionalEPortfolioUtil {
 		fillInTags(browser, tags);
 		
 		/* fill in wizard - select binder path */
-		if(!createElements(browser, binder, page, structure))
-			return(false);
+		String selector = createSelector(binder, page, structure);
 		
-		browser.click(createSelector(binder, page, structure));
+		functionalUtil.waitForPageToLoadElement(browser, selector);
+		
+		browser.click(selector);
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
@@ -788,12 +875,12 @@ public class FunctionalEPortfolioUtil {
 		this.createLearningJournalCss = createLearningJournalCss;
 	}
 
-	public String getAddBinderBoxCss() {
-		return addBinderBoxCss;
+	public String getAddBinderBoxId() {
+		return addBinderBoxId;
 	}
 
-	public void setAddBinderBoxCss(String addBinderBoxCss) {
-		this.addBinderBoxCss = addBinderBoxCss;
+	public void setAddBinderBoxId(String addBinderBoxId) {
+		this.addBinderBoxId = addBinderBoxId;
 	}
 
 	public String getCreateBinderCss() {
@@ -828,6 +915,16 @@ public class FunctionalEPortfolioUtil {
 		this.openBinderCss = openBinderCss;
 	}
 
+	public String getEditLinkCss() {
+		return editLinkCss;
+	}
+
+
+	public void setEditLinkCss(String editLinkCss) {
+		this.editLinkCss = editLinkCss;
+	}
+
+
 	public String getEPortfolioTableOfContentsCss() {
 		return eportfolioTableOfContentsCss;
 	}
@@ -852,12 +949,12 @@ public class FunctionalEPortfolioUtil {
 		this.eportfolioTOCLevel2Css = eportfolioTOCLevel2Css;
 	}
 
-	public String getAddPageCss() {
-		return addPageCss;
+	public String getAddLinkCss() {
+		return addLinkCss;
 	}
 
-	public void setAddPageCss(String addPageCss) {
-		this.addPageCss = addPageCss;
+	public void setAddLinkCss(String addLinkCss) {
+		this.addLinkCss = addLinkCss;
 	}
 
 	public String getPageTabsCss() {
@@ -866,5 +963,25 @@ public class FunctionalEPortfolioUtil {
 
 	public void setPageTabsCss(String pageTabsCss) {
 		this.pageTabsCss = pageTabsCss;
+	}
+
+
+	public String getPageIconCss() {
+		return pageIconCss;
+	}
+
+
+	public void setPageIconCss(String pageIconCss) {
+		this.pageIconCss = pageIconCss;
+	}
+
+
+	public String getStructIconCss() {
+		return structIconCss;
+	}
+
+
+	public void setStructIconCss(String structIconCss) {
+		this.structIconCss = structIconCss;
 	}
 }

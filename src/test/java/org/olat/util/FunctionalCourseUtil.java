@@ -143,9 +143,6 @@ public class FunctionalCourseUtil {
 	public boolean addToEportfolio(Selenium browser, String binder, String page, String structure,
 			String title, String description, String tags,
 			FunctionalEPortfolioUtil functionalEPortfolioUtil){
-		/* create binder, page or structure if necessary */
-		if(!functionalEPortfolioUtil.createElements(browser, binder, page, structure))
-			return(false);
 		
 		/* open wizard */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -156,6 +153,8 @@ public class FunctionalCourseUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
 		if(binder != null){
 			/* fill in wizard - title & description */
 			functionalEPortfolioUtil.fillInTitleAndDescription(browser, title, description);
@@ -164,7 +163,11 @@ public class FunctionalCourseUtil {
 			functionalEPortfolioUtil.fillInTags(browser, tags);
 			
 			/* fill in wizard - destination */
-			browser.click(functionalEPortfolioUtil.createSelector(binder, page, structure));
+			String selector = functionalEPortfolioUtil.createSelector(binder, page, structure);
+			
+			functionalUtil.waitForPageToLoadElement(browser, selector);
+			
+			browser.click(selector);
 			
 			/* click finish */
 			functionalUtil.clickWizardFinish(browser);
@@ -192,7 +195,8 @@ public class FunctionalCourseUtil {
 		.append(getForumIconCss())
 		.append("')][")
 		.append(nth + 1)
-		.append("]");
+		.append("]")
+		.append("");
 		
 		browser.click(selectorBuffer.toString());
 		
@@ -289,6 +293,8 @@ public class FunctionalCourseUtil {
 		.append(getWikiCreateArticleCss())
 		.append("')]/..//input[@type='text']");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
 		browser.type(selectorBuffer.toString(), pagename);
 		
 		/* click create */
@@ -331,6 +337,8 @@ public class FunctionalCourseUtil {
 		.append("')]//button[last()]");
 		
 		browser.click(selectorBuffer.toString());
+		
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		return(true);
 	}

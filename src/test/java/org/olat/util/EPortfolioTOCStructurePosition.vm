@@ -13,7 +13,7 @@ if(document.querySelector){
         var current = selection.item(i);
         
         if(current.className.indexOf(level1) >= 0){
-            var currentPage = document.evaluate('//a//span[contains(text(), \'' + page + '\')]', current, null, XPathResult.ANY_TYPE, null);
+            var currentPage = window.document.evaluate('//a//span[contains(text(), \'' + page + '\')]', current, null, XPathResult.ANY_TYPE, null);
             
             if(currentPage != null){
                 current = selection.item(i + 1);
@@ -21,7 +21,7 @@ if(document.querySelector){
                 for(j = 0; current.className.indexOf(level2) >= 0; j++){
                     current = selection.item(i + 1 + j);
                     
-                    var currentStructure = document.evaluate('//a//span[contains(text(), \'' + structure + '\')]', current, null, XPathResult.ANY_TYPE, null);
+                    var currentStructure = window.document.evaluate('//a//span[contains(text(), \'' + structure + '\')]', current, null, XPathResult.ANY_TYPE, null);
                     
                     if(currentStructure != null){
                         position = i + 1 + j;

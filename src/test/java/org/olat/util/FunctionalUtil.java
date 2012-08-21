@@ -600,11 +600,16 @@ public class FunctionalUtil {
 	}
 	
 	public boolean typeMCE(Selenium browser, String content){
+		if(content == null)
+			return(true);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("dom=document.getElementsByClassName('")
 		.append("mceIframeContainer")
 		.append("')[0].getElementsByTagName('iframe')[0].contentDocument.body");
+		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		browser.type(selectorBuffer.toString(), content);
 		

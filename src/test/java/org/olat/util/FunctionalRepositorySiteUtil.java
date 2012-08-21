@@ -415,7 +415,7 @@ public class FunctionalRepositorySiteUtil {
 
 		selectorBuffer.append("//form")
 		.append("//tr[contains(@class,'b_first_child') and contains(@class, 'b_last_child')]")
-		.append("//td[3]") //TODO:JK: this isn't very safe
+		.append("//td[3]") //FIXME:JK: this isn't very safe
 		.append("//a");
 
 		browser.click(selectorBuffer.toString());
@@ -457,7 +457,58 @@ public class FunctionalRepositorySiteUtil {
 		return(true);
 	}
 	
-	private long readId(Selenium browser){
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param nth
+	 * @return true on success
+	 * 
+	 * Opens the detail view of a specified learning resource.
+	 */
+	public boolean openDetailView(Selenium browser, String title, int nth){
+		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
+			return(false);
+		
+		//FIXME:JK: use CSS classes instead of ordinal
+		int searchFormIndex = 0;
+
+		/* open search form */
+		functionalUtil.typeText(browser, SearchField.ID.getEntryCss(), title);
+
+		/* click search */
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//form[")
+		.append(searchFormIndex + 1)
+		.append("]")
+		.append("//div[@class='b_form_element']")
+		.append("//a[@class='b_button']");
+
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+
+		/* click course */
+		selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("//form")
+		.append("//tr[")
+		.append(nth)
+		.append("]")
+		.append("//td[6]") //FIXME:JK: this isn't very safe
+		.append("//a");
+
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @return the id
+	 */
+	private long readIdFromDetailView(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=");
@@ -507,19 +558,28 @@ public class FunctionalRepositorySiteUtil {
 		
 		/* open wizard */
 		if(!clickCreate(browser, getToolboxBlogCss()))
-			throw(new IOException());
+			throw(new IOException("can't open create wizard of blog"));
 		
-		long id = readId(browser);
+		if(!openDetailView(browser, title, 0))
+			throw(new IOException("can't open detail view"));
+			
+		long id = readIdFromDetailView(browser);
 		
 		/* fill in wizard - title and description */
 		if(!fillInTitleAndDescription(browser, title, description))
 			throw(new IOException("failed to fill in title and description"));
 		
 		/* fill in wizard - click next */
+		functionalUtil.clickWizardNext(browser);
 		
 		/* click no, we don't want to open the editor */
+		StringBuffer selectorBuffer = new StringBuffer();
 		
-		//TODO:JK: implement me
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(functionalUtil.getWizardCss())
+		.append("']//form//");//TODO:JK: implement me
+		
+		browser.click(selectorBuffer.toString());
 		
 		return(id);
 	}

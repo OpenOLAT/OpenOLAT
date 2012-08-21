@@ -129,7 +129,6 @@ public class FunctionalHomeSiteUtil {
 	public final static String RESUME_VALUE = "resume";
 
 	/* password tab */
-	//TODO:JK: add CSS classes to olat
 	public final static String OLD_PASSWORD_CSS = "o_sel_home_pwd_old";
 	public final static String NEW_PASSWORD_CSS = "o_sel_home_pwd_new_1";
 	public final static String CONFIRM_PASSWORD_CSS = "o_sel_home_pwd_new_2";
@@ -530,13 +529,25 @@ public class FunctionalHomeSiteUtil {
 	 * Browse the home site's menu tree.
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){
+		return(openActionByMenuTree(browser, action, true));
+	}
+	
+	/**
+	 * @param browser
+	 * @param action
+	 * @param checkCurrentAction
+	 * @return true on success otherwise false
+	 * 
+	 * Browse the home site's menu tree.
+	 */
+	public boolean openActionByMenuTree(Selenium browser, Object action, boolean checkCurrentAction){
 		String selectedCss = findCssClassOfAction(action);
 
 		if(selectedCss == null){
 			return(false);
 		}
 
-		if(!checkCurrentAction(browser, action, 15000)){
+		if(!checkCurrentAction || !checkCurrentAction(browser, action, 15000)){
 			if(action instanceof EPortfolioAction){
 				StringBuffer selectorBuffer = new StringBuffer();
 
