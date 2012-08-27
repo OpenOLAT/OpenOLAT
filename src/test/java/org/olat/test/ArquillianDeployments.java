@@ -35,7 +35,7 @@ public class ArquillianDeployments {
 	public static final String WEBAPP    = "src/main/webapp";
 	public static final String WEBINF    = "src/main/webapp/WEB-INF";
 	public static final String TEST_RSRC = "src/test/resources";
-	public static final String LIB_DIR   = "target/openolat-lms-8.1-SNAPSHOT/WEB-INF/lib";
+	public static final String LIB_DIR   = "target/openolat-lms-8.2-SNAPSHOT/WEB-INF/lib";
 
 	
 	public static WebArchive createDeployment() {
