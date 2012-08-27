@@ -178,6 +178,8 @@
 	<!-- <bean id="org.olat.user.AfterLoginConfig" class="org.olat.login.AfterLoginConfig" scope="prototype">	
 		<property name="afterLoginControllerList">
 			<list>
+			-->
+			<!-- Configuration to force users to regularly check and update the user profile, redoTimeout sets the interval	(seconds)		
 				<map>
 					<entry key="controller">
 						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -187,8 +189,21 @@
 					<entry key="forceUser"><value>true</value></entry>			
 					  <entry key="redoTimeout"><value>10</value></entry>  
 					<entry key="i18nIntro"><value>org.olat.user:runonce.profile.intro</value></entry>	
-				</map> -->
-			<!-- <map>
+				</map> 
+			-->
+			<!-- Alternative configuration to force users to fill out profile if a mandatory user property is missing (no syntax checks done, only checks if property exists)
+                <map>
+                        <entry key="controller">
+                                <bean class="org.olat.user.ProfileAndHomePageEditIfMissingMandatoryControllerCreator" scope="prototype" />
+                        </entry>
+                        <entry key="forceUser"><value>true</value></entry>
+                        <entry key="redoTimeout"><value>31536000</value></entry>
+                        <entry key="i18nIntro"><value>org.olat.user:runonce.profile.intro</value></entry>
+                        <entry key="size"><value>800x600</value></entry>
+                </map>
+			-->				
+			<!-- Configuration to force users to change their password after the configured redoTimeout (seconds) 
+				<map>
 					<entry key="controller">
 						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 							<property name="className" value="org.olat.user.ChangePasswordController"/>
@@ -198,9 +213,10 @@
 					## equals 30d in seconds ## 
 					<entry key="redoTimeout"><value>2592000</value></entry> 
 					<entry key="i18nIntro"><value>org.olat.user:runonce.changepw.intro</value></entry>			
-				</map> -->	
-				
-			<!-- example config: <map>
+				</map> 
+			-->		
+			<!-- Documented example of the change password dialog 
+				<map>
 					## specify a controller to start with default args (ureq, wControl) 
 					<entry key="controller">
 						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -215,7 +231,8 @@
 					## optional i18nKey to present an intro-text for this controller
 					## specify in the form of "package:i18nKey"
 					<entry key="i18nIntro"><value>org.olat.user:runonce.intro</value></entry>		
-				</map> --> 
+				</map> 
+			--> 
 	<!-- </list> 
 		</property>
 	</bean> -->		
