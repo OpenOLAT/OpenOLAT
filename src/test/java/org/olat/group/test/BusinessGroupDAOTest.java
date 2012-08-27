@@ -40,13 +40,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupPropertyDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -1252,16 +1252,15 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check owner + attendee
 		int countMembershipA = businessGroupDao.countMembershipInfoInBusinessGroups(id, groupKeys);
 		Assert.assertEquals(3, countMembershipA);
-		List<BusinessGroupMembership> memberships = businessGroupDao.getMembershipInfoInBusinessGroups(id, groupKeys);
+		List<BusinessGroupMembershipViewImpl> memberships = businessGroupDao.getMembershipInfoInBusinessGroups(id, groupKeys);
 		Assert.assertNotNull(memberships);
 		Assert.assertEquals(3, memberships.size());
 		
 		int found = 0;
-		for(BusinessGroupMembership membership:memberships) {
+		for(BusinessGroupMembershipViewImpl membership:memberships) {
 			Assert.assertNotNull(membership.getIdentityKey());
 			Assert.assertNotNull(membership.getCreationDate());
 			Assert.assertNotNull(membership.getLastModified());
-			Assert.assertNotNull(membership.getMembership());
 			if(membership.getOwnerGroupKey() != null && group1.getKey().equals(membership.getOwnerGroupKey())) {
 				found++;
 			}

@@ -53,6 +53,10 @@ public class GroupMembersDisplayController extends BasicController {
 			GroupController groupParticipantsController = new GroupController(ureq, wControl, false, true, false, businessGroup.getPartipiciantGroup());
 			content.put("participants", groupParticipantsController.getInitialComponent());
 		}
+		if(members.isWaitingListPublic()) {
+			GroupController groupWaitingListController = new GroupController(ureq, wControl, false, true, false, businessGroup.getWaitingGroup());
+			content.put("waitingList", groupWaitingListController.getInitialComponent());
+		}
 		putInitialPanel(content);
 	}
 

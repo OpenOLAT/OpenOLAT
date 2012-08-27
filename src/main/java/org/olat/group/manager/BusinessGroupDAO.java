@@ -44,13 +44,12 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
-import org.olat.group.model.BusinessGroupMembershipImpl;
+import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupShortImpl;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
@@ -221,7 +220,7 @@ public class BusinessGroupDAO {
 	
 	public int countMembershipInfoInBusinessGroups(Identity identity, List<Long> groupKeys) {
 		StringBuilder sb = new StringBuilder(); 
-		sb.append("select count(membership) from ").append(BusinessGroupMembershipImpl.class.getName()).append(" as membership ")
+		sb.append("select count(membership) from ").append(BusinessGroupMembershipViewImpl.class.getName()).append(" as membership ")
 		  .append(" where membership.identityKey=:identId ");
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 		  sb.append(" and (membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
@@ -237,21 +236,21 @@ public class BusinessGroupDAO {
 		return res.intValue();
 	}
 	
-	public List<BusinessGroupMembership> getMembershipInfoInBusinessGroups(Identity identity, Collection<Long> groupKeys) {
+	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Identity identity, Collection<Long> groupKeys) {
 		StringBuilder sb = new StringBuilder(); 
-		sb.append("select membership from ").append(BusinessGroupMembershipImpl.class.getName()).append(" as membership ")
+		sb.append("select membership from ").append(BusinessGroupMembershipViewImpl.class.getName()).append(" as membership ")
 		  .append(" where membership.identityKey=:identId ");
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 		  sb.append(" and (membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
 		}
 		
-		TypedQuery<BusinessGroupMembership> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembership.class)
+		TypedQuery<BusinessGroupMembershipViewImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembershipViewImpl.class)
 				.setParameter("identId", identity.getKey());
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 			query.setParameter("groupKeys", groupKeys);
 		}
 		
-		List<BusinessGroupMembership> res = query.getResultList();
+		List<BusinessGroupMembershipViewImpl> res = query.getResultList();
 		return res;
 	}
 

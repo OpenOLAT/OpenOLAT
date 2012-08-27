@@ -30,12 +30,14 @@ import org.olat.group.model.BGMembership;
 public interface BusinessGroupMembership extends CreateInfo, ModifiedInfo {
 
 	public Long getIdentityKey();
+	
+	public Long getGroupKey();
 
-	public Long getOwnerGroupKey();
+	public boolean isOwner();
 
-	public Long getParticipantGroupKey();
+	public boolean isParticipant();
 
-	public Long getWaitingGroupKey();
+	public boolean isWaiting();
 	
 	public BGMembership getMembership();
 

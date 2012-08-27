@@ -76,7 +76,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryTableModel.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("resources.noresources"));
+		tableConfig.setTableEmptyMessage(translate("config.resources.noresources"));
 		resourcesCtr = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);
 		listenTo(resourcesCtr);
 

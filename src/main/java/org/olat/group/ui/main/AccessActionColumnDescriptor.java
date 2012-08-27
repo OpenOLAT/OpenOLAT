@@ -58,7 +58,7 @@ public class AccessActionColumnDescriptor extends DefaultColumnDescriptor {
 		Object wrapper = table.getTableDataModel().getValueAt(sortedRow, BusinessGroupTableModelWithType.Cols.wrapper.ordinal());
 		if(wrapper instanceof BGTableItem) {
 			BGTableItem item = (BGTableItem)wrapper;
-			if(item.isFull()) {
+			if(item.isFull() && !item.isWaitingListEnabled()) {
 				return null;
 			}
 			return TABLE_ACTION_ACCESS;
@@ -83,9 +83,17 @@ public class AccessActionColumnDescriptor extends DefaultColumnDescriptor {
 			if(wrapper instanceof BGTableItem) {
 				BGTableItem item = (BGTableItem)wrapper;
 				if(item.isFull()) {
-					sb.append(translator.translate("table.header.group.full"));
+					if(item.isWaitingListEnabled()) {
+						sb.append(translator.translate("table.access.waitingList"));
+					} else {
+						sb.append(translator.translate("table.header.group.full"));
+					}
 				} else if(item.isWaitingListEnabled()) {
-					sb.append(translator.translate("table.access.waitingList"));
+					if(item.isAutoCloseRanksEnabled()) {
+						sb.append(translator.translate("table.access"));
+					} else {
+						sb.append(translator.translate("table.access.waitingList"));
+					}	
 				} else {
 					sb.append(translator.translate("table.access"));
 				}

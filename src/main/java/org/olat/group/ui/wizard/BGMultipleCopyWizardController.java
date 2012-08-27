@@ -137,8 +137,8 @@ public class BGMultipleCopyWizardController extends WizardController {
 		// reload original group to prevent context proxy problems
 		originalGroup = businessGroupService.loadBusinessGroup(originalGroup);
 
-		BusinessGroup newGroup = businessGroupService.copyBusinessGroup(originalGroup, newGroupName, originalGroup.getDescription(),
-				null, max, null, null /* areas map */,
+		BusinessGroup newGroup = businessGroupService.copyBusinessGroup(getIdentity(), originalGroup, newGroupName, originalGroup.getDescription(),
+				null, max, 
 				copyForm.isCopyAreas(), copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(),
 				copyForm.isCopyParticipants(), copyForm.isCopyMembersVisibility(), copyForm.isCopyWaitingList(),
 				true /*copy relations*/);

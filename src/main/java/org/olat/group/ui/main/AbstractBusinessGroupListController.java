@@ -73,7 +73,6 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -453,8 +452,8 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 					boolean copyRelations = convertToBoolean(runContext, "resources");
 
 					for(BGCopyBusinessGroup copy:copies) {
-						businessGroupService.copyBusinessGroup(copy.getOriginal(), copy.getName(), copy.getDescription(),
-								copy.getMinParticipants(), copy.getMaxParticipants(), null, null,
+						businessGroupService.copyBusinessGroup(getIdentity(), copy.getOriginal(), copy.getName(), copy.getDescription(),
+								copy.getMinParticipants(), copy.getMaxParticipants(),
 								copyAreas, copyCollabToolConfig, copyRights, copyOwners, copyParticipants,
 								copyMemberVisibility, copyWaitingList, copyRelations);
 					
@@ -729,15 +728,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(getIdentity(), groupKeysWithMembers);
 		Map<Long, BusinessGroupMembership> memberships = new HashMap<Long, BusinessGroupMembership>();
 		for(BusinessGroupMembership membership: groupsAsOwner) {
-			if(membership.getOwnerGroupKey() != null) {
-				memberships.put(membership.getOwnerGroupKey(), membership);
-			}
-			if(membership.getParticipantGroupKey() != null) {
-				memberships.put(membership.getParticipantGroupKey(), membership);
-			}
-			if(membership.getWaitingGroupKey() != null) {
-				memberships.put(membership.getWaitingGroupKey(), membership);
-			}
+			memberships.put(membership.getGroupKey(), membership);
 		}
 		
 		//find resources / courses
@@ -785,9 +776,8 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 			BusinessGroupMembership membership =  memberships.get(group.getKey());
 			Boolean allowLeave =  membership != null;
 			Boolean allowDelete = admin ? Boolean.TRUE : null;
-			BGMembership member = membership == null ? null : membership.getMembership();
 			boolean marked = markedResources.contains(group.getResource().getResourceableId());
-			BGTableItem tableItem = new BGTableItem(group, marked, member, allowLeave, allowDelete, accessMethods);
+			BGTableItem tableItem = new BGTableItem(group, marked, membership, allowLeave, allowDelete, accessMethods);
 			tableItem.setUnfilteredRelations(resources);
 			items.add(tableItem);
 		}

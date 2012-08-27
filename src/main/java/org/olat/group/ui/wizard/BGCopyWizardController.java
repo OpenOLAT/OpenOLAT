@@ -123,8 +123,8 @@ public class BGCopyWizardController extends WizardController {
 		Integer bgMax = groupController.getGroupMax();
 		Integer bgMin = groupController.getGroupMin();
 
-		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, bgName, bgDesc,
-				bgMin, bgMax, null, null,
+		BusinessGroup newGroup = bgs.copyBusinessGroup(getIdentity(), originalGroup, bgName, bgDesc,
+				bgMin, bgMax,
 				copyForm.isCopyAreas(), copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(),
 				copyForm.isCopyParticipants(), copyForm.isCopyMembersVisibility(), copyForm.isCopyWaitingList(),
 				true /*copy resources */ );

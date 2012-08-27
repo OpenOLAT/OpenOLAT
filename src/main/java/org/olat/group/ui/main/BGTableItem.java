@@ -24,9 +24,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
-import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
@@ -41,7 +41,7 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BGTableItem {
-	private final BGMembership member;
+	private final BusinessGroupMembership member;
 	private boolean marked;
 	private final Boolean allowLeave;
 	private final Boolean allowDelete;
@@ -52,7 +52,7 @@ public class BGTableItem {
 	private List<RepositoryEntryShort> relations;
 	private List<PriceMethodBundle> access;
 	
-	public BGTableItem(BusinessGroup businessGroup, boolean marked, BGMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
+	public BGTableItem(BusinessGroup businessGroup, boolean marked, BusinessGroupMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
 		this.businessGroup = new BGShort(businessGroup);
 		this.businessGroupDescription = businessGroup.getDescription();
 		this.businessGroupLastUsage = businessGroup.getLastUsage();
@@ -63,7 +63,7 @@ public class BGTableItem {
 		this.access = access;
 	}
 	
-	public BGTableItem(BusinessGroupView businessGroup, boolean marked, BGMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
+	public BGTableItem(BusinessGroupView businessGroup, boolean marked, BusinessGroupMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
 		this.businessGroup = new BGShort(businessGroup);
 		this.businessGroupDescription = businessGroup.getDescription();
 		this.businessGroupLastUsage = businessGroup.getLastUsage();
@@ -94,6 +94,10 @@ public class BGTableItem {
 		return businessGroup.isWaitingListEnabled();
 	}
 	
+	public boolean isAutoCloseRanksEnabled() {
+		return businessGroup.isAutoCloseRanksEnabled();
+	}
+	
 	public boolean isFull() {
 		Integer maxParticipants = businessGroup.getMaxParticipants();
 		if(maxParticipants == null || maxParticipants.intValue() <= 0) {
@@ -121,7 +125,7 @@ public class BGTableItem {
 		this.marked = mark;
 	}
 
-	public BGMembership getMembership() {
+	public BusinessGroupMembership getMembership() {
 		return member;
 	}
 	
@@ -188,12 +192,14 @@ public class BGTableItem {
 		private final Integer maxParticipants;
 		private long numOfParticipants;
 		private final boolean waitingListEnabled;
+		private final boolean autoCloseRanksEnabled;
 		
 		public BGShort(BusinessGroup group) {
 			key = group.getKey();
 			name = group.getName().intern();
 			maxParticipants = group.getMaxParticipants();
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
+			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
 		}
 		
 		public BGShort(BusinessGroupView group) {
@@ -202,6 +208,7 @@ public class BGTableItem {
 			maxParticipants = group.getMaxParticipants();
 			numOfParticipants = group.getNumOfParticipants();
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
+			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
 		}
 
 		@Override
@@ -234,6 +241,10 @@ public class BGTableItem {
 		
 		public boolean isWaitingListEnabled() {
 			return waitingListEnabled;
+		}
+
+		public boolean isAutoCloseRanksEnabled() {
+			return autoCloseRanksEnabled;
 		}
 
 		@Override

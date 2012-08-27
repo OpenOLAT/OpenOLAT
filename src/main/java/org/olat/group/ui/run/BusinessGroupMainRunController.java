@@ -324,9 +324,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private boolean isOnWaitinglist(List<BusinessGroupMembership> memberships) {
 		boolean waiting = false;
 		for(BusinessGroupMembership membership:memberships) {
-			if(membership.getOwnerGroupKey() != null || membership.getParticipantGroupKey() != null) {
+			if(membership.isOwner() || membership.isParticipant()) {
 				return false;
-			} else if (membership.getWaitingGroupKey() != null) {
+			} else if (membership.isWaiting()) {
 				waiting = true;
 			}
 		}

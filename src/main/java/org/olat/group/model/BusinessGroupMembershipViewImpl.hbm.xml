@@ -3,7 +3,7 @@
 	"-//Hibernate/Hibernate Mapping DTD//EN"
 	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping default-lazy="false">
-	<class name="org.olat.group.model.BusinessGroupMembershipImpl" table="o_bs_gp_membership_v" mutable="false">
+	<class name="org.olat.group.model.BusinessGroupMembershipViewImpl" table="o_bs_gp_membership_v" mutable="false">
 		<cache usage="read-write" />
 		<id name="key" 
 			type="long" 

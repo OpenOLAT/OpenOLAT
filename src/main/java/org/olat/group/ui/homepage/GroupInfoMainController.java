@@ -48,7 +48,13 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.DisplayMembers;
 
-
+/**
+ * 
+ * The main controller for the group business card.
+ * 
+ * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
 public class GroupInfoMainController extends MainLayoutBasicController implements Activateable2 {
 	
 	public final static String COMMAND_MENU_GROUPINFO = "COMMAND_MENU_GROUPINFO";
@@ -207,7 +213,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		rootNode.addChild(childNode);
 		rootNode.setDelegate(childNode);
 		
-		if(members.isOwnersPublic() || members.isParticipantsPublic()) {
+		if(members.isOwnersPublic() || members.isParticipantsPublic() || members.isWaitingListPublic()) {
 			childNode = new GenericTreeNode();
 			childNode.setTitle(translate("main.menu.members"));
 			childNode.setUserObject(COMMAND_MENU_GROUPMEMBERS);

@@ -107,13 +107,13 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				return wrapped.getMembership();
 			case firstTime:
 				if(memberships != null) {
-					BusinessGroupMembership membership = memberships.get(wrapped.getBusinessGroupKey());
+					BusinessGroupMembership membership = wrapped.getMembership();
 					return membership == null ? null : membership.getCreationDate();
 				}
 				return null;
 			case lastTime:
 				if(memberships != null) {
-					BusinessGroupMembership membership = memberships.get(wrapped.getBusinessGroupKey());
+					BusinessGroupMembership membership = wrapped.getMembership();
 					return membership == null ? null : membership.getLastModified();
 				}
 				return null;
@@ -149,7 +149,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		for(Iterator<BusinessGroup> it=groups.iterator(); it.hasNext(); ) {
 			BusinessGroup group = it.next();
 			BusinessGroupMembership membership = memberships.get(group.getKey());
-			if(membership == null || membership.getOwnerGroupKey() == null) {
+			if(membership == null || !membership.isOwner()) {
 				it.remove();
 			}
 		}
@@ -165,7 +165,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		for(Iterator<Long> it=groupKeys.iterator(); it.hasNext(); ) {
 			Long groupKey = it.next();
 			BusinessGroupMembership membership = memberships.get(groupKey);
-			if(membership == null || membership.getOwnerGroupKey() == null) {
+			if(membership == null || !membership.isOwner()) {
 				it.remove();
 			}
 		}

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -78,6 +79,8 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
+import org.olat.group.model.BusinessGroupMembershipImpl;
+import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -332,14 +335,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public BusinessGroup copyBusinessGroup(BusinessGroup sourceBusinessGroup, String targetName, String targetDescription, Integer targetMin,
-			Integer targetMax, OLATResource targetResource, Map<BGArea, BGArea> areaLookupMap, boolean copyAreas, boolean copyCollabToolConfig,
-			boolean copyRights, boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList,
-			boolean copyRelations) {
+	public BusinessGroup copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, String targetName, String targetDescription,
+			Integer targetMin, Integer targetMax,  boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
+			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations) {
 
 		// 1. create group, set waitingListEnabled, enableAutoCloseRanks like source business-group
 		BusinessGroup newGroup = createBusinessGroup(null, targetName, targetDescription, targetMin, targetMax, 
-				sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(), targetResource);
+				sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(), null);
 		// return immediately with null value to indicate an already take groupname
 		if (newGroup == null) { 
 			return null;
@@ -366,28 +368,28 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		if (copyAreas) {
 			List<BGArea> areas = areaManager.findBGAreasOfBusinessGroup(sourceBusinessGroup);
 			for(BGArea area : areas) {
-				if (areaLookupMap == null) {
-					// reference target group to source groups areas
-					areaManager.addBGToBGArea(newGroup, area);
-				} else {
-					// reference target group to mapped group areas
-					BGArea mappedArea = (BGArea) areaLookupMap.get(area);
-					areaManager.addBGToBGArea(newGroup, mappedArea);
-				}
+				// reference target group to source groups areas
+				areaManager.addBGToBGArea(newGroup, area);
 			}
 		}
 		// 5. copy owners
 		if (copyOwners) {
 			List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(sourceBusinessGroup.getOwnerGroup());
-			for (Identity identity:owners) {
+			if(owners.isEmpty()) {
 				securityManager.addIdentityToSecurityGroup(identity, newGroup.getOwnerGroup());
+			} else {
+				for (Identity owner:owners) {
+					securityManager.addIdentityToSecurityGroup(owner, newGroup.getOwnerGroup());
+				}
 			}
+		} else {
+			securityManager.addIdentityToSecurityGroup(identity, newGroup.getOwnerGroup());
 		}
 		// 6. copy participants
 		if (copyParticipants) {
 			List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(sourceBusinessGroup.getPartipiciantGroup());
-			for(Identity identity:participants) {
-				securityManager.addIdentityToSecurityGroup(identity, newGroup.getPartipiciantGroup());
+			for(Identity participant:participants) {
+				securityManager.addIdentityToSecurityGroup(participant, newGroup.getPartipiciantGroup());
 			}
 		}
 		// 7. copy rights
@@ -400,8 +402,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		// 8. copy waiting-lisz
 		if (copyWaitingList) {
 			List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(sourceBusinessGroup.getWaitingGroup());
-			for (Identity identity:waitingList) {
-				securityManager.addIdentityToSecurityGroup(identity, newGroup.getWaitingGroup());
+			for (Identity waiting:waitingList) {
+				securityManager.addIdentityToSecurityGroup(waiting, newGroup.getWaitingGroup());
 			}
 		}
 		//9. copy relations
@@ -1284,7 +1286,44 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	@Transactional(readOnly=true)
 	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, Collection<Long> businessGroups) {
-		return businessGroupDAO.getMembershipInfoInBusinessGroups(identity, businessGroups);
+		List<BusinessGroupMembershipViewImpl> views = businessGroupDAO.getMembershipInfoInBusinessGroups(identity, businessGroups);
+		
+
+		Map<Long, BusinessGroupMembershipImpl> memberships = new HashMap<Long, BusinessGroupMembershipImpl>();
+		for(BusinessGroupMembershipViewImpl membership: views) {
+			if(membership.getOwnerGroupKey() != null) {
+				Long groupKey = membership.getOwnerGroupKey();
+				if(!memberships.containsKey(groupKey)) {
+					memberships.put(groupKey, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
+				}
+				BusinessGroupMembershipImpl mb = memberships.get(groupKey);
+				mb.setOwner(true);
+				mb.setCreationDate(membership.getCreationDate());
+				mb.setLastModified(membership.getLastModified());
+			}
+			if(membership.getParticipantGroupKey() != null) {
+				Long groupKey = membership.getParticipantGroupKey();
+				if(!memberships.containsKey(groupKey)) {
+					memberships.put(groupKey, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
+				}
+				BusinessGroupMembershipImpl mb = memberships.get(groupKey);
+				mb.setParticipant(true);
+				mb.setCreationDate(membership.getCreationDate());
+				mb.setLastModified(membership.getLastModified());
+			}
+			if(membership.getWaitingGroupKey() != null) {
+				Long groupKey = membership.getWaitingGroupKey();
+				if(!memberships.containsKey(groupKey)) {
+					memberships.put(groupKey, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
+				}
+				BusinessGroupMembershipImpl mb = memberships.get(groupKey);
+				mb.setWaiting(true);
+				mb.setCreationDate(membership.getCreationDate());
+				mb.setLastModified(membership.getLastModified());
+			}
+		}
+		
+		return new ArrayList<BusinessGroupMembership>(memberships.values());
 	}
 	
 	@Override

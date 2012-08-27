@@ -63,6 +63,10 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 		setTranslator(Util.createPackageTranslator(CollaborationToolsSettingsController.class, getLocale(), getTranslator()));
 		this.quotaManager = QuotaManager.getInstance();
 		
+		enableValues = new String[]{
+				translate("config.tools.on"), translate("config.tools.off")
+		};
+		
 		initForm(ureq);
 	}
 	@Override
@@ -79,7 +83,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 			String[] keys = new String[]{ "on" };
 			String[] values = new String[]{ translate("collabtools.named." + k) };
 			
-			String i18n = first ? "config.tools.title" : null;
+			String i18n = first ? "config.tools.desc" : null;
 			MultipleSelectionElement selectEl = uifactory.addCheckboxesHorizontal(k, i18n, formLayout, keys, values, null);
 			selectEl.addActionListener(this, FormEvent.ONCHANGE);
 			toolList.add(selectEl);

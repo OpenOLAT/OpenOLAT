@@ -1,5 +1,13 @@
 <h4>$r.translate("userlist.title")</h4>
-<h5>$r.translate("userlist.owners.title")</h5>
-$r.render("owners")
-<h5>$r.translate("userlist.participants.title")</h5>
-$r.render("participants")
+#if($r.available("owners"))
+	<h5>$r.translate("userlist.owners.title")</h5>
+	$r.render("owners")
+#end
+#if($r.available("participants"))
+	<h5>$r.translate("userlist.participants.title")</h5>
+	$r.render("participants")
+#end
+#if($r.available("waitingList"))
+	<h5>$r.translate("userlist.waitingList.title")</h5>
+	$r.render("waitingList")
+#end

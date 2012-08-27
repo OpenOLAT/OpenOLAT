@@ -61,7 +61,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.AddToGroupsEvent;
-import org.olat.group.model.BGMembership;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.main.BGRoleCellRenderer;
@@ -156,22 +155,13 @@ public class GroupOverviewController extends BasicController {
 		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(identity, groupKeysWithMembers);
 		Map<Long, BusinessGroupMembership> memberships = new HashMap<Long, BusinessGroupMembership>();
 		for(BusinessGroupMembership membership: groupsAsOwner) {
-			if(membership.getOwnerGroupKey() != null) {
-				memberships.put(membership.getOwnerGroupKey(), membership);
-			}
-			if(membership.getParticipantGroupKey() != null) {
-				memberships.put(membership.getParticipantGroupKey(), membership);
-			}
-			if(membership.getWaitingGroupKey() != null) {
-				memberships.put(membership.getWaitingGroupKey(), membership);
-			}
+			memberships.put(membership.getGroupKey(), membership);
 		}
 
 		List<BGTableItem> items = new ArrayList<BGTableItem>();
 		for(BusinessGroup group:groups) {
 			BusinessGroupMembership membership =  memberships.get(group.getKey());
-			BGMembership member = membership == null ? null : membership.getMembership();
-			BGTableItem tableItem = new BGTableItem(group, false, member, Boolean.TRUE, Boolean.FALSE, null);
+			BGTableItem tableItem = new BGTableItem(group, false, membership, Boolean.TRUE, Boolean.FALSE, null);
 			items.add(tableItem);
 		}
 		tableDataModel.setEntries(items, memberships);
