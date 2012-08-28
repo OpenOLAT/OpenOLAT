@@ -45,28 +45,30 @@ import com.thoughtworks.xstream.mapper.MapperWrapper;
  */
 public class EnhancedXStream extends XStream  {
 	
-	public EnhancedXStream() {
+	public EnhancedXStream(boolean export) {
 		super();
 		
-		addDefaultImplementation(PersistentList.class, List.class);
-		addDefaultImplementation(PersistentBag.class, List.class);
-		addDefaultImplementation(PersistentMap.class, Map.class);
-		addDefaultImplementation(PersistentSortedMap.class, Map.class);
-		addDefaultImplementation(PersistentSet.class, Set.class);
-		addDefaultImplementation(PersistentSortedSet.class, Set.class);
-		addDefaultImplementation(ArrayList.class, List.class);
-		
-		registerConverter(new CollectionConverter(getMapper()) {
-		    public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
-		        return PersistentList.class == type || PersistentBag.class == type;
-		    }
-		});
-		
-		registerConverter(new MapConverter(getMapper()) {
-		  public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
-		    return PersistentMap.class == type;
-		  }
-		});
+		if(export) {
+			addDefaultImplementation(PersistentList.class, List.class);
+			addDefaultImplementation(PersistentBag.class, List.class);
+			addDefaultImplementation(PersistentMap.class, Map.class);
+			addDefaultImplementation(PersistentSortedMap.class, Map.class);
+			addDefaultImplementation(PersistentSet.class, Set.class);
+			addDefaultImplementation(PersistentSortedSet.class, Set.class);
+			addDefaultImplementation(ArrayList.class, List.class);
+			
+			registerConverter(new CollectionConverter(getMapper()) {
+			    public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
+			        return PersistentList.class == type || PersistentBag.class == type;
+			    }
+			});
+			
+			registerConverter(new MapConverter(getMapper()) {
+			  public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
+			    return PersistentMap.class == type;
+			  }
+			});
+		}
 	}
 	
 	@Override

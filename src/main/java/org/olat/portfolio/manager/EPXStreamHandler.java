@@ -67,7 +67,7 @@ public class EPXStreamHandler {
 	
 	private static final OLog log = Tracing.createLoggerFor(EPXStreamHandler.class);
 
-	private static final XStream myStream = XStreamHelper.createXStreamInstance();
+	private static final XStream myStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	private static Templates filterArtefactsTemplates;
 	
 	static { // initialize supported types
