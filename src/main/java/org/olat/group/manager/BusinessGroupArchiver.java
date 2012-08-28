@@ -25,15 +25,11 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
@@ -54,6 +50,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.ui.BGControllerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -79,10 +76,6 @@ public class BusinessGroupArchiver {
 	private static String PARTICIPANT = "participant";
 	private static String WAITING = "waiting";
 	
-
-	private Translator translator;
-	private Map<Locale,Translator> translatorMap;
-	
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -91,18 +84,6 @@ public class BusinessGroupArchiver {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	
-	/**
-	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
-	 */
-	@PostConstruct
-	public void inti() {
-		Locale locale = I18nModule.getDefaultLocale();
-		Translator fallBacktranslator1 =  Util.createPackageTranslator(GroupController.class, locale);
-		Translator fallBacktranslator2 = Util.createPackageTranslator(BusinessGroupService.class, locale, fallBacktranslator1);
-		// fallback to translate user properties
-		translator = userManager.getPropertyHandlerTranslator(fallBacktranslator2);
-	}
 
 	/**
 	 * Retrives a PackageTranslator for the input locale.
@@ -111,21 +92,11 @@ public class BusinessGroupArchiver {
 	 * @return
 	 */
 	protected Translator getPackageTranslator(Locale locale) {
-		if(I18nModule.getDefaultLocale().equals(locale)) {
-			return translator;			
-		} else {
-			if(translatorMap==null) {
-				translatorMap = new HashMap<Locale,Translator>();
-			}				
-			if(translatorMap.containsKey(locale)) {
-				return translatorMap.get(locale);
-			} else {
-				Translator fallBacktranslator =  Util.createPackageTranslator(GroupController.class, locale);
-				Translator trans = Util.createPackageTranslator(BusinessGroupService.class, locale, fallBacktranslator);
-				translatorMap.put(locale, trans);
-				return trans;
-			}
-		}
+		Translator fallBacktranslator1 =  Util.createPackageTranslator(GroupController.class, locale);
+		Translator fallBacktranslator2 = Util.createPackageTranslator(BGControllerFactory.class, locale, fallBacktranslator1);
+		Translator translator = userManager.getPropertyHandlerTranslator(fallBacktranslator2);
+		return translator;
+
 	}
 	
 	//get user property handlers used in this group archiver
@@ -134,10 +105,12 @@ public class BusinessGroupArchiver {
 	}
 
 	public void archiveGroup(BusinessGroup businessGroup, File archiveFile) {
-		FileUtils.save(archiveFile, toXls(businessGroup), "utf-8");
+		Translator translator = getPackageTranslator(I18nModule.getDefaultLocale());
+		FileUtils.save(archiveFile, toXls(businessGroup, translator), "utf-8");
 	}
 
-	private String toXls(BusinessGroup businessGroup) {
+	private String toXls(BusinessGroup businessGroup, Translator translator) {
+		
 		StringBuffer buf = new StringBuffer();
 		// Export Header
 		buf.append(translator.translate("archive.group.name"));
@@ -153,24 +126,24 @@ public class BusinessGroupArchiver {
 		buf.append(FilterFactory.getHtmlTagsFilter().filter(businessGroup.getDescription()));
 		buf.append(EOL);
 		
-			appendIdentityTable(buf, businessGroup.getOwnerGroup(), translator.translate("archive.header.owners"));
-			appendIdentityTable(buf, businessGroup.getPartipiciantGroup(), translator.translate("archive.header.partipiciant"));
+		appendIdentityTable(buf, businessGroup.getOwnerGroup(), translator.translate("archive.header.owners"), translator);
+		appendIdentityTable(buf, businessGroup.getPartipiciantGroup(), translator.translate("archive.header.partipiciant"), translator);
 		
 		if (businessGroup.getWaitingListEnabled() ) {
-			appendIdentityTable(buf, businessGroup.getWaitingGroup(), translator.translate("archive.header.waitinggroup"));
+			appendIdentityTable(buf, businessGroup.getWaitingGroup(), translator.translate("archive.header.waitinggroup"), translator);
 		}
 		return buf.toString();
 	}
 
-	private void appendIdentityTable(StringBuffer buf, SecurityGroup group, String title ) {
+	private void appendIdentityTable(StringBuffer buf, SecurityGroup group, String title, Translator translator) {
 		if (group != null) {
-		appendTitle(buf, title );
-		appendIdentityTableHeader(buf);
-		for (Iterator<Object[]> iter = securityManager.getIdentitiesAndDateOfSecurityGroup(group).iterator(); iter.hasNext();) {
-			Object[] element = iter.next();
-			Identity identity = (Identity) element[0];
-			Date addedTo = (Date) element[1];
-			appendIdentity(buf, identity, addedTo );
+			appendTitle(buf, title);
+			appendIdentityTableHeader(buf, translator);
+			for (Iterator<Object[]> iter = securityManager.getIdentitiesAndDateOfSecurityGroup(group).iterator(); iter.hasNext();) {
+				Object[] element = iter.next();
+				Identity identity = (Identity) element[0];
+				Date addedTo = (Date) element[1];
+				appendIdentity(buf, identity, addedTo, translator);
 			}
 		}
 	}
@@ -181,7 +154,7 @@ public class BusinessGroupArchiver {
 		buf.append(EOL);
 	}
 
-	private void appendIdentity(StringBuffer buf, Identity owner, Date addedTo) {
+	private void appendIdentity(StringBuffer buf, Identity owner, Date addedTo, Translator translator) {
 		Locale loc = translator.getLocale();
 		// add the identities user name
 		buf.append(owner.getName());
@@ -199,7 +172,7 @@ public class BusinessGroupArchiver {
 		buf.append(EOL);
 	}
 
-	private void appendIdentityTableHeader(StringBuffer buf) {
+	private void appendIdentityTableHeader(StringBuffer buf, Translator translator) {
 		// first the identites name
 		buf.append( translator.translate("table.user.login") );
 		buf.append(DELIMITER);
@@ -219,6 +192,7 @@ public class BusinessGroupArchiver {
 	}
 
 	private String toXls(List<BusinessGroup> groups) {
+		Translator translator = getPackageTranslator(I18nModule.getDefaultLocale());
 		StringBuffer buf = new StringBuffer();
 		// Export Context Header
 		buf.append(translator.translate("archive.group.context.name"));
@@ -235,7 +209,7 @@ public class BusinessGroupArchiver {
 		buf.append(EOL);
 
 		for (BusinessGroup group : groups) {
-			buf.append( toXls(group) );
+			buf.append(toXls(group, translator));
 			buf.append(EOL);
 			buf.append(EOL);
 		}
