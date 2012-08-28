@@ -148,12 +148,13 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		}
 	}
 
-	public BusinessGroup updateAccountManagerGroupName(String groupName, String groupDescription, BusinessGroup accountManagerGroup) {
+	@Override
+	public BusinessGroup updateAccountManagerGroupName(Identity ureqIdentity, String groupName, String groupDescription, BusinessGroup accountManagerGroup) {
 		// group could have been deleted, see FXOLAT-295
 		if (accountManagerGroup != null){
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(accountManagerGroup);
-			return bgs.updateBusinessGroup(reloadedBusinessGroup, groupName, groupDescription,
+			return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, groupName, groupDescription,
 					reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 		}
 		return null;
@@ -194,10 +195,11 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	 * If the goup-name already exist, it will be automatically try another one with suffix e.g. ' _2'
 	 * @see org.olat.course.nodes.projectbroker.service.ProjectGroupManager#changeProjectGroupName(org.olat.group.BusinessGroup, java.lang.String, java.lang.String)
 	 */
-	public BusinessGroup changeProjectGroupName(BusinessGroup projectGroup, String groupName, String groupDescription, OLATResource courseResource) {
+	@Override
+	public BusinessGroup changeProjectGroupName(Identity ureqIdentity, BusinessGroup projectGroup, String groupName, String groupDescription, OLATResource courseResource) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
-		return bgs.updateBusinessGroup(reloadedBusinessGroup, groupName, groupDescription,
+		return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, groupName, groupDescription,
 				reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 	}
 
@@ -299,11 +301,12 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		return BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getCandidateGroup());
 	}
 
-	public BusinessGroup setProjectGroupMaxMembers(BusinessGroup projectGroup, int maxMembers ) {
+	@Override
+	public BusinessGroup setProjectGroupMaxMembers(Identity ureqIdentity, BusinessGroup projectGroup, int maxMembers ) {
   	 BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
   	 BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
   	 logDebug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
-  	 return bgs.updateBusinessGroup(reloadedBusinessGroup, null, null, reloadedBusinessGroup.getMinParticipants(),
+  	 return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, null, null, reloadedBusinessGroup.getMinParticipants(),
   			 maxMembers);
 	}
 

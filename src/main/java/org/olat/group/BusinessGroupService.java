@@ -80,7 +80,8 @@ public interface BusinessGroupService {
 	 * @param maxParticipants
 	 * @return
 	 */
-	public BusinessGroup updateBusinessGroup(BusinessGroup group, String name, String desc, Integer minParticipants, Integer maxParticipants);
+	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
+			Integer minParticipants, Integer maxParticipants);
 	
 	/**
 	 * Update the business group with the supplied arguments and do it in sync
@@ -93,8 +94,8 @@ public interface BusinessGroupService {
 	 * @param autoCloseRanks
 	 * @return
 	 */
-	public BusinessGroup updateBusinessGroup(final BusinessGroup group, final String name, final String description,
-			final Integer minParticipants, final Integer maxParticipants, final Boolean waitingList, final Boolean autoCloseRanks);
+	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
+			Integer minParticipants, Integer maxParticipants, Boolean waitingList, Boolean autoCloseRanks);
 	
 	public DisplayMembers getDisplayMembers(BusinessGroup group);
 	

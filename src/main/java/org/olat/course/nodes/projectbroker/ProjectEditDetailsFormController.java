@@ -318,7 +318,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			String newProjectGroupName = translate("project.member.groupname", projectTitle.getValue());
 			String newProjectGroupDescription = translate("project.member.groupdescription", projectTitle.getValue());
 			OLATResource courseResource = courseEnv.getCourseGroupManager().getCourseResource();
-			ProjectBrokerManagerFactory.getProjectGroupManager().changeProjectGroupName(project.getProjectGroup(), newProjectGroupName, newProjectGroupDescription, courseResource);
+			ProjectBrokerManagerFactory.getProjectGroupManager().changeProjectGroupName(getIdentity(), project.getProjectGroup(), newProjectGroupName, newProjectGroupDescription, courseResource);
 			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
 			projectChanged = true;
 		}
@@ -332,7 +332,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		}
 		if (project.getMaxMembers() != maxMembers.getIntValue()) {
 			project.setMaxMembers(maxMembers.getIntValue());
-			ProjectBrokerManagerFactory.getProjectGroupManager().setProjectGroupMaxMembers(project.getProjectGroup(), maxMembers.getIntValue());
+			ProjectBrokerManagerFactory.getProjectGroupManager().setProjectGroupMaxMembers(getIdentity(), project.getProjectGroup(), maxMembers.getIntValue());
 			projectChanged = true;
 		}			
 		if (attachmentFileName.getUploadFileName() != null && !attachmentFileName.getUploadFileName().equals("")) {

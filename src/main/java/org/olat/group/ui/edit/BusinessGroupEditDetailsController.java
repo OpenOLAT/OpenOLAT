@@ -98,7 +98,7 @@ public class BusinessGroupEditDetailsController extends BasicController {
 		Integer bgMin = editController.getGroupMin();
 		boolean waitingListEnabled = editController.isWaitingListEnabled();
 		boolean autoCloseRanksEnabled = editController.isAutoCloseRanksEnabled();
-		return businessGroupService.updateBusinessGroup(businessGroup, bgName, bgDesc,
+		return businessGroupService.updateBusinessGroup(getIdentity(), businessGroup, bgName, bgDesc,
 				bgMin, bgMax, waitingListEnabled, autoCloseRanksEnabled);
 	}
 }

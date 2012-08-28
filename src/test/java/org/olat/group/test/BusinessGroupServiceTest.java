@@ -195,13 +195,130 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(group);
 	}
-	
-	
+
 	@Test
-	public void loadBusinessGroups() {
+	public void testLoadBusinessGroups() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(null, false, false);
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, 5);
 		Assert.assertNotNull(groups);
+	}
+	
+	@Test
+	public void testCreateUpdateBusinessGroup_v1() {
+		//create a group
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("grp-up-1-" + UUID.randomUUID().toString());
+		OLATResource resource =  JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(id, "up-1", "up-1-desc", -1, -1, false, false, resource);
+		Assert.assertNotNull(group);
+		dbInstance.commitAndCloseSession();
+		
+		//check update
+		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id, group, "up-1-b", "up-1-desc-b", new Integer(2), new Integer(3));
+		Assert.assertNotNull(updateGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//reload to check update
+		BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(group.getKey());
+		Assert.assertNotNull(reloadedGroup);
+		Assert.assertEquals("up-1-b", reloadedGroup.getName());
+		Assert.assertEquals("up-1-desc-b", reloadedGroup.getDescription());
+		Assert.assertEquals(new Integer(2), reloadedGroup.getMinParticipants());
+		Assert.assertEquals(new Integer(3), reloadedGroup.getMaxParticipants());
+	}
+	
+	@Test
+	public void testCreateUpdateBusinessGroup_v2() {
+		//create a group
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("grp-up-2-" + UUID.randomUUID().toString());
+		OLATResource resource =  JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(id, "up-2", "up-2-desc", -1, -1, false, false, resource);
+		Assert.assertNotNull(group);
+		dbInstance.commitAndCloseSession();
+		
+		//check update
+		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id, group, "up-2-b", "up-2-desc-b", new Integer(2), new Integer(3), Boolean.TRUE, Boolean.TRUE);
+		Assert.assertNotNull(updateGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//reload to check update
+		BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(group.getKey());
+		Assert.assertNotNull(reloadedGroup);
+		Assert.assertEquals("up-2-b", reloadedGroup.getName());
+		Assert.assertEquals("up-2-desc-b", reloadedGroup.getDescription());
+		Assert.assertEquals(new Integer(2), reloadedGroup.getMinParticipants());
+		Assert.assertEquals(new Integer(3), reloadedGroup.getMaxParticipants());
+		Assert.assertEquals(Boolean.TRUE, reloadedGroup.getWaitingListEnabled());
+		Assert.assertEquals(Boolean.TRUE, reloadedGroup.getAutoCloseRanksEnabled());
+	}
+	
+	@Test
+	public void testUpdateBusinessGroupAndAutoRank_v1() {
+		//create a group with 1 participant and 2 users in waiting list
+		Identity id0 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-0-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-2-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-3-" + UUID.randomUUID().toString());
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-4-" + UUID.randomUUID().toString());
+		
+		OLATResource resource =  JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(id0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), true, true, resource);
+		Assert.assertNotNull(group);
+
+		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id3, group.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id4, group.getWaitingGroup());
+		dbInstance.commitAndCloseSession();
+
+		//update max participants
+		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id0, group, "auto-1", "auto-1-desc", new Integer(0), new Integer(3));
+		Assert.assertNotNull(updateGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//check the auto rank 
+		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+		Assert.assertNotNull(participants);
+		Assert.assertEquals(3, participants.size());
+		Assert.assertTrue(participants.contains(id1));
+		
+		List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
+		Assert.assertNotNull(waitingList);
+		Assert.assertEquals(1, waitingList.size());
+	}
+	
+	@Test
+	public void testUpdateBusinessGroupAndAutoRank_v2() {
+		//create a group with 1 participant and 2 users in waiting list
+		Identity id0 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-0-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-2-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-3-" + UUID.randomUUID().toString());
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-4-" + UUID.randomUUID().toString());
+		
+		OLATResource resource =  JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(id0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), false, false, resource);
+		Assert.assertNotNull(group);
+
+		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id3, group.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id4, group.getWaitingGroup());
+		dbInstance.commitAndCloseSession();
+
+		//update max participants
+		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id0, group, "auto-1", "auto-1-desc", new Integer(0), new Integer(3), Boolean.TRUE, Boolean.TRUE);
+		Assert.assertNotNull(updateGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//check the auto rank 
+		List<Identity> participants = securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+		Assert.assertNotNull(participants);
+		Assert.assertEquals(3, participants.size());
+		Assert.assertTrue(participants.contains(id1));
+		
+		List<Identity> waitingList = securityManager.getIdentitiesOfSecurityGroup(group.getWaitingGroup());
+		Assert.assertNotNull(waitingList);
+		Assert.assertEquals(1, waitingList.size());
 	}
 	
 	@Test

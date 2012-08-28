@@ -247,7 +247,7 @@ public class LearningGroupWebService {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
+
 		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		final BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
@@ -257,8 +257,8 @@ public class LearningGroupWebService {
 		if(!StringHelper.containsNonWhitespace(group.getName())) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
-
-		BusinessGroup mergedBg = bgs.updateBusinessGroup(bg, group.getName(), group.getDescription(),
+		Identity identity = RestSecurityHelper.getIdentity(request);
+		BusinessGroup mergedBg = bgs.updateBusinessGroup(identity, bg, group.getName(), group.getDescription(),
 				normalize(group.getMinParticipants()), normalize(group.getMaxParticipants()));
 		//save the updated group
 		GroupVO savedVO = ObjectFactory.get(mergedBg);

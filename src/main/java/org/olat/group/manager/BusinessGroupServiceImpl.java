@@ -202,30 +202,34 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional
-	public BusinessGroup updateBusinessGroup(final BusinessGroup group, final String name, final String description,
+	public BusinessGroup updateBusinessGroup(final Identity ureqIdentity, final BusinessGroup group, final String name, final String description,
 			final Integer minParticipants, final Integer maxParticipants) {
 		
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
 				// refresh group to prevent stale object exception and context proxy issues
 				BusinessGroup bg = loadBusinessGroup(group);
+				final Integer previousMaxParticipants = bg.getMaxParticipants();
 				bg.setName(name);
 				bg.setDescription(description);
 				bg.setMaxParticipants(maxParticipants);
 				bg.setMinParticipants(minParticipants);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
+				//auto rank if possible
+				autoRankCheck(ureqIdentity, bg, previousMaxParticipants);
 				return businessGroupDAO.merge(bg);
 			}
 		});
 	}
 	
-	public BusinessGroup updateBusinessGroup(final BusinessGroup group, final String name, final String description,
+	public BusinessGroup updateBusinessGroup(final Identity ureqIdentity, final BusinessGroup group, final String name, final String description,
 			final Integer minParticipants, final Integer maxParticipants, final Boolean waitingList, final Boolean autoCloseRanks) {
 		
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
 				// refresh group to prevent stale object exception and context proxy issues
 				BusinessGroup bg = loadBusinessGroup(group);
+				final Integer previousMaxParticipants = bg.getMaxParticipants();
 				bg.setName(name);
 				bg.setDescription(description);
 				bg.setMaxParticipants(maxParticipants);
@@ -238,9 +242,29 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 				bg.setAutoCloseRanksEnabled(autoCloseRanks);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
+				//auto rank if possible
+				autoRankCheck(ureqIdentity, bg, previousMaxParticipants);
 				return businessGroupDAO.merge(bg);
 			}
 		});
+	}
+	
+	private void autoRankCheck(Identity identity, BusinessGroup updatedGroup, Integer previousMaxParticipants) {
+		if(updatedGroup.getWaitingListEnabled() == null || !updatedGroup.getWaitingListEnabled().booleanValue()
+				|| updatedGroup.getAutoCloseRanksEnabled() == null || !updatedGroup.getAutoCloseRanksEnabled().booleanValue()) {
+			//do not check further, no waiting list, no automatic ranks
+			return;
+		}
+		
+		int currentMaxNumber = updatedGroup.getMaxParticipants() == null || updatedGroup.getMaxParticipants().intValue() <= 0
+				? -1 : updatedGroup.getMaxParticipants().intValue();
+		int previousMaxNumber = previousMaxParticipants == null || previousMaxParticipants.intValue() <= 0
+				? -1 : previousMaxParticipants.intValue();
+		
+		if(currentMaxNumber > previousMaxNumber) {
+			//I can rank up some users
+			transferFirstIdentityFromWaitingToParticipant(identity, updatedGroup);
+		}
 	}
 
 	@Override
@@ -1084,22 +1108,25 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		// Check if waiting-list is enabled and auto-rank-up
-		if (group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue()) {
+		if (group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()
+				&& group.getAutoCloseRanksEnabled() != null && group.getAutoCloseRanksEnabled().booleanValue()) {
 			// Check if participant is not full
 			Integer maxSize = group.getMaxParticipants();
 			int reservations = acService.countReservations(group.getResource());
-			int waitingPartipiciantSize = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
-			if (maxSize != null && (waitingPartipiciantSize + reservations) < maxSize.intValue()) {
-				// ok it has free places => get first identity from Waitinglist
+			int partipiciantSize = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+			if (maxSize != null && (partipiciantSize + reservations) < maxSize.intValue()) {
+				// ok it has free places => get first identities from waiting list
 				List<Object[]> identities = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup(), true/*sortedByAddedDate*/);
-				int i = 0;
-				boolean transferNotDone = true;
-			  while (i<identities.size() && transferNotDone) {
+				
+				int counter = 0;
+				int freeSlot = maxSize - (partipiciantSize + reservations);
+			  for(Object[] co: identities) {
+			  	if(counter >= freeSlot) {
+			  		break;
+			  	}
+			  	
 			  	// It has an identity and transfer from waiting-list to participant-group is not done
-					Object[] co = (Object[])identities.get(i++);
 					Identity firstWaitingListIdentity = (Identity) co[0];
-					//reload group
-					group = loadBusinessGroup(group);
 					// Check if firstWaitingListIdentity is not allready in participant-group
 					if (!securityManager.isIdentityInSecurityGroup(firstWaitingListIdentity,group.getPartipiciantGroup())) {
 						// move the identity from the waitinglist to the participant group
@@ -1125,7 +1152,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 							// Does not report errors to current screen because this is the identity who triggered the transfer
 							log.warn("Could not send WaitinglistTransferMail for identity=" + firstWaitingListIdentity.getName());
 						}						
-						transferNotDone = false;
+						counter++;
 				  }
 				}
 			}

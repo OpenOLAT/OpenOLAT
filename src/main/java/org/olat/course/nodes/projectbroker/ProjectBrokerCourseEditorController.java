@@ -334,7 +334,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			getLogger().debug("NODECONFIG_CHANGED_node.shortTitle=" + node.getShortTitle());
 	    	String groupName = translate("account.manager.groupname", node.getShortTitle());
 	    	String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
-	    	accountManagerGroup = ProjectBrokerManagerFactory.getProjectGroupManager().updateAccountManagerGroupName(groupName,groupDescription,accountManagerGroup);
+	    	accountManagerGroup = ProjectBrokerManagerFactory.getProjectGroupManager().updateAccountManagerGroupName(getIdentity(), groupName, groupDescription, accountManagerGroup);
 		} else if (source == dropboxForm) {
 				if (event == Event.CANCELLED_EVENT) {
 					return;
