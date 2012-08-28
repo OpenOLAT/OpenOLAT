@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -427,7 +428,7 @@ public class ScoDocument extends XMLDocument {
 	 */
 	public String[][] doFinalPreUpdate(String[][] scoElementsPreUpdate, boolean loadFlag) {
 		// Keying the elements into a map will make this easier
-		Map<String,String> keyedElements = new HashMap<String,String>();
+		Map<String,String> keyedElements = new LinkedHashMap<String,String>();
 		for (int i = 0; i < scoElementsPreUpdate.length; i++) {
 			keyedElements.put(scoElementsPreUpdate[i][0], scoElementsPreUpdate[i][1]);
 		}

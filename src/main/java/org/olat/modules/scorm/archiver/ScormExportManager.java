@@ -169,6 +169,8 @@ public class ScormExportManager extends BasicManager {
 	private ScoDatas parseScoModel(String scoId, String username, String[][] scoModel) {
 		ScoDatas datas = new ScoDatas(scoId, username);
 		
+		String curInteractionID = null;
+		
 		for(String[] line:scoModel) {
 			String key = null;
 			try {
@@ -224,9 +226,17 @@ public class ScormExportManager extends BasicManager {
 					int nr = Integer.valueOf(interactionNr).intValue();
 					
 					ScoInteraction interaction = datas.getInteraction(nr);
+					if (curInteractionID != null) {
+						interaction = datas.getInteractionByID (curInteractionID);
+					}
 					
 					String endKey = endStr.substring(nextPoint + 1);
 					if(CMI_ID.equals(endKey)) {
+						interactionNr = endStr.substring(0, nextPoint);
+						nr = Integer.valueOf(interactionNr).intValue();
+						interaction = datas.getInteraction(nr);
+						
+						curInteractionID = value;
 						interaction.setInteractionId(value);
 					}
 					else if(CMI_RESULT.equals(endKey)) {

@@ -140,4 +140,13 @@ public class ScoDatas {
 		}
 		return interactions.get(i);
 	}
+	
+	public ScoInteraction getInteractionByID(String id) {
+		for(ScoInteraction s:interactions) {
+			if (s.getInteractionId().equals(id)) {
+				return s;
+			}
+		}
+		return null;
+	}
 }
