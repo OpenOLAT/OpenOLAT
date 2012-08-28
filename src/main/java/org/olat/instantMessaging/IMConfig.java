@@ -43,12 +43,10 @@ public class IMConfig {
 	private String replaceStringForEmailAt;
 	private String adminUsername = "admin";
 	private String adminPassword;
-	private boolean generateTestUsers = false;
 	private String CONFERENCE_PREFIX = "conference";
 	private int idlePolltime;
 	private int chatPolltime;
-	private boolean syncPersonalGroups;
-	private boolean syncLearningGroups;
+	private String syncGroups;
 	public static final String RESOURCE = "OLAT";
 	// fxdiff: FXOLAT-46
 	private boolean hideExternalClientInfo;
@@ -123,14 +121,6 @@ public class IMConfig {
 		return nodeId;
 	}
 	
-	public boolean generateTestUsers() {
-		return generateTestUsers;
-	}
-	
-	public void setGenerateTestUsers(boolean generateTestUsers) {
-		this.generateTestUsers = generateTestUsers;
-	}
-	
 	public String getConferenceServer() {
 		return CONFERENCE_PREFIX+"."+servername;
 	}
@@ -156,22 +146,20 @@ public class IMConfig {
 		this.chatPolltime = chatPolltime;
 	}
 
-	public boolean isSyncPersonalGroups() {
-		return syncPersonalGroups;
+	public IMConfigSync getSyncGroupsConfig() {
+		if("true".equals(syncGroups)) {
+			return IMConfigSync.allGroups;
+		}
+		if("groupconfig".equals(syncGroups)) {
+			return IMConfigSync.perConfig;
+		}
+		return IMConfigSync.never;
 	}
 
-	public void setSyncPersonalGroups(boolean syncPersonalGroups) {
-		this.syncPersonalGroups = syncPersonalGroups;
+	public void setSyncGroups(String syncGroups) {
+		this.syncGroups = syncGroups;
 	}
 
-	public boolean isSyncLearningGroups() {
-		return syncLearningGroups;
-	}
-
-	public void setSyncLearningGroups(boolean syncLearningGroups) {
-		this.syncLearningGroups = syncLearningGroups;
-	}
-	
 	public void setPacketReplyTimeout (int timeout) {
 		SmackConfiguration.setPacketReplyTimeout(timeout);
 	}

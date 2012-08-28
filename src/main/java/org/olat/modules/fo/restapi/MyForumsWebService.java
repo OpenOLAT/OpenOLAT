@@ -72,7 +72,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.restapi.group.LearningGroupWebService;
 
 /**
@@ -187,7 +186,7 @@ public class MyForumsWebService {
 		final List<ForumVO> forumVOs = new ArrayList<ForumVO>();
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
-		ACService acManager = (ACFrontendManager)CoreSpringFactory.getImpl(ACService.class);
+		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
 		repoParams.setOnlyExplicitMember(true);
 		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(repoParams, 0, -1, true);

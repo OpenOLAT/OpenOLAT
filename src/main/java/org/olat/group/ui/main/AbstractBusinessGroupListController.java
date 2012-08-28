@@ -492,6 +492,9 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
 			return;
+		} else if(CollaborationTools.TOOLS == null) {
+			//init the available tools
+			CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(groups.get(0));
 		}
 		
 		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor()

@@ -1034,7 +1034,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		if (InstantMessagingModule.isEnabled() && 
 				collabTools.isToolEnabled(CollaborationTools.TOOL_CHAT) && 
-				InstantMessagingModule.isSyncLearningGroups() // whether LearningGroups can have chat or not)
+				InstantMessagingModule.isSyncGroups() // whether LearningGroups can have chat or not)
 				) {
 			gtnChild = new GenericTreeNode();
 			gtnChild.setTitle(translate("menutree.chat"));

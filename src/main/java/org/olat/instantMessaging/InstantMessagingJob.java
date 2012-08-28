@@ -56,7 +56,7 @@ public class InstantMessagingJob extends JobWithDB {
 		try {
 			List<Property> props = propertyManager.findProperties(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_LEARNING_GROUPS));
 			if (props.size() == 0 || !Boolean.getBoolean(props.get(0).getStringValue())) {
-				if (InstantMessagingModule.isSyncLearningGroups()) {
+				if (InstantMessagingModule.isSyncGroups()) {
 					long start = System.currentTimeMillis();
 					log.info("Start synching learning groups with IM");
 					boolean result = im.synchronizeBusinessGroupsWithIMServer();

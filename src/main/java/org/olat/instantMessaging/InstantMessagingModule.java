@@ -26,16 +26,10 @@
 
 package org.olat.instantMessaging;
 
-import java.util.List;
-
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.olat.admin.user.delete.service.UserDeletionManager;
-import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.control.Event;
@@ -44,7 +38,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,12 +59,10 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 	private static XMPPConnection adminConnection;
 	//FIXME: used for legacy access
 	private static InstantMessaging instantMessaingStatic;
-	private IMConfig config;
 	private static boolean enabled = false;
-	private static final String CONFIG_SYNCED_BUDDY_GROUPS = "issynced";
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
 	public static final String CONFIG_SYNCED_LEARNING_GROUPS = "syncedlearninggroups";
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(InstantMessagingModule.class);
 	@Autowired
 	private PropertyManager propertyManager;
 	@Autowired
@@ -112,43 +103,11 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 	 */
 	@Autowired(required=true)
 	public void setIMConfig(IMConfig config) {
-		this.config = config;
 		enabled = config.isEnabled();
 	}
 
-	/**
-	 * @see org.olat.core.configuration.OLATModule#init(com.anthonyeden.lib.config.Configuration)
-	 */
 	public void init() {
-		if (config.isEnabled()) {
-			
-			//create test accounts local and on the IM server
-			if (config.generateTestUsers()) checkAndCreateTestUsers();
-
-			// synchronizing of existing buddygroups with the instant messaging
-			// server
-			// if done we set a property (it gets only done once, to reactivate delete
-			// entry in table o_property)
-			/**
-			 * delete from o_property where name='org.olat.instantMessaging.InstantMessagingModule::syncedbuddygroups';
-			 */
-			
-			List<Property> props = propertyManager.findProperties(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_BUDDY_GROUPS));
-			if (props.size() == 0) {
-				
-				if (config.isSyncPersonalGroups()) {
-					instantMessaging.synchronizeBusinessGroupsWithIMServer();
-				}
-				Property property = propertyManager.createPropertyInstance(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_BUDDY_GROUPS), null,  null, Boolean.toString(true), null);
-				propertyManager.saveProperty(property);
-			}
-
-			// Cleanup, otherwise this subjects will have problems in normal OLAT
-			// operation
-			DBFactory.getInstance().intermediateCommit();
-			
-		}// end if enabled
-
+		//synched moved to the job 
 	}
 	
 	/**
@@ -159,53 +118,9 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
    */
 
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
-  public static String createPropertyName(Class clazz, String configurationName) {
-          return clazz.getName() + "::" + configurationName;
+  public static String createPropertyName(Class<?> clazz, String configurationName) {
+  	return clazz.getName() + "::" + configurationName;
   }
-
-
-
-
-	/**
-	 * if enabled in the configuration some testusers for IM are created in the
-	 * database. It has nothing to do with accounts on the jabber server itself.
-	 */
-	private void checkAndCreateTestUsers() {
-		Identity identity;
-		Authentication auth;
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		identity = securityManager.findIdentityByName("author");
-		auth = BaseSecurityManager.getInstance().findAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING);
-		if (auth == null) { // create new authentication for provider
-			BaseSecurityManager.getInstance().createAndPersistAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING, identity.getName(),
-					"test");
-			instantMessaging.createAccount("author", "test", "Aurich Throw", "author@olat-newinstallation.org");
-		}
-
-		identity = securityManager.findIdentityByName("administrator");
-		auth = BaseSecurityManager.getInstance().findAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING);
-		if (auth == null) { // create new authentication for provider
-			BaseSecurityManager.getInstance().createAndPersistAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING, identity.getName(),
-					"olat");
-			instantMessaging.createAccount("administrator", "olat", "Administrator", "administrator@olat-newinstallation.org");
-		}
-
-		identity = securityManager.findIdentityByName("learner");
-		auth = BaseSecurityManager.getInstance().findAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING);
-		if (auth == null) { // create new authentication for provider
-			BaseSecurityManager.getInstance().createAndPersistAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING, identity.getName(),
-					"test");
-			instantMessaging.createAccount("learner", "test", "Leise Arnerich", "learner@olat-newinstallation.org");
-		}
-
-		identity = securityManager.findIdentityByName("test");
-		auth = BaseSecurityManager.getInstance().findAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING);
-		if (auth == null) { // create new authentication for provider
-			BaseSecurityManager.getInstance().createAndPersistAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING, identity.getName(),
-					"test");
-			instantMessaging.createAccount("test", "test", "Thomas Est", "test@olat-newinstallation.org");
-		}
-	}
 
 	/**
 	 * @see org.olat.core.configuration.OLATModule#destroy()
@@ -286,8 +201,10 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 	}
 
 
-	public static boolean isSyncLearningGroups() {
-		return instantMessaingStatic.getConfig().isEnabled() && instantMessaingStatic.getConfig().isSyncLearningGroups();
+	public static boolean isSyncGroups() {
+		return instantMessaingStatic.getConfig().isEnabled()
+				&& (IMConfigSync.allGroups.equals(instantMessaingStatic.getConfig().getSyncGroupsConfig())
+						|| IMConfigSync.perConfig.equals(instantMessaingStatic.getConfig().getSyncGroupsConfig()));
 	}
 
 	@Override

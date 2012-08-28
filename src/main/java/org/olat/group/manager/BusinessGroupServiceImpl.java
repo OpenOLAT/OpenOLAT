@@ -87,6 +87,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.instantMessaging.IMConfigSync;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.syncservice.SyncSingleUserTask;
 import org.olat.notifications.NotificationsManagerImpl;
@@ -1136,15 +1137,23 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private void addToRoster(Identity ureqIdentity, Identity identity, BusinessGroup group) {
 		if (InstantMessagingModule.isEnabled()) {
 			//evaluate whether to sync or not
-			boolean syncGroup = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
+			IMConfigSync syncGroup = InstantMessagingModule.getAdapter().getConfig().getSyncGroupsConfig();
 			//only sync when a group is a certain type and this type is configured that you want to sync it
-			if(syncGroup) { 
+			if(syncGroup.equals(IMConfigSync.allGroups) || 
+					(syncGroup.equals(IMConfigSync.perConfig) && isChatEnableFor(group))) { 
 				String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
 				String groupDisplayName = group.getName();
 				//course group enrolment is time critial so we move this in an separate thread and catch all failures 
 				TaskExecutorManager.getInstance().runTask(new SyncSingleUserTask(ureqIdentity, groupID, groupDisplayName, identity));
 			}
 		}
+	}
+	private boolean isChatEnableFor(BusinessGroup group) {
+		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+		if(tools == null) {
+			return false;
+		}
+		return tools.isToolEnabled(CollaborationTools.TOOL_CHAT);
 	}
 	
 	@Override
