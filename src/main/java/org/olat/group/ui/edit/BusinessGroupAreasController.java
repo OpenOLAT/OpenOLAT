@@ -78,7 +78,7 @@ public class BusinessGroupAreasController extends FormBasicController {
 		
 		FormLayoutContainer choiceContainer = FormLayoutContainer.createDefaultFormLayout("areasChoice", getTranslator());
 		choiceContainer.setRootForm(mainForm);
-		flc.add(choiceContainer);
+		flc.add("areasChoice", choiceContainer);
 		
 		boolean hasAreas = false;
 		List<BGArea> selectedAreas = areaManager.findBGAreasOfBusinessGroup(businessGroup);
@@ -111,8 +111,8 @@ public class BusinessGroupAreasController extends FormBasicController {
 		}
 		
 		flc.contextPut("noAreasFound", new Boolean(!hasAreas));
-		boolean isAdmin = (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager());
-		flc.contextPut("noAreasFound", new Boolean(isAdmin));
+		Boolean isAdmin = new Boolean(ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager());
+		flc.contextPut("isGmAdmin", isAdmin);
 	}
 
 	@Override
