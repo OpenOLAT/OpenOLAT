@@ -21,6 +21,7 @@ package org.olat.core.util.xml;
 
 import org.hibernate.collection.internal.PersistentBag;
 import org.hibernate.collection.internal.PersistentList;
+import org.hibernate.collection.internal.PersistentMap;
 
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
@@ -42,19 +43,10 @@ public class EnhancedMapper extends MapperWrapper {
 			return PersistentBag.class;
 		} else if("org.hibernate.collection.PersistentList".equals(elementName)) {
 			return PersistentList.class;
+		} else if("org.hibernate.collection.PersistentMap".equals(elementName)) {
+			return PersistentMap.class;
 		} else {
 			return super.realClass(elementName);
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public String serializedClass(final Class type) {
-		if(PersistentBag.class.equals(type)) {
-			return "org.hibernate.collection.PersistentBag";
-		} else if(PersistentList.class.equals(type)) {
-			return "org.hibernate.collection.PersistentList";
-		} else {
-			return super.serializedClass(type);
 		}
 	}
 }

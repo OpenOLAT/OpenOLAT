@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.Policy;

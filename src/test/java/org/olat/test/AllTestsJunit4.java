@@ -122,6 +122,7 @@ import org.junit.runners.Suite;
 	org.olat.portfolio.EPFrontendManagerTest.class,
 	org.olat.portfolio.EPStructureManagerTest.class,
 	org.olat.portfolio.EPStructureToArtefactTest.class,
+	org.olat.portfolio.EPImportTest.class,
 	org.olat.commons.info.InfoManagerTest.class,
 	org.olat.core.commons.service.tagging.SimpleTagProposalManagerTest.class,
 	org.olat.commons.coordinate.singlevm.SingleVMLockerTest.class,

@@ -50,6 +50,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.manager.EPXStreamHandler;
 import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
@@ -59,7 +60,6 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.RepositorySearchController;
-import org.olat.repository.handlers.PortfolioHandler;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
@@ -174,7 +174,7 @@ public class ImportPortfolioReferencesController extends BasicController {
 	public static RepositoryEntry doImport(RepositoryEntryImportExport importExport, CourseNode node, boolean keepSoftkey,
 			Identity owner) {
 		File fExportedFile = importExport.importGetExportedFile();
-		PortfolioStructure structure = PortfolioHandler.getAsObject(fExportedFile);
+		PortfolioStructure structure = EPXStreamHandler.getAsObject(fExportedFile, false);
 		if(structure == null) {
 			log.warn("Error adding portfolio map resource during repository reference import: " + importExport.getDisplayName());
 			return null;

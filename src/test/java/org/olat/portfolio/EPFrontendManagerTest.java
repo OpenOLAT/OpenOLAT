@@ -133,6 +133,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		epStructureManager.savePortfolioStructure(struct11);
 		//structure element 2 from page 1
 		PortfolioStructure struct12 = epFrontendManager.createAndPersistPortfolioStructureElement(page1, "template-structure-1.2", "template-structure-1.2");
+		assertNotNull(struct12);
 		//first page
 		PortfolioStructure page2 = epFrontendManager.createAndPersistPortfolioPage(templateEl, "template-page-2", "template-page-2");
 		//structure element 1 from page 2

@@ -1877,6 +1877,9 @@ public class EPStructureManager extends BasicManager {
 	
 
 	private static class KeyStructureToStructureLinkComparator implements Comparator<EPStructureToStructureLink>, Serializable {
+
+		private static final long serialVersionUID = 366101659547497002L;
+
 		public KeyStructureToStructureLinkComparator() {
 			//
 		}

@@ -25,11 +25,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -55,6 +64,7 @@ import org.olat.portfolio.EPSecurityCallbackFactory;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.manager.EPXStreamHandler;
 import org.olat.portfolio.model.restriction.CollectRestriction;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPDefaultMap;
@@ -76,7 +86,6 @@ import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 
 import de.bps.onyx.plugin.StreamMediaResource;
 
@@ -97,7 +106,6 @@ public class PortfolioHandler implements RepositoryHandler {
 	public static final String PROCESS_CREATENEW = "create_new";
 	public static final String PROCESS_UPLOAD = "upload";
 	
-	public static XStream myStream = XStreamHelper.createXStreamInstance();
 
 	private static final boolean DOWNLOADABLE = false;
 	private static final boolean EDITABLE = true;
@@ -108,24 +116,6 @@ public class PortfolioHandler implements RepositoryHandler {
 	static { // initialize supported types
 		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(EPTemplateMapResource.TYPE_NAME);
-		
-		myStream.alias("defaultMap", EPDefaultMap.class);
-		myStream.alias("structureMap", EPStructuredMap.class);
-		myStream.alias("templateMap", EPStructuredMapTemplate.class);
-		myStream.alias("structure", EPStructureElement.class);
-		myStream.alias("page", EPPage.class);
-		myStream.alias("structureToArtefact", EPStructureToArtefactLink.class);
-		myStream.alias("structureToStructure", EPStructureToStructureLink.class);
-		myStream.alias("collectionRestriction", CollectRestriction.class);
-		myStream.omitField(EPAbstractMap.class, "ownerGroup"); // see also OLAT-6344
-		//myStream.addDefaultImplementation(PersistentList.class, List.class);
-		myStream.addDefaultImplementation(ArrayList.class, List.class);
-		/*myStream.registerConverter(new CollectionConverter(myStream.getMapper()) {
-		    public boolean canConvert(Class type) {
-		        return PersistentList.class == type;
-		    }
-		});*/
-		
 	}
 	
 	/**
@@ -211,8 +201,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq) {
 		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
 		PortfolioStructure structure = ePFMgr.loadPortfolioStructure(res);
-		String stringuified = myStream.toXML(structure);
-		PortfolioStructure newStructure = (PortfolioStructure)myStream.fromXML(stringuified);
+		PortfolioStructure newStructure = EPXStreamHandler.copy(structure);
 		PortfolioStructureMap map = ePFMgr.importPortfolioMapTemplate(newStructure, ureq.getIdentity());
 		return map.getOlatResource();
 	}
@@ -239,53 +228,13 @@ public class PortfolioHandler implements RepositoryHandler {
 
 		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
 		PortfolioStructure structure = ePFMgr.loadPortfolioStructure(res);
-		String xmlStructure = myStream.toXML(structure);
 		try {
-			//prepare a zip
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			ZipOutputStream zipOut = new ZipOutputStream(out);
-			zipOut.putNextEntry(new ZipEntry("map.xml"));
-			InputStream in = new ByteArrayInputStream(xmlStructure.getBytes("UTF8"));
-			FileUtils.copy(in, zipOut);
-			zipOut.closeEntry();
-			zipOut.close();
-			
-			//prepare media resource
-			byte[] outArray = out.toByteArray();
-			FileUtils.closeSafely(out);
-			FileUtils.closeSafely(in);
-			InputStream inOut = new ByteArrayInputStream(outArray);
+			InputStream inOut = EPXStreamHandler.toStream(structure);
 			mr = new StreamMediaResource(inOut, null, 0l, 0l);
 		} catch (IOException e) {
 			log.error("Cannot export this map: " + structure, e);
 		}
-		
 		return mr;
-	}
-	
-	public static final PortfolioStructure getAsObject(File fMapXml) {
-		try {
-			//extract from zip
-			InputStream in = new FileInputStream(fMapXml);
-			ZipInputStream zipIn = new ZipInputStream(in);
-			ZipEntry entry = zipIn.getNextEntry();
-			
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			FileUtils.copy(zipIn, out);
-			zipIn.closeEntry();
-			zipIn.close();
-			
-			//prepare decoding with xstream
-			byte[] outArray = out.toByteArray();
-			String xml = new String(outArray);
-			PortfolioStructure struct = (PortfolioStructure) myStream.fromXML(xml);
-			// OLAT-6344: reset ownerGroup from earlier exports. A new group is created by import in ePFMgr.importPortfolioMapTemplate() later on anyway.
-			((EPAbstractMap) struct).setOwnerGroup(null); 
-			return struct;
-		} catch (IOException e) {
-			log.error("Cannot export this map: " + fMapXml, e);
-		}
-		return null;
 	}
 
 	/**
