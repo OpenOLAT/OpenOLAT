@@ -39,6 +39,8 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -289,7 +291,7 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	}
 	
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	private boolean synchonizeBuddyRoster(BusinessGroup group, Set<Long> checkedIdentities) {
+	private boolean synchonizeRoster(BusinessGroup group, Set<Long> checkedIdentities) {
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		secGroups.add(group.getOwnerGroup());
@@ -329,6 +331,14 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		return true;
 	}
 	
+	private boolean isChatEnabled(BusinessGroup group) {
+		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+		if(tools == null) {
+			return false;
+		}
+		return tools.isToolEnabled(CollaborationTools.TOOL_CHAT);
+	}
+	
 	/**
 	 * 
 	 * @see org.olat.instantMessaging.InstantMessaging#synchronizeLearningGroupsWithIMServer()
@@ -341,7 +351,7 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		}
 		logInfo("Starting synchronisation of LearningGroups with IM server");
 		long start = System.currentTimeMillis();
-		boolean syncLearn = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
+		IMConfigSync syncGroups = InstantMessagingModule.getAdapter().getConfig().getSyncGroupsConfig();
 
 		int counter = 0;
 		int GROUP_BATCH_SIZE = 50;
@@ -351,12 +361,12 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		do {
 			groups = businessGroupService.findBusinessGroups(params, null, counter, GROUP_BATCH_SIZE);
 			for (BusinessGroup group:groups) {
-				if (!syncLearn) {
+				if (syncGroups == IMConfigSync.never || (syncGroups == IMConfigSync.perConfig && !isChatEnabled(group))) {
 					String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
 					if (deleteRosterGroup(groupID)) {
 						logInfo("deleted unwanted group: "+group.getResourceableTypeName()+" "+groupID, null);
 					}
-				} else if (!synchonizeBuddyRoster(group, checkedIdentities)) {
+				} else if (!synchonizeRoster(group, checkedIdentities)) {
 					logError("couldn't sync group: "+group.getResourceableTypeName(), null);
 				}
 				if (counter++ % 6 == 0) {

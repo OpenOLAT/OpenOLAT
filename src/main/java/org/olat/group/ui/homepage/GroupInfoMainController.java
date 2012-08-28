@@ -236,7 +236,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 			return true;
 		}
 		if(BusinessGroupModule.CONTACT_BUSINESS_CARD_GROUP_CONFIG.equals(contactConfig)) {
-			CollaborationTools tools = CollaborationToolsFactory.getInstance().getCollaborationToolsIfExists(businessGroup);
+			CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 			return tools == null ? false : tools.isToolEnabled(CollaborationTools.TOOL_CONTACT);
 		}
 		return false;
