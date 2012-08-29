@@ -160,7 +160,7 @@ public class ServletUtil {
               // Set the content-length as String to be able to use a long
           	httpResp.setHeader("content-length", "" + length);
           }
-
+          httpResp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
           try {
           	httpResp.setBufferSize(2048);
           } catch (IllegalStateException e) {
@@ -355,8 +355,6 @@ public class ServletUtil {
 			}
 
 			s.skip(seekPos);
-			
-			int readSize = 0;
 
 			final int bufferSize = 1024 * 10;
 			long left = fileSize;
@@ -368,7 +366,6 @@ public class ServletUtil {
 
 				byte[] buf = new byte[howMuch];
 				int numRead = s.read(buf);
-				readSize += numRead;
 
 				out.write(buf, 0, numRead);
 				httpResp.flushBuffer();
@@ -381,7 +378,7 @@ public class ServletUtil {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			if (e.getClass().getName().contains("Eof")) {
 				//ignore
 			} else {
