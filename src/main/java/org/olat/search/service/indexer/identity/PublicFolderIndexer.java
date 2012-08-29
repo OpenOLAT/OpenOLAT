@@ -20,7 +20,6 @@
 package org.olat.search.service.indexer.identity;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -41,8 +40,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  */
 public class PublicFolderIndexer extends FolderIndexer {
 	public static final String TYPE = "type.identity.publicfolder";
-	public static final OLATResourceable BUSINESS_CONTROL_TYPE = OresHelper.createOLATResourceableTypeWithoutCheck(FolderRunController.class
-			.getSimpleName());
+	public static final OLATResourceable BUSINESS_CONTROL_TYPE = OresHelper.createOLATResourceableTypeWithoutCheck("userfolder");
 
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()

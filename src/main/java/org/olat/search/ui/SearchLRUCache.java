@@ -22,7 +22,14 @@ package org.olat.search.ui;
 import org.apache.commons.collections.map.LRUMap;
 import org.olat.core.commons.services.search.SearchResults;
 
+/**
+ * A LRU map
+ * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
 class SearchLRUCache extends LRUMap {
+
+	private static final long serialVersionUID = -6748874217812035135L;
 
 	public SearchLRUCache() {
 		super(5);

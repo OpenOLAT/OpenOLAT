@@ -37,6 +37,7 @@ import org.apache.pdfbox.util.PDFTextStripper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.SearchServiceFactory;
@@ -90,11 +91,11 @@ public class PdfDocument extends FileDocument {
 		return pdfTextTmpFilePath;
 	}
 
-	protected String readContent(VFSLeaf leaf) throws DocumentException, DocumentAccessException {
+	protected FileContent readContent(VFSLeaf leaf) throws DocumentException, DocumentAccessException {
 		try {
 			long startTime = 0;
 			if (log.isDebug()) startTime = System.currentTimeMillis();
-			String pdfText = null;
+			FileContent pdfText;
 			String fullPdfTextTmpFilePath = pdfTextBufferPath + File.separator + getFilePath() + ".tmp";
 			File pdfTextFile = new File(fullPdfTextTmpFilePath);
 			if (pdfTextBuffering && !isNewPdfFile(leaf,pdfTextFile) ) {
@@ -122,15 +123,19 @@ public class PdfDocument extends FileDocument {
 		} 
 	}
 
-	private void storePdfTextInBuffer(String pdfText, String fullPdfTextTmpFilePath, File pdfTextFile) throws IOException {
+	private void storePdfTextInBuffer(FileContent pdfText, String fullPdfTextTmpFilePath, File pdfTextFile) throws IOException {
 		int lastSlash = fullPdfTextTmpFilePath.lastIndexOf('/');
 		String dirPath = fullPdfTextTmpFilePath.substring(0,lastSlash);
 		File dirFile = new File(dirPath);
 		dirFile.mkdirs();
-		FileUtils.save(new FileOutputStream(pdfTextFile), pdfText, "utf-8");
+		if(StringHelper.containsNonWhitespace(pdfText.getTitle())) {
+			FileUtils.save(new FileOutputStream(pdfTextFile), pdfText.getTitle() + "\u00A0|\u00A0" + pdfText.getContent(), "utf-8");
+		} else {
+			FileUtils.save(new FileOutputStream(pdfTextFile), pdfText.getContent(), "utf-8");
+		}
 	}
 
-	private String extractTextFromPdf(VFSLeaf leaf) throws IOException, DocumentAccessException {
+	private FileContent extractTextFromPdf(VFSLeaf leaf) throws IOException, DocumentAccessException {
 		if (log.isDebug()) log.debug("readContent from pdf starts...");
 		PDDocument document = null;
 		BufferedInputStream bis = null;
@@ -143,10 +148,11 @@ public class PdfDocument extends FileDocument {
 				} catch (Exception e) {
 					throw new DocumentAccessException("PDF is encrypted. Can not read content file=" + leaf.getName());
 				}
-			}			
+			}	
+			String title = getTitle(document);
 			if (log.isDebug()) log.debug("readContent PDDocument loaded");
 			PDFTextStripper stripper = new PDFTextStripper();
-			return stripper.getText(document);
+			return new FileContent(title, stripper.getText(document));
 		} finally {
 			if (document != null) {
 			  document.close();
@@ -155,17 +161,28 @@ public class PdfDocument extends FileDocument {
 				bis.close();
 			}
 		}
-
+	}
+	
+	private String getTitle(PDDocument document) {
+		if(document != null && document.getDocumentInformation() != null) {
+			return document.getDocumentInformation().getTitle();
+		}
+		return null;
 	}
 
-	private String getPdfTextFromBuffer(File pdfTextFile) throws IOException {
+	private FileContent getPdfTextFromBuffer(File pdfTextFile) throws IOException {
 		if (log.isDebug()) log.debug("readContent from text file start...");
 		BufferedInputStream bis = null;
 		try {
 			bis = new BufferedInputStream(new FileInputStream(pdfTextFile));
-			String pdfText = FileUtils.load(bis, "utf-8");
+			String text = FileUtils.load(bis, "utf-8");
 			if (log.isDebug()) log.debug("readContent from text file done.");
-			return pdfText;
+			
+			int indexSep = text.indexOf("\u00A0|\u00A0");
+			if(indexSep > 0) {
+				return new FileContent(text.substring(0, indexSep), text.substring(indexSep + 3, text.length()));
+			}
+			return new FileContent(text);
 		} finally {
 			if (bis != null) {
 				bis.close();

@@ -102,6 +102,8 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 				if (!isOnBlacklist(repositoryEntry.getOlatResource().getResourceableId()) ) {
 					SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 					searchResourceContext.setBusinessControlFor(repositoryEntry);
+					searchResourceContext.setTitle(repositoryEntry.getDisplayname());
+					searchResourceContext.setDescription(repositoryEntry.getDescription());
 					Document document = RepositoryEntryDocument.createDocument(searchResourceContext, repositoryEntry);
 					indexWriter.addDocument(document);
 					// Pass created-date & modified-date in context to child indexer because the child have no dates

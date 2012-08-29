@@ -58,10 +58,11 @@ public class TextDocument extends FileDocument {
 		return textDocument.getLuceneDocument();
 	}
 	
-	protected String readContent(VFSLeaf leaf) throws IOException {
+	@Override
+	protected FileContent readContent(VFSLeaf leaf) throws IOException {
   	BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
 		String content = FileUtils.load(bis, "utf-8");
 		bis.close();
-  	return content;
+  	return new FileContent(content);
 	}
 }

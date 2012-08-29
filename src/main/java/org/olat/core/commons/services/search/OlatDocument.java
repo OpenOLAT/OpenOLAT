@@ -42,12 +42,12 @@ import org.olat.core.util.StringHelper;
  */
 public class OlatDocument extends AbstractOlatDocument {
 
+	private static final long serialVersionUID = 2632864475115088251L;
 	private String content = "";
 	
 	public OlatDocument() {
 		super();
 	}
-	
 	
 	public OlatDocument(Document document) {
 		super(document);

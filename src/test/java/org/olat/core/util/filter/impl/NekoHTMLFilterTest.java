@@ -19,6 +19,8 @@
  */
 package org.olat.core.util.filter.impl;
 
+import java.io.ByteArrayInputStream;
+
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -26,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.olat.core.util.filter.impl.NekoHTMLFilter.NekoContent;
 
 /**
  * Description:<br>
@@ -108,5 +111,19 @@ public class NekoHTMLFilterTest{
             + "</body></html>"; // Text = 'Dies ist der Test Text'
 		String text = "Test HTML Seite fuer JUnit Test Dies ist der Test\u00A0Text"; // must include '\u00A0' !!! 19.5.2010/cg
 		t(htmlText,text);
+	}
+	
+	@Test
+	public void testHtmlTextAndTitle() {
+		String htmlText = "<html><head><title>Hello Neko</title><meta name=\"generator\" content=\"olat-tinymce-1\"><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body>"
+            + "<H1>Test HTML Seite fuer JUnit Test</H1>"
+            + "Dies ist<br />der Test&nbsp;Text"
+            + "</body></html>"; // Text = 'Dies ist der Test Text'
+		String text = "Hello Neko Test HTML Seite fuer JUnit Test Dies ist der Test\u00A0Text"; // must include '\u00A0' !!! 19.5.2010/cg
+		
+		NekoContent content = filter.filter(new ByteArrayInputStream(htmlText.getBytes()));
+		Assert.assertNotNull(content);
+		Assert.assertEquals("Hello Neko", content.getTitle());
+		Assert.assertEquals(text, content.getContent());
 	}
 }

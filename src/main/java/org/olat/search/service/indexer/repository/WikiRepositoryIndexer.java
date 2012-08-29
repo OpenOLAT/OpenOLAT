@@ -72,13 +72,10 @@ public class WikiRepositoryIndexer extends DefaultIndexer {
 			List<WikiPage> wikiPageList = wiki.getAllPagesWithContent();
 			for (WikiPage wikiPage : wikiPageList) {
 		    try {
-					resourceContext.setDocumentType(TYPE);
-					resourceContext.setDocumentContext(Long.toString(repositoryEntry.getKey()));
-					resourceContext.setParentContextType(TYPE);
-					resourceContext.setParentContextName(wikiPage.getPageName());
-					resourceContext.setFilePath(wikiPage.getPageName());
-
-					Document document = WikiPageDocument.createDocument(resourceContext, wikiPage);
+					SearchResourceContext wikiContext = new SearchResourceContext(resourceContext);
+					wikiContext.setDocumentType(TYPE);
+					wikiContext.setFilePath(wikiPage.getPageName());
+					Document document = WikiPageDocument.createDocument(wikiContext, wikiPage);
 					indexWriter.addDocument(document);
 				} catch (Exception e) {
 					logError("Error indexing wiki page:" + repoEntryName + " " + (wikiPage == null ? "null" : wikiPage.getPageName()), e);

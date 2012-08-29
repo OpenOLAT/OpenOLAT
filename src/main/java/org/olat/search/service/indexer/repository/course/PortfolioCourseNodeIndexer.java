@@ -93,7 +93,6 @@ public class PortfolioCourseNodeIndexer extends DefaultIndexer implements Course
 			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(searchResourceContext);
 	    courseNodeResourceContext.setBusinessControlFor(courseNode);
 	    courseNodeResourceContext.setDocumentType(NODE_TYPE);
-	    courseNodeResourceContext.setDocumentContext(course.getResourceableId() + " " + courseNode.getIdent());
 			courseNodeResourceContext.setTitle(courseNode.getShortTitle());
 	    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 

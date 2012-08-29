@@ -71,10 +71,8 @@ public class ImsCPRepositoryIndexer extends FolderIndexer {
     File cpRoot = FileResourceManager.getInstance().unzipFileResource(repositoryEntry.getOlatResource());
 		if (cpRoot == null) throw new AssertException("file of repository entry " + repositoryEntry.getKey() + "was missing");
 
-    resourceContext.setParentContextType(TYPE);
-		resourceContext.setParentContextName(repositoryEntry.getDisplayname());
+		SearchResourceContext cpContext = new SearchResourceContext(resourceContext);
     VFSContainer rootContainer = new LocalFolderImpl(cpRoot);
-    doIndexVFSContainer(resourceContext,rootContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
-
+    doIndexVFSContainer(cpContext, rootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
 	}
 }

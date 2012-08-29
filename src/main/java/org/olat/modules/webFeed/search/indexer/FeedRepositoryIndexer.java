@@ -61,11 +61,6 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 			}
 			Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
 
-			// Set the document type, e.g. type.repository.entry.FileResource.BLOG
-			searchResourceContext.setDocumentType(getDocumentType());
-			searchResourceContext.setParentContextType(getDocumentType());
-			searchResourceContext.setParentContextName(repoEntryName);
-
 			// Make sure images are displayed properly
 			// TODO:GW It's only working for public resources, because base url is
 			// personal. -> fix
@@ -77,7 +72,9 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 				logDebug("PublishedItems size=" + feed.getPublishedItems().size());
 			}
 			for (Item item : feed.getPublishedItems()) {
-				OlatDocument itemDoc = new FeedItemDocument(item, searchResourceContext, mediaUrlFilter);
+				SearchResourceContext feedContext = new SearchResourceContext(searchResourceContext);
+				feedContext.setDocumentType(getDocumentType());
+				OlatDocument itemDoc = new FeedItemDocument(item, feedContext, mediaUrlFilter);
 				indexer.addDocument(itemDoc.getLuceneDocument());
 			}
 		} catch (NullPointerException e) {

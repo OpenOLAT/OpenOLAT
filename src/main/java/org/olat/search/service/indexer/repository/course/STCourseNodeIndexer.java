@@ -66,6 +66,8 @@ public class STCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
 		courseNodeResourceContext.setBusinessControlFor(courseNode);
     courseNodeResourceContext.setDocumentType(TYPE);
+    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
     
 	  Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
 		indexWriter.addDocument(document);

@@ -103,7 +103,6 @@ public class GroupPortfolioIndexer extends AbstractHierarchicalIndexer  {
 		  SearchResourceContext resourceContext = new SearchResourceContext(parentResourceContext);
 		  resourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLPORTFOLIO);
 		  resourceContext.setDocumentType(TYPE);
-		  resourceContext.setDocumentContext(businessGroup.getKey() + " " + mapKey);
 			resourceContext.setParentContextType(GroupDocument.TYPE);
 			resourceContext.setParentContextName(businessGroup.getName());
 			Document document = PortfolioMapDocument.createDocument(resourceContext, map);

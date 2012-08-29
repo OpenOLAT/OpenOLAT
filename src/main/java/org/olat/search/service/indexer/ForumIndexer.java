@@ -52,7 +52,6 @@ public abstract class ForumIndexer extends AbstractHierarchicalIndexer {
 		for(Message message : messages) {
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 			searchResourceContext.setBusinessControlFor(message);
-			searchResourceContext.setDocumentContext(parentResourceContext.getDocumentContext() + " " + message.getKey());
 			Document document = ForumMessageDocument.createDocument(searchResourceContext, message);
 		  indexWriter.addDocument(document);
 		}

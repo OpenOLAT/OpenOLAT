@@ -149,7 +149,6 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 			searchResourceContext.setBusinessControlFor(message);
 			searchResourceContext.setDocumentType(TYPE_MESSAGE);
-			searchResourceContext.setDocumentContext(parentResourceContext.getDocumentContext() + " " + forum.getKey());
 			Document document = ForumMessageDocument.createDocument(searchResourceContext, message);
 		  indexWriter.addDocument(document);
 		}

@@ -65,7 +65,7 @@ public class ExcelDocument extends FileDocument {
 		return excelDocument.getLuceneDocument();
 	}
 
-	protected String readContent(VFSLeaf leaf) throws IOException, DocumentException {
+	protected FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
 		BufferedInputStream bis = null;
 		int cellNullCounter = 0;
 		int rowNullCounter = 0;
@@ -109,14 +109,13 @@ public class ExcelDocument extends FileDocument {
 							+ sheetNullCounter);
 				}
 			}
-			return content.toString();
+			return new FileContent(content.toString());
 		} catch (Exception ex) {
 			throw new DocumentException("Can not read XLS Content. File=" + leaf.getName());
 		} finally {
 			if (bis != null) {
 				bis.close();
 			}
-
 		}
 	}
 

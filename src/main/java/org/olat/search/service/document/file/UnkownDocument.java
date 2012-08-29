@@ -50,7 +50,7 @@ public class UnkownDocument extends FileDocument {
 	}
 
 	@Override
-	protected String readContent(VFSLeaf leaf) {
-		return "";
+	protected FileContent readContent(VFSLeaf leaf) {
+		return new FileContent("");
 	}
 }

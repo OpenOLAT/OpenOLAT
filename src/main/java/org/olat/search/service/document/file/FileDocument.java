@@ -44,13 +44,10 @@ import org.olat.search.service.SimpleDublinCoreMetadataFieldsProvider;
  */
 public abstract class FileDocument extends OlatDocument {
 
+	private static final long serialVersionUID = -8977326187286155071L;
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public final static String TYPE = "type.file";
-	
-	public FileDocument() {
-		super();
-	}
 	
 	protected void init(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
 		// Load metadata for this file
@@ -60,37 +57,51 @@ public abstract class FileDocument extends OlatDocument {
 		}
 		
 		// Set all know attributes
-		this.setResourceUrl(leafResourceContext.getResourceUrl());
-		this.setLastChange(new Date(leaf.getLastModified()));
+		setResourceUrl(leafResourceContext.getResourceUrl());
+		setLastChange(new Date(leaf.getLastModified()));
 		// Check if there are documents attributes set in resource context
 		if (leafResourceContext.getDocumentType() != null && !leafResourceContext.getDocumentType().equals("")) {
 			// document-type in context is set => get from there
-			this.setDocumentType(leafResourceContext.getDocumentType());
+			setDocumentType(leafResourceContext.getDocumentType());
 		} else {
-  		this.setDocumentType(TYPE);
+  		setDocumentType(TYPE);
 		}
-		String metaTitle = (meta == null ? null : meta.getTitle());
-		if(!StringHelper.containsNonWhitespace(metaTitle)) {
+
+		FileContent content = readContent(leaf);
+		String metaTitle;
+		if(meta != null && StringHelper.containsNonWhitespace(meta.getTitle())) {
+			metaTitle = meta.getTitle();
+		} else if(content != null && StringHelper.containsNonWhitespace(content.getTitle())) {
+			metaTitle = content.getTitle();
+		} else {
 			metaTitle = null;
-		}
-		if (leafResourceContext.getTitle() != null && !leafResourceContext.getTitle().equals("")) {
+		} 
+		
+		StringBuilder title = new StringBuilder();
+		if (StringHelper.containsNonWhitespace(leafResourceContext.getTitle())) {
 			// Title in context is set => get from there and add filename
-			this.setTitle(leafResourceContext.getTitle() + " , " + (metaTitle == null ? "" : (metaTitle + " ( ")) + leaf.getName() + (metaTitle == null ? "" : " )"));
-		} else {
-			this.setTitle((metaTitle == null ? "" : (metaTitle + " ( ")) + leaf.getName() + (metaTitle == null ? "" : " )"));
+			title.append(leafResourceContext.getTitle()).append(", ");
 		}
+		if(metaTitle != null) {
+			title.append(metaTitle).append(" ( ");
+		}
+		title.append(leaf.getName());
+		if(metaTitle != null) title.append(" )");
+		setTitle(title.toString());
+
 		String metaDesc = (meta == null ? null : meta.getComment());
 		if (leafResourceContext.getDescription() != null && !leafResourceContext.getDescription().equals("")) {
 			// Title in context is set => get from there
-			this.setDescription(leafResourceContext.getDescription() + (metaDesc == null ? "" : " " + metaDesc));
+			setDescription(leafResourceContext.getDescription() + (metaDesc == null ? "" : " " + metaDesc));
 		} else {
       //		 no description this.setDescription();
 			if (metaDesc != null) this.setDescription(metaDesc);
 		}
-		this.setParentContextType(leafResourceContext.getParentContextType());
-		this.setParentContextName(leafResourceContext.getParentContextName());
+		setParentContextType(leafResourceContext.getParentContextType());
+		setParentContextName(leafResourceContext.getParentContextName());
 		// Add the content itself
-		this.setContent(readContent(leaf));
+		setContent(content.getContent());
+		
 		
 		// Add other metadata from meta info
 		if (meta != null) {
@@ -118,7 +129,27 @@ public abstract class FileDocument extends OlatDocument {
 		
 	}
 	
-	abstract protected String readContent(VFSLeaf leaf) throws IOException, DocumentException, DocumentAccessException;
+	abstract protected FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException, DocumentAccessException;
 
-	
+	public static class FileContent {
+		private final String title;
+		private final String content;
+		
+		public FileContent(String content) {
+			this(null, content);
+		}
+		
+		public FileContent(String title, String content) {
+			this.title = title;
+			this.content = content;
+		}
+		
+		public String getTitle() {
+			return title;
+		}
+		
+		public String getContent() {
+			return content;
+		}
+	}
 }

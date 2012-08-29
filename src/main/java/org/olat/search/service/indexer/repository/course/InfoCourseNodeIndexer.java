@@ -78,6 +78,7 @@ public class InfoCourseNodeIndexer extends DefaultIndexer  implements CourseNode
 		try {
 			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
 	    courseNodeResourceContext.setBusinessControlFor(courseNode);
+	    courseNodeResourceContext.setDocumentType(TYPE);
 	    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
 	    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 	    doIndexInfos(courseNodeResourceContext, course, courseNode, indexWriter);
@@ -99,7 +100,6 @@ public class InfoCourseNodeIndexer extends DefaultIndexer  implements CourseNode
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(InfoMessage.class, message.getKey());
 			searchResourceContext.setBusinessControlFor(ores);
-			searchResourceContext.setDocumentContext(parentResourceContext.getDocumentContext() + " " + message.getKey());
 			Document document = InfoMessageDocument.createDocument(searchResourceContext, message);
 		  indexWriter.addDocument(document);
 		}

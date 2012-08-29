@@ -69,7 +69,7 @@ public class PowerPointDocument extends FileDocument {
 	
 
 	
-  public String readContent(VFSLeaf leaf) throws IOException,DocumentException {
+  public FileContent readContent(VFSLeaf leaf) throws IOException,DocumentException {
   	BufferedInputStream bis = null;
   	OutputStream oStream = null;
   	if (log.isDebug()) log.debug("read PPT Content of leaf=" + leaf.getName());
@@ -78,7 +78,7 @@ public class PowerPointDocument extends FileDocument {
       oStream = new ByteArrayOutputStream();
     	extractText(bis, oStream);
     	String content = oStream.toString();
-      return removeUnvisibleChars(content);			
+      return new FileContent(removeUnvisibleChars(content));			
 		} catch (Exception e) {
 			throw new DocumentException("Can not read PPT Content. File=" + leaf.getName() );
 		} finally {

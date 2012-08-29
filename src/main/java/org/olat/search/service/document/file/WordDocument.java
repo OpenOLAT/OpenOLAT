@@ -62,7 +62,7 @@ public class WordDocument extends FileDocument {
 		return wordDocument.getLuceneDocument();
 	}
 	
-	protected String readContent(VFSLeaf leaf) throws IOException,DocumentException {
+	protected FileContent readContent(VFSLeaf leaf) throws IOException,DocumentException {
 		BufferedInputStream bis = null;
 		StringBuilder sb = new StringBuilder();
     try {
@@ -78,7 +78,7 @@ public class WordDocument extends FileDocument {
         	collectWordDocument(filesystem, sb);
         }
       }
-			return sb.toString();
+			return new FileContent(sb.toString());
 		} catch (Exception e) {
 			log.warn("could not read in word document: " + leaf + " please check, that this is not an docx/rtf/html file!");
 			throw new DocumentException(e.getMessage());

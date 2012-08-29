@@ -500,6 +500,7 @@ public class SearchInputController extends FormBasicController implements Search
 				String term = termAtt.term();
 				if(log.isDebug()) log.debug(term);
 			}
+			analyzer.close();
 		} catch (IOException e) {
 			log.error("", e);
 		}

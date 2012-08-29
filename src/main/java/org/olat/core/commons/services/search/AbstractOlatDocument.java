@@ -41,8 +41,10 @@ import org.olat.core.util.StringHelper;
  * Lucene document mapper.
  * @author Christian Guretzki
  */
-public class AbstractOlatDocument implements Serializable {
-	
+public abstract class AbstractOlatDocument implements Serializable {
+
+	private static final long serialVersionUID = 3477625468662703214L;
+
 	// Field names
 	public  static final String TITLE_FIELD_NAME = "title";
 

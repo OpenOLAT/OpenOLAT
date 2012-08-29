@@ -31,6 +31,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNode;
@@ -41,7 +42,7 @@ import org.olat.modules.fo.Message;
  * @author Christian Guretzki
  */
 public class SearchResourceContext {
-
+	private static final OLog log = Tracing.createLoggerFor(SearchResourceContext.class);
 	
 	/** Workaround for forum message. Forum-Message is currently no OLATResourcable. */
 	public static final String MESSAGE_RESOURCE_TYPE = "Message";
@@ -58,7 +59,6 @@ public class SearchResourceContext {
 	private String description = null;
 	private String parentContextType = null;
 	private String parentContextName = null;
-	private String documentContext = null;
 
 	private BusinessControl myBusinessControl;
 	private BusinessControl parentBusinessControl;
@@ -81,6 +81,9 @@ public class SearchResourceContext {
 		createdDate  = parentResourceContext.getCreatedDate();
 		documentType = parentResourceContext.getDocumentType();
 		parentBusinessControl = parentResourceContext.getBusinessControl();
+		if(parentBusinessControl == null) {
+			parentBusinessControl = parentResourceContext.parentBusinessControl;
+		}
 		filePath = parentResourceContext.getFilePath();
 		parentContextType = parentResourceContext.parentContextType;
 		parentContextName = parentResourceContext.getParentContextName();
@@ -99,7 +102,8 @@ public class SearchResourceContext {
 	 * @return Returns the resourcePath.
 	 */
 	public String getResourceUrl() {
-		String resourceUrl = BusinessControlFactory.getInstance().getAsString(myBusinessControl);
+		BusinessControl bControl = myBusinessControl == null ? parentBusinessControl : myBusinessControl;
+		String resourceUrl = BusinessControlFactory.getInstance().getAsString(bControl);
 		if (filePath != null) {
 			// It is a file resource => Append file path
 	    StringBuilder buf = new StringBuilder(resourceUrl);
@@ -136,7 +140,7 @@ public class SearchResourceContext {
 	 * @param courseNode
 	 */
 	public void setBusinessControlFor(CourseNode courseNode) {
-		if (Tracing.isDebugEnabled(SearchResourceContext.class)) Tracing.logDebug("Course-node-ID=" + courseNode.getIdent(), SearchResourceContext.class);
+		if (log.isDebug()) log.debug("Course-node-ID=" + courseNode.getIdent());
 		setBusinessControlFor(OresHelper.createOLATResourceableInstance(CourseNode.class,new Long(courseNode.getIdent())));
   }
 
@@ -190,14 +194,6 @@ public class SearchResourceContext {
 	 */
 	public String getDocumentType() {
 		return documentType;
-	}
-
-	public String getDocumentContext() {
-		return documentContext;
-	}
-
-	public void setDocumentContext(String documentContext) {
-		this.documentContext = documentContext;
 	}
 
 	/**

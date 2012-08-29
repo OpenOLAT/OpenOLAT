@@ -56,6 +56,7 @@ public class ProjectBrokerCourseNodeIndexer extends FolderIndexer implements Cou
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
     SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
     courseNodeResourceContext.setBusinessControlFor(courseNode);
+    courseNodeResourceContext.setDocumentType(TYPE);
     courseNodeResourceContext.setTitle(courseNode.getShortTitle());
     courseNodeResourceContext.setDescription(courseNode.getLongTitle());
        

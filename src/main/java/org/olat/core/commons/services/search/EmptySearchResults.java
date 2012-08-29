@@ -33,6 +33,8 @@ import java.util.List;
  */
 public class EmptySearchResults implements SearchResults {
 
+	private static final long serialVersionUID = 9056000658199264982L;
+
 	protected EmptySearchResults() {
 		//
 	}

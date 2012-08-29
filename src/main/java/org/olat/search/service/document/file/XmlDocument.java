@@ -33,6 +33,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.filter.impl.NekoHTMLFilter;
+import org.olat.core.util.filter.impl.NekoHTMLFilter.NekoContent;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 
@@ -60,10 +61,10 @@ public class XmlDocument extends FileDocument {
 	}
 	
 	//fxdiff FXOLAT-97: index run in infinite loop
-	protected String readContent(VFSLeaf leaf) throws IOException {
+	protected FileContent readContent(VFSLeaf leaf) throws IOException {
 		InputStream is = leaf.getInputStream();
     // Remove all HTML and &nbsp; Tags
-    String output;
+    NekoContent output;
 		try {
 			output = new NekoHTMLFilter().filter(is);
 	    if (log.isDebug() ) log.debug("HTML content without tags :" + output);
@@ -72,7 +73,7 @@ public class XmlDocument extends FileDocument {
 		} finally {
 			FileUtils.closeSafely(is);
 		}
-		return output;
+		return new FileContent(output.getTitle(), output.getContent());
 	}
 
 }

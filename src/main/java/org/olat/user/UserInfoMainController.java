@@ -55,11 +55,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
@@ -81,7 +83,7 @@ import org.olat.portfolio.PortfolioModule;
  *         form.
  * 
  */
-public class UserInfoMainController extends MainLayoutBasicController {
+public class UserInfoMainController extends MainLayoutBasicController implements Activateable2 {
 
 	private static final String CMD_HOMEPAGE = "homepage";
 	private static final String CMD_CALENDAR = "calendar";
@@ -105,6 +107,8 @@ public class UserInfoMainController extends MainLayoutBasicController {
 	private Identity chosenIdentity;
 	private String firstLastName;
 	private Controller portfolioController;
+	
+	private GenericTreeNode folderNode;
 
 	/**
 	 * @param ureq
@@ -168,12 +172,17 @@ public class UserInfoMainController extends MainLayoutBasicController {
 		// no events from intro
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-	//
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("userfolder".equals(type)) {
+			String cmd = (String)folderNode.getUserObject();
+			main.setContent(createComponent(ureq, cmd, chosenIdentity));
+			menuTree.setSelectedNode(folderNode);
+			folderRunController.activate(ureq, entries.subList(1, entries.size()), null);
+		}
 	}
 
 	/**
@@ -211,11 +220,11 @@ public class UserInfoMainController extends MainLayoutBasicController {
 			gtn.setAltText(translate("menu.calendar.alt"));
 			root.addChild(gtn);
 	
-			gtn = new GenericTreeNode();
-			gtn.setTitle(translate("menu.folder"));
-			gtn.setUserObject(CMD_FOLDER);
-			gtn.setAltText(translate("menu.folder.alt"));
-			root.addChild(gtn);
+			folderNode = new GenericTreeNode();
+			folderNode.setTitle(translate("menu.folder"));
+			folderNode.setUserObject(CMD_FOLDER);
+			folderNode.setAltText(translate("menu.folder.alt"));
+			root.addChild(folderNode);
 		}	
 		if ( !isDeleted) {
 			gtn = new GenericTreeNode();

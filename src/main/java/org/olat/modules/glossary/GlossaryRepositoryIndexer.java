@@ -68,6 +68,8 @@ public class GlossaryRepositoryIndexer extends DefaultIndexer {
 		if(isLogDebugEnabled()) logDebug("Analyse Glosary RepositoryEntry...");
 		try {
 			resourceContext.setDocumentType(TYPE);
+			resourceContext.setTitle(repositoryEntry.getDisplayname());
+			resourceContext.setDescription(repositoryEntry.getDescription());
 			Document document = GlossaryManager.getInstance().getIndexerDocument(repositoryEntry, resourceContext);
 			if (document != null) {
 				indexWriter.addDocument(document);

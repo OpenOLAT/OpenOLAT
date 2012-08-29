@@ -71,14 +71,14 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 		}
 	}
 
-	public String filter(InputStream in) {
+	public NekoContent filter(InputStream in) {
 		if (in == null) return null;
 		try {
 			SAXParser parser = new SAXParser();
 			HTMLHandler contentHandler = new HTMLHandler((int)(1000 * 0.66f));
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(in));
-			return contentHandler.toString();
+			return contentHandler.getContent();
 		} catch (SAXException e) {
 			logError("", e);
 			return null;
@@ -91,13 +91,34 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 		}
 	}
 	
-	private class HTMLHandler extends DefaultHandler {
+	public static class NekoContent {
+		private final String title;
+		private final String content;
+		
+		public NekoContent(String title, String content) {
+			this.title = title;
+			this.content = content;
+		}
+		
+		public String getTitle() {
+			return title;
+		}
+		
+		public String getContent() {
+			return content;
+		}
+	}
+	
+	private static class HTMLHandler extends DefaultHandler {
 		private boolean collect = true;
 		private boolean consumeBlanck = false;
+		private boolean consumeTitle = true;
 		private final StringBuilder sb;
+		private final StringBuilder title;
 		
 		public HTMLHandler(int size) {
 			sb = new StringBuilder(size);
+			title = new StringBuilder(32);
 		}
 
 		@Override
@@ -106,8 +127,13 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 			if("script".equals(elem)) {
 				collect = false;
 			// add a single whitespace before each block element but only if not there is not already a whitespace there
-			} else if(blockTags.contains(elem) && sb.length() > 0 && sb.charAt(sb.length() -1) != ' ' ) {
-				consumeBlanck = true;
+			} else {
+				if("title".equals(elem)) {
+					consumeTitle = true;
+				}
+				if(blockTags.contains(elem) && sb.length() > 0 && sb.charAt(sb.length() -1) != ' ' ) {
+					consumeBlanck = true;
+				}
 			}
 		}
 		
@@ -121,6 +147,9 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 					consumeBlanck = false;
 				}
 				sb.append(chars, offset, length);
+				if(consumeTitle) {
+					title.append(chars, offset, length);
+				}
 			}
 		}
 
@@ -129,11 +158,21 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 			String elem = localName.toLowerCase();
 			if("script".equals(elem)) {
 				collect = true;
-			} else if(blockTags.contains(elem) && sb.length() > 0 && sb.charAt(sb.length() -1) != ' ' ) {
-				consumeBlanck = true;
+			} else {
+				if("title".equals(elem)) {
+					consumeTitle = false;
+				}
+				if(blockTags.contains(elem) && sb.length() > 0 && sb.charAt(sb.length() -1) != ' ' ) {
+					consumeBlanck = true;
+				}
 			}
 		}
 
+		public NekoContent getContent() {
+			return new NekoContent(title.toString(), sb.toString());
+		}
+		
+		@Override
 		public String toString() {
 			return sb.toString();
 		}

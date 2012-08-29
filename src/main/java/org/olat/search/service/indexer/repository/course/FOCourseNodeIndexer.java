@@ -64,6 +64,7 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 		try {
 			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
 	    courseNodeResourceContext.setBusinessControlFor(courseNode);
+	    courseNodeResourceContext.setDocumentType(TYPE);
 	    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
 	    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 	    doIndexForum(courseNodeResourceContext, course, courseNode, indexWriter);
@@ -117,7 +118,6 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 //		  SearchResourceContext forumSearchResourceContext = new SearchResourceContext(parentResourceContext);
 //		  forumSearchResourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLFORUM); // TODO:chg: Must be an other Class e.g. CourseRunMainController 
 		  parentResourceContext.setDocumentType(TYPE);
-		  parentResourceContext.setDocumentContext(course.getResourceableId() + " " + courseNode.getIdent() + " " + forumKey);
 		  doIndexAllMessages(parentResourceContext, forum, indexWriter );
 		}
 	}

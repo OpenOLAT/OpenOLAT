@@ -70,13 +70,14 @@ public class WordOOXMLDocument extends FileDocument {
 		return wordDocument.getLuceneDocument();
 	}
 
-	protected String readContent(VFSLeaf leaf) throws IOException, DocumentException {
+	protected FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
 		BufferedInputStream bis = null;
 		StringBuilder buffy = new StringBuilder();
 		try {
 			bis = new BufferedInputStream(leaf.getInputStream());
 			POIXMLTextExtractor extractor = (POIXMLTextExtractor) ExtractorFactory.createExtractor(bis);
 			POIXMLDocument document = extractor.getDocument();
+			String title = getTitle(document);
 			
 			if (document instanceof XWPFDocument) {
 				XWPFDocument xDocument = (XWPFDocument) document;
@@ -86,7 +87,7 @@ public class WordOOXMLDocument extends FileDocument {
 				extractFooters(buffy, hfPolicy);
 			}
 
-			return buffy.toString();
+			return new FileContent(title, buffy.toString());
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
 		} finally {
@@ -94,6 +95,13 @@ public class WordOOXMLDocument extends FileDocument {
 				bis.close();
 			}
 		}
+	}
+	
+	private String getTitle(POIXMLDocument document) {
+		if(document.getProperties() != null && document.getProperties().getCoreProperties() != null) {
+			return document.getProperties().getCoreProperties().getTitle();
+		}
+		return null;
 	}
 
 	private void extractContent(StringBuilder buffy, XWPFDocument document)

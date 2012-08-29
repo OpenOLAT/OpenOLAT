@@ -59,6 +59,8 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
     SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
     courseNodeResourceContext.setBusinessControlFor(courseNode);
     courseNodeResourceContext.setDocumentType(TYPE);
+    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
     
     RepositoryEntry re = CPEditController.getCPReference(courseNode.getModuleConfiguration(), true);
 		if (re == null) throw new AssertException("configurationkey 'CONFIG_KEY_REPOSITORY_SOFTKEY' of BB CP was missing");

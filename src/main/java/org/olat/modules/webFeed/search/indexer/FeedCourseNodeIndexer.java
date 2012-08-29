@@ -62,9 +62,9 @@ public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements Co
 	 * @see org.olat.search.service.indexer.Indexer#doIndex(org.olat.search.service.SearchResourceContext,
 	 *      java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
 	 */
-	public void doIndex(SearchResourceContext searchResourceContext, ICourse course, CourseNode node, OlatFullIndexer indexer)
+	public void doIndex(SearchResourceContext searchResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexer)
 			throws IOException, InterruptedException {
-		RepositoryEntry repositoryEntry = node.getReferencedRepositoryEntry();
+		RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
 		// used for log messages
 		String repoEntryName = "*name not available*";
 		try {
@@ -76,15 +76,17 @@ public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements Co
 
 			// Set the document type, e.g. type.repository.entry.FileResource.BLOG
 			SearchResourceContext nodeSearchContext = new SearchResourceContext(searchResourceContext);
-			nodeSearchContext.setBusinessControlFor(node);
+			nodeSearchContext.setBusinessControlFor(courseNode);
 			nodeSearchContext.setDocumentType(getDocumentType());
+			nodeSearchContext.setTitle(courseNode.getShortTitle());
+			nodeSearchContext.setDescription(courseNode.getLongTitle());
 
 			// Create the olatDocument for the feed course node itself
 			OlatDocument feedNodeDoc = new FeedNodeDocument(feed, nodeSearchContext);
 			indexer.addDocument(feedNodeDoc.getLuceneDocument());
 			
 			// Make sure images are displayed properly
-			String mapperBaseURL = Path.getFeedBaseUri(feed, null, course.getResourceableId(), node.getIdent());
+			String mapperBaseURL = Path.getFeedBaseUri(feed, null, course.getResourceableId(), courseNode.getIdent());
 			Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(mapperBaseURL);
 
 			// Only index items. Feed itself is indexed by RepositoryEntryIndexer.

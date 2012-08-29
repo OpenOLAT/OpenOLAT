@@ -69,7 +69,8 @@ public class WikiCourseNodeIndexer extends FolderIndexer implements CourseNodeIn
 					SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
 					courseNodeResourceContext.setBusinessControlFor(courseNode);
 					courseNodeResourceContext.setDocumentType(TYPE);
-					courseNodeResourceContext.setDocumentContext(course.getResourceableId() + " " + courseNode.getIdent());
+			    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+			    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 					courseNodeResourceContext.setFilePath(wikiPage.getPageName());
 
 					Document document = WikiPageDocument.createDocument(courseNodeResourceContext, wikiPage);

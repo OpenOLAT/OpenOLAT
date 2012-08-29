@@ -80,21 +80,22 @@ public class PowerPointOOXMLDocument extends FileDocument {
 		return powerPointDocument.getLuceneDocument();
 	}
 
-	public String readContent(VFSLeaf leaf) throws IOException, DocumentException {
+	public FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
 		BufferedInputStream bis = null;
 		StringBuilder buffy = new StringBuilder();
 		try {
 			bis = new BufferedInputStream(leaf.getInputStream());
 			POIXMLTextExtractor extractor = (POIXMLTextExtractor) ExtractorFactory.createExtractor(bis);
 			POIXMLDocument document = extractor.getDocument();
-
+			String title = getTitle(document);
+			
 			if (document instanceof XSLFSlideShow) {
 				XSLFSlideShow slideShow = (XSLFSlideShow) document;
 				XMLSlideShow xmlSlideShow = new XMLSlideShow(slideShow);
 				extractContent(buffy, xmlSlideShow);
 			}
 
-			return buffy.toString();
+			return new FileContent(title, buffy.toString());
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
 		} finally {
@@ -102,6 +103,13 @@ public class PowerPointOOXMLDocument extends FileDocument {
 				bis.close();
 			}
 		}
+	}
+	
+	private String getTitle(POIXMLDocument document) {
+		if(document.getProperties() != null && document.getProperties().getCoreProperties() != null) {
+			return document.getProperties().getCoreProperties().getTitle();
+		}
+		return null;
 	}
 
 	private void extractContent(StringBuilder buffy, XMLSlideShow xmlSlideShow) throws IOException, XmlException {

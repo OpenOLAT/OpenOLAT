@@ -70,7 +70,6 @@ public class GroupWikiIndexer extends FolderIndexer{
 					  SearchResourceContext wikiResourceContext = new SearchResourceContext(parentResourceContext);
 					  wikiResourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLWIKI);
 					  wikiResourceContext.setDocumentType(TYPE);
-					  wikiResourceContext.setDocumentContext(businessGroup.getKey() + " ");
 					  wikiResourceContext.setFilePath(wikiPage.getPageName());
 			
 						Document document = WikiPageDocument.createDocument(wikiResourceContext, wikiPage);

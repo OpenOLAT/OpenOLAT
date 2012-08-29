@@ -79,7 +79,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 		return excelDocument.getLuceneDocument();
 	}
 
-	protected String readContent(VFSLeaf leaf) throws DocumentException {
+	protected FileContent readContent(VFSLeaf leaf) throws DocumentException {
 		BufferedInputStream bis = null;
 		StringBuilder buffy = new StringBuilder();
 		try {
@@ -100,7 +100,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 				sheet.close();
 			}
 
-			return buffy.toString();
+			return new FileContent(buffy.toString());
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage(), e);
 		} finally {

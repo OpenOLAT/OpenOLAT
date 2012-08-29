@@ -63,13 +63,12 @@ public class SharedFolderRepositoryIndexer extends FolderIndexer {
 		if (isLogDebugEnabled()) logDebug("Analyse Shared Folder RepositoryEntry...");
 
 		resourceContext.setDocumentType(TYPE);
-    resourceContext.setParentContextType(TYPE);
-		resourceContext.setParentContextName(repositoryEntry.getDisplayname());
-    
+
 		VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(repositoryEntry.getOlatResource());
 		// fxdiff: only index if no lockfile found. see OLAT-5724
 		if (sfContainer.resolve(NO_FOLDER_INDEXING_LOCKFILE) == null){
-			doIndexVFSContainer(resourceContext,sfContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
+			SearchResourceContext folderContext = new SearchResourceContext(resourceContext);
+			doIndexVFSContainer(folderContext,sfContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
 		}
 	}
 }

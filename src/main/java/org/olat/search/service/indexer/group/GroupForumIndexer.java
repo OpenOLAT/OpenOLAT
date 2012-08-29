@@ -82,7 +82,6 @@ public class GroupForumIndexer extends ForumIndexer{
 		  SearchResourceContext forumSearchResourceContext = new SearchResourceContext(parentResourceContext);
 		  forumSearchResourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLFORUM);
 		  forumSearchResourceContext.setDocumentType(TYPE);
-		  forumSearchResourceContext.setDocumentContext(businessGroup.getKey() + " " + forumKey);
 			forumSearchResourceContext.setParentContextType(GroupDocument.TYPE);
 			forumSearchResourceContext.setParentContextName(businessGroup.getName());
 			if (forum == null) { // fxdiff: FXOLAT-104 warn about missing forums

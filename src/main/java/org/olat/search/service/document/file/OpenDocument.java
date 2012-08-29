@@ -80,7 +80,7 @@ public class OpenDocument extends FileDocument {
 		return openDocument.getLuceneDocument();
 	}
 
-	public String readContent(VFSLeaf leaf) throws DocumentException {
+	public FileContent readContent(VFSLeaf leaf) throws DocumentException {
 		final OpenDocumentHandler dh = new OpenDocumentHandler();
 
 		InputStream stream = null;
@@ -104,7 +104,7 @@ public class OpenDocument extends FileDocument {
 			FileUtils.closeSafely(zip);
 			FileUtils.closeSafely(stream);
 		}
-		return dh.getContent();
+		return new FileContent(dh.getContent());
 	}
 	
 	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {

@@ -88,7 +88,6 @@ public class PortfolioRepositoryIndexer extends AbstractHierarchicalIndexer {
 		// only index templates
 		if(element instanceof EPStructuredMapTemplate) {
 			resourceContext.setDocumentType(TYPE);
-			resourceContext.setDocumentContext(Long.toString(repositoryEntry.getKey()));
 			resourceContext.setParentContextType(TYPE);
 			resourceContext.setParentContextName(repositoryEntry.getDisplayname());
 			resourceContext.setFilePath(element.getKey().toString());

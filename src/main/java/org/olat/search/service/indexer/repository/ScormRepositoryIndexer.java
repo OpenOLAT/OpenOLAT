@@ -96,13 +96,9 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
 		OLATResource ores = repositoryEntry.getOlatResource();
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(ores);
-
 		resourceContext.setDocumentType(TYPE);
-		resourceContext.setTitle(repositoryEntry.getDisplayname());
-		resourceContext.setDescription(repositoryEntry.getDescription());
-		resourceContext.setParentContextType(TYPE);
-		resourceContext.setParentContextName(repositoryEntry.getDisplayname());
-		doIndex(resourceContext, indexWriter, cpRoot);
+		SearchResourceContext scormContext = new SearchResourceContext(resourceContext);
+		doIndex(scormContext, indexWriter, cpRoot);
 	}
 		
 	protected void doIndex(SearchResourceContext resourceContext, OlatFullIndexer indexWriter, File cpRoot)
