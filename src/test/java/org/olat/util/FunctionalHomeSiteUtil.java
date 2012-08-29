@@ -548,22 +548,22 @@ public class FunctionalHomeSiteUtil {
 		}
 
 		if(!checkCurrentAction || !checkCurrentAction(browser, action, 15000)){
-			if(action instanceof EPortfolioAction){
-				StringBuffer selectorBuffer = new StringBuffer();
-
-				selectorBuffer.append("xpath=//ul//div[@id='")
-				.append(getEPortfolioParentId())
-				.append("']//a");
-
-				browser.click(selectorBuffer.toString());
-				browser.waitForPageToLoad(functionalUtil.getWaitLimit());
-			}
-			
 			StringBuffer selectorBuffer = new StringBuffer();
 
 			selectorBuffer.append("xpath=//ul//li[contains(@class, '")
 			.append(selectedCss)
 			.append("')]//a");
+			
+			if(action instanceof EPortfolioAction && !browser.isElementPresent(selectorBuffer.toString())){
+				StringBuffer actionSelectorBuffer = new StringBuffer();
+
+				actionSelectorBuffer.append("xpath=//ul//div[@id='")
+				.append(getEPortfolioParentId())
+				.append("']//a");
+
+				browser.click(actionSelectorBuffer.toString());
+				browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			}
 
 			browser.click(selectorBuffer.toString());
 			browser.waitForPageToLoad(functionalUtil.getWaitLimit());

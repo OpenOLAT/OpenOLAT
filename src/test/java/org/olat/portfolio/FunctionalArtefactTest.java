@@ -33,6 +33,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
@@ -61,7 +62,7 @@ public class FunctionalArtefactTest {
 	public final static String FORUM_POST_MESSAGE = "What multiplexing exists in operating systems?";
 	public final static String FORUM_ARTEFACT_TITLE = "multiplexing forum post";
 	public final static String FORUM_ARTEFACT_DESCRIPTION = "Thread about multiplexing.";
-	public final static String FORUM_TAGS = "networking multiplexing operating systems virtual machine forum post";
+	public final static String[] FORUM_TAGS = {"networking", "multiplexing", "operating systems", "virtual machine", "forum", "post"};
 	public final static String FORUM_BINDER = BINDER_PROGRAMMING_THEORIE;
 	public final static String FORUM_PAGE = "operating systems";
 	public final static String FORUM_STRUCTURE = "issue 1";
@@ -70,7 +71,7 @@ public class FunctionalArtefactTest {
 	public final static String WIKI_ARTICLE_CONTENT = "==Time Multiplexing==\nscheduling a serially-reusable resource among several users\n\n==Space multiplexing==\ndividing a multiple-use resource up among several users";
 	public final static String WIKI_ARTEFACT_TITLE = "multiplexing wiki";
 	public final static String WIKI_ARTEFACT_DESCRIPTION = "wiki page about multiplexing";
-	public final static String WIKI_TAGS = "networking multiplexing operating systems virtual machine wiki";
+	public final static String[] WIKI_TAGS = {"networking", "multiplexing", "operating systems", "virtual machine", "wiki"};
 	public final static String WIKI_BINDER = BINDER_PROGRAMMING_THEORIE;
 	public final static String WIKI_PAGE = "operating systems";
 	public final static String WIKI_STRUCTURE = "issue 2";
@@ -82,7 +83,7 @@ public class FunctionalArtefactTest {
 	public final static String BLOG_POST_CONTENT = "Operating Systems: Design & Implementation (by Andrew S. Tanenbaum)";
 	public final static String BLOG_ARTEFACT_TITLE = "blog";
 	public final static String BLOG_ARTEFACT_DESCRIPTION = "my personal blog";
-	public final static String BLOG_TAGS = "john smith blog";
+	public final static String[] BLOG_TAGS = {"john smith", "blog"};
 	public final static String BLOG_BINDER = BINDER_PROGRAMMING_THEORIE;
 	public final static String BLOG_PAGE = "operating systems";
 	public final static String BLOG_STRUCTURE = "issue 3";
@@ -90,7 +91,7 @@ public class FunctionalArtefactTest {
 	public final static String TEXT_ARTEFACT_CONTENT = "Bufferbloat is a phenomenon in a packet-switched computer network whereby excess buffering of packets inside the network causes high latency and jitter, as well as reducing the overall network throughput.";
 	public final static String TEXT_ARTEFACT_TITLE = "Definition bufferbloat";
 	public final static String TEXT_ARTEFACT_DESCRIPTION = "Definition bufferbloat";
-	public final static String TEXT_ARTEFACT_TAGS = "bufferbloat network latency jitter";
+	public final static String[] TEXT_ARTEFACT_TAGS = {"bufferbloat", "network", "latency", "jitter"};
 	public final static String TEXT_ARTEFACT_BINDER = BINDER_PROGRAMMING_THEORIE;
 	public final static String TEXT_ARTEFACT_PAGE = "networking";
 	public final static String TEXT_ARTEFACT_STRUCTURE = "issue 1";
@@ -98,14 +99,14 @@ public class FunctionalArtefactTest {
 	public final static String FILE_ARTEFACT_PATH = "/org/olat/portfolio/sfqcodel.cc";
 	public final static String FILE_ARTEFACT_TITLE = "CoDel";
 	public final static String FILE_ARTEFACT_DESCRIPTION = "CoDel Algorithm";
-	public final static String FILE_ARTEFACT_TAGS = "codel";
+	public final static String[] FILE_ARTEFACT_TAGS = {"codel", "sample code"};
 	public final static String FILE_ARTEFACT_BINDER = BINDER_PROGRAMMING_SAMPLES;
 	public final static String FILE_ARTEFACT_PAGE = "cpp";
 	public final static String FILE_ARTEFACT_STRUCTURE = "issue 1";
 	
 	public final static String LEARNING_JOURNAL_TITLE = "Programming Topics";
 	public final static String LEARNING_JOURNAL_DESCRIPTION = "Some hot programming topics";
-	public final static String LEARNING_JOURNAL_TAGS = "programming c c++";
+	public final static String[] LEARNING_JOURNAL_TAGS = {"programming", "c", "c++"};
 	public final static String LEARNING_JOURNAL_BINDER = BINDER_PROGRAMMING_THEORIE;
 	public final static String LEARNING_JOURNAL_PAGE = "journal";
 	public final static String LEARNING_JOURNAL_STRUCTURE = "2012/08/13";

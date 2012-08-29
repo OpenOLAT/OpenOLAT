@@ -12,12 +12,14 @@
         <configuration>
             <property name="workDir">target/arquillianDeployments</property>
 			<property name="catalinaHome">target/arq-apache-tomcat-7.0.27</property>
-			<property name="javaVmArguments">-Xmx512m -XX:MaxPermSize=128m -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</property>
+		<!-- <property name="javaVmArguments">-Xmx512m -XX:MaxPermSize=128m -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</property>  -->
         </configuration>
     </container>
     
 	<extension qualifier="selenium">
-        <property name="browser">*googlechrome</property>
+		<property name="browserCapabilities">firefox</property>
+		<property name="capabilityWebdriverFirefoxBin">/Applications/Firefox.app/Contents/MacOS/firefox-bin</property>
+        <!-- <property name="browser">*googlechrome</property> -->
     </extension>
 
 </arquillian>

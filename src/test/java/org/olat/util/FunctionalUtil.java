@@ -26,6 +26,12 @@ import java.util.Properties;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.util.FunctionalAdministrationSiteUtil.AdministrationSiteAction;
+import org.olat.util.FunctionalGroupsSiteUtil.GroupsSiteAction;
+import org.olat.util.FunctionalHomeSiteUtil.HomeSiteAction;
+import org.olat.util.FunctionalRepositorySiteUtil.RepositorySiteAction;
+import org.olat.util.FunctionalUserManagementSiteUtil.UserManagementSiteAction;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -112,6 +118,13 @@ public class FunctionalUtil {
 	
 	private String mceContentBodyCss;
 	
+	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
+	private FunctionalGroupsSiteUtil functionalGroupsSiteUtil;
+	private FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	private FunctionalUserManagementSiteUtil functionalUserManagementSiteUtil;
+	private FunctionalAdministrationSiteUtil functionalAdministrationSiteUtil;
+	
+	
 	public FunctionalUtil(){
 		Properties properties = new Properties();
 		
@@ -126,7 +139,7 @@ public class FunctionalUtil {
 			username = "administrator";
 			password = "openolat";
 			
-			// TODO Auto-generated catch block
+			//TODO:JK: Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -161,6 +174,12 @@ public class FunctionalUtil {
 		wizardFinishCss = WIZARD_FINISH_CSS;
 		
 		mceContentBodyCss = MCE_CONTENT_BODY_CSS;
+		
+		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(this);
+		functionalGroupsSiteUtil = new FunctionalGroupsSiteUtil(this);
+		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(this);
+		functionalUserManagementSiteUtil = new FunctionalUserManagementSiteUtil(this);
+		functionalAdministrationSiteUtil = new FunctionalAdministrationSiteUtil(this);
 	}
 	
 	/**
@@ -321,6 +340,54 @@ public class FunctionalUtil {
 	/**
 	 * @param browser
 	 * @param site
+	 * @return true on success
+	 * 
+	 * Clicks the appropriate action on a site that it would be
+	 * on it's initial state i.e. it looks like the user wouldn't
+	 * have visited site before.
+	 */
+	private boolean resetSite(Selenium browser, OlatSite site){
+		boolean retval = false;
+		
+		switch(site){
+		case HOME:
+		{
+			retval = functionalHomeSiteUtil.openActionByMenuTree(browser, HomeSiteAction.PORTAL);
+		}
+		break;
+		case GROUPS:
+		{
+			retval = functionalGroupsSiteUtil.openActionByMenuTree(browser, GroupsSiteAction.MY_GROUPS);
+		}
+		break;
+		case LEARNING_RESOURCES:
+		{
+			retval = functionalRepositorySiteUtil.openActionByMenuTree(browser, RepositorySiteAction.MY_ENTRIES);
+		}
+		break;
+		case USER_MANAGEMENT:
+		{
+			retval = functionalUserManagementSiteUtil.openActionByMenuTree(browser, UserManagementSiteAction.USER_SEARCH);
+		}
+		break;
+		case GROUP_ADMINISTRATION:
+		{
+			//FIXME:JK: need to be implemented
+		}
+		break;
+		case ADMINISTRATION:
+		{
+			retval = functionalAdministrationSiteUtil.openActionByMenuTree(browser, AdministrationSiteAction.SYSTEM_ADMINISTRATION);
+		}
+		break;
+		}
+		
+		return(retval);
+	}
+	
+	/**
+	 * @param browser
+	 * @param site
 	 * @return true on success otherwise false
 	 * 
 	 * Open a specific olat site.
@@ -333,9 +400,14 @@ public class FunctionalUtil {
 		}
 		
 		if(checkCurrentSite(browser, site, 15000)){
-			return(true);
+			if(resetSite(browser, site)){
+				return(true);
+			}else{
+				return(false);
+			}
 		}
 		
+		/* open the appropriate site */
 		StringBuilder selectorBuffer = new StringBuilder();
 		
 		selectorBuffer.append("css=.")
@@ -347,6 +419,9 @@ public class FunctionalUtil {
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(getWaitLimit());
 		waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		/* set it to it's initial state */
+		resetSite(browser, site);
 		
 		return(true);
 	}
@@ -691,9 +766,9 @@ public class FunctionalUtil {
 	public boolean clickWizardFinish(Selenium browser){
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//form//a[contains(@class, ")
+		locatorBuffer.append("xpath=//form//a[contains(@class, '")
 		.append(getWizardFinishCss())
-		.append(")]");
+		.append("')]");
 		
 		browser.click(locatorBuffer.toString());
 		
@@ -891,5 +966,50 @@ public class FunctionalUtil {
 
 	public void setMceContentBodyCss(String mceContentBodyCss) {
 		this.mceContentBodyCss = mceContentBodyCss;
+	}
+
+	public FunctionalHomeSiteUtil getFunctionalHomeSiteUtil() {
+		return functionalHomeSiteUtil;
+	}
+
+	public void setFunctionalHomeSiteUtil(
+			FunctionalHomeSiteUtil functionalHomeSiteUtil) {
+		this.functionalHomeSiteUtil = functionalHomeSiteUtil;
+	}
+
+	public FunctionalGroupsSiteUtil getFunctionalGroupsSiteUtil() {
+		return functionalGroupsSiteUtil;
+	}
+
+	public void setFunctionalGroupsSiteUtil(
+			FunctionalGroupsSiteUtil functionalGroupsSiteUtil) {
+		this.functionalGroupsSiteUtil = functionalGroupsSiteUtil;
+	}
+
+	public FunctionalRepositorySiteUtil getFunctionalRepositorySiteUtil() {
+		return functionalRepositorySiteUtil;
+	}
+
+	public void setFunctionalRepositorySiteUtil(
+			FunctionalRepositorySiteUtil functionalRepositorySiteUtil) {
+		this.functionalRepositorySiteUtil = functionalRepositorySiteUtil;
+	}
+
+	public FunctionalUserManagementSiteUtil getFunctionalUserManagementSiteUtil() {
+		return functionalUserManagementSiteUtil;
+	}
+
+	public void setFunctionalUserManagementSiteUtil(
+			FunctionalUserManagementSiteUtil functionalUserManagementSiteUtil) {
+		this.functionalUserManagementSiteUtil = functionalUserManagementSiteUtil;
+	}
+
+	public FunctionalAdministrationSiteUtil getFunctionalAdministrationSiteUtil() {
+		return functionalAdministrationSiteUtil;
+	}
+
+	public void setFunctionalAdministrationSiteUtil(
+			FunctionalAdministrationSiteUtil functionalAdministrationSiteUtil) {
+		this.functionalAdministrationSiteUtil = functionalAdministrationSiteUtil;
 	}
 }

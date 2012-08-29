@@ -141,7 +141,7 @@ public class FunctionalCourseUtil {
 	 * button.
 	 */
 	public boolean addToEportfolio(Selenium browser, String binder, String page, String structure,
-			String title, String description, String tags,
+			String title, String description, String[] tags,
 			FunctionalEPortfolioUtil functionalEPortfolioUtil){
 		
 		/* open wizard */

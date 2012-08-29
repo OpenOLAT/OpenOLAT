@@ -31,6 +31,7 @@ import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.olat.util.FunctionalHomeSiteUtil.EPortfolioAction;
 import org.olat.util.FunctionalUtil.OlatSite;
+import org.openqa.selenium.Keys;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -604,14 +605,38 @@ public class FunctionalEPortfolioUtil {
 	 * 
 	 * Fills in the open wizard's tags.
 	 */
-	protected boolean fillInTags(Selenium browser, String tags){
-		StringBuffer locatorBuffer = new StringBuffer();
+	protected boolean fillInTags(Selenium browser, String[] tags){
+		int i = 1;
 		
-		locatorBuffer.append("xpath=//form//div[contains(@class, '")
-		.append(functionalUtil.getWizardCss())
-		.append("')]//input[@type='text']");
-		
-		browser.type(locatorBuffer.toString(), tags);
+		for(String tag: tags){
+			StringBuffer locatorBuffer = new StringBuffer();
+			
+			locatorBuffer.append("xpath=(//form//div[contains(@class, '")
+			.append(functionalUtil.getWizardCss())
+			.append("')]//input[@type='text'])[" + i + "]");
+			
+			functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+			
+			browser.focus(locatorBuffer.toString());
+//			for(char c: (tag + ",").toCharArray()){
+//				browser.focus(locatorBuffer.toString());
+//				browser.keyDown(locatorBuffer.toString(), String.valueOf(c));
+//				browser.focus(locatorBuffer.toString());
+//				browser.keyPress(locatorBuffer.toString(), String.valueOf(c));
+//				browser.focus(locatorBuffer.toString());
+//				browser.keyUp(locatorBuffer.toString(), String.valueOf(c));
+//			}
+			browser.type(locatorBuffer.toString(), tag);
+			browser.focus(locatorBuffer.toString());
+			browser.fireEvent(locatorBuffer.toString(), "changed");
+			browser.keyDown(locatorBuffer.toString(), ","); //TODO:JK: "13" is really ugly way to press enter
+			browser.keyPress(locatorBuffer.toString(), ","); //TODO:JK: "13" is really ugly way to press enter
+			browser.keyUp(locatorBuffer.toString(), ","); //TODO:JK: "13" is really ugly way to press enter
+			browser.fireEvent(locatorBuffer.toString(), "changed");
+			browser.fireEvent(locatorBuffer.toString(), "blur");
+			
+			i++;
+		}
 		
 		functionalUtil.clickWizardNext(browser);
 		
@@ -629,7 +654,7 @@ public class FunctionalEPortfolioUtil {
 	 * Add a text artefact to a e-portfolio.
 	 */
 	public boolean addTextArtefact(Selenium browser, String binder, String page, String structure,
-			String content, String title, String description, String tags){
+			String content, String title, String description, String[] tags){
 		/* create binder, page or structure if necessary */
 		if(!createElements(browser, binder, page, structure))
 			return(false);
@@ -693,7 +718,7 @@ public class FunctionalEPortfolioUtil {
 	 * Upload a file artefact to a e-portfolio.
 	 */
 	public boolean uploadFileArtefact(Selenium browser, String binder, String page, String structure,
-			URI file, String title, String description, String tags) throws MalformedURLException{
+			URI file, String title, String description, String[] tags) throws MalformedURLException{
 		if(!createElements(browser, binder, page, structure))
 			return(false);
 		
@@ -723,6 +748,7 @@ public class FunctionalEPortfolioUtil {
 		.append(functionalUtil.getWizardCss())
 		.append("')]//input[@type='file']");
 		
+		browser.focus(locatorBuffer.toString());
 		browser.type(locatorBuffer.toString(), file.toURL().getPath());
 		//browser.attachFile(locatorBuffer.toString(), file.toURL().toString());
 		
@@ -767,7 +793,7 @@ public class FunctionalEPortfolioUtil {
 	 * Create a learnig journal for a e-portfolio.
 	 */
 	public boolean createLearningJournal(Selenium browser, String binder, String page, String structure,
-			String title, String description, String tags){
+			String title, String description, String[] tags){
 		if(!createElements(browser, binder, page, structure))
 			return(false);
 		

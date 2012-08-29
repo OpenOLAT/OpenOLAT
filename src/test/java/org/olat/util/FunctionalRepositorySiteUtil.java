@@ -345,7 +345,7 @@ public class FunctionalRepositorySiteUtil {
 	 * 
 	 * Browse the learning resources site's navigation.
 	 */
-	public boolean activateMenuTreeAction(Selenium browser, Object action){ //activateMenuTreeAction(browser, action)
+	public boolean openActionByMenuTree(Selenium browser, Object action){ //activateMenuTreeAction(browser, action)
 		String selectedCss = findCssClassOfAction(action);
 		
 		if(selectedCss == null){
@@ -389,7 +389,7 @@ public class FunctionalRepositorySiteUtil {
 		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
 			return(false);
 
-		if(!activateMenuTreeAction(browser, RepositorySiteAction.SEARCH_FORM))
+		if(!openActionByMenuTree(browser, RepositorySiteAction.SEARCH_FORM))
 			return(false);
 
 		//FIXME:JK: use CSS classes instead of ordinal
