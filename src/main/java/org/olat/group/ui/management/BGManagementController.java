@@ -70,6 +70,7 @@ import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -82,6 +83,7 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
@@ -121,7 +123,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	// Menu commands
 	private static final String CMD_OVERVIEW = "cmd.overview";
-	private static final String CMD_EDITCONTEXT = "cmd.editcontext";
 	private static final String CMD_GROUPLIST = "cmd.grouplist";
 	private static final String CMD_AREALIST = "cmd.arealist";
 	// Toolbox commands
@@ -190,6 +191,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private final UserManager userManager;
 	private final BGAreaManager areaManager;
 	private final BaseSecurity securityManager;
+	private final BusinessGroupModule groupModule;
 	private final BusinessGroupService businessGroupService;
 
 	// Workflow variables
@@ -226,6 +228,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		businessGroupTranslator = Util.createPackageTranslator(BusinessGroupMainRunController.class, ureq.getLocale());
@@ -406,28 +409,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 		}
 		confirmDeleteGroup = activateYesNoDialog(ureq, null, confirmDeleteGroupText, confirmDeleteGroup);
 	}
-
-	private void doContextEdit(UserRequest ureq) {
-		/*
-		if (isContextOwner || ureq.getUserSession().getRoles().isOLATAdmin()) {
-			removeAsListenerAndDispose(contextEditCtr);
-			contextEditCtr = new BGContextEditController(ureq, getWindowControl(), this.bgContext);
-			listenTo(contextEditCtr);
-			contextEditVC.put("contexteditor", contextEditCtr.getInitialComponent());
-			contextEditVC.contextPut("editingAllowed", Boolean.TRUE);
-		} else {
-			// show who is the owner of this context
-			removeAsListenerAndDispose(contextOwnersCtr);
-			contextOwnersCtr = new GroupController(ureq, getWindowControl(), false, true, false, this.bgContext.getOwnerGroup());
-			listenTo(contextOwnersCtr);
-			contextEditVC.put("owners", contextOwnersCtr.getInitialComponent());
-			contextEditVC.contextPut("editingAllowed", Boolean.FALSE);
-		}
-
-		setMainContent(contextEditVC);
-		setTools(STATE_CONTEXT_EDIT);
-		*/
-	}
 	
 	private void listMembers(UserRequest ureq, String cmd) {
 		if(CMD_LIST_MEMBERS_WITH_GROUPS.equals(cmd)) {
@@ -446,7 +427,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 			closeableModalController.activate();   
 		}
 	}
-	
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
@@ -650,8 +630,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 		releaseAdminLockAndGroupMUE();
 		if (cmd.equals(CMD_OVERVIEW)) {
 			doOverview(ureq);
-		} else if (cmd.equals(CMD_EDITCONTEXT)) {
-			doContextEdit(ureq);
 		} else if (cmd.equals(CMD_GROUPLIST)) {
 			this.currentAreaFilter = null;
 			doGroupList(ureq, true);
@@ -691,7 +669,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		return gtm;
 	}
 
-	private void setTools(int state) {
+	private void setTools(UserRequest ureq, int state) {
 		removeAsListenerAndDispose(toolC);
 		toolC = ToolFactory.createToolController(getWindowControl());
 		listenTo(toolC);
@@ -703,9 +681,14 @@ public class BGManagementController extends MainLayoutBasicController implements
 		}
 
 		toolC.addHeader(translate("tools.title.groupmanagement"));
+		
+		boolean canCreateGroup = canCreateBusinessGroup(ureq);
 
 		// Generic actions
-		toolC.addLink(CMD_GROUP_CREATE, translate(CMD_GROUP_CREATE));
+		if(canCreateGroup) {
+			toolC.addLink(CMD_GROUP_CREATE, translate(CMD_GROUP_CREATE));
+		}
+		
 		toolC.addLink(CMD_AREA_CREATE, translate(CMD_AREA_CREATE));
 		if (backLink) toolC.addLink(CMD_BACK, translate(CMD_BACK));
 		toolC.addLink(CMD_CLOSE, translate(CMD_CLOSE), null, "b_toolbox_close");
@@ -718,9 +701,11 @@ public class BGManagementController extends MainLayoutBasicController implements
 			toolC.addHeader(translate("tools.title.group"));
 			toolC.addLink(CMD_GROUP_MESSAGE, translate(CMD_GROUP_MESSAGE));
 			toolC.addLink(CMD_GROUP_RUN, translate(CMD_GROUP_RUN));
-			toolC.addLink(CMD_GROUP_COPY, translate(CMD_GROUP_COPY));
-			toolC.addLink(CMD_GROUP_COPY_MULTIPLE, translate(CMD_GROUP_COPY_MULTIPLE));
-			toolC.addLink(CMD_GROUP_DELETE, translate(CMD_GROUP_DELETE));
+			if(canCreateGroup) {
+				toolC.addLink(CMD_GROUP_COPY, translate(CMD_GROUP_COPY));
+				toolC.addLink(CMD_GROUP_COPY_MULTIPLE, translate(CMD_GROUP_COPY_MULTIPLE));
+				toolC.addLink(CMD_GROUP_DELETE, translate(CMD_GROUP_DELETE));
+			}
 		}
 
 		if (state == STATE_AREA_EDIT) {
@@ -739,6 +724,16 @@ public class BGManagementController extends MainLayoutBasicController implements
 			toolC.addLink(CMD_USER_MESSAGE, translate(CMD_USER_MESSAGE));
 		}
 
+	}
+	
+	private boolean canCreateBusinessGroup(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles.isOLATAdmin() || roles.isGroupManager()
+				|| (roles.isAuthor() && groupModule.isAuthorAllowedCreate())
+				|| (!roles.isGuestOnly() && !roles.isInvitee() && groupModule.isUserAllowedCreate())) {
+			return true;
+		}
+		return false;
 	}
 
 	private void initVC(String resourceName) {
@@ -783,7 +778,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// number of areas
 		overviewVC.contextPut("numbAreas", new Integer(areaManager.countBGAreasInContext(resource)));
 
-		setTools(STATE_OVERVIEW);
+		setTools(ureq, STATE_OVERVIEW);
 	}
 
 	/*
@@ -796,7 +791,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 				
 		newAreaVC.put("areaCreateForm", areaCreateController.getInitialComponent());
 		setMainContent(newAreaVC);
-		setTools(STATE_AREA_CREATE_FORM);
+		setTools(ureq, STATE_AREA_CREATE_FORM);
 	}
 	
 	private void createNewGroupController(UserRequest ureq, WindowControl wControl) {				
@@ -806,7 +801,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		
 		newGroupVC.put("groupCreateForm", groupCreateController.getInitialComponent());
 		setMainContent(newGroupVC);
-		setTools(STATE_GROUP_CREATE_FORM);
+		setTools(ureq, STATE_GROUP_CREATE_FORM);
 	}
 
 	private void doGroupCopy(UserRequest ureq) {
@@ -839,7 +834,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 		setMainContent(groupEditCtr.getInitialComponent());
 		if (groupEditCtr.isLockAcquired()) {
-			setTools(STATE_GROUP_EDIT);
+			setTools(ureq, STATE_GROUP_EDIT);
 		}
 		// else don't change the tools state
 	}
@@ -870,7 +865,9 @@ public class BGManagementController extends MainLayoutBasicController implements
 			groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.name", 0, CMD_GROUP_RUN, ureq.getLocale()));
 			groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.desc", 1, null, ureq.getLocale()));
 			groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_GROUP_EDIT, "grouplist.table.edit", translate(CMD_GROUP_EDIT)));
-			groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_GROUP_DELETE, "grouplist.table.delete", translate(CMD_GROUP_DELETE)));
+			if(canCreateBusinessGroup(ureq)) {
+				groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_GROUP_DELETE, "grouplist.table.delete", translate(CMD_GROUP_DELETE)));
+			}
 			groupListVC.put("groupListTableCtr", groupListCtr.getInitialComponent());
 		}
 		if (groupListModel == null || initializeModel) {
@@ -892,7 +889,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 			groupListCtr.setFilters(this.areaFilters, currentAreaFilter);
 		}
 		setMainContent(groupListVC);
-		setTools(STATE_GROUP_LIST);
+		setTools(ureq, STATE_GROUP_LIST);
 	}
 
 	private void doAreaEdit(UserRequest ureq) {
@@ -901,7 +898,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		listenTo(areaEditCtr);
 		
 		setMainContent(areaEditCtr.getInitialComponent());
-		setTools(STATE_AREA_EDIT);
+		setTools(ureq, STATE_AREA_EDIT);
 	}
 
 	private void doAreaDelete() {
@@ -932,7 +929,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 			areaListVC.put("arealisttable", areaListCtr.getInitialComponent());
 		}
 		setMainContent(areaListVC);
-		setTools(STATE_AREA_LIST);
+		setTools(ureq, STATE_AREA_LIST);
 	}
 
 	private void doUsersList(UserRequest ureq, boolean initializeModel) {
@@ -973,7 +970,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		}
 		// 3. set content
 		setMainContent(userListVC);
-		setTools(STATE_USER_LIST);
+		setTools(ureq, STATE_USER_LIST);
 	}
 
 	private void doUserDetails(UserRequest ureq) {
@@ -1011,7 +1008,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		userDetailsVC.contextPut("participantGroupLinks", participantGroupLinks);
 		// 4. set content
 		setMainContent(userDetailsVC);
-		setTools(STATE_USER_DETAILS);
+		setTools(ureq, STATE_USER_DETAILS);
 	}
 
 	private void doRemoveUserFromParticipatingGroup(Identity ureqIdentity, Identity toRemoveIdentity, String groupKey) {

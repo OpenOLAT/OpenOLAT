@@ -44,12 +44,17 @@ public class OwnedBusinessGroupListController extends AbstractBusinessGroupListC
 	protected void initButtons(UserRequest ureq) {
 		initButtons(ureq, true);
 		groupListCtr.setMultiSelect(true);
-		groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
-		groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
+		boolean canCreateGroup = canCreateBusinessGroup(ureq);
+		if(canCreateGroup) {
+			groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
+			groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
+		}
 		groupListCtr.addMultiSelectAction("table.users.management", TABLE_ACTION_USERS);
 		groupListCtr.addMultiSelectAction("table.config", TABLE_ACTION_CONFIG);
 		groupListCtr.addMultiSelectAction("table.email", TABLE_ACTION_EMAIL);
-		groupListCtr.addMultiSelectAction("table.delete", TABLE_ACTION_DELETE);
+		if(canCreateGroup) {
+			groupListCtr.addMultiSelectAction("table.delete", TABLE_ACTION_DELETE);
+		}
 	}
 
 	@Override
