@@ -19,13 +19,14 @@
  */
 package org.olat.group.ui.main;
 
-import static org.olat.group.ui.main.AbstractBusinessGroupListController.*;
+import static org.olat.group.ui.main.AbstractBusinessGroupListController.TABLE_ACTION_ACCESS;
+import static org.olat.group.ui.main.AbstractBusinessGroupListController.TABLE_ACTION_LEAVE;
 
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
-import org.olat.group.model.BGMembership;
+import org.olat.group.BusinessGroupMembership;
 
 /**
  * 
@@ -50,7 +51,7 @@ public class AccessActionColumnDescriptor extends DefaultColumnDescriptor {
 		int sortedRow = table.getSortedRow(row);
 		
 		Object memberObj = table.getTableDataModel().getValueAt(sortedRow, BusinessGroupTableModelWithType.Cols.role.ordinal());
-		if(memberObj instanceof BGMembership) {
+		if(memberObj instanceof BusinessGroupMembership) {
 			//owner, participant, or in waiting list can leave
 			return TABLE_ACTION_LEAVE;
 		}
@@ -70,13 +71,14 @@ public class AccessActionColumnDescriptor extends DefaultColumnDescriptor {
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {
 		int sortedRow = table.getSortedRow(row);
 		Object memberObj = table.getTableDataModel().getValueAt(sortedRow, BusinessGroupTableModelWithType.Cols.role.ordinal());
-		if(memberObj instanceof BGMembership) {
-			switch((BGMembership)memberObj) {
-				case owner:
-				case participant:
-					sb.append(translator.translate("table.header.leave")); break;
-				case waiting:
-					sb.append(translator.translate("table.header.leave.waiting")); break;
+		if(memberObj instanceof BusinessGroupMembership) {
+			BusinessGroupMembership membership = (BusinessGroupMembership)memberObj;
+			if(membership.isOwner()) {
+				//nothing???
+			} else if (membership.isParticipant()) {
+				sb.append(translator.translate("table.header.leave"));
+			} else if (membership.isWaiting()) {
+				sb.append(translator.translate("table.header.leave.waiting"));
 			}
 		} else {
 			Object wrapper = table.getTableDataModel().getValueAt(sortedRow, BusinessGroupTableModelWithType.Cols.wrapper.ordinal());
