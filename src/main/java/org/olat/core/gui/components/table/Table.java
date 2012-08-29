@@ -118,10 +118,10 @@ public class Table extends Component implements Comparator {
 
 	// order of left-to-right presentation of Columns (visible columndescriptors):
 	// list of columndescriptors
-	List columnOrder; // default visibility to improve speed, not private
+	List<ColumnDescriptor> columnOrder; // default visibility to improve speed, not private
 
 	// all column descriptors whether visible or not
-	List allCDs; // default visibility to improve speed, not private
+	List<ColumnDescriptor> allCDs; // default visibility to improve speed, not private
 
 	private TableDataModel tableDataModel;
 	// DO NOT REFERENCE filteredTableDataModel directly, use always getFilteredTableDataModel() because lazy init!
@@ -161,9 +161,9 @@ public class Table extends Component implements Comparator {
 	 */
 	protected Table(final String name, final Translator translator) {
 		super(name, translator);
-		columnOrder = new ArrayList(INITIAL_COLUMNSIZE);
-		allCDs = new ArrayList(INITIAL_COLUMNSIZE);
-		sorter = new ArrayList(DEFAULT_RESULTS_PER_PAGE);
+		columnOrder = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
+		allCDs = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
+		sorter = new ArrayList<Integer>(DEFAULT_RESULTS_PER_PAGE);
 		selectedRowId = NO_ROW_SELECTED;
 		currentPageId = Integer.valueOf(1);
 		resultsPerPage = DEFAULT_RESULTS_PER_PAGE;
@@ -174,11 +174,11 @@ public class Table extends Component implements Comparator {
 	 * @return Column descriptor of given column
 	 */
 	protected ColumnDescriptor getColumnDescriptor(final int column) {
-		return (ColumnDescriptor) columnOrder.get(column);
+		return columnOrder.get(column);
 	}
 
 	protected ColumnDescriptor getColumnDescriptorFromAllCDs(final int column) {
-		return (ColumnDescriptor) allCDs.get(column);
+		return allCDs.get(column);
 	}
 
 	/**
@@ -195,7 +195,7 @@ public class Table extends Component implements Comparator {
 		// we got a new TableDataModel, so we need to prepare the sorting
 		int rows = getRowCount();
 		selectedRowId = NO_ROW_SELECTED; // no selection anymore
-		sorter = new ArrayList();
+		sorter = new ArrayList<Integer>();
 		for (int i = 0; i < rows; i++) {
 			sorter.add(Integer.valueOf(i));
 		}
@@ -345,7 +345,8 @@ public class Table extends Component implements Comparator {
 			int rowid = Integer.parseInt(value1);
 			int actualrows = getTableDataModel().getRowCount();
 			if (rowid < 0 || rowid >= actualrows){
-				throw new RuntimeException("Rowid out of range:" + rowid);
+				setDirty(true);
+				return;
 			}
 		} else {
 			// check for multiselect actions
@@ -476,7 +477,7 @@ public class Table extends Component implements Comparator {
 			multiSelectSelectedRows = new BitSet(); //if all deselected create new multiSelectSelectedRows
 			return;
 		}
-		List rowIds = new ArrayList();
+		List<Integer> rowIds = new ArrayList<Integer>();
 		for (int i = 0; i < sRowIds.length; i++) {
 			String sRowId = sRowIds[i];
 			try {
@@ -724,11 +725,11 @@ public class Table extends Component implements Comparator {
 	/**
 	 * @param selRows
 	 */
-	protected void updateConfiguredRows(final List selRows) {
+	protected void updateConfiguredRows(final List<Integer> selRows) {
 		setDirty(true);
 		columnOrder.clear();
-		for (Iterator itSel = selRows.iterator(); itSel.hasNext();) {
-			int pos = ((Integer)itSel.next()).intValue();
+		for (Iterator<Integer> itSel = selRows.iterator(); itSel.hasNext();) {
+			int pos = itSel.next().intValue();
 			// if multiselect, skip the first cd (which is the multiselect CD)
 			if (isMultiSelect()){
 				pos += 1;
@@ -753,9 +754,9 @@ public class Table extends Component implements Comparator {
 	 * @return true if there is at least one sortable row in the list of all
 	 *         columndescriptors (both visible and invisible)
 	 */
-	public boolean isSortableColumnIn(final List selRows) {
-		for (Iterator itSelRows = selRows.iterator(); itSelRows.hasNext();) {
-			Integer posI = (Integer) itSelRows.next();
+	public boolean isSortableColumnIn(final List<Integer> selRows) {
+		for (Iterator<Integer> itSelRows = selRows.iterator(); itSelRows.hasNext();) {
+			Integer posI = itSelRows.next();
 			ColumnDescriptor cd = (ColumnDescriptor) allCDs.get(posI.intValue());
 			if (cd.isSortingAllowed()){
 				return true;
@@ -916,7 +917,7 @@ public class Table extends Component implements Comparator {
 	}
 
 	private void buildFilteredTableDataModel(final String tableSearchString2) {
-		ArrayList filteredElementList = new ArrayList();
+		List<Object> filteredElementList = new ArrayList<Object>();
 		log.debug("buildFilteredTableDataModel: tableDataModel.getRowCount()=" + tableDataModel.getRowCount());
 		if (tableDataModel.getRowCount() > 0) {
 			log.debug("buildFilteredTableDataModel: tableDataModel.getObject(0)=" + tableDataModel.getObject(0));
@@ -995,11 +996,11 @@ public class Table extends Component implements Comparator {
 class ChoiceTableDataModel extends BaseTableDataModelWithoutFilter {
 	
 	private boolean isMultiSelect;
-	private List allCDs;
-	private List columnOrder;
+	private List<ColumnDescriptor> allCDs;
+	private List<ColumnDescriptor> columnOrder;
 	private Translator translator;
 
-	protected ChoiceTableDataModel(final boolean isMultiSelect, final List allCDs, final List columnOrder, final Translator translator) {
+	protected ChoiceTableDataModel(final boolean isMultiSelect, final List<ColumnDescriptor> allCDs, final List<ColumnDescriptor> columnOrder, final Translator translator) {
 		this.isMultiSelect = isMultiSelect;
 		this.allCDs = allCDs;
 		this.columnOrder = columnOrder;
@@ -1022,7 +1023,7 @@ class ChoiceTableDataModel extends BaseTableDataModelWithoutFilter {
 	}
 
 	public Object getValueAt(final int row, final int col) {
-		ColumnDescriptor cd = (ColumnDescriptor) allCDs.get(isMultiSelect? (row + 1): row);
+		ColumnDescriptor cd = allCDs.get(isMultiSelect? (row + 1): row);
 		switch (col) {
 			case 0: // on/off indicator; true if column is visible
 				return (columnOrder.contains(cd) ? Boolean.TRUE : Boolean.FALSE);
