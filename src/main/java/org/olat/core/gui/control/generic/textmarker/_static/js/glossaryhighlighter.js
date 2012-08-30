@@ -239,19 +239,24 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 			if (targetChk){
 				debug ? console.log("tooltip for " + glossaryMainTerm + " and targetId " + targetId + " of path " + mapperPath): null;
 				targetChkExt.removeAllListeners();
-				//targetChkExt.setOpacity(1);
-				
-				//allows caching for browser. ext otherwise appends "&garbage=12345" to URL				
-				Ext.Ajax.disableCaching = false;			    
-			    
-			    var neutip = new Ext.ToolTip({
-			        target: targetId,
-			        id: targetId + '_tip',
-			        minWidth: 250,
-			        dismissDelay: 0,
-			        //   html: 'This is just a static test content... blabliblubb... <b>cool</b>'
-			        autoLoad: {url: mapperPath + glossaryMainTerm + '.html', nocache: false }
-			    });
+
+				Ext.Ajax.request({
+					url: mapperPath + glossaryMainTerm + '.html',
+					disableCaching: true,
+					success: function(response, opts) {
+						if(response.status == 200) {
+							new Ext.ToolTip({
+								target: targetId,
+								id: targetId + '_tip',
+								minWidth: 250,
+								dismissDelay: 0,
+								constrainPosition: true,
+								html: response.responseText
+							});
+					   }  
+					}
+				});
+
 				debug ? console.log("neutip ID: " + neutip.getId()): null;
 				debug ? console.log("target ev id after creating tip: " + targetChk._prototypeEventID): null;
 		    } 		    
