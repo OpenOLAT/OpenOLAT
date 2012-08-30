@@ -118,6 +118,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	private String currentUri; 		// relative uri of currently loaded page in iframe
 	private boolean checkForInlineEvent; // false when a new currentUri is set
 	private boolean adjusteightAutomatically;
+	private boolean rawContent = false;
 	private String customCssURL;
 	private String contentEncoding;
 	private String jsEncoding;
@@ -284,6 +285,10 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			adjusteightAutomatically = false; 
 			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);			
 		}
+	}
+	
+	public void setRawContent(boolean rawContent) {
+		this.rawContent = rawContent;
 	}
 	
 	public void setContentEncoding(String encoding) {
@@ -664,6 +669,11 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * when puttings js to the end or menachism like ext.onReady is needed
 	 */
 	private String injectJavaScript(String page, String mimetype, boolean addCheckForInlineEvents, boolean anchorFirefoxWorkaround) {
+		//if raw content, add nothing
+		if(rawContent) {
+			return page;
+		}
+		
 		StringOutput sb = new StringOutput();
 		//do not use parser and just check for css and script stuff myself and append just before body and head
 		SimpleHtmlParser parser = new SimpleHtmlParser(page);

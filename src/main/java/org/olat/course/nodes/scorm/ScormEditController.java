@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -91,6 +92,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_SHOWNAVBUTTONS = "shownavbuttons";
 	public static final String CONFIG_ISASSESSABLE = "isassessable";
 	public static final String CONFIG_CUTVALUE = "cutvalue";
+	public static final String CONFIG_RAW_CONTENT = "rawcontent";
 	public static final String CONFIG_HEIGHT = "height";	
 	public final static String CONFIG_HEIGHT_AUTO = "auto";
 	//fxdiff FXOLAT-116: SCORM improvements
@@ -188,6 +190,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		boolean advanceScore = config.getBooleanSafe(CONFIG_ADVANCESCORE, true);
 		// </OLATCE-289>
 		int cutvalue = config.getIntegerSafe(CONFIG_CUTVALUE, 0);
+		boolean rawContent = config.getBooleanSafe(CONFIG_RAW_CONTENT, false);
 		String height = (String) config.get(CONFIG_HEIGHT);
 		String encContent = (String) config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
 		String encJS = (String) config.get(NodeEditController.CONFIG_JS_ENCODING);
@@ -196,7 +199,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
 		//= conf.get(CONFIG_CUTVALUE);
-		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons, height, encContent, encJS, assessable, cutvalue, fullWindow, closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
+		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons,
+				rawContent, height, encContent, encJS, assessable, cutvalue, fullWindow,
+				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
 		listenTo(scorevarform);
 		cpConfigurationVc.put("scorevarform", scorevarform.getInitialComponent());
 
@@ -307,6 +312,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				config.setBooleanEntry(CONFIG_ADVANCESCORE, scorevarform.isAdvanceScore());
 				config.setBooleanEntry(CONFIG_ATTEMPTSDEPENDONSCORE, scorevarform.getAttemptsDependOnScore());
 				// </OLATCE-289>
+				config.setBooleanEntry(CONFIG_RAW_CONTENT, scorevarform.isRawContent());
 				config.set(CONFIG_HEIGHT, scorevarform.getHeightValue());
 				config.set(NodeEditController.CONFIG_CONTENT_ENCODING, scorevarform.getEncodingContentValue());
 				config.set(NodeEditController.CONFIG_JS_ENCODING, scorevarform.getEncodingJSValue());
@@ -399,13 +405,14 @@ class VarForm extends FormBasicController {
 	private SelectionElement closeOnFinishEl;//fxdiff FXOLAT-116: SCORM improvements
 	private SelectionElement isAssessableEl;
 	private SelectionElement skipLaunchPageEl; //fxdiff FXOLAT-322 : skip start-page / auto-launch
+	private SelectionElement rawContentEl;
 	private IntegerElement cutValueEl;
 	private SingleSelection heightEl;
 	private SingleSelection encodingContentEl;
 	private SingleSelection encodingJSEl;
 	
 	
-	private boolean showMenu, showNavButtons, isAssessable,skipLaunchPage;
+	private boolean showMenu, showNavButtons, isAssessable, skipLaunchPage, rawContent;
 	private String height;
 	private String encodingContent;
 	private String encodingJS;
@@ -430,8 +437,9 @@ class VarForm extends FormBasicController {
 	 * 
 	 * @param name  Name of the form
 	 */
-	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage, boolean showNavButtons, String height,
-			String encodingContent, String encodingJS, boolean isAssessable, int cutValue, boolean fullWindow, boolean closeOnFinish,
+	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage, boolean showNavButtons, 
+			boolean rawContent, String height, String encodingContent, String encodingJS, 
+			boolean isAssessable, int cutValue, boolean fullWindow, boolean closeOnFinish,
 			// <OLATCE-289>
 			int maxattempts, boolean advanceScore, boolean attemptsDependOnScore
 			// </OLATCE-289>
@@ -445,6 +453,7 @@ class VarForm extends FormBasicController {
 		//fxdiff FXOLAT-116: SCORM improvements
 		this.fullWindow = fullWindow;
 		this.closeOnFinish = closeOnFinish;
+		this.rawContent = rawContent;
 		this.height = height;
 		this.encodingContent = encodingContent;
 		this.encodingJS = encodingJS;
@@ -539,6 +548,10 @@ class VarForm extends FormBasicController {
 		return isAssessableEl.isSelected(0);
 	}
 	
+	public boolean isRawContent() {
+		return rawContentEl.isSelected(0);
+	}
+	
 	public String getHeightValue() {
 		return heightEl.getSelectedKey();
 	}
@@ -554,6 +567,23 @@ class VarForm extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent (ureq, Event.DONE_EVENT);
+	}
+	
+	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+
+		heightEl.clearError();
+		if(isRawContent()) {
+			String height = getHeightValue();
+			if(!StringHelper.containsNonWhitespace(height) || ScormEditController.CONFIG_HEIGHT_AUTO.equals(height)) {
+				allOk &= false;
+				heightEl.setErrorKey("rawcontent.height.error", null);
+			}	
+		}
+		return allOk && super.validateFormLogic(ureq);
 	}
 
 	@Override
@@ -575,6 +605,9 @@ class VarForm extends FormBasicController {
 		
 		closeOnFinishEl = uifactory.addCheckboxesVertical("closeonfinish", "closeonfinish.label", formLayout, new String[]{"closeonfinish"}, new String[]{null}, null, 1);
 		closeOnFinishEl.select("closeonfinish", closeOnFinish);
+
+		rawContentEl = uifactory.addCheckboxesVertical("rawcontent", "rawcontent.label", formLayout, new String[]{"rawcontent"}, new String[]{null}, null, 1);
+		rawContentEl.select("rawcontent", rawContent);
 		
 		heightEl = uifactory.addDropdownSingleselect("height", "height.label", formLayout, keys, values, null);
 		if (Arrays.asList(keys).contains(height)) {

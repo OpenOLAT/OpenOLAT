@@ -303,6 +303,10 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		iframectr.setHeightPX(height);
 	}
 	
+	public void setRawContent(boolean rawContent) {
+		iframectr.setRawContent(rawContent);
+	}
+	
 	public void setContentEncoding(String encoding) {
 		iframectr.setContentEncoding(encoding);
 	}
@@ -460,11 +464,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 
 	private void updateMenuTreeIconsAndMessages() {
 		menuTree.setDirty(true);
-		Map itemsStat = scormAdapter.getScoItemsStatus();
+		Map<String,String> itemsStat = scormAdapter.getScoItemsStatus();
 		Map idToNode = treeModel.getScormIdToNodeRelation();
 		
-		for (Iterator it = itemsStat.keySet().iterator(); it.hasNext();) {
-			String itemId = (String) it.next();
+		for (Iterator<String> it = itemsStat.keySet().iterator(); it.hasNext();) {
+			String itemId = it.next();
 			GenericTreeNode tn = (GenericTreeNode) idToNode.get(itemId);
 			// change icon decorator
 			tn.setIconDecorator1CssClass("o_scorm_" + (String) itemsStat.get(itemId));

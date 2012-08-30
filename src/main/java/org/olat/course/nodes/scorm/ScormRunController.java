@@ -283,6 +283,8 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// configure some display options
 		boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 		scormDispC.showNavButtons(showNavButtons);
+		boolean rawContent = config.getBooleanSafe(ScormEditController.CONFIG_RAW_CONTENT, false);
+		scormDispC.setRawContent(rawContent);
 		String height = (String) config.get(ScormEditController.CONFIG_HEIGHT);
 		if (!height.equals(ScormEditController.CONFIG_HEIGHT_AUTO)) {
 			scormDispC.setHeightPX(Integer.parseInt(height));
