@@ -64,6 +64,11 @@ public class PdfDocument extends FileDocument {
 		pdfTextBufferPath = SearchServiceFactory.getService().getSearchModuleConfig().getPdfTextBufferPath(); 
 	}
 	
+	public PdfDocument(boolean pdfTextBuffering, String pdfTextBufferPath) {
+		this.pdfTextBuffering = pdfTextBuffering;
+		this.pdfTextBufferPath = pdfTextBufferPath;
+	}
+	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
     PdfDocument textDocument = new PdfDocument();
     textDocument.setFilePath(getPdfTextTmpFilePath(leafResourceContext));
@@ -128,10 +133,12 @@ public class PdfDocument extends FileDocument {
 		String dirPath = fullPdfTextTmpFilePath.substring(0,lastSlash);
 		File dirFile = new File(dirPath);
 		dirFile.mkdirs();
+		
+		FileOutputStream out = new FileOutputStream(pdfTextFile);
 		if(StringHelper.containsNonWhitespace(pdfText.getTitle())) {
-			FileUtils.save(new FileOutputStream(pdfTextFile), pdfText.getTitle() + "\u00A0|\u00A0" + pdfText.getContent(), "utf-8");
+			FileUtils.save(out, pdfText.getTitle() + "\u00A0|\u00A0" + pdfText.getContent(), "utf-8");
 		} else {
-			FileUtils.save(new FileOutputStream(pdfTextFile), pdfText.getContent(), "utf-8");
+			FileUtils.save(out, pdfText.getContent(), "utf-8");
 		}
 	}
 
