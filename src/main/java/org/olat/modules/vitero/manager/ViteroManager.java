@@ -44,6 +44,7 @@ import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
@@ -69,7 +70,9 @@ import org.olat.modules.vitero.manager.stubs.UserServiceStub;
 import org.olat.modules.vitero.manager.stubs.UserServiceStub.Userid;
 import org.olat.modules.vitero.manager.stubs.UserServiceStub.Userlist;
 import org.olat.modules.vitero.manager.stubs.UserServiceStub.Usertype;
+import org.olat.modules.vitero.model.CheckUserInfo;
 import org.olat.modules.vitero.model.ErrorCode;
+import org.olat.modules.vitero.model.GetUserInfo;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.modules.vitero.model.ViteroBooking;
 import org.olat.modules.vitero.model.ViteroGroup;
@@ -112,6 +115,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	private BaseSecurity securityManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
+	@Autowired
+	private DB dbInstance;
 	
 	private XStream xStream;
 
@@ -202,14 +207,17 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	protected String createVMSSessionCode(Identity identity)
 	throws VmsNotAvailableException {
 		try {
-			int userId = getVmsUserId(identity, true);
+			GetUserInfo userInfo = getVmsUserId(identity, true);
+			int userId = userInfo.getUserId();
 			
 			//update user information
-			try {
-				updateVmsUser(identity, userId);
-				storePortrait(identity, userId);
-			} catch (Exception e) {
-				logError("Cannot update user on vitero system:" + identity.getName(), e);
+			if(!userInfo.isCreated()) {
+				try {
+					updateVmsUser(identity, userId);
+					storePortrait(identity, userId);
+				} catch (Exception e) {
+					logError("Cannot update user on vitero system:" + identity.getName(), e);
+				}
 			}
 
 			SessionCodeServiceStub sessionCodeWs = getSessionCodeWebService();
@@ -256,14 +264,17 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	protected String createPersonalBookingSessionCode(Identity identity, ViteroBooking booking)
 	throws VmsNotAvailableException {
 		try {
-			int userId = getVmsUserId(identity, true);
+			GetUserInfo userInfo = getVmsUserId(identity, true);
+			int userId = userInfo.getUserId();
 			
 			//update user information
-			try {
-				updateVmsUser(identity, userId);
-				storePortrait(identity, userId);
-			} catch (Exception e) {
-				logError("Cannot update user on vitero system:" + identity.getName(), e);
+			if(!userInfo.isCreated()) {
+				try {
+					updateVmsUser(identity, userId);
+					storePortrait(identity, userId);
+				} catch (Exception e) {
+					logError("Cannot update user on vitero system:" + identity.getName(), e);
+				}
 			}
 
 			SessionCodeServiceStub sessionCodeWs = getSessionCodeWebService();
@@ -357,7 +368,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	public boolean isUserOf(ViteroBooking booking, Identity identity)
 	throws VmsNotAvailableException {
 		boolean member = false;
-		int userId = getVmsUserId(identity, false);
+		GetUserInfo userInfo = getVmsUserId(identity, false);
+		int userId = userInfo.getUserId();
 		if(userId > 0) {
 			Usertype[] users = getVmsUsersByGroup(booking.getGroupId());
 			if(users != null) {
@@ -374,6 +386,27 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	public List<ViteroUser> getUsersOf(ViteroBooking booking) 
 	throws VmsNotAvailableException {
 		return convert(getVmsUsersByGroup(booking.getGroupId()));
+	}
+	
+	public Usertype[] getCustomersUsers() throws VmsNotAvailableException {
+		try {
+			UserServiceStub userWs = getUserWebService();
+			UserServiceStub.GetUserListByCustomerRequest listRequest = new UserServiceStub.GetUserListByCustomerRequest();
+			listRequest.setCustomerid(viteroModule.getCustomerId());
+			UserServiceStub.GetUserListByCustomerResponse response = userWs.getUserListByCustomer(listRequest);
+			Userlist userList = response.getGetUserListByCustomerResponse();
+			Usertype[] userTypes = userList.getUser();
+			return userTypes;
+		} catch(AxisFault f) {
+			ErrorCode code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot get the list of users of customer: " + viteroModule.getCustomerId(), f);
+			}
+			return null;
+		} catch (RemoteException e) {
+			logError("Cannot get the list of users of customer: " + viteroModule.getCustomerId(), e);
+			return null;
+		}
 	}
 	
 	protected Usertype[] getVmsUsersByGroup(int groupId)
@@ -398,12 +431,17 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		}
 	}
 	
-	protected int getVmsUserId(Identity identity, boolean create) 
+	protected GetUserInfo getVmsUserId(Identity identity, boolean create) 
 	throws VmsNotAvailableException {
 		int userId;
+		boolean created = false;
+		
+		closeDBSessionSafely();
+
 		Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER);
 		if(authentication == null) {
 			if(create) {
+				created = true;
 				userId =  createVmsUser(identity);
 				if(userId > 0) {
 					securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(userId), "");
@@ -414,7 +452,18 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} else {
 			userId = Integer.parseInt(authentication.getAuthusername());
 		}
-		return userId;
+		
+		closeDBSessionSafely();
+		
+		return new GetUserInfo(created, userId);
+	}
+	
+	private void closeDBSessionSafely() {
+		try {
+			dbInstance.commitAndCloseSession();
+		} catch (Exception e) {
+			logError("Close safely for VMS", e);
+		}
 	}
 	
 	protected boolean updateVmsUser(Identity identity, int vmsUserId)
@@ -478,6 +527,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			
 			updateRequest.setUser(user);
 			userWs.updateUser(updateRequest);
+
 			return true;
 		} catch(AxisFault f) {
 			ErrorCode code = handleAxisFault(f);
@@ -491,8 +541,9 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		}
 	}
 	
-	protected int createVmsUser(Identity identity)
+	private final int createVmsUser(Identity identity)
 	throws VmsNotAvailableException {
+		String username = null;
 		try {
 			UserServiceStub userWs = getUserWebService();
 			UserServiceStub.CreateUserRequest createRequest = new UserServiceStub.CreateUserRequest();
@@ -500,7 +551,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			
 			//mandatory
 			User olatUser = identity.getUser();
-			user.setUsername("olat." + WebappHelper.getInstanceId() + "." + identity.getName());
+			username = "olat." + WebappHelper.getInstanceId() + "." + identity.getName();
+			user.setUsername(username);
 			user.setSurname(olatUser.getProperty(UserConstants.LASTNAME, null));
 			user.setFirstname(olatUser.getProperty(UserConstants.FIRSTNAME, null));
 			user.setEmail(olatUser.getProperty(UserConstants.EMAIL, null));
@@ -615,7 +667,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		if(!viteroModule.isDeleteVmsUserOnUserDelete()) return;
 		
 		try {
-			int userId = getVmsUserId(identity, false);
+			GetUserInfo userInfo = getVmsUserId(identity, false);
+			int userId = userInfo.getUserId();
 			if(userId > 0) {
 				deleteVmsUser(userId);
 			}
@@ -785,17 +838,20 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	public boolean addToRoom(ViteroBooking booking, Identity identity, GroupRole role)
 	throws VmsNotAvailableException {
 		try {
-			int userId = getVmsUserId(identity, true);
+			GetUserInfo userInfo = getVmsUserId(identity, true);
+			int userId = userInfo.getUserId();
 			if(userId < 0) {
 				return false;
 			}
 			
+			if(!userInfo.isCreated()) {
 			//update user information
-			try {
-				updateVmsUser(identity, userId);
-				storePortrait(identity, userId);
-			} catch (Exception e) {
-				logError("Cannot update user on vitero system:" + identity.getName(), e);
+				try {
+					updateVmsUser(identity, userId);
+					//storePortrait(identity, userId);
+				} catch (Exception e) {
+					logError("Cannot update user on vitero system:" + identity.getName(), e);
+				}
 			}
 			
 			GroupServiceStub groupWs = getGroupWebService();
@@ -835,7 +891,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	
 	public boolean removeFromRoom(ViteroBooking booking, Identity identity)
 	throws VmsNotAvailableException {
-		int userId = getVmsUserId(identity, true);
+		GetUserInfo userInfo = getVmsUserId(identity, true);
+		int userId = userInfo.getUserId();
 		if(userId < 0) {
 			return true;//nothing to remove
 		}
@@ -1080,7 +1137,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	
 	public List<ViteroBooking> getBookingInFutures(Identity identity)
 	throws VmsNotAvailableException {
-		int userId = getVmsUserId(identity, false);
+		GetUserInfo userInfo = getVmsUserId(identity, false);
+		int userId = userInfo.getUserId();
 		if(userId > 0) {
 			Booking[] bookings = getBookingInFutureByUserId(userId);
 			return convert(bookings);
@@ -1166,6 +1224,64 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		}
 	}
 	
+	public CheckUserInfo checkUsers() throws VmsNotAvailableException {
+		final String[] authProviders = new String[]{ VMS_PROVIDER };
+		final String prefix = getVmsUsernamePrefix();
+		
+		int authenticationCreated = 0;
+		int authenticationDeleted = 0;
+		
+		//check if vms user with an openolat login exists on vms server
+		//without the need authentication object in openolat.
+		Usertype[] users = getCustomersUsers();
+		if(users != null && users.length > 0) {
+			for(Usertype user:users) {
+				String vmsUsername = user.getUsername();
+				if(vmsUsername.startsWith(prefix)) {
+					String olatUsername = vmsUsername.substring(prefix.length(), vmsUsername.length());
+					List<Identity> identities = securityManager.getIdentitiesByPowerSearch(olatUsername, null, false, null, null, authProviders, null, null, null, null, null);
+					if(identities.isEmpty()) {
+						Identity identity = securityManager.findIdentityByName(olatUsername);
+						if(identity != null) {
+							authenticationCreated++;
+							securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(user.getId()), "");
+							logInfo("Recreate VMS authentication for: " + identity.getName());
+						}
+					}
+				}	
+			}
+		}
+		
+		//check if all openolat users with a vms authentication have an user
+		//on the vms server
+		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(null, null, false, null, null, authProviders, null, null, null, null, null);
+		for(Identity identity :identities) {
+			Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER);
+			String vmsUserId = authentication.getAuthusername();
+			
+			boolean foundIt = false;
+			for(Usertype user:users) {
+				if(vmsUserId.equals(Integer.toString(user.getId()))) {
+					foundIt = true;
+				}
+			}
+			
+			if(!foundIt) {
+				securityManager.deleteAuthentication(authentication);
+				authenticationDeleted++;
+			}
+		}
+		
+		CheckUserInfo infos = new CheckUserInfo();
+		infos.setAuthenticationCreated(authenticationCreated);
+		infos.setAuthenticationDeleted(authenticationDeleted);
+		return infos;
+	}
+	
+	private String getVmsUsernamePrefix() {
+		return "olat." + WebappHelper.getInstanceId() + ".";
+	}
+	
 	public boolean checkConnection() {
 		try {
 			return checkConnection(viteroModule.getVmsURI().toString(), viteroModule.getAdminLogin(), 
@@ -1192,6 +1308,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
 				case unsufficientRights: logError("Unsufficient rights", f); break;
+				default: logAxisError("Cannot check connection", f);
 			}
 			return false;
 		} catch (Exception e) {
