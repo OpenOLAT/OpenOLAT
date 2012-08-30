@@ -41,9 +41,24 @@ $r.render("backLink")
 	## simulate form view to match styling of fieldset above
 	<div class="b_form">
 		<div class="b_form_element_wrapper b_clearfix">
-			<div class="b_form_element_label"><label>$r.translate("cif.initialAuthor")</label></div>
-			<div class="b_form_element">$initialauthor</div>
+			<div class="b_form_element_label"><label>$r.translate("cif.owners")</label></div>
+			<div class="b_form_element">
+				<ul class="o_sel_repository_owners">
+					#foreach($authorlinkname in $authorlinknames)
+						<li>$r.render($authorlinkname)</li>
+					#end
+				</ul>
+			</div>
 		</div>
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.initialAuthor")</label></div>
+			<div class="b_form_element">
+				#if($r.available($initialauthorlinkename))
+					$r.render($initialauthorlinkename)
+				#end
+			</div>
+		</div>
+		
 		<div class="b_form_element_wrapper b_clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.type")</label></div>
 			<div class="b_form_element">$type</div>
@@ -57,6 +72,11 @@ $r.render("backLink")
 			<div class="b_form_element_label"><label>$r.translate("cif.ores_id")</label></div>
 			<div class="b_form_element">$ores_id</div>
 		</div>
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.softkey")</label></div>
+			<div class="b_form_element">$softkey</div>
+		</div>
+		
 		#end			
 		#if ($launchableTyp)		
 		<div class="b_form_element_wrapper b_clearfix">

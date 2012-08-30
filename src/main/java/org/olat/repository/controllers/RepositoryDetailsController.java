@@ -25,21 +25,27 @@
 
 package org.olat.repository.controllers;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.bookmark.AddAndEditBookmarkController;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.catalog.ui.CatalogAjaxAddController;
 import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.catalog.ui.RepoEntryCategoriesTableController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -99,6 +105,8 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.resource.references.ReferenceManager;
+import org.olat.user.UserManager;
+
 
 /**
  * Description: <br>
@@ -179,6 +187,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private CloseableModalController settingsCloseableModalController;
 	//fxdiff FXOLAT-128: back/resume function
 	public static final Event LAUNCHED_EVENT = new Event("lr-launched");
+	
+	private final BaseSecurity securityManager;
+	private final UserManager userManager;
 
 	/**
 	 * Controller displaying details of a given repository entry.
@@ -191,6 +202,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		super(ureq, wControl);
 		//sets velocity root and translator to RepositoryManager package 
 		setBasePackage(RepositoryManager.class);
+		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		if (log.isDebug()){
 			log.debug("Constructing ReposityMainController using velocity root " + velocity_root);
 		}
@@ -266,7 +279,32 @@ public class RepositoryDetailsController extends BasicController implements Gene
 
 		main.contextPut("id", repositoryEntry.getResourceableId());
 		main.contextPut("ores_id", repositoryEntry.getOlatResource().getResourceableId());
-		main.contextPut("initialauthor", repositoryEntry.getInitialAuthor());
+		main.contextPut("softkey", repositoryEntry.getSoftkey());
+		
+		//add the list of owners
+		List<IdentityShort> authors = securityManager.getIdentitiesShortOfSecurityGroups(Collections.singletonList(repositoryEntry.getOwnerGroup()), 0, -1);
+		List<String> authorLinkNames = new ArrayList<String>(authors.size());
+		int counter = 0;
+		for(IdentityShort author:authors) {
+			String authorName = userManager.getUserDisplayName(author);
+			Link authorLink = LinkFactory.createLink("author_" + counter++, main, this);
+			authorLink.setCustomDisplayText(authorName);
+			authorLink.setUserObject(author);
+			authorLinkNames.add(authorLink.getComponentName());
+		}
+		main.contextPut("authorlinknames", authorLinkNames);
+		
+		//add the initial author
+		String initialAuthorName = repositoryEntry.getInitialAuthor();
+		List<IdentityShort> initialAuthors = securityManager.findShortIdentitiesByName(Collections.singletonList(initialAuthorName));
+		if(!initialAuthors.isEmpty()) {
+			String authorName = userManager.getUserDisplayName(initialAuthors.get(0));
+			Link authorLink = LinkFactory.createLink("author_" + counter++, main, this);
+			authorLink.setCustomDisplayText(authorName);
+			authorLink.setUserObject(initialAuthors.get(0));
+			main.contextPut("initialauthorlinkename", authorLink.getComponentName());
+		}
+		
 		main.contextPut("userlang", I18nManager.getInstance().getLocaleKey(ureq.getLocale()));
 		main.contextPut("isGuestAllowed", (repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS ? Boolean.TRUE	: Boolean.FALSE));
 		main.contextPut("isGuest", Boolean.valueOf(ureq.getUserSession().getRoles().isGuestOnly()));
@@ -546,15 +584,22 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			} else if (cmd.equals(ACTION_LAUNCH)) { // launch resource
 
 			}
-		} else if (source == backLink){
-			doCloseDetailView(ureq);
-			return;
-		} else if (source == downloadButton){
-			doDownload(ureq, false);
-		} else if (source == launchButton){
-			doLaunch(ureq);
-		} else if (source == loginLink){
-			DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
+		} else if (source instanceof Link) {
+			Link sourceLink = (Link)source;
+			if (sourceLink == backLink){
+				doCloseDetailView(ureq);
+				return;
+			} else if (sourceLink == downloadButton){
+				doDownload(ureq, false);
+			} else if (sourceLink == launchButton){
+				doLaunch(ureq);
+			} else if (sourceLink == loginLink){
+				DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
+			} else if (sourceLink.getUserObject() instanceof IdentityShort) {
+				IdentityShort author = (IdentityShort)sourceLink.getUserObject();
+				String businessPath = "[Identity:" + author.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
 		}
 	}
 

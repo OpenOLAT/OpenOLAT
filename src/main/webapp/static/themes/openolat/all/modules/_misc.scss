@@ -141,7 +141,12 @@ img.o_portrait_dummy_female_small   {background-image: url(../openolat/images/du
 img.o_portrait_dummy_male_big       {background-image: url(../openolat/images/dummy_male_big.png); width: 100px; height: 100px;}
 img.o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); }
 
+/* Repository */
 
+ul.o_sel_repository_owners {
+	list-style: none; margin: 0; padding: 0; white-space: nowrap;
+	li { margin: 0; }			
+}
 
 /* Portlet admin. */
 div.fx_portal_admin { margin-top: 10px; }
