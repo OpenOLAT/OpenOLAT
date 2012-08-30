@@ -249,6 +249,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 				logError("Directory "+exportDir.getAbsolutePath()+" not found", new FileNotFoundException());
 			}
 			// collect all nodes
+			nodeList.clear();
 			collectNodesAsList((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), nodeList);
 			nodeListPos = 0;
 			boolean finished = processNodeList(ureq);
@@ -397,7 +398,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	 */
 	private boolean processNodeList(UserRequest ureq) {
 		while (nodeListPos < nodeList.size()) {
-			CourseEditorTreeNode nextNode = (CourseEditorTreeNode)nodeList.get(nodeListPos);
+			CourseEditorTreeNode nextNode = nodeList.get(nodeListPos);
 			nodeListPos++;
 			Controller ctrl = nextNode.getCourseNode().importNode(getExportDataDir(course), course, false, ureq, getWindowControl());
 			if (ctrl != null) {

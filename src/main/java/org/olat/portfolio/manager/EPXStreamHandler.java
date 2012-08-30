@@ -126,21 +126,18 @@ public class EPXStreamHandler {
 	
 	public static final InputStream toStream(PortfolioStructure structure)
 	throws IOException {
-		String xmlStructure = myStream.toXML(structure);
 		try {
 			//prepare a zip
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			ZipOutputStream zipOut = new ZipOutputStream(out);
 			zipOut.putNextEntry(new ZipEntry("map.xml"));
-			InputStream in = new ByteArrayInputStream(xmlStructure.getBytes("UTF8"));
-			IOUtils.copy(in, out);
+			myStream.toXML(structure, zipOut);
 			zipOut.closeEntry();
 			zipOut.close();
 			
 			//prepare media resource
 			byte[] outArray = out.toByteArray();
 			IOUtils.closeQuietly(out);
-			IOUtils.closeQuietly(in);
 			return new ByteArrayInputStream(outArray);
 		} catch (IOException e) {
 			log.error("Cannot export this map: " + structure, e);
