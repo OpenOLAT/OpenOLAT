@@ -853,7 +853,8 @@
 						<show>public</show>
 						<subpackages>
 							org.olat.restapi,org.olat.catalog.restapi,org.olat.modules.fo.restapi,
-							org.olat.notifications.restapi,org.olat.user.restapi,org.olat.course.nodes
+							org.olat.notifications.restapi,org.olat.user.restapi,org.olat.course.nodes,
+							org.olat.restapi.system
 					</subpackages>
 
 						<doclet>com.sun.jersey.wadl.resourcedoc.ResourceDoclet</doclet>

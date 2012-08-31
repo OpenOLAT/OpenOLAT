@@ -28,6 +28,7 @@ package org.olat.search.service;
 import java.util.Date;
 
 import org.olat.core.commons.services.search.SearchService;
+import org.olat.core.commons.services.search.SearchServiceStatus;
 import org.olat.search.service.indexer.FullIndexerStatus;
 import org.olat.search.service.indexer.Index;
 
@@ -36,7 +37,7 @@ import org.olat.search.service.indexer.Index;
  * 
  * @author Christian Guretzki
  */
-public class SearchServiceStatusImpl implements org.olat.core.commons.services.search.SearchServiceStatus {
+public class SearchServiceStatusImpl implements SearchServiceStatus {
 	
 	FullIndexerStatus fullIndexerStatus;
 	

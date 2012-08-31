@@ -73,6 +73,7 @@
 		<mapping-file>org/olat/core/logging/activity/LoggingObject.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
 		<properties>
+			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>
 			<property name="hibernate.ejb.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
 		</properties>

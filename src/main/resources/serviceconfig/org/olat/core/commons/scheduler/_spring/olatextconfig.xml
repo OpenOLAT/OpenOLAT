@@ -44,6 +44,7 @@ How to add a new job:
             <ref bean="updateQtiResultsTrigger${assessmentplugin.activate}" />
             <ref bean="invitationCleanupTrigger" />
             <ref bean="epDeadlineTrigger" />
+            <ref bean="systemSamplerTrigger"/>
             <ref bean="instantMessagingSyncTrigger"/>
             <ref bean="updateQtiResultsTriggerOnyx"/>
             <ref bean="countUserOnlineTrigger"/>

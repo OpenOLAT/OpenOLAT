@@ -36,41 +36,33 @@ import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.manager.BasicManager;
-import org.springframework.jmx.support.MBeanServerFactoryBean;
 
 /**
  * Description:<br>
- * TODO:
+ * Manage the JMX beans
  * 
  * <P>
  * Initial Date:  01.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class JMXManager extends BasicManager {
-	private static JMXManager INSTANCE;
-	private boolean initDone = true;
+
 	private MBeanServer mBeanServer;
-	
-	public static JMXManager getInstance() {
-		return INSTANCE;
-	}
 
 	/**
 	 * [spring]
 	 */
 	private JMXManager(MBeanServer mBeanServer) {
 		this.mBeanServer = mBeanServer;
-		INSTANCE = this;
 	}
 	
-	boolean isActive() {
-		return initDone;
+	public boolean isActive() {
+		return mBeanServer != null;
 	}
 	
-	void init() {
-		initDone = true;
+	public MBeanServer getMBeanServer() {
+		return mBeanServer;
 	}
 	
 	public List<String> dumpJmx(String objectName) {
@@ -92,9 +84,8 @@ public class JMXManager extends BasicManager {
 			}
 			return l;
 		} catch (Exception e) {
-			List l = new ArrayList();
+			List<String> l = new ArrayList<String>();
 			l.add("error while retrieving jmx values: "+e.getClass().getName()+":"+e.getMessage());
-			//TODO: this is just version 0.1 of dumping jmx values... need a better interface
 			return l;
 		} 	
 	}
@@ -102,8 +93,7 @@ public class JMXManager extends BasicManager {
 	public String dumpAll() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			MBeanServer server = (MBeanServer) CoreSpringFactory.getBean(MBeanServerFactoryBean.class);
-			Set<ObjectInstance> mbeansset = server.queryMBeans(null, null);
+			Set<ObjectInstance> mbeansset = mBeanServer.queryMBeans(null, null);
 			List<ObjectInstance> mbeans = new ArrayList<ObjectInstance>(mbeansset);
 			Collections.sort(mbeans, new Comparator<ObjectInstance>(){
 				public int compare(ObjectInstance o1, ObjectInstance o2) {
@@ -113,7 +103,7 @@ public class JMXManager extends BasicManager {
 			
 			for (ObjectInstance instance : mbeans) {
 				ObjectName on = instance.getObjectName();
-				MBeanAttributeInfo[] ainfo = server.getMBeanInfo(on).getAttributes();
+				MBeanAttributeInfo[] ainfo = mBeanServer.getMBeanInfo(on).getAttributes();
 				List<MBeanAttributeInfo> mbal = Arrays.asList(ainfo);
 				Collections.sort(mbal, new Comparator<MBeanAttributeInfo>(){
 					public int compare(MBeanAttributeInfo o1, MBeanAttributeInfo o2) {
@@ -125,7 +115,7 @@ public class JMXManager extends BasicManager {
 				for (MBeanAttributeInfo info : mbal) {
 					String name = info.getName();
 					try {
-						Object res = server.getAttribute(on, name);
+						Object res = mBeanServer.getAttribute(on, name);
 						sb.append("<br />"+oname+"-> "+name+"="+res);
 					} catch (Exception e) {
 						sb.append("<br />ERROR: for attribute '"+name+"', exception:"+e+", message:"+e.getMessage());
@@ -134,9 +124,8 @@ public class JMXManager extends BasicManager {
 			}
 			return sb.toString();
 		} catch (Exception e) {
+			logError("", e);
 			return "error:"+e.getMessage();
-		} 	
-		
+		}
 	}
-
 }

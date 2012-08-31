@@ -26,6 +26,7 @@ package org.olat.admin.jmx;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -36,7 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * Description:<br>
- * TODO:
+ * Dump the JMX context and show the output
  * 
  * <P>
  * Initial Date:  01.10.2007 <br>
@@ -44,8 +45,7 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class JMXInfoController extends BasicController {
 
-	private VelocityContainer mainVc;
-	//private Link dumpAllLink;
+	private final JMXManager jmxManager;
 
 	/**
 	 * @param ureq
@@ -54,38 +54,29 @@ public class JMXInfoController extends BasicController {
 	public JMXInfoController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		if (!JMXManager.getInstance().isActive()) {
+		jmxManager = CoreSpringFactory.getImpl(JMXManager.class);
+		if (!jmxManager.isActive()) {
 			showError("nojmx");
 			putInitialPanel(new Panel("empty"));
 			return;
 		}
 		
-		mainVc = createVelocityContainer("jmxmain");
-		//dumpAllLink = LinkFactory.createButton("dumpall", mainVc, this);
-		List<String> jmxres = JMXManager.getInstance().dumpJmx("org.olat.core.commons.modules.bc:name=FilesInfoMBean");
+		VelocityContainer mainVc = createVelocityContainer("jmxmain");
+		List<String> jmxres = jmxManager.dumpJmx("org.olat.core.commons.modules.bc:name=FilesInfoMBean");
 		mainVc.contextPut("jmxlist", jmxres);
-		String htmlRes = JMXManager.getInstance().dumpAll();
+		String htmlRes = jmxManager.dumpAll();
 		mainVc.contextPut("jmxdump", htmlRes);
 		
 		putInitialPanel(mainVc);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	@SuppressWarnings("unused")
-	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
 }
