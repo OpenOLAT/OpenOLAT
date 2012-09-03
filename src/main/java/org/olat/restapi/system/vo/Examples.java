@@ -119,7 +119,7 @@ public class Examples {
 		
 		SAMPLE_MONITORINGCONFIGVO.setDescription("this is an OpenOLAT instance");
 		SAMPLE_MONITORINGCONFIGVO.setType("openolat");
-		SAMPLE_MONITORINGCONFIGVO.setProbes(new String[]{"Environnment", "System", "Runtime", "Memory"});
+		SAMPLE_MONITORINGCONFIGVO.setProbes(new String[]{"Environment", "System", "Runtime", "Memory"});
 		
 		MonitoringDependencyVO dep1 = new MonitoringDependencyVO();
 		dep1.setType("openfire");

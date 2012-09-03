@@ -93,6 +93,7 @@ import org.junit.runners.Suite;
 	org.olat.course.assessment.AssessmentManagerTest.class,//ok
 	org.olat.course.config.CourseConfigManagerImplTest.class,//ok
 	org.olat.course.groupsandrights.CourseGroupManagementTest.class,//ok
+	org.olat.course.editor.PublishProcessTest.class,//ok
 	org.olat.modules.fo.ForumManagerTest.class,//fail
 	org.olat.modules.wiki.WikiUnitTest.class,//ok
 	org.olat.modules.wiki.versioning.diff.CookbookDiffTest.class,//ok

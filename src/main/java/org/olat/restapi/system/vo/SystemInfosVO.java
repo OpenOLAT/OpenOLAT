@@ -29,18 +29,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SystemInfosVO {
 	
 	private ReleaseInfosVO openolatRelease;
-	private EnvironmentInformationsVO environnment;
+	private EnvironmentInformationsVO environment;
 	
 	public SystemInfosVO() {
 		//make JAXB happy
 	}
 
-	public EnvironmentInformationsVO getEnvironnment() {
-		return environnment;
+	public EnvironmentInformationsVO getEnvironment() {
+		return environment;
 	}
 
-	public void setEnvironnment(EnvironmentInformationsVO environnment) {
-		this.environnment = environnment;
+	public void setEnvironment(EnvironmentInformationsVO environment) {
+		this.environment = environment;
 	}
 
 	public ReleaseInfosVO getOpenolatRelease() {

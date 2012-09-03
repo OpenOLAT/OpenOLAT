@@ -50,7 +50,7 @@ public class MonitoringModule extends AbstractOLATModule implements ConfigOnOff 
 	@Override
 	protected void initDefaultProperties() {
 		enabled = getBooleanConfigParameter(ENABLED, true);
-		monitoredProbes = getStringConfigParameter(MONITORED_PROBES, "Environnment,Release", false);
+		monitoredProbes = getStringConfigParameter(MONITORED_PROBES, "Environment,Release", false);
 		server = getStringConfigParameter(SERVER, "local", false);
 		description = getStringConfigParameter(DESCRIPTION, "Dummy description", false);
 	}

@@ -40,6 +40,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.ObjectCloner;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -79,6 +81,8 @@ import org.olat.user.UserManager;
  * @author patrickb
  */
 public class PublishProcess {
+	
+	private static final OLog log = Tracing.createLoggerFor(PublishProcess.class);
 	
 	private static final String PACKAGE = Util.getPackageName(PublishProcess.class);
 	private static Translator translator;
@@ -407,7 +411,7 @@ public class PublishProcess {
 					if (!(cn.getIdent().equals(oldCn.getIdent()))) { throw new AssertException("deleted cn.getIdent != oldCn.getIdent"); }
 				}
 				cetn.removeFromParent();
-				if (!cetn.isNewnode()) {
+				if (!cetn.isNewnode() && oldCn != null) {
 					// only clean up and archive of nodes which were already in run
 					// save data, remove references
 					deleteRefs(oldCn);
@@ -513,9 +517,9 @@ public class PublishProcess {
 	 */
 	private void deleteRefs(CourseNode courseNode) {
 		ReferenceManager refM = ReferenceManager.getInstance();
-		List courseRefs = refM.getReferences(course);
-		for (Iterator iter = courseRefs.iterator(); iter.hasNext();) {
-			ReferenceImpl ref = (ReferenceImpl) iter.next();
+		List<ReferenceImpl> courseRefs = refM.getReferences(course);
+		for (Iterator<ReferenceImpl> iter = courseRefs.iterator(); iter.hasNext();) {
+			ReferenceImpl ref = iter.next();
 			if (!ref.getUserdata().equals(courseNode.getIdent())) continue;
 			refM.delete(ref);
 			break;
@@ -677,7 +681,7 @@ public class PublishProcess {
 		private CourseEditorTreeNode root;
 		private Structure existingRun;
 		private List<String> publishNodeIds;
-		private List skippableNodes;
+		private List<CourseEditorTreeNode> skippableNodes;
 
 		private NodePublishVisitor(CourseEditorTreeNode root, List<String> userSelectedNodeIdsToPublish, Structure existingRun) {
 			/*
@@ -691,7 +695,7 @@ public class PublishProcess {
 			this.existingRun = existingRun;
 			this.publishNodeIds = userSelectedNodeIdsToPublish;
 			// internal use
-			this.skippableNodes = new ArrayList();
+			this.skippableNodes = new ArrayList<CourseEditorTreeNode>();
 		}
 
 		public void visit(INode node) {
@@ -746,22 +750,25 @@ public class PublishProcess {
 					// new node and its former parent is deleted.
 					addNodeTo(resultingCourseRun, cetn);
 					editorModelModifiedNodes.add(cetn);
-				} else if (cetn.isNewnode() && cetn.isDeleted()) {
+				} else if (cetn.isDeleted()) {
 					// publish deletion of a new node
 					editorModelDeletedNodes.add(cetn);
-					List getsAlsoDeleted = new ArrayList();
+					List<CourseEditorTreeNode> getsAlsoDeleted = new ArrayList<CourseEditorTreeNode>();
 					collectSubTreeNodesStartingFrom(cetn, getsAlsoDeleted);
 					// whole subtree added, marked as being deleted
 					editorModelDeletedNodes.addAll(getsAlsoDeleted);
-					return;
-				} else if (cetn.isNewnode() && !cetn.isDeleted()) {
+					if(!cetn.isNewnode()) {
+						log.warn("try to publish node [" + cetn.getTitle() + " " + cetn.getIdent() + "]which says it is not new (but deleted )but also not in the runstructure (OO-249 delete it).");
+					}
+				} else if (!cetn.isDeleted()) {
 					// publish new node
 					addNodeTo(resultingCourseRun, cetn);
 					editorModelInsertedNodes.add(cetn);
-					return;
+					if(!cetn.isNewnode()) {
+						log.warn("try to publish node [" + cetn.getTitle() + " " + cetn.getIdent() + "] which says it is not new but also not in the runstructure (OO-249 publish it).");
+					}
 				} else {
-					// ...!cetn.isNewnode() && cetn.isDeleted()
-					// this state is not possible
+					// this state is really not possible
 					throw new AssertException("try to publish node [" + cetn.getTitle() + " " + cetn.getIdent()
 							+ "]which says it is not new but also not in the runstructure.");
 				}
@@ -770,29 +777,34 @@ public class PublishProcess {
 					// publish modified node
 					addNodeTo(resultingCourseRun, cetn);
 					editorModelModifiedNodes.add(cetn);
-					return;
-				} else if (!cetn.isNewnode() && cetn.isDeleted()) {
+				} else if (cetn.isDeleted()) {
 					// publish deletion of a node
 					editorModelDeletedNodes.add(cetn);
-					List getsAlsoDeleted = new ArrayList();
+					List<CourseEditorTreeNode> getsAlsoDeleted = new ArrayList<CourseEditorTreeNode>();
 					collectSubTreeNodesStartingFrom(cetn, getsAlsoDeleted);
 					// whole subtree added, marked as being deleted
 					editorModelDeletedNodes.addAll(getsAlsoDeleted);
-					return;
+					if(cetn.isNewnode()) {
+						log.warn(cetn.getTitle() + " - try to publish node which says it is new and deleted but also exists in the runstructure (OO-249 delete it).");
+					}
 				} else if (cetn.isNewnode() && !cetn.isDeleted()) {
-					// this state is not possible
-					throw new AssertException(cetn.getTitle() + " - try to publish node which says it is new but also exists in the runstructure.");
+					// this state is not possible but appears somewhat
+					addNodeTo(resultingCourseRun, cetn);
+					editorModelModifiedNodes.add(cetn);
+					log.warn(cetn.getTitle() + " - try to publish node which says it is new but also exists in the runstructure (OO-249: publish the node).");
+				} else if (!cetn.isNewnode() && !cetn.isDeleted()) {
+					//not new, not deleted, not changed
+					log.warn(cetn.getTitle() + " - try to publish node which says it is not new, not deleted, not changed (OO-249: publish do nothing).");
 				} else {
-					// ...cetn.isNewnode() && cetn.isDeleted()
-					// this state is not possible
-					throw new AssertException(cetn.getTitle() + " - try to publish node which says it is new but also exists in the runstructure.");
+					log.error(cetn.getTitle() + " - try to publish node which is in an unkown state (OO-249: publish do nothing).");
 				}
 			} else {
 				// ...(!publishNode && !alreadyInRun){
 				// check condition, and add all subnodes to be skipped
 				if (!cetn.isNewnode()) { 
-					throw new AssertException(cetn.getTitle()+" - node is not to publish and not in run -> hence it should be isNewnode() == true, but it is not!!"); }
-				List skippable = new ArrayList();
+					log.warn(cetn.getTitle()+" - node is not to publish and not in run -> hence it should be isNewnode() == true, but it is not (OO-249: ignore it until explicitly published)!!");
+				}
+				List<CourseEditorTreeNode> skippable = new ArrayList<CourseEditorTreeNode>();
 				collectSubTreeNodesStartingFrom(cetn, skippable);
 				// remember this new node with its subtree as not being published
 				// there may float a dirty node in the subtree, which got there by
@@ -838,10 +850,11 @@ public class PublishProcess {
 		 * @param root
 		 * @param rootNodeWithSubtree
 		 */
-		private void collectSubTreeNodesStartingFrom(CourseEditorTreeNode root, List rootNodeWithSubtree) {
+		private void collectSubTreeNodesStartingFrom(CourseEditorTreeNode root, List<CourseEditorTreeNode> rootNodeWithSubtree) {
 			for (int i = 0; i < root.getChildCount(); i++) {
-				rootNodeWithSubtree.add(root.getChildAt(i));
-				collectSubTreeNodesStartingFrom((CourseEditorTreeNode) root.getChildAt(i), rootNodeWithSubtree);
+				CourseEditorTreeNode node = (CourseEditorTreeNode)root.getChildAt(i);
+				rootNodeWithSubtree.add(node);
+				collectSubTreeNodesStartingFrom(node, rootNodeWithSubtree);
 			}
 		}
 	}// end nested class
