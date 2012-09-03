@@ -33,6 +33,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.WebappHelper;
 import org.olat.restapi.system.vo.EnvironmentInformationsVO;
@@ -41,60 +42,23 @@ import org.olat.restapi.system.vo.ReleaseInfosVO;
 /**
  * 
  * <h3>Description:</h3>
- * FrentixSystemWebService
  * <p>
  * Initial Date:  18 jun. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
 @Path("system")
 public class SystemWebService {
-	
-	private static final MemoryWebService memoryWebService = new MemoryWebService();
-	private static final ThreadsWebService threadsWebService = new ThreadsWebService();
 
-	
 	public SystemWebService() {
 		//make Spring happy
 	}
-
-	@Path("runtime")
-	public RuntimeWebService getCompilationXml(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return null;
-		}
-		return new RuntimeWebService();
-	}
 	
-	@Path("database")
-	public DatabaseWebService getDatabaseWS(@Context HttpServletRequest request) {
+	@Path("log")
+	public LogWebService getLogsWS(@Context HttpServletRequest request) {
 		if(!isAdmin(request)) {
 			return null;
 		}
-		return new DatabaseWebService();
-	}
-	
-	@Path("openolat")
-	public OpenOLATStatisticsWebService getSessionsWS(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return null;
-		}
-		return new OpenOLATStatisticsWebService();
-	}
-	
-	@Path("memory")
-	public MemoryWebService getMemoryWS(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return null;
-		}
-		return memoryWebService;
-	}
-
-	@Path("threads")
-	public ThreadsWebService getThreadsWS(@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return null;
-		}
-		return threadsWebService;
+		return new LogWebService();
 	}
 	
 	/**
@@ -146,8 +110,16 @@ public class SystemWebService {
 		return Response.ok(version).build();
 	}
 	
-	public static void takeSample() {
-		memoryWebService.takeSample();
-		threadsWebService.takeSample();
+	@Path("monitoring")
+	public MonitoringWebService getImplementedProbes(@Context HttpServletRequest request) {
+		if(!isMonitoringEnabled() && !isAdmin(request)) {
+			return null;
+		}
+		return new MonitoringWebService();
+	}
+	
+	private boolean isMonitoringEnabled() {
+		MonitoringModule module = CoreSpringFactory.getImpl(MonitoringModule.class);
+		return module.isEnabled();
 	}
 }

@@ -17,26 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.restapi.system;
+package org.olat.restapi.system.vo;
 
-import org.quartz.JobExecutionContext;
-import org.springframework.scheduling.quartz.QuartzJobBean;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * 
- * <h3>Description:</h3>
- * This a quartz job which take a sample for the monitoring system
- * every 15 seconds.
- * 
- * <p>
- * <p>
- * Initial Date:  21 feb. 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SamplerJob extends QuartzJobBean {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "dependencyVO")
+public class MonitoringDependencyVO {
 
-	@Override
-	protected void executeInternal(JobExecutionContext context)  {
-		MonitoringWebService.takeSample();
+	@XmlAttribute(name="type", required=true)
+	private String type;
+	@XmlAttribute(name="url", required=true)
+	private String url;
+	
+	public MonitoringDependencyVO() {
+		//
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 }

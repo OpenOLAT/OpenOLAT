@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.restapi.log;
+package org.olat.restapi.system;
 
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
@@ -50,7 +50,6 @@ import org.olat.core.util.vfs.VFSLeaf;
  * Initial Date:  23.12.2011 <br>
  * @author strentini, sergio.trentini@frentix.com, www.frentix.com
  */
-@Path("system/log")
 public class LogWebService {
 
 	private static final String VERSION = "1.0";

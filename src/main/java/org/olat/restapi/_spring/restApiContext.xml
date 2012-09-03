@@ -86,11 +86,36 @@
 	
 	<!-- Using singletons would be good for the future and prevent using CoreSpringFactory -->
 	<!-- bean id="userWebService" class="org.olat.user.restapi.UserWebService"/ -->
+	<bean id="configFactory" class="org.olat.restapi.repository.course.config.CustomConfigFactory">
+		<constructor-arg index="0" ref="${assessmentplugin.activate}CustomConfigCreator" />
+	</bean>
 
-<bean id="configFactory" class="org.olat.restapi.repository.course.config.CustomConfigFactory">
-	<constructor-arg index="0" ref="${assessmentplugin.activate}CustomConfigCreator" />
-</bean>
+	<bean id="OlatCustomConfigCreator" class="org.olat.restapi.repository.course.config.OlatCustomConfigCreator" lazy-init="true"/>
 
-<bean id="OlatCustomConfigCreator" class="org.olat.restapi.repository.course.config.OlatCustomConfigCreator" lazy-init="true"/>
+	<!-- Definition of the providers -->
+	<bean id="monitoringModule" class="org.olat.restapi.system.MonitoringModule">
+		<property name="databaseHost" value="${db.host}" />
+		<property name="persistedProperties">
+	  		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
+	  			depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
+	    		<constructor-arg index="0" ref="coordinatorManager"/>
+	    		<constructor-arg index="1" ref="monitoringModule" />
+	  		</bean>
+		</property>
+	</bean>
+	
+	<!-- default configuration -->
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="monitoringModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				monitoring.enabled=${monitoring.enabled}
+				description=${monitoring.instance.description}
+				probes=${monitored.probes}
+				dependency.server=${monitoring.dependency.server}
+			</value>
+		</property>
+	</bean>
 
 </beans>

@@ -54,6 +54,16 @@ import org.olat.search.service.indexer.FullIndexerStatus;
  */
 public class OpenOLATStatisticsWebService {
 	
+	/**
+	 * Return the statistics about OpenOLAT, users count, courses count... 
+	 * @response.representation.200.qname {http://www.example.com}releaseVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The verison of the instance
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_STATSVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The statistics about OpenOLAT
+	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getStatistics() {
@@ -65,6 +75,16 @@ public class OpenOLATStatisticsWebService {
 		return Response.ok(stats).build();
 	}
 	
+	/**
+	 * Return the statistics about OpenOLAT users
+	 * @response.representation.200.qname {http://www.example.com}releaseVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The verison of the instance
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_USERSSTATSVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The statistics about OpenOLAT users
+	 */
 	@GET
 	@Path("users")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -73,6 +93,16 @@ public class OpenOLATStatisticsWebService {
 		return Response.ok(stats).build();
 	}
 	
+	/**
+	 * Return the statistics about the repository, courses count, published courses... 
+	 * @response.representation.200.qname {http://www.example.com}releaseVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The verison of the instance
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_REPOSTATSVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The statistics about the repository
+	 */
 	@GET
 	@Path("repository")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -81,6 +111,16 @@ public class OpenOLATStatisticsWebService {
 		return Response.ok(stats).build();
 	}
 	
+	/**
+	 * Return the statistics about the indexer
+	 * @response.representation.200.qname {http://www.example.com}releaseVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The verison of the instance
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_INDEXERSTATSVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The statistics about the indexer
+	 */
 	@GET
 	@Path("indexer")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -90,14 +130,14 @@ public class OpenOLATStatisticsWebService {
 	}
 
 	/**
-	 * Return some informations about session.
+	 * Return some statistics about session.
 	 * @response.representation.200.qname {http://www.example.com}sessionVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc A short summary about sessions
    * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_SESSIONVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
    * @param request The HTTP request
-	 * @return The informations about sessions
+	 * @return The statistics about sessions
 	 */
 	@GET
 	@Path("sessions")

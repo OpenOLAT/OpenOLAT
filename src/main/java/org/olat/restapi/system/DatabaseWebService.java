@@ -48,6 +48,17 @@ public class DatabaseWebService {
 	
 	private static final OLog log = Tracing.createLoggerFor(DatabaseWebService.class);
 	
+	/**
+	 * Return the statistics about database and hibernate
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}runtimeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The version of the instance
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_DATABASEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The informations about runtime, uptime, classes loaded, memory summary...
+	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getDatabaseStatistics() {

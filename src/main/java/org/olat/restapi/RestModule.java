@@ -43,6 +43,8 @@ public class RestModule implements GenericEventListener {
 	private Boolean defaultEnabled;
 	private PersistedProperties persistedProperties;
 	
+	private String monitoredProbes;
+	
 	public RestModule() {
 		//
 	}
@@ -99,5 +101,15 @@ public class RestModule implements GenericEventListener {
 			enabled = null;
 		}
 	}
+
+	public String getMonitoredProbes() {
+		return monitoredProbes;
+	}
+
+	public void setMonitoredProbes(String monitoredProbes) {
+		this.monitoredProbes = monitoredProbes;
+	}
+	
+	
 
 }

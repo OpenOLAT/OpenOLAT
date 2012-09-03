@@ -22,11 +22,14 @@ package org.olat.restapi.system;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.lang.management.ClassLoadingMXBean;
+import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -53,6 +56,18 @@ public class RuntimeWebService {
 		//make Spring happy
 	}
 
+	/**
+	 * Return the statistics about runtime: uptime, classes loaded, memory
+	 * summary, threads count...
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}runtimeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The version of the instance
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_RUNTIMEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The informations about runtime, uptime, classes loaded, memory summary...
+	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSystemSummaryVO(@Context HttpServletRequest request) {
@@ -74,6 +89,17 @@ public class RuntimeWebService {
 		return Response.ok(stats).build();
 	}
 	
+	/**
+	 * Return the statistics about memory
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}runtimeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The version of the instance
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_RUNTIME_MEMORYVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The informations about runtime, uptime, classes loaded, memory summary...
+	 */
 	@GET
 	@Path("memory")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -85,6 +111,17 @@ public class RuntimeWebService {
 		return Response.ok(stats).build();
 	}
 	
+	/**
+	 * Return the statistics about threads
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}runtimeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The version of the instance
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_RUNTIME_THREADSVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @param request The HTTP request
+	 * @return The informations about threads count
+	 */
 	@GET
 	@Path("threads")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -101,7 +138,7 @@ public class RuntimeWebService {
 	 * @response.representation.200.qname {http://www.example.com}classesVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc A short summary of the number of classes
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_CLASSESVO}
+   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_RUNTIME_CLASSESVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
    * @param request The HTTP request
 	 * @return The information about the classes
@@ -133,6 +170,27 @@ public class RuntimeWebService {
     stats.setUsedMemory((runtime.totalMemory() - runtime.freeMemory()) / mb);
     stats.setFreeMemory(runtime.freeMemory() / mb);
     stats.setTotalMemory(runtime.totalMemory() / mb);
+
+    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    stats.setInitHeap(memoryBean.getHeapMemoryUsage().getInit() / mb);
+    stats.setInitNonHeap(memoryBean.getNonHeapMemoryUsage().getInit() / mb);
+    stats.setUsedHeap(memoryBean.getHeapMemoryUsage().getUsed() / mb);
+    stats.setUsedNonHeap(memoryBean.getNonHeapMemoryUsage().getUsed() / mb);
+    stats.setCommittedHeap(memoryBean.getHeapMemoryUsage().getCommitted() / mb);
+    stats.setCommittedNonHeap(memoryBean.getNonHeapMemoryUsage().getCommitted() / mb);
+    stats.setMaxHeap(memoryBean.getHeapMemoryUsage().getMax() / mb);
+    stats.setMaxNonHeap(memoryBean.getNonHeapMemoryUsage().getMax() / mb);
+    
+    long collectionTime = 0l;
+    long collectionCount = 0l;
+    List<GarbageCollectorMXBean> gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
+    for(GarbageCollectorMXBean gcBean:gcBeans) {
+    	collectionCount += gcBean.getCollectionCount();
+    	collectionTime += gcBean.getCollectionTime();
+    }
+    stats.setGarbageCollectionCount(collectionCount);
+    stats.setGarbageCollectionTime(collectionTime);
+
 		return stats;
 	}
 	
@@ -144,8 +202,4 @@ public class RuntimeWebService {
 		stats.setUnloadedClassCount(bean.getUnloadedClassCount());
 		return stats;
 	}
-
-	
-	
-
 }

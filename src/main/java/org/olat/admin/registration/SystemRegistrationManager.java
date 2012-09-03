@@ -79,7 +79,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 
 	private static final String SCHEDULER_NAME = "system.registration";
 	private static final String TRIGGER = "system_registration_trigger";
-	private static final String PRODUCT = "openolat";
+	public static final String PRODUCT = "openolat";
 
 	private final SystemRegistrationModule registrationModule;
 	private final Scheduler scheduler;

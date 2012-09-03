@@ -42,6 +42,29 @@ public class MemoryStatisticsVO {
 	private long freeMemory;
 	@XmlAttribute(name="totalMemory", required=true)
 	private long totalMemory;
+
+	@XmlAttribute(name="initHeap", required=true)
+	private long initHeap;
+	@XmlAttribute(name="usedHeap", required=true)
+	private long usedHeap;
+	@XmlAttribute(name="committedHeap", required=true)
+	private long committedHeap;
+	@XmlAttribute(name="maxHeap", required=true)
+	private long maxHeap;
+	
+	@XmlAttribute(name="initNonHeap", required=true)
+	private long initNonHeap;
+	@XmlAttribute(name="usedNonHeap", required=true)
+	private long usedNonHeap;
+	@XmlAttribute(name="committedNonHeap", required=true)
+	private long committedNonHeap;
+	@XmlAttribute(name="maxNonHeap", required=true)
+	private long maxNonHeap;
+	
+	@XmlAttribute(name="garbageCollectionTime", required=true)
+	private long garbageCollectionTime;
+	@XmlAttribute(name="garbageCollectionCount", required=true)
+	private long garbageCollectionCount;
 	
 	
 	public MemoryStatisticsVO() {
@@ -71,5 +94,84 @@ public class MemoryStatisticsVO {
 	public void setTotalMemory(long totalMemory) {
 		this.totalMemory = totalMemory;
 	}
-	
+
+	public long getInitHeap() {
+		return initHeap;
+	}
+
+	public void setInitHeap(long initHeap) {
+		this.initHeap = initHeap;
+	}
+
+	public long getUsedHeap() {
+		return usedHeap;
+	}
+
+	public void setUsedHeap(long usedHeap) {
+		this.usedHeap = usedHeap;
+	}
+
+	public long getCommittedHeap() {
+		return committedHeap;
+	}
+
+	public void setCommittedHeap(long committedHeap) {
+		this.committedHeap = committedHeap;
+	}
+
+	public long getMaxHeap() {
+		return maxHeap;
+	}
+
+	public void setMaxHeap(long maxHeap) {
+		this.maxHeap = maxHeap;
+	}
+
+	public long getInitNonHeap() {
+		return initNonHeap;
+	}
+
+	public void setInitNonHeap(long initNonHeap) {
+		this.initNonHeap = initNonHeap;
+	}
+
+	public long getUsedNonHeap() {
+		return usedNonHeap;
+	}
+
+	public void setUsedNonHeap(long usedNonHeap) {
+		this.usedNonHeap = usedNonHeap;
+	}
+
+	public long getCommittedNonHeap() {
+		return committedNonHeap;
+	}
+
+	public void setCommittedNonHeap(long committedNonHeap) {
+		this.committedNonHeap = committedNonHeap;
+	}
+
+	public long getMaxNonHeap() {
+		return maxNonHeap;
+	}
+
+	public void setMaxNonHeap(long maxNonHeap) {
+		this.maxNonHeap = maxNonHeap;
+	}
+
+	public long getGarbageCollectionTime() {
+		return garbageCollectionTime;
+	}
+
+	public void setGarbageCollectionTime(long garbageCollectionTime) {
+		this.garbageCollectionTime = garbageCollectionTime;
+	}
+
+	public long getGarbageCollectionCount() {
+		return garbageCollectionCount;
+	}
+
+	public void setGarbageCollectionCount(long garbageCollectionCount) {
+		this.garbageCollectionCount = garbageCollectionCount;
+	}
 }
