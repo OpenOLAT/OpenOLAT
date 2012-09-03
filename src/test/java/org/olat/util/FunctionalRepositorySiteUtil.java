@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.util.FunctionalUtil.OlatSite;
+import org.olat.util.FunctionalUtil.WaitLimitAttribute;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -359,7 +360,7 @@ public class FunctionalRepositorySiteUtil {
 		.append(" * a");
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -373,7 +374,7 @@ public class FunctionalRepositorySiteUtil {
 	 */
 	public boolean openCourse(Selenium browser, long key){
 		browser.open(functionalUtil.getDeploymentUrl() + "url/RepositoryEntry/" + key);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -408,7 +409,7 @@ public class FunctionalRepositorySiteUtil {
 		.append("//a[@class='b_button']");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 
 		/* click course */
 		selectorBuffer = new StringBuffer();
@@ -419,7 +420,7 @@ public class FunctionalRepositorySiteUtil {
 		.append("//a");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -486,7 +487,7 @@ public class FunctionalRepositorySiteUtil {
 		.append("//a[@class='b_button']");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 
 		/* click course */
 		selectorBuffer = new StringBuffer();
@@ -499,7 +500,7 @@ public class FunctionalRepositorySiteUtil {
 		.append("//a");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}

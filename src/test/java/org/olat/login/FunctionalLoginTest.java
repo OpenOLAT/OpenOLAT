@@ -105,7 +105,7 @@ public class FunctionalLoginTest {
 		browser.type("id=o_fiooolat_login_name", "administrator");
 		browser.type("id=o_fiooolat_login_pass", "openolat");
 		browser.click("id=o_fiooolat_login_button");
-		browser.waitForPageToLoad("15000");
+		functionalUtil.waitForPageToLoad(browser);
 
 		//check if administrator appears in the footer
 		boolean loginAs = browser.isElementPresent("xpath=//div[@id='b_footer_user']//i[contains(text(), 'administrator')]");

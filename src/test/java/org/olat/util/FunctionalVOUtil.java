@@ -29,12 +29,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -43,13 +48,19 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.junit.Assert;
-import org.olat.restapi.CoursesTest;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 
 public class FunctionalVOUtil {
+
+	private final static OLog log = Tracing.createLoggerFor(FunctionalVOUtil.class);
+	
+	public final static String WAIT_LIMIT = "15000";
+	
 	public final static String ALL_ELEMENTS_COURSE_DISPLAYNAME = "All Elements Course";
 	public final static String ALL_ELEMENTS_COURSE_FILENAME = "All_Elements_Course.zip";
 
@@ -68,6 +79,9 @@ public class FunctionalVOUtil {
 	
 	private String allElementsCourseDisplayname;
 	private String allElementsCourseFilename;
+
+	private HttpClient client;
+	private String waitLimit;
 	
 	public FunctionalVOUtil(String username, String password){
 		setUsername(username);
@@ -75,6 +89,9 @@ public class FunctionalVOUtil {
 		
 		setAllElementsCourseDisplayname(ALL_ELEMENTS_COURSE_DISPLAYNAME);
 		setAllElementsCourseFilename(ALL_ELEMENTS_COURSE_FILENAME);
+		
+		client = new HttpClient();
+		waitLimit = WAIT_LIMIT;
 	}
 	
 	/**
@@ -134,14 +151,18 @@ public class FunctionalVOUtil {
 	
 	/**
 	 * @param deploymentUrl
-	 * @return
+	 * @param path
+	 * @param filename
+	 * @param resourcename
+	 * @param displayname
+	 * @return CourseVO
 	 * @throws URISyntaxException
 	 * @throws IOException
 	 * 
-	 * Imports the "All Elements Course" via REST.
+	 * Imports the specified course via REST.
 	 */
-	public CourseVO importAllElementsCourse(URL deploymentUrl) throws URISyntaxException, IOException{
-		URL cpUrl = FunctionalVOUtil.class.getResource("/org/olat/course/All_Elements_Course.zip");
+	public CourseVO importCourse(URL deploymentUrl, String path, String filename, String resourcename, String displayname) throws URISyntaxException, IOException{
+		URL cpUrl = FunctionalVOUtil.class.getResource(path);
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
@@ -152,9 +173,9 @@ public class FunctionalVOUtil {
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(cp));
-		entity.addPart("filename", new StringBody("All_Elements_Course.zip"));
-		entity.addPart("resourcename", new StringBody("All Elements Course"));
-		entity.addPart("displayname", new StringBody("All Elements Course"));
+		entity.addPart("filename", new StringBody(filename));
+		entity.addPart("resourcename", new StringBody(resourcename));
+		entity.addPart("displayname", new StringBody(displayname));
 		entity.addPart("access", new StringBody("3"));
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
 		entity.addPart("softkey", new StringBody(softKey));
@@ -167,10 +188,34 @@ public class FunctionalVOUtil {
 		assertNotNull(vo);
 		assertNotNull(vo.getRepoEntryKey());
 		assertNotNull(vo.getKey());
-
+		
 		return(vo);
 	}
+	
+	/**
+	 * @param deploymentUrl
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * 
+	 * Imports the "All Elements Course" via REST.
+	 */
+	public CourseVO importAllElementsCourse(URL deploymentUrl) throws URISyntaxException, IOException{
+		return(importCourse(deploymentUrl, "/org/olat/course/All_Elements_Course.zip", "All_Elements_Course.zip", "All Elements Course", "All Elements Course"));
+	}
 
+	/**
+	 * @param deploymentUrl
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * 
+	 * Imports the "Course including Forum" via REST.
+	 */
+	public CourseVO importCourseIncludingForum(URL deploymentUrl) throws URISyntaxException, IOException{
+		return(importCourse(deploymentUrl, "/org/olat/portfolio/Course_including_Forum.zip", "Course_including_Forum.zip", "Course including Forum", "Course including Forum"));
+	}
+	
 	/**
 	 * @param deploymentUrl
 	 * @return
@@ -281,5 +326,21 @@ public class FunctionalVOUtil {
 
 	public void setAllElementsCourseFilename(String allElementsCourseFilename) {
 		this.allElementsCourseFilename = allElementsCourseFilename;
+	}
+
+	public HttpClient getClient() {
+		return client;
+	}
+
+	public void setClient(HttpClient client) {
+		this.client = client;
+	}
+
+	public String getWaitLimit() {
+		return waitLimit;
+	}
+
+	public void setWaitLimit(String waitLimit) {
+		this.waitLimit = waitLimit;
 	}
 }

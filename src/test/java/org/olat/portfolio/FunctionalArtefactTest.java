@@ -33,7 +33,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
@@ -122,44 +121,58 @@ public class FunctionalArtefactTest {
 	@ArquillianResource
 	URL deploymentUrl;
 
-	FunctionalUtil functionalUtil;
-	FunctionalHomeSiteUtil functionalHomeSiteUtil;
-	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
-	FunctionalCourseUtil functionalCourseUtil;
-	FunctionalEPortfolioUtil functionalEportfolioUtil;
-	FunctionalVOUtil functionalVOUtil;
+	static FunctionalUtil functionalUtil;
+	static FunctionalHomeSiteUtil functionalHomeSiteUtil;
+	static FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	static FunctionalCourseUtil functionalCourseUtil;
+	static FunctionalEPortfolioUtil functionalEportfolioUtil;
+	static FunctionalVOUtil functionalVOUtil;
 	
-	UserVO user;
+	static UserVO user;
+	
+	static boolean initialized = false;
 	
 	@Before
 	public void setup() throws IOException, URISyntaxException{
-		functionalUtil = new FunctionalUtil();
-		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
+		if(!initialized){
+			functionalUtil = new FunctionalUtil();
+			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
+			functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
 
-		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
-		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
-		functionalEportfolioUtil = new FunctionalEPortfolioUtil(functionalUtil, functionalHomeSiteUtil);
-		
-		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		
-		/* create test user with REST */
-		List<UserVO> userVO = functionalVOUtil.createTestUsers(deploymentUrl, 1);
-		
-		user = userVO.get(0);
+			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+			functionalEportfolioUtil = new FunctionalEPortfolioUtil(functionalUtil, functionalHomeSiteUtil);
+
+			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
+
+			/* create test user with REST */
+			List<UserVO> userVO = functionalVOUtil.createTestUsers(deploymentUrl, 1);
+
+			user = userVO.get(0);
+			
+			initialized = true;
+		}
 	}
 	
 	@Test
 	@RunAsClient
 	public void checkCollectForumPost() throws IOException, URISyntaxException{
 		/* deploy course with REST */
-		CourseVO course = functionalVOUtil.importAllElementsCourse(deploymentUrl);
+		CourseVO course = functionalVOUtil.importCourseIncludingForum(deploymentUrl);
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 		
 		/* create binder, page or structure if necessary */
 		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE));
+
+		//FIXME:JK: really ugly
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		/* post message to forum */
 		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
@@ -182,6 +195,14 @@ public class FunctionalArtefactTest {
 		/* create binder, page or structure if necessary */
 		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE));
 		
+		//FIXME:JK: really ugly
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		/* create an article for the wiki */
 		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
 		

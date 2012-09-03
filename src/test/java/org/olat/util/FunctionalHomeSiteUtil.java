@@ -547,7 +547,7 @@ public class FunctionalHomeSiteUtil {
 			return(false);
 		}
 
-		if(!checkCurrentAction || !checkCurrentAction(browser, action, 15000)){
+		if(!checkCurrentAction || !checkCurrentAction(browser, action, Long.parseLong(functionalUtil.getWaitLimit()))){
 			StringBuffer selectorBuffer = new StringBuffer();
 
 			selectorBuffer.append("xpath=//ul//li[contains(@class, '")
@@ -562,11 +562,11 @@ public class FunctionalHomeSiteUtil {
 				.append("']//a");
 
 				browser.click(actionSelectorBuffer.toString());
-				browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+				functionalUtil.waitForPageToLoad(browser);
 			}
 
 			browser.click(selectorBuffer.toString());
-			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			functionalUtil.waitForPageToLoad(browser);
 			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		}
 
@@ -898,7 +898,7 @@ public class FunctionalHomeSiteUtil {
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 	}
 
@@ -930,7 +930,7 @@ public class FunctionalHomeSiteUtil {
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 	}
 
@@ -962,7 +962,7 @@ public class FunctionalHomeSiteUtil {
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 	}
 
@@ -994,7 +994,7 @@ public class FunctionalHomeSiteUtil {
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 
 		return(true);
@@ -1023,7 +1023,7 @@ public class FunctionalHomeSiteUtil {
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 
 		return(true);
@@ -1052,7 +1052,7 @@ public class FunctionalHomeSiteUtil {
 		selectorBuffer.append("button[@type='button']");
 
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 
 		return(true);
@@ -1097,7 +1097,7 @@ public class FunctionalHomeSiteUtil {
 
 		log.info("submitting changes");
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		//functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		return(true);

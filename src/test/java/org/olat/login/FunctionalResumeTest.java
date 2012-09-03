@@ -142,7 +142,7 @@ public class FunctionalResumeTest {
 		
 		/* Yes to resume last session */
 		browser.click("xpath=//form//button");
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* check if we are on open course tab */
 		Assert.assertTrue(browser.isElementPresent(courseXPath));

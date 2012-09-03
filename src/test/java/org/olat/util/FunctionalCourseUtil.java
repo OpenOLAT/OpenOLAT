@@ -19,6 +19,8 @@
  */
 package org.olat.util;
 
+import org.olat.util.FunctionalUtil.WaitLimitAttribute;
+
 import com.thoughtworks.selenium.Selenium;
 
 /**
@@ -153,7 +155,7 @@ public class FunctionalCourseUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		if(binder != null){
 			/* fill in wizard - title & description */
@@ -171,6 +173,8 @@ public class FunctionalCourseUtil {
 			
 			/* click finish */
 			functionalUtil.clickWizardFinish(browser);
+			
+			functionalUtil.waitForPageToLoad(browser);
 		}
 
 		return(true);
@@ -191,16 +195,17 @@ public class FunctionalCourseUtil {
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//ul//li//a[contains(@class, '")
+		selectorBuffer.append("xpath=(//ul//li//a[contains(@class, '")
 		.append(getForumIconCss())
-		.append("')][")
+		.append("')])[")
 		.append(nth + 1)
 		.append("]")
 		.append("");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -229,7 +234,7 @@ public class FunctionalCourseUtil {
 		.append("')]");
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in form - title */
 		selectorBuffer = new StringBuffer();
@@ -240,7 +245,7 @@ public class FunctionalCourseUtil {
 		
 		browser.type(selectorBuffer.toString(), title);
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+//		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in form - post */
 		functionalUtil.typeMCE(browser, message);
@@ -254,7 +259,7 @@ public class FunctionalCourseUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -268,7 +273,7 @@ public class FunctionalCourseUtil {
 	 */
 	public boolean openWiki(Selenium browser, long id){
 		browser.open(functionalUtil.getDeploymentUrl() + "url/RepositoryEntry/" + id);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -306,7 +311,7 @@ public class FunctionalCourseUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* edit content */
 		selectorBuffer = new StringBuffer();
@@ -317,7 +322,7 @@ public class FunctionalCourseUtil {
 		
 		browser.click(selectorBuffer.toString());
 
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		
 		/* fill in text area */
@@ -338,7 +343,7 @@ public class FunctionalCourseUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -352,7 +357,7 @@ public class FunctionalCourseUtil {
 	 */
 	public boolean openBlog(Selenium browser, long id){
 		browser.open(functionalUtil.getDeploymentUrl() + "url/RepositoryEntry/" + id);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}

@@ -250,7 +250,7 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -270,7 +270,7 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -299,7 +299,7 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		selectorBuffer = new StringBuffer();
 		
@@ -309,7 +309,7 @@ public class FunctionalEPortfolioUtil {
 
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 	
 		/* fill in dialog - title */
 		selectorBuffer = new StringBuffer();
@@ -333,7 +333,7 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -382,7 +382,7 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - title */
 		selectorBuffer = new StringBuffer();
@@ -434,7 +434,7 @@ public class FunctionalEPortfolioUtil {
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//div[contains(@class, '")
+		selectorBuffer.append("//div[contains(@class, '")
 		.append(getEPortfolioTableOfContentsCss())
 		.append("')]//ul//li");
 		
@@ -511,7 +511,7 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		selectorBuffer = new StringBuffer();
 		
@@ -521,9 +521,10 @@ public class FunctionalEPortfolioUtil {
 		.append(getStructIconCss())
 		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - title */
 		selectorBuffer = new StringBuffer();
@@ -532,8 +533,9 @@ public class FunctionalEPortfolioUtil {
 		.append(getEPortfolioMapCss())
 		.append("')]//form//input[@type='text']");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), title);
-		
+				
 		/* fill in wizard - description */
 		functionalUtil.typeMCE(browser, description);
 		
@@ -544,8 +546,10 @@ public class FunctionalEPortfolioUtil {
 		.append(getEPortfolioMapCss())
 		.append("')]//form//button[last()]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -565,7 +569,7 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -593,7 +597,7 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.clickWizardNext(browser);
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -618,20 +622,14 @@ public class FunctionalEPortfolioUtil {
 			functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 			
 			browser.focus(locatorBuffer.toString());
-//			for(char c: (tag + ",").toCharArray()){
-//				browser.focus(locatorBuffer.toString());
-//				browser.keyDown(locatorBuffer.toString(), String.valueOf(c));
-//				browser.focus(locatorBuffer.toString());
-//				browser.keyPress(locatorBuffer.toString(), String.valueOf(c));
-//				browser.focus(locatorBuffer.toString());
-//				browser.keyUp(locatorBuffer.toString(), String.valueOf(c));
-//			}
 			browser.type(locatorBuffer.toString(), tag);
+			
 			browser.focus(locatorBuffer.toString());
 			browser.fireEvent(locatorBuffer.toString(), "changed");
-			browser.keyDown(locatorBuffer.toString(), ","); //TODO:JK: "13" is really ugly way to press enter
-			browser.keyPress(locatorBuffer.toString(), ","); //TODO:JK: "13" is really ugly way to press enter
-			browser.keyUp(locatorBuffer.toString(), ","); //TODO:JK: "13" is really ugly way to press enter
+			
+			browser.keyDown(locatorBuffer.toString(), ",");
+			browser.keyPress(locatorBuffer.toString(), ",");
+			browser.keyUp(locatorBuffer.toString(), ",");
 			browser.fireEvent(locatorBuffer.toString(), "changed");
 			browser.fireEvent(locatorBuffer.toString(), "blur");
 			
@@ -668,7 +666,7 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open wizard */
 		openEditLink(browser);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -677,14 +675,14 @@ public class FunctionalEPortfolioUtil {
 		.append("')]");
 		
 		browser.click(locatorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - content */
 		functionalUtil.typeMCE(browser, content);
 		
 		functionalUtil.clickWizardNext(browser);
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - title & description */
 		fillInTitleAndDescription(browser, title, description);
@@ -701,6 +699,8 @@ public class FunctionalEPortfolioUtil {
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
+
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -730,7 +730,7 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open wizard */
 		openEditLink(browser);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -739,7 +739,7 @@ public class FunctionalEPortfolioUtil {
 		.append("')]");
 		
 		browser.click(locatorBuffer.toString());
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - file */
 		locatorBuffer = new StringBuffer();
@@ -756,11 +756,11 @@ public class FunctionalEPortfolioUtil {
 		/* IE may don't like the following script */
 		//browser.runScript("$(\"form ." + functionalUtil.getWizardCss() + " input[type='file']\").trigger(\"change\")");
 
-//		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+//		functionalUtil.waitForPageToLoad(browser);
 		
 		functionalUtil.clickWizardNext(browser);
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - title & description */
 		fillInTitleAndDescription(browser, title, description);
@@ -777,6 +777,8 @@ public class FunctionalEPortfolioUtil {
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
+		
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -805,7 +807,7 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open wizard */
 		openEditLink(browser);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -815,7 +817,7 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(locatorBuffer.toString());
 		
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - title & description */
 		fillInTitleAndDescription(browser, title, description);
@@ -832,6 +834,8 @@ public class FunctionalEPortfolioUtil {
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
+
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}

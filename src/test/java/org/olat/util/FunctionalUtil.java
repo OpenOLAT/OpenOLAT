@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 
+import org.apache.commons.httpclient.HttpClient;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalAdministrationSiteUtil.AdministrationSiteAction;
@@ -43,13 +44,34 @@ public class FunctionalUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalUtil.class);
 	
 	public final static String DEPLOYMENT_URL = "http://localhost:8080/olat";
-	public final static String WAIT_LIMIT = "15000";
+	public final static String WAIT_LIMIT = "5000";
 	
 	public final static String LOGIN_PAGE = "dmz";
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
 	
 	public final static String INFO_DIALOG = "o_interceptionPopup";
 
+	public enum WaitLimitAttribute {
+		NORMAL("0"),
+		EXTENDED("3000"),
+		SAVE("7000"),
+		VERY_SAVE("12000");
+		
+		private String extend;
+		
+		WaitLimitAttribute(String extend){
+			setExtend(extend);
+		}
+
+		public String getExtend() {
+			return extend;
+		}
+
+		public void setExtend(String extend) {
+			this.extend = extend;
+		}
+	}
+	
 	public enum OlatSite {
 		HOME,
 		GROUPS,
@@ -123,7 +145,6 @@ public class FunctionalUtil {
 	private FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	private FunctionalUserManagementSiteUtil functionalUserManagementSiteUtil;
 	private FunctionalAdministrationSiteUtil functionalAdministrationSiteUtil;
-	
 	
 	public FunctionalUtil(){
 		Properties properties = new Properties();
@@ -200,7 +221,17 @@ public class FunctionalUtil {
 		
 		/* open url and wait specified time */
 		browser.open(url);
-		browser.waitForPageToLoad(getWaitLimit());
+		waitForPageToLoad(browser);
+	}
+	
+	public void waitForPageToLoad(Selenium browser){
+		waitForPageToLoad(browser, WaitLimitAttribute.VERY_SAVE);
+	}
+	
+	public void waitForPageToLoad(Selenium browser, WaitLimitAttribute wait){
+		String waitLimit = Long.toString(Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend()));
+		
+		browser.waitForPageToLoad(waitLimit);
 	}
 
 	/**
@@ -208,13 +239,26 @@ public class FunctionalUtil {
 	 * @param locator
 	 * @return true on success otherwise false
 	 * 
-	 * Waits at most waitLimit amount of time for element to load
+	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
 	 * specified by locator.
 	 */
 	public boolean waitForPageToLoadElement(Selenium browser, String locator){
+		return(waitForPageToLoadElement(browser, locator, WaitLimitAttribute.VERY_SAVE));
+	}
+	
+	/**
+	 * @param browser
+	 * @param locator
+	 * @param wait
+	 * @return true on success otherwise false
+	 * 
+	 * Waits at most (waitLimit + wait) amount of time for element to load
+	 * specified by locator.
+	 */
+	public boolean waitForPageToLoadElement(Selenium browser, String locator, WaitLimitAttribute wait){
 		long startTime = Calendar.getInstance().getTimeInMillis();
 		long currentTime = startTime;
-		long waitLimit = Long.parseLong(getWaitLimit());
+		long waitLimit = Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend());
 
 		log.info("waiting for page to load element");
 		
@@ -399,7 +443,7 @@ public class FunctionalUtil {
 			return(false);
 		}
 		
-		if(checkCurrentSite(browser, site, 15000)){
+		if(checkCurrentSite(browser, site, Long.parseLong(getWaitLimit()))){
 			if(resetSite(browser, site)){
 				return(true);
 			}else{
@@ -417,8 +461,8 @@ public class FunctionalUtil {
 		.append(" a");
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(getWaitLimit());
-		waitForPageToLoadElement(browser, selectorBuffer.toString());
+		waitForPageToLoad(browser);
+		waitForPageToLoadElement(browser, selectorBuffer.toString(), WaitLimitAttribute.NORMAL);
 		
 		/* set it to it's initial state */
 		resetSite(browser, site);
@@ -447,7 +491,7 @@ public class FunctionalUtil {
 		browser.type("id=o_fiooolat_login_name", username);
 		browser.type("id=o_fiooolat_login_pass", password);
 	    browser.click("id=o_fiooolat_login_button");
-	    browser.waitForPageToLoad(getWaitLimit());
+	    waitForPageToLoad(browser);
 	    
 	    if(closeDialogs){
 	    	/* check if it's our first login */
@@ -456,7 +500,7 @@ public class FunctionalUtil {
 
 	    		/* click accept button */
 	    		browser.click("xpath=//div[contains(@class, 'b_window')]//button[last()]");
-	    		browser.waitForPageToLoad(getWaitLimit());
+	    		waitForPageToLoad(browser);
 	    	}
 
 	    	/* click away info dialogs eg. restore session */
@@ -465,7 +509,7 @@ public class FunctionalUtil {
 	    		/* click last button */
 	    	if(browser.isElementPresent("id="+ getInfoDialog())){
 	    		browser.click("xpath=//form//div//button[@type='button']/../../span/a[@class='b_button']");
-	    		browser.waitForPageToLoad(getWaitLimit());
+	    		waitForPageToLoad(browser);
 	    	}
 	    	//}
 	    }
@@ -488,7 +532,7 @@ public class FunctionalUtil {
 		.append(" a");
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(getWaitLimit());
+		waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -522,7 +566,7 @@ public class FunctionalUtil {
 			.append(" * a");
 			
 			browser.click(selectorBuffer.toString());
-			browser.waitForPageToLoad(getWaitLimit());
+			waitForPageToLoad(browser);
 		}
 		
 		return(true);

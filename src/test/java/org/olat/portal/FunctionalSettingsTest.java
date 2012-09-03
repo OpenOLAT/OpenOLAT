@@ -200,7 +200,7 @@ public class FunctionalSettingsTest {
 		for(i = 0; i < pages.size(); i++){
 			browser.click(keys[i]);
 			
-			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			functionalUtil.waitForPageToLoad(browser);
 			functionalUtil.waitForPageToLoadElement(browser, values[i]);
 		}
 		
@@ -214,7 +214,7 @@ public class FunctionalSettingsTest {
 		for(; i >= 0; i--){
 			browser.goBack();
 
-			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			functionalUtil.waitForPageToLoad(browser);
 			functionalUtil.waitForPageToLoadElement(browser, values[i]);
 			
 			Assert.assertTrue(browser.isElementPresent(values[i]));
@@ -345,7 +345,7 @@ public class FunctionalSettingsTest {
 		for(i = 0; i < pages.size(); i++){
 			browser.click(keys[i]);
 			
-			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			functionalUtil.waitForPageToLoad(browser);
 			functionalUtil.waitForPageToLoadElement(browser, values[i]);
 		}
 		
@@ -359,7 +359,7 @@ public class FunctionalSettingsTest {
 		for(; i >= 0; i--){
 			browser.goBack();
 
-			browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+			functionalUtil.waitForPageToLoad(browser);
 			functionalUtil.waitForPageToLoadElement(browser, values[i]);
 			
 			Assert.assertTrue(browser.isElementPresent(values[i]));
