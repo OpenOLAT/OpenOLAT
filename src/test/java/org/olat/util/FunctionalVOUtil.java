@@ -222,6 +222,18 @@ public class FunctionalVOUtil {
 	 * @throws URISyntaxException
 	 * @throws IOException
 	 * 
+	 * Imports the "Course including Blog" via REST.
+	 */
+	public CourseVO importCourseIncludingBlog(URL deploymentUrl) throws URISyntaxException, IOException{
+		return(importCourse(deploymentUrl, "/org/olat/portfolio/Course_including_Blog.zip", "Course_including_Blog.zip", "Course including Blog", "Course including Blog"));
+	}
+	
+	/**
+	 * @param deploymentUrl
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * 
 	 * imports a wiki via REST.
 	 */
 	public RepositoryEntryVO importWiki(URL deploymentUrl) throws URISyntaxException, IOException{

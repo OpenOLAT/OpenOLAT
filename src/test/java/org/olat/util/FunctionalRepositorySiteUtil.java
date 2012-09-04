@@ -126,6 +126,14 @@ public class FunctionalRepositorySiteUtil {
 		GLOSSARY;
 	}
 	
+	public enum AccessSettings {
+		ONLY_OWNERS,
+		OWNERS_AND_AUTHORS,
+		USERS,
+		USERS_AND_GUESTS,
+		MEMBERS_ONLY;
+	}
+	
 	public final static String TOOLBOX_CONTENT_CSS = "b_toolbox_content";
 	public final static String TOOLBOX_COURSE_CSS = "o_toolbox_course";
 	public final static String TOOLBOX_CONTENT_PACKAGE_CSS = "o_toolbox_content";
@@ -373,7 +381,7 @@ public class FunctionalRepositorySiteUtil {
 	 * Opens a course by using business path.
 	 */
 	public boolean openCourse(Selenium browser, long key){
-		browser.open(functionalUtil.getDeploymentUrl() + "url/RepositoryEntry/" + key);
+		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + key);
 		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
@@ -423,6 +431,30 @@ public class FunctionalRepositorySiteUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param key
+	 * @return
+	 * 
+	 * Opens the appropriate detailed view.
+	 */
+	public boolean openDetailedView(Selenium browser, Long key){
+		//TODO:JK: implement me
+		
+		return(false);
+	}
+	
+	/**
+	 * @param browser
+	 * @param settings
+	 * @return
+	 */
+	public boolean modifySettings(Selenium browser, AccessSettings settings){
+		//TODO:JK: implement me
+		
+		return(false);
 	}
 	
 	public String findCssClassOfCourseAlias(String descriptor){

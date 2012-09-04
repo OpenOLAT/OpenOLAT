@@ -40,6 +40,7 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
+import org.olat.util.FunctionalCourseUtil.AccessOption;
 import org.olat.util.FunctionalEPortfolioUtil;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
@@ -165,7 +166,7 @@ public class FunctionalArtefactTest {
 		
 		/* create binder, page or structure if necessary */
 		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE));
-
+		
 		//FIXME:JK: really ugly
 		try {
 			Thread.sleep(500);
@@ -194,7 +195,7 @@ public class FunctionalArtefactTest {
 		
 		/* create binder, page or structure if necessary */
 		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE));
-		
+
 		//FIXME:JK: really ugly
 		try {
 			Thread.sleep(500);
@@ -202,7 +203,7 @@ public class FunctionalArtefactTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
 		/* create an article for the wiki */
 		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
 		
@@ -215,18 +216,35 @@ public class FunctionalArtefactTest {
 	@Test
 	@RunAsClient
 	public void checkCollectBlogPost() throws URISyntaxException, IOException{
-		/* import blog via rest */
-		long repoKey = functionalRepositorySiteUtil.createBlog(browser, BLOG_TITLE, BLOG_DESCRIPTION);
+		/* deploy course with REST */
+		CourseVO course = functionalVOUtil.importCourseIncludingBlog(deploymentUrl);
+		
+//		long repoKey = functionalRepositorySiteUtil.createBlog(browser, BLOG_TITLE, BLOG_DESCRIPTION);
+		
+		/*  */
+//		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
+//		Assert.assertTrue(functionalCourseUtil.openBlog(browser, repoKey));
+//		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
+//		Assert.assertTrue(functionalCourseUtil.disableAccessOption(browser, AccessOption.BLOCKED_FOR_LEARNERS, 1)); //TODO:JK: don't use hard coded form index
+		
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
-		
 
 		/* create binder, page or structure if necessary */
 		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE));
 		
+		//FIXME:JK: really ugly
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		/* blog */
-		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, repoKey, BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
+		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, course.getRepoEntryKey(), 0,
+				BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
 		
 		/* add artefact */
 		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE,
@@ -270,5 +288,7 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalEportfolioUtil.createLearningJournal(browser, LEARNING_JOURNAL_BINDER, LEARNING_JOURNAL_PAGE, LEARNING_JOURNAL_STRUCTURE,
 				LEARNING_JOURNAL_TITLE, LEARNING_JOURNAL_DESCRIPTION,
 				LEARNING_JOURNAL_TAGS));
+		
+		System.out.println();
 	}
 }

@@ -34,6 +34,7 @@ public class FunctionalCourseUtil {
 	public final static String EPORTFOLIO_ADD_CSS = "b_eportfolio_add";
 	
 	public final static String FORUM_ICON_CSS = "o_fo_icon";
+	public final static String BLOG_ICON_CSS = "o_blog_icon";
 	
 	public final static String FORUM_TOOLBAR_CSS = "o_forum_toolbar";
 	public final static String FORUM_THREAD_NEW_CSS = "o_sel_forum_thread_new";
@@ -45,12 +46,73 @@ public class FunctionalCourseUtil {
 	public final static String WIKI_EDIT_FORM_WRAPPER_CSS = "o_wikimod_editform_wrapper";
 	
 	public final static String BLOG_CREATE_ENTRY_CSS = "o_sel_feed_item_new";
+	public final static String BLOG_FORM_CSS = "o_sel_blog_form";
+	
+	public enum CourseNodeTab {
+		TITLE_AND_DESCRIPTION,
+		VISIBILITY,
+		ACCESS,
+		CONTENT;
+	};
+	
+	public enum VisibilityOption {
+		BLOCKED_FOR_LEARNERS,
+		DEPENDING_ON_DATE,
+		DEPENDING_ON_GROUP,
+		DEPENDING_ON_ASSESSMENT,
+		APPLY_TO_OWNERS_AND_TUTORS(DEPENDING_ON_ASSESSMENT);
+		
+		private VisibilityOption requires;
+		
+		VisibilityOption(){
+			this(null);
+		}
+		
+		VisibilityOption(VisibilityOption requires){
+			setRequires(requires);
+		}
+
+		public VisibilityOption getRequires() {
+			return requires;
+		}
+
+		public void setRequires(VisibilityOption requires) {
+			this.requires = requires;
+		}
+	};
+	
+	public enum AccessOption {
+		BLOCKED_FOR_LEARNERS,
+		DEPENDING_ON_DATE,
+		DEPENDING_ON_GROUP,
+		DEPENDING_ON_ASSESSMENT,
+		APPLY_TO_OWNERS_AND_TUTORS(DEPENDING_ON_ASSESSMENT);
+		
+		private AccessOption requires;
+		
+		AccessOption(){
+			this(null);
+		}
+		
+		AccessOption(AccessOption requires){
+			setRequires(requires);
+		}
+
+		public AccessOption getRequires() {
+			return requires;
+		}
+
+		public void setRequires(AccessOption requires) {
+			this.requires = requires;
+		}
+	}
 	
 	private String courseRunCss;
 	
 	private String eportfolioAddCss;
 	
 	private String forumIconCss;
+	private String blogIconCss;
 	
 	private String forumToolbarCss;
 	private String forumThreadNewCss;
@@ -62,6 +124,7 @@ public class FunctionalCourseUtil {
 	private String wikiEditFormWrapperCss;
 	
 	private String blogCreateEntryCss;
+	private String blogFormCss;
 	
 	private FunctionalUtil functionalUtil;
 	private FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
@@ -75,6 +138,7 @@ public class FunctionalCourseUtil {
 		setEportfolioAddCss(EPORTFOLIO_ADD_CSS);
 		
 		setForumIconCss(FORUM_ICON_CSS);
+		setBlogIconCss(BLOG_ICON_CSS);
 		
 		setForumToolbarCss(FORUM_TOOLBAR_CSS);
 		setForumThreadNewCss(FORUM_THREAD_NEW_CSS);
@@ -86,6 +150,7 @@ public class FunctionalCourseUtil {
 		setWikiEditFormWrapperCss(WIKI_EDIT_FORM_WRAPPER_CSS);
 		
 		setBlogCreateEntryCss(BLOG_CREATE_ENTRY_CSS);
+		setBlogFormCss(BLOG_FORM_CSS);
 	}
 	
 	/**
@@ -139,6 +204,45 @@ public class FunctionalCourseUtil {
 	 * @param browser
 	 * @return true on success
 	 * 
+	 * Opens the course editor but the course must be open.
+	 */
+	public boolean openCourseEditor(Selenium browser){
+		//TODO:JK: implement me
+		return(false);
+	}
+	
+	/**
+	 * @param browser
+	 * @param option
+	 * @param nthForm
+	 * @return true on success
+	 * 
+	 * Disables the specified access option, the course editor should be open.
+	 */
+	public boolean disableAccessOption(Selenium browser, AccessOption option, int nthForm){
+		//TODO:JK: implement me
+		
+		return(false);
+	}
+	
+	/**
+	 * @param browser
+	 * @param option
+	 * @param nthForm
+	 * @return true on success
+	 * 
+	 * Enables the specified access option, the course editor should be open.
+	 */
+	public boolean enableAccessOption(Selenium browser, AccessOption option, int nthForm){
+		//TODO:JK: implement me
+		
+		return(false);
+	}
+	
+	/**
+	 * @param browser
+	 * @return true on success
+	 * 
 	 * Adds an artefact to eportfolio by clicking the appropriate
 	 * button.
 	 */
@@ -173,8 +277,7 @@ public class FunctionalCourseUtil {
 			
 			/* click finish */
 			functionalUtil.clickWizardFinish(browser);
-			
-			functionalUtil.waitForPageToLoad(browser);
+			functionalUtil.waitForPageToUnloadElement(browser, selector);
 		}
 
 		return(true);
@@ -272,7 +375,7 @@ public class FunctionalCourseUtil {
 	 * Opens the wiki specified by id.
 	 */
 	public boolean openWiki(Selenium browser, long id){
-		browser.open(functionalUtil.getDeploymentUrl() + "url/RepositoryEntry/" + id);
+		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + id);
 		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
@@ -356,7 +459,36 @@ public class FunctionalCourseUtil {
 	 * Opens the blog specified by id.
 	 */
 	public boolean openBlog(Selenium browser, long id){
-		browser.open(functionalUtil.getDeploymentUrl() + "url/RepositoryEntry/" + id);
+		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + id);
+		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param courseId
+	 * @param nth
+	 * @return
+	 * 
+	 * Opens the course with courseId and nth blog within the specified
+	 * course.
+	 */
+	public boolean openBlogWithoutBusinessPath(Selenium browser, long courseId, int nth){
+		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
+			return(false);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=(//ul//li//a[contains(@class, '")
+		.append(getBlogIconCss())
+		.append("')])[")
+		.append(nth + 1)
+		.append("]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
 		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
@@ -372,8 +504,9 @@ public class FunctionalCourseUtil {
 	 * 
 	 * Create a new blog entry.
 	 */
-	public boolean createBlogEntry(Selenium browser, long blogId, String title, String description, String content){
-		if(!openBlog(browser, blogId))
+	public boolean createBlogEntry(Selenium browser, long courseId, int nth,
+			String title, String description, String content){
+		if(!openBlogWithoutBusinessPath(browser, courseId, nth))
 			return(false);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -387,40 +520,31 @@ public class FunctionalCourseUtil {
 		/* fill in form - title */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//form//div[contains(@class, '")
-		.append(functionalUtil.getWizardCss())
-		.append("')]//input[@type='text' and position = 1]");
+		selectorBuffer.append("xpath=(//form//div[contains(@class, '")
+		.append(getBlogFormCss())
+		.append("')]//input[@type='text'])[1]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		browser.type(selectorBuffer.toString(), title);
 		
 		/* fill in form - description */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//form//div[contains(@class, '")
-		.append(functionalUtil.getWizardCss())
-		.append("')]//textarea[0]");
-		
-		browser.type(selectorBuffer.toString(), description);
+		functionalUtil.typeMCE(browser, getBlogFormCss(), description);
 		
 		/* fill in form - content */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//form//div[contains(@class, '")
-		.append(functionalUtil.getWizardCss())
-		.append("')]//textarea[1]");
-		
-		browser.type(selectorBuffer.toString(), content);
+		functionalUtil.typeMCE(browser, getBlogFormCss(), content);
 		
 		/* save form */
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form//div[contains(@class, '")
-		.append(functionalUtil.getWizardCss())
+		.append(getBlogFormCss())
 		.append("')]//button[last()]");
 		
 		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToLoad(browser);
 		
-		return(false);
+		return(true);
 	}
 	
 	public FunctionalUtil getFunctionalUtil() {
@@ -462,6 +586,14 @@ public class FunctionalCourseUtil {
 
 	public void setForumIconCss(String forumIconCss) {
 		this.forumIconCss = forumIconCss;
+	}
+
+	public String getBlogIconCss() {
+		return blogIconCss;
+	}
+
+	public void setBlogIconCss(String blogIconCss) {
+		this.blogIconCss = blogIconCss;
 	}
 
 	public String getForumToolbarCss() {
@@ -526,6 +658,14 @@ public class FunctionalCourseUtil {
 
 	public void setBlogCreateEntryCss(String blogCreateEntryCss) {
 		this.blogCreateEntryCss = blogCreateEntryCss;
+	}
+
+	public String getBlogFormCss() {
+		return blogFormCss;
+	}
+
+	public void setBlogFormCss(String blogFormCss) {
+		this.blogFormCss = blogFormCss;
 	}
 	
 }

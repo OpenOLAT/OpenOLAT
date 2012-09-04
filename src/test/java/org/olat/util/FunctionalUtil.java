@@ -43,7 +43,8 @@ import com.thoughtworks.selenium.Selenium;
 public class FunctionalUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalUtil.class);
 	
-	public final static String DEPLOYMENT_URL = "http://localhost:8080/olat";
+	public final static String DEPLOYMENT_URL = "http://localhost:8080/openolat";
+	public final static String DEPLOYMENT_PATH = "/openolat";
 	public final static String WAIT_LIMIT = "5000";
 	
 	public final static String LOGIN_PAGE = "dmz";
@@ -109,6 +110,7 @@ public class FunctionalUtil {
 	private String password;
 	
 	private String deploymentUrl;
+	private String deploymentPath;
 	private String waitLimit;
 	
 	private String loginPage;
@@ -165,6 +167,7 @@ public class FunctionalUtil {
 		}
 		
 		deploymentUrl = DEPLOYMENT_URL;
+		deploymentPath = DEPLOYMENT_PATH;
 		waitLimit = WAIT_LIMIT;
 		
 		loginPage = LOGIN_PAGE;
@@ -264,6 +267,57 @@ public class FunctionalUtil {
 		
 		do{
 			if(browser.isElementPresent(locator)){
+				log.info("found element after " + (currentTime - startTime) + "ms");
+				
+				return(true);
+			}
+			
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			
+			currentTime = Calendar.getInstance().getTimeInMillis();
+		}while(waitLimit >  currentTime - startTime);
+		
+		log.warn("giving up after " + waitLimit + "ms");
+		
+		return(false);
+	}
+	
+	
+	/**
+	 * @param browser
+	 * @param locator
+	 * @return true on success otherwise false
+	 * 
+	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
+	 * specified by locator.
+	 */
+	public boolean waitForPageToUnloadElement(Selenium browser, String locator){
+		return(waitForPageToUnloadElement(browser, locator, WaitLimitAttribute.VERY_SAVE));
+	}
+	
+	/**
+	 * @param browser
+	 * @param locator
+	 * @param wait
+	 * @return true on success otherwise false
+	 * 
+	 * Waits at most (waitLimit + wait) amount of time for element to load
+	 * specified by locator.
+	 */
+	public boolean waitForPageToUnloadElement(Selenium browser, String locator, WaitLimitAttribute wait){
+		long startTime = Calendar.getInstance().getTimeInMillis();
+		long currentTime = startTime;
+		long waitLimit = Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend());
+
+		log.info("waiting for page to unload element");
+		
+		do{
+			if(!browser.isElementPresent(locator)){
 				log.info("found element after " + (currentTime - startTime) + "ms");
 				
 				return(true);
@@ -735,6 +789,25 @@ public class FunctionalUtil {
 		return(true);
 	}
 	
+	public boolean typeMCE(Selenium browser, String cssClass, String content){
+		if(content == null)
+			return(true);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("dom=document.getElementsByClassName('")
+		.append(cssClass)
+		.append("')[0].getElementsByClassName('")
+		.append("mceIframeContainer")
+		.append("')[0].getElementsByTagName('iframe')[0].contentDocument.body");
+		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.type(selectorBuffer.toString(), content);
+		
+		return(true);
+	}
+	
 	/**
 	 * @param browser
 	 * @param entryCss
@@ -814,6 +887,9 @@ public class FunctionalUtil {
 		.append(getWizardFinishCss())
 		.append("')]");
 		
+		waitForPageToLoadElement(browser, locatorBuffer.toString());
+		
+		browser.focus(locatorBuffer.toString());
 		browser.click(locatorBuffer.toString());
 		
 		return(true);
@@ -841,6 +917,14 @@ public class FunctionalUtil {
 
 	public void setDeploymentUrl(String deploymentUrl) {
 		this.deploymentUrl = deploymentUrl;
+	}
+
+	public String getDeploymentPath() {
+		return deploymentPath;
+	}
+
+	public void setDeploymentPath(String deploymentPath) {
+		this.deploymentPath = deploymentPath;
 	}
 
 	public String getWaitLimit() {
