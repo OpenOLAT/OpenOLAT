@@ -1040,16 +1040,40 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#findIdentityByName(java.lang.String)
 	 */
+	@Override
 	public Identity findIdentityByName(String identityName) {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
-		List identities = DBFactory.getInstance().find(
-				"select ident from org.olat.basesecurity.IdentityImpl as ident where ident.name = ?", new Object[] { identityName },
-				new Type[] { StandardBasicTypes.STRING });
-		int size = identities.size();
-		if (size == 0) return null;
-		if (size != 1) throw new AssertException("non unique name in identites: " + identityName);
-		Identity identity = (Identity) identities.get(0);
-		return identity;
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where ident.name=:username");
+		
+		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("username", identityName)
+				.getResultList();
+		
+		if(identities.isEmpty()) {
+			return null;
+		}
+		return identities.get(0);
+	}
+	
+	@Override
+	public Identity findIdentityByUser(User user) {
+		if (user == null) return null;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where ident.user.key=:userKey");
+		
+		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("userKey", user.getKey())
+				.getResultList();
+		
+		if(identities.isEmpty()) {
+			return null;
+		}
+		return identities.get(0);
 	}
 
 	@Override
@@ -1587,16 +1611,18 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		DBFactory.getInstance().updateObject(identity);
 	}
 
-	
+	@Override
 	public List<SecurityGroup> getSecurityGroupsForIdentity(Identity identity) {
-		DB db = DBFactory.getInstance();
-	  List<SecurityGroup> secGroups = db.find(
-				"select sgi from"
-				+ " org.olat.basesecurity.SecurityGroupImpl as sgi," 
-				+ " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi "
-				+ " where sgmsi.securityGroup = sgi and sgmsi.identity = ?",
-				new Object[] { identity.getKey() },
-				new Type[] { StandardBasicTypes.LONG });
+		StringBuilder sb = new StringBuilder();
+		sb.append("select sgi from ").append(SecurityGroupImpl.class.getName()).append(" as sgi, ")
+		  .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		  .append(" where sgmsi.securityGroup=sgi and sgmsi.identity.key=:identityKey");
+
+	  List<SecurityGroup> secGroups = DBFactory.getInstance().getCurrentEntityManager()
+	  		.createQuery(sb.toString(), SecurityGroup.class)
+	  		.setParameter("identityKey", identity.getKey())
+	  		.getResultList();
+
   	return secGroups;
 	}
 	

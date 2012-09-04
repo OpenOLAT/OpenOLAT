@@ -32,9 +32,9 @@ import java.util.Iterator;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityManager;
 import org.olat.core.logging.LogFileParser;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
@@ -73,7 +73,7 @@ public class ErrorFeedbackMailer implements Dispatcher {
 		String errorNr = request.getParameter("fx_errnum");
 		String username = request.getParameter("username");
 		try {
-			IdentityManager im = (IdentityManager) CoreSpringFactory.getBean("core.id.IdentityManager");
+			BaseSecurity im = CoreSpringFactory.getImpl(BaseSecurity.class);
 			Identity ident = im.findIdentityByName(username);
 			// if null, user may crashed befor getting a valid session, try with
 			// guest user instead

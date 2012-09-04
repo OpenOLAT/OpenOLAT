@@ -82,17 +82,7 @@
 		<constructor-arg index="0" ref="resourceManager" />
 		<constructor-arg index="1" ref="propertyManager" />
 	</bean> 
-  
-    <!--
-		*****************************************
-		*** Define the Identity Manager       ***
-		*****************************************
-	-->
-	<bean id="core.id.IdentityManager" class="org.olat.basesecurity.IdentityManagerImpl"  >
-		<constructor-arg type="org.olat.basesecurity.BaseSecurity" ref="baseSecurityManager"/>
-	</bean>  
 
-   
     <!--
 		*****************************************
 		*** IMS Content Packaging  Manager    ***

@@ -29,13 +29,14 @@ package org.olat.basesecurity;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
@@ -48,7 +49,7 @@ import org.olat.test.OlatTestCase;
  */
 public class IdentityTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(IdentityTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(IdentityTest.class);
 	// variables for test fixture
 	private static boolean isInitialized = false;
 	private static Identity ident1, ident2;
@@ -78,7 +79,6 @@ public class IdentityTest extends OlatTestCase {
 
 	@Test
 	public void testEquals() {
-
 		assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(new Integer(1)));
 		assertFalse("Wrong equals implementation, different users are recognized as equals ",ident1.equals(ident2));
 		assertFalse("Wrong equals implementation, null value is recognized as equals ",ident1.equals(null));
@@ -87,6 +87,7 @@ public class IdentityTest extends OlatTestCase {
 		Identity ident1_2 = ma.findIdentityByName(identityTest1Name);
 		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1_2));
 	}
+	
 	@Test
 	public void testHashCode() {
 		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",ident1.hashCode() == ident1.hashCode());

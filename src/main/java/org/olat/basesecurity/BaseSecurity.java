@@ -157,6 +157,13 @@ public interface BaseSecurity {
 	public Identity findIdentityByName(String identityName);
 	
 	/**
+	 * Find an identity by its user
+	 * @param user
+	 * @return The identity or null if not found
+	 */
+	public Identity findIdentityByUser(User user);
+	
+	/**
 	 * Find identities by names. This is an exact match.
 	 * <p>
 	 * Be aware that this method does <b>not</b> check the identities status!
