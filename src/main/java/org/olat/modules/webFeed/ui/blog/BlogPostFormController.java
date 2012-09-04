@@ -174,8 +174,9 @@ public class BlogPostFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.setFormTitle("feed.edit.item");
-		this.setFormContextHelp(this.getClass().getPackage().getName(), "post_form_help.html", "chelp.hover.form");
+		setFormTitle("feed.edit.item");
+		setFormContextHelp(this.getClass().getPackage().getName(), "post_form_help.html", "chelp.hover.form");
+		formLayout.setElementCssClass("o_sel_blog_form");
 
 		title = uifactory.addTextElement("title", "feed.title.label", 256, post.getTitle(), this.flc);
 		title.setMandatory(true);

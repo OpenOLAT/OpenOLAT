@@ -454,9 +454,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			if (isOwner) {
 				if (isNewController) {
 					if(isAuthor) {
-						detailsToolC.addLink(ACTION_EDIT, translate("details.openeditor"), TOOL_EDIT, null);
-						detailsToolC.addLink(ACTION_EDITDESC, translate("details.chdesc"), TOOL_CHDESC, null);
-						detailsToolC.addLink(ACTION_EDITPROP, translate("details.chprop"), TOOL_CHPROP, null);
+						detailsToolC.addLink(ACTION_EDIT, translate("details.openeditor"), TOOL_EDIT, null, "o_sel_repo_open_editor", false);
+						detailsToolC.addLink(ACTION_EDITDESC, translate("details.chdesc"), TOOL_CHDESC, null, "o_sel_repo_edit_descritpion", false);
+						detailsToolC.addLink(ACTION_EDITPROP, translate("details.chprop"), TOOL_CHPROP, null, "o_sel_repor_edit_properties", false);
 					}
 					detailsToolC.addLink(ACTION_ADD_CATALOG, translate("details.catadd"), TOOL_CATALOG, null);
 					

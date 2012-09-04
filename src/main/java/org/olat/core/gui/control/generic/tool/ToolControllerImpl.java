@@ -49,10 +49,10 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ToolControllerImpl.class);
 
-	private List entries;
-	private List myLinks;
+	private List<ToolEntry> entries;
+	private List<Link> myLinks;
 	private VelocityContainer content;
-	private boolean dragEnabled;
+
 	/**
 	 * to enumerate the names of the components so the caller has never to care
 	 * about possible name clashed if adding multiple components
@@ -64,8 +64,8 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 	 */
 	ToolControllerImpl(WindowControl wControl) {
 		super(wControl);
-		entries = new ArrayList();
-		myLinks = new ArrayList();
+		entries = new ArrayList<ToolEntry>();
+		myLinks = new ArrayList<Link>();
 		// init content; we do not need a translator here (null argument below)
 		content = new VelocityContainer("toolcontent", VELOCITY_ROOT + "/index.html", null, this);
 		content.contextPut("entries", entries);
@@ -106,6 +106,10 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 	}
 
 	public void addLink(String action, String text, String ident, String cssClass, boolean markAsDownloadLink) {
+		addLink(action, text, ident, cssClass, null, markAsDownloadLink);
+	}
+	
+	public void addLink(String action, String text, String ident, String cssClass, String elementCssClass, boolean markAsDownloadLink) {
 		String linkCmpName = ident;
 		if(ident==null){
 			//TODO:pb remove quickfix -> recorder is also removed
@@ -117,6 +121,7 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 			if(markAsDownloadLink){
 				LinkFactory.markDownloadLink(linkCmp);
 			}
+			linkCmp.setElementCssClass(elementCssClass);
 			myLinks.add(linkCmp);
 			addComponent(linkCmp, ident);
 		}
@@ -125,11 +130,12 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 			if(markAsDownloadLink){
 				LinkFactory.markDownloadLink(linkCmp);
 			}
+			linkCmp.setElementCssClass(elementCssClass);
 			myLinks.add(linkCmp);
 			addComponent(linkCmp, ident);
 		}
 		else {
-		   entries.add(new ToolEntry(ident, action, text, cssClass));
+		   entries.add(new ToolEntry(ident, action, text, cssClass, elementCssClass, null, null, false));
 		}
 	}
 	
@@ -141,12 +147,14 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 	public void addLink(String action, String text, String ident, String cssClass) {
 		addLink(action, text, ident, cssClass, false);
 	}
+	
+	
 
 	/** 
 	 * @see org.olat.core.gui.control.generic.tool.ToolController#addPopUpLink(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	public void addPopUpLink(String action, String text, String ident, String cssClass, String width, String height, boolean browserMenubarEnabled) {
-		entries.add(new ToolEntry(ident, action, text, cssClass, width, height,  browserMenubarEnabled));
+	public void addPopUpLink(String action, String text, String ident, String cssClass,  String width, String height, boolean browserMenubarEnabled) {
+		entries.add(new ToolEntry(ident, action, text, cssClass, null, width, height, browserMenubarEnabled));
 	}
 
 	/**
@@ -244,7 +252,6 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 	 * @see org.olat.core.gui.control.generic.tool.ToolController#setDragEnabled(boolean)
 	 */
 	public void setDragEnabled(boolean dragEnabled) {
-		this.dragEnabled = dragEnabled;
 		content.contextPut("offerdrag", Boolean.valueOf(dragEnabled));
 	}
 
