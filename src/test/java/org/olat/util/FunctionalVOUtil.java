@@ -192,6 +192,10 @@ public class FunctionalVOUtil {
 		return(vo);
 	}
 	
+	public CourseVO importEmptyCourse(URL deploymentUrl) throws URISyntaxException, IOException{
+		return(importCourse(deploymentUrl, "/org/olat/course/Empty_Course.zip", "Empty_Course.zip", "Empty Course", "Empty Course"));
+	}
+	
 	/**
 	 * @param deploymentUrl
 	 * @return

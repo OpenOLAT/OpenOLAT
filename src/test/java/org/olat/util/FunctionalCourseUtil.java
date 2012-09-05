@@ -19,6 +19,7 @@
  */
 package org.olat.util;
 
+import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.FunctionalUtil.WaitLimitAttribute;
 
 import com.thoughtworks.selenium.Selenium;
@@ -30,6 +31,17 @@ import com.thoughtworks.selenium.Selenium;
  */
 public class FunctionalCourseUtil {
 	public final static String COURSE_RUN_CSS = "o_course_run";
+	public final static String COURSE_OPEN_EDITOR_CSS = "o_sel_course_open_editor";
+	
+	public final static String COURSE_EDITOR_PUBLISH_CSS = "b_toolbox_publish";
+	public final static String COURSE_EDITOR_PUBLISH_WIZARD_SELECT_ALL_CSS = null; //FIXME:JK: needs a css class
+	public final static String COURSE_EDITOR_PUBLISH_WIZARD_ACCESS_ID = "o_fioaccessBox_SELBOX";
+	public final static String COURSE_EDITOR_PUBLISH_WIZARD_CATALOG_ID = "o_fiocatalogBox_SELBOX";
+	public final static String ADD_TO_CATALOG_YES_VALUE = "yes";
+	public final static String ADD_TO_CATALOG_NO_VALUE = "no";
+	
+	public final static String COURSE_EDITOR_INSERT_CONTENT_CSS = "b_toolbox_content";
+	public final static String CREATE_COURSE_NODE_TARGET_POSITION_ITEM_CSS = "b_selectiontree_item";
 	
 	public final static String EPORTFOLIO_ADD_CSS = "b_eportfolio_add";
 	
@@ -47,6 +59,9 @@ public class FunctionalCourseUtil {
 	
 	public final static String BLOG_CREATE_ENTRY_CSS = "o_sel_feed_item_new";
 	public final static String BLOG_FORM_CSS = "o_sel_blog_form";
+	
+	public final static String TEST_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_test_choose_repofile";
+	public final static String TEST_CREATE_RESOURCE_CSS = "o_sel_repo_popup_create_resource";
 	
 	public enum CourseNodeTab {
 		TITLE_AND_DESCRIPTION,
@@ -107,7 +122,65 @@ public class FunctionalCourseUtil {
 		}
 	}
 	
+	public enum CourseNodeAlias {
+		IQ_TEST("o_iqtest_icon"),
+		IQ_SELFTEST("o_iqself_icon"),
+		IQ_QUESTIONAIRE("o_iqsurv_icon");
+		
+		private String iconCss;
+		
+		CourseNodeAlias(String iconCss){
+			setIconCss(iconCss);
+		}
+
+		public String getIconCss() {
+			return iconCss;
+		}
+
+		public void setIconCss(String iconCss) {
+			this.iconCss = iconCss;
+		}
+	}
+	
+	public enum AccessSettings {
+		OWNERS("1"),
+		OWNERS_AND_AUTHORS("2"),
+		ALL_REGISTERED_USERS("3"),
+		REGISTERED_USERS_AND_GUESTS("4"),
+		MEMBERS_ONLY("membersonly");
+		
+		private String accessValue;
+		
+		AccessSettings(String accessValue){
+			setAccessValue(accessValue);
+		}
+
+		public String getAccessValue() {
+			return accessValue;
+		}
+
+		public void setAccessValue(String accessValue) {
+			this.accessValue = accessValue;
+		}
+	}
+	
+	public enum CourseEditorIQTestTab {
+		TITLE_AND_DESCRIPTION,
+		VISIBILITY,
+		ACCESS,
+		TEST_CONFIGURATION;
+	}
+	
 	private String courseRunCss;
+	private String courseOpenEditorCss;
+	
+	private String courseEditorPublishCss;
+	private String courseEditorPublishWizardSelectAllCss;
+	private String courseEditorPublishWizardAccessId;
+	private String courseEditorPublishWizardCatalogId;
+	
+	private String courseEditorInsertContentCss;
+	private String createCourseNodeTargetPositionItemCss;
 	
 	private String eportfolioAddCss;
 	
@@ -126,6 +199,9 @@ public class FunctionalCourseUtil {
 	private String blogCreateEntryCss;
 	private String blogFormCss;
 	
+	private String testChooseRepositoryFileCss;
+	private String testCreateResourceCss;
+	
 	private FunctionalUtil functionalUtil;
 	private FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	
@@ -134,6 +210,15 @@ public class FunctionalCourseUtil {
 		this.functionalRepositorySiteUtil = functionalRepositorySiteUtil;
 		
 		setCourseRunCss(COURSE_RUN_CSS);
+		setCourseOpenEditorCss(COURSE_OPEN_EDITOR_CSS);
+		
+		setCourseEditorPublishCss(COURSE_EDITOR_PUBLISH_CSS);
+		setCourseEditorPublishWizardSelectAllCss(COURSE_EDITOR_PUBLISH_WIZARD_SELECT_ALL_CSS);
+		setCourseEditorPublishWizardAccessId(COURSE_EDITOR_PUBLISH_WIZARD_ACCESS_ID);
+		setCourseEditorPublishWizardCatalogId(COURSE_EDITOR_PUBLISH_WIZARD_CATALOG_ID);
+		
+		setCourseEditorInsertContentCss(COURSE_EDITOR_INSERT_CONTENT_CSS);
+		setCreateCourseNodeTargetPositionItemCss(CREATE_COURSE_NODE_TARGET_POSITION_ITEM_CSS);
 		
 		setEportfolioAddCss(EPORTFOLIO_ADD_CSS);
 		
@@ -151,6 +236,9 @@ public class FunctionalCourseUtil {
 		
 		setBlogCreateEntryCss(BLOG_CREATE_ENTRY_CSS);
 		setBlogFormCss(BLOG_FORM_CSS);
+		
+		setTestChooseRepositoryFileCss(TEST_CHOOSE_REPOSITORY_FILE_CSS);
+		setTestCreateResourceCss(TEST_CREATE_RESOURCE_CSS);
 	}
 	
 	/**
@@ -204,11 +292,20 @@ public class FunctionalCourseUtil {
 	 * @param browser
 	 * @return true on success
 	 * 
-	 * Opens the course editor but the course must be open.
+	 * Opens the course editor but the course must be opened.
 	 */
 	public boolean openCourseEditor(Selenium browser){
-		//TODO:JK: implement me
-		return(false);
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getCourseOpenEditorCss())
+		.append("')]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
 	}
 	
 	/**
@@ -235,6 +332,128 @@ public class FunctionalCourseUtil {
 	 */
 	public boolean enableAccessOption(Selenium browser, AccessOption option, int nthForm){
 		//TODO:JK: implement me
+		
+		return(false);
+	}
+	
+	private String[] createCatalogSelectors(String path){
+		//TODO:JK: implement me
+		
+		return(null);
+	}
+	
+	public boolean publishEntireCourse(Selenium browser, AccessSettings access, String catalog){
+		/* click publish */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getCourseEditorPublishCss());
+		
+		browser.click(selectorBuffer.toString());
+		
+		/* select all course nodes */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getCourseEditorPublishWizardSelectAllCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.clickWizardNext(browser);
+		
+		/* access options */
+		functionalUtil.waitForPageToLoadElement(browser, "id=" + getCourseEditorPublishWizardAccessId());
+		
+		if(access != null){
+			functionalUtil.selectOption(browser, getCourseEditorPublishWizardAccessId(), access.getAccessValue());
+		}
+		
+		functionalUtil.clickWizardNext(browser);
+		
+		/* add to catalog or not */
+		functionalUtil.waitForPageToLoadElement(browser, "id=" + getCourseEditorPublishWizardCatalogId());
+		
+		if(catalog != null){
+			functionalUtil.selectOption(browser, getCourseEditorPublishWizardCatalogId(), ADD_TO_CATALOG_YES_VALUE);
+			
+			String[] catalogSelectors = createCatalogSelectors(catalog);
+			
+			for(String catalogSelector: catalogSelectors){
+				functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
+				browser.click(catalogSelector);
+			}
+		}else{
+			functionalUtil.selectOption(browser, getCourseEditorPublishWizardCatalogId(), ADD_TO_CATALOG_NO_VALUE);
+		}
+		
+		functionalUtil.clickWizardFinish(browser);
+		
+		return(false);
+	}
+
+	/**
+	 * @param browser
+	 * @param node
+	 * @param title
+	 * @param description
+	 * @param position
+	 * @return true on success otherwise false
+	 * 
+	 * Creates the specified course node in a opened course editor.
+	 */
+	public boolean createCourseNode(Selenium browser, CourseNodeAlias node, String shortTitle, String longTitle, String description, int position){
+		/* click on the appropriate link to create node */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getCourseEditorInsertContentCss())
+		.append("')]")
+		.append("//a[contains(@class, '")
+		.append(node.getIconCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* choose insertion point */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//form//div[contains(@class, '")
+		.append(getCreateCourseNodeTargetPositionItemCss())
+		.append("')]//a)[")
+		.append(position + 2)
+		.append("]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//button[0]");
+		browser.click(selectorBuffer.toString());
+		
+		/* fill in short title */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//form//input[@type='text'])[1]");
+		
+		browser.type(selectorBuffer.toString(), shortTitle);
+		
+		/* fill in long title */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//form//input[@type='text'])[2]");
+		
+		browser.type(selectorBuffer.toString(), longTitle);
+		
+		/* fill in description */
+		functionalUtil.typeMCE(browser, description);
+		
+		/* click save */
+		selectorBuffer.append("xpath=//form//button[0]");
+		browser.click(selectorBuffer.toString());
 		
 		return(false);
 	}
@@ -547,6 +766,72 @@ public class FunctionalCourseUtil {
 		return(true);
 	}
 	
+	/**
+	 * @param browser
+	 * @param tab
+	 * @return true on success
+	 * 
+	 * Opens the test configurations appropriate tab.
+	 */
+	public boolean openCourseEditorIQTestTab(Selenium browser, CourseEditorIQTestTab tab){
+		return(functionalUtil.openContentTab(browser, tab.ordinal()));
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return true on success
+	 * 
+	 * Creates a new test.
+	 */
+	public boolean createQTITest(Selenium browser, String title, String description){
+		if(!openCourseEditorIQTestTab(browser, CourseEditorIQTestTab.TEST_CONFIGURATION))
+			return(false);
+		
+		/* click on "choose, create or import file" button */
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//a[contains(@class '")
+		.append(getTestChooseRepositoryFileCss())
+		.append("']");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* click create button */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getTestCreateResourceCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
+		
+		/* fill in title */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//input[@type='text']");
+		
+		browser.type(selectorBuffer.toString(), title);
+		
+		/* fill in description */
+		functionalUtil.typeMCE(browser, description);
+		
+		/* click save */
+		selectorBuffer.append("xpath=");
+		
+		browser.click(selectorBuffer.toString());
+		
+		/* click next */
+		functionalUtil.clickWizardNext(browser);
+		
+		return(false);
+	}
+	
 	public FunctionalUtil getFunctionalUtil() {
 		return functionalUtil;
 	}
@@ -570,6 +855,66 @@ public class FunctionalCourseUtil {
 
 	public void setCourseRunCss(String courseRunCss) {
 		this.courseRunCss = courseRunCss;
+	}
+
+	public String getCourseOpenEditorCss() {
+		return courseOpenEditorCss;
+	}
+
+	public void setCourseOpenEditorCss(String courseOpenEditorCss) {
+		this.courseOpenEditorCss = courseOpenEditorCss;
+	}
+
+	public String getCourseEditorPublishCss() {
+		return courseEditorPublishCss;
+	}
+
+	public void setCourseEditorPublishCss(String courseEditorPublishCss) {
+		this.courseEditorPublishCss = courseEditorPublishCss;
+	}
+
+	public String getCourseEditorPublishWizardSelectAllCss() {
+		return courseEditorPublishWizardSelectAllCss;
+	}
+
+	public void setCourseEditorPublishWizardSelectAllCss(
+			String courseEditorPublishWizardSelectAllCss) {
+		this.courseEditorPublishWizardSelectAllCss = courseEditorPublishWizardSelectAllCss;
+	}
+
+	public String getCourseEditorPublishWizardAccessId() {
+		return courseEditorPublishWizardAccessId;
+	}
+
+	public void setCourseEditorPublishWizardAccessId(
+			String courseEditorPublishWizardAccessId) {
+		this.courseEditorPublishWizardAccessId = courseEditorPublishWizardAccessId;
+	}
+
+	public String getCourseEditorPublishWizardCatalogId() {
+		return courseEditorPublishWizardCatalogId;
+	}
+
+	public void setCourseEditorPublishWizardCatalogId(
+			String courseEditorPublishWizardCatalogId) {
+		this.courseEditorPublishWizardCatalogId = courseEditorPublishWizardCatalogId;
+	}
+
+	public String getCourseEditorInsertContentCss() {
+		return courseEditorInsertContentCss;
+	}
+
+	public void setCourseEditorInsertContentCss(String courseEditorInsertContentCss) {
+		this.courseEditorInsertContentCss = courseEditorInsertContentCss;
+	}
+
+	public String getCreateCourseNodeTargetPositionItemCss() {
+		return createCourseNodeTargetPositionItemCss;
+	}
+
+	public void setCreateCourseNodeTargetPositionItemCss(
+			String createCourseNodeTargetPositionItemCss) {
+		this.createCourseNodeTargetPositionItemCss = createCourseNodeTargetPositionItemCss;
 	}
 
 	public String getEportfolioAddCss() {
@@ -666,6 +1011,22 @@ public class FunctionalCourseUtil {
 
 	public void setBlogFormCss(String blogFormCss) {
 		this.blogFormCss = blogFormCss;
+	}
+
+	public String getTestChooseRepositoryFileCss() {
+		return testChooseRepositoryFileCss;
+	}
+
+	public void setTestChooseRepositoryFileCss(String testChooseRepositoryFileCss) {
+		this.testChooseRepositoryFileCss = testChooseRepositoryFileCss;
+	}
+
+	public String getTestCreateResourceCss() {
+		return testCreateResourceCss;
+	}
+
+	public void setTestCreateResourceCss(String testCreateResourceCss) {
+		this.testCreateResourceCss = testCreateResourceCss;
 	}
 	
 }

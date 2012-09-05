@@ -74,10 +74,6 @@ public class FunctionalRepositorySiteUtil {
 	public final static String QUESTIONAIRE_ALIAS = "iqsurv";
 	public final static String RESOURCE_FOLDER_ALIAS = "bc";
 	public final static String GLOSSARY_ALIAS = "glossary";
-	
-	public enum CourseNode {
-		
-	}
 
 	public final static String TITLE_OF_LEARNING_RESOURCE_CSS = "o_sel_repo_search_displayname";
 	public final static String AUTHOR_CSS = "o_sel_repo_search_author";

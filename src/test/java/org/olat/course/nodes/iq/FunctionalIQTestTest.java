@@ -34,9 +34,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.restapi.support.vo.CourseVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
+import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
@@ -51,6 +53,11 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @RunWith(Arquillian.class)
 public class FunctionalIQTestTest {
+	
+	public final static String IQ_TEST_SHORT_TITLE = "";
+	public final static String IQ_TEST_LONG_TITLE = "";
+	public final static String IQ_TEST_DESCRIPTION = "";
+	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();
@@ -62,38 +69,44 @@ public class FunctionalIQTestTest {
 	@ArquillianResource
 	URL deploymentUrl;
 
-	FunctionalUtil functionalUtil;
-	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
-	FunctionalCourseUtil functionalCourseUtil;
-	FunctionalVOUtil functionalVOUtil;
+	static FunctionalUtil functionalUtil;
+	static FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	static FunctionalCourseUtil functionalCourseUtil;
+	static FunctionalVOUtil functionalVOUtil;
 
-	UserVO user;
+	static boolean initialized = false;
 	
 	@Before
 	public void setup() throws IOException, URISyntaxException{
-		functionalUtil = new FunctionalUtil();
-		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-		
-		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
-		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
-		
-		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		
-		/* create test user with REST */
-		List<UserVO> userVO = functionalVOUtil.createTestUsers(deploymentUrl, 1);
-		
-		user = userVO.get(0);
+		if(!initialized){
+			functionalUtil = new FunctionalUtil();
+			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
+
+			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+
+			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
+
+			initialized = true;
+		}
 	}
 	
 	@Test
 	@RunAsClient
-	public void checkCreate(){
+	public void checkCreate() throws URISyntaxException, IOException{
+		CourseVO course = functionalVOUtil.importEmptyCourse(deploymentUrl);
+		
 		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
+		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
 		
-		/* open repository site */
-		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
+		/*  */
+		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
 		
-		//TODO:JK: implement me
+		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.IQ_TEST, IQ_TEST_SHORT_TITLE, IQ_TEST_LONG_TITLE, IQ_TEST_DESCRIPTION, 0));
+		Assert.assertTrue(functionalCourseUtil.createQTITest(browser, IQ_TEST_SHORT_TITLE, IQ_TEST_DESCRIPTION));
+		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
+		
+		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 	}
 }
