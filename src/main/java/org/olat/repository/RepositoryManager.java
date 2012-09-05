@@ -81,8 +81,9 @@ import org.olat.repository.async.SetLastUsageBackgroundTask;
 import org.olat.repository.async.SetPropertiesBackgroundTask;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntryMember;
 import org.olat.repository.model.RepositoryEntryMembership;
-import org.olat.repository.model.RepositoryEntryStrictMembership;
+import org.olat.repository.model.RepositoryEntryStrictMember;
 import org.olat.repository.model.RepositoryEntryStrictParticipant;
 import org.olat.repository.model.RepositoryEntryStrictTutor;
 import org.olat.resource.OLATResource;
@@ -1124,7 +1125,7 @@ public class RepositoryManager extends BasicManager {
 			sb.append(" or (")
 				.append("   v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
 				.append("   and v.key in (")
-		    .append("     select vmember.key from ").append(RepositoryEntryStrictMembership.class.getName()).append(" vmember")
+		    .append("     select vmember.key from ").append(RepositoryEntryStrictMember.class.getName()).append(" vmember")
 			  .append("     where (vmember.repoParticipantKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.repoOwnerKey=:identityKey")
 			  .append("         or vmember.groupParticipantKey=:identityKey or vmember.groupOwnerKey=:identityKey)")
 				.append(" ))");
@@ -1139,7 +1140,7 @@ public class RepositoryManager extends BasicManager {
 		  .append(" or (")
 		  .append("   v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
 		  .append("   and v.key in (")
-		  .append("     select vmember.key from ").append(RepositoryEntryStrictMembership.class.getName()).append(" vmember")
+		  .append("     select vmember.key from ").append(RepositoryEntryStrictMember.class.getName()).append(" vmember")
 			.append("     where (vmember.repoParticipantKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.repoOwnerKey=:identityKey")
 			.append("       or vmember.groupParticipantKey=:identityKey or vmember.groupOwnerKey=:identityKey)")
 		  .append(" )))");
@@ -1151,7 +1152,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
 			.append(" where v.key=:repositoryEntryKey and v.key in (")
-			.append("   select vmember.key from ").append(RepositoryEntryMembership.class.getName()).append(" vmember")
+			.append("   select vmember.key from ").append(RepositoryEntryMember.class.getName()).append(" vmember")
 			.append("   where vmember.key=:repositoryEntryKey and ")
 			.append("     (vmember.repoParticipantKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.repoOwnerKey=:identityKey")
 			.append("     or vmember.groupParticipantKey=:identityKey or vmember.groupOwnerKey=:identityKey)")
@@ -1658,6 +1659,56 @@ public class RepositoryManager extends BasicManager {
 		}
 		List<RepositoryEntry> entries = query.getResultList();
 		return entries;
+	}
+	
+	/**
+	 * Need a repository entry or identites to return a list.
+	 * @param re
+	 * @param identity
+	 * @return
+	 */
+	public List<RepositoryEntryMembership> getRepositoryEntryMembership(RepositoryEntry re, Identity... identity) {
+		if(re == null && (identity == null || identity.length == 0)) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("select distinct membership from ").append(RepositoryEntryMembership.class.getName()).append(" membership ");
+		boolean and = false;
+		if(re != null) {
+			and = and(sb, and);
+			sb.append("(ownerRepoKey=:repoKey or tutorRepoKey=:repoKey or participantRepoKey=:repoKey)");
+		}
+		if(identity != null && identity.length > 0) {
+			and = and(sb, and);
+			sb.append("membership.identityKey=:identityKeys");
+		}
+
+		TypedQuery<RepositoryEntryMembership> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryMembership.class);
+		if(re != null) {
+			query.setParameter("repoKey", re.getKey());
+		}
+		if(identity != null && identity.length > 0) {
+			List<Long> ids = new ArrayList<Long>(identity.length);
+			for(Identity id:identity) {
+				ids.add(id.getKey());
+			}
+			query.setParameter("identityKeys", ids);
+		}
+
+		List<RepositoryEntryMembership> entries = query.getResultList();
+		return entries;
+	}
+	
+	private final boolean and(StringBuilder sb, boolean and) {
+		if(and) sb.append(" and ");
+		else sb.append(" where ");
+		return true;
+	}
+	
+	private final boolean or(StringBuilder sb, boolean or) {
+		if(or) sb.append(" or ");
+		else sb.append(" ");
+		return true;
 	}
 	
 	private void appendOrderBy(StringBuilder sb, String var, RepositoryEntryOrder... orderby) {

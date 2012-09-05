@@ -235,7 +235,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 		
 
-		List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(getIdentity(), Collections.singletonList(bGroup.getKey()));
+		List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(Collections.singletonList(bGroup.getKey()), getIdentity());
 		if(isOnWaitinglist(memberships)) {
 			VelocityContainer vc = createVelocityContainer("waiting");
 			vc.contextPut("name", bGroup.getName());

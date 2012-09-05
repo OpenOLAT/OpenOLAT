@@ -183,7 +183,7 @@ public interface BaseSecurity {
 	 * @param identityNames
 	 * @return The identities
 	 */
-	public List<IdentityShort> findShortIdentitiesByKey(Collection<Long> identityName);
+	public List<IdentityShort> findShortIdentitiesByKey(Collection<Long> identityKeys);
 
 	/**
 	 * find an identity by the key instead of the username. Prefer this method as

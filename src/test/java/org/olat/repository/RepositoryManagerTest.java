@@ -53,6 +53,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JMSCodePointServerJunitHelper;
@@ -390,6 +391,78 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertFalse(isParticipant3);
 	}
 	
+	@Test
+	public void getRepositoryentryMembership() {
+		//create a repository entry with an owner and a participant
+		Identity admin = securityManager.findIdentityByName("administrator");
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-m-is-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-m-is-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-m-is-" + UUID.randomUUID().toString());
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("re-m-is-" + UUID.randomUUID().toString());
+		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("re-m-is-" + UUID.randomUUID().toString());
+		Identity id6 = JunitTestHelper.createAndPersistIdentityAsUser("re-m-is-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		if(securityManager.isIdentityInSecurityGroup(admin, re.getOwnerGroup())) {
+			securityManager.removeIdentityFromSecurityGroup(admin, re.getOwnerGroup());
+		}
+		securityManager.addIdentityToSecurityGroup(id1, re.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(id2, re.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(id3, re.getTutorGroup());
+		securityManager.addIdentityToSecurityGroup(id4, re.getTutorGroup());
+		securityManager.addIdentityToSecurityGroup(id5, re.getParticipantGroup());
+		securityManager.addIdentityToSecurityGroup(id6, re.getParticipantGroup());
+		securityManager.addIdentityToSecurityGroup(id1, re.getParticipantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		Set<Long> identityKeys = new HashSet<Long>();
+		identityKeys.add(id1.getKey());
+		identityKeys.add(id2.getKey());
+		identityKeys.add(id3.getKey());
+		identityKeys.add(id4.getKey());
+		identityKeys.add(id5.getKey());
+		identityKeys.add(id6.getKey());
+		
+		//check with all identities
+		List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(re);
+		Assert.assertNotNull(memberships);
+		Assert.assertEquals(7, memberships.size());
+		for(RepositoryEntryMembership membership:memberships) {
+			if(membership.getOwnerRepoKey() != null) {
+				Assert.assertEquals(re.getKey(), membership.getOwnerRepoKey());
+			} else if (membership.getTutorRepoKey() != null) {
+				Assert.assertEquals(re.getKey(), membership.getTutorRepoKey());
+			} else if (membership.getParticipantRepoKey() != null) {
+				Assert.assertEquals(re.getKey(), membership.getParticipantRepoKey());
+			} else {
+				Assert.assertTrue(false);
+			}
+			Assert.assertTrue(identityKeys.contains(membership.getIdentityKey()));
+		}
+		
+		//check with id1
+		List<RepositoryEntryMembership> membership1s = repositoryManager.getRepositoryEntryMembership(re, id1);
+		Assert.assertNotNull(membership1s);
+		Assert.assertEquals(2, membership1s.size());
+		for(RepositoryEntryMembership membership:membership1s) {
+			if(membership.getOwnerRepoKey() != null) {
+				Assert.assertEquals(re.getKey(), membership.getOwnerRepoKey());
+			} else if (membership.getParticipantRepoKey() != null) {
+				Assert.assertEquals(re.getKey(), membership.getParticipantRepoKey());
+			} else {
+				Assert.assertTrue(false);
+			}
+			Assert.assertEquals(id1.getKey(), membership.getIdentityKey());
+		}
+	}
+	
+	@Test
+	public void getRepositoryentryMembershipAgainstDummy() {
+		//no repo, no identities
+		List<RepositoryEntryMembership> membership2s = repositoryManager.getRepositoryEntryMembership(null);
+		Assert.assertNotNull(membership2s);
+		Assert.assertTrue(membership2s.isEmpty());
+	}
 
 	@Test
 	public void testCountByTypeLimitAccess() {

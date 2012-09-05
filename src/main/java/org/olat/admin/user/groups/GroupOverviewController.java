@@ -152,7 +152,7 @@ public class GroupOverviewController extends BasicController {
 		}
 
 		//retrieve all user's membership if there are more than 50 groups
-		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(identity, groupKeysWithMembers);
+		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(groupKeysWithMembers, identity);
 		Map<Long, BusinessGroupMembership> memberships = new HashMap<Long, BusinessGroupMembership>();
 		for(BusinessGroupMembership membership: groupsAsOwner) {
 			memberships.put(membership.getGroupKey(), membership);
@@ -164,7 +164,7 @@ public class GroupOverviewController extends BasicController {
 			BGTableItem tableItem = new BGTableItem(group, false, membership, Boolean.TRUE, Boolean.FALSE, null);
 			items.add(tableItem);
 		}
-		tableDataModel.setEntries(items, memberships);
+		tableDataModel.setEntries(items);
 		groupListCtr.modelChanged();
 	}
 

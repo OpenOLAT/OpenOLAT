@@ -56,6 +56,8 @@ public interface BusinessGroupView extends BusinessGroupShort, Persistable, Crea
 	
 	public long getNumOfParticipants();
 	
+	public long getNumWaiting();
+	
 	public long getNumOfOffers();
 	
 	public long getNumOfValidOffers();

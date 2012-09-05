@@ -101,7 +101,7 @@ import org.olat.course.db.CustomDBMainController;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
-import org.olat.course.groupsandrights.ui.CourseGroupManagementMainController;
+import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
@@ -122,7 +122,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
-import org.olat.resource.accesscontrol.ui.SecurityGroupsRepositoryMainController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -798,17 +797,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				
 			} else throw new OLATSecurityException("wanted to activate editor, but no according right");
 
-		} else if (cmd.equals("groupmngt")) {
+		} else if (cmd.equals("unifiedusermngt")) {
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
-				currentToolCtr = new CourseGroupManagementMainController(ureq, getWindowControl(), course);
-				listenTo(currentToolCtr);
-				all.setContent(currentToolCtr.getInitialComponent());
-			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
-		//fxdiff VCRP-1,2: access control of resources
-		} else if (cmd.equals("simplegroupmngt")) {
-			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
-				boolean mayModifyMembers = true;
-				currentToolCtr = new SecurityGroupsRepositoryMainController(ureq, getWindowControl(), course, courseRepositoryEntry, mayModifyMembers);
+				currentToolCtr = new MembersManagementMainController(ureq, getWindowControl(), courseRepositoryEntry);
 				listenTo(currentToolCtr);
 				all.setContent(currentToolCtr.getInitialComponent());
 			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
@@ -1108,9 +1099,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 				//fxdiff VCRP-1,2: access control of resources
-				myTool.addLink("simplegroupmngt", translate("command.opensimplegroupmngt"));
-				//
-				myTool.addLink("groupmngt", translate("command.opengroupmngt"));
+				myTool.addLink("unifiedusermngt", translate("command.opensimplegroupmngt"));
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 				myTool.addLink("archiver", translate("command.openarchiver"));

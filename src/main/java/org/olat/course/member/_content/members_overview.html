@@ -1,0 +1,11 @@
+<h4 class="b_with_small_icon_left b_group_icon">
+	$r.translate("menu.members")
+</h4>
+<div class="b_clearfix">
+	$r.render("segments")
+	
+	#if($r.available("membersCmp"))
+		$r.render("membersCmp")
+	#end
+	
+</div>

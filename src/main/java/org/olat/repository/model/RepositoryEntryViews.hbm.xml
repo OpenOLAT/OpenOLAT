@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping default-lazy="false">
 
-	<class name="org.olat.repository.model.RepositoryEntryMembership" table="o_re_member_v" mutable="false">
+	<class name="org.olat.repository.model.RepositoryEntryMember" table="o_re_member_v" mutable="false">
 		<composite-id>
 			<key-property name="key" column="re_id" type="long" />
 			<key-property name="repoOwnerKey" column="re_owner_member_id" type="long" />
@@ -16,7 +16,7 @@
 		<property name="membersOnly" column="re_membersonly" type="boolean"/>
 	</class>
 	
-	<class name="org.olat.repository.model.RepositoryEntryStrictMembership" table="o_re_strict_member_v" mutable="false">
+	<class name="org.olat.repository.model.RepositoryEntryStrictMember" table="o_re_strict_member_v" mutable="false">
 		<composite-id>
 			<key-property name="key" column="re_id" type="long" />
 			<key-property name="repoOwnerKey" column="re_owner_member_id" type="long" />
@@ -43,5 +43,21 @@
 			<key-property name="groupOwnerKey" column="bg_owner_member_id" type="long" />
 		</composite-id>
 	</class>	
+	
+	<class name="org.olat.repository.model.RepositoryEntryMembership" table="o_re_membership_v" mutable="false">
+		<cache usage="read-write" />
+		<id name="key" 
+			type="long" 
+			column="membership_id" 
+			unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+		<property  name="lastModified" column="lastmodified" type="timestamp" />
+		<property  name="creationDate" column="creationdate" type="timestamp" />
+  		<property name="identityKey" column="identity_id" type="long" />
+		<property name="ownerRepoKey" column="owner_re_id" type="long" />
+		<property name="tutorRepoKey" column="tutor_re_id" type="long" />
+		<property name="participantRepoKey" column="participant_re_id" type="long" />
+	</class>
 	
 </hibernate-mapping>

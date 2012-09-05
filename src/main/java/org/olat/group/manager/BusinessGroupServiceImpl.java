@@ -1321,9 +1321,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, Collection<Long> businessGroups) {
-		List<BusinessGroupMembershipViewImpl> views = businessGroupDAO.getMembershipInfoInBusinessGroups(identity, businessGroups);
-		
+	public List<BusinessGroupMembership> getBusinessGroupMembership(Collection<Long> businessGroups, Identity... identity) {
+		List<BusinessGroupMembershipViewImpl> views =
+				businessGroupDAO.getMembershipInfoInBusinessGroups(businessGroups, identity);
 
 		Map<Long, BusinessGroupMembershipImpl> memberships = new HashMap<Long, BusinessGroupMembershipImpl>();
 		for(BusinessGroupMembershipViewImpl membership: views) {

@@ -236,16 +236,27 @@ public class BusinessGroupDAO {
 		return res.intValue();
 	}
 	
-	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Identity identity, Collection<Long> groupKeys) {
+	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Collection<Long> groupKeys, Identity... identity) {
 		StringBuilder sb = new StringBuilder(); 
-		sb.append("select membership from ").append(BusinessGroupMembershipViewImpl.class.getName()).append(" as membership ")
-		  .append(" where membership.identityKey=:identId ");
+		sb.append("select membership from ").append(BusinessGroupMembershipViewImpl.class.getName()).append(" as membership ");
+		boolean and = false;
+		if(identity != null && identity.length > 0) {
+			and = and(sb, and);
+		  sb.append("membership.identityKey in (:identIds) ");
+		}
 		if(groupKeys != null && !groupKeys.isEmpty()) {
-		  sb.append(" and (membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
+			and = and(sb, and);
+		  sb.append("(membership.ownerGroupKey in (:groupKeys) or membership.participantGroupKey in (:groupKeys) or membership.waitingGroupKey in (:groupKeys))");
 		}
 		
-		TypedQuery<BusinessGroupMembershipViewImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembershipViewImpl.class)
-				.setParameter("identId", identity.getKey());
+		TypedQuery<BusinessGroupMembershipViewImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembershipViewImpl.class);
+		if(identity != null && identity.length > 0) {
+			List<Long> ids = new ArrayList<Long>(identity.length);
+			for(Identity id:identity) {
+				ids.add(id.getKey());
+			}
+			query.setParameter("identIds", ids);
+		}	
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 			query.setParameter("groupKeys", groupKeys);
 		}
@@ -924,7 +935,7 @@ public class BusinessGroupDAO {
 		return string.toLowerCase();
 	}
 	
-	private boolean where(StringBuilder sb, boolean where) {
+	private final boolean where(StringBuilder sb, boolean where) {
 		if(where) {
 			sb.append(" and ");
 		} else {
@@ -933,8 +944,15 @@ public class BusinessGroupDAO {
 		return true;
 	}
 	
-	private boolean or(StringBuilder sb, boolean or) {
+	private final boolean and(StringBuilder sb, boolean and) {
+		if(and) sb.append(" and ");
+		else sb.append(" where ");
+		return true;
+	}
+	
+	private final boolean or(StringBuilder sb, boolean or) {
 		if(or) sb.append(" or ");
+		else sb.append(" ");
 		return true;
 	}
 }

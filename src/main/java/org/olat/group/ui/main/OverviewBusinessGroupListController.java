@@ -144,6 +144,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl);
+			listenTo(favoritGroupsCtrl);
 		}
 		favoritGroupsCtrl.updateMarkedGroups();
 		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
@@ -157,6 +158,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			allGroupsCtrl = new BusinessGroupListController(ureq, bwControl);
+			listenTo(allGroupsCtrl);
 		}
 		allGroupsCtrl.updateAllGroups();
 		mainVC.put("groupList", allGroupsCtrl.getInitialComponent());
@@ -170,6 +172,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			ownedGroupsCtrl = new OwnedBusinessGroupListController(ureq, bwControl);
+			listenTo(ownedGroupsCtrl);
 		}
 		ownedGroupsCtrl.updateOwnedGroups();
 		mainVC.put("groupList", ownedGroupsCtrl.getInitialComponent());
@@ -183,6 +186,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl);
+			listenTo(searchGroupsCtrl);
 		}
 		searchGroupsCtrl.updateSearch(ureq);
 		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());

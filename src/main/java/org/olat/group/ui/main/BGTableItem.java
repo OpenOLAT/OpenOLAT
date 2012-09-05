@@ -86,6 +86,14 @@ public class BGTableItem {
 		return businessGroup.getNumOfParticipants();
 	}
 	
+	public long getNumOfOwners() {
+		return businessGroup.getNumOfOwners();
+	}
+	
+	public long getNumWaiting() {
+		return businessGroup.getNumWaiting();
+	}
+	
 	public Integer getMaxParticipants() {
 		return businessGroup.getMaxParticipants();
 	}
@@ -190,6 +198,8 @@ public class BGTableItem {
 		private final Long key;
 		private final String name;
 		private final Integer maxParticipants;
+		private long numWaiting;
+		private long numOfOwners;
 		private long numOfParticipants;
 		private final boolean waitingListEnabled;
 		private final boolean autoCloseRanksEnabled;
@@ -206,6 +216,8 @@ public class BGTableItem {
 			key = group.getKey();
 			name = group.getName().intern();
 			maxParticipants = group.getMaxParticipants();
+			numWaiting = group.getNumWaiting();
+			numOfOwners = group.getNumOfOwners();
 			numOfParticipants = group.getNumOfParticipants();
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
@@ -237,6 +249,14 @@ public class BGTableItem {
 
 		public long getNumOfParticipants() {
 			return numOfParticipants;
+		}
+		
+		public long getNumOfOwners() {
+			return numOfOwners;
+		}
+		
+		public long getNumWaiting() {
+			return numWaiting;
 		}
 		
 		public boolean isWaitingListEnabled() {

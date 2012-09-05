@@ -1252,7 +1252,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check owner + attendee
 		int countMembershipA = businessGroupDao.countMembershipInfoInBusinessGroups(id, groupKeys);
 		Assert.assertEquals(3, countMembershipA);
-		List<BusinessGroupMembershipViewImpl> memberships = businessGroupDao.getMembershipInfoInBusinessGroups(id, groupKeys);
+		List<BusinessGroupMembershipViewImpl> memberships = businessGroupDao.getMembershipInfoInBusinessGroups(groupKeys, id);
 		Assert.assertNotNull(memberships);
 		Assert.assertEquals(3, memberships.size());
 		
@@ -1272,6 +1272,40 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 			}
 		}
 		Assert.assertEquals(3, found);
+	}
+	
+	@Test
+	public void getMembershipInfoInBusinessGroupsWithoutIdentityParam() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
+		
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+
+		securityManager.addIdentityToSecurityGroup(id1, group1.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id1, group3.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group3.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(id3, group2.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id3, group3.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> groupKeys = new ArrayList<Long>();
+		groupKeys.add(group1.getKey());
+		groupKeys.add(group2.getKey());
+		groupKeys.add(group3.getKey());
+
+		//check owner + attendee + waiting
+		List<BusinessGroupMembershipViewImpl> memberships = businessGroupDao.getMembershipInfoInBusinessGroups(groupKeys);
+		Assert.assertNotNull(memberships);
+		Assert.assertEquals(7, memberships.size());
+		for(BusinessGroupMembershipViewImpl membership:memberships) {
+			Assert.assertNotNull(membership.getIdentityKey());
+			Assert.assertNotNull(membership.getCreationDate());
+			Assert.assertNotNull(membership.getLastModified());
+		}
 	}
 	
 	private boolean contains(List<BusinessGroupView> views, BusinessGroup group) {

@@ -433,7 +433,7 @@ public interface BusinessGroupService {
 	 * @param businessGroups
 	 * @return The list of group keys where the identity is either participant or owner
 	 */
-	public List<BusinessGroupMembership> getBusinessGroupMembership(Identity identity, Collection<Long> businessGroups);
+	public List<BusinessGroupMembership> getBusinessGroupMembership(Collection<Long> businessGroups, Identity... identity);
 
 	/**
 	 * Checks if an identity is in a business group with a specific key, either as owner or

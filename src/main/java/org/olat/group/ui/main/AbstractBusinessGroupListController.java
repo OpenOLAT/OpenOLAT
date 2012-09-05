@@ -62,6 +62,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
@@ -87,6 +88,7 @@ import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
@@ -96,7 +98,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-abstract class AbstractBusinessGroupListController extends BasicController implements Activateable2 {
+public abstract class AbstractBusinessGroupListController extends BasicController implements Activateable2 {
 	protected static final String TABLE_ACTION_LEAVE = "bgTblLeave";
 	protected static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
 	protected static final String TABLE_ACTION_ACCESS = "bgTblAccess";
@@ -135,7 +137,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 	protected final CollaborationToolsFactory collaborationTools;
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale()));
 		
 		admin = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -703,16 +705,20 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		updateTableModel(lastSearchParams, false);
 	}
 	
+	protected OLATResource getResource() {
+		return null;
+	}
+	
 	protected List<BusinessGroupView> updateTableModel(SearchBusinessGroupParams params, boolean alreadyMarked) {
 		List<BusinessGroupView> groups;
 		if(params == null) {
 			groups = new ArrayList<BusinessGroupView>();
 		} else {
-			groups = businessGroupService.findBusinessGroupViews(params, null, 0, -1);
+			groups = businessGroupService.findBusinessGroupViews(params, getResource(), 0, -1);
 		}
 		lastSearchParams = params;
 		if(groups.isEmpty()) {
-			groupListModel.setEntries(Collections.<BGTableItem>emptyList(), Collections.<Long,BusinessGroupMembership>emptyMap());
+			groupListModel.setEntries(Collections.<BGTableItem>emptyList());
 			groupListCtr.modelChanged();
 			return groups;
 		}
@@ -728,7 +734,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 		}
 
 		//retrieve all user's membership if there are more than 50 groups
-		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(getIdentity(), groupKeysWithMembers);
+		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(groupKeysWithMembers, getIdentity());
 		Map<Long, BusinessGroupMembership> memberships = new HashMap<Long, BusinessGroupMembership>();
 		for(BusinessGroupMembership membership: groupsAsOwner) {
 			memberships.put(membership.getGroupKey(), membership);
@@ -785,7 +791,7 @@ abstract class AbstractBusinessGroupListController extends BasicController imple
 			items.add(tableItem);
 		}
 		
-		groupListModel.setEntries(items, memberships);
+		groupListModel.setEntries(items);
 		groupListCtr.modelChanged();
 		return groups;
 	}

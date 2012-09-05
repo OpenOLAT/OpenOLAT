@@ -19,6 +19,8 @@
  */
 package org.olat.repository.model;
 
+import java.util.Date;
+
 import org.olat.core.commons.persistence.PersistentObject;
 
 /**
@@ -27,82 +29,70 @@ import org.olat.core.commons.persistence.PersistentObject;
  */
 public class RepositoryEntryMembership extends PersistentObject {
 
-	private static final long serialVersionUID = 3795108974268603941L;
+	private static final long serialVersionUID = -5404538852842562897L;
 	
-	private Long repoParticipantKey;
-	private Long repoTutorKey;
-	private Long repoOwnerKey;
-	private Long groupParticipantKey;
-	private Long groupOwnerKey;
-	
-	private int access;
-	private boolean membersOnly;
+	private Long identityKey;
+	private Date lastModified;
+	private Long ownerRepoKey;
+	private Long tutorRepoKey;
+	private Long participantRepoKey;
 
-	public Long getRepoParticipantKey() {
-		return repoParticipantKey;
-	}
-	
-	public void setRepoParticipantKey(Long repoParticipantKey) {
-		this.repoParticipantKey = repoParticipantKey;
-	}
-	
-	public Long getRepoTutorKey() {
-		return repoTutorKey;
+	public Long getIdentityKey() {
+		return identityKey;
 	}
 
-	public void setRepoTutorKey(Long repoTutorKey) {
-		this.repoTutorKey = repoTutorKey;
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
 	}
 
-	public Long getRepoOwnerKey() {
-		return repoOwnerKey;
-	}
-	
-	public void setRepoOwnerKey(Long repoOwnerKey) {
-		this.repoOwnerKey = repoOwnerKey;
-	}
-	
-	public Long getGroupParticipantKey() {
-		return groupParticipantKey;
-	}
-	
-	public void setGroupParticipantKey(Long groupParticipantKey) {
-		this.groupParticipantKey = groupParticipantKey;
-	}
-	
-	public Long getGroupOwnerKey() {
-		return groupOwnerKey;
-	}
-	
-	public void setGroupOwnerKey(Long groupOwnerKey) {
-		this.groupOwnerKey = groupOwnerKey;
+	public Date getLastModified() {
+		return lastModified;
 	}
 
-	public int getAccess() {
-		return access;
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
 	}
 
-	public void setAccess(int access) {
-		this.access = access;
+	public Long getOwnerRepoKey() {
+		return ownerRepoKey;
 	}
 
-	public boolean isMembersOnly() {
-		return membersOnly;
+	public void setOwnerRepoKey(Long ownerRepoKey) {
+		this.ownerRepoKey = ownerRepoKey;
 	}
 
-	public void setMembersOnly(boolean membersOnly) {
-		this.membersOnly = membersOnly;
+	public Long getTutorRepoKey() {
+		return tutorRepoKey;
+	}
+
+	public void setTutorRepoKey(Long tutorRepoKey) {
+		this.tutorRepoKey = tutorRepoKey;
+	}
+
+	public Long getParticipantRepoKey() {
+		return participantRepoKey;
+	}
+
+	public void setParticipantRepoKey(Long participantRepoKey) {
+		this.participantRepoKey = participantRepoKey;
 	}
 
 	@Override
 	public int hashCode() {
-		return getKey() == null ? 3768 : getKey().hashCode();
+		return getKey() == null ? 2901 : getKey().hashCode();
 	}
 
+	/**
+	 * Compares the keys.
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
+		} else if (obj instanceof RepositoryEntryMembership) {
+			RepositoryEntryMembership bg = (RepositoryEntryMembership)obj;
+			return getKey() != null && getKey().equals(bg.getKey());
 		}
 		return false;
 	}
