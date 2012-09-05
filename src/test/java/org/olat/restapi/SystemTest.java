@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.restapi.system.vo.ClasseStatisticsVO;
 import org.olat.restapi.system.vo.DatabaseVO;
@@ -40,6 +41,8 @@ import org.olat.restapi.system.vo.RepositoryStatisticsVO;
 import org.olat.restapi.system.vo.RuntimeStatisticsVO;
 import org.olat.restapi.system.vo.SessionsVO;
 import org.olat.restapi.system.vo.ThreadStatisticsVO;
+import org.olat.restapi.system.vo.ThreadVO;
+import org.olat.restapi.system.vo.ThreadVOes;
 import org.olat.restapi.system.vo.ThreadsVO;
 import org.olat.restapi.system.vo.UserStatisticsVO;
 import org.olat.test.OlatJerseyTestCase;
@@ -82,6 +85,29 @@ public class SystemTest extends OlatJerseyTestCase {
 		assertTrue(threadInfos.getDaemonCount() > 0);
 		assertTrue(threadInfos.getThreadCount() > 0);
 		
+		conn.shutdown();	
+	}
+	
+	@Test
+	public void testSystemThreadDetails() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("threads").path("cpu").build();
+		ThreadVOes threadInfos = conn.get(systemUri, ThreadVOes.class);
+
+		Assert.assertNotNull(threadInfos);
+		Assert.assertNotNull(threadInfos.getThreads());
+		Assert.assertTrue(threadInfos.getTotalCount() > 0);
+		Assert.assertEquals(threadInfos.getTotalCount(), (int)threadInfos.getThreads().length);
+		
+		ThreadVO threadVo = threadInfos.getThreads()[0];
+		Assert.assertNotNull(threadVo.getName());
+		Assert.assertTrue(threadVo.getCpuTime() >= 0);
+		Assert.assertTrue(threadVo.getCpuUsage() >= 0.0f);
+		Assert.assertTrue(threadVo.getId() > 0l);
+		Assert.assertTrue(threadVo.getPrevCpuTime() >= 0f);
+		Assert.assertTrue(threadVo.getWarningCounter() >= 0);
 		conn.shutdown();	
 	}
 

@@ -44,6 +44,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.restapi.system.vo.ThreadVO;
+import org.olat.restapi.system.vo.ThreadVOes;
 import org.olat.restapi.system.vo.ThreadsVO;
 
 /**
@@ -82,10 +83,17 @@ public class ThreadsWebService implements Sampler {
 	@Path("cpu")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public synchronized Response getThreadsCpu() {
+		if(threadMap.isEmpty()) {
+			takeSample();
+		}
+
 		List<ThreadVO> threads = new ArrayList<ThreadVO>(threadMap.values());
 		Collections.sort(threads);
 		ThreadVO[] threadVos = threads.toArray(new ThreadVO[threads.size()]);
-		return Response.ok(threadVos).build();
+		ThreadVOes voes = new ThreadVOes();
+		voes.setThreads(threadVos);
+		voes.setTotalCount(threadVos.length);
+		return Response.ok(voes).build();
 	}
 	
   @Override

@@ -84,6 +84,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.OLATResourceManagerTest.class,//ok
 	org.olat.basesecurity.SecurityManagerTest.class,//ok
 	org.olat.basesecurity.BaseSecurityTest.class,//ok
+	org.olat.basesecurity.BaseSecurityManagerTest.class,//ok
 	org.olat.repository.RepositoryManagerTest.class,//ok
 	org.olat.repository.RepositoryManagerConcurrentTest.class,//ok
 	org.olat.repository.RepositoryManagerQueryTest.class,//ok
