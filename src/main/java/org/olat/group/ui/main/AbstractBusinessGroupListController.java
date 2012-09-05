@@ -220,7 +220,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 				toogleMark((BGTableItem)uobj);
 			}
 		} else if (source == createButton) {
-			doCreate(ureq, getWindowControl());
+			doCreate(ureq, getWindowControl(), null);
 		}
 	}
 	
@@ -412,9 +412,9 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	 * @param ureq
 	 * @param wControl
 	 */
-	protected void doCreate(UserRequest ureq, WindowControl wControl) {				
+	protected void doCreate(UserRequest ureq, WindowControl wControl, OLATResource resource) {				
 		removeAsListenerAndDispose(groupCreateController);
-		groupCreateController = new NewBGController(ureq, wControl, null, false, null);
+		groupCreateController = new NewBGController(ureq, wControl, resource, false, null);
 		listenTo(groupCreateController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupCreateController.getInitialComponent(), true, translate("create.form.title"));

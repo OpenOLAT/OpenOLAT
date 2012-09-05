@@ -1152,6 +1152,12 @@ create or replace view o_gp_business_v  as (
       gp.autocloseranks_enabled as autocloseranks_enabled,
       (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
       (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
+      (case when gp.waitinglist_enabled = true
+         then 
+           (select count(waiting.id) from o_bs_membership as waiting where waiting.secgroup_id = gp.fk_partipiciantgroup)
+         else
+           0
+      end) as num_waiting,
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = gp.fk_resource
          and offer.is_valid=true
@@ -1239,38 +1245,19 @@ create or replace view o_re_strict_tutor_v as (
    where re.membersonly=true and re.accesscode=1
 );
 
-create or replace view o_gp_business_v  as (
+create or replace view o_re_membership_v as (
    select
-      gp.group_id as group_id,
-      gp.groupname as groupname,
-      gp.lastmodified as lastmodified,
-      gp.creationdate as creationdate,
-      gp.lastusage as lastusage,
-      gp.descr as descr,
-      gp.minparticipants as minparticipants,
-      gp.maxparticipants as maxparticipants,
-      gp.waitinglist_enabled as waitinglist_enabled,
-      gp.autocloseranks_enabled as autocloseranks_enabled,
-      (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
-      (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
-      (select count(offer.offer_id) from o_ac_offer as offer 
-         where offer.fk_resource_id = gp.fk_resource
-         and offer.is_valid=true
-         and (offer.validfrom is null or offer.validfrom >= current_timestamp)
-         and (offer.validto is null or offer.validto <= current_timestamp)
-      ) as num_of_valid_offers,
-      (select count(offer.offer_id) from o_ac_offer as offer 
-         where offer.fk_resource_id = gp.fk_resource
-         and offer.is_valid=true
-      ) as num_of_offers,
-      (select count(relation.fk_resource) from o_gp_business_to_resource as relation 
-         where relation.fk_group = gp.group_id
-      ) as num_of_relations,
-      gp.fk_resource as fk_resource,
-      gp.fk_ownergroup as fk_ownergroup,
-      gp.fk_partipiciantgroup as fk_partipiciantgroup,
-      gp.fk_waitinggroup as fk_waitinggroup
-   from o_gp_business as gp
+      membership.id as membership_id,
+      membership.identity_id as identity_id,
+      membership.lastmodified as lastmodified,
+      membership.creationdate as creationdate,
+      re_owner_member.repositoryentry_id as owner_re_id,
+      re_tutor_member.repositoryentry_id as tutor_re_id,
+      re_part_member.repositoryentry_id as participant_re_id
+   from o_bs_membership as membership
+   left join o_repositoryentry as re_part_member on (membership.secgroup_id = re_part_member.fk_participantgroup)
+   left join o_repositoryentry as re_tutor_member on (membership.secgroup_id = re_tutor_member.fk_tutorgroup)
+   left join o_repositoryentry as re_owner_member on (membership.secgroup_id = re_owner_member.fk_ownergroup)
 );
 
 create or replace view o_re_member_v as (

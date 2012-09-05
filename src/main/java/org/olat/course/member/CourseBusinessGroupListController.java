@@ -20,12 +20,16 @@
 package org.olat.course.member;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
@@ -42,10 +46,17 @@ import org.olat.resource.OLATResource;
 public class CourseBusinessGroupListController extends AbstractBusinessGroupListController {
 	
 	private final OLATResource resource;
+	private final Link createGroup;
+	private final Link addGroup;
 	
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
 		super(ureq, wControl, "group_list");
 		this.resource = resource;
+		
+		createGroup = LinkFactory.createButton("group.create", mainVC, this);
+		mainVC.put("createGroup", createGroup);
+		addGroup = LinkFactory.createButton("group.add", mainVC, this);
+		mainVC.put("addGroup", addGroup);
 	}
 
 	@Override
@@ -76,6 +87,17 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "action", translate("table.header.work")));
 		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "action", translate("table.header.remove")));
 		return 11;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source == createGroup) {
+			doCreate(ureq, getWindowControl(), resource);
+		} else if (source == addGroup) {
+			//TODO
+		} else {
+			super.event(ureq, source, event);
+		}
 	}
 
 	@Override

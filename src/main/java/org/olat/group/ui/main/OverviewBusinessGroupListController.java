@@ -110,11 +110,6 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			}
 		}
 	}
-	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		super.event(ureq, source, event);
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
