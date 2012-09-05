@@ -162,6 +162,11 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		return component;
 	}
 
+	@Override
+	public void setElementCssClass(String elementCssClass) {
+		component.setElementCssClass(elementCssClass);
+		super.setElementCssClass(elementCssClass);
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FormLink#setCustomEnabledLinkCSS(java.lang.String)

@@ -292,8 +292,10 @@ class PublishStep00 extends BasicStep {
 				//publish treemodel is tree model and INodeFilter at the same time
 				multiSelectTree = uifactory.addTreeMultiselect("seltree", null, fic, publishManager2.getPublishTreeModel(), publishManager2.getPublishTreeModel());
 				selectAllLink = uifactory.addFormLink("checkall", fic);
+				selectAllLink.setElementCssClass("o_sel_course_publish_selectall_cbb");
 				selectAllLink.addActionListener(this, FormEvent.ONCLICK);
 				uncheckallLink = uifactory.addFormLink("uncheckall", fic);
+				uncheckallLink.setElementCssClass("o_sel_course_publish_deselectall_cbb");
 				uncheckallLink.addActionListener(this, FormEvent.ONCLICK);
 			} else {
 				// set message container - telling nothing to publish.
