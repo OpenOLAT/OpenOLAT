@@ -549,7 +549,7 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
-		functionalUtil.waitForPageToLoad(browser);
+		functionalUtil.waitForPageToLoadElement(browser, createSelector(binder, page, title));
 		
 		return(true);
 	}

@@ -167,14 +167,6 @@ public class FunctionalArtefactTest {
 		/* create binder, page or structure if necessary */
 		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE));
 		
-		//FIXME:JK: really ugly
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		/* post message to forum */
 		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
 		
@@ -195,14 +187,6 @@ public class FunctionalArtefactTest {
 		
 		/* create binder, page or structure if necessary */
 		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE));
-
-		//FIXME:JK: really ugly
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
 		/* create an article for the wiki */
 		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
@@ -217,30 +201,13 @@ public class FunctionalArtefactTest {
 	@RunAsClient
 	public void checkCollectBlogPost() throws URISyntaxException, IOException{
 		/* deploy course with REST */
-		CourseVO course = functionalVOUtil.importCourseIncludingBlog(deploymentUrl);
-		
-//		long repoKey = functionalRepositorySiteUtil.createBlog(browser, BLOG_TITLE, BLOG_DESCRIPTION);
-		
-		/*  */
-//		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
-//		Assert.assertTrue(functionalCourseUtil.openBlog(browser, repoKey));
-//		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
-//		Assert.assertTrue(functionalCourseUtil.disableAccessOption(browser, AccessOption.BLOCKED_FOR_LEARNERS, 1)); //TODO:JK: don't use hard coded form index
-		
+		CourseVO course = functionalVOUtil.importCourseIncludingBlog(deploymentUrl);	
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 
 		/* create binder, page or structure if necessary */
 		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE));
-		
-		//FIXME:JK: really ugly
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 		/* blog */
 		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, course.getRepoEntryKey(), 0,
