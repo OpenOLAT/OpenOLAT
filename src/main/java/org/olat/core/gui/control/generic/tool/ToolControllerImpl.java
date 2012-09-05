@@ -135,7 +135,7 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 			addComponent(linkCmp, ident);
 		}
 		else {
-		   entries.add(new ToolEntry(ident, action, text, cssClass, elementCssClass, null, null, false));
+		   entries.add(new ToolEntry(ident, action, text, cssClass, elementCssClass));
 		}
 	}
 	
@@ -147,13 +147,11 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 	public void addLink(String action, String text, String ident, String cssClass) {
 		addLink(action, text, ident, cssClass, false);
 	}
-	
-	
 
 	/** 
 	 * @see org.olat.core.gui.control.generic.tool.ToolController#addPopUpLink(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	public void addPopUpLink(String action, String text, String ident, String cssClass,  String width, String height, boolean browserMenubarEnabled) {
+	public void addPopUpLink(String action, String text, String ident, String cssClass, String width, String height, boolean browserMenubarEnabled) {
 		entries.add(new ToolEntry(ident, action, text, cssClass, null, width, height, browserMenubarEnabled));
 	}
 

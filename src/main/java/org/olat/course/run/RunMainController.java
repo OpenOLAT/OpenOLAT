@@ -1126,7 +1126,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 			myTool.addHeader(translate("header.tools"));
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-				myTool.addLink(COMMAND_EDIT, translate("command.openeditor"));
+				myTool.addLink(COMMAND_EDIT, translate("command.openeditor"), null, null, "o_sel_course_open_editor", false);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 				//fxdiff VCRP-1,2: access control of resources

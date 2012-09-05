@@ -75,12 +75,13 @@ public class ToolEntry {
 	 * @param linkText
 	 * @param cssClass
 	 */
-	public ToolEntry(String ident, String action, String linkText, String cssClass) {
+	public ToolEntry(String ident, String action, String linkText, String cssClass, String elementCssClass) {
 		this.type = TYPE_LINK;
 		this.ident = ident;
 		this.action = action;
 		this.linkText = linkText;
 		if (cssClass != null) this.cssClass = cssClass;
+		this.elementCssClass = elementCssClass;
 	}
 
 	/**

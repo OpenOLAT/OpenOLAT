@@ -296,7 +296,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		
 		myContent = this.createVelocityContainer("edit");		
 		chooseTestButton = LinkFactory.createButtonSmall("command.chooseRepFile", myContent, this);
+		chooseTestButton.setElementCssClass("o_sel_test_choose_repofile");
 		changeTestButton = LinkFactory.createButtonSmall("command.changeRepFile", myContent, this);
+		changeTestButton.setElementCssClass("o_sel_test_change_repofile");
 		modConfigForm = new IQEditForm(ureq, wControl, moduleConfiguration);
 		listenTo(modConfigForm);
 		myContent.put("iqeditform",modConfigForm.getInitialComponent());
