@@ -54,9 +54,9 @@ import com.thoughtworks.selenium.DefaultSelenium;
 @RunWith(Arquillian.class)
 public class FunctionalIQTestTest {
 	
-	public final static String IQ_TEST_SHORT_TITLE = "";
-	public final static String IQ_TEST_LONG_TITLE = "";
-	public final static String IQ_TEST_DESCRIPTION = "";
+	public final static String IQ_TEST_SHORT_TITLE = "Test";
+	public final static String IQ_TEST_LONG_TITLE = "Test";
+	public final static String IQ_TEST_DESCRIPTION = "test";
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -105,6 +105,7 @@ public class FunctionalIQTestTest {
 		
 		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.IQ_TEST, IQ_TEST_SHORT_TITLE, IQ_TEST_LONG_TITLE, IQ_TEST_DESCRIPTION, 0));
 		Assert.assertTrue(functionalCourseUtil.createQTITest(browser, IQ_TEST_SHORT_TITLE, IQ_TEST_DESCRIPTION));
+		
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
 		
 		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));

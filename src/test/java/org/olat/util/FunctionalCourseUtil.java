@@ -34,7 +34,7 @@ public class FunctionalCourseUtil {
 	public final static String COURSE_OPEN_EDITOR_CSS = "o_sel_course_open_editor";
 	
 	public final static String COURSE_EDITOR_PUBLISH_CSS = "b_toolbox_publish";
-	public final static String COURSE_EDITOR_PUBLISH_WIZARD_SELECT_ALL_CSS = null; //FIXME:JK: needs a css class
+	public final static String COURSE_EDITOR_PUBLISH_WIZARD_SELECT_ALL_CSS = "o_sel_course_publish_selectall_cbb";
 	public final static String COURSE_EDITOR_PUBLISH_WIZARD_ACCESS_ID = "o_fioaccessBox_SELBOX";
 	public final static String COURSE_EDITOR_PUBLISH_WIZARD_CATALOG_ID = "o_fiocatalogBox_SELBOX";
 	public final static String ADD_TO_CATALOG_YES_VALUE = "yes";
@@ -301,9 +301,10 @@ public class FunctionalCourseUtil {
 		.append(getCourseOpenEditorCss())
 		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
-		functionalUtil.waitForPageToLoad(browser);
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}
@@ -347,7 +348,8 @@ public class FunctionalCourseUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append(getCourseEditorPublishCss());
+		.append(getCourseEditorPublishCss())
+		.append("')]");
 		
 		browser.click(selectorBuffer.toString());
 		
@@ -389,8 +391,9 @@ public class FunctionalCourseUtil {
 		}
 		
 		functionalUtil.clickWizardFinish(browser);
+		functionalUtil.waitForPageToUnloadElement(browser, "id=" + getCourseEditorPublishWizardCatalogId());
 		
-		return(false);
+		return(true);
 	}
 
 	/**
@@ -416,14 +419,16 @@ public class FunctionalCourseUtil {
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
+
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* choose insertion point */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//form//div[contains(@class, '")
+		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window')]//form[@name='seltree']//div[contains(@class, '")
 		.append(getCreateCourseNodeTargetPositionItemCss())
-		.append("')]//a)[")
-		.append(position + 2)
+		.append("')]//input[@type='radio'])[")
+		.append(position + 1)
 		.append("]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -431,20 +436,22 @@ public class FunctionalCourseUtil {
 		
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//form//button[0]");
+		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window')]//form[@name='seltree']//button[contains(@class, 'b_button_dirty')])[1]");
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		/* fill in short title */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//form//input[@type='text'])[1]");
+		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[1]");
 		
 		browser.type(selectorBuffer.toString(), shortTitle);
 		
 		/* fill in long title */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//form//input[@type='text'])[2]");
+		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[2]");
 		
 		browser.type(selectorBuffer.toString(), longTitle);
 		
@@ -452,10 +459,13 @@ public class FunctionalCourseUtil {
 		functionalUtil.typeMCE(browser, description);
 		
 		/* click save */
-		selectorBuffer.append("xpath=//form//button[0]");
-		browser.click(selectorBuffer.toString());
+		selectorBuffer = new StringBuffer();
 		
-		return(false);
+		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//button)[1]");
+		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
 	}
 	
 	/**
@@ -792,9 +802,9 @@ public class FunctionalCourseUtil {
 		/* click on "choose, create or import file" button */
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//a[contains(@class '")
+		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getTestChooseRepositoryFileCss())
-		.append("']");
+		.append("')]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
@@ -814,7 +824,7 @@ public class FunctionalCourseUtil {
 		/* fill in title */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//form//input[@type='text']");
+		selectorBuffer.append("xpath=//div[contains(@class, 'b_window')]//form//input[@type='text']");
 		
 		browser.type(selectorBuffer.toString(), title);
 		
@@ -822,14 +832,26 @@ public class FunctionalCourseUtil {
 		functionalUtil.typeMCE(browser, description);
 		
 		/* click save */
-		selectorBuffer.append("xpath=");
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window')]//form//div[contains(@class, 'o_sel_repo_save_details')]//button)[1]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		browser.click(selectorBuffer.toString());
 		
 		/* click next */
-		functionalUtil.clickWizardNext(browser);
+		selectorBuffer = new StringBuffer();
 		
-		return(false);
+		selectorBuffer.append("xpath=//div[contains(@class, 'b_window')]//a[contains(@class, 'o_sel_repo_add_forward')]");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
+		
+		return(true);
 	}
 	
 	public FunctionalUtil getFunctionalUtil() {

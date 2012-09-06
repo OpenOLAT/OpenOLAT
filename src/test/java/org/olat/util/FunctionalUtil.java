@@ -869,6 +869,7 @@ public class FunctionalUtil {
 		.append(getWizardNextCss())
 		.append("')]");
 		
+		waitForPageToLoadElement(browser, locatorBuffer.toString());
 		browser.click(locatorBuffer.toString());
 		
 		return(true);
