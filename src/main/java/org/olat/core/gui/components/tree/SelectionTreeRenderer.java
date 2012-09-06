@@ -38,6 +38,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.tree.TreeHelper;
 
 /**
@@ -112,7 +113,12 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 		target.append(tree.isMultiselect() ? SCRIPT_MULTI_PRE : SCRIPT_SINGLE_PRE);
 		target.append(translator.translate("alert"));
 		target.append(SCRIPT_POST);
-		target.append("<div class=\"b_selectiontree\"><form method=\"post\" name=\"seltree\" action=\"");
+		target.append("<div class=\"b_selectiontree");
+		if(StringHelper.containsNonWhitespace(tree.getElementCssClass())) {
+			target.append(" ").append(tree.getElementCssClass());
+		}
+		target.append("\"><form method=\"post\" name=\"seltree\" action=\"");
+
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		ubu.buildURI(target, null, null, iframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		target.append("\"");
@@ -139,7 +145,7 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 		else target.append(internalTranslator.translate("selectiontree.noentries"));
 		target.append("<br /><br />");
 		if (atLeastOneIsAccessible) {
-			target.append("<button type=\"submit\" class=\"b_button\" name=\"" + Form.SUBMIT_IDENTIFICATION + "\" value=\"");
+			target.append("<button type=\"submit\" class=\"b_button o_sel_submit_selection\" name=\"" + Form.SUBMIT_IDENTIFICATION + "\" value=\"");
 			target.append(StringEscapeUtils.escapeHtml(translator.translate(tree.getFormButtonKey())));
 			if (!tree.isAllowEmptySelection()) {
 				target.append("\" onclick=\"return seltree_check();\" onkeypress=\"return seltree_check();\">");
@@ -150,7 +156,7 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 			
 		}
 		if(tree.isShowCancelButton()){
-			target.append("<button type=\"submit\" class=\"b_button\" name=\"" + Form.CANCEL_IDENTIFICATION + "\" value=\"");
+			target.append("<button type=\"submit\" class=\"b_button o_sel_cancel_selection\" name=\"" + Form.CANCEL_IDENTIFICATION + "\" value=\"");
 			target.append(StringEscapeUtils.escapeHtml(translator.translate("cancel"))).append("\">");
 			target.append("<span>").append(translator.translate("cancel")).append("</span></button>");
 		}

@@ -64,6 +64,7 @@ public class InsertNodeController extends BasicController {
 		this.type = type;
 
 		insertTree = new SelectionTree("insert_new_node_selection", getTranslator());
+		insertTree.setElementCssClass("o_sel_course_insert_node_popup");
 		insertTree.setFormButtonKey("insertAtSelectedTreepos");
 		insertTree.addListener(this);
 		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
