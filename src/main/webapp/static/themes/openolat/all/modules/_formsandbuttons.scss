@@ -127,9 +127,8 @@ span.b_toggle_slide_legend {font-size: 90%; }
 }
 
 
-
-.b_link_to_home {
-	> span {padding: 2px 8px 0px 25px; background: transparent url('../openolat/images/card-address.png') no-repeat 4px center;}
+.b_link_left_icon {
+	> span {padding: 2px 8px 0px 25px; background-color: transparent; background-repeat: no-repeat; background-position: 4px center;}
 	@include btt-outer;	
 	/* focused buttons */
 	&:focus,&:hover {
@@ -144,63 +143,28 @@ span.b_toggle_slide_legend {font-size: 90%; }
 		@include o-box-shadow-inset(0, 1px, 2px, rgba(0,0,0,0.3));
 		border-color:$basecolor;
 	}
+}
+
+
+.b_link_to_home {
+	> span {background-image: url('../openolat/images/card-address.png');}
 }
 
 .b_link_course {
-	> span {padding: 2px 8px 0px 25px; background: transparent url('../openolat/images/book-open-next.png') no-repeat 4px center;}
-	@include btt-outer;	
-	/* focused buttons */
-	&:focus,&:hover {
-		text-decoration: none;
-		border:1px solid #C6C6C6;
-		@include o-box-shadow(0, 1px, 1px, rgba(0,0,0,0.1));
-	}
-	&:focus {
-		border-color:$basecolor;
-	}
-	&:active {
-		@include o-box-shadow-inset(0, 1px, 2px, rgba(0,0,0,0.3));
-		border-color:$basecolor;
-	}
+	> span { background-image: transparent url('../openolat/images/book-open-next.png');}
 }
 
 .b_link_group {
-	> span {padding: 2px 8px 0px 25px; background: transparent url('../openolat/images/document-page-next.png') no-repeat 4px center;}
-	@include btt-outer;	
-	/* focused buttons */
-	&:focus,&:hover {
-		text-decoration: none;
-		border:1px solid #C6C6C6;
-		@include o-box-shadow(0, 1px, 1px, rgba(0,0,0,0.1));
-	}
-	&:focus {
-		border-color:$basecolor;
-	}
-	&:active {
-		@include o-box-shadow-inset(0, 1px, 2px, rgba(0,0,0,0.3));
-		border-color:$basecolor;
-	}
+	> span {background-image: url('../openolat/images/document-page-next.png');}
 }
 
 .b_link_mail {
-	> span {padding: 2px 8px 0px 25px; background: transparent url('../openolat/images/mail.png') no-repeat 4px center;}
-	@include btt-outer;	
-	/* focused buttons */
-	&:focus,&:hover {
-		text-decoration: none;
-		border:1px solid #C6C6C6;
-		@include o-box-shadow(0, 1px, 1px, rgba(0,0,0,0.1));
-	}
-	&:focus {
-		border-color:$basecolor;
-	}
-	&:active {
-		@include o-box-shadow-inset(0, 1px, 2px, rgba(0,0,0,0.3));
-		border-color:$basecolor;
-	}
+	> span {background-image: url('../openolat/images/mail.png');}
 }
 
-
+.b_link_assessment {
+	> span {background-image: url('../openolat/images/le_resources/thumb-up.png');}
+}
 
 /** ----------------- FORMS + LOGIN  ----------------- **/
 div.o_login {

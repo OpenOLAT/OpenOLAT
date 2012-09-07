@@ -31,6 +31,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
+import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -200,6 +201,14 @@ public interface BusinessGroupService {
 	 * @param groups
 	 */
 	public void updateMembership(Identity identity, MembershipModification modifications, List<BusinessGroup> groups);
+	
+	/**
+	 * Very fine tuned membership changes on several groups
+	 * 
+	 * @param ureqIdentity
+	 * @param changes
+	 */
+	public void updateMemberships(Identity ureqIdentity, List<BusinessGroupMembershipChange> changes);
 	
 	//search methods
 	/**

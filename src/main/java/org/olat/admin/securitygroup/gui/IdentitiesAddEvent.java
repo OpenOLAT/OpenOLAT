@@ -40,7 +40,7 @@ import org.olat.core.id.Identity;
  * @author Ch.Guretzki
  */
 public class IdentitiesAddEvent extends Event {
-
+	private static final long serialVersionUID = 2553262760712674405L;
 	/* Input-list of Identity which should be added */
 	private List<Identity> addIdentities;
 	/* Output-list of Identity which are added */
@@ -50,8 +50,15 @@ public class IdentitiesAddEvent extends Event {
 	/* Output-list of Identity which are added */
 	private List<Identity> identitiesWithoutPermission;
 	
+	
+
+	public IdentitiesAddEvent(Identity addIdentity) {
+		this(new ArrayList<Identity>());
+		addIdentities.add(addIdentity);
+	}
+	
 	/**
-	 * @param addIdentities  List of Identiey which should be added 
+	 * @param addIdentities  List of Identity which should be added 
 	 */
 	public IdentitiesAddEvent(List<Identity> addIdentities) {
 		super("identities_added");

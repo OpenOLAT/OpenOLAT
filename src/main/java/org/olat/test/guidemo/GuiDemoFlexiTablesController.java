@@ -28,12 +28,11 @@ package org.olat.test.guidemo;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElment;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -46,8 +45,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
-import org.olat.core.gui.components.table.TableDataModel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -55,19 +52,18 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 
+/**
+ * 
+ * @author guretzki
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
 public class GuiDemoFlexiTablesController extends FormBasicController {
 	
-	VelocityContainer vcMain;
+	private FlexiTableDataModel tableDataModel;
 	
 	public GuiDemoFlexiTablesController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
+		super(ureq, wControl, "flexitable");
 		initForm(ureq);		
-	}
-
-	public void event(UserRequest ureq, Component source, Event event) {
-	}
-
-	protected void doDispose() {
 	}
 
 	@Override
@@ -86,15 +82,20 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
     // column 7 : Link
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7"));
 
-		FlexiTableDataModel tableDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new SampleFlexiTableModel(this), tableColumnModel);
-		FlexiTableElment fte = FormUIFactory.getInstance().addTableElement("gui-demo", tableDataModel, formLayout);
-	}	
+		tableDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new SampleFlexiTableModel(this, formLayout), tableColumnModel);
+		uifactory.addTableElement("gui-demo", tableDataModel, formLayout);
+		uifactory.addFormSubmitButton("ok", formLayout);
+	}
+	
+	protected void doDispose() {
+		//
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = true;
-		// TODO: ADD VALIDATION CHECK
-		return isInputValid;			
+		//do some validation here
+		return isInputValid && super.validateFormLogic(ureq);			
 	}
 	
 	@Override
@@ -102,9 +103,14 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 		System.out.println("TEST formInnerEvent");
 	}
 	
-	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		Object obj = tableDataModel.getValueAt(0, 2);
+		if(obj instanceof MultipleSelectionElement) {
+			MultipleSelectionElement selection = (MultipleSelectionElement)obj;
+			System.out.println(selection.getSelectedKeys());
+			
+		}
 		fireEvent(ureq, Event.DONE_EVENT);  
 	}
 	
@@ -113,85 +119,132 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);      
 	}	
 	
-}
+	/**
+	 * Example legacy (non-flexi-table) table-model.
+	 * @author guretzki
+	 */
+	private class SampleFlexiTableModel extends BaseTableDataModelWithoutFilter<Row> {
+		private final int COLUMN_COUNT = 7;
+		private final List<Row> entries;
 
-/**
- * Example legacy (non-flexi-table) table-model.
- * @author guretzki
- */
-class SampleFlexiTableModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+		public SampleFlexiTableModel(Controller controller, FormItemContainer formContainer) {
+			int iEntries = 50;
+			entries = new ArrayList<Row>(iEntries);
+			for (int i=0; i < iEntries; i++) {
+				entries.add(new Row(i, controller, formContainer));
+			}
+		}
+
+		public int getColumnCount() {
+			return COLUMN_COUNT;
+		}
+
+		public int getRowCount() {
+			return entries.size();
+		}
+
+		public Object getValueAt(int row, int col) {
+			Row entry = entries.get(row);
+			switch(col) {
+				case 0: return entry.getCol1();
+				case 1: return entry.getCol2();
+				case 2: return entry.getSelection3();
+				case 3: return entry.getCol4();
+				case 4: return entry.getCol5();
+				case 5: return entry.getCol6();
+				case 6: return entry.getCol7();
+				default: return entry;
+			}
+		}
+	}
 	
-	private int COLUMN_COUNT = 7;
-	private List entries;
-	
-	public SampleFlexiTableModel(Controller controller) {
-		int iEntries = 50;
-		this.entries = new ArrayList(iEntries);
-		for (int i=0; i < iEntries; i++) {
-			List row = new ArrayList(COLUMN_COUNT);
-			// column 1 : checkbox
-			row.add("Flexi Lorem" + i);
-			// column 2 : checkbox
-			row.add("Ipsum" + i);
+	private class Row {
+		private final String col1;
+		private final String col2;
+		private final MultipleSelectionElement selection3;
+		private final String col4;
+		private final Date col5;
+		private final Boolean col6;
+		private final FormLink col7;
+		
+		public Row(int i, Controller controller, FormItemContainer formContainer) {
+			// column 1 : string
+			col1 = "Flexi Lorem" + i;
+			// column 2 : string
+			col2 = "Ipsum" + i;
 			// column 3 : checkbox
-			MultipleSelectionElement checkbox = new MultipleSelectionElementImpl("checkbox", MultipleSelectionElementImpl.createVerticalLayout("checkbox",1)) {
+			
+			selection3 = new MultipleSelectionElementImpl("checkbox", MultipleSelectionElementImpl.createVerticalLayout("checkbox",1)) {
 				{
 					keys = new String[] { "ison", "isOff" };
 					values = new String[] { "on", "off" };
 					select("ison", true);
 				}
 			};
-			row.add(checkbox);
+			formContainer.add(UUID.randomUUID().toString(), selection3);
+			
 			// column 4 : Integer
-			row.add(Integer.toString(i));
+			col4 = Integer.toString(i);
 			// column 5 : Date
-			row.add(new Date());
+			col5 = new Date();
 			// column 6 : Boolean value => custom rendered with two images
-			row.add((i % 2 == 0) ? Boolean.TRUE : Boolean.FALSE);
+			col6 = ((i % 2 == 0) ? Boolean.TRUE : Boolean.FALSE);
 			// column 7: Action Link
 			FormLinkImpl link = new FormLinkImpl("choose");
 			link.setUserObject(Integer.valueOf(i));
 			link.addActionListener(controller, FormEvent.ONCLICK);
-			row.add(link);
-			
-			entries.add(row);
+			col7 = link;
 		}
+
+		public String getCol1() {
+			return col1;
+		}
+
+		public String getCol2() {
+			return col2;
+		}
+
+		public MultipleSelectionElement getSelection3() {
+			return selection3;
+		}
+
+		public String getCol4() {
+			return col4;
+		}
+
+		public Date getCol5() {
+			return col5;
+		}
+
+		public Boolean getCol6() {
+			return col6;
+		}
+
+		public FormLink getCol7() {
+			return col7;
+		}	
 	}
 
-	public int getColumnCount() {
-		return COLUMN_COUNT;
-	}
-
-	public int getRowCount() {
-		return entries.size();
-	}
-
-	public Object getValueAt(int row, int col) {
-		List entry = (List)entries.get(row);
-		return entry.get(col);
-	}
-
-}
-
-/**
- * Example for custom cell renderer. Add one of two images depending on a 
- * boolean value.
- * @author guretzki
- */
-class ExampleCustomFlexiCellRenderer extends CustomFlexiCellRenderer {
-
-	public void render(StringOutput target, Object cellValue, Translator translator) {
-		if (cellValue instanceof Boolean) {
-			if ( ((Boolean)cellValue).booleanValue() ) {
-				target.append("<img src=\"");
-				Renderer.renderStaticURI(target, "images/openolat/openolat_logo_16.png");
-				target.append("\" alt=\"An image within a table...\" />");				
-			} else {
-				target.append("<img src=\"");
-				Renderer.renderStaticURI(target, "images/openolat/bug.png");
-				target.append("\" alt=\"An image within a table...\" />");				
+	/**
+	 * Example for custom cell renderer. Add one of two images depending on a 
+	 * boolean value.
+	 * @author guretzki
+	 */
+	private class ExampleCustomFlexiCellRenderer extends CustomFlexiCellRenderer {
+		public void render(StringOutput target, Object cellValue, Translator translator) {
+			if (cellValue instanceof Boolean) {
+				if ( ((Boolean)cellValue).booleanValue() ) {
+					target.append("<img src=\"");
+					Renderer.renderStaticURI(target, "images/openolat/openolat_logo_16.png");
+					target.append("\" alt=\"An image within a table...\" />");				
+				} else {
+					target.append("<img src=\"");
+					Renderer.renderStaticURI(target, "images/openolat/bug.png");
+					target.append("\" alt=\"An image within a table...\" />");				
+				}
 			}
 		}
 	}
-	
 }
+
+

@@ -28,9 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -48,6 +50,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
@@ -56,6 +59,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
@@ -75,6 +79,8 @@ public abstract class AbstractMemberListController extends BasicController {
 	protected final VelocityContainer mainVC;
 	
 	private DialogBoxController leaveDialogBox;
+	protected CloseableModalController cmc;
+	private EditMemberController editMemberCtrl;
 
 	private final UserManager userManager;
 	private final RepositoryEntry repoEntry;
@@ -141,7 +147,7 @@ public abstract class AbstractMemberListController extends BasicController {
 
 				MemberView member = memberListModel.getObject(te.getRowId());
 				if(actionid.equals(TABLE_ACTION_EDIT)) {
-					doEdit(ureq, member);
+					openEdit(ureq, member);
 				} else if(actionid.equals(TABLE_ACTION_REMOVE)) {
 					confirmDelete(ureq, Collections.singletonList(member));
 				}
@@ -159,7 +165,30 @@ public abstract class AbstractMemberListController extends BasicController {
 				doLeave(ureq, members);
 				reloadModel();
 			}
+		} else if(source == editMemberCtrl) {
+			if(event instanceof MemberPermissionChangeEvent) {
+				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
+				doChangePermission(e);
+			}
+			
+			//do something
+			cmc.deactivate();
+			cleanUpPopups();
+		} else if (source == cmc) {
+			cleanUpPopups();
 		}
+	}
+	
+	/**
+	 * Aggressive clean up all popup controllers
+	 */
+	protected void cleanUpPopups() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(editMemberCtrl);
+		removeAsListenerAndDispose(leaveDialogBox);
+		cmc = null;
+		leaveDialogBox = null;
+		editMemberCtrl = null;
 	}
 	
 	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
@@ -177,8 +206,54 @@ public abstract class AbstractMemberListController extends BasicController {
 		leaveDialogBox.setUserObject(ids);
 	}
 	
-	protected void doEdit(UserRequest ureq, MemberView member) {
+	protected void openEdit(UserRequest ureq, MemberView member) {
+		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
+		editMemberCtrl = new EditMemberController(ureq, getWindowControl(), identity, repoEntry);
+		listenTo(editMemberCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
+				true, translate("edit.member"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	protected void doChangePermission(MemberPermissionChangeEvent e) {
+		doChangeRepoPermission(e);
+		doChangeGroupPermissions(e.getGroupChanges());
 		
+		//make sure all is committed before loading the model again (I see issues without)
+		DBFactory.getInstance().commitAndCloseSession();
+		reloadModel();
+	}
+	
+	private void doChangeRepoPermission(MemberPermissionChangeEvent e) {
+		//first change repository permission
+		if(e.getRepoOwner() != null) {
+			if(e.getRepoOwner().booleanValue()) {
+				repositoryManager.addOwners(getIdentity(), new IdentitiesAddEvent(e.getMember()), repoEntry);
+			} else {
+				repositoryManager.removeOwners(getIdentity(), Collections.singletonList(e.getMember()), repoEntry);
+			}
+		}
+		
+		if(e.getRepoTutor() != null) {
+			if(e.getRepoTutor().booleanValue()) {
+				repositoryManager.addTutors(getIdentity(), new IdentitiesAddEvent(e.getMember()), repoEntry);
+			} else {
+				repositoryManager.removeTutors(getIdentity(), Collections.singletonList(e.getMember()), repoEntry);
+			}
+		}
+		
+		if(e.getRepoParticipant() != null) {
+			if(e.getRepoParticipant().booleanValue()) {
+				repositoryManager.addParticipants(getIdentity(), new IdentitiesAddEvent(e.getMember()), repoEntry);
+			} else {
+				repositoryManager.removeParticipants(getIdentity(), Collections.singletonList(e.getMember()), repoEntry);
+			}
+		}
+	}
+	
+	private void doChangeGroupPermissions(List<BusinessGroupMembershipChange> changes) {
+		businessGroupService.updateMemberships(getIdentity(), changes);
 	}
 	
 	protected void doLeave(UserRequest ureq, List<Identity> members) {

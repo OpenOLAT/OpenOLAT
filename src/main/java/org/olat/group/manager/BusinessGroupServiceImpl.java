@@ -79,8 +79,10 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
+import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.BusinessGroupMembershipImpl;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
+import org.olat.group.model.BusinessGroupMembershipsChanges;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -552,6 +554,72 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 				removeOwners(identity, ownerToRemove, group);
 		}});
+	}
+
+	@Override
+	public void updateMemberships(final Identity ureqIdentity, final List<BusinessGroupMembershipChange> changes) {
+		Map<Long,BusinessGroupMembershipsChanges> changesMap = new HashMap<Long,BusinessGroupMembershipsChanges>();
+		for(BusinessGroupMembershipChange change:changes) {
+			BusinessGroupMembershipsChanges changesWrapper;
+			if(changesMap.containsKey(change.getGroupKey())) {
+				changesWrapper = changesMap.get(change.getGroupKey());
+			} else {
+				changesWrapper = new BusinessGroupMembershipsChanges();
+				changesMap.put(change.getGroupKey(), changesWrapper);
+			}
+			
+			Identity id = change.getMember();
+			if(change.getTutor() != null) {
+				if(change.getTutor().booleanValue()) {
+					changesWrapper.addTutors.add(id);
+				} else {
+					changesWrapper.removeTutors.add(id);
+				}
+			}
+			
+			if(change.getParticipant() != null) {
+				if(change.getParticipant().booleanValue()) {
+					changesWrapper.addParticipants.add(id);
+				} else {
+					changesWrapper.removeParticipants.add(id);
+				}	
+			}
+			
+			if(change.getWaitingList() != null) {
+				if(change.getWaitingList().booleanValue()) {
+					changesWrapper.addToWaitingList.add(id);
+				} else {
+					changesWrapper.removeFromWaitingList.add(id);
+				}
+			}
+		}
+		
+		List<BusinessGroup> groups = loadBusinessGroups(changesMap.keySet());
+		for(final BusinessGroup group:groups) {
+			final BusinessGroupMembershipsChanges changesWrapper = changesMap.get(group.getKey());
+			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor() {
+				public void execute() {
+					for(Identity id:changesWrapper.addToWaitingList) {
+						addToWaitingList(ureqIdentity, id, group);
+					}
+					for(Identity id:changesWrapper.removeFromWaitingList) {
+						removeFromWaitingList(ureqIdentity, id, group);
+					}
+					for(Identity id:changesWrapper.addTutors) {
+						addOwner(ureqIdentity, id, group);
+					}
+					for(Identity id:changesWrapper.removeTutors) {
+						removeOwner(ureqIdentity, id, group);
+					}
+					for(Identity id:changesWrapper.addParticipants) {
+						addParticipant(ureqIdentity, id, group);
+					}
+					for(Identity id:changesWrapper.removeParticipants) {
+						removeParticipant(ureqIdentity, id, group);
+					}
+				}
+			});
+		}
 	}
 
 	@Override

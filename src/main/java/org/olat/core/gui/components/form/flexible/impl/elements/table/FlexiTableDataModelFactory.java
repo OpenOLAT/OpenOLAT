@@ -40,7 +40,7 @@ public class FlexiTableDataModelFactory {
 	 * @param tableColumnModel
 	 * @return
 	 */
-	public static FlexiTableDataModel createFlexiTableDataModel(TableDataModel tableModel, FlexiTableColumnModel tableColumnModel ) {
+	public static FlexiTableDataModel createFlexiTableDataModel(TableDataModel<?> tableModel, FlexiTableColumnModel tableColumnModel ) {
 		FlexiTableDataModelImpl flexiTableDataModel = new FlexiTableDataModelImpl(tableModel,tableColumnModel);
 		return flexiTableDataModel;
 	}

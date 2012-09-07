@@ -34,7 +34,7 @@ import org.olat.core.gui.components.table.TableDataModel;
  */
 public class FlexiTableDataModelImpl implements FlexiTableDataModel {
 	
-	private TableDataModel tableModel;
+	private TableDataModel<?> tableModel;
 	private FlexiTableColumnModel tableColumnModel;
 
 	/**
@@ -42,7 +42,7 @@ public class FlexiTableDataModelImpl implements FlexiTableDataModel {
 	 * @param tableModel        non-flexi table data model
 	 * @param tableColumnModel  table-column-model (all columns)
 	 */
-	public FlexiTableDataModelImpl(TableDataModel tableModel, FlexiTableColumnModel tableColumnModel ) {
+	public FlexiTableDataModelImpl(TableDataModel<?> tableModel, FlexiTableColumnModel tableColumnModel ) {
 		this.tableModel = tableModel;
 		this.tableColumnModel = tableColumnModel;
 	}
