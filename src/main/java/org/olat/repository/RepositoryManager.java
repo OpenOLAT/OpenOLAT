@@ -1558,6 +1558,39 @@ public class RepositoryManager extends BasicManager {
 					+ "' from securitygroup with key " + re.getParticipantGroup().getKey());
     }
 	}
+	
+	/**
+	 * Remove the identities as members of the repository and from
+	 * all connected business groups.
+	 * 
+	 * @param members
+	 * @param re
+	 */
+	public boolean removeMembers(List<Identity> members, RepositoryEntry re) {
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		if(re.getOwnerGroup() != null) {
+			secGroups.add(re.getOwnerGroup());
+		}
+		if(re.getTutorGroup() != null) {
+			secGroups.add(re.getTutorGroup());
+		}
+		if(re.getParticipantGroup() != null) {
+			secGroups.add(re.getParticipantGroup());
+		}
+		//log the action
+		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+		for(Identity identity:members) {
+			try{
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_MEMBER_REMOVED, getClass(),
+						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+			} finally {
+				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+			}
+		}
+		
+		return securityManager.removeIdentityFromSecurityGroups(members, secGroups);
+	}
 
 	/**
 	 * has one owner of repository entry the same institution like the resource manager
@@ -1702,12 +1735,6 @@ public class RepositoryManager extends BasicManager {
 	private final boolean and(StringBuilder sb, boolean and) {
 		if(and) sb.append(" and ");
 		else sb.append(" where ");
-		return true;
-	}
-	
-	private final boolean or(StringBuilder sb, boolean or) {
-		if(or) sb.append(" or ");
-		else sb.append(" ");
 		return true;
 	}
 	

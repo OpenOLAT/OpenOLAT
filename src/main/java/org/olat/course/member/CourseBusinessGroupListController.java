@@ -19,6 +19,9 @@
  */
 package org.olat.course.member;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -29,14 +32,19 @@ import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.group.BusinessGroup;
+import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
 import org.olat.group.ui.main.BGAccessControlledCellRenderer;
 import org.olat.group.ui.main.BGResourcesCellRenderer;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
+import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.resource.OLATResource;
 
 /**
@@ -48,6 +56,8 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	private final OLATResource resource;
 	private final Link createGroup;
 	private final Link addGroup;
+	
+	private SelectBusinessGroupController selectController;
 	
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
 		super(ureq, wControl, "group_list");
@@ -84,7 +94,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(), null, getLocale()));
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
-		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "action", translate("table.header.work")));
+		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "action", translate("table.header.edit")));
 		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "action", translate("table.header.remove")));
 		return 11;
 	}
@@ -94,10 +104,47 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		if(source == createGroup) {
 			doCreate(ureq, getWindowControl(), resource);
 		} else if (source == addGroup) {
-			//TODO
+			doSelectGroups(ureq);
 		} else {
 			super.event(ureq, source, event);
 		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof BusinessGroupSelectionEvent) {
+			BusinessGroupSelectionEvent selectionEvent = (BusinessGroupSelectionEvent)event;
+			List<BusinessGroup> selectedGroups = selectionEvent.getGroups();
+			cmc.deactivate();
+			cleanUpPopups();
+			addGroupsToCourse(selectedGroups);
+		} else {
+			super.event(ureq, source, event);
+		}
+	}
+	
+	@Override
+	protected void cleanUpPopups() {
+		super.cleanUpPopups();
+		removeAsListenerAndDispose(selectController);
+		selectController = null;
+	}
+
+	protected void doSelectGroups(UserRequest ureq) {
+		removeAsListenerAndDispose(selectController);
+		selectController = new SelectBusinessGroupController(ureq, getWindowControl());
+		listenTo(selectController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectController.getInitialComponent(), true, translate("select.group"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	protected void addGroupsToCourse(List<BusinessGroup> groups) {
+		List<OLATResource> resources = Collections.singletonList(resource);
+		businessGroupService.addResourcesTo(groups, resources);
+		reloadModel();
+		mainVC.setDirty(true);
 	}
 
 	@Override

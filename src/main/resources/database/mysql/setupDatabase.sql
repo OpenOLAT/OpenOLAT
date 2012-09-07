@@ -1255,8 +1255,11 @@ create or replace view o_re_membership_v as (
       membership.lastmodified as lastmodified,
       membership.creationdate as creationdate,
       re_owner_member.repositoryentry_id as owner_re_id,
+      re_owner_member.fk_olatresource as owner_ores_id,
       re_tutor_member.repositoryentry_id as tutor_re_id,
-      re_part_member.repositoryentry_id as participant_re_id
+      re_tutor_member.fk_olatresource as tutor_ores_id,
+      re_part_member.repositoryentry_id as participant_re_id,
+      re_part_member.fk_olatresource as participant_ores_id
    from o_bs_membership as membership
    left join o_repositoryentry as re_part_member on (membership.secgroup_id = re_part_member.fk_participantgroup)
    left join o_repositoryentry as re_tutor_member on (membership.secgroup_id = re_tutor_member.fk_tutorgroup)

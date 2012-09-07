@@ -34,8 +34,11 @@ public class RepositoryEntryMembership extends PersistentObject {
 	private Long identityKey;
 	private Date lastModified;
 	private Long ownerRepoKey;
+	private Long ownerResourceKey;
 	private Long tutorRepoKey;
+	private Long tutorResourceKey;
 	private Long participantRepoKey;
+	private Long participantResourceKey;
 
 	public Long getIdentityKey() {
 		return identityKey;
@@ -75,6 +78,30 @@ public class RepositoryEntryMembership extends PersistentObject {
 
 	public void setParticipantRepoKey(Long participantRepoKey) {
 		this.participantRepoKey = participantRepoKey;
+	}
+
+	public Long getOwnerResourceKey() {
+		return ownerResourceKey;
+	}
+
+	public void setOwnerResourceKey(Long ownerResourceKey) {
+		this.ownerResourceKey = ownerResourceKey;
+	}
+
+	public Long getTutorResourceKey() {
+		return tutorResourceKey;
+	}
+
+	public void setTutorResourceKey(Long tutorResourceKey) {
+		this.tutorResourceKey = tutorResourceKey;
+	}
+
+	public Long getParticipantResourceKey() {
+		return participantResourceKey;
+	}
+
+	public void setParticipantResourceKey(Long participantResourceKey) {
+		this.participantResourceKey = participantResourceKey;
 	}
 
 	@Override

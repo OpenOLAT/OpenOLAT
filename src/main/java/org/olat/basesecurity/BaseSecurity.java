@@ -194,6 +194,14 @@ public interface BaseSecurity {
 	 */
 	public Identity loadIdentityByKey(Long identityKey);
 	
+	/**
+	 * Load a list of identities by their keys.
+	 * 
+	 * @param identityKeys
+	 * @return A list of identities
+	 */
+	public List<Identity> loadIdentityByKeys(Collection<Long> identityKeys);
+	
 	public IdentityShort loadIdentityShortByKey(Long identityKey);
 	
 	/**
@@ -312,7 +320,15 @@ public interface BaseSecurity {
 	 * @param identity
 	 * @param secGroup
 	 */
-	public void removeIdentityFromSecurityGroup(Identity identity, SecurityGroup secGroup);
+	public boolean removeIdentityFromSecurityGroup(Identity identity, SecurityGroup secGroup);
+
+	/**
+	 * Remove an Identity
+	 * @param identity
+	 * @param secGroups
+	 * @return
+	 */
+	public boolean removeIdentityFromSecurityGroups(List<Identity> identities, List<SecurityGroup> secGroups);
 
 	// --- Policy management
 	// again no pure RAM creation, since all attributes are mandatory and given by

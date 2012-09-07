@@ -541,6 +541,78 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testRemoveMembers() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-0-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-2-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-3-" + UUID.randomUUID().toString());
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-4-" + UUID.randomUUID().toString());
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(id1, "move-bg-3", "move-desc", 0, 10, true, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(id2, "move-bg-3", "move-desc", 0, 10, true, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(id3, "move-bg-3", "move-desc", 0, 10, true, false, resource);
+
+		securityManager.addIdentityToSecurityGroup(id2, group1.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id3, group1.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id3, group2.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group2.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id1, group3.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group3.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id4, group3.getWaitingGroup());
+		dbInstance.commitAndCloseSession();
+		//this groups and relations have been created
+		//group1: id1, id2, id3
+		//group2: id2, id3
+		//group3: id1, id2, id3, id4
+		
+		
+		//-> remove id1, id3 from the resource
+		List<Identity> identitiesToRemove = new ArrayList<Identity>();
+		identitiesToRemove.add(id1);
+		identitiesToRemove.add(id3);
+		businessGroupService.removeMembers(admin, identitiesToRemove, resource);
+		dbInstance.commitAndCloseSession();
+
+		//check in group1 stay only id2 in waiting list
+		List<Identity> ownerGroup1 = securityManager.getIdentitiesOfSecurityGroup(group1.getOwnerGroup());
+		Assert.assertNotNull(ownerGroup1);
+		Assert.assertTrue(ownerGroup1.isEmpty());
+		List<Identity> participantGroup1 = securityManager.getIdentitiesOfSecurityGroup(group1.getPartipiciantGroup());
+		Assert.assertNotNull(participantGroup1);
+		Assert.assertTrue(participantGroup1.isEmpty());
+		List<Identity> waitingGroup1 = securityManager.getIdentitiesOfSecurityGroup(group1.getWaitingGroup());
+		Assert.assertNotNull(waitingGroup1);
+		Assert.assertEquals(1, waitingGroup1.size());
+		Assert.assertEquals(id2, waitingGroup1.get(0));
+		
+		//check in group2 id2 as owner and participant
+		List<Identity> ownerGroup2 = securityManager.getIdentitiesOfSecurityGroup(group2.getOwnerGroup());
+		Assert.assertNotNull(ownerGroup2);
+		Assert.assertEquals(1, ownerGroup2.size());
+		Assert.assertEquals(id2, ownerGroup2.get(0));
+		List<Identity> participantGroup2 = securityManager.getIdentitiesOfSecurityGroup(group2.getPartipiciantGroup());
+		Assert.assertNotNull(participantGroup2);
+		Assert.assertEquals(1, participantGroup2.size());
+		Assert.assertEquals(id2, participantGroup2.get(0));
+		List<Identity> waitingGroup2 = securityManager.getIdentitiesOfSecurityGroup(group2.getWaitingGroup());
+		Assert.assertNotNull(waitingGroup2);
+		Assert.assertTrue(waitingGroup2.isEmpty());
+		
+		//check in group3 id2 as owner and participant
+		List<Identity> ownerGroup3 = securityManager.getIdentitiesOfSecurityGroup(group3.getOwnerGroup());
+		Assert.assertNotNull(ownerGroup3);
+		Assert.assertTrue(ownerGroup3.isEmpty());
+		List<Identity> participantGroup3 = securityManager.getIdentitiesOfSecurityGroup(group3.getPartipiciantGroup());
+		Assert.assertNotNull(participantGroup3);
+		Assert.assertEquals(1, participantGroup3.size());
+		Assert.assertEquals(id2, participantGroup3.get(0));
+		List<Identity> waitingGroup3 = securityManager.getIdentitiesOfSecurityGroup(group3.getWaitingGroup());
+		Assert.assertNotNull(waitingGroup3);
+		Assert.assertEquals(1, waitingGroup3.size());
+		Assert.assertEquals(id4, waitingGroup3.get(0));
+	}
+	
+	@Test
 	public void testMoveRegisteredIdentityFromWaitingToParticipant() throws Exception {
 		//add 1 identity as participant
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w4-1-" + UUID.randomUUID().toString());

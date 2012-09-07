@@ -75,6 +75,7 @@ import org.olat.group.BusinessGroupView;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
@@ -108,6 +109,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	protected static final String TABLE_ACTION_CONFIG = "bgTblConfig";
 	protected static final String TABLE_ACTION_EMAIL = "bgTblEmail";
 	protected static final String TABLE_ACTION_DELETE = "bgTblDelete";
+	protected static final String TABLE_ACTION_SELECT = "bgTblSelect";
 	
 	protected final VelocityContainer mainVC;
 
@@ -124,7 +126,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	private MailNotificationEditController userManagementSendMailController;
 	private BusinessGroupDeleteDialogBoxController deleteDialogBox;
 	private StepsMainRunController businessGroupWizard;
-	private CloseableModalController cmc;
+	protected CloseableModalController cmc;
 	
 	private final boolean admin;
 	protected final MarkManager markManager;
@@ -262,6 +264,8 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 					leaveDialogBox.setUserObject(businessGroup);
 				} else if (actionid.equals(TABLE_ACTION_ACCESS)) {
 					doAccess(ureq, businessGroup);
+				} else if (actionid.equals(TABLE_ACTION_SELECT)) {
+					doSelect(ureq, businessGroup);
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
@@ -278,6 +282,8 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 					doUserManagement(ureq, selectedItems);
 				} else if(TABLE_ACTION_MERGE.equals(te.getAction())) {
 					doMerge(ureq, selectedItems);
+				} else if(TABLE_ACTION_SELECT.equals(te.getAction())) {
+					doSelect(ureq, selectedItems);
 				}
 			}
 		} else if (source == deleteDialogBox) {
@@ -347,7 +353,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	/**
 	 * Aggressive clean up all popup controllers
 	 */
-	private void cleanUpPopups() {
+	protected void cleanUpPopups() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(deleteDialogBox);
 		removeAsListenerAndDispose(groupCreateController);
@@ -604,6 +610,16 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		//TODO send mails
 	}
 	
+	private void doSelect(UserRequest ureq, List<BGTableItem> items) {
+		List<BusinessGroup> selection = toBusinessGroups(ureq, items, false);
+		fireEvent(ureq, new BusinessGroupSelectionEvent(selection));
+	}
+	
+	private void doSelect(UserRequest ureq, BusinessGroup group) {
+		List<BusinessGroup> selection = Collections.singletonList(group);
+		fireEvent(ureq, new BusinessGroupSelectionEvent(selection));
+	}
+	
 	/**
 	 * 
 	 * @param ureq
@@ -709,13 +725,18 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		return null;
 	}
 	
-	protected List<BusinessGroupView> updateTableModel(SearchBusinessGroupParams params, boolean alreadyMarked) {
+	protected List<BusinessGroupView> searchBusinessGroupViews(SearchBusinessGroupParams params) {
 		List<BusinessGroupView> groups;
 		if(params == null) {
 			groups = new ArrayList<BusinessGroupView>();
 		} else {
 			groups = businessGroupService.findBusinessGroupViews(params, getResource(), 0, -1);
 		}
+		return groups;
+	}
+	
+	protected List<BusinessGroupView> updateTableModel(SearchBusinessGroupParams params, boolean alreadyMarked) {
+		List<BusinessGroupView> groups = searchBusinessGroupViews(params);
 		lastSearchParams = params;
 		if(groups.isEmpty()) {
 			groupListModel.setEntries(Collections.<BGTableItem>emptyList());

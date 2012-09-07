@@ -101,6 +101,10 @@ public class GroupLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction GROUP_FROM_WAITING_LIST_REMOVED = 
 		new GroupLoggingAction(ActionType.tracking,	CrudAction.delete, ActionVerb.remove, ActionObject.waitingperson).setTypeList(GROUP_ACTION_RESOURCEABLE_TYPE_LIST);
 
+	/** activity identitfyer: group participant has been removed from group * */
+	public static final ILoggingAction GROUP_MEMBER_REMOVED = 
+		new GroupLoggingAction(ActionType.tracking, CrudAction.delete, ActionVerb.remove, ActionObject.participant).setTypeList(GROUP_ACTION_RESOURCEABLE_TYPE_LIST);
+
 
 	/** activity identitfyer: group configuration has been changed * */
 	public static final ILoggingAction GROUP_CONFIGURATION_CHANGED = 

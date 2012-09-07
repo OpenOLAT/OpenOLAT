@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import junit.framework.Assert;
@@ -337,7 +339,6 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertNotNull(byWaitingGroup);
 		Assert.assertEquals(group2, byWaitingGroup);
 		Assert.assertNotSame(group1, byWaitingGroup);
-		
 	}
 	
 	@Test
@@ -375,6 +376,32 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		List<BusinessGroup> groupOfId3 = businessGroupDao.findBusinessGroupsWithWaitingListAttendedBy(id3,  null);
 		Assert.assertNotNull(groupOfId3);
 		Assert.assertTrue(groupOfId3.isEmpty());
+	}
+	
+	@Test
+	public void findBusinessGroupWithAuthorConnection() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsUser("bdao-5-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		securityManager.addIdentityToSecurityGroup(author, re.getOwnerGroup());
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdlo", "gdlo-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(author, "gdmo", "gdmo-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(author, "gdmo", "gdmo-desc", 0, 5, true, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(group1, re.getOlatResource());
+		businessGroupRelationDao.addRelationToResource(group3, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		//check 
+		List<BusinessGroupView> groups = businessGroupDao.findBusinessGroupWithAuthorConnection(author);
+		Assert.assertNotNull(groups);
+		Assert.assertEquals(2, groups.size());
+		
+		Set<Long> retrievedGroupkey = new HashSet<Long>();
+		for(BusinessGroupView view:groups) {
+			retrievedGroupkey.add(view.getKey());
+		}
+		Assert.assertTrue(retrievedGroupkey.contains(group1.getKey()));
+		Assert.assertTrue(retrievedGroupkey.contains(group3.getKey()));
+		Assert.assertFalse(retrievedGroupkey.contains(group2.getKey()));
 	}
 	
 	@Test

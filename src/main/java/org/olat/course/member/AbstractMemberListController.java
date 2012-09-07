@@ -20,6 +20,7 @@
 package org.olat.course.member;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,12 +38,19 @@ import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
+import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
+import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.course.member.MemberListTableModel.Cols;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
@@ -51,6 +59,7 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -65,6 +74,9 @@ public abstract class AbstractMemberListController extends BasicController {
 	protected final TableController memberListCtr;
 	protected final VelocityContainer mainVC;
 	
+	private DialogBoxController leaveDialogBox;
+
+	private final UserManager userManager;
 	private final RepositoryEntry repoEntry;
 	private final BaseSecurity securityManager;
 	private final RepositoryManager repositoryManager;
@@ -74,6 +86,7 @@ public abstract class AbstractMemberListController extends BasicController {
 		super(ureq, wControl);
 		
 		this.repoEntry = repoEntry;
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -100,11 +113,6 @@ public abstract class AbstractMemberListController extends BasicController {
 		//
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
-	}
-	
 	protected int initColumns() {
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastName.i18n(), Cols.lastName.ordinal(), null, getLocale()));
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstName.i18n(), Cols.firstName.ordinal(), null, getLocale()));
@@ -114,11 +122,71 @@ public abstract class AbstractMemberListController extends BasicController {
 		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
 		CustomCellRenderer groupRenderer = new GroupCellRenderer();
 		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
-		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "action", translate("table.header.work")));
+		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "action", translate("table.header.edit")));
 		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_REMOVE, "action", translate("table.header.remove")));
 		return 8;
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == memberListCtr) {
+			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
+				TableEvent te = (TableEvent) event;
+				String actionid = te.getActionId();
+
+				MemberView member = memberListModel.getObject(te.getRowId());
+				if(actionid.equals(TABLE_ACTION_EDIT)) {
+					doEdit(ureq, member);
+				} else if(actionid.equals(TABLE_ACTION_REMOVE)) {
+					confirmDelete(ureq, Collections.singletonList(member));
+				}
+			} else if (event instanceof TableMultiSelectEvent) {
+				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
+				List<MemberView> selectedItems = memberListModel.getObjects(te.getSelection());
+				if(TABLE_ACTION_REMOVE.equals(te.getAction())) {
+					confirmDelete(ureq, selectedItems);
+				}
+			}
+		} else if (source == leaveDialogBox) {
+			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<Identity> members = (List<Identity>)leaveDialogBox.getUserObject();
+				doLeave(ureq, members);
+				reloadModel();
+			}
+		}
+	}
 	
+	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
+		List<Long> identityKeys = new ArrayList<Long>();
+		for(MemberView member:members) {
+			identityKeys.add(member.getIdentityKey());
+		}
+		List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
+		StringBuilder sb = new StringBuilder();
+		for(Identity id:ids) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(userManager.getUserDisplayName(id.getUser()));
+		}
+		leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", sb.toString()), leaveDialogBox);
+		leaveDialogBox.setUserObject(ids);
+	}
+	
+	protected void doEdit(UserRequest ureq, MemberView member) {
+		
+	}
+	
+	protected void doLeave(UserRequest ureq, List<Identity> members) {
+		repositoryManager.removeMembers(members, repoEntry);
+		businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource());
+		reloadModel();
+	}
+
 	protected abstract SearchMembersParams getSearchParams();
 	
 	protected void reloadModel() {
@@ -138,7 +206,7 @@ public abstract class AbstractMemberListController extends BasicController {
 			groupKeys.add(group.getKey());
 			keyToGroupMap.put(group.getKey(), group);
 		}
-		List<BusinessGroupMembership> memberships =
+		List<BusinessGroupMembership> memberships = groups.isEmpty() ? Collections.<BusinessGroupMembership>emptyList() :
 				businessGroupService.getBusinessGroupMembership(groupKeys);
 		
 		//get identities

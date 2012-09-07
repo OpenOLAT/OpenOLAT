@@ -52,6 +52,16 @@ public class BusinessGroupMembershipViewImpl extends PersistentObject {
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
+	
+	public Long getGroupKey() {
+		if(participantGroupKey != null) {
+			return participantGroupKey;
+		}
+		if(ownerGroupKey != null) {
+			return ownerGroupKey;
+		}
+		return waitingGroupKey;
+	}
 
 	public Long getOwnerGroupKey() {
 		return ownerGroupKey;

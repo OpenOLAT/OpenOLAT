@@ -51,8 +51,10 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupShortImpl;
+import org.olat.group.model.BusinessGroupViewImpl;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
+import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.model.OfferImpl;
@@ -235,8 +237,17 @@ public class BusinessGroupDAO {
 		Number res = query.getSingleResult();
 		return res.intValue();
 	}
+
+	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Collection<BusinessGroup> groups, List<Identity> identities) {
+		List<Long> groupKeys = new ArrayList<Long>();
+		for(BusinessGroup group:groups) {
+			groupKeys.add(group.getKey());
+		}
+		Identity[] identityArr = identities.toArray(new Identity[identities.size()]);
+		return getMembershipInfoInBusinessGroups(groupKeys, identityArr);
+	}
 	
-	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Collection<Long> groupKeys, Identity... identity) {
+	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Collection<Long> groupKeys, Identity... identity) {	
 		StringBuilder sb = new StringBuilder(); 
 		sb.append("select membership from ").append(BusinessGroupMembershipViewImpl.class.getName()).append(" as membership ");
 		boolean and = false;
@@ -616,6 +627,24 @@ public class BusinessGroupDAO {
 		}
 		return dbq;
 	}
+	
+	public List<BusinessGroupView> findBusinessGroupWithAuthorConnection(Identity author) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgi from ").append(BusinessGroupViewImpl.class.getName()).append(" as bgi ")
+		  .append("where bgi.key in (")
+		  .append("  select rel.group.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+		  .append("  where rel.resource.key in (")
+		  .append("    select membership.ownerResourceKey from ").append(RepositoryEntryMembership.class.getName()).append(" as membership")
+		  .append("    where membership.identityKey=:authorKey and membership.ownerRepoKey is not null")
+		  .append("  )")
+		  .append(")");
+
+		List<BusinessGroupView> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroupView.class)
+				.setParameter("authorKey", author.getKey())
+				.getResultList();
+		return groups;
+	}
 
 	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource) {
 		TypedQuery<Number> query = createFindViewDBQuery(params, resource, Number.class)
@@ -643,7 +672,7 @@ public class BusinessGroupDAO {
 		} else {
 			query.append("select count(bgi.key) from ");
 		}
-		query.append(BusinessGroupView.class.getName()).append(" as bgi ");
+		query.append(BusinessGroupViewImpl.class.getName()).append(" as bgi ");
 
 		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
 			//implicit joins

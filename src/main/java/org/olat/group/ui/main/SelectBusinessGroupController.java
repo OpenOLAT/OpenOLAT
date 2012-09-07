@@ -4,14 +4,15 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.group.model.BusinessGroupSelectionEvent;
 
 /**
  * 
@@ -25,9 +26,10 @@ public class SelectBusinessGroupController extends BasicController {
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
-	private FavoritBusinessGroupListController favoritGroupsCtrl;
-	private OwnedBusinessGroupListController ownedGroupsCtrl;
-	private SearchBusinessGroupListController searchGroupsCtrl;
+	private SelectFavoritBusinessGroupController favoritGroupsCtrl;
+	private SelectOwnedBusinessGroupController ownedGroupsCtrl;
+	private SelectBusinessGroupCourseAuthorController authorGroupsCtrL;
+	private SelectSearchBusinessGroupController searchGroupsCtrl;
 	
 	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -43,10 +45,10 @@ public class SelectBusinessGroupController extends BasicController {
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		markedGroupsLink = LinkFactory.createLink("marked.groups", mainVC, this);
 		segmentView.addSegment(markedGroupsLink, marked);
-		ownedGroupsLink = LinkFactory.createLink("course.groups", mainVC, this);
-		segmentView.addSegment(ownedGroupsLink, false);
-		courseGroupsLink = LinkFactory.createLink("opengroups.all", mainVC, this);
-		segmentView.addSegment(courseGroupsLink, !marked);
+		courseGroupsLink = LinkFactory.createLink("course.groups", mainVC, this);
+		segmentView.addSegment(courseGroupsLink, false);
+		ownedGroupsLink = LinkFactory.createLink("owned.groups.2", mainVC, this);
+		segmentView.addSegment(ownedGroupsLink, !marked);
 		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
 		segmentView.addSegment(searchOpenLink, false);
 		
@@ -78,9 +80,18 @@ public class SelectBusinessGroupController extends BasicController {
 		}
 	}
 
-	private FavoritBusinessGroupListController updateMarkedGroups(UserRequest ureq) {
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof BusinessGroupSelectionEvent) {
+			fireEvent(ureq, event);
+		} else {
+			super.event(ureq, source, event);
+		}
+	}
+
+	private SelectFavoritBusinessGroupController updateMarkedGroups(UserRequest ureq) {
 		if(favoritGroupsCtrl == null) {
-			favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, getWindowControl());
+			favoritGroupsCtrl = new SelectFavoritBusinessGroupController(ureq, getWindowControl());
 			listenTo(favoritGroupsCtrl);
 		}
 		favoritGroupsCtrl.updateMarkedGroups();
@@ -88,9 +99,9 @@ public class SelectBusinessGroupController extends BasicController {
 		return favoritGroupsCtrl;
 	}
 	
-	private OwnedBusinessGroupListController updateOwnedGroups(UserRequest ureq) {
+	private SelectOwnedBusinessGroupController updateOwnedGroups(UserRequest ureq) {
 		if(ownedGroupsCtrl == null) {
-			ownedGroupsCtrl = new OwnedBusinessGroupListController(ureq, getWindowControl());
+			ownedGroupsCtrl = new SelectOwnedBusinessGroupController(ureq, getWindowControl());
 			listenTo(ownedGroupsCtrl);
 		}
 		ownedGroupsCtrl.updateOwnedGroups();
@@ -98,13 +109,19 @@ public class SelectBusinessGroupController extends BasicController {
 		return ownedGroupsCtrl;
 	}
 	
-	private void updateCourseGroups(UserRequest ureq) {
-		mainVC.put("groupList", new Panel("empty"));
+	private SelectBusinessGroupCourseAuthorController updateCourseGroups(UserRequest ureq) {
+		if(authorGroupsCtrL == null) {
+			authorGroupsCtrL = new SelectBusinessGroupCourseAuthorController(ureq, getWindowControl());
+			listenTo(authorGroupsCtrL);
+		}
+		authorGroupsCtrL.updateOwnedGroups();
+		mainVC.put("groupList", authorGroupsCtrL.getInitialComponent());
+		return authorGroupsCtrL;
 	}
 	
-	private SearchBusinessGroupListController updateSearch(UserRequest ureq) {
+	private SelectSearchBusinessGroupController updateSearch(UserRequest ureq) {
 		if(searchGroupsCtrl == null) {
-			searchGroupsCtrl = new SearchBusinessGroupListController(ureq, getWindowControl());
+			searchGroupsCtrl = new SelectSearchBusinessGroupController(ureq, getWindowControl());
 			listenTo(searchGroupsCtrl);
 		}
 		searchGroupsCtrl.updateSearch(ureq);

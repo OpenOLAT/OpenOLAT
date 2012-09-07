@@ -1,5 +1,6 @@
 package org.olat.basesecurity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,5 +86,44 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertNotNull(sgFound);
 		Assert.assertEquals(sgFound.getKey(), ng.getKey());
 	}
-
+	
+	@Test
+	public void testRemoveFromSecurityGroup() {
+		//create a security group with 2 identites
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-1-sec-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-2-sec-" + UUID.randomUUID().toString());
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		securityManager.addIdentityToSecurityGroup(id1, secGroup);
+		securityManager.addIdentityToSecurityGroup(id2, secGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//remove the first one
+		securityManager.removeIdentityFromSecurityGroup(id1, secGroup);
+		dbInstance.commitAndCloseSession();
+		
+		int countMembers = securityManager.countIdentitiesOfSecurityGroup(secGroup);
+		Assert.assertEquals(1, countMembers);
+		List<Identity> members = securityManager.getIdentitiesOfSecurityGroup(secGroup);
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		Assert.assertEquals(id2, members.get(0));
+	}
+	
+	@Test
+	public void testLoadIdentityByKeys() {
+		//create a security group with 2 identites
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "load-1-sec-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "load-2-sec-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> keys = new ArrayList<Long>(2);
+		keys.add(id1.getKey());
+		keys.add(id2.getKey());
+		List<Identity> identities = securityManager.loadIdentityByKeys(keys);
+		Assert.assertNotNull(identities);
+		Assert.assertEquals(2, identities.size());
+		Assert.assertTrue(identities.contains(id1));
+		Assert.assertTrue(identities.contains(id2));
+	}
+	
 }

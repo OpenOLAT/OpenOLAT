@@ -240,9 +240,23 @@ public interface BusinessGroupService {
 	
 	
 	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource);
-	
+	/**
+	 * Find business groups (the view)
+	 * @param params
+	 * @param resource
+	 * @param firstResult
+	 * @param maxResults
+	 * @param ordering
+	 * @return
+	 */
 	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
 	
+	/**
+	 * Find all groups within resources where the identity is author.
+	 * @param author
+	 * @return
+	 */
+	public List<BusinessGroupView> findBusinessGroupViewsWithAuthorConnection(Identity author);
 	
 	public List<Long> toGroupKeys(String groupNames, OLATResource resource);
 
@@ -349,6 +363,16 @@ public interface BusinessGroupService {
 	 * @param flags
 	 */
 	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group);
+	
+	/**
+	 * Remove the members (tutors and participants) from all business groups connected
+	 * to the resource.
+	 * 
+	 * @param ureqIdentity
+	 * @param identities
+	 * @param group
+	 */
+	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource);
 
 	/**
 	 * Adds a user to a waiting-list of a group and does all the magic that needs to

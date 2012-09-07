@@ -598,8 +598,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return businessGroupDAO.findBusinessGroups(params, resource, firstResult, maxResults);
 	}
 
-
 	@Override
+	@Transactional(readOnly=true)
 	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource) {
 		if(params == null) {
 			params = new SearchBusinessGroupParams();
@@ -608,12 +608,19 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource, int firstResult,
 			int maxResults, BusinessGroupOrder... ordering) {
 		if(params == null) {
 			params = new SearchBusinessGroupParams();
 		}
 		return businessGroupDAO.findBusinessGroupViews(params, resource, firstResult, maxResults);
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<BusinessGroupView> findBusinessGroupViewsWithAuthorConnection(Identity author) {
+		return businessGroupDAO.findBusinessGroupWithAuthorConnection(author);
 	}
 
 	@Override
@@ -662,7 +669,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			// 1.b)delete display member property
 			businessGroupPropertyManager.deleteDisplayMembers(group);
 			// 1.c)delete user in security groups
-			removeFromRepositoryEntrySecurityGroup(group);
+			//removeFromRepositoryEntrySecurityGroup(group);
 			// 2) Delete the group areas
 			areaManager.deleteBGtoAreaRelations(group);
 			// 3) Delete the group object itself on the database
@@ -743,44 +750,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			return mailerResult;
 		}
 		return null;
-	}
-	
-	private void removeFromRepositoryEntrySecurityGroup(BusinessGroup group) {
-		//TODO
-		/*
-		BGContext context = group.getGroupContext();
-		if(context == null) return;//nothing to do
-		
-		
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		List<Identity> coaches = group.getOwnerGroup() == null ? Collections.<Identity>emptyList() :
-			securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
-		List<Identity> participants = group.getPartipiciantGroup() == null ? Collections.<Identity>emptyList() :
-			securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
-		List<RepositoryEntry> entries = contextManager.findRepositoryEntriesForBGContext(context);
-		
-		for(Identity coach:coaches) {
-			List<BusinessGroup> businessGroups = contextManager.getBusinessGroupAsOwnerOfBGContext(coach, context) ;
-			if(context.isDefaultContext() && businessGroups.size() == 1) {
-				for(RepositoryEntry entry:entries) {
-					if(entry.getTutorGroup() != null && securityManager.isIdentityInSecurityGroup(coach, entry.getTutorGroup())) {
-						securityManager.removeIdentityFromSecurityGroup(coach, entry.getTutorGroup());
-					}
-				}
-			}
-		}
-		
-		for(Identity participant:participants) {
-			List<BusinessGroup> businessGroups = contextManager.getBusinessGroupAsParticipantOfBGContext(participant, context) ;
-			if(context.isDefaultContext() && businessGroups.size() == 1) {
-				for(RepositoryEntry entry:entries) {
-					if(entry.getParticipantGroup() != null && securityManager.isIdentityInSecurityGroup(participant, entry.getParticipantGroup())) {
-						securityManager.removeIdentityFromSecurityGroup(participant, entry.getParticipantGroup());
-					}
-				}
-			}
-		}
-		*/
 	}
 
 	@Override
@@ -903,6 +872,80 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 			}
 		});
+	}
+
+	@Override
+	public void removeMembers(final Identity ureqIdentity, final List<Identity> identities, OLATResource resource) {
+		if(identities == null || identities.isEmpty() || resource == null) return;//nothing to do
+		
+		List<BusinessGroup> groups = findBusinessGroups(null, resource, 0, -1);
+		if(groups.isEmpty()) return;//nothing to do
+		
+		Map<Long,BusinessGroup> keyToGroupMap = new HashMap<Long,BusinessGroup>();
+		for(BusinessGroup group:groups) {
+			keyToGroupMap.put(group.getKey(), group);
+		}
+		final Map<Long,Identity> keyToIdentityMap = new HashMap<Long,Identity>();
+		for(Identity identity:identities) {
+			keyToIdentityMap.put(identity.getKey(), identity);
+		}
+		
+		List<BusinessGroupMembershipViewImpl> memberships = businessGroupDAO.getMembershipInfoInBusinessGroups(groups, identities);
+		Collections.sort(memberships, new BusinessGroupMembershipViewComparator());
+
+		BusinessGroupMembershipViewImpl nextGroupMembership = null;
+		for(final Iterator<BusinessGroupMembershipViewImpl> itMembership=memberships.iterator(); nextGroupMembership != null || itMembership.hasNext(); ) {
+			final BusinessGroupMembershipViewImpl currentMembership;
+			if(nextGroupMembership == null) {
+				currentMembership = itMembership.next();
+			} else {
+				currentMembership = nextGroupMembership;
+				nextGroupMembership = null;
+			}
+			
+			Long groupKey = currentMembership.getGroupKey();
+			BusinessGroup nextGroup = keyToGroupMap.get(groupKey);
+
+			final BusinessGroup currentGroup = nextGroup;
+			nextGroupMembership = CoordinatorManager.getInstance().getCoordinator().getSyncer()
+					.doInSync(currentGroup, new SyncerCallback<BusinessGroupMembershipViewImpl>(){
+				
+				public BusinessGroupMembershipViewImpl execute() {
+					BusinessGroupMembershipViewImpl previsousComputedMembership = currentMembership;
+					BusinessGroupMembershipViewImpl membership;
+
+					do {
+						if(previsousComputedMembership != null) {
+							membership = previsousComputedMembership;
+							previsousComputedMembership = null;
+						} else if(itMembership.hasNext()) {
+							membership = itMembership.next();
+						} else {
+							//security, nothing to do
+							return null;
+						}
+						
+						if(currentGroup.getKey().equals(membership.getGroupKey())) {
+							Identity id = keyToIdentityMap.get(membership.getIdentityKey());
+							if(membership.getOwnerGroupKey() != null) {
+								removeOwner(ureqIdentity, id, currentGroup);
+							}
+							if(membership.getParticipantGroupKey() != null) {
+								removeParticipant(ureqIdentity, id, currentGroup);
+							}
+							if(membership.getWaitingGroupKey() != null) {
+								removeFromWaitingList(ureqIdentity, id, currentGroup);
+							}
+						} else {
+							return membership;
+						}
+					} while (itMembership.hasNext());
+
+					return null;
+				}
+			});
+
+		}
 	}
 
 	@Override
@@ -1183,26 +1226,29 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return tools.isToolEnabled(CollaborationTools.TOOL_CHAT);
 	}
 	
+	public void removeOwner(Identity ureqIdentity, Identity identityToRemove, BusinessGroup group) {
+		securityManager.removeIdentityFromSecurityGroup(identityToRemove, group.getOwnerGroup());
+		// remove user from buddies rosters
+		removeFromRoster(identityToRemove, group);
+		
+		//remove subsciptions if user gets removed
+		removeSubscriptions(identityToRemove, group);
+		
+		// notify currently active users of this business group
+		if (identityToRemove.getKey().equals(ureqIdentity.getKey()) ) {
+			BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.MYSELF_ASOWNER_REMOVED_EVENT, group, identityToRemove);
+		} else {
+  		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group, identityToRemove);
+		}
+		// do logging
+		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToRemove));
+	}
+	
 	@Override
 	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup group) {
 		//fxdiff VCRP-2: access control
-		for(Identity identity:identitiesToRemove) {
-			securityManager.removeIdentityFromSecurityGroup(identity, group.getOwnerGroup());
-			// remove user from buddies rosters
-			removeFromRoster(identity, group);
-			
-			//remove subsciptions if user gets removed
-			removeSubscriptions(identity, group);
-			
-			// notify currently active users of this business group
-			if (identity.getKey().equals(ureqIdentity.getKey()) ) {
-				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.MYSELF_ASOWNER_REMOVED_EVENT, group, identity);
-			} else {
-	  		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group, identity);
-			}
-			// do logging
-			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
-			// send notification mail in your controller!
+		for(Identity identityToRemove:identitiesToRemove) {
+			removeOwner(ureqIdentity, identityToRemove, group);
 		}
 	}
 	

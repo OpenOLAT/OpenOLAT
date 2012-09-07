@@ -552,11 +552,31 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#removeIdentityFromSecurityGroup(org.olat.core.id.Identity, org.olat.basesecurity.SecurityGroup)
 	 */
-	public void removeIdentityFromSecurityGroup(Identity identity, SecurityGroup secGroup) {
-		IdentityImpl iimpl = getImpl(identity);
-		DBFactory.getInstance().delete(
-				"from org.olat.basesecurity.SecurityGroupMembershipImpl as msi where msi.identity.key = ? and msi.securityGroup.key = ?",
-				new Object[] { iimpl.getKey(), secGroup.getKey() }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.LONG });
+	@Override
+	public boolean removeIdentityFromSecurityGroup(Identity identity, SecurityGroup secGroup) {
+		return removeIdentityFromSecurityGroups(Collections.singletonList(identity), Collections.singletonList(secGroup));
+	}
+
+	@Override
+	public boolean removeIdentityFromSecurityGroups(List<Identity> identities, List<SecurityGroup> secGroups) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as msi ")
+		  .append("  where msi.identity.key in (:identityKeys) and msi.securityGroup.key in (:secGroupKeys)");
+		
+		List<Long> identityKeys = new ArrayList<Long>();
+		for(Identity identity:identities) {
+			identityKeys.add(identity.getKey());
+		}
+		List<Long> secGroupKeys = new ArrayList<Long>();
+		for(SecurityGroup secGroup:secGroups) {
+			secGroupKeys.add(secGroup.getKey());
+		}
+		int rowsAffected = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("identityKeys", identityKeys)
+				.setParameter("secGroupKeys", secGroupKeys)
+				.executeUpdate();
+		return rowsAffected > 0;
 	}
 
 	/**
@@ -1111,7 +1131,21 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if(identityKey.equals(Long.valueOf(0))) return null;
 		return (Identity) DBFactory.getInstance().loadObject(IdentityImpl.class, identityKey);
 	}
-	
+
+	@Override
+	public List<Identity> loadIdentityByKeys(Collection<Long> identityKeys) {
+		if (identityKeys == null || identityKeys.isEmpty()) {
+			return Collections.emptyList();
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident where ident.key in (:keys)");
+		
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("keys", identityKeys)
+				.getResultList();
+	}
+
 	/**
 	 * @see org.olat.basesecurity.Manager#loadIdentityByKey(java.lang.Long,boolean)
 	 */
