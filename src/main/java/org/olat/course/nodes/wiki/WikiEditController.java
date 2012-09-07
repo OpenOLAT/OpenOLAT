@@ -120,10 +120,11 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 		
 		main = new Panel("wikimain");
 		
-		content = this.createVelocityContainer("edit");
-		/*previewButton = LinkFactory.createButtonSmall("command.preview", content, this);*/
+		content = createVelocityContainer("edit");
 		chooseButton = LinkFactory.createButtonSmall("command.create", content, this);
+		chooseButton.setElementCssClass("o_sel_wiki_choose_repofile");
 		changeButton = LinkFactory.createButtonSmall("command.change", content, this);
+		changeButton.setElementCssClass("o_sel_wiki_choose_repofile");
 				
 		editAccessVc = this.createVelocityContainer("edit_access");
 		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
