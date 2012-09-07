@@ -21,6 +21,8 @@ package org.olat.course.member;
 
 import java.util.List;
 
+import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -30,16 +32,24 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.member.wizard.ImportMember_1_ChooseMemberStep;
+import org.olat.group.BusinessGroup;
+import org.olat.group.ui.wizard.BGConfigBusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -60,6 +70,9 @@ public class MembersOverviewController extends BasicController implements Activa
 	private MemberListController tutorsCtrl;
 	private MemberListController participantsCtrl;
 	private MemberListController waitingCtrl;
+	private final Link importMemberLink, addMemberLink;
+	
+	private StepsMainRunController importMembersWizard;
 	
 	private final RepositoryEntry repoEntry;
 	
@@ -84,6 +97,13 @@ public class MembersOverviewController extends BasicController implements Activa
 		segmentView.addSegment(searchLink, false);
 		
 		updateAllMembers(ureq);
+		
+		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
+		mainVC.put("addMembers", addMemberLink);
+		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
+		mainVC.put("importMembers", importMemberLink);
+		
+		
 		putInitialPanel(mainVC);
 	}
 	
@@ -116,7 +136,37 @@ public class MembersOverviewController extends BasicController implements Activa
 			} else if (clickedLink == searchLink) {
 				updateSearch(ureq);
 			}
+		} else if (source == addMemberLink) {
+			
+		} else if (source == importMemberLink) {
+			doImportMembers(ureq);
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == importMembersWizard) {
+			System.out.println("Import!!!");
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doImportMembers(UserRequest ureq) {
+		removeAsListenerAndDispose(importMembersWizard);
+
+		Step start = new ImportMember_1_ChooseMemberStep(ureq, repoEntry);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				//configuration
+				System.out.println("Import!!!");
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("import.member"));
+		listenTo(importMembersWizard);
+		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
 	
 	private MemberListController updateAllMembers(UserRequest ureq) {

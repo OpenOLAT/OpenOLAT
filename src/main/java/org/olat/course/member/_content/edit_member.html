@@ -1,5 +1,6 @@
-$r.render("infos")
-
+#if($r.available("infos"))
+	$r.render("infos")
+#end
 <h4>$editTitle</h4>
 $r.render("repoRights")
 <h5>$r.translate("edit.member.groups")</h5>

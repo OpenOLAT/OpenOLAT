@@ -72,7 +72,8 @@ import org.olat.user.UserManager;
 public abstract class AbstractMemberListController extends BasicController {
 	
 	public static final String TABLE_ACTION_EDIT = "tbl_edit";
-	public static final String TABLE_ACTION_REMOVE = "tbl_REMOVE";
+	public static final String TABLE_ACTION_MAIL = "tbl_mail";
+	public static final String TABLE_ACTION_REMOVE = "tbl_remove";
 	
 	protected final MemberListTableModel memberListModel;
 	protected final TableController memberListCtr;
@@ -80,7 +81,7 @@ public abstract class AbstractMemberListController extends BasicController {
 	
 	private DialogBoxController leaveDialogBox;
 	protected CloseableModalController cmc;
-	private EditMemberController editMemberCtrl;
+	private EditMembershipController editMemberCtrl;
 
 	private final UserManager userManager;
 	private final RepositoryEntry repoEntry;
@@ -109,8 +110,13 @@ public abstract class AbstractMemberListController extends BasicController {
 		int numOfColumns = initColumns();
 		memberListModel = new MemberListTableModel(numOfColumns);
 		memberListCtr.setTableDataModel(memberListModel);
+		memberListCtr.setMultiSelect(true);
+		memberListCtr.addMultiSelectAction("table.header.edit", TABLE_ACTION_EDIT);
+		memberListCtr.addMultiSelectAction("table.header.mail", TABLE_ACTION_MAIL);
+		memberListCtr.addMultiSelectAction("table.header.remove", TABLE_ACTION_REMOVE);
 
 		mainVC.put("memberList", memberListCtr.getInitialComponent());
+		
 		putInitialPanel(mainVC);
 	}
 	
@@ -156,6 +162,10 @@ public abstract class AbstractMemberListController extends BasicController {
 				List<MemberView> selectedItems = memberListModel.getObjects(te.getSelection());
 				if(TABLE_ACTION_REMOVE.equals(te.getAction())) {
 					confirmDelete(ureq, selectedItems);
+				} else if(TABLE_ACTION_EDIT.equals(te.getAction())) {
+					//TODO
+				}if(TABLE_ACTION_MAIL.equals(te.getAction())) {
+					//TODO
 				}
 			}
 		} else if (source == leaveDialogBox) {
@@ -208,7 +218,7 @@ public abstract class AbstractMemberListController extends BasicController {
 	
 	protected void openEdit(UserRequest ureq, MemberView member) {
 		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		editMemberCtrl = new EditMemberController(ureq, getWindowControl(), identity, repoEntry);
+		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identity, repoEntry);
 		listenTo(editMemberCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
 				true, translate("edit.member"));

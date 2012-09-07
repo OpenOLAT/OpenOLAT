@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
@@ -56,11 +57,11 @@ import org.olat.repository.model.RepositoryEntryMembership;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class EditMemberController extends FormBasicController {
+public class EditMembershipController extends FormBasicController {
 	
 	private EditMemberTableDataModel tableDataModel;
 	private MultipleSelectionElement repoRightsEl;
-	private final MemberInfoController infoController;
+	private MemberInfoController infoController;
 	
 	private static final String[] repoRightsKeys = {"owner", "tutor", "participant"};
 	
@@ -75,7 +76,7 @@ public class EditMemberController extends FormBasicController {
 	private static final String[] keys = new String[] { "ison" };
 	private static final String[] values = new String[] {""};
 	
-	public EditMemberController(UserRequest ureq, WindowControl wControl, Identity member,
+	public EditMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
 			RepositoryEntry repoEntry) {
 		super(ureq, wControl, "edit_member");
 		this.member = member;
@@ -90,11 +91,27 @@ public class EditMemberController extends FormBasicController {
 		loadModel(member);
 	}
 	
+	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
+			RepositoryEntry repoEntry, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
+		
+		this.member = null;
+		this.repoEntry = repoEntry;
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		
+		memberships = Collections.emptyList();
+
+		initForm(ureq);
+		loadModel(member);
+	}
+	
 	private void loadModel(Identity member) {
 		List<BusinessGroupView> groups = businessGroupService.findBusinessGroupViews(null, repoEntry.getOlatResource(), 0, -1);
 		List<Long> businessGroupKeys = PersistenceHelper.toKeys(groups);
 		
-		groupMemberships = businessGroupService.getBusinessGroupMembership(businessGroupKeys, member);
+		groupMemberships = member == null ?
+				Collections.<BusinessGroupMembership>emptyList() : businessGroupService.getBusinessGroupMembership(businessGroupKeys, member);
 		List<MemberOption> options = new ArrayList<MemberOption>();
 		for(BusinessGroupView group:groups) {
 			MemberOption option = new MemberOption(group);
@@ -122,7 +139,9 @@ public class EditMemberController extends FormBasicController {
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.put("infos", infoController.getInitialComponent());
+			if(infoController != null) {
+				layoutCont.put("infos", infoController.getInitialComponent());
+			}
 
 			String title = translate("edit.member.title", new String[]{ repoEntry.getDisplayname() });
 			layoutCont.contextPut("editTitle", title);
@@ -133,10 +152,12 @@ public class EditMemberController extends FormBasicController {
 				translate("role.owner"), translate("role.tutor"), translate("role.participant")
 		};
 		repoRightsEl = uifactory.addCheckboxesVertical("repoRights", formLayout, repoRightsKeys, repoValues, null, 1);
-		RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
-		repoRightsEl.select("owner", repoPermission.isOwner());
-		repoRightsEl.select("tutor", repoPermission.isTutor());
-		repoRightsEl.select("participant", repoPermission.isParticipant());
+		if(member != null) {
+			RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
+			repoRightsEl.select("owner", repoPermission.isOwner());
+			repoRightsEl.select("tutor", repoPermission.isTutor());
+			repoRightsEl.select("participant", repoPermission.isParticipant());
+		}
 
 		//group rights
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
