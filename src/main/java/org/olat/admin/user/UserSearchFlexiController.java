@@ -16,8 +16,7 @@
  * Initial code contributed and copyrighted by<br>
  * frentix GmbH, http://www.frentix.com
  * <p>
- */ 
-
+ */
 package org.olat.admin.user;
 
 import java.util.ArrayList;
@@ -29,11 +28,14 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -41,21 +43,15 @@ import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.table.TableMultiSelectEvent;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.ajax.autocompletion.AutoCompleterController;
 import org.olat.core.gui.control.generic.ajax.autocompletion.EntriesChosenEvent;
+import org.olat.core.gui.control.generic.ajax.autocompletion.FlexiAutoCompleterController;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
-import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -89,15 +85,11 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *         Optionally set the useMultiSelect boolean to true which allows to
  *         select multiple identities from within the search results.
  */
-public class UserSearchController extends BasicController {
-	// Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends UserSearchController and re-use translations
-	private static final String PACKAGE = UserSearchController.class.getPackage().getName();
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
-	
+public class UserSearchFlexiController extends FormBasicController {
+
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
-	
-	private VelocityContainer myContent;
+
 	private Panel searchPanel;
 	private UserSearchForm searchform;
 	private TableController tableCtr;
@@ -107,47 +99,13 @@ public class UserSearchController extends BasicController {
 	private boolean useMultiSelect = false;
 	private Object userObject;
 	
-	private AutoCompleterController autocompleterC;
+	private FlexiAutoCompleterController autocompleterC;
 	private String actionKeyChoose;
 	private boolean isAdministrativeUser;
-	private Link backLink;
+	private FormLink backLink;
 
 	public static final String ACTION_KEY_CHOOSE = "action.choose";
 	public static final String ACTION_KEY_CHOOSE_FINISH = "action.choose.finish";
-	
-	
-	/**
-	 * fxdiff: FXOLAT-250   we need standard-constructor for use in genericMainController
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 */
-	public UserSearchController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false, false, false);
-	}
-	
-	
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param cancelbutton
-	 */
-	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton) {
-		this(ureq, wControl, cancelbutton, false, false);
-	}
-
-	/**
-	 * @param ureq
-	 * @param windowControl
-	 * @param cancelbutton
-	 * @param userMultiSelect
-	 * @param statusEnabled
-	 * @param actionKeyChooseFinish
-	 */
-	public UserSearchController(UserRequest ureq, WindowControl windowControl, boolean cancelbutton, boolean userMultiSelect, boolean statusEnabled, String actionKeyChooseFinish) {
-		this(ureq, windowControl, cancelbutton, userMultiSelect, statusEnabled);
-		this.actionKeyChoose = actionKeyChooseFinish;
-	}
 
 	/**
 	 * @param ureq
@@ -156,54 +114,48 @@ public class UserSearchController extends BasicController {
 	 * @param userMultiSelect
 	 * @param statusEnabled
 	 */
-	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect, boolean statusEnabled) {
-		super(ureq, wControl);
+	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, boolean userMultiSelect,
+			boolean statusEnabled, String actionKeyChooseFinish, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "usersearch", rootForm);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
-	  // Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends UserSearchController and re-use translations
-		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator( new PackageTranslator(PACKAGE, ureq.getLocale()) );	
-		myContent = new VelocityContainer("olatusersearch", VELOCITY_ROOT + "/usersearch.html", pT, this);
-		backLink = LinkFactory.createButton("btn.back", myContent, this);
-		
-		searchPanel = new Panel("usersearchPanel");
-		searchPanel.addListener(this);
-		myContent.put("usersearchPanel", searchPanel);
 
-		if (ureq.getUserSession()==null) {
-			logError("UserSearchController<init>: session is null!", null);
-		} else if (ureq.getUserSession().getRoles()==null) {
-			logError("UserSearchController<init>: roles is null!", null);
-		}
-		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin(); 
-		
-		searchform = new UserSearchForm(ureq, wControl, isAdmin, cancelbutton);
-		listenTo(searchform);
-		
-		searchPanel.setContent(searchform.getInitialComponent());
+		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			backLink = uifactory.addFormLink("btn.back", formLayout);
+
+			searchPanel = new Panel("usersearchPanel");
+			layoutCont.put("usersearchPanel", searchPanel);
 	
-		myContent.contextPut("noList","false");			
-		myContent.contextPut("showButton","false");
-		
-		boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
-		if (ajax) {
+			boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+			searchform = new UserSearchForm(ureq, getWindowControl(), isAdmin, false, formLayout.getRootForm());
+			listenTo(searchform);
+			
+			searchPanel.setContent(searchform.getInitialComponent());
+			layoutCont.contextPut("noList","false");			
+			layoutCont.contextPut("showButton","false");
+
 			// insert a autocompleter search
 			ListProvider provider = new UserSearchListProvider();
-			autocompleterC = new AutoCompleterController(ureq, getWindowControl(), provider, null, isAdmin, 60, 3, null);
+			autocompleterC = new FlexiAutoCompleterController(ureq, getWindowControl(), provider, null, isAdmin, 60, 3, null);
 			listenTo(autocompleterC);
-			myContent.put("autocompletionsearch", autocompleterC.getInitialComponent());
+			layoutCont.put("autocompletionsearch", autocompleterC.getInitialComponent());
+
+			//add the table
+			tableConfig = new TableGuiConfiguration();
+			tableConfig.setTableEmptyMessage(translate("error.no.user.found"));
+			tableConfig.setDownloadOffered(false);// no download because user should not download user-list
+			tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
+			listenTo(tableCtr);
+			
+			Roles roles = ureq.getUserSession().getRoles();
+			isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
 		}
-		
-		tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("error.no.user.found"));
-		tableConfig.setDownloadOffered(false);// no download because user should not download user-list
-		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), myContent.getTranslator());
-		listenTo(tableCtr);
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
-		
-		
-		putInitialPanel(myContent);
 	}
 
 	public Object getUserObject() {
@@ -214,12 +166,26 @@ public class UserSearchController extends BasicController {
 		this.userObject = userObject;
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {		
-			myContent.contextPut("noList","false");			
-			myContent.contextPut("showButton","false");
+			flc.contextPut("noList","false");			
+			flc.contextPut("showButton","false");
 			searchPanel.popContent();
-		} 
+		} else {
+			super.event(ureq, source, event);
+		}
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == backLink) {
+			flc.contextPut("noList","false");			
+			flc.contextPut("showButton","false");
+			searchPanel.popContent();
+		} else {
+			super.formInnerEvent(ureq, source, event);
+		}
 	}
 
 	/**
@@ -246,9 +212,9 @@ public class UserSearchController extends BasicController {
 			}
 		} else if (source == autocompleterC) {
 			EntriesChosenEvent ece = (EntriesChosenEvent)event;
-			List res = ece.getEntries();
+			List<String> res = ece.getEntries();
 			// if we get the event, we have a result or an incorrect selection see OLAT-5114 -> check for empty
-			String mySel = res.isEmpty() ? null : (String) res.get(0);
+			String mySel = res.isEmpty() ? null : res.get(0);
 			if (( mySel == null) || mySel.trim().equals("")) {
 				getWindowControl().setWarning(translate("error.search.form.notempty"));
 				return;
@@ -285,7 +251,7 @@ public class UserSearchController extends BasicController {
 				}
 				if (userPropertiesSearch.isEmpty()) userPropertiesSearch = null;
 				
-				tableCtr = new TableController(tableConfig, ureq, getWindowControl(), myContent.getTranslator());
+				tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 				listenTo(tableCtr);
 				
 				List<Identity> users = searchUsers(login,	userPropertiesSearch, true);
@@ -296,16 +262,15 @@ public class UserSearchController extends BasicController {
 					// add the action columns
 					if (useMultiSelect) {
 						// add multiselect action
-						tableCtr.addMultiSelectAction(this.actionKeyChoose, ACTION_MULTISELECT_CHOOSE);
+						tableCtr.addMultiSelectAction(actionKeyChoose, ACTION_MULTISELECT_CHOOSE);
 					} else {
 						// add single column selec action
-						tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", myContent
-								.getTranslator().translate("action.choose")));
+						tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", translate("action.choose")));
 					}
 					tableCtr.setTableDataModel(tdm);
 					tableCtr.setMultiSelect(useMultiSelect);
 					searchPanel.pushContent(tableCtr.getInitialComponent());
-					myContent.contextPut("showButton","true");
+					flc.contextPut("showButton","true");
 				} else {
 					getWindowControl().setInfo(translate("error.no.user.found"));
 				}
@@ -314,6 +279,11 @@ public class UserSearchController extends BasicController {
 			}
 		}
 		
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 	
 	/**

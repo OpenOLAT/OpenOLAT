@@ -34,15 +34,17 @@ public class PermissionHelper {
 	
 	public static final RepoPermission getPermission(RepositoryEntry re, Identity id, List<RepositoryEntryMembership> memberships) {
 		RepoPermission p = new RepoPermission();
-		for(RepositoryEntryMembership membership:memberships) {
-			if(membership.getOwnerRepoKey() != null && re.getKey().equals(membership.getOwnerRepoKey())) {
-				p.setOwner(true);
-			}
-			if(membership.getTutorRepoKey() != null && re.getKey().equals(membership.getTutorRepoKey())) {
-				p.setTutor(true);
-			}
-			if(membership.getParticipantRepoKey() != null && re.getKey().equals(membership.getParticipantRepoKey())) {
-				p.setParticipant(true);
+		if(id != null && memberships != null && !memberships.isEmpty()) {
+			for(RepositoryEntryMembership membership:memberships) {
+				if(membership.getOwnerRepoKey() != null && re.getKey().equals(membership.getOwnerRepoKey())) {
+					p.setOwner(true);
+				}
+				if(membership.getTutorRepoKey() != null && re.getKey().equals(membership.getTutorRepoKey())) {
+					p.setTutor(true);
+				}
+				if(membership.getParticipantRepoKey() != null && re.getKey().equals(membership.getParticipantRepoKey())) {
+					p.setParticipant(true);
+				}
 			}
 		}
 		return p;
@@ -50,16 +52,18 @@ public class PermissionHelper {
 	
 	public static final BGPermission getPermission(Long groupkey, Identity id, List<BusinessGroupMembership> memberships) {
 		BGPermission p = new BGPermission();
-		for(BusinessGroupMembership membership:memberships) {
-			if(membership.getGroupKey().equals(groupkey)) {
-				if(membership.isOwner()) {
-					p.setTutor(true);
-				}
-				if(membership.isParticipant()) {
-					p.setParticipant(true);
-				}
-				if(membership.isWaiting()) {
-					p.setWaitingList(true);
+		if(id != null && memberships != null && !memberships.isEmpty()) {
+			for(BusinessGroupMembership membership:memberships) {
+				if(membership.getGroupKey().equals(groupkey)) {
+					if(membership.isOwner()) {
+						p.setTutor(true);
+					}
+					if(membership.isParticipant()) {
+						p.setParticipant(true);
+					}
+					if(membership.isWaiting()) {
+						p.setWaitingList(true);
+					}
 				}
 			}
 		}

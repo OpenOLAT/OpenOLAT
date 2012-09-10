@@ -62,6 +62,7 @@ public class EditMembershipController extends FormBasicController {
 	private EditMemberTableDataModel tableDataModel;
 	private MultipleSelectionElement repoRightsEl;
 	private MemberInfoController infoController;
+	private boolean withButtons;
 	
 	private static final String[] repoRightsKeys = {"owner", "tutor", "participant"};
 	
@@ -81,6 +82,7 @@ public class EditMembershipController extends FormBasicController {
 		super(ureq, wControl, "edit_member");
 		this.member = member;
 		this.repoEntry = repoEntry;
+		this.withButtons = true;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
@@ -97,6 +99,7 @@ public class EditMembershipController extends FormBasicController {
 		
 		this.member = null;
 		this.repoEntry = repoEntry;
+		this.withButtons = false;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
@@ -172,11 +175,13 @@ public class EditMembershipController extends FormBasicController {
 		tableDataModel = new EditMemberTableDataModel(Collections.<MemberOption>emptyList(), tableColumnModel);
 		uifactory.addTableElement("groupList", tableDataModel, formLayout);
 		
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
-		buttonLayout.setRootForm(mainForm);
-		uifactory.addFormSubmitButton("ok", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		if(withButtons) {
+			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+			formLayout.add(buttonLayout);
+			buttonLayout.setRootForm(mainForm);
+			uifactory.addFormSubmitButton("ok", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		}
 	}
 
 	@Override
@@ -197,7 +202,7 @@ public class EditMembershipController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	protected void collectRepoChanges(MemberPermissionChangeEvent e) {
+	public void collectRepoChanges(MemberPermissionChangeEvent e) {
 		RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
 
 		Set<String>	selectRepoRights = repoRightsEl.getSelectedKeys();
@@ -209,7 +214,7 @@ public class EditMembershipController extends FormBasicController {
 		e.setRepoParticipant(repoParticipant == repoPermission.isParticipant() ? null : new Boolean(repoParticipant));
 	}
 	
-	protected void collectGroupChanges(MemberPermissionChangeEvent e) {
+	public void collectGroupChanges(MemberPermissionChangeEvent e) {
 		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
 		
 		for(MemberOption option:tableDataModel.getObjects()) {

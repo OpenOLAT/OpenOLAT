@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -54,7 +55,8 @@ public class MailTemplateForm extends FormBasicController {
 	private SelectionElement ccSender;
 	private final static String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	
-	private boolean useCancel;
+	private final boolean useCancel;
+	private final boolean useSubmit;
 	private MailTemplate template;
 	/**
 	 * Constructor for the mail notification form
@@ -67,6 +69,14 @@ public class MailTemplateForm extends FormBasicController {
 		super(ureq, wControl);
 		this.template = template;
 		this.useCancel = useCancel;
+		this.useSubmit = true;
+		initForm (ureq);
+	}
+	
+	public MailTemplateForm(UserRequest ureq, WindowControl wControl, MailTemplate template, Form rootForm) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		this.template = template;
+		useCancel = useSubmit = false;
 		initForm (ureq);
 	}
 
@@ -91,7 +101,7 @@ public class MailTemplateForm extends FormBasicController {
 	}
 	
 	@Override
-	protected boolean validateFormLogic (UserRequest ureq) {
+	public boolean validateFormLogic (UserRequest ureq) {
 		// validate only when sendMail is enabled
 		if (sendMail.isSelected(0)) {
 			if (subjectElem.getValue().trim().length() == 0) {
@@ -135,7 +145,9 @@ public class MailTemplateForm extends FormBasicController {
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		
-		uifactory.addFormSubmitButton("continue", "mailtemplateform.continue", buttonGroupLayout);
+		if(useSubmit) {
+			uifactory.addFormSubmitButton("continue", "mailtemplateform.continue", buttonGroupLayout);
+		}
 		if (useCancel) {
 			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		}

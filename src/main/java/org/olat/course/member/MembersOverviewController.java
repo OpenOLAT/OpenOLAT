@@ -19,10 +19,10 @@
  */
 package org.olat.course.member;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.collaboration.CollaborationTools;
-import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -41,16 +41,21 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.member.wizard.ImportMember_1_ChooseMemberStep;
-import org.olat.group.BusinessGroup;
-import org.olat.group.ui.wizard.BGConfigBusinessGroup;
+import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
+import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -70,15 +75,20 @@ public class MembersOverviewController extends BasicController implements Activa
 	private MemberListController tutorsCtrl;
 	private MemberListController participantsCtrl;
 	private MemberListController waitingCtrl;
+	private MemberListController selectedCtrl;
 	private final Link importMemberLink, addMemberLink;
 	
 	private StepsMainRunController importMembersWizard;
 	
 	private final RepositoryEntry repoEntry;
+	private final RepositoryManager repositoryManager;
+	private final BusinessGroupService businessGroupService;
 	
 	public MembersOverviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry) {
 		super(ureq, wControl);
 		this.repoEntry = repoEntry;
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		mainVC = createVelocityContainer("members_overview");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -124,19 +134,21 @@ public class MembersOverviewController extends BasicController implements Activa
 			String segmentCName = sve.getComponentName();
 			Component clickedLink = mainVC.getComponent(segmentCName);
 			if (clickedLink == allMembersLink) {
-				updateAllMembers(ureq);
+				selectedCtrl =updateAllMembers(ureq);
 			} else if (clickedLink == ownersLink){
-				updateOwners(ureq);
+				selectedCtrl = updateOwners(ureq);
 			} else if (clickedLink == tutorsLink){
-				updateTutors(ureq);
+				selectedCtrl = updateTutors(ureq);
 			} else if (clickedLink == participantsLink) {
-				updateParticipants(ureq);
+				selectedCtrl = updateParticipants(ureq);
 			} else if (clickedLink == waitingListLink) {
-				updateWaitingList(ureq);
+				selectedCtrl = updateWaitingList(ureq);
 			} else if (clickedLink == searchLink) {
 				updateSearch(ureq);
+				selectedCtrl = null;
 			}
 		} else if (source == addMemberLink) {
+			doChooseMembers(ureq);
 			
 		} else if (source == importMemberLink) {
 			doImportMembers(ureq);
@@ -146,20 +158,28 @@ public class MembersOverviewController extends BasicController implements Activa
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == importMembersWizard) {
-			System.out.println("Import!!!");
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(importMembersWizard);
+				importMembersWizard = null;
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					if(selectedCtrl != null) {
+						selectedCtrl.reloadModel();
+					}
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
 
-	private void doImportMembers(UserRequest ureq) {
+	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1_ChooseMemberStep(ureq, repoEntry);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				//configuration
-				System.out.println("Import!!!");
+				addMembers(runContext);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -167,6 +187,49 @@ public class MembersOverviewController extends BasicController implements Activa
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("import.member"));
 		listenTo(importMembersWizard);
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
+	}
+	
+	private void doImportMembers(UserRequest ureq) {
+		removeAsListenerAndDispose(importMembersWizard);
+
+		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				addMembers(runContext);
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("import.member"));
+		listenTo(importMembersWizard);
+		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
+	}
+	
+	protected void addMembers(StepsRunContext runContext) {
+		@SuppressWarnings("unchecked")
+		List<Identity> members = (List<Identity>)runContext.get("members");
+		
+		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
+		//commit changes to the repository entry
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = new ArrayList<RepositoryEntryPermissionChangeEvent>();
+		for(Identity member:members) {
+			repoChanges.add(new RepositoryEntryPermissionChangeEvent(member, changes));
+		}
+		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, repoChanges);
+
+		//commit all changes to the group memberships
+		List<BusinessGroupMembershipChange> groupChanges = changes.getGroupChanges();
+		List<BusinessGroupMembershipChange> allModifications = new ArrayList<BusinessGroupMembershipChange>();
+		for(BusinessGroupMembershipChange groupChange:groupChanges) {
+			for(Identity member:members) {
+				allModifications.add(new BusinessGroupMembershipChange(member, groupChange));
+			}
+		}
+		businessGroupService.updateMemberships(getIdentity(), allModifications);
+		
+		MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+		System.out.println("Send mails: " + mailTemplate);
 	}
 	
 	private MemberListController updateAllMembers(UserRequest ureq) {

@@ -123,4 +123,12 @@ public class MemberView {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("memberView[name=").append(firstName == null ? "" : firstName)
+			.append(" ").append(lastName == null ? "NULL" : lastName).append("]");
+		return sb.toString();
+	}
 }

@@ -58,7 +58,7 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getRowCount()
 	 */
 	public int getRowCount() {
-		return objects.size();
+		return objects == null ? 0 : objects.size();
 	}
 
 	/**

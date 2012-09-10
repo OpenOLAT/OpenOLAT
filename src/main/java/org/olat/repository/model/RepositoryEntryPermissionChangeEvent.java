@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.model;
+package org.olat.repository.model;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
@@ -26,58 +26,52 @@ import org.olat.core.id.Identity;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupMembershipChange extends Event {
+public class RepositoryEntryPermissionChangeEvent extends Event {
 	private static final long serialVersionUID = 8499004967313689825L;
 
 	private final Identity member;
-	private final Long groupKey;
 	
-	private Boolean tutor;
-	private Boolean participant;
-	private Boolean waitingList;
+	private Boolean repoOwner;
+	private Boolean repoTutor;
+	private Boolean repoParticipant;
 	
-	public BusinessGroupMembershipChange(Identity member, Long groupKey) {
+	public RepositoryEntryPermissionChangeEvent(Identity member) {
 		super("id-perm-changed");
 		this.member = member;
-		this.groupKey = groupKey;
 	}
 	
-	public BusinessGroupMembershipChange(Identity member, BusinessGroupMembershipChange origin) {
-		this(member, origin.getGroupKey());
-		tutor = origin.tutor;
-		participant = origin.participant;
-		waitingList = origin.waitingList;	
+	public RepositoryEntryPermissionChangeEvent(Identity member, RepositoryEntryPermissionChangeEvent origin) {
+		this(member);
+		repoOwner = origin.repoOwner;
+		repoTutor = origin.repoTutor;
+		repoParticipant = origin.repoParticipant;
 	}
 	
 	public Identity getMember() {
 		return member;
 	}
 
-	public Boolean getTutor() {
-		return tutor;
+	public Boolean getRepoOwner() {
+		return repoOwner;
 	}
 
-	public void setTutor(Boolean tutor) {
-		this.tutor = tutor;
+	public void setRepoOwner(Boolean repoOwner) {
+		this.repoOwner = repoOwner;
 	}
 
-	public Boolean getParticipant() {
-		return participant;
+	public Boolean getRepoTutor() {
+		return repoTutor;
 	}
 
-	public void setParticipant(Boolean participant) {
-		this.participant = participant;
+	public void setRepoTutor(Boolean repoTutor) {
+		this.repoTutor = repoTutor;
 	}
 
-	public Boolean getWaitingList() {
-		return waitingList;
+	public Boolean getRepoParticipant() {
+		return repoParticipant;
 	}
 
-	public void setWaitingList(Boolean waitingList) {
-		this.waitingList = waitingList;
-	}
-
-	public Long getGroupKey() {
-		return groupKey;
+	public void setRepoParticipant(Boolean repoParticipant) {
+		this.repoParticipant = repoParticipant;
 	}
 }

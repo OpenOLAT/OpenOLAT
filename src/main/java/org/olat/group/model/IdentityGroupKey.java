@@ -17,33 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
-
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.group.model.BusinessGroupMembershipChange;
-import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
+package org.olat.group.model;
 
 /**
+ * Useful as key for HashMap
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChangeEvent {
-	private static final long serialVersionUID = 8499004967313689825L;
-
-	private List<BusinessGroupMembershipChange> groupChanges;
+public class IdentityGroupKey {
+	private final Long identityKey;
+	private final Long groupKey;
 	
-	public MemberPermissionChangeEvent(Identity member) {
-		super(member);
-	}
-	
-
-	public List<BusinessGroupMembershipChange> getGroupChanges() {
-		return groupChanges;
+	public IdentityGroupKey(Long identityKey, Long groupKey) {
+		this.identityKey = identityKey;
+		this.groupKey = groupKey;
 	}
 
-	public void setGroupChanges(List<BusinessGroupMembershipChange> changes) {
-		this.groupChanges = changes;
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	public Long getGroupKey() {
+		return groupKey;
+	}
+	
+	@Override
+	public int hashCode() {
+		return (identityKey == null ? 38469 : identityKey.hashCode())
+				+ (groupKey == null ? 910 : groupKey.hashCode());
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof IdentityGroupKey) {
+			IdentityGroupKey key = (IdentityGroupKey)obj;
+			return identityKey != null && identityKey.equals(key.identityKey)
+					&& groupKey != null && groupKey.equals(key.groupKey);
+		}
+		return false;
 	}
 }

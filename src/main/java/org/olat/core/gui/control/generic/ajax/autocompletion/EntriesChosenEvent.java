@@ -42,12 +42,13 @@ import org.olat.core.gui.control.Event;
  */
 public class EntriesChosenEvent extends Event {
 
-	private final List entries;
+	private static final long serialVersionUID = 641650982845790452L;
+	private final List<String> entries;
 
 	/**
 	 * @param command
 	 */
-	EntriesChosenEvent(List entries) {
+	EntriesChosenEvent(List<String> entries) {
 		super("chosenentries");
 		this.entries = entries;
 	}
@@ -55,7 +56,7 @@ public class EntriesChosenEvent extends Event {
 	/**
 	 * @return Returns the entries. never null, but may be an empty list. an item in the list contains a key, which is a string.
 	 */
-	public List getEntries() {
+	public List<String> getEntries() {
 		return entries;
 	}
 

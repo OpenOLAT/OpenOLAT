@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
@@ -63,6 +62,7 @@ import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
+import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.user.UserManager;
 
 /**
@@ -235,31 +235,10 @@ public abstract class AbstractMemberListController extends BasicController {
 		reloadModel();
 	}
 	
-	private void doChangeRepoPermission(MemberPermissionChangeEvent e) {
+	private void doChangeRepoPermission(RepositoryEntryPermissionChangeEvent e) {
 		//first change repository permission
-		if(e.getRepoOwner() != null) {
-			if(e.getRepoOwner().booleanValue()) {
-				repositoryManager.addOwners(getIdentity(), new IdentitiesAddEvent(e.getMember()), repoEntry);
-			} else {
-				repositoryManager.removeOwners(getIdentity(), Collections.singletonList(e.getMember()), repoEntry);
-			}
-		}
-		
-		if(e.getRepoTutor() != null) {
-			if(e.getRepoTutor().booleanValue()) {
-				repositoryManager.addTutors(getIdentity(), new IdentitiesAddEvent(e.getMember()), repoEntry);
-			} else {
-				repositoryManager.removeTutors(getIdentity(), Collections.singletonList(e.getMember()), repoEntry);
-			}
-		}
-		
-		if(e.getRepoParticipant() != null) {
-			if(e.getRepoParticipant().booleanValue()) {
-				repositoryManager.addParticipants(getIdentity(), new IdentitiesAddEvent(e.getMember()), repoEntry);
-			} else {
-				repositoryManager.removeParticipants(getIdentity(), Collections.singletonList(e.getMember()), repoEntry);
-			}
-		}
+		List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList(e);
+		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, changes);
 	}
 	
 	private void doChangeGroupPermissions(List<BusinessGroupMembershipChange> changes) {

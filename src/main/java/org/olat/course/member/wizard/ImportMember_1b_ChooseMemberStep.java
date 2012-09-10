@@ -32,9 +32,9 @@ import org.olat.repository.RepositoryEntry;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ImportMember_1_ChooseMemberStep extends BasicStep {
+public class ImportMember_1b_ChooseMemberStep extends BasicStep {
 	
-	public ImportMember_1_ChooseMemberStep(UserRequest ureq, RepositoryEntry repoEntry) {
+	public ImportMember_1b_ChooseMemberStep(UserRequest ureq, RepositoryEntry repoEntry) {
 		super(ureq);
 		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry));
 		setI18nTitleAndDescr("import.import.title", "import.import.title");
@@ -47,7 +47,7 @@ public class ImportMember_1_ChooseMemberStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		ImportMemberByUsernamesController controller = new ImportMemberByUsernamesController(ureq, wControl, form, runContext);
+		ImportMemberBySearchController controller = new ImportMemberBySearchController(ureq, wControl, form, runContext);
 		return controller;
 	}
 }

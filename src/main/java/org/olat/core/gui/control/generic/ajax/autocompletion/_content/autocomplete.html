@@ -1,12 +1,20 @@
 <div class="b_form_auto_completer">
-	<form id="$r.getId("aj_ac_f")" action="$r.formURIbg('select')" method="post" $r.bgTarget()>
-	    #if ($autocompleter_label)
-			$autocompleter_label 
-		#end
-		<div class="b_form_element">
-		    <input type="text" size="$inputWidth" name="$r.getId("b_autocomplete_input")" id="$r.getId("b_autocomplete_input")" />
-		</div>	
-	</form>
+	#if($flexi)
+		<div id="$r.getId("aj_ac_f")">
+	#else
+		<form id="$r.getId("aj_ac_f")" action="$r.formURIbg('select')" method="post" $r.bgTarget()>
+	#end
+    #if ($autocompleter_label)
+		$autocompleter_label 
+	#end
+	<div class="b_form_element">
+	    <input type="text" size="$inputWidth" name="$r.getId("b_autocomplete_input")" id="$r.getId("b_autocomplete_input")" />
+	</div>	
+	#if($flexi)
+		</div>
+	#else
+		</form>
+	#end
 </div>
 
 <script type="text/javascript">
@@ -28,6 +36,8 @@ Ext.onReady(function(){
 		}
 		oldCombo = null;
 	}
+	
+	console.log('Hello');
 	
 	## Data store gets key value pairs from server
     var dataStore = new Ext.data.Store({
@@ -79,7 +89,9 @@ Ext.onReady(function(){
     ## by the form submit and the combo box result list is showed delayed. In this case
     ## don't expand
     comboBox.on('expand', function(combo) {
+    		console.log('Expand');
 	    	var elem=document.getElementById('${r.getId("aj_ac_f")}'); 
+    		console.log('Expand', elem);
 	    	if (!elem) combo.collapse();
 	    	elem = null;
     	}

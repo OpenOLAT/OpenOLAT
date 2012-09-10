@@ -24,7 +24,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -53,6 +52,8 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String logins = idata.getValue();
+		addToRunContext("logins", logins);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 

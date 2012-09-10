@@ -84,6 +84,7 @@ import org.olat.group.model.BusinessGroupMembershipImpl;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupMembershipsChanges;
 import org.olat.group.model.DisplayMembers;
+import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
@@ -1439,34 +1440,37 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		List<BusinessGroupMembershipViewImpl> views =
 				businessGroupDAO.getMembershipInfoInBusinessGroups(businessGroups, identity);
 
-		Map<Long, BusinessGroupMembershipImpl> memberships = new HashMap<Long, BusinessGroupMembershipImpl>();
+		Map<IdentityGroupKey, BusinessGroupMembershipImpl> memberships = new HashMap<IdentityGroupKey, BusinessGroupMembershipImpl>();
 		for(BusinessGroupMembershipViewImpl membership: views) {
 			if(membership.getOwnerGroupKey() != null) {
 				Long groupKey = membership.getOwnerGroupKey();
-				if(!memberships.containsKey(groupKey)) {
-					memberships.put(groupKey, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
+				IdentityGroupKey key = new IdentityGroupKey(membership.getIdentityKey(), groupKey);
+				if(!memberships.containsKey(key)) {
+					memberships.put(key, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
 				}
-				BusinessGroupMembershipImpl mb = memberships.get(groupKey);
+				BusinessGroupMembershipImpl mb = memberships.get(key);
 				mb.setOwner(true);
 				mb.setCreationDate(membership.getCreationDate());
 				mb.setLastModified(membership.getLastModified());
 			}
 			if(membership.getParticipantGroupKey() != null) {
 				Long groupKey = membership.getParticipantGroupKey();
-				if(!memberships.containsKey(groupKey)) {
-					memberships.put(groupKey, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
+				IdentityGroupKey key = new IdentityGroupKey(membership.getIdentityKey(), groupKey);
+				if(!memberships.containsKey(key)) {
+					memberships.put(key, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
 				}
-				BusinessGroupMembershipImpl mb = memberships.get(groupKey);
+				BusinessGroupMembershipImpl mb = memberships.get(key);
 				mb.setParticipant(true);
 				mb.setCreationDate(membership.getCreationDate());
 				mb.setLastModified(membership.getLastModified());
 			}
 			if(membership.getWaitingGroupKey() != null) {
 				Long groupKey = membership.getWaitingGroupKey();
-				if(!memberships.containsKey(groupKey)) {
-					memberships.put(groupKey, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
+				IdentityGroupKey key = new IdentityGroupKey(membership.getIdentityKey(), groupKey);
+				if(!memberships.containsKey(key)) {
+					memberships.put(key, new BusinessGroupMembershipImpl(membership.getIdentityKey(), groupKey));
 				}
-				BusinessGroupMembershipImpl mb = memberships.get(groupKey);
+				BusinessGroupMembershipImpl mb = memberships.get(key);
 				mb.setWaiting(true);
 				mb.setCreationDate(membership.getCreationDate());
 				mb.setLastModified(membership.getLastModified());

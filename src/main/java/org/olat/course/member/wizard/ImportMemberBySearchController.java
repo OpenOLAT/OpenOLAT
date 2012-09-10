@@ -19,51 +19,57 @@
  */
 package org.olat.course.member.wizard;
 
+import java.util.Collections;
+
+import org.olat.admin.user.UserSearchFlexiController;
+import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.member.EditMembershipController;
-import org.olat.course.member.MemberPermissionChangeEvent;
-import org.olat.repository.RepositoryEntry;
+
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ImportMemberPermissionChoiceController extends StepFormBasicController {
-	private EditMembershipController permissionCtrl;
+public class ImportMemberBySearchController extends StepFormBasicController {
+	private UserSearchFlexiController searchController;
 
-	public ImportMemberPermissionChoiceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry,
-			Form rootForm, StepsRunContext runContext) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+	public ImportMemberBySearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
+
+		searchController = new UserSearchFlexiController(ureq, wControl, false, false, null, rootForm);
+		listenTo(searchController);
 		
-		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, repoEntry, rootForm);
-		listenTo(permissionCtrl);
-
 		initForm (ureq);
 	}
 
-	public boolean validate() {
-		return true;
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof SingleIdentityChosenEvent) {
+			SingleIdentityChosenEvent e = (SingleIdentityChosenEvent)event;
+			String key = e.getChosenIdentity().getKey().toString();
+			addToRunContext("keys", Collections.singletonList(key));
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		} else {
+			super.event(ureq, source, event);
+		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		MemberPermissionChangeEvent e = new MemberPermissionChangeEvent(null);
-		permissionCtrl.collectRepoChanges(e);
-		permissionCtrl.collectGroupChanges(e);
-		addToRunContext("permissions", e);
-		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
+		//do nothing, it's import as it receive event from the UserSearchFlexiController
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.add(permissionCtrl.getInitialFormItem());	
+		formLayout.add("search", searchController.getInitialFormItem());
 	}
 
 	@Override

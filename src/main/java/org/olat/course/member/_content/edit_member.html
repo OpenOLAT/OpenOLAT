@@ -1,8 +1,14 @@
 #if($r.available("infos"))
 	$r.render("infos")
 #end
-<h4>$editTitle</h4>
-$r.render("repoRights")
-<h5>$r.translate("edit.member.groups")</h5>
-$r.render("groupList")
-$r.render("buttonLayout")
+#if($r.available("repoRights"))
+	<h4>$editTitle</h4>
+	$r.render("repoRights")
+#end
+#if($r.available("groupList"))
+	<h5>$r.translate("edit.member.groups")</h5>
+	$r.render("groupList")
+#end
+#if($r.available("buttonLayout"))
+	$r.render("buttonLayout")
+#end

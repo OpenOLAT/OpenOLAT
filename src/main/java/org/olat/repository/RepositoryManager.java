@@ -83,6 +83,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryMember;
 import org.olat.repository.model.RepositoryEntryMembership;
+import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntryStrictMember;
 import org.olat.repository.model.RepositoryEntryStrictParticipant;
 import org.olat.repository.model.RepositoryEntryStrictTutor;
@@ -1730,6 +1731,34 @@ public class RepositoryManager extends BasicManager {
 
 		List<RepositoryEntryMembership> entries = query.getResultList();
 		return entries;
+	}
+	
+	public void updateRepositoryEntryMembership(Identity ureqIdentity, RepositoryEntry re, List<RepositoryEntryPermissionChangeEvent> changes) {
+		for(RepositoryEntryPermissionChangeEvent e:changes) {
+			if(e.getRepoOwner() != null) {
+				if(e.getRepoOwner().booleanValue()) {
+					addOwners(ureqIdentity, new IdentitiesAddEvent(e.getMember()), re);
+				} else {
+					removeOwners(ureqIdentity, Collections.singletonList(e.getMember()), re);
+				}
+			}
+			
+			if(e.getRepoTutor() != null) {
+				if(e.getRepoTutor().booleanValue()) {
+					addTutors(ureqIdentity, new IdentitiesAddEvent(e.getMember()), re);
+				} else {
+					removeTutors(ureqIdentity, Collections.singletonList(e.getMember()), re);
+				}
+			}
+			
+			if(e.getRepoParticipant() != null) {
+				if(e.getRepoParticipant().booleanValue()) {
+					addParticipants(ureqIdentity, new IdentitiesAddEvent(e.getMember()), re);
+				} else {
+					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re);
+				}
+			}
+		}
 	}
 	
 	private final boolean and(StringBuilder sb, boolean and) {

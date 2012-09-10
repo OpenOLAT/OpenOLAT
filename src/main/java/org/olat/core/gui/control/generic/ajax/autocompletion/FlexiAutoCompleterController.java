@@ -34,11 +34,12 @@ import org.json.JSONObject;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 
@@ -59,7 +60,8 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
  * 
  * @author Felix Jost, FLorian Gnägi
  */
-public class AutoCompleterController extends BasicController {
+public class FlexiAutoCompleterController extends FormBasicController {
+
 	private static final String COMMAND_SELECT = "select";
 	private static final String JSNAME_INPUTFIELD = "b_autocomplete_input";
 	private static final String JSNAME_DATASTORE = "autocompleterDatastore";
@@ -67,10 +69,8 @@ public class AutoCompleterController extends BasicController {
 
 	static final String AUTOCOMPLETER_NO_RESULT = "AUTOCOMPLETER_NO_RESULT";
 
-	private VelocityContainer myContent;
 	private Mapper mapper;
 	private final ListProvider gprovider;
-	private final String noResults;
 	
 	private String datastoreName;
 	private String comboboxName;
@@ -99,32 +99,38 @@ public class AutoCompleterController extends BasicController {
 	 *            perform a search
 	 * @param label
 	 */
-	public AutoCompleterController(UserRequest ureq, WindowControl wControl, ListProvider provider, String noresults,
+	public FlexiAutoCompleterController(UserRequest ureq, WindowControl wControl, ListProvider provider, String noresults,
 			final boolean showDisplayKey, int inputWidth, int minChars, String label) {
-		super(ureq, wControl);
+		super(ureq, wControl, "autocomplete");
 		this.gprovider = provider;
-		this.noResults = (noresults == null ? translate("autocomplete.noresults") : noresults);
-		this.myContent = createVelocityContainer("autocomplete");
-		
+		String noResults = (noresults == null ? translate("autocomplete.noresults") : noresults);
+
 		// Configure displaying parameters
 		if (label != null) {
-			myContent.contextPut("autocompleter_label", label);
+			flc.contextPut("autocompleter_label", label);
 		}
-		myContent.contextPut("showDisplayKey", Boolean.valueOf(showDisplayKey));
-		myContent.contextPut("inputWidth", Integer.valueOf(inputWidth));
-		myContent.contextPut("minChars", Integer.valueOf(minChars));
+		flc.contextPut("showDisplayKey", Boolean.valueOf(showDisplayKey));
+		flc.contextPut("inputWidth", Integer.valueOf(inputWidth));
+		flc.contextPut("minChars", Integer.valueOf(minChars));
+		flc.contextPut("flexi", Boolean.TRUE);
 		// Create name for addressing the javascript components
-		datastoreName = "o_s" + JSNAME_DATASTORE + myContent.getDispatchID();
-		comboboxName = "o_s" + JSNAME_COMBOBOX + myContent.getDispatchID();
+		datastoreName = "o_s" + JSNAME_DATASTORE + flc.getComponent().getDispatchID();
+		comboboxName = "o_s" + JSNAME_COMBOBOX + flc.getComponent().getDispatchID();
+		
+		flc.getComponent().addListener(this);
 
 		// Create a mapper for the server responses for a given input
 		mapper = new AutoCompleterMapper(noResults, showDisplayKey, gprovider);
-			
+		
 		// Add mapper URL to JS data store in velocity
 		String fetchUri = registerMapper(mapper);
 		final String fulluri = fetchUri; // + "/" + fileName;
-		myContent.contextPut("mapuri", fulluri+"/autocomplete.json");
-		putInitialPanel(myContent);
+		flc.contextPut("mapuri", fulluri+"/autocomplete.json");
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		//
 	}
 
 	/**
@@ -134,14 +140,14 @@ public class AutoCompleterController extends BasicController {
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == myContent) {
+		if (source == flc.getComponent()) {
 			if (event.getCommand().equals(COMMAND_SELECT)) {
 				List<String> selectedEntries = new ArrayList<String>(); // init empty result list
 				String key = ureq.getParameter(AutoCompleterMapper.PARAM_KEY);
 				if (key == null) {
 					// Fallback to submitted input field: the input field does not contain
 					// the key but the search value itself
-					VelocityRenderDecorator r = (VelocityRenderDecorator) myContent.getContext().get("r");
+					VelocityRenderDecorator r = (VelocityRenderDecorator) ((VelocityContainer)flc.getComponent()).getContext().get("r");
 					String searchValue = ureq.getParameter(r.getId(JSNAME_INPUTFIELD).toString());
 					if (searchValue == null) {
 						// log error because something went wrong in the code and send empty list as result
@@ -182,14 +188,9 @@ public class AutoCompleterController extends BasicController {
 		}
 	}
 
-	/**
-	 * This dispatches controller events...
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		// Nothing to dispatch
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	/**
