@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.wiki;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -27,13 +29,17 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.restapi.support.vo.CourseVO;
 import org.olat.test.ArquillianDeployments;
+import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
+import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 
@@ -43,6 +49,11 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @RunWith(Arquillian.class)
 public class FunctionalWikiTest {
+	
+	public final static String WIKI_SHORT_TITLE = "wiki";
+	public final static String WIKI_LONG_TITLE = "test wiki";
+	public final static String WIKI_DESCRIPTION = "wiki";
+	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();
@@ -54,23 +65,45 @@ public class FunctionalWikiTest {
 	@ArquillianResource
 	URL deploymentUrl;
 
-	FunctionalUtil functionalUtil;
-	FunctionalVOUtil functionalVOUtil;
-	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	static FunctionalUtil functionalUtil;
+	static FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	static FunctionalCourseUtil functionalCourseUtil;
+	static FunctionalVOUtil functionalVOUtil;
+
+	static boolean initialized = false;
 	
 	@Before
-	public void setup(){
-		functionalUtil = new FunctionalUtil();
-		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-		
-		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
-	}
+	public void setup() throws IOException, URISyntaxException{
+		if(!initialized){
+			functionalUtil = new FunctionalUtil();
+			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 
+			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+
+			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
+
+			initialized = true;
+		}
+	}
+	
 	@Test
 	@RunAsClient
-	public void checkCreate(){
-		//TODO:JK: implement me
+	public void checkCreate() throws URISyntaxException, IOException{
+		CourseVO course = functionalVOUtil.importEmptyCourse(deploymentUrl);
 		
+		/* login for test setup */
+		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
+		
+		/*  */
+		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
+		
+		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.WIKI, WIKI_SHORT_TITLE, WIKI_LONG_TITLE, WIKI_DESCRIPTION, 0));
+		Assert.assertTrue(functionalCourseUtil.createWiki(browser, WIKI_SHORT_TITLE, WIKI_DESCRIPTION));
+		
+		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
+		
+		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 	}
 }

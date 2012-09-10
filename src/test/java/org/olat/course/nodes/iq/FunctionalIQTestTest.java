@@ -22,7 +22,6 @@ package org.olat.course.nodes.iq;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -36,13 +35,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.test.ArquillianDeployments;
-import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
-import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
-import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.FunctionalVOUtil;
 
 import com.thoughtworks.selenium.DefaultSelenium;

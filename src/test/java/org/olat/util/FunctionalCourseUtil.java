@@ -61,7 +61,13 @@ public class FunctionalCourseUtil {
 	public final static String BLOG_FORM_CSS = "o_sel_blog_form";
 	
 	public final static String TEST_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_test_choose_repofile";
-	public final static String TEST_CREATE_RESOURCE_CSS = "o_sel_repo_popup_create_resource";
+	public final static String CP_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_cp_choose_repofile";
+	public final static String WIKI_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_wiki_choose_repofile";
+	public final static String FEED_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_feed_choose_repofile";
+	
+	public final static String REPOSITORY_POPUP_CREATE_RESOURCE_CSS = "o_sel_repo_popup_create_resource";
+	public final static String REPOSITORY_SAVE_DETAILS_CSS = "o_sel_repo_save_details";
+	public final static String REPOSITORY_ADD_FORWARD_CSS = "o_sel_repo_add_forward";
 	
 	public enum CourseNodeTab {
 		TITLE_AND_DESCRIPTION,
@@ -123,6 +129,11 @@ public class FunctionalCourseUtil {
 	}
 	
 	public enum CourseNodeAlias {
+		CP("o_cp_icon"),
+		BLOG("o_blog_icon"),
+		PODCAST("o_podcast_icon"),
+		WIKI("o_wiki_icon"),
+		PORTFOLIO_TASK("o_ep_icon"),
 		IQ_TEST("o_iqtest_icon"),
 		IQ_SELFTEST("o_iqself_icon"),
 		IQ_QUESTIONAIRE("o_iqsurv_icon");
@@ -171,6 +182,20 @@ public class FunctionalCourseUtil {
 		TEST_CONFIGURATION;
 	}
 	
+	public enum CourseEditorCpTab {
+		TITLE_AND_DESCRIPTION,
+		VISIBILITY,
+		ACCESS,
+		LEARNING_CONTENT;
+	}
+	
+	public enum CourseEditorWikiTab {
+		TITLE_AND_DESCRIPTION,
+		VISIBILITY,
+		ACCESS,
+		LEARNING_CONTENT;
+	}
+	
 	private String courseRunCss;
 	private String courseOpenEditorCss;
 	
@@ -200,7 +225,13 @@ public class FunctionalCourseUtil {
 	private String blogFormCss;
 	
 	private String testChooseRepositoryFileCss;
-	private String testCreateResourceCss;
+	private String cpChooseRepositoryFileCss;
+	private String wikiChooseRepositoryFileCss;
+	private String feedChooseRepositoryFileCss;
+	
+	private String repositoryPopupCreateResourceCss;
+	private String repositorySaveDetailsCss;
+	private String repositoryAddForwardCss;
 	
 	private FunctionalUtil functionalUtil;
 	private FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
@@ -238,7 +269,13 @@ public class FunctionalCourseUtil {
 		setBlogFormCss(BLOG_FORM_CSS);
 		
 		setTestChooseRepositoryFileCss(TEST_CHOOSE_REPOSITORY_FILE_CSS);
-		setTestCreateResourceCss(TEST_CREATE_RESOURCE_CSS);
+		setCpChooseRepositoryFileCss(CP_CHOOSE_REPOSITORY_FILE_CSS);
+		setWikiChooseRepositoryFileCss(WIKI_CHOOSE_REPOSITORY_FILE_CSS);
+		setFeedChooseRepositoryFileCss(FEED_CHOOSE_REPOSITORY_FILE_CSS);
+		
+		setRepositoryPopupCreateResourceCss(REPOSITORY_POPUP_CREATE_RESOURCE_CSS);
+		setRepositorySaveDetailsCss(REPOSITORY_SAVE_DETAILS_CSS);
+		setRepositoryAddForwardCss(REPOSITORY_ADD_FORWARD_CSS);
 	}
 	
 	/**
@@ -789,21 +826,41 @@ public class FunctionalCourseUtil {
 	
 	/**
 	 * @param browser
+	 * @param tab
+	 * @return true on success
+	 * 
+	 * Opens the content package configurations appropriate tab.
+	 */
+	public boolean openCourseEditorCpTab(Selenium browser, CourseEditorCpTab tab){
+		return(functionalUtil.openContentTab(browser, tab.ordinal()));
+	}
+	
+	/**
+	 * @param browser
+	 * @param tab
+	 * @return true on success
+	 * 
+	 * Opens the wiki configurations appropriate tab.
+	 */
+	public boolean openCourseEditorWikiTab(Selenium browser, CourseEditorWikiTab tab){
+		return(functionalUtil.openContentTab(browser, tab.ordinal()));
+	}
+	
+	/**
+	 * @param browser
+	 * @param chooseRepositoryCss
 	 * @param title
 	 * @param description
 	 * @return true on success
 	 * 
-	 * Creates a new test.
+	 * Opens and fills in the "create resource" popup.
 	 */
-	public boolean createQTITest(Selenium browser, String title, String description){
-		if(!openCourseEditorIQTestTab(browser, CourseEditorIQTestTab.TEST_CONFIGURATION))
-			return(false);
-		
+	private boolean createRepositoryResource(Selenium browser, String chooseRepositoryCss, String title, String description){
 		/* click on "choose, create or import file" button */
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append(getTestChooseRepositoryFileCss())
+		.append(chooseRepositoryCss)
 		.append("')]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -813,7 +870,7 @@ public class FunctionalCourseUtil {
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append(getTestCreateResourceCss())
+		.append(getRepositoryPopupCreateResourceCss())
 		.append("')]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -834,7 +891,9 @@ public class FunctionalCourseUtil {
 		/* click save */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window')]//form//div[contains(@class, 'o_sel_repo_save_details')]//button)[1]");
+		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window')]//form//div[contains(@class, '")
+		.append(getRepositorySaveDetailsCss())
+		.append("')]//button)[1]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
@@ -843,7 +902,9 @@ public class FunctionalCourseUtil {
 		/* click next */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, 'b_window')]//a[contains(@class, 'o_sel_repo_add_forward')]");
+		selectorBuffer.append("xpath=//div[contains(@class, 'b_window')]//a[contains(@class, '")
+		.append(getRepositoryAddForwardCss())
+		.append("')]");
 
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
@@ -851,6 +912,63 @@ public class FunctionalCourseUtil {
 		
 		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return true on success
+	 * 
+	 * Creates a new test.
+	 */
+	public boolean createQTITest(Selenium browser, String title, String description){
+		if(!openCourseEditorIQTestTab(browser, CourseEditorIQTestTab.TEST_CONFIGURATION))
+			return(false);
+		
+		if(!createRepositoryResource(browser, getTestChooseRepositoryFileCss(), title, description)){
+			return(false);
+		}
+				
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return true on success
+	 * 
+	 * Creates a new CP learning content.
+	 */
+	public boolean createCPLearningContent(Selenium browser, String title, String description){
+		if(!openCourseEditorCpTab(browser, CourseEditorCpTab.LEARNING_CONTENT))
+			return(false);
+		
+		if(!createRepositoryResource(browser, getCpChooseRepositoryFileCss(), title, description)){
+			return(false);
+		}
+				
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return true on success
+	 * 
+	 * Creates a new wiki.
+	 */
+	public boolean createWiki(Selenium browser, String title, String description){
+		if(!openCourseEditorWikiTab(browser, CourseEditorWikiTab.LEARNING_CONTENT))
+			return(false);
+		
+		if(!createRepositoryResource(browser, getWikiChooseRepositoryFileCss(), title, description)){
+			return(false);
+		}
+				
 		return(true);
 	}
 	
@@ -1043,12 +1161,52 @@ public class FunctionalCourseUtil {
 		this.testChooseRepositoryFileCss = testChooseRepositoryFileCss;
 	}
 
-	public String getTestCreateResourceCss() {
-		return testCreateResourceCss;
+	public String getCpChooseRepositoryFileCss() {
+		return cpChooseRepositoryFileCss;
 	}
 
-	public void setTestCreateResourceCss(String testCreateResourceCss) {
-		this.testCreateResourceCss = testCreateResourceCss;
+	public void setCpChooseRepositoryFileCss(String cpChooseRepositoryFileCss) {
+		this.cpChooseRepositoryFileCss = cpChooseRepositoryFileCss;
+	}
+
+	public String getWikiChooseRepositoryFileCss() {
+		return wikiChooseRepositoryFileCss;
+	}
+
+	public void setWikiChooseRepositoryFileCss(String wikiChooseRepositoryFileCss) {
+		this.wikiChooseRepositoryFileCss = wikiChooseRepositoryFileCss;
+	}
+
+	public String getFeedChooseRepositoryFileCss() {
+		return feedChooseRepositoryFileCss;
+	}
+
+	public void setFeedChooseRepositoryFileCss(String feedChooseRepositoryFileCss) {
+		this.feedChooseRepositoryFileCss = feedChooseRepositoryFileCss;
+	}
+
+	public String getRepositoryPopupCreateResourceCss() {
+		return repositoryPopupCreateResourceCss;
+	}
+
+	public void setRepositoryPopupCreateResourceCss(String repositoryPopupCreateResourceCss) {
+		this.repositoryPopupCreateResourceCss = repositoryPopupCreateResourceCss;
+	}
+
+	public String getRepositorySaveDetailsCss() {
+		return repositorySaveDetailsCss;
+	}
+
+	public void setRepositorySaveDetailsCss(String repositorySaveDetailsCss) {
+		this.repositorySaveDetailsCss = repositorySaveDetailsCss;
+	}
+
+	public String getRepositoryAddForwardCss() {
+		return repositoryAddForwardCss;
+	}
+
+	public void setRepositoryAddForwardCss(String repositoryAddForwardCss) {
+		this.repositoryAddForwardCss = repositoryAddForwardCss;
 	}
 	
 }
