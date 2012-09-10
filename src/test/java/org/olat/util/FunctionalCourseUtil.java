@@ -19,9 +19,6 @@
  */
 package org.olat.util;
 
-import org.olat.util.FunctionalUtil.OlatSite;
-import org.olat.util.FunctionalUtil.WaitLimitAttribute;
-
 import com.thoughtworks.selenium.Selenium;
 
 /**
@@ -66,8 +63,14 @@ public class FunctionalCourseUtil {
 	public final static String FEED_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_feed_choose_repofile";
 	
 	public final static String REPOSITORY_POPUP_CREATE_RESOURCE_CSS = "o_sel_repo_popup_create_resource";
+	public final static String REPOSITORY_POPUP_IMPORT_RESOURCE_CSS = "o_sel_repo_popup_import_resource";
+	
 	public final static String REPOSITORY_SAVE_DETAILS_CSS = "o_sel_repo_save_details";
 	public final static String REPOSITORY_ADD_FORWARD_CSS = "o_sel_repo_add_forward";
+	
+	public final static String BLOG_NO_POSTS_CSS = "o_blog_no_posts";
+	
+	public final static String PODCAST_NO_EPISODES_CSS = "o_podcast_no_episodes";
 	
 	public enum CourseNodeTab {
 		TITLE_AND_DESCRIPTION,
@@ -196,6 +199,20 @@ public class FunctionalCourseUtil {
 		LEARNING_CONTENT;
 	}
 	
+	public enum CourseEditorBlogTab {
+		TITLE_AND_DESCRIPTION,
+		VISIBILITY,
+		ACCESS,
+		LEARNING_CONTENT;
+	}
+	
+	public enum CourseEditorPodcastTab {
+		TITLE_AND_DESCRIPTION,
+		VISIBILITY,
+		ACCESS,
+		LEARNING_CONTENT;
+	}
+	
 	private String courseRunCss;
 	private String courseOpenEditorCss;
 	
@@ -232,6 +249,9 @@ public class FunctionalCourseUtil {
 	private String repositoryPopupCreateResourceCss;
 	private String repositorySaveDetailsCss;
 	private String repositoryAddForwardCss;
+	
+	private String blogNoPostsCss;
+	private String podcastNoEpisodesCss;
 	
 	private FunctionalUtil functionalUtil;
 	private FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
@@ -276,6 +296,9 @@ public class FunctionalCourseUtil {
 		setRepositoryPopupCreateResourceCss(REPOSITORY_POPUP_CREATE_RESOURCE_CSS);
 		setRepositorySaveDetailsCss(REPOSITORY_SAVE_DETAILS_CSS);
 		setRepositoryAddForwardCss(REPOSITORY_ADD_FORWARD_CSS);
+		
+		setBlogNoPostsCss(BLOG_NO_POSTS_CSS);
+		setPodcastNoEpisodesCss(PODCAST_NO_EPISODES_CSS);
 	}
 	
 	/**
@@ -762,6 +785,42 @@ public class FunctionalCourseUtil {
 
 	/**
 	 * @param browser
+	 * @param url
+	 * @return true on success
+	 * 
+	 * Imports an existing feed into blog.
+	 */
+	public boolean importBlogFeed(Selenium browser, String url){
+		/* open popup to enter url */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getBlogNoPostsCss())
+		.append("')]//a[contains(@class, 'b_button')])[last()]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* enter url */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window_content')]//form//input[@type='text'])[2]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), url);
+		
+		/* click save */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window_content')]//form//button[contains(@class, 'b_button_dirty')])[last()]");
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
 	 * @param blogId
 	 * @param title
 	 * @param description
@@ -815,6 +874,42 @@ public class FunctionalCourseUtil {
 	
 	/**
 	 * @param browser
+	 * @param url
+	 * @return true on success
+	 * 
+	 * Imports an existing feed into podcast.
+	 */
+	public boolean importPodcastFeed(Selenium browser, String url){
+		/* open popup to enter url */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getPodcastNoEpisodesCss())
+		.append("')]//a[contains(@class, 'b_button')])[last()]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* enter url */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window_content')]//form//input[@type='text'])[2]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), url);
+		
+		/* click save */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window_content')]//form//button[contains(@class, 'b_button_dirty')])[last()]");
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
 	 * @param tab
 	 * @return true on success
 	 * 
@@ -843,6 +938,28 @@ public class FunctionalCourseUtil {
 	 * Opens the wiki configurations appropriate tab.
 	 */
 	public boolean openCourseEditorWikiTab(Selenium browser, CourseEditorWikiTab tab){
+		return(functionalUtil.openContentTab(browser, tab.ordinal()));
+	}
+	
+	/**
+	 * @param browser
+	 * @param tab
+	 * @return true on success
+	 * 
+	 * Opens the blog configurations appropriate tab.
+	 */
+	public boolean openCourseEditorBlogTab(Selenium browser, CourseEditorBlogTab tab){
+		return(functionalUtil.openContentTab(browser, tab.ordinal()));
+	}
+	
+	/**
+	 * @param browser
+	 * @param tab
+	 * @return true on success
+	 * 
+	 * Opens the podcast configurations appropriate tab.
+	 */
+	public boolean openCourseEditorPodcastTab(Selenium browser, CourseEditorPodcastTab tab){
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
@@ -966,6 +1083,44 @@ public class FunctionalCourseUtil {
 			return(false);
 		
 		if(!createRepositoryResource(browser, getWikiChooseRepositoryFileCss(), title, description)){
+			return(false);
+		}
+				
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return true on success
+	 * 
+	 * Creates a new blog.
+	 */
+	public boolean createBlog(Selenium browser, String title, String description){
+		if(!openCourseEditorBlogTab(browser, CourseEditorBlogTab.LEARNING_CONTENT))
+			return(false);
+		
+		if(!createRepositoryResource(browser, getFeedChooseRepositoryFileCss(), title, description)){
+			return(false);
+		}
+				
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return true on success
+	 * 
+	 * Creates a new podcast.
+	 */
+	public boolean createPodcast(Selenium browser, String title, String description){
+		if(!openCourseEditorPodcastTab(browser, CourseEditorPodcastTab.LEARNING_CONTENT))
+			return(false);
+		
+		if(!createRepositoryResource(browser, getFeedChooseRepositoryFileCss(), title, description)){
 			return(false);
 		}
 				
@@ -1207,6 +1362,22 @@ public class FunctionalCourseUtil {
 
 	public void setRepositoryAddForwardCss(String repositoryAddForwardCss) {
 		this.repositoryAddForwardCss = repositoryAddForwardCss;
+	}
+
+	public String getBlogNoPostsCss() {
+		return blogNoPostsCss;
+	}
+
+	public void setBlogNoPostsCss(String blogNoPostsCss) {
+		this.blogNoPostsCss = blogNoPostsCss;
+	}
+
+	public String getPodcastNoEpisodesCss() {
+		return podcastNoEpisodesCss;
+	}
+
+	public void setPodcastNoEpisodesCss(String podcastNoEpisodesCss) {
+		this.podcastNoEpisodesCss = podcastNoEpisodesCss;
 	}
 	
 }

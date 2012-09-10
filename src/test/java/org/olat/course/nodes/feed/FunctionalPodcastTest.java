@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.feed;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -27,13 +29,17 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.restapi.support.vo.CourseVO;
 import org.olat.test.ArquillianDeployments;
+import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
+import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 
@@ -43,6 +49,12 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @RunWith(Arquillian.class)
 public class FunctionalPodcastTest {
+	
+	public final static String PODCAST_SHORT_TITLE = "podcast";
+	public final static String PODCAST_LONG_TITLE = "test podcast";
+	public final static String PODCAST_DESCRIPTION = "podcast";
+	public final static String PODCAST_FEED = "http://pod.drs.ch/rock_special_mpx.xml";
+	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();
@@ -54,23 +66,48 @@ public class FunctionalPodcastTest {
 	@ArquillianResource
 	URL deploymentUrl;
 
-	FunctionalUtil functionalUtil;
-	FunctionalVOUtil functionalVOUtil;
-	FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	static FunctionalUtil functionalUtil;
+	static FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
+	static FunctionalCourseUtil functionalCourseUtil;
+	static FunctionalVOUtil functionalVOUtil;
+
+	static boolean initialized = false;
 	
 	@Before
-	public void setup(){
-		functionalUtil = new FunctionalUtil();
-		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-		
-		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
-	}
+	public void setup() throws IOException, URISyntaxException{
+		if(!initialized){
+			functionalUtil = new FunctionalUtil();
+			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 
+			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+
+			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
+
+			initialized = true;
+		}
+	}
+	
 	@Test
 	@RunAsClient
-	public void checkCreate(){
-		//TODO:JK: implement me
+	public void checkCreate() throws URISyntaxException, IOException{
+		CourseVO course = functionalVOUtil.importEmptyCourse(deploymentUrl);
 		
+		/* login for test setup */
+		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
+		
+		/*  */
+		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
+		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
+		
+		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.PODCAST, PODCAST_SHORT_TITLE, PODCAST_LONG_TITLE, PODCAST_DESCRIPTION, 0));
+		Assert.assertTrue(functionalCourseUtil.createPodcast(browser, PODCAST_SHORT_TITLE, PODCAST_DESCRIPTION));
+		
+		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
+		
+		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		Assert.assertTrue(functionalCourseUtil.importPodcastFeed(browser, PODCAST_FEED));
+		
+		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 	}
 }
