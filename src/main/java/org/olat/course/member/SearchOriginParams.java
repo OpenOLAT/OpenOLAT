@@ -19,31 +19,35 @@
  */
 package org.olat.course.member;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberListController extends AbstractMemberListController {
+public class SearchOriginParams extends Event {
+
+	private static final long serialVersionUID = -8878568908411612699L;
+	private boolean repoOrigin = true;
+	private boolean groupOrigin = true;
+
+	public SearchOriginParams() {
+		super("search_origin");
+	}
 	
-	private final SearchMembersParams searchParams;
-	
-	public MemberListController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repoEntry, SearchMembersParams searchParams, String infos) {
-		super(ureq, wControl, repoEntry, "all_member_list");
-		this.searchParams = searchParams;
-		
-		if(StringHelper.containsNonWhitespace(infos)) {
-			mainVC.contextPut("infos", infos);
-		}
+	public boolean isRepoOrigin() {
+		return repoOrigin;
 	}
 
-	@Override
-	public SearchMembersParams getSearchParams() {
-		return searchParams;
+	public void setRepoOrigin(boolean repoOrigin) {
+		this.repoOrigin = repoOrigin;
+	}
+
+	public boolean isGroupOrigin() {
+		return groupOrigin;
+	}
+
+	public void setGroupOrigin(boolean groupOrigin) {
+		this.groupOrigin = groupOrigin;
 	}
 }

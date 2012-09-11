@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupShort;
 
 /**
@@ -31,37 +32,23 @@ import org.olat.group.BusinessGroupShort;
  */
 public class MemberView {
 	
-	private final Long identityKey;
-	private String firstName;
-	private String lastName;
+	private final Identity identity;
 	private Date firstTime;
 	private Date lastTime;
 	private final CourseMembership membership = new CourseMembership();
 	private List<BusinessGroupShort> groups;
 	
 	
-	public MemberView(Long identityKey) {
-		this.identityKey = identityKey;
+	public MemberView(Identity identity) {
+		this.identity = identity;
 	}
 
 	public Long getIdentityKey() {
-		return identityKey;
+		return identity.getKey();
 	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	
+	public Identity getIdentity() {
+		return identity;
 	}
 
 	public CourseMembership getMembership() {
@@ -109,7 +96,7 @@ public class MemberView {
 
 	@Override
 	public int hashCode() {
-		return identityKey == null ? 2878 : identityKey.hashCode();
+		return getIdentityKey() == null ? 2878 : getIdentityKey().hashCode();
 	}
 
 	@Override
@@ -119,7 +106,7 @@ public class MemberView {
 		}
 		if(obj instanceof MemberView) {
 			MemberView member = (MemberView)obj;
-			return identityKey != null && identityKey.equals(member.getIdentityKey());
+			return getIdentityKey() != null && getIdentityKey().equals(member.getIdentityKey());
 		}
 		return false;
 	}
@@ -127,8 +114,8 @@ public class MemberView {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("memberView[name=").append(firstName == null ? "" : firstName)
-			.append(" ").append(lastName == null ? "NULL" : lastName).append("]");
+		sb.append("memberView[identityKey=").append(getIdentityKey() == null ? "" : getIdentityKey())
+			.append(":login=").append(identity == null ? "NULL" : identity.getName()).append("]");
 		return sb.toString();
 	}
 }

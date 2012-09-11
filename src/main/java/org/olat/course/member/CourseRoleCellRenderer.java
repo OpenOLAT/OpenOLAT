@@ -47,19 +47,27 @@ public class CourseRoleCellRenderer implements CustomCellRenderer {
 			boolean and = false;
 			if(membership.isOwner()) {
 				and = and(sb, and);
-				sb.append(translator.translate("role.owner"));
+				sb.append(translator.translate("role.repo.owner"));
 			}
-			if(membership.isTutor()) {
+			if(membership.isRepoTutor()) {
 				and = and(sb, and);
-				sb.append(translator.translate("role.tutor"));
+				sb.append(translator.translate("role.repo.tutor"));
 			}
-			if(membership.isParticipant()) {
+			if(membership.isGroupTutor()) {
 				and = and(sb, and);
-				sb.append(translator.translate("role.participant"));
+				sb.append(translator.translate("role.group.tutor"));
+			}
+			if(membership.isRepoParticipant()) {
+				and = and(sb, and);
+				sb.append(translator.translate("role.repo.participant"));
+			}
+			if(membership.isGroupParticipant()) {
+				and = and(sb, and);
+				sb.append(translator.translate("role.group.participant"));
 			}
 			if(membership.isWaiting()) {
 				and = and(sb, and);
-				sb.append(translator.translate("role.waiting"));
+				sb.append(translator.translate("role.group.waiting"));
 			}
 		}
 	}

@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -53,6 +53,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.member.MemberListTableModel.Cols;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
@@ -64,12 +66,15 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public abstract class AbstractMemberListController extends BasicController {
+
+	protected static final String USER_PROPS_ID = MemberListController.class.getCanonicalName();
 	
 	public static final String TABLE_ACTION_EDIT = "tbl_edit";
 	public static final String TABLE_ACTION_MAIL = "tbl_mail";
@@ -82,6 +87,7 @@ public abstract class AbstractMemberListController extends BasicController {
 	private DialogBoxController leaveDialogBox;
 	protected CloseableModalController cmc;
 	private EditMembershipController editMemberCtrl;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private final UserManager userManager;
 	private final RepositoryEntry repoEntry;
@@ -90,7 +96,7 @@ public abstract class AbstractMemberListController extends BasicController {
 	private final BusinessGroupService businessGroupService;
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, String page) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale()));
 		
 		this.repoEntry = repoEntry;
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
@@ -103,12 +109,14 @@ public abstract class AbstractMemberListController extends BasicController {
 		//table
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setPreferencesOffered(true, this.getClass().getSimpleName());
-		tableConfig.setTableEmptyMessage(translate("nomembers"));			
-		memberListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator(), false);
+		tableConfig.setTableEmptyMessage(translate("nomembers"));
+		
+		memberListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator(), true);
 		listenTo(memberListCtr);
 
-		int numOfColumns = initColumns();
-		memberListModel = new MemberListTableModel(numOfColumns);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
+		initColumns();
+		memberListModel = new MemberListTableModel(userPropertyHandlers);
 		memberListCtr.setTableDataModel(memberListModel);
 		memberListCtr.setMultiSelect(true);
 		memberListCtr.addMultiSelectAction("table.header.edit", TABLE_ACTION_EDIT);
@@ -125,9 +133,15 @@ public abstract class AbstractMemberListController extends BasicController {
 		//
 	}
 	
-	protected int initColumns() {
-		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastName.i18n(), Cols.lastName.ordinal(), null, getLocale()));
-		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstName.i18n(), Cols.firstName.ordinal(), null, getLocale()));
+	protected void initColumns() {
+		int offset = Cols.values().length;
+		int i=0;
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+			memberListCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i++ + offset, null, getLocale()));
+		}
+		
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
 		CustomCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
@@ -136,7 +150,6 @@ public abstract class AbstractMemberListController extends BasicController {
 		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
 		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "action", translate("table.header.edit")));
 		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_REMOVE, "action", translate("table.header.remove")));
-		return 8;
 	}
 
 	@Override
@@ -253,7 +266,7 @@ public abstract class AbstractMemberListController extends BasicController {
 
 	protected abstract SearchMembersParams getSearchParams();
 	
-	protected void reloadModel() {
+	public void reloadModel() {
 		updateTableModel(getSearchParams());
 	}
 
@@ -281,13 +294,20 @@ public abstract class AbstractMemberListController extends BasicController {
 		for(BusinessGroupMembership membership:memberships) {
 			identityKeys.add(membership.getIdentityKey());
 		}
-		List<IdentityShort> identities = securityManager.findShortIdentitiesByKey(identityKeys);
+		SearchIdentityParams idParams = new SearchIdentityParams();
+		idParams.setIdentityKeys(identityKeys);
+		if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
+			idParams.setUserProperties(params.getUserPropertiesSearch());
+		}
+		if(StringHelper.containsNonWhitespace(params.getLogin())) {
+			idParams.setLogin(params.getLogin());
+		}
+		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(idParams);
+
 		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
 		List<MemberView> memberList = new ArrayList<MemberView>();
-		for(IdentityShort identity:identities) {
-			MemberView member = new MemberView(identity.getKey());
-			member.setFirstName(identity.getFirstName());
-			member.setLastName(identity.getLastName());
+		for(Identity identity:identities) {
+			MemberView member = new MemberView(identity);
 			memberList.add(member);
 			keyToMemberMap.put(identity.getKey(), member);
 		}
@@ -332,10 +352,32 @@ public abstract class AbstractMemberListController extends BasicController {
 			}
 		}
 		
+		//the order of the filter is important
 		filterByRoles(memberList, params);
+		filterByOrigin(memberList, params);
 		memberListModel.setObjects(memberList);
 		memberListCtr.modelChanged();
 		return memberList;
+	}
+	
+	private void filterByOrigin(List<MemberView> memberList, SearchMembersParams params) {
+		if(params.isGroupOrigin() && params.isRepoOrigin()) {
+			//do ntohing not very useful :-)
+		} else if(params.isGroupOrigin()) {
+			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
+				CourseMembership m = it.next().getMembership();
+				if(!m.isGroupTutor() && !m.isGroupParticipant() && !m.isGroupWaiting()) {
+					it.remove();
+				}
+			}
+		} else if(params.isRepoOrigin()) {
+			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
+				CourseMembership m = it.next().getMembership();
+				if(!m.isRepoOwner() && !m.isRepoTutor() && !m.isRepoParticipant()) {
+					it.remove();
+				}
+			}
+		}
 	}
 	
 	/**
@@ -347,6 +389,7 @@ public abstract class AbstractMemberListController extends BasicController {
 	 */
 	private void filterByRoles(List<MemberView> memberList, SearchMembersParams params) {
 		List<MemberView> members = new ArrayList<MemberView>(memberList);
+
 		if(params.isRepoOwners()) {
 			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
 				if(it.next().getMembership().isRepoOwner()) {

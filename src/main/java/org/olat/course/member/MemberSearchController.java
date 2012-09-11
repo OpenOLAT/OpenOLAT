@@ -20,30 +20,43 @@
 package org.olat.course.member;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberListController extends AbstractMemberListController {
+public class MemberSearchController extends AbstractMemberListController {
 	
-	private final SearchMembersParams searchParams;
+	private SearchMembersParams searchParams = new SearchMembersParams();
+	private final MemberSearchForm searchForm;
 	
-	public MemberListController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repoEntry, SearchMembersParams searchParams, String infos) {
-		super(ureq, wControl, repoEntry, "all_member_list");
-		this.searchParams = searchParams;
+	public MemberSearchController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry repoEntry) {
+		super(ureq, wControl, repoEntry, "search_member_list");
 		
-		if(StringHelper.containsNonWhitespace(infos)) {
-			mainVC.contextPut("infos", infos);
-		}
+		searchForm = new MemberSearchForm(ureq, wControl);
+		listenTo(searchForm);
+		
+		mainVC.put("searchForm", searchForm.getInitialComponent());
 	}
 
 	@Override
 	public SearchMembersParams getSearchParams() {
 		return searchParams;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == searchForm) {
+			if(event instanceof SearchMembersParams) {
+				searchParams = (SearchMembersParams)event;
+				reloadModel();
+			}
+		}
+		super.event(ureq, source, event);
 	}
 }

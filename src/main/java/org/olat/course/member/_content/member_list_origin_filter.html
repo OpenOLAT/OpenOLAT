@@ -1,0 +1,13 @@
+#if($infos)
+	<br/>
+	<div class="b_clearfix">
+		<p class="b_info">$infos</p>
+	</div>
+#end
+<br/>
+<div class="b_clearfix" style="position:relative;">
+	<div class="o_buttons_box_right">
+		$r.render("originFilter")
+	</div>
+	$r.render("memberList")
+</div>

@@ -20,6 +20,8 @@
 package org.olat.course.member;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
@@ -28,14 +30,19 @@ import org.olat.repository.RepositoryEntry;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberListController extends AbstractMemberListController {
+public class MemberListWithOriginFilterController extends AbstractMemberListController {
 	
 	private final SearchMembersParams searchParams;
+	private final OriginFilterController filterController;
 	
-	public MemberListController(UserRequest ureq, WindowControl wControl,
+	public MemberListWithOriginFilterController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry repoEntry, SearchMembersParams searchParams, String infos) {
-		super(ureq, wControl, repoEntry, "all_member_list");
+		super(ureq, wControl, repoEntry, "member_list_origin_filter");
 		this.searchParams = searchParams;
+		
+		filterController = new OriginFilterController(ureq, wControl);
+		listenTo(filterController);
+		mainVC.put("originFilter", filterController.getInitialComponent());
 		
 		if(StringHelper.containsNonWhitespace(infos)) {
 			mainVC.contextPut("infos", infos);
@@ -45,5 +52,18 @@ public class MemberListController extends AbstractMemberListController {
 	@Override
 	public SearchMembersParams getSearchParams() {
 		return searchParams;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == filterController) {
+			if(event instanceof SearchOriginParams) {
+				SearchOriginParams filter = (SearchOriginParams)event;
+				searchParams.setRepoOrigin(filter.isRepoOrigin());
+				searchParams.setGroupOrigin(filter.isGroupOrigin());
+				reloadModel();
+			}
+		}
+		super.event(ureq, source, event);
 	}
 }

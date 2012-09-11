@@ -20,8 +20,10 @@
 package org.olat.course.member;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -29,35 +31,39 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
  */
 public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 	
-	private final int numOfColumns;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	public MemberListTableModel(int numOfColumns) {
+	public MemberListTableModel(List<UserPropertyHandler> userPropertyHandlers) {
 		super(Collections.<MemberView>emptyList());
-		this.numOfColumns = numOfColumns;
+		this.userPropertyHandlers = userPropertyHandlers;
 	}
 
 	@Override
 	public int getColumnCount() {
-		return numOfColumns;
+		return 4 + userPropertyHandlers.size();
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		MemberView member = getObject(row);
-		switch(Cols.values()[col]) {
-			case firstName: return member.getFirstName();
-			case lastName: return member.getLastName();
-			case firstTime: return member.getFirstTime();
-			case lastTime: return member.getLastTime();
-			case role: return member.getMembership();
-			case groups: return member;
-			default: return "ERROR";
+		switch(col) {
+			case 0: return member.getFirstTime();
+			case 1: return member.getLastTime();
+			case 2: return member.getMembership();
+			case 3: return member;
+			default: {
+				int propPos = col-4;
+				if(propPos < userPropertyHandlers.size()) {
+					UserPropertyHandler handler = userPropertyHandlers.get(propPos);
+					String value = handler.getUserProperty(member.getIdentity().getUser(), getLocale());
+					return value;
+				}
+				return null;
+			}
 		}
 	}
 	
 	public enum Cols {
-		firstName("table.header.firstName"),
-		lastName("table.header.lastName"),
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
 		role("table.header.role"),

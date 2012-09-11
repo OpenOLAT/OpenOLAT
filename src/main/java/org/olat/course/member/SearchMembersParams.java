@@ -19,11 +19,17 @@
  */
 package org.olat.course.member;
 
+import java.util.Map;
+
+import org.olat.core.gui.control.Event;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SearchMembersParams {
+public class SearchMembersParams extends Event {
+	private static final long serialVersionUID = -8842738563007496141L;
+	
 	private boolean repoOwners;
 	private boolean repoTutors;
 	private boolean repoParticipants;
@@ -31,12 +37,19 @@ public class SearchMembersParams {
 	private boolean groupParticipants;
 	private boolean groupWaitingList;
 	
+	private boolean repoOrigin = true;
+	private boolean groupOrigin = true;
+	
+	private String login;
+	private Map<String, String> userPropertiesSearch;
+	
 	public SearchMembersParams() {
-		//
+		super("search_members");
 	}
 	
 	public SearchMembersParams(boolean repoOwners, boolean repoTutors, boolean repoParticipants,
 			boolean groupTutors, boolean groupParticipants, boolean groupWaitingList) {
+		this();
 		this.repoOwners = repoOwners;
 		this.repoTutors = repoTutors;
 		this.repoParticipants = repoParticipants;
@@ -91,5 +104,37 @@ public class SearchMembersParams {
 	
 	public void setGroupWaitingList(boolean groupWaitingList) {
 		this.groupWaitingList = groupWaitingList;
+	}
+
+	public boolean isRepoOrigin() {
+		return repoOrigin;
+	}
+
+	public void setRepoOrigin(boolean repoOrigin) {
+		this.repoOrigin = repoOrigin;
+	}
+
+	public boolean isGroupOrigin() {
+		return groupOrigin;
+	}
+
+	public void setGroupOrigin(boolean groupOrigin) {
+		this.groupOrigin = groupOrigin;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public Map<String, String> getUserPropertiesSearch() {
+		return userPropertiesSearch;
+	}
+
+	public void setUserPropertiesSearch(Map<String, String> userPropertiesSearch) {
+		this.userPropertiesSearch = userPropertiesSearch;
 	}
 }

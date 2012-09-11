@@ -517,6 +517,13 @@ public interface BaseSecurity {
 			Date createdBefore);
 	
 	/**
+	 * Like the following method but compact
+	 * @param params
+	 * @return
+	 */
+	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params);
+	
+	/**
 	 * Get a list of identities that match the following conditions. All
 	 * parameters are additive. NULL values mean "no constraints" (e.g. all
 	 * parameters NULL would result in a list with all identities of the entire

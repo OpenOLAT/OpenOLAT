@@ -121,11 +121,11 @@ public class CORunController extends BasicController {
 		if(groupKeys != null && StringHelper.containsNonWhitespace(grpNames)) {
 			groupKeys = businessGroupService.toGroupKeys(grpNames, cgm.getCourseResource());
 		}
-		if (coachesConfigured) {
+		if (coachesConfigured != null && coachesConfigured.booleanValue()) {
 			ContactList cl = retrieveCoachesFromGroups(groupKeys);
 			contactLists.push(cl);
 		}
-		if (partipsConfigured) {
+		if (partipsConfigured != null && partipsConfigured.booleanValue()) {
 			ContactList cl = retrieveParticipantsFromGroups(groupKeys);
 			contactLists.push(cl);
 		} 

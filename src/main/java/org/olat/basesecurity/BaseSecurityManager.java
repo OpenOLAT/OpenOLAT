@@ -1264,15 +1264,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#getVisibleIdentitiesByPowerSearch(java.lang.String, java.util.Map, boolean, org.olat.basesecurity.SecurityGroup[], org.olat.basesecurity.PermissionOnResourceable[], java.lang.String[], java.util.Date, java.util.Date)
 	 */
-	public List getVisibleIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
+	public List<Identity> getVisibleIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
 			SecurityGroup[] groups, PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore) {
-		return getIdentitiesByPowerSearch(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, 
-				                              authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT ); 
+		return getIdentitiesByPowerSearch(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, 
+				                              authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT)); 
 	}
 	
 	public long countIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
 			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
-		DBQuery dbq = createIdentitiesByPowerQuery(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status, true);
+		DBQuery dbq = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), true);
 		Number count = (Number)dbq.uniqueResult();
 		return count.longValue();
 	}
@@ -1282,16 +1282,22 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
    */
 	public List<Identity> getIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
 			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
-		DBQuery dbq = createIdentitiesByPowerQuery(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status, false);
+		DBQuery dbq = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), false);
 		return dbq.list();
 	}
 	
-	private DBQuery createIdentitiesByPowerQuery(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
-			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status, boolean count) {
+	@Override
+	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params) {
+		DBQuery dbq = createIdentitiesByPowerQuery(params, false);
+		@SuppressWarnings("unchecked")
+		List<Identity> identities = dbq.list();
+		return identities;
+	}
 
-		boolean hasGroups = (groups != null && groups.length > 0);
-		boolean hasPermissionOnResources = (permissionOnResources != null && permissionOnResources.length > 0);
-		boolean hasAuthProviders = (authProviders != null && authProviders.length > 0);
+	private DBQuery createIdentitiesByPowerQuery(SearchIdentityParams params, boolean count) {
+		boolean hasGroups = (params.getGroups() != null && params.getGroups().length > 0);
+		boolean hasPermissionOnResources = (params.getPermissionOnResources() != null && params.getPermissionOnResources().length > 0);
+		boolean hasAuthProviders = (params.getAuthProviders() != null && params.getAuthProviders().length > 0);
 
 		// select identity and inner join with user to optimize query
 		StringBuilder sb = new StringBuilder();
@@ -1328,11 +1334,19 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			sb.append(" ,org.olat.basesecurity.SecurityGroupMembershipImpl as policyGroupMembership "); 
 			sb.append(" ,org.olat.basesecurity.PolicyImpl as policy "); 
 			sb.append(" ,org.olat.resource.OLATResourceImpl as resource ");
-		}		
+		}	
+		
+		String login = params.getLogin();
+		Map<String,String> userproperties = params.getUserProperties();
+		Date createdAfter = params.getCreatedAfter();
+		Date createdBefore = params.getCreatedBefore();
+		Integer status = params.getStatus();
+		Collection<Long> identityKeys = params.getIdentityKeys();
 		
 		// complex where clause only when values are available
-		if (login != null || (userproperties != null && !userproperties.isEmpty()) || createdAfter != null	|| createdBefore != null || 
-				hasAuthProviders || hasGroups || hasPermissionOnResources || status != null) {
+		if (login != null || (userproperties != null && !userproperties.isEmpty())
+				|| (identityKeys != null && !identityKeys.isEmpty()) || createdAfter != null	|| createdBefore != null
+				|| hasAuthProviders || hasGroups || hasPermissionOnResources || status != null) {
 			sb.append(" where ");		
 			boolean needsAnd = false;
 			boolean needsUserPropertiesJoin = false;
@@ -1341,17 +1355,17 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			if (login != null && (userproperties != null && !userproperties.isEmpty())) {
 				sb.append(" ( ");			
 			}
-			// append queries for user attributes
-				if (login != null) {
-					login = makeFuzzyQueryString(login);
-					if (login.contains("_") && dbVendor.equals("oracle")) {
-						//oracle needs special ESCAPE sequence to search for escaped strings
-						sb.append(" lower(ident.name) like :login ESCAPE '\\'");
-					} else if (dbVendor.equals("mysql")) {
-						sb.append(" ident.name like :login");
-					} else {
-						sb.append(" lower(ident.name) like :login");
-					}
+			// append query for login
+			if (login != null) {
+				login = makeFuzzyQueryString(login);
+				if (login.contains("_") && dbVendor.equals("oracle")) {
+					//oracle needs special ESCAPE sequence to search for escaped strings
+					sb.append(" lower(ident.name) like :login ESCAPE '\\'");
+				} else if (dbVendor.equals("mysql")) {
+					sb.append(" ident.name like :login");
+				} else {
+					sb.append(" lower(ident.name) like :login");
+				}
 				// if user fields follow a join element is needed
 				needsUserPropertiesJoin = true;
 				// at least one user field used, after this and is required
@@ -1360,8 +1374,8 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 
 			// append queries for user fields
 			if (userproperties != null && !userproperties.isEmpty()) {
-				HashMap<String, String> emailProperties = new HashMap<String, String>();
-				HashMap<String, String> otherProperties = new HashMap<String, String>();
+				Map<String, String> emailProperties = new HashMap<String, String>();
+				Map<String, String> otherProperties = new HashMap<String, String>();
 	
 				// split the user fields into two groups
 				for (String key : userproperties.keySet()) {
@@ -1374,7 +1388,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 				// handle email fields special: search in all email fields
 				if (!emailProperties.isEmpty()) {
-					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, userPropertiesAsIntersectionSearch);
+					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
 					boolean moreThanOne = emailProperties.size() > 1;
 					if (moreThanOne) sb.append("(");
 					boolean needsOr = false;
@@ -1401,7 +1415,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 				// add other fields
 				for (String key : otherProperties.keySet()) {
-					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, userPropertiesAsIntersectionSearch);
+					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
 					if(dbVendor.equals("mysql")) {
 						sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
 					} else {
@@ -1419,15 +1433,22 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				otherProperties.clear();
 				// at least one user field used, after this and is required
 				needsAnd = true;
-				}
+			}
 			// end of user fields and login part
 			if (login != null && (userproperties != null && !userproperties.isEmpty())) {
 				sb.append(" ) ");
 			}
 			// now continue with the other elements. They are joined with an AND connection
 	
+			// append query for identity primary keys
+			if(identityKeys != null && !identityKeys.isEmpty()) {
+				needsAnd = checkAnd(sb, needsAnd);
+				sb.append("ident.key in (:identityKeys)");
+			}
+			
 			// append query for named security groups
 			if (hasGroups) {
+				SecurityGroup[] groups = params.getGroups();
 				needsAnd = checkAnd(sb, needsAnd);
 				sb.append(" (");
 				for (int i = 0; i < groups.length; i++) {
@@ -1442,6 +1463,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			if (hasPermissionOnResources) {
 				needsAnd = checkAnd(sb, needsAnd);
 				sb.append(" (");
+				PermissionOnResourceable[] permissionOnResources = params.getPermissionOnResources();
 				for (int i = 0; i < permissionOnResources.length; i++) {
 					sb.append(" (");
 					sb.append(" policy.permission=:permission_").append(i);
@@ -1460,6 +1482,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			if (hasAuthProviders) {
 				needsAnd = checkAnd(sb, needsAnd);
 				sb.append(" (");
+				String[] authProviders = params.getAuthProviders();
 				for (int i = 0; i < authProviders.length; i++) {
 					// special case for null auth provider
 					if (authProviders[i] == null) {
@@ -1481,11 +1504,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				needsAnd = checkAnd(sb, needsAnd);
 				sb.append(" ident.creationDate <= :createdBefore ");
 			}
-			if(userLoginAfter != null){
+			if(params.getUserLoginAfter() != null){
 				needsAnd = checkAnd(sb, needsAnd);
 				sb.append(" ident.lastLogin >= :lastloginAfter ");
 			}
-			if(userLoginBefore != null){
+			if(params.getUserLoginBefore() != null){
 				needsAnd = checkAnd(sb, needsAnd);
 				sb.append(" ident.lastLogin <= :lastloginBefore ");
 			}
@@ -1509,8 +1532,13 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		DBQuery dbq = db.createQuery(query);
 		
 		// add user attributes
-		if (login != null) 
+		if (login != null) {
 			dbq.setString("login", login.toLowerCase());
+		}
+		
+		if(identityKeys != null && !identityKeys.isEmpty()) {
+			dbq.setParameterList("identityKeys", identityKeys);
+		}
 
 		//	 add user properties attributes
 		if (userproperties != null && !userproperties.isEmpty()) {
@@ -1523,6 +1551,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 
 		// add named security group names
 		if (hasGroups) {
+			SecurityGroup[] groups = params.getGroups();
 			for (int i = 0; i < groups.length; i++) {
 				SecurityGroupImpl group = (SecurityGroupImpl) groups[i]; // need to work with impls
 				dbq.setEntity("group_" + i, group);
@@ -1531,6 +1560,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		
 		// add policies
 		if (hasPermissionOnResources) {
+			PermissionOnResourceable[] permissionOnResources = params.getPermissionOnResources();
 			for (int i = 0; i < permissionOnResources.length; i++) {
 				PermissionOnResourceable permissionOnResource = permissionOnResources[i];
 				dbq.setString("permission_" + i, permissionOnResource.getPermission());
@@ -1542,6 +1572,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 
 		// add authentication providers
 		if (hasAuthProviders) {
+			String[] authProviders = params.getAuthProviders();
 			for (int i = 0; i < authProviders.length; i++) {
 				String authProvider = authProviders[i];
 				if (authProvider != null) {
@@ -1558,11 +1589,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if (createdBefore != null) {
 			dbq.setDate("createdBefore", createdBefore);
 		}
-		if(userLoginAfter != null){
-			dbq.setDate("lastloginAfter", userLoginAfter);
+		if(params.getUserLoginAfter() != null){
+			dbq.setDate("lastloginAfter", params.getUserLoginAfter());
 		}
-		if(userLoginBefore != null){
-			dbq.setDate("lastloginBefore", userLoginBefore);
+		if(params.getUserLoginBefore() != null){
+			dbq.setDate("lastloginBefore", params.getUserLoginBefore());
 		}
 		
 		if (status != null) {

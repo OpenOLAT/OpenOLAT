@@ -20,15 +20,20 @@
 package org.olat.basesecurity;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -40,6 +45,8 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 
@@ -144,5 +151,91 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(identities.contains(id1));
 		Assert.assertTrue(identities.contains(id2));
 	}
+	
+	@Test
+	public void testGetIdentityByPowerSearch_IdentityKeys() {
+		String login = "pow-1-" + UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(login);
+		dbInstance.commitAndCloseSession();
+		
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setIdentityKeys(Collections.singletonList(id.getKey()));
+		
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(1, ids.size());
+		Assert.assertEquals(id, ids.get(0));
+	}
+	
+	@Test
+	public void testGetIdentityByPowerSearch_Login() {
+		String login = "pow-2-" + UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(login);
+		dbInstance.commitAndCloseSession();
+		
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setLogin(login);
+		
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(1, ids.size());
+		Assert.assertEquals(id, ids.get(0));
+	}
+	
+	@Test
+	public void testGetIdentityByPowerSearch_UserProperty() {
+		//create a user with a first name
+		String login = "pow-3-" + UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(login);
+		String firstName = id.getUser().getProperty(UserConstants.FIRSTNAME, null);
+		dbInstance.commitAndCloseSession();
+		
+		SearchIdentityParams params = new SearchIdentityParams();
+		Map<String,String> props = new HashMap<String,String>();
+		props.put(UserConstants.FIRSTNAME, firstName);
+		params.setUserProperties(props);
+		
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(1, ids.size());
+		Assert.assertEquals(id, ids.get(0));
+	}
+	
+	@Test
+	public void testGetIdentityByPowerSearch_LoginIdentityKeys() {
+		String login = "pow-4-" + UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(login);
+		dbInstance.commitAndCloseSession();
+		
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setLogin(login);
+		params.setIdentityKeys(Collections.singletonList(id.getKey()));
+		
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(1, ids.size());
+		Assert.assertEquals(id, ids.get(0));
+	}
+	
+	@Test
+	public void testGetIdentityByPowerSearch_LoginIdentityKeysProperty() {
+		String login = "pow-5-" + UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(login);
+		dbInstance.commitAndCloseSession();
+		
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setLogin(login);
+		Map<String,String> props = new HashMap<String,String>();
+		props.put(UserConstants.FIRSTNAME, id.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		props.put(UserConstants.LASTNAME, id.getUser().getProperty(UserConstants.LASTNAME, null));
+		params.setUserProperties(props);
+		params.setIdentityKeys(Collections.singletonList(id.getKey()));
+		
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(1, ids.size());
+		Assert.assertEquals(id, ids.get(0));
+	}
+	
 	
 }

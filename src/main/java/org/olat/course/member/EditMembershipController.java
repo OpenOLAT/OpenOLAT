@@ -152,7 +152,7 @@ public class EditMembershipController extends FormBasicController {
 		//repository entry rights
 		
 		String[] repoValues = new String[] {
-				translate("role.owner"), translate("role.tutor"), translate("role.participant")
+				translate("role.repo.owner"), translate("role.repo.tutor"), translate("role.repo.participant")
 		};
 		repoRightsEl = uifactory.addCheckboxesVertical("repoRights", formLayout, repoRightsKeys, repoValues, null, 1);
 		if(member != null) {
