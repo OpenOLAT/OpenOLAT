@@ -91,8 +91,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private BusinessGroupToolsController collaborationToolsController;
 	private BusinessGroupMembersController membersController;
 	private BusinessGroupEditResourceController resourceController;
-	private BusinessGroupAreasController areasController;
-	private BusinessGroupRightsController rightsController;
 	private BusinessGroupEditAccessController tabAccessCtrl;
 
 	/**
@@ -196,17 +194,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		if(resourceController != null) {
 			tabbedPane.addTab(translate("group.edit.tab.resources"), resourceController.getInitialComponent());
 		}
-		//areas controller (optional)
-		areasController = getAreasController(ureq);
-		if(areasController != null) {
-			tabbedPane.addTab(translate("group.edit.tab.areas"), areasController.getInitialComponent());
-		}
 		
-		rightsController = getRightsController(ureq);
-		if(rightsController != null) {
-			tabbedPane.addTab(translate("group.edit.tab.rights"), rightsController.getInitialComponent());
-		}
-
 		if(tabAccessCtrl != null) {
 			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
 		}
@@ -236,32 +224,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		}
 		removeAsListenerAndDispose(resourceController);
 		resourceController = null;
-		return null;
-	}
-	
-	private BusinessGroupAreasController getAreasController(UserRequest ureq) {
-		if(hasResources) {
-			if(areasController == null) {
-				areasController = new BusinessGroupAreasController(ureq, getWindowControl(), currBusinessGroup);
-				listenTo(areasController);
-			}
-			return areasController;
-		}
-		removeAsListenerAndDispose(areasController);
-		areasController = null;
-		return null;
-	}
-	
-	private BusinessGroupRightsController getRightsController(UserRequest ureq) {
-		if(hasResources) {
-			if(rightsController == null) {
-				rightsController = new BusinessGroupRightsController(ureq, getWindowControl(), currBusinessGroup);
-				listenTo(rightsController);
-			}
-			return rightsController;
-		}
-		removeAsListenerAndDispose(rightsController);
-		rightsController = null;
 		return null;
 	}
 	

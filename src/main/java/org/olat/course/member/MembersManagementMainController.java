@@ -27,7 +27,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -43,6 +42,7 @@ import org.olat.core.logging.activity.ActionType;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.groupsandrights.GroupsAndRightsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
@@ -67,6 +67,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	private OrdersAdminController ordersController;
 	private CourseBusinessGroupListController groupsCtrl;
 	private MembersOverviewController membersOverviewCtrl;
+	private GroupsAndRightsController rightsController;
 	
 	private final RepositoryEntry repoEntry;
 	private final AccessControlModule acModule;
@@ -164,7 +165,11 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 			}
 			mainVC.put("content", ordersController.getInitialComponent());
 		} else if(CMD_RIGHTS.equals(cmd)) {
-			mainVC.put("content", new Panel("empty"));
+			if(rightsController == null) {
+				rightsController = new GroupsAndRightsController(ureq, getWindowControl(), repoEntry.getOlatResource());
+				listenTo(rightsController);
+			}
+			mainVC.put("content", rightsController.getInitialComponent());
 		}
 		
 		TreeNode selTreeNode = TreeHelper.findNodeByUserObject(cmd, menuTree.getTreeModel().getRootNode());

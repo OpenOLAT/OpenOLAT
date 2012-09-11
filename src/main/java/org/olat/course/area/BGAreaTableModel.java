@@ -23,13 +23,12 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.group.ui.area;
+package org.olat.course.area;
 
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.area.BGArea;
@@ -43,16 +42,12 @@ import org.olat.group.area.BGArea;
 public class BGAreaTableModel extends DefaultTableDataModel<BGArea> {
 	private static final int COLUMN_COUNT = 3;
 
-	// package-local to avoid synthetic accessor method.
-	Translator translator;
-
 	/**
 	 * @param owned list of group areas
 	 * @param translator
 	 */
-	public BGAreaTableModel(List<BGArea> owned, Translator translator) {
+	public BGAreaTableModel(List<BGArea> owned) {
 		super(owned);
-		this.translator = translator;
 	}
 
 	/**

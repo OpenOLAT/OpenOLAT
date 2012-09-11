@@ -28,12 +28,9 @@ package org.olat.course.editor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
@@ -96,6 +93,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.area.CourseAreasController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
@@ -136,6 +134,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String CMD_CLOSEEDITOR = "cmd.close";
 	private static final String CMD_PUBLISH = "pbl";
 	private static final String CMD_COURSEFOLDER = "cfd";
+	private static final String CMD_COURSEAREAS = "careas";
 	private static final String CMD_COURSEPREVIEW = "cprev";
 	private static final String CMD_KEEPCLOSED_ERROR = "keep.closed.error";
 	private static final String CMD_KEEPOPEN_ERROR = "keep.open.error";
@@ -149,6 +148,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_PUBLISHED_LATEST = "published.latest";
 	private static final String NLS_HEADER_TOOLS = "header.tools";
 	private static final String NLS_COMMAND_COURSEFOLDER = "command.coursefolder";
+	private static final String NLS_COMMAND_COURSEAREAS = "command.courseareas";
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
 	private static final String NLS_COMMAND_CLOSEEDITOR = "command.closeeditor";
@@ -186,6 +186,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private MoveCopySubtreeController moveCopyController;
 	private InsertNodeController insertNodeController;
 	private FolderRunController folderController;
+	private CourseAreasController areasController;
 	private DialogBoxController deleteDialogController;		
 	private LayoutMain3ColsController columnLayoutCtr;
 	
@@ -305,6 +306,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			listenTo(toolC);
 			toolC.addHeader(translate(NLS_HEADER_TOOLS));
 			toolC.addLink(CMD_COURSEFOLDER, translate(NLS_COMMAND_COURSEFOLDER), CMD_COURSEFOLDER, "o_toolbox_coursefolder");
+			toolC.addLink(CMD_COURSEAREAS, translate(NLS_COMMAND_COURSEAREAS), CMD_COURSEAREAS, "o_toolbox_courseareas");
 			toolC.addLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), CMD_COURSEPREVIEW, "b_toolbox_preview" );
 			toolC.addLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), CMD_PUBLISH,"b_toolbox_publish" );
 			toolC.addLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), null, "b_toolbox_close");
@@ -643,13 +645,25 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// Folder for course with custom link model to jump to course nodes
 				VFSContainer namedCourseFolder = new NamedContainerImpl(translate(NLS_COURSEFOLDER_NAME), course.getCourseFolderContainer());
 				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
+				removeAsListenerAndDispose(folderController);
 				folderController = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
 				folderController.addLoggingResourceable(LoggingResourceable.wrap(course));
 				listenTo(folderController);
+
+				removeAsListenerAndDispose(cmc);
 				cmc = new CloseableModalController(getWindowControl(), translate(NLS_COURSEFOLDER_CLOSE), folderController.getInitialComponent());
 				listenTo(cmc);
 				cmc.activate();
+			} else if (event.getCommand().equals(CMD_COURSEAREAS)) {
+				removeAsListenerAndDispose(areasController);
+				areasController = new CourseAreasController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager().getCourseResource());
+				areasController.addLoggingResourceable(LoggingResourceable.wrap(course));
+				listenTo(areasController);
 				
+				removeAsListenerAndDispose(cmc);
+				cmc = new CloseableModalController(getWindowControl(), translate(NLS_COURSEFOLDER_CLOSE), areasController.getInitialComponent());
+				listenTo(cmc);
+				cmc.activate();
 			} else if (event.getCommand().equals(CMD_MULTI_SP)) {
 				removeAsListenerAndDispose(multiSPChooserCtr);
 				VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer();
@@ -890,45 +904,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		euce.getCourseEditorEnv().validateCourse();
 		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 		updateCourseStatusMessages(ureq.getLocale(), courseStatus);
-	}
-
-	/*
-	 * FIXME:pb:b never used...
-	 */
-	private Map<String, List<String>> checkReferencesFor(TreeNode tn) {
-		final CourseEditorTreeModel cetm = CourseFactory.getCourseEditSession(ores.getResourceableId()).getEditorTreeModel();
-		 //create a list of all nodes in the selected subtree
-		final Set<String> allSubTreeids = new HashSet<String>();
-		TreeVisitor tv = new TreeVisitor(new Visitor() {
-			public void visit(INode node) {
-				allSubTreeids.add(node.getIdent());
-			}
-		}, tn, true);
-		tv.visitAll();
-		 //find all references pointing from outside the subtree into the subtree or
-		 //on the subtree root node.
-		final Map<String, List<String>> allRefs = new HashMap<String, List<String>>();
-		tv = new TreeVisitor(new Visitor() {
-			public void visit(INode node) {
-				List referencingNodes = euce.getCourseEditorEnv().getReferencingNodeIdsFor(node.getIdent());
-				// subtract the inner nodes. This allows to delete a whole subtree if
-				// only references residing completly inside the subtree are active.
-				referencingNodes.removeAll(allSubTreeids);
-				if (referencingNodes.size() > 0) {
-					List<String> nodeNames = new ArrayList<String>();
-					for (Iterator iter = referencingNodes.iterator(); iter.hasNext();) {
-						String nodeId = (String) iter.next();
-						CourseNode cn = cetm.getCourseNode(nodeId);
-						nodeNames.add(cn.getShortTitle());
-					}
-					allRefs.put(node.getIdent(), nodeNames);
-				}
-			}
-		}, tn, true);
-		// traverse all nodes from the deletion startpoint
-		tv.visitAll();
-		// allRefs contains now all references, or zero if ready for delete.
-		return allRefs;
 	}
 
 	/**

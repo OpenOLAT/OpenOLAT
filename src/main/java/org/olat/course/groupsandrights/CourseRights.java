@@ -119,6 +119,11 @@ public class CourseRights implements BGRights {
                 trans.translate(RIGHT_STATISTICS)
         };
     }
+    
+    public static List<String> getAvailableRights() {
+    	List<String> available = new ArrayList<String>(rights);
+    	return available;
+    }
 
     /**
      * @see org.olat.group.right.BGRights#getRights()

@@ -32,6 +32,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -60,7 +62,9 @@ public class BGAreaEditController extends BasicController {
 
 	// GUI components
 	private TabbedPane tabbedPane;
-	private VelocityContainer editVC, detailsTabVC, groupsTabVC;
+	private Link backLink;
+	private final VelocityContainer mainVC;
+	private VelocityContainer detailsTabVC, groupsTabVC;
 	private BGAreaFormController areaController;
 	private GroupsToAreaDataModel groupsDataModel;
 	private Choice groupsChoice;
@@ -79,7 +83,7 @@ public class BGAreaEditController extends BasicController {
 	 * @param wControl The window control
 	 * @param area The business group area
 	 */
-	public BGAreaEditController(UserRequest ureq, WindowControl wControl, BGArea area) {
+	public BGAreaEditController(UserRequest ureq, WindowControl wControl, BGArea area, boolean back) {
 		super(ureq, wControl);
 
 		this.area = area;
@@ -95,17 +99,14 @@ public class BGAreaEditController extends BasicController {
 		// groups tab
 		initAndAddGroupsTab();
 		// initialize main view
-		initEditVC();
-		putInitialPanel(this.editVC);
-	}
-
-	/**
-	 * initialize the main velocity wrapper container
-	 */
-	private void initEditVC() {
-		editVC = createVelocityContainer("edit");
-		editVC.put("tabbedpane", tabbedPane);
-		editVC.contextPut("title", translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(area.getName()).toString() }));
+		mainVC = createVelocityContainer("edit");
+		if(back) {
+			backLink = LinkFactory.createLinkBack(mainVC, this);
+			mainVC.put("backLink", backLink);
+		}
+		mainVC.put("tabbedpane", tabbedPane);
+		mainVC.contextPut("title", translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(area.getName()).toString() }));
+		putInitialPanel(mainVC);
 	}
 
 	/**
@@ -160,12 +161,14 @@ public class BGAreaEditController extends BasicController {
 					}
 				}
 			}
+		} else if (source == backLink) {
+			fireEvent(ureq, Event.BACK_EVENT);
 		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == this.areaController) {
+		if (source == areaController) {
 			if (event == Event.DONE_EVENT) {
 				BGArea updatedArea = doAreaUpdate();
 				if (updatedArea == null) {
@@ -173,7 +176,7 @@ public class BGAreaEditController extends BasicController {
 					getWindowControl().setWarning(translate("error.area.name.exists"));
 				} else {
 					area = updatedArea;
-					editVC.contextPut("title", translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(area.getName()).toString() }));
+					mainVC.contextPut("title", translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(area.getName()).toString() }));
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				// area might have been changed, reload from db
@@ -182,6 +185,7 @@ public class BGAreaEditController extends BasicController {
 				areaController = new BGAreaFormController(ureq, getWindowControl(), area, false);
 				listenTo(areaController);
 				detailsTabVC.put("areaForm", areaController.getInitialComponent());
+				fireEvent(ureq, event);
 			}
 		}
 	}
