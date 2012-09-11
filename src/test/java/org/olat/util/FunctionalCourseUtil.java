@@ -30,6 +30,9 @@ public class FunctionalCourseUtil {
 	public final static String COURSE_RUN_CSS = "o_course_run";
 	public final static String COURSE_OPEN_EDITOR_CSS = "o_sel_course_open_editor";
 	
+	public final static String COURSE_TAB_ACTIVE_CSS = "b_nav_active";
+	public final static String COURSE_TAB_CLOSE_CSS = "b_nav_tab_close";
+	
 	public final static String COURSE_EDITOR_PUBLISH_CSS = "b_toolbox_publish";
 	public final static String COURSE_EDITOR_PUBLISH_WIZARD_SELECT_ALL_CSS = "o_sel_course_publish_selectall_cbb";
 	public final static String COURSE_EDITOR_PUBLISH_WIZARD_ACCESS_ID = "o_fioaccessBox_SELBOX";
@@ -61,12 +64,16 @@ public class FunctionalCourseUtil {
 	public final static String CP_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_cp_choose_repofile";
 	public final static String WIKI_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_wiki_choose_repofile";
 	public final static String FEED_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_feed_choose_repofile";
+	public final static String MAP_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_map_choose_repofile";
 	
 	public final static String REPOSITORY_POPUP_CREATE_RESOURCE_CSS = "o_sel_repo_popup_create_resource";
 	public final static String REPOSITORY_POPUP_IMPORT_RESOURCE_CSS = "o_sel_repo_popup_import_resource";
 	
+	public final static String REPOSITORY_POPUP_CSS = "o_sel_edit_repositoryentry_popup";
 	public final static String REPOSITORY_SAVE_DETAILS_CSS = "o_sel_repo_save_details";
 	public final static String REPOSITORY_ADD_FORWARD_CSS = "o_sel_repo_add_forward";
+	
+	public final static String MAP_EDIT_CSS = "o_sel_edit_map";
 	
 	public final static String BLOG_NO_POSTS_CSS = "o_blog_no_posts";
 	
@@ -213,8 +220,19 @@ public class FunctionalCourseUtil {
 		LEARNING_CONTENT;
 	}
 	
+	public enum CourseEditorPortfolioTaskTab {
+		TITLE_AND_DESCRIPTION,
+		VISIBILITY,
+		ACCESS,
+		LEARNING_CONTENT,
+		ASSESSMENT;
+	}
+	
 	private String courseRunCss;
 	private String courseOpenEditorCss;
+	
+	private String courseTabActiveCss;
+	private String courseTabCloseCss;
 	
 	private String courseEditorPublishCss;
 	private String courseEditorPublishWizardSelectAllCss;
@@ -245,10 +263,14 @@ public class FunctionalCourseUtil {
 	private String cpChooseRepositoryFileCss;
 	private String wikiChooseRepositoryFileCss;
 	private String feedChooseRepositoryFileCss;
+	private String mapChooseRepositoryFileCss;
 	
+	private String repositoryPopupCss;
 	private String repositoryPopupCreateResourceCss;
 	private String repositorySaveDetailsCss;
 	private String repositoryAddForwardCss;
+	
+	private String mapEditCss;
 	
 	private String blogNoPostsCss;
 	private String podcastNoEpisodesCss;
@@ -262,6 +284,9 @@ public class FunctionalCourseUtil {
 		
 		setCourseRunCss(COURSE_RUN_CSS);
 		setCourseOpenEditorCss(COURSE_OPEN_EDITOR_CSS);
+		
+		setCourseTabActiveCss(COURSE_TAB_ACTIVE_CSS);
+		setCourseTabCloseCss(COURSE_TAB_CLOSE_CSS);
 		
 		setCourseEditorPublishCss(COURSE_EDITOR_PUBLISH_CSS);
 		setCourseEditorPublishWizardSelectAllCss(COURSE_EDITOR_PUBLISH_WIZARD_SELECT_ALL_CSS);
@@ -292,10 +317,14 @@ public class FunctionalCourseUtil {
 		setCpChooseRepositoryFileCss(CP_CHOOSE_REPOSITORY_FILE_CSS);
 		setWikiChooseRepositoryFileCss(WIKI_CHOOSE_REPOSITORY_FILE_CSS);
 		setFeedChooseRepositoryFileCss(FEED_CHOOSE_REPOSITORY_FILE_CSS);
+		setMapChooseRepositoryFileCss(MAP_CHOOSE_REPOSITORY_FILE_CSS);
 		
+		setRepositoryPopupCss(REPOSITORY_POPUP_CSS);
 		setRepositoryPopupCreateResourceCss(REPOSITORY_POPUP_CREATE_RESOURCE_CSS);
 		setRepositorySaveDetailsCss(REPOSITORY_SAVE_DETAILS_CSS);
 		setRepositoryAddForwardCss(REPOSITORY_ADD_FORWARD_CSS);
+		
+		setMapEditCss(MAP_EDIT_CSS);
 		
 		setBlogNoPostsCss(BLOG_NO_POSTS_CSS);
 		setPodcastNoEpisodesCss(PODCAST_NO_EPISODES_CSS);
@@ -344,6 +373,51 @@ public class FunctionalCourseUtil {
 		.append("]//a");
 		
 		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @return
+	 */
+	public boolean closeTab(Selenium browser, String title){
+		StringBuffer stringBuffer = new StringBuffer();
+		
+		stringBuffer.append("xpath=//li//div//a[@title='")
+		.append(title)
+		.append("']/../..//a[contains(@class, '")
+		.append(getCourseTabCloseCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, stringBuffer.toString());
+		browser.click(stringBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @return
+	 * 
+	 * Closes the active tab.
+	 */
+	public boolean closeActiveTab(Selenium browser){
+		StringBuffer stringBuffer = new StringBuffer();
+		
+		stringBuffer.append("xpath=//li[contains(@class, '")
+		.append(getCourseTabActiveCss())
+		.append("')]//a[contains(@class, '")
+		.append(getCourseTabCloseCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, stringBuffer.toString());
+		browser.click(stringBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -411,6 +485,7 @@ public class FunctionalCourseUtil {
 		.append(getCourseEditorPublishCss())
 		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		/* select all course nodes */
@@ -965,6 +1040,17 @@ public class FunctionalCourseUtil {
 	
 	/**
 	 * @param browser
+	 * @param tab
+	 * @return true on success
+	 * 
+	 * Opens the portfolio task configurations appropriate tab.
+	 */
+	public boolean openCourseEditorPortfolioTaskTab(Selenium browser, CourseEditorPortfolioTaskTab tab){
+		return(functionalUtil.openContentTab(browser, tab.ordinal()));
+	}
+	
+	/**
+	 * @param browser
 	 * @param chooseRepositoryCss
 	 * @param title
 	 * @param description
@@ -972,6 +1058,7 @@ public class FunctionalCourseUtil {
 	 * 
 	 * Opens and fills in the "create resource" popup.
 	 */
+	//FIXME:JK: needs an additional class to find elements
 	private boolean createRepositoryResource(Selenium browser, String chooseRepositoryCss, String title, String description){
 		/* click on "choose, create or import file" button */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -982,6 +1069,8 @@ public class FunctionalCourseUtil {
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
 		
 		/* click create button */
 		selectorBuffer = new StringBuffer();
@@ -998,17 +1087,22 @@ public class FunctionalCourseUtil {
 		/* fill in title */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, 'b_window')]//form//input[@type='text']");
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getRepositoryPopupCss())
+		.append("')]//form//input[@type='text']");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), title);
 		
 		/* fill in description */
-		functionalUtil.typeMCE(browser, description);
+		functionalUtil.typeMCE(browser, getRepositoryPopupCss(), description);
 		
 		/* click save */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window')]//form//div[contains(@class, '")
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getRepositoryPopupCss())
+		.append("')]//form//div[contains(@class, '")
 		.append(getRepositorySaveDetailsCss())
 		.append("')]//button)[1]");
 		
@@ -1047,6 +1141,8 @@ public class FunctionalCourseUtil {
 		if(!createRepositoryResource(browser, getTestChooseRepositoryFileCss(), title, description)){
 			return(false);
 		}
+		
+		functionalUtil.waitForPageToLoad(browser);
 				
 		return(true);
 	}
@@ -1127,6 +1223,45 @@ public class FunctionalCourseUtil {
 		return(true);
 	}
 	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return true on success
+	 * 
+	 * Creates a new podcast.
+	 */
+	public boolean createPortfolioTask(Selenium browser, String title, String description){
+		if(!openCourseEditorPortfolioTaskTab(browser, CourseEditorPortfolioTaskTab.LEARNING_CONTENT))
+			return(false);
+		
+		if(!createRepositoryResource(browser, getMapChooseRepositoryFileCss(), title, description)){
+			return(false);
+		}
+				
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @return true on success
+	 * 
+	 * Opens the portfolio template editor in conjunction with this method the appropriate node and
+	 * the appopriate tab should already be opened.
+	 */
+	public boolean openPortfolioTemplateEditor(Selenium browser){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getMapEditCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
 	public FunctionalUtil getFunctionalUtil() {
 		return functionalUtil;
 	}
@@ -1158,6 +1293,22 @@ public class FunctionalCourseUtil {
 
 	public void setCourseOpenEditorCss(String courseOpenEditorCss) {
 		this.courseOpenEditorCss = courseOpenEditorCss;
+	}
+
+	public String getCourseTabActiveCss() {
+		return courseTabActiveCss;
+	}
+
+	public void setCourseTabActiveCss(String courseTabActiveCss) {
+		this.courseTabActiveCss = courseTabActiveCss;
+	}
+
+	public String getCourseTabCloseCss() {
+		return courseTabCloseCss;
+	}
+
+	public void setCourseTabCloseCss(String courseTabCloseCss) {
+		this.courseTabCloseCss = courseTabCloseCss;
 	}
 
 	public String getCourseEditorPublishCss() {
@@ -1340,6 +1491,22 @@ public class FunctionalCourseUtil {
 		this.feedChooseRepositoryFileCss = feedChooseRepositoryFileCss;
 	}
 
+	public String getMapChooseRepositoryFileCss() {
+		return mapChooseRepositoryFileCss;
+	}
+
+	public void setMapChooseRepositoryFileCss(String mapChooseRepositoryFileCss) {
+		this.mapChooseRepositoryFileCss = mapChooseRepositoryFileCss;
+	}
+
+	public String getRepositoryPopupCss() {
+		return repositoryPopupCss;
+	}
+
+	public void setRepositoryPopupCss(String repositoryPopupCss) {
+		this.repositoryPopupCss = repositoryPopupCss;
+	}
+
 	public String getRepositoryPopupCreateResourceCss() {
 		return repositoryPopupCreateResourceCss;
 	}
@@ -1362,6 +1529,14 @@ public class FunctionalCourseUtil {
 
 	public void setRepositoryAddForwardCss(String repositoryAddForwardCss) {
 		this.repositoryAddForwardCss = repositoryAddForwardCss;
+	}
+
+	public String getMapEditCss() {
+		return mapEditCss;
+	}
+
+	public void setMapEditCss(String mapEditCss) {
+		this.mapEditCss = mapEditCss;
 	}
 
 	public String getBlogNoPostsCss() {

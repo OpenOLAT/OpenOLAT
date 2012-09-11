@@ -261,13 +261,14 @@ public class FunctionalEPortfolioUtil {
 	 * 
 	 * Opens the editor of open binder.
 	 */
-	private boolean openEditor(Selenium browser){
+	public boolean openEditor(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getEditLinkCss())
 		.append("')]//a");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
@@ -370,8 +371,14 @@ public class FunctionalEPortfolioUtil {
 	 * Create a page in the specified binder.
 	 */
 	public boolean createPage(Selenium browser, String binder, String title, ArtefactDisplay display, String description){
-		if(!openBinder(browser, binder))
-			return(false);
+		return(createPage(browser, binder, title, display, description, true));
+	}
+	
+	public boolean createPage(Selenium browser, String binder, String title, ArtefactDisplay display, String description, boolean reopenBinder){
+		if(reopenBinder){
+			if(!openBinder(browser, binder))
+				return(false);
+		}
 		
 		/* click add */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -385,24 +392,28 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - title */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getEPortfolioMapCss())
-		.append("')]//form//input[@type='text']");
-		
-		browser.type(selectorBuffer.toString(), title);
+		if(title != null){
+			selectorBuffer = new StringBuffer();
+
+			selectorBuffer.append("xpath=//div[contains(@class, '")
+			.append(getEPortfolioMapCss())
+			.append("')]//form//input[@type='text']");
+
+			browser.type(selectorBuffer.toString(), title);
+		}
 		
 		/* fill in wizard - display */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//div[contains(@class, '")
-		.append(getEPortfolioMapCss())
-		.append("')]//form//input[@type='radio'])[")
-		.append(display.ordinal() + 1)
-		.append("]");
-		
-		browser.click(selectorBuffer.toString());
+		if(display != null){
+			selectorBuffer = new StringBuffer();
+
+			selectorBuffer.append("xpath=(//div[contains(@class, '")
+			.append(getEPortfolioMapCss())
+			.append("')]//form//input[@type='radio'])[")
+			.append(display.ordinal() + 1)
+			.append("]");
+
+			browser.click(selectorBuffer.toString());
+		}
 		
 		/* fill in wizard - description */
 		functionalUtil.typeMCE(browser, description);
@@ -415,6 +426,37 @@ public class FunctionalEPortfolioUtil {
 		.append("')]//form//button[last()]");
 		
 		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
+	}
+	
+	public boolean renamePage(Selenium browser, String binder, String oldName, String newName){
+		String selector = createSelector(binder, oldName, null);
+		
+		functionalUtil.waitForPageToLoadElement(browser, selector);
+		browser.click(selector);
+		
+		/* rename */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getEPortfolioMapCss())
+		.append("')]//form//input[@type='text']");
+		
+		browser.type(selectorBuffer.toString(), newName);
+		
+		/* save */
+		selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getEPortfolioMapCss())
+		.append("')]//form//button)[last()]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}

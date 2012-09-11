@@ -585,6 +585,7 @@ public class FunctionalUtil {
 		.append(getOlatTopNavigationLogoutCss())
 		.append(" a");
 		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		waitForPageToLoad(browser);
 		
@@ -851,6 +852,7 @@ public class FunctionalUtil {
 		optionLocatorBuffer.append("value=")
 		.append(value);
 		
+		waitForPageToLoadElement(browser, selectLocatorBuffer.toString());
 		browser.select(selectLocatorBuffer.toString(), optionLocatorBuffer.toString());
 		
 		return(true);
