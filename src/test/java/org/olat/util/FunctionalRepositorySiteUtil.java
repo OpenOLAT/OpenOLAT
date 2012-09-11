@@ -35,6 +35,13 @@ import com.thoughtworks.selenium.Selenium;
  */
 public class FunctionalRepositorySiteUtil {	
 	
+	public final static String REPOSITORY_POPUP_CSS = "o_sel_edit_repositoryentry_popup";
+	public final static String REPOSITORY_SAVE_DETAILS_CSS = "o_sel_repo_save_details";
+	public final static String REPOSITORY_ADD_FORWARD_CSS = "o_sel_repo_add_forward";
+	
+	public final static String COURSE_WIZARD_PUBLISH_CHECKBOX = "publishCheckbox";
+	public final static String COURSE_WIZARD_ACCESS_OPTION_ID = "o_fioaccessChooser_SELBOX";
+	
 	public final static String REPOSITORY_SITE_MENU_TREE_SELECTED_CSS = "b_tree_selected";
 	
 	public final static String REPOSITORY_SITE_CATALOG_CSS = "o_sel_repo_catalog";
@@ -130,6 +137,67 @@ public class FunctionalRepositorySiteUtil {
 		MEMBERS_ONLY;
 	}
 	
+	public enum NextSteps {
+		WIZARD("sw"),
+		COURSE_EDITOR("ce"),
+		DETAILED_VIEW("dv");
+		
+		private String value;
+		
+		NextSteps(String value){
+			setValue(value);
+		}
+		
+		public String getValue(){
+			return(value);
+		}
+		
+		public void setValue(String value){
+			this.value = value;
+		}
+	}
+	
+	public enum CourseWizardElement {
+		INFO_PAGE("sp"),
+		ENROLLMENT("en"),
+		DOWNLOAD_FOLDER("bc"),
+		FORUM("fo"),
+		EMAIL("co");
+
+		private String value;
+		
+		CourseWizardElement(String value){
+			setValue(value);
+		}
+		
+		public String getValue(){
+			return(value);
+		}
+		
+		public void setValue(String value){
+			this.value = value;
+		}
+	}
+	
+	public enum CourseWizardAccess {
+		USERS("acl_olat"),
+		USERS_AND_GUESTS("acl_guest");
+		
+		private String value;
+
+		CourseWizardAccess(String value){
+			setValue(value);
+		}
+		
+		public String getValue(){
+			return(value);
+		}
+		
+		public void setValue(String value){
+			this.value = value;
+		}
+	}
+	
 	public final static String TOOLBOX_CONTENT_CSS = "b_toolbox_content";
 	public final static String TOOLBOX_COURSE_CSS = "o_toolbox_course";
 	public final static String TOOLBOX_CONTENT_PACKAGE_CSS = "o_toolbox_content";
@@ -141,6 +209,13 @@ public class FunctionalRepositorySiteUtil {
 	public final static String TOOLBOX_QUESTIONNAIRE_CSS = "o_toolbox_questionnaire";
 	public final static String TOOLBOX_SHAREDFOLDER_CSS = "o_toolbox_sharedfolder";
 	public final static String TOOLBOX_GLOSSARY_CSS = "o_toolbox_glossary";
+	
+	private String repositoryPopupCss;
+	private String repositorySaveDetailsCss;
+	private String repositoryAddForwardCss;
+	
+	private String courseWizardPublishCheckbox;
+	private String courseWizardAccessOptionCss;
 	
 	private String repositorySiteMenuTreeSelectedCss;
 	
@@ -177,6 +252,13 @@ public class FunctionalRepositorySiteUtil {
 	
 	
 	public FunctionalRepositorySiteUtil(FunctionalUtil functionalUtil){
+		setRepositoryPopupCss(REPOSITORY_POPUP_CSS);
+		setRepositorySaveDetailsCss(REPOSITORY_SAVE_DETAILS_CSS);
+		setRepositoryAddForwardCss(REPOSITORY_ADD_FORWARD_CSS);
+		
+		setCourseWizardPublishCheckbox(COURSE_WIZARD_PUBLISH_CHECKBOX);
+		setCourseWizardAccessOptionId(COURSE_WIZARD_ACCESS_OPTION_ID);
+		
 		setRepositorySiteMenuTreeSelectedCss(REPOSITORY_SITE_MENU_TREE_SELECTED_CSS);
 		
 		setRepositorySiteCatalogCss(REPOSITORY_SITE_CATALOG_CSS);
@@ -613,6 +695,170 @@ public class FunctionalRepositorySiteUtil {
 		return(id);
 	}
 	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @return
+	 * 
+	 * 
+	 */
+	public boolean fillInRepositoryEntryPopup(Selenium browser, String title, String description){
+		/* fill in title */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getRepositoryPopupCss())
+		.append("')]//form//input[@type='text']");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), title);
+		
+		/* fill in description */
+		functionalUtil.typeMCE(browser, getRepositoryPopupCss(), description);
+		
+		/* click save */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getRepositoryPopupCss())
+		.append("')]//form//div[contains(@class, '")
+		.append(getRepositorySaveDetailsCss())
+		.append("')]//button)[1]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		/* click next */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, 'b_window')]//a[contains(@class, '")
+		.append(getRepositoryAddForwardCss())
+		.append("')]");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
+	 * @param element
+	 * @param catalog
+	 * @param publish
+	 * @param access
+	 * @return true on success
+	 * 
+	 * Creates a course using the wizard whereas the specified settings
+	 * will applied.
+	 */
+	public boolean createCourseUsingWizard(Selenium browser, String title, String description,
+			CourseWizardElement[] element, String catalog, boolean  publish, CourseWizardAccess access){
+		if(!clickCreate(browser, getToolboxCourseCss())){
+			return(false);
+		}
+		
+		if(!fillInRepositoryEntryPopup(browser, title, description)){
+			return(false);
+		}
+		
+		/* select wizard */
+		functionalUtil.clickRadio(browser, null, NextSteps.WIZARD.getValue());
+		
+		/* click next */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getRepositoryAddForwardCss())
+		.append("')]//button)[last()]");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
+		
+		/* select course element */
+		for(CourseWizardElement current: element){
+			functionalUtil.clickCheckbox(browser, null, current.getValue());
+		}
+		
+		functionalUtil.clickWizardNext(browser);
+		
+		/* catalog */
+		if(catalog != null){
+			//TODO:JK: implement me
+		}
+		
+		functionalUtil.clickWizardNext(browser);
+		
+		/* publish */
+		if(!publish){
+			selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=//div[contains(@class, 'b_wizard')]//input[@type='checkbox' and @name='")
+			.append(getCourseWizardPublishCheckbox())
+			.append("']");
+			
+			browser.click(selectorBuffer.toString());
+		}
+		
+		if(access != null){
+			functionalUtil.selectOption(browser, getCourseWizardAccessOptionId(), access.getValue());
+		}
+		
+		functionalUtil.clickWizardFinish(browser);
+		
+		return(true);
+	}
+
+	public String getRepositoryPopupCss() {
+		return repositoryPopupCss;
+	}
+
+	public void setRepositoryPopupCss(String repositoryPopupCss) {
+		this.repositoryPopupCss = repositoryPopupCss;
+	}
+	
+	public String getRepositorySaveDetailsCss() {
+		return repositorySaveDetailsCss;
+	}
+
+	public void setRepositorySaveDetailsCss(String repositorySaveDetailsCss) {
+		this.repositorySaveDetailsCss = repositorySaveDetailsCss;
+	}
+
+	public String getRepositoryAddForwardCss() {
+		return repositoryAddForwardCss;
+	}
+
+	public void setRepositoryAddForwardCss(String repositoryAddForwardCss) {
+		this.repositoryAddForwardCss = repositoryAddForwardCss;
+	}
+	
+	public String getCourseWizardPublishCheckbox() {
+		return courseWizardPublishCheckbox;
+	}
+
+	public void setCourseWizardPublishCheckbox(String courseWizardPublishCheckbox) {
+		this.courseWizardPublishCheckbox = courseWizardPublishCheckbox;
+	}
+
+	public String getCourseWizardAccessOptionId() {
+		return courseWizardAccessOptionCss;
+	}
+
+	public void setCourseWizardAccessOptionId(String courseWizardAccessOptionCss) {
+		this.courseWizardAccessOptionCss = courseWizardAccessOptionCss;
+	}
+
 	public String getRepositorySiteMenuTreeSelectedCss() {
 		return repositorySiteMenuTreeSelectedCss;
 	}

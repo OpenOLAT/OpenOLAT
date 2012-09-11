@@ -69,10 +69,6 @@ public class FunctionalCourseUtil {
 	public final static String REPOSITORY_POPUP_CREATE_RESOURCE_CSS = "o_sel_repo_popup_create_resource";
 	public final static String REPOSITORY_POPUP_IMPORT_RESOURCE_CSS = "o_sel_repo_popup_import_resource";
 	
-	public final static String REPOSITORY_POPUP_CSS = "o_sel_edit_repositoryentry_popup";
-	public final static String REPOSITORY_SAVE_DETAILS_CSS = "o_sel_repo_save_details";
-	public final static String REPOSITORY_ADD_FORWARD_CSS = "o_sel_repo_add_forward";
-	
 	public final static String MAP_EDIT_CSS = "o_sel_edit_map";
 	
 	public final static String BLOG_NO_POSTS_CSS = "o_blog_no_posts";
@@ -264,11 +260,8 @@ public class FunctionalCourseUtil {
 	private String wikiChooseRepositoryFileCss;
 	private String feedChooseRepositoryFileCss;
 	private String mapChooseRepositoryFileCss;
-	
-	private String repositoryPopupCss;
+
 	private String repositoryPopupCreateResourceCss;
-	private String repositorySaveDetailsCss;
-	private String repositoryAddForwardCss;
 	
 	private String mapEditCss;
 	
@@ -319,10 +312,7 @@ public class FunctionalCourseUtil {
 		setFeedChooseRepositoryFileCss(FEED_CHOOSE_REPOSITORY_FILE_CSS);
 		setMapChooseRepositoryFileCss(MAP_CHOOSE_REPOSITORY_FILE_CSS);
 		
-		setRepositoryPopupCss(REPOSITORY_POPUP_CSS);
 		setRepositoryPopupCreateResourceCss(REPOSITORY_POPUP_CREATE_RESOURCE_CSS);
-		setRepositorySaveDetailsCss(REPOSITORY_SAVE_DETAILS_CSS);
-		setRepositoryAddForwardCss(REPOSITORY_ADD_FORWARD_CSS);
 		
 		setMapEditCss(MAP_EDIT_CSS);
 		
@@ -342,6 +332,17 @@ public class FunctionalCourseUtil {
 		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
 			return(false);
 		
+		return(open(browser, nth));
+	}
+	
+	/**
+	 * @param browser
+	 * @param nth
+	 * @return true on success
+	 * 
+	 * Opens the nth course element in the current course.
+	 */
+	public boolean open(Selenium browser, int nth){
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//ul[contains(@class, 'b_tree_l1')]//li[")
@@ -1058,7 +1059,6 @@ public class FunctionalCourseUtil {
 	 * 
 	 * Opens and fills in the "create resource" popup.
 	 */
-	//FIXME:JK: needs an additional class to find elements
 	private boolean createRepositoryResource(Selenium browser, String chooseRepositoryCss, String title, String description){
 		/* click on "choose, create or import file" button */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -1084,46 +1084,8 @@ public class FunctionalCourseUtil {
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
-		/* fill in title */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getRepositoryPopupCss())
-		.append("')]//form//input[@type='text']");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		browser.type(selectorBuffer.toString(), title);
-		
-		/* fill in description */
-		functionalUtil.typeMCE(browser, getRepositoryPopupCss(), description);
-		
-		/* click save */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//div[contains(@class, '")
-		.append(getRepositoryPopupCss())
-		.append("')]//form//div[contains(@class, '")
-		.append(getRepositorySaveDetailsCss())
-		.append("')]//button)[1]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		
-		browser.click(selectorBuffer.toString());
-		
-		/* click next */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//div[contains(@class, 'b_window')]//a[contains(@class, '")
-		.append(getRepositoryAddForwardCss())
-		.append("')]");
-
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		
-		browser.click(selectorBuffer.toString());
-		
-		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
-		
-		return(true);
+		/* */
+		return(functionalRepositorySiteUtil.fillInRepositoryEntryPopup(browser, title, description));
 	}
 	
 	/**
@@ -1499,36 +1461,12 @@ public class FunctionalCourseUtil {
 		this.mapChooseRepositoryFileCss = mapChooseRepositoryFileCss;
 	}
 
-	public String getRepositoryPopupCss() {
-		return repositoryPopupCss;
-	}
-
-	public void setRepositoryPopupCss(String repositoryPopupCss) {
-		this.repositoryPopupCss = repositoryPopupCss;
-	}
-
 	public String getRepositoryPopupCreateResourceCss() {
 		return repositoryPopupCreateResourceCss;
 	}
 
 	public void setRepositoryPopupCreateResourceCss(String repositoryPopupCreateResourceCss) {
 		this.repositoryPopupCreateResourceCss = repositoryPopupCreateResourceCss;
-	}
-
-	public String getRepositorySaveDetailsCss() {
-		return repositorySaveDetailsCss;
-	}
-
-	public void setRepositorySaveDetailsCss(String repositorySaveDetailsCss) {
-		this.repositorySaveDetailsCss = repositorySaveDetailsCss;
-	}
-
-	public String getRepositoryAddForwardCss() {
-		return repositoryAddForwardCss;
-	}
-
-	public void setRepositoryAddForwardCss(String repositoryAddForwardCss) {
-		this.repositoryAddForwardCss = repositoryAddForwardCss;
 	}
 
 	public String getMapEditCss() {
