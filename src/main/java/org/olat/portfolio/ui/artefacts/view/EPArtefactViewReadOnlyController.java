@@ -74,6 +74,7 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 		vC.contextPut("authorName", fullName);
 		if (secCallback.canView()){
 			detailsLink = LinkFactory.createCustomLink("small.details.link", "open", "small.details.link", Link.LINK, vC, this);
+			detailsLink.setElementCssClass("o_sel_artefact_details");
 		}
 		
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");

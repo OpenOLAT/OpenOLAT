@@ -176,6 +176,7 @@ public class EPArtefactViewController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(detailsLinkEnabled && !artefactChooseMode) {
 			detailsLink = uifactory.addFormLink("details.link", formLayout, Link.LINK);
+			detailsLink.setElementCssClass("o_sel_artefact_details");
 		} 
 		title = uifactory.addInlineTextElement("title", artefact.getTitle(), formLayout, this);
 		
