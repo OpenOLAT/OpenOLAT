@@ -32,7 +32,6 @@ import java.util.Locale;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.group.right.BGRightManager;
-import org.olat.group.right.BGRights;
 
 /**
  * Description:<BR/>
@@ -42,7 +41,7 @@ import org.olat.group.right.BGRights;
  *
  * @author gnaegi 
  */
-public class CourseRights implements BGRights {
+public class CourseRights {
     
     // since right are stored as permissions, lenght is limited to 12 chars!!
     

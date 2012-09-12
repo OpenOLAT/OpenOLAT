@@ -25,6 +25,7 @@
 
 package org.olat.group.right;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -42,8 +43,8 @@ import org.olat.resource.OLATResource;
  */
 public interface BGRightManager {
 	/**
-	 * buiness group rights are stored as perminssions. all business group right
-	 * permission must use this prfix to work properly
+	 * Business group rights are stored as permissions. all business group right
+	 * permission must use this prefix to work properly
 	 */
 	public static final String BG_RIGHT_PREFIX = "bgr.";
 
@@ -55,7 +56,16 @@ public interface BGRightManager {
 	 * @param bgRight
 	 * @param rightGroup
 	 */
-	public abstract void addBGRight(String bgRight, BusinessGroup rightGroup);
+	public void addBGRight(String bgRight, BusinessGroup group, BGRightsRole role);
+	
+	/**
+	 * 
+	 * @param bgRight
+	 * @param group
+	 * @param resource
+	 * @param role
+	 */
+	public void addBGRight(String bgRight, BusinessGroup group, OLATResource resource, BGRightsRole role);
 
 	/**
 	 * Remove a business group right from a business group
@@ -63,7 +73,21 @@ public interface BGRightManager {
 	 * @param bgRight
 	 * @param rightGroup
 	 */
-	public abstract void removeBGRight(String bgRight, BusinessGroup rightGroup);
+	public void removeBGRight(String bgRight, BusinessGroup group, OLATResource resource, BGRightsRole role);
+	
+	/**
+	 * 
+	 * @param rightGroup
+	 * @param resource
+	 * @param roles
+	 */
+	public void removeBGRights(BusinessGroup group, OLATResource resource, BGRightsRole role);
+	
+	/**
+	 * 
+	 * @param groups
+	 */
+	public void removeBGRights(Collection<BusinessGroup> groups, OLATResource resource);
 
 	/**
 	 * @param bgRight
@@ -72,19 +96,27 @@ public interface BGRightManager {
 	 * @return true if an identity is in a group that has this business group
 	 *         right in the given resource
 	 */
-	public abstract boolean hasBGRight(String bgRight, Identity identity, OLATResource resource);
+	public boolean hasBGRight(String bgRight, Identity identity, OLATResource resource);
 
 	/**
 	 * @param rightGroup
 	 * @return a list of all business group rights associated with the given
 	 *         business group
 	 */
-	public List<String> findBGRights(BusinessGroup group);
+	public List<String> findBGRights(BusinessGroup group, BGRightsRole roles);
+	
+	/**
+	 * 
+	 * @param groups
+	 * @param resource
+	 * @return
+	 */
+	public List<BGRights> findBGRights(List<BusinessGroup> groups, OLATResource resource);
 	
 	/**
 	 * 
 	 * @param groups
 	 * @return
 	 */
-	public int countBGRight(List<BusinessGroup> groups);
+	public boolean hasBGRight(List<BusinessGroup> groups);
 }

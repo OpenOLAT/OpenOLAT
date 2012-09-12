@@ -1070,7 +1070,7 @@ public class EPFrontendManager extends BasicManager {
 		return isMapShared(resource);
 	}
 		
-	public boolean isMapShared(OLATResourceable resource) {
+	public boolean isMapShared(OLATResource resource) {
 		List<Policy> policies = securityManager.getPoliciesOfResource(resource, null);
 		for(Policy policy:policies) {
 			if(policy.getPermission().contains(Constants.PERMISSION_READ)) {

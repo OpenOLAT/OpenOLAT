@@ -27,6 +27,7 @@
 package org.olat.core.commons.persistence;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -242,10 +243,25 @@ public class PersistenceHelper {
 	 * @param list
 	 * @return
 	 */
-	public static List<Long> toKeys(List<? extends Persistable> list) {
+	public static List<Long> toKeys(Collection<? extends Persistable> list) {
 		List<Long> keys = new ArrayList<Long>();
 		for(Persistable obj:list) {
 			keys.add(obj.getKey());
+		}
+		return keys;
+	}
+	
+	/**
+	 * 
+	 * @param list
+	 * @return
+	 */
+	public static List<Long> toKeys(Persistable... list) {
+		List<Long> keys = new ArrayList<Long>();
+		if(list != null && list.length > 0) {
+			for(Persistable obj:list) {
+				keys.add(obj.getKey());
+			}
 		}
 		return keys;
 	}

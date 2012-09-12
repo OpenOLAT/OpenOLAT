@@ -28,26 +28,28 @@ package org.olat.group.right;
 import java.util.List;
 
 /**
- * Description:<BR>
- * Generic callback interface to get a list of all available rights and a
- * translator that can translate the keys stored in the list to
- * internationalized strings.
- * <P>
- * Initial Date: Aug 31, 2004
  * 
- * @author gnaegi
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface BGRights {
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public Long getBusinessGroupKey();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public BGRightsRole getRole();
 
 	/**
 	 * @return A list of right keys
 	 */
 	public List<String> getRights();
 
-	/**
-	 * @param right
-	 * @return The translated right
-	 */
-	public String transateRight(String right);
+
 
 }

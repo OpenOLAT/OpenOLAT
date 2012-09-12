@@ -43,6 +43,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.right.BGRightManager;
+import org.olat.group.right.BGRightsRole;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -120,10 +121,10 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id1, g4.getPartipiciantGroup());
 		securityManager.addIdentityToSecurityGroup(id3, g4.getPartipiciantGroup());
 		// rights
-		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g3);
-		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g3);
-		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g4);
-		rightManager.addBGRight(CourseRights.RIGHT_GROUPMANAGEMENT, g4);
+		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g3, BGRightsRole.participant);
+		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g3, BGRightsRole.participant);
+		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g4, BGRightsRole.participant);
+		rightManager.addBGRight(CourseRights.RIGHT_GROUPMANAGEMENT, g4, BGRightsRole.participant);
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 
@@ -194,10 +195,10 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id1, g4.getPartipiciantGroup());
 		securityManager.addIdentityToSecurityGroup(id3, g4.getPartipiciantGroup());
 		// rights
-		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g3);
-		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g3);
-		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g4);
-		rightManager.addBGRight(CourseRights.RIGHT_GROUPMANAGEMENT, g4);
+		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g3, BGRightsRole.participant);
+		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g3, BGRightsRole.participant);
+		rightManager.addBGRight(CourseRights.RIGHT_ARCHIVING, g4, BGRightsRole.participant);
+		rightManager.addBGRight(CourseRights.RIGHT_GROUPMANAGEMENT, g4, BGRightsRole.participant);
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 

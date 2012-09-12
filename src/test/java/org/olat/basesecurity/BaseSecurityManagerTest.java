@@ -236,6 +236,39 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, ids.size());
 		Assert.assertEquals(id, ids.get(0));
 	}
+
+	@Test
+	public void testGetPoliciesOfSecurityGroup() {
+		
+		//securityManager.createAndPersistPolicy(secGroup, permission, olatResourceable);
+		
+		//public List<Policy> getPoliciesOfSecurityGroup(SecurityGroup secGroup) {
+			
+	}
 	
+	@Test
+	public void testGetPoliciesOfSecurityGroups() {
+		//public List<Policy> getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups, OLATResource... resources) {
+	}
+		
+	@Test
+	public void testGetPoliciesOfResource() {
+		//public List<Policy> getPoliciesOfResource(OLATResource resource, SecurityGroup secGroup) {
+	}
+	
+	@Test
+	public void testGetPoliciesOfIdentity() {
+		//getPoliciesOfIdentity
+	}
+	
+	@Test
+	public void testDeletePolicy() {
+		//public void deletePolicy(SecurityGroup secGroup, String permission, OLATResource resource) {		 
+	}
+	
+	@Test
+	public void testDeletePolicies() {
+		//public boolean deletePolicies(Collection<SecurityGroup> secGroups, Collection<OLATResource> resources) {		
+	}
 	
 }

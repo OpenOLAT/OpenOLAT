@@ -29,21 +29,18 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Policy;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
+import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -66,8 +63,8 @@ public class PolicyController extends BasicController {
 	public PolicyController(UserRequest ureq, WindowControl wControl, Identity identity) { 
 		super(ureq, wControl);
 		
-		final List entries = BaseSecurityManager.getInstance().getPoliciesOfIdentity(identity);
-		TableDataModel tdm = new PolicyTableDataModel(entries);
+		List<Policy> entries = BaseSecurityManager.getInstance().getPoliciesOfIdentity(identity);
+		TableDataModel<Policy> tdm = new PolicyTableDataModel(entries);
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		
@@ -83,65 +80,34 @@ public class PolicyController extends BasicController {
 		putInitialPanel(tableCtr.getInitialComponent());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no component events to listen to
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		// no component events to listen to
-	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	protected void doDispose() {
 		//
 	}
-
-}
-
-
-class PolicyTableDataModel extends BaseTableDataModelWithoutFilter {
-	private List entries;
-
-	protected PolicyTableDataModel(List entries) {
-		this.entries = entries;
-	}
 	
-	public int getColumnCount() {
-		// group key, permission, resource
-		return 4;
-	}
-
-	public int getRowCount() {
-		return entries.size();
-	}
-
-	public final Object getValueAt(int row, int col) {
-		Object[] o = (Object[])entries.get(row);
-		Object co = o[(col== 3? 2: col)];
-		switch(col) {
-			case 0: // secgr
-				SecurityGroup sg = (SecurityGroup)co;
-				return sg.getKey(); //"key:"+sg.getKey()+" ("+sg.getCreationDate()+")";
-			case 1: // permission
-				Policy po = (Policy)co;
-				String perm = po.getPermission();
-				return perm;
-			case 2: 
-				OLATResource or = (OLATResource)co;
-				return or.getResourceableId();
-			case 3: 
-				OLATResource ore = (OLATResource)co;
-				return ore.getResourceableTypeName();
+	private static class PolicyTableDataModel extends DefaultTableDataModel<Policy> {
+		
+		public PolicyTableDataModel(List<Policy> entries) {
+			super(entries);
 		}
-		return co.toString();
+		
+		public int getColumnCount() {
+			// group key, permission, resource
+			return 4;
+		}
+
+		public final Object getValueAt(int row, int col) {
+			Policy o = getObject(row);
+			switch(col) {
+				case 0: return o.getSecurityGroup().getKey();
+				case 1: return o.getPermission();
+				case 2: return o.getOlatResource().getResourceableId();
+				case 3: return o.getOlatResource().getResourceableTypeName();
+			}
+			return o;
+		}
 	}
 }

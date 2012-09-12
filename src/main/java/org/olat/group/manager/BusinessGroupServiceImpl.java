@@ -88,6 +88,7 @@ import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
+import org.olat.group.right.BGRightsRole;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.IMConfigSync;
@@ -422,10 +423,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		}
 		// 7. copy rights
 		if (copyRights) {
-			List<String> sourceRights = rightManager.findBGRights(sourceBusinessGroup);
-			for (String sourceRight:sourceRights) {
-				rightManager.addBGRight(sourceRight, newGroup);
+			List<String> participantRights = rightManager.findBGRights(sourceBusinessGroup, BGRightsRole.participant);
+			for (String sourceRight:participantRights) {
+				rightManager.addBGRight(sourceRight, newGroup, BGRightsRole.participant);
 			}
+			List<String> tutorRights = rightManager.findBGRights(sourceBusinessGroup, BGRightsRole.tutor);
+			for (String sourceRight:tutorRights) {
+				rightManager.addBGRight(sourceRight, newGroup, BGRightsRole.tutor);
+			}
+			
 		}
 		// 8. copy waiting-lisz
 		if (copyWaitingList) {

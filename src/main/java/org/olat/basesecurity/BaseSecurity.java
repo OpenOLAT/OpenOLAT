@@ -420,10 +420,9 @@ public interface BaseSecurity {
 	 * @param permission
 	 * @param olatResourceable
 	 */
-	public void deletePolicy(SecurityGroup secGroup, String permission, OLATResourceable olatResourceable);
-
-	// public void deletePolicy(Policy policy); //just deletes the policy, but not
-	// the resource
+	public void deletePolicy(SecurityGroup secGroup, String permission, OLATResource olatResourceable);
+	
+	public boolean deletePolicies(Collection<SecurityGroup> secGroups, Collection<OLATResource> resources);
 
 	// some queries mainly for the group/groupcontext management
 	/**
@@ -437,7 +436,7 @@ public interface BaseSecurity {
 	 * @param secGroups
 	 * @return
 	 */
-	public List<Policy> getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups);
+	public List<Policy> getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups, OLATResource... resources);
 
 /**
  * Return the policies
@@ -445,7 +444,7 @@ public interface BaseSecurity {
  * @param securityGroup The securityGroup (optional)
  * @return
  */
-	public List<Policy> getPoliciesOfResource(OLATResourceable resource, SecurityGroup securityGroup);
+	public List<Policy> getPoliciesOfResource(OLATResource resource, SecurityGroup securityGroup);
 	
 	/**
 	 * Update the policy valid dates
@@ -454,24 +453,6 @@ public interface BaseSecurity {
 	 * @param to
 	 */
 	public void updatePolicy(Policy policy, Date from, Date to);
-	
-	/**
-	 * use for testing ONLY.
-	 * 
-	 * @param permission
-	 * @param olatResourceable
-	 * @return a list of SecurityGroup objects
-	 */
-	public List<SecurityGroup> getGroupsWithPermissionOnOlatResourceable(String permission, OLATResourceable olatResourceable);
-
-	/**
-	 * use for testing ONLY.
-	 * 
-	 * @param permission
-	 * @param olatResourceable
-	 * @return a list of Identity objects
-	 */
-	public List<Identity> getIdentitiesWithPermissionOnOlatResourceable(String permission, OLATResourceable olatResourceable);
 
 	/**
 	 * for debugging and info by the olat admins:
@@ -480,7 +461,7 @@ public interface BaseSecurity {
 	 * @return scalar query return list of object[] with SecurityGroupImpl,
 	 *         PolicyImpl, OLATResourceImpl
 	 */
-	public List<Identity> getPoliciesOfIdentity(Identity identity);
+	public List<Policy> getPoliciesOfIdentity(Identity identity);
 
 	/**
 	 * @param authusername

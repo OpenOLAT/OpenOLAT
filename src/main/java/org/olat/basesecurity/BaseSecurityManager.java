@@ -36,6 +36,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.persistence.TypedQuery;
+
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.quota.GenericQuotaEditController;
@@ -48,6 +50,7 @@ import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
@@ -232,59 +235,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 
 	/**
-	 * @see org.olat.basesecurity.Manager#getGroupsWithPermissionOnOlatResourceable(java.lang.String,
-	 *      org.olat.core.id.OLATResourceable
-	 */
-	public List getGroupsWithPermissionOnOlatResourceable(String permission, OLATResourceable olatResourceable) {
-		Long oresid = olatResourceable.getResourceableId();
-		if (oresid == null) oresid = new Long(0); //TODO: make a method in
-		// OLATResorceManager, since this
-		// is implementation detail
-		String oresName = olatResourceable.getResourceableTypeName();
-
-		List res = DBFactory.getInstance().find(
-				"select sgi from" 
-					+ " org.olat.basesecurity.SecurityGroupImpl as sgi,"
-					+ " org.olat.basesecurity.PolicyImpl as poi,"
-					+ " org.olat.resource.OLATResourceImpl as ori" 
-					+ " where poi.securityGroup = sgi and poi.permission = ?"
-					+ " and poi.olatResource = ori" 
-					+ " and (ori.resId = ? or ori.resId = 0) and ori.resName = ?",
-				new Object[] { permission, oresid, oresName }, new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.STRING });
-		return res;
-	}
-
-	/**
-	 * @see org.olat.basesecurity.Manager#getIdentitiesWithPermissionOnOlatResourceable(java.lang.String,
-	 *      org.olat.core.id.OLATResourceable
-	 */
-	public List getIdentitiesWithPermissionOnOlatResourceable(String permission, OLATResourceable olatResourceable) {
-		Long oresid = olatResourceable.getResourceableId();
-		if (oresid == null) oresid = new Long(0); //TODO: make a method in
-		// OLATResorceManager, since this
-		// is implementation detail
-		String oresName = olatResourceable.getResourceableTypeName();
-
-		// if the olatResourceable is not persisted as OLATResource, then the answer
-		// is false,
-		// therefore we can use the query assuming there is an OLATResource
-		List res = DBFactory.getInstance().find(
-				"select distinct im from" 
-					+ " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi,"
-					+ " org.olat.basesecurity.IdentityImpl as im,"
-					+ " org.olat.basesecurity.PolicyImpl as poi," 
-					+ " org.olat.resource.OLATResourceImpl as ori" 
-					+ " where im = sgmsi.identity"
-					+ " and sgmsi.securityGroup = poi.securityGroup"
-					+ " and poi.permission = ?" 
-					+ " and poi.olatResource = ori"
-					+ " and (ori.resId = ? or ori.resId = 0) and ori.resName = ?", 
-					// if you have a type right, you autom. have all instance rights
-				new Object[] { permission, oresid, oresName }, new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.STRING });
-		return res;
-	}
-
-	/**
 	 * @see org.olat.basesecurity.Manager#getPoliciesOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
 	 */
 	@Override
@@ -302,21 +252,27 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 	
 	@Override
-	public List<Policy> getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups) {
+	public List<Policy> getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups, OLATResource... resources) {
 		if(secGroups == null || secGroups.isEmpty()) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi where poi.securityGroup.key in (:secGroupKeys)");
-
-		List<Long> secGroupKeys = new ArrayList<Long>(secGroups.size());
-		for(SecurityGroup secGroup:secGroups) {
-			secGroupKeys.add(secGroup.getKey());
+		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi")
+		  .append(" inner join fetch poi.securityGroup as secGroup")
+		  .append(" inner join fetch poi.olatResource as resource")
+		  .append(" where secGroup.key in (:secGroupKeys)");
+		if(resources != null && resources.length > 0) {
+			sb.append(" and resource.key in (:resourceKeys)");
 		}
 
-		List<Policy> policies = DBFactory.getInstance().getCurrentEntityManager()
+		List<Long> secGroupKeys = PersistenceHelper.toKeys(secGroups);
+		TypedQuery<Policy> queryPolicies = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), Policy.class)
-				.setParameter("secGroupKeys", secGroupKeys)
-				.getResultList();
+				.setParameter("secGroupKeys", secGroupKeys);
+		if(resources != null && resources.length > 0) {
+			List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
+			queryPolicies.setParameter("resourceKeys", resourceKeys);
+		}	
+		List<Policy> policies =	queryPolicies.getResultList();
 		return policies;
 	}
 
@@ -324,48 +280,22 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.BaseSecurity#getPoliciesOfResource(org.olat.core.id.OLATResourceable)
 	 */
 	@Override
-	public List<Policy> getPoliciesOfResource(OLATResourceable olatResourceable, SecurityGroup secGroup) {
+	public List<Policy> getPoliciesOfResource(OLATResource resource, SecurityGroup secGroup) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" poi where ")
-			.append("(poi.olatResource.resId=:resId or poi.olatResource.resId=0)")
-			.append(" and poi.olatResource.resName=:resName");
+			.append(" poi.olatResource.key=:resourceKey ");
 		if(secGroup != null) {
-			sb.append(" and poi.securityGroup=:secGroup");
+			sb.append(" and poi.securityGroup.key=:secGroupKey");
 		}
 		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setLong("resId", olatResourceable.getResourceableId());
-		query.setString("resName", olatResourceable.getResourceableTypeName());
+		TypedQuery<Policy> query = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Policy.class)
+				.setParameter("resourceKey", resource.getKey());
 		if(secGroup != null) {
-			query.setEntity("secGroup", secGroup);
+			query.setParameter("secGroupKey", secGroup.getKey());
 		}
-		return query.list();
+		return query.getResultList();
 	}
-
-	/**
-	 * @see org.olat.basesecurity.Manager#isIdentityPermittedOnResourceable(org.olat.core.id.Identity, java.lang.String, org.olat.core.id.OLATResourceable
-	 */
-	/*
-	 * MAY BE USED LATER - do not remove please public boolean
-	 * isGroupPermittedOnResourceable(SecurityGroup secGroup, String permission,
-	 * OLATResourceable olatResourceable) { Long oresid =
-	 * olatResourceable.getResourceableId(); if (oresid == null) oresid = new
-	 * Long(0); //TODO: make a method in OLATResorceManager, since this is
-	 * implementation detail String oresName =
-	 * olatResourceable.getResourceableTypeName(); List res =
-	 * DB.getInstance().find("select count(poi) from"+ "
-	 * org.olat.basesecurity.SecurityGroupImpl as sgi,"+ "
-	 * org.olat.basesecurity.PolicyImpl as poi,"+ "
-	 * org.olat.resource.OLATResourceImpl as ori"+ " where sgi.key = ?" + " and
-	 * poi.securityGroup = sgi and poi.permission = ?"+ " and poi.olatResource =
-	 * ori" + " and (ori.resId = ? or ori.resId = 0) and ori.resName = ?", new
-	 * Object[] { secGroup.getKey(), permission, oresid, oresName }, new Type[] {
-	 * Hibernate.LONG, Hibernate.STRING, Hibernate.LONG, Hibernate.STRING } );
-	 * Integer cntI = (Integer)res.get(0); int cnt = cntI.intValue(); return (cnt >
-	 * 0); // can be > 1 if identity is in more the one group having the
-	 * permission on the olatresourceable }
-	 */
-
 	
 	public boolean isIdentityPermittedOnResourceable(Identity identity, String permission, OLATResourceable olatResourceable) {
 		return isIdentityPermittedOnResourceable(identity, permission, olatResourceable, true);
@@ -439,19 +369,18 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @param identity
 	 * @return List of policies
 	 */
-	public List getPoliciesOfIdentity(Identity identity) {
-		IdentityImpl iimpl = getImpl(identity);
-		List res = DBFactory.getInstance().find(
-				"select sgi, poi, ori from" 
-				+ " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi,"
-				+ " org.olat.basesecurity.SecurityGroupImpl as sgi," 
-				+ " org.olat.basesecurity.PolicyImpl as poi,"
-				+ " org.olat.resource.OLATResourceImpl as ori"
-				+ " where sgmsi.identity = ? and sgmsi.securityGroup = sgi" 
-				+ " and poi.securityGroup = sgi and poi.olatResource = ori", 
-				new Object[] { iimpl.getKey() }, new Type[] { StandardBasicTypes.LONG });
-		// scalar query, we get a List of Object[]'s
-		return res;
+	@Override
+	public List<Policy> getPoliciesOfIdentity(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi ")
+		  .append("inner join fetch poi.securityGroup as secGroup ")
+		  .append("inner join fetch poi.olatResource as resource ")
+		  .append("where secGroup in (select sgmi.securityGroup from ")
+		  .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi where sgmi.identity.key=:identityKey)");
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Policy.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 	
 	@Override
@@ -636,39 +565,58 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return existingPolicy;
 	}
 
+	public Policy findPolicy(SecurityGroup secGroup, String permission, OLATResource olatResource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi ")
+		  .append(" where poi.permission=:permission and poi.olatResource.key=:resourceKey and poi.securityGroup.key=:secGroupKey");
 
-	Policy findPolicy(SecurityGroup secGroup, String permission, OLATResource olatResource) {
-		Long secKey = secGroup.getKey();
-		Long orKey = olatResource.getKey();
+		List<Policy> policies = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Policy.class)
+				.setParameter("permission", permission)
+				.setParameter("resourceKey", olatResource.getKey())
+				.setParameter("secGroupKey", secGroup.getKey())
+				.getResultList();
+		  		
 
-		List res = DBFactory.getInstance().find(
-				" select poi from org.olat.basesecurity.PolicyImpl as poi"
-				+ " where poi.permission = ? and poi.olatResource = ? and poi.securityGroup = ?", 
-				new Object[] { permission, orKey, secKey },
-				new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.LONG });
-		if (res.size() == 0) {
+		if (policies.isEmpty()) {
 			return null;
 		}
-		else  {
-			PolicyImpl poi = (PolicyImpl) res.get(0);
-			return poi;
-		}
+		return policies.get(0);
 	}	
 	
 	private void deletePolicy(Policy policy) {
 		DBFactory.getInstance().deleteObject(policy);
 	}
 
+	@Override
+	public boolean deletePolicies(Collection<SecurityGroup> secGroups, Collection<OLATResource> resources) {	
+		if(secGroups == null || secGroups.isEmpty() || resources == null || resources.isEmpty()) return false;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(PolicyImpl.class.getName()).append(" as poi ")
+		  .append(" where poi.olatResource.key in (:resourceKey) and poi.securityGroup.key in (:secGroupKeys)");
+
+		List<Long> secGroupKeys = PersistenceHelper.toKeys(secGroups);
+		List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
+		int rows = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("resourceKey", resourceKeys)
+				.setParameter("secGroupKeys", secGroupKeys)
+				.executeUpdate();
+		return rows > 0;
+	}
+
 	/**
 	 * @see org.olat.basesecurity.Manager#deletePolicy(org.olat.basesecurity.SecurityGroup, java.lang.String, org.olat.core.id.OLATResourceable
 	 */
-	public void deletePolicy(SecurityGroup secGroup, String permission, OLATResourceable olatResourceable) {		 
-		OLATResource olatResource = orm.findResourceable(olatResourceable);
-		if (olatResource == null) throw new AssertException("cannot delete policy of a null olatresourceable!");
-		Policy p = findPolicy(secGroup, permission, olatResource);
+	@Override
+	public void deletePolicy(SecurityGroup secGroup, String permission, OLATResource resource) {		 
+		if (resource == null) throw new AssertException("cannot delete policy of a null olatresourceable!");
+		Policy p = findPolicy(secGroup, permission, resource);
 		// fj: introduced strict testing here on purpose
-		if (p == null) throw new AssertException("findPolicy returned null, cannot delete policy");
-		deletePolicy(p);
+		if (p != null) {
+			deletePolicy(p);
+		}
 	}
 	
 	/**

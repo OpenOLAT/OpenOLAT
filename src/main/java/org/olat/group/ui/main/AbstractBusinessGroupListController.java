@@ -441,7 +441,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		
 		boolean enableCoursesCopy = businessGroupService.hasResources(groups);
 		boolean enableAreasCopy = areaManager.countBGAreasOfBusinessGroups(groups) > 0;
-		boolean enableRightsCopy = rightManager.countBGRight(groups) > 0;
+		boolean enableRightsCopy = rightManager.hasBGRight(groups);
 
 		Step start = new BGCopyPreparationStep(ureq, groups, enableCoursesCopy, enableAreasCopy, enableRightsCopy);
 		StepRunnerCallback finish = new StepRunnerCallback() {
