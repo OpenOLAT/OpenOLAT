@@ -26,6 +26,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,7 +83,7 @@ public class RestConnection {
 	private String HOST = "localhost";
 	private String PROTOCOL = "http";
 	private String CONTEXT_PATH = "olat";
-	
+
 	private final DefaultHttpClient httpclient;
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
@@ -94,6 +95,17 @@ public class RestConnection {
 		
 		//CookieStore cookieStore = new BasicCookieStore();
 		//httpclient.setCookieStore(cookieStore);
+	}
+	
+	
+	public RestConnection(URL url) {
+		PORT = url.getPort();
+		HOST = url.getHost();
+		PROTOCOL = url.getProtocol();
+		CONTEXT_PATH = url.getPath();
+		
+		httpclient = new DefaultHttpClient();
+		HttpClientParams.setCookiePolicy(httpclient.getParams(), CookiePolicy.RFC_2109);
 	}
 	
 	public CookieStore getCookieStore() {
@@ -241,8 +253,11 @@ public class RestConnection {
 	 * @return http://localhost:9998
 	 */
 	public UriBuilder getBaseURI() throws URISyntaxException  {
-		URI uri = new URI(PROTOCOL, null, HOST, PORT, null, null, null);
-    return UriBuilder.fromUri(uri);
+		URI uri;
+
+		uri = new URI(PROTOCOL, null, HOST, PORT, null, null, null);
+		
+		return UriBuilder.fromUri(uri);
 	}
 	
 	/**

@@ -225,25 +225,33 @@ public class SearchForm extends FormBasicController{
 		setFormTitle("search.generic");
 		
 		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", formLayout);
+		displayName.setElementCssClass("o_sel_repo_search_displayname");
 		displayName.setFocus(true);
 		
 		author = uifactory.addTextElement("cif_author", "cif.author", 255, "", formLayout);
+		author.setElementCssClass("o_sel_repo_search_author");
 		if (limitUsername != null) {
 			author.setValue(limitUsername);
 			author.setEnabled(false);
 		}
 		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", formLayout);
+		description.setElementCssClass("o_sel_repo_search_description");
 		
 		id = uifactory.addTextElement("cif_id", "cif.id", 12, "", formLayout);
+		id.setElementCssClass("o_sel_repo_search_id");
 		id.setVisible(isAdmin);
 		id.setRegexMatchCheck("\\d*", "search.id.format");
 		
 		
 		typesSelection = uifactory.addCheckboxesVertical("search.limit.type", formLayout, new String[]{"xx"}, new String[]{""}, new String[]{null}, 1);
 		typesSelection.addActionListener(listener, FormEvent.ONCLICK);
+		typesSelection.setElementCssClass("o_sel_repo_search_type_limit");
 		
-		types = uifactory.addCheckboxesVertical("cif_types", "cif.type", formLayout, getResources().toArray(new String[0]), getTranslatedResources(getResources()), null, 1);
-	
+		String[] typeKeys = getResources().toArray(new String[0]);
+		String[] typeCssClasess = getCssResources(getResources());
+		types = uifactory.addCheckboxesVertical("cif_types", "cif.type", formLayout, typeKeys, getTranslatedResources(getResources()), typeCssClasess, 1);
+		types.setElementCssClass("o_sel_repo_search_types");
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		
@@ -267,6 +275,15 @@ public class SearchForm extends FormBasicController{
 			l.add(translate(key));
 		}
 		return l.toArray(new String[0]);
+	}
+	
+	private String[] getCssResources(List<String> resources) {
+		String[] cssClasses= new String[resources.size()];
+		int count = 0;
+		for(String key: resources){
+			cssClasses[count++] = "o_sel_repo_search_" + key.toLowerCase().replace(".", "_");
+		}
+		return cssClasses;
 	}
 	
 	private List<String> getResources() {

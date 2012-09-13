@@ -66,7 +66,7 @@ junit and integration tests in OpenOLAT 8
 
 * Execute selenium functional integration tests
 -----------------------------------------
-- Selenium functional tests on GUI layer that load OpenOLAT with Arquillian in a Tomcat 7.0.27 managed by Arquillian
+- Selenium functional tests on GUI layer that load OpenOLAT in a Tomcat 7.0.27 managed by Arquillian
 	mvn package
 	mvn -Parquillian surefire:test
 

@@ -46,6 +46,7 @@ public class ToolEntry {
 	private String componentName;
 	private boolean enabled = true;
 	private String cssClass = "b_toolbox_link"; // default
+	private String elementCssClass;
 	private String width;
 	private String height;
 	private boolean browserMenubarEnabled;
@@ -74,12 +75,13 @@ public class ToolEntry {
 	 * @param linkText
 	 * @param cssClass
 	 */
-	public ToolEntry(String ident, String action, String linkText, String cssClass) {
+	public ToolEntry(String ident, String action, String linkText, String cssClass, String elementCssClass) {
 		this.type = TYPE_LINK;
 		this.ident = ident;
 		this.action = action;
 		this.linkText = linkText;
 		if (cssClass != null) this.cssClass = cssClass;
+		this.elementCssClass = elementCssClass;
 	}
 
 	/**
@@ -103,12 +105,13 @@ public class ToolEntry {
 	 * @param height
 	 * @param browserMenubarEnabled
 	 */
-	public ToolEntry(String ident, String action, String linkText, String cssClass, String width, String height, boolean browserMenubarEnabled) {
+	public ToolEntry(String ident, String action, String linkText, String cssClass, String elementCssClass, String width, String height, boolean browserMenubarEnabled) {
 		this.type = TYPE_POPUP_LINK;
 		this.ident = ident;
 		this.action = action;
 		this.linkText = linkText;
 		if (cssClass != null) this.cssClass = cssClass;
+		this.elementCssClass = elementCssClass;
 		this.width = width;
 		this.height = height;
 		this.browserMenubarEnabled = browserMenubarEnabled;
@@ -169,6 +172,13 @@ public class ToolEntry {
 	 */
 	public String getCssClass() {
 		return cssClass;
+	}
+
+	/**
+	 * @return The element CSS class used for Selenium tests.
+	 */
+	public String getElementCssClass() {
+		return elementCssClass;
 	}
 
 	/**

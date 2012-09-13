@@ -1095,11 +1095,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 			myTool.addHeader(translate("header.tools"));
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-				myTool.addLink(COMMAND_EDIT, translate("command.openeditor"));
+				myTool.addLink(COMMAND_EDIT, translate("command.openeditor"), null, null, "o_sel_course_open_editor", false);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 				//fxdiff VCRP-1,2: access control of resources
-				myTool.addLink("unifiedusermngt", translate("command.opensimplegroupmngt"));
+				myTool.addLink("unifiedusermngt", translate("command.opensimplegroupmngt"), null, null, "o_sel_course_open_membersmgmt", false);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 				myTool.addLink("archiver", translate("command.openarchiver"));
@@ -1299,74 +1299,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// log the fact that the user is leaving the course in the log file
 		logAudit("Leaving course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 	}
-
-	/*
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if(isDisposed()) {
-			return;
-		}
-		// transform ACTIVATE_RUN to activate course root node
-		if (viewIdentifier.equals(RepositoryDetailsController.ACTIVATE_RUN)) {
-			// activating the run, means so far activating the root node
-			// viewIdentifier = course.getRunStructure().getRootNode().getIdent();
-			return;
-		}
-		//
-
-		if (viewIdentifier.equals(RepositoryDetailsController.ACTIVATE_EDITOR)) {
-			// activate editor
-			if (!isInEditor) {
-				if (currentToolCtr == null) {
-					// not already in the editor and also no other course tool running
-					isInEditor = true;
-					doHandleToolEvents(ureq, COMMAND_EDIT);
-				} else if (currentToolCtr != null) {
-					// not activateable as another tool is running, i.e. assessment tool
-					getWindowControl().setWarning(translate("warn.cannotactivatesinceintool"));
-				}
-			}// else it is already active
-		} else if (isInEditor || currentToolCtr != null) {
-			// do not activate anything if a course tool or the editor is active!
-			getWindowControl().setWarning(translate("warn.cannotactivatesinceintool"));
-		} else {
-			if (currentNodeController != null) {
-				currentNodeController.dispose();
-			}
-			//fxdiff BAKS-7 Resume function
-			if (viewIdentifier.startsWith("CourseNode:")) {
-				viewIdentifier = viewIdentifier.substring("CourseNode:".length());
-			} 
-
-			CourseNode cn = null;
-			cn = (viewIdentifier == null ? null : course.getRunStructure().getNode(viewIdentifier));
-			String subsubId = null;
-
-			// check for subsubIdent (jump into the third level)
-			if (viewIdentifier != null) {
-				if (viewIdentifier.indexOf(":") != -1) {
-					String[] vis = viewIdentifier.split(":");
-					cn = course.getRunStructure().getNode(vis[0]);
-					subsubId = vis[1];
-				}
-			}
-			// FIXME:fj:b is this needed in some cases?: currentCourseNode = cn;
-			getWindowControl().makeFlat();
-			
-			//add loggin information for case course gets started via jumpin link/search
-			addLoggingResourceable(LoggingResourceable.wrap(course));
-			if (cn!=null) {
-				addLoggingResourceable(LoggingResourceable.wrap(cn));
-			}
-			updateTreeAndContent(ureq, cn, subsubId);
-		}
-		
-		// reset gloss toolC to get newly tabs
-		removeAsListenerAndDispose(glossaryToolCtr);
-		boolean hasGlossaryRights = hasCourseRight(CourseRights.RIGHT_GLOSSARY) || isCourseAdmin;
-		glossaryToolCtr = new CourseGlossaryToolLinkController(getWindowControl(), ureq, course, getTranslator(), hasGlossaryRights, 
-				uce.getCourseEnvironment(), glossaryMarkerCtr);
-		listenTo(glossaryToolCtr);
-	}*/
 
 	@Override
 	//fxdiff BAKS-7 Resume function

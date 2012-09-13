@@ -118,6 +118,7 @@ public class PortfolioConfigForm extends FormBasicController {
 		previewMapLink.setCustomEnabledLinkCSS("b_preview");
 		((Link)previewMapLink.getComponent()).setCustomDisplayText(name);
 		previewMapLink.setVisible(map != null);
+		previewMapLink.setElementCssClass("o_sel_preview_map");
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;
@@ -126,8 +127,11 @@ public class PortfolioConfigForm extends FormBasicController {
 			buttonGroupLayout.setRootForm(mainForm);
 			layoutContainer.add(buttonGroupLayout);
 			chooseMapLink = uifactory.addFormLink("select_or_import.map", buttonGroupLayout, Link.BUTTON);
+			chooseMapLink.setElementCssClass("o_sel_map_choose_repofile");
 			changeMapLink = uifactory.addFormLink("select.map", buttonGroupLayout, Link.BUTTON);
+			changeMapLink.setElementCssClass("o_sel_map_change_repofile");
 			editMapLink = uifactory.addFormLink("edit.map", buttonGroupLayout, Link.BUTTON);
+			editMapLink.setElementCssClass("o_sel_edit_map");
 			
 			chooseMapLink.setVisible(map == null);
 			chooseMapLink.setEnabled(!inUse);

@@ -222,6 +222,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		artefactLinks = new HashMap<Item,Controller>();
 		if (feed.isInternal()) {
 			addItemButton = LinkFactory.createButtonSmall("feed.add.item", vcItems, this);
+			addItemButton.setElementCssClass("o_sel_feed_item_new");
 			if (items != null) {
 				for (Item item : items) {
 					createButtonsForItem(ureq, item);
@@ -339,7 +340,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 		String guid = item.getGuid();
 		Link editButton = LinkFactory.createCustomLink("feed.edit.item." + guid, "feed.edit.item." + guid, "feed.edit.item",
 				Link.BUTTON_XSMALL, vcItems, this);
+		editButton.setElementCssClass("o_sel_feed_item_edit");
 		Link deleteButton = LinkFactory.createCustomLink("delete." + guid, "delete." + guid, "delete", Link.BUTTON_XSMALL, vcItems, this);
+		deleteButton.setElementCssClass("o_sel_feed_item_delete");
 
 		if(feedResource.isInternal() && getIdentity().getKey() != null && getIdentity().getKey().equals(item.getAuthorKey())) {
 			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl());
@@ -420,6 +423,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		} else if (source == makeInternalButton) {
 			feedManager.updateFeedMode(Boolean.FALSE, feed);
 			addItemButton = LinkFactory.createButton("feed.add.item", vcItems, this);
+			addItemButton.setElementCssClass("o_sel_feed_item_new");
 			currentItem = new Item();
 			currentItem.setDraft(true);
 			currentItem.setAuthorKey(ureq.getIdentity().getKey());

@@ -125,11 +125,13 @@ public class ReferencableEntriesSearchController extends BasicController {
 		boolean isVisible = isCreateButtonVisible();
 		if (isVisible) {
 			createRessourceButton = LinkFactory.createButtonSmall("cmd.create.ressource", mainVC, this);
+			createRessourceButton.setElementCssClass("o_sel_repo_popup_create_resource");
 		}
 		mainVC.contextPut("hasCreateRessourceButton", new Boolean(isVisible));
 		isVisible = isImportButtonVisible(); 
 		if (isVisible) {
 			importRessourceButton = LinkFactory.createButtonSmall("cmd.import.ressource", mainVC, this);
+			importRessourceButton.setElementCssClass("o_sel_repo_popup_import_resource");
 		}
 		mainVC.contextPut("hasImportRessourceButton", new Boolean(isVisible));
 		

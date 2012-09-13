@@ -339,7 +339,6 @@ public class Link extends Component {
 		setDirty(true);
 	}
 
-	
 	public void removeCSS(){
 		this.presentation = presentationBeforeCustomCSS;
 		setDirty(true);

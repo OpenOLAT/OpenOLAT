@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormDecorator;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -43,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
  */
 public class FormDecoratorImpl implements FormDecorator {
 
-	FormItemContainer container;
+	private final FormItemContainer container;
 
 	public FormDecoratorImpl(FormItemContainer container) {
 		this.container = container;
@@ -114,6 +115,21 @@ public class FormDecoratorImpl implements FormDecorator {
 			return false;
 		else
 			return (item instanceof SpacerElement);
+	}
+	
+	public String getContainerCssClass() {
+		if (container != null && StringHelper.containsNonWhitespace(container.getElementCssClass())) {
+			return " " + container.getElementCssClass();
+		}
+		return "";
+	}
+	
+	public String getElementCssClass(String formItemName) {
+		FormItem item = getFormItem(formItemName);
+		if (item != null && StringHelper.containsNonWhitespace(item.getElementCssClass())) {
+			return " " + item.getElementCssClass();
+		}
+		return "";
 	}
 
 	/**

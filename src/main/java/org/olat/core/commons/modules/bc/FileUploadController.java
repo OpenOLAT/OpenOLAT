@@ -274,6 +274,7 @@ public class FileUploadController extends FormBasicController {
 		formLayout.add(buttons);
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		buttons.add(buttonGroupLayout);
+		buttonGroupLayout.setElementCssClass("o_sel_upload_buttons");
 		uifactory.addFormSubmitButton("ul.upload", buttonGroupLayout);
 		if (showCancel) {
 			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());			

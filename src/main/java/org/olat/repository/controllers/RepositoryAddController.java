@@ -141,7 +141,9 @@ public class RepositoryAddController extends BasicController {
 		
 		repositoryadd = createVelocityContainer("addDelegate");
 		cancelButton = LinkFactory.createButton("cmd.cancel", repositoryadd, this);
+		cancelButton.setElementCssClass("o_sel_repo_add_cancel");
 		forwardButton = LinkFactory.createButton("cmd.forward", repositoryadd, this);
+		forwardButton.setElementCssClass("o_sel_repo_add_forward");
 		
 		String translatedTypeName = null;
 		String typeIntro = null;

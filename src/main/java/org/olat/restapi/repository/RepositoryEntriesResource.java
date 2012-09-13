@@ -30,7 +30,6 @@ import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -62,10 +60,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.repository.RepositoryEntry;
@@ -75,6 +70,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.restapi.support.vo.RepositoryEntryVOes;
@@ -280,9 +276,7 @@ public class RepositoryEntriesResource {
 	@PUT
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
-	public Response putResource(@FormParam("filename") String filename, @FormParam("file") InputStream file,
-			@FormParam("resourcename") String resourcename, @FormParam("displayname") String displayname,
-			@FormParam("softkey") String softkey, @Context HttpServletRequest request) {
+	public Response putResource(@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -291,13 +285,17 @@ public class RepositoryEntriesResource {
 		long length = 0;
 		try {
 			Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
-			tmpFile = getTmpFile(filename);
-			FileUtils.save(file, tmpFile);
-			FileUtils.closeSafely(file);
+			MultipartReader partsReader = new MultipartReader(request);
+			tmpFile = partsReader.getFile();
 			length = tmpFile.length();
 			
 			if(length > 0) {
-				RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey);
+				Long accessRaw = partsReader.getLongValue("access");
+				int access = accessRaw != null ? accessRaw.intValue() : RepositoryEntry.ACC_OWNERS;
+				String softkey = partsReader.getValue("softkey");
+				String resourcename = partsReader.getValue("resourcename");
+				String displayname = partsReader.getValue("displayname");	
+				RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, access);
 				RepositoryEntryVO vo = ObjectFactory.get(re);
 				return Response.ok(vo).build();
 			}
@@ -313,11 +311,11 @@ public class RepositoryEntriesResource {
 	}
 	
 	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename, String displayname,
-			String softkey) {
+			String softkey, int access) {
 		try {
 			FileResourceManager frm = FileResourceManager.getInstance();
 			FileResource newResource = frm.addFileResource(fResource, fResource.getName());
-			return importResource(identity, newResource, resourcename, displayname, softkey);
+			return importResource(identity, newResource, resourcename, displayname, softkey, access);
 		} catch(Exception e) {
 			log.error("Fail to import a resource", e);
 			throw new WebApplicationException(e);
@@ -325,7 +323,7 @@ public class RepositoryEntriesResource {
 	}
 		
 	public static RepositoryEntry importResource(Identity identity, OLATResourceable newResource, String resourcename, String displayname,
-			String softkey) {
+			String softkey, int access) {
 
 		RepositoryEntry addedEntry = RepositoryManager.getInstance().createRepositoryEntryInstance(identity.getName());
 		addedEntry.setCanDownload(false);
@@ -379,16 +377,13 @@ public class RepositoryEntriesResource {
 		
 		// Do set access for owner at the end, because unfinished course should be
 		// invisible
-		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
+		if(access < RepositoryEntry.ACC_OWNERS || access > RepositoryEntry.ACC_USERS_GUESTS) {
+			addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
+		} else {
+			addedEntry.setAccess(access);
+		}
 		rm.saveRepositoryEntry(addedEntry);
 		return addedEntry;
-	}
-	
-	private File getTmpFile(String suffix) {
-		suffix = (suffix == null ? "" : suffix);
-		File tmpFile = new File(WebappHelper.getUserDataRoot()	+ "/tmp/", CodeHelper.getGlobalForeverUniqueID() + "_" + suffix);
-		FileUtils.createEmptyFile(tmpFile);
-		return tmpFile;
 	}
 	
 	@Path("{repoEntryKey}")

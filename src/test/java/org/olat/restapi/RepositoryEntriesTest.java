@@ -144,12 +144,12 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(cp));
 		entity.addPart("filename", new StringBody("cp-demo.zip"));
 		entity.addPart("resourcename", new StringBody("CP demo"));
 		entity.addPart("displayname", new StringBody("CP demo"));
+		entity.addPart("access", new StringBody("3"));
 		method.setEntity(entity);
 		
 		HttpResponse response = conn.execute(method);
@@ -163,6 +163,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(re.getOwnerGroup());
 		assertNotNull(re.getOlatResource());
 		assertEquals("CP demo", re.getDisplayname());
+		assertEquals(RepositoryEntry.ACC_USERS, re.getAccess());
 	}
 	
 	@Test
@@ -176,7 +177,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(cp));
 		entity.addPart("filename", new StringBody("qti-demo.zip"));
@@ -209,7 +209,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(cp));
 		entity.addPart("filename", new StringBody("questionnaire-demo.zip"));
@@ -241,7 +240,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(cp));
 		entity.addPart("filename", new StringBody("wiki-demo.zip"));
@@ -274,7 +272,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(cp));
 		entity.addPart("filename", new StringBody("blog-demo.zip"));

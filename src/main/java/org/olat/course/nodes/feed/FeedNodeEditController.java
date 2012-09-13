@@ -148,7 +148,9 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 		learningResource = new Panel("learning_resource_panel");
 		contentVC = new VelocityContainer("accessVC", FeedNodeEditController.class, "edit", getTranslator(), this);
 		changeButton = LinkFactory.createButtonSmall(BUTTON_CHANGE_FEED, contentVC, this);
+		changeButton.setElementCssClass("o_sel_feed_change_repofile");
 		chooseButton = LinkFactory.createButtonSmall(BUTTON_CREATE_FEED, contentVC, this);
+		chooseButton.setElementCssClass("o_sel_feed_choose_repofile");
 
 		if (config.get(AbstractFeedCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
 			// fetch repository entry to display the repository entry title of the

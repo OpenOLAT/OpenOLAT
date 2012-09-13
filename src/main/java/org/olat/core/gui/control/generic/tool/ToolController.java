@@ -110,6 +110,17 @@ public interface ToolController extends Controller {
 	public void addLink(String action, String text, String ident, String cssClass, boolean isDownloadLink);
 	
 	/**
+	 * 
+	 * @param action
+	 * @param text
+	 * @param ident
+	 * @param cssClass
+	 * @param elementCssClass
+	 * @param markAsDownloadLink
+	 */
+	public void addLink(String action, String text, String ident, String cssClass, String elementCssClass, boolean markAsDownloadLink);
+	
+	/**
 	 * a link (= a velocity $r.link(..)). in order to receive events, the code
 	 * creating the tool must use
 	 * tool.addControllerListener(ControllerEventListener el) to receive the link

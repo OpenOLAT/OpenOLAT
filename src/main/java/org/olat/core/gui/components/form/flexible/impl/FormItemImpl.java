@@ -82,6 +82,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	private boolean isInlineEditingOn;
 	private Component inlineEditingComponent;
 	private String i18nKey4EmptyText="inline.empty.click.for.edit";
+	private String elementCssClass;
 
 	/**
 	 * 
@@ -113,6 +114,14 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	
 	public String getName() {
 		return name;
+	}
+
+	public String getElementCssClass() {
+		return elementCssClass;
+	}
+
+	public void setElementCssClass(String elementCssClass) {
+		this.elementCssClass = elementCssClass;
 	}
 
 	@Override

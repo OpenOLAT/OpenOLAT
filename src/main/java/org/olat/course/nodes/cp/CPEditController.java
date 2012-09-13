@@ -129,9 +129,11 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 		main = new Panel("cpmain");		
 		
-		cpConfigurationVc = this.createVelocityContainer("edit");
+		cpConfigurationVc = createVelocityContainer("edit");
 		chooseCPButton = LinkFactory.createButtonSmall(NLS_COMMAND_CREATECP, cpConfigurationVc, this);
+		chooseCPButton.setElementCssClass("o_sel_cp_choose_repofile");
 		changeCPButton = LinkFactory.createButtonSmall(NLS_COMMAND_CHANGECP, cpConfigurationVc, this);
+		changeCPButton.setElementCssClass("o_sel_cp_change_repofile");
 		
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
 			// fetch repository entry to display the repository entry title of the chosen cp

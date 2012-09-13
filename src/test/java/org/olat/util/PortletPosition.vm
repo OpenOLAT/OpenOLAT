@@ -1,0 +1,25 @@
+var position = -1;
+
+if (document.querySelector){
+	var portalCss = "${portalCss}";
+	var portalSubcolumnsCss = "${portalSubcolumnsCss}";
+	var portletCss = "${portletCss}";
+	var portalColumnCssPrefix = "${portalColumnCssPrefix}";
+	
+	var portlet = "${portlet}";
+	
+	var j_stop = ${j_stop};
+	var column = ${column};
+	
+	var selection = window.document.querySelectorAll('.' + portalCss + '.' + portalSubcolumnsCss + ' .' + portalColumnCssPrefix + (column + 1) + ' .' + portletCss);
+	
+	for(j=0; j < j_stop; j++){
+		var current = selection.item(j);
+		
+		if(current.className.indexOf(portlet) >= 0){
+			position = j;
+		}
+	}
+}
+
+position;
