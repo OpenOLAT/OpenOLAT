@@ -25,6 +25,7 @@
 
 package org.olat.gui.control;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
@@ -39,7 +40,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -51,6 +51,8 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.instantMessaging.ConncectedUsersHelper;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.ConnectedClientsListController;
+import org.olat.social.SocialModule;
+import org.olat.social.shareLink.ShareLinkController;
 
 /**
  * Overrides the default footer of the webapplication framework showing the 
@@ -85,7 +87,16 @@ public class OlatFooterController extends BasicController implements GenericEven
 		if (isGuest || isInvitee) {
 			showOtherUsers.setEnabled(false);
 		}
-		
+
+		// share links
+		SocialModule socialModule = (SocialModule) CoreSpringFactory.getBean("socialModule");
+		if (socialModule.isShareEnabled() && socialModule.getEnabledShareLinkButtons().size() > 0) {
+			Controller shareLinkCtr = new ShareLinkController(ureq, wControl);
+			listenTo(shareLinkCtr); // for auto-dispose
+			// push to view
+			olatFootervc.put("shareLink", shareLinkCtr.getInitialComponent());
+		}
+
 		// some variables displayed in the footer
 		String username;
 		if(isGuest) {

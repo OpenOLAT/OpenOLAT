@@ -1,0 +1,63 @@
+## some common JS helper methods
+<script type="text/javascript">
+/* <![CDATA[ */
+    ## Called from Window.java to update the businesspath
+	function b_shareActiveSocialUrl() {
+		$('b_mail').writeAttribute('href','mailto:?subject=' + b_shareSocialTitle() + '&body=' + b_shareSocialUrl());
+	}
+	## Helper methods for buttons below
+	function b_shareSocialUrl() {
+		if(o_info.businessPath && o_info.businessPath.length > 0) return o_info.businessPath;
+		return '$baseURL';
+	} 
+	function b_shareSocialTitle() { return document.title; }
+/* ]]> */
+</script>
+
+
+<div id="b_share">
+#foreach ($link in $shareLinks)
+	#if ($link == "twitter")
+		<a id="b_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+b_shareSocialUrl()+'&text='+b_shareSocialTitle());return false;"></a>
+	#elseif ($link == "facebook")
+		<a id="b_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+b_shareSocialUrl()+'&t='+b_shareSocialTitle());return false;"></a>
+	#elseif ($link == "google")
+		<a id="b_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&bkmk='+b_shareSocialUrl()+'&title='+b_shareSocialTitle());return false;"></a>
+	#elseif ($link == "delicious")
+		<a id="b_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+b_shareSocialUrl()+'&title='+b_shareSocialTitle());return false;"></a>
+	#elseif ($link == "digg")
+		<a id="b_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+b_shareSocialUrl()+'&title='+b_shareSocialTitle());return false;"></a>
+	#elseif ($link == "mail")	
+		<a id="b_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")"></a>
+	#elseif ($link == "link")	
+		<span id="b_link" href="" title="$r.translateInAttribute("share.link")" onclick="javascript:b_shareSocialLink();"></span>
+		<script type="text/javascript">
+		/* <![CDATA[ */
+			function b_shareSocialLink() {
+				if(Ext.getCmp('callout_share_link') != null ) {
+					Ext.getCmp('callout_share_link').destroy();
+				};
+				var tt = new Ext.ToolTip({
+					id: 'callout_share_link',
+					html: '<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" value="' + b_shareSocialUrl() + '" /></p>',
+					target: 'b_link',
+					title: '<span>' + b_shareSocialTitle() + '</span>',
+					closable: true,
+					autoHide: false,
+					hideDelay: 100000,
+					anchor: 'box',
+					width: 500,
+					autoScroll: true,
+					style: 'z-index:900',
+					onDocMouseDown: function(e) { }
+				});
+				tt.show();
+				document.getElementById('callout_share_link_in').focus();
+			}
+		/* ]]> */
+		</script>
+	#else
+		<!-- did not found code for $link share link button in shareLink.html template-->
+	#end
+#end
+</div>
