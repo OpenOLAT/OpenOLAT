@@ -38,18 +38,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.resource.OLATResource;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
@@ -60,10 +60,9 @@ import org.olat.test.OlatTestCase;
  */
 public class SecurityManagerTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(SecurityManagerTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(SecurityManagerTest.class);
 	private Identity s1,s2,s3,testAdmin;
 	private static String testLogin = "test-login"; 
-	private OLATResourceable olatres, olatres2;
 	private BaseSecurity sm;
 
 	
@@ -76,7 +75,7 @@ public class SecurityManagerTest extends OlatTestCase {
 	 */
 	@Test public void testGetIdentitiesByPowerSearch() {
 		// test using visibility search
-		List userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null, null);
+		List<Identity> userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null, null);
 		assertEquals(1,userList.size());
 		Identity identity = (Identity) userList.get(0);
 		assertEquals(testLogin,identity.getName());
@@ -92,7 +91,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		userProperties.put(UserConstants.FIRSTNAME, "first"+ testLogin);
 		userProperties.put(UserConstants.LASTNAME, "last"+ testLogin);
 		// test using visibility search
-		List userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null, null);
+		List<Identity> userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null, null);
 		assertEquals(1,userList.size());
 		Identity identity = (Identity) userList.get(0);
 		assertEquals("first" + testLogin,identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
@@ -109,7 +108,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, s2.getUser().getProperty(UserConstants.LASTNAME, null));
 		// with AND search (conjunction) no identity is found
-		List userList = sm.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
+		List<Identity> userList = sm.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
 		assertEquals(0, userList.size());
 		// with OR search both identities are found
 		userList = sm.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null, null);
@@ -126,17 +125,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		userList = sm.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null, null);
 		assertEquals(1, userList.size());
 	}
-	
-	@Test public void testGetIdentitiesByPowerSearchWithGroups() {
-	  SecurityGroup[] groups = {sm.findSecurityGroupByName(Constants.GROUP_OLATUSERS)};
-	  List userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, null, true, groups, null, null, null, null);
-		assertEquals(1,userList.size());
-		Identity identity = (Identity) userList.get(0);
-		assertEquals(testLogin,identity.getName());
-	  SecurityGroup[] authors = {sm.findSecurityGroupByName(Constants.GROUP_AUTHORS)};
-	  userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, null, true, authors, null, null, null, null);
-		assertEquals(0,userList.size());
-	}
+
 	
 	@Test public void testGetIdentitiesByPowerSearchWithAuthProviders() {
 		// 1) only auth providers and login
@@ -144,7 +133,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		for (int i = 0; i < authProviders.length; i++) {
 			assertTrue("Provider name.length must be <= 8", authProviders[i].length() <= 8);
 		}
-	  List userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, authProviders, null, null);
+	  List<Identity> userList = sm.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, authProviders, null, null);
 		assertEquals(1,userList.size());
 		Identity identity = (Identity) userList.get(0);
 		assertEquals(testLogin,identity.getName());
@@ -183,28 +172,6 @@ public class SecurityManagerTest extends OlatTestCase {
 		assertEquals(1, userList.size());
 	}
 	
-	@Test public void testGetPoliciesOfIdentity() {
-		SecurityGroup olatUsersGroup = sm.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		sm.createAndPersistPolicy(olatUsersGroup, Constants.PERMISSION_ACCESS, olatres);
-		List policies = sm.getPoliciesOfIdentity(s1);
-		boolean foundPolicy = false;
-		for (Iterator iterator = policies.iterator(); iterator.hasNext();) {
-			Object[] policy = (Object[]) iterator.next();
-			for (int i = 0; i < policy.length; i++) {
-				Long resourcableId = ((OLATResource)policy[2]).getResourceableId();
-				if ( (resourcableId != null)
-						 && (resourcableId.equals(olatres.getResourceableId())) ) {
-					System.out.println("ok, we found the right resource");
-					assertEquals(olatUsersGroup.getKey(),((SecurityGroup)policy[0]).getKey());
-					assertEquals(Constants.PERMISSION_ACCESS,((Policy)policy[1]).getPermission());
-					assertEquals(olatres.getResourceableId(),((OLATResource)policy[2]).getResourceableId());
-					foundPolicy = true;
-				}
-			}
-		}
-		assertTrue("Does not found policy", foundPolicy);
-	}
-	
 	@Test public void testRemoveIdentityFromSecurityGroup() {
 		SecurityGroup olatUsersGroup = sm.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		assertTrue(sm.isIdentityInSecurityGroup(s1, olatUsersGroup));
@@ -216,7 +183,7 @@ public class SecurityManagerTest extends OlatTestCase {
 	
 	@Test public void testGetIdentitiesAndDateOfSecurityGroup() {
 		SecurityGroup olatUsersGroup = sm.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		List identities = sm.getIdentitiesAndDateOfSecurityGroup(olatUsersGroup, false);// not sortedByAddDate
+		List<Object[]> identities = sm.getIdentitiesAndDateOfSecurityGroup(olatUsersGroup, false);// not sortedByAddDate
 		assertTrue("Found no users", identities.size() > 0);
 		Object[] firstIdentity = (Object[])identities.get(0);
 		assertTrue("Wrong type, Identity[0] must be an Identity", firstIdentity[0] instanceof Identity);
@@ -225,27 +192,29 @@ public class SecurityManagerTest extends OlatTestCase {
 		identities = sm.getIdentitiesAndDateOfSecurityGroup(olatUsersGroup, true);// sortedByAddDate
 		assertTrue("Found no users", identities.size() > 0);
 		Date addedDateBefore = null;
-		for (Iterator iterator = identities.iterator(); iterator.hasNext();) {
-			Object[] object = (Object[]) iterator.next();
+		for (Iterator<Object[]> iterator = identities.iterator(); iterator.hasNext();) {
+			Object[] object = iterator.next();
 			Identity identity = (Identity) object[0];
+			Assert.assertNotNull(identity);
 			Date addedDate    = (Date) object[1];
+			Assert.assertNotNull(addedDate);
 			if (addedDateBefore != null) {
 				assertTrue("Not sorted by AddDate ", (addedDate.compareTo(addedDateBefore) == 1) || (addedDate.compareTo(addedDateBefore) == 0) );
 			}
 			addedDateBefore = addedDate;
 		}
-		
 	}
 	
 	@Test public void testGetSecurityGroupJoinDateForIdentity(){
-		SecurityGroup secGroup = sm.createAndPersistNamedSecurityGroup("testGroup");
+		String randomName = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+		SecurityGroup secGroup = sm.createAndPersistNamedSecurityGroup(randomName);
 		sm.addIdentityToSecurityGroup(s1, secGroup);
 		DBFactory.getInstance().commit();
 		try {
 			// we have to sleep for a short time to have different time
-			Thread.currentThread().sleep(10);
+			Thread.sleep(10);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 		Date now = new Date();
 		assertTrue(sm.getSecurityGroupJoinDateForIdentity(secGroup, s1).getTime() < now.getTime());
@@ -256,7 +225,7 @@ public class SecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test public void testGetAuthentications() {
-		List authentications = sm.getAuthentications(s1);
+		List<Authentication> authentications = sm.getAuthentications(s1);
 		Authentication authentication = (Authentication)authentications.get(0);
 		assertEquals(testLogin,authentication.getAuthusername());
 	}
@@ -319,34 +288,13 @@ public class SecurityManagerTest extends OlatTestCase {
 		c2.add(Calendar.DAY_OF_YEAR, - 101); 
 		assertEquals(initialUserLogins, sm.countUniqueUserLoginsSince(c2.getTime()));
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before public void setup() throws Exception {
+
+	@Before
+	public void setup() throws Exception {
 		sm = BaseSecurityManager.getInstance();
 		s1 = JunitTestHelper.createAndPersistIdentityAsUser(testLogin);
 		s2 = JunitTestHelper.createAndPersistIdentityAsUser("coop");
 		s3 = JunitTestHelper.createAndPersistIdentityAsAuthor("diesbach");
 		testAdmin = JunitTestHelper.createAndPersistIdentityAsAdmin("testAdmin");
-
-		olatres  = OresHelper.createOLATResourceableInstance("Kürs",new Long("123"));
-		olatres2 = OresHelper.createOLATResourceableInstance("Kürs_2",new Long("124"));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After public void tearDown() throws Exception {
-		try {
-			//DB.getInstance().delete("select * from o_bookmark");
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
-		}
 	}
 }

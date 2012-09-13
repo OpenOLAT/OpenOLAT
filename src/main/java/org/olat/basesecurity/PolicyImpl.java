@@ -34,6 +34,8 @@ import org.olat.resource.OLATResource;
  * @author Felix Jost
  */
 public class PolicyImpl extends PersistentObject implements Policy {
+
+	private static final long serialVersionUID = 1616085626397520902L;
 	private OLATResource olatResource;
 	private SecurityGroup securityGroup;
 	private String permission;
@@ -125,9 +127,27 @@ public class PolicyImpl extends PersistentObject implements Policy {
 		this.to = to;
 	}
 
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 52154 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof PolicyImpl) {
+			PolicyImpl policy = (PolicyImpl)obj;
+			return getKey() != null && getKey().equals(policy.getKey());	
+		}
+		return false;
+	}
+
 	/**
 	 * @see org.olat.core.commons.persistence.PersistentObject#toString()
 	 */
+	@Override
 	public String toString() {
 		return "secgroupKey:" + securityGroup.getKey() + ", perm:" + permission + ", oresource: " + olatResource.getResourceableTypeName()
 				+ ":" + olatResource.getResourceableId() + " (key:" + olatResource.getKey() + "), " + super.toString();
