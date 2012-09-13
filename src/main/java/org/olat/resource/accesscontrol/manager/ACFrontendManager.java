@@ -36,6 +36,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -315,9 +316,6 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			return true;//don't need reservation
 		} else if("BusinessGroup".equals(resourceType)) {
 			final BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
-			if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()) {
-				return true; //don't need reservation
-			}
 			if(group.getMaxParticipants() == null && group.getMaxParticipants() <= 0) {
 				return true;//don't need reservation
 			}
@@ -378,33 +376,10 @@ public class ACFrontendManager extends BasicManager implements ACService {
 				return true;
 			}
 		} else if("BusinessGroup".equals(resourceType)) {
-			final BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
+			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
-				Boolean success = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>() {
-					public Boolean execute() {
-						
-						ResourceReservation reservation = reservationDao.loadReservation(identity, group.getResource());
-						if(reservation != null
-								|| (group.getMaxParticipants() == null || group.getMaxParticipants().intValue() <=0)
-								|| (group.getMaxParticipants() != null && (group.getMaxParticipants().intValue() > 
-								   (countReservations(group.getResource()) + securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup()))))) {
-							if(!securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
-								securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
-							}
-						} else if(group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()) {
-							if(!securityManager.isIdentityInSecurityGroup(identity, group.getWaitingGroup())) {
-								securityManager.addIdentityToSecurityGroup(identity, group.getWaitingGroup());
-							}
-						} else {
-							return Boolean.FALSE;
-						}
-
-						if(reservation != null) {
-							reservationDao.deleteReservation(reservation);
-						}
-						return Boolean.TRUE;
-					}});
-				return success.booleanValue();
+				EnrollState result = businessGroupService.enroll(group, identity);
+				return result.isFailed() ? Boolean.FALSE : Boolean.TRUE;
 			}
 		}
 		return false;

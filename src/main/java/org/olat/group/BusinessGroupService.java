@@ -33,6 +33,7 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.DisplayMembers;
+import org.olat.group.model.EnrollState;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
@@ -327,6 +328,17 @@ public interface BusinessGroupService {
 	 * @param flags
 	 */
 	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup group);
+	
+	/**
+	 * Enroll an identity to the group following the rules set by reservation, max participants,
+	 * waiting list, auto close ranks...
+	 * 
+	 * 
+	 * @param group
+	 * @param identity
+	 * @return
+	 */
+	public EnrollState enroll(final BusinessGroup group,  final Identity identity);
 
 	/**
 	 * Adds a user to a group as participant and does all the magic that needs to

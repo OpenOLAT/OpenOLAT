@@ -27,17 +27,27 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.manager.ACMethodManager;
 import org.olat.resource.accesscontrol.manager.ACOfferManager;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.Offer;
+import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,21 +64,22 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	
 	@Autowired
 	private ACOfferManager acOfferManager;
-	
 	@Autowired
 	private ACService acService;
-	
 	@Autowired
 	private OLATResourceManager resourceManager;
-	
 	@Autowired
 	private RepositoryManager repositoryManager;
-	
 	@Autowired
-	private BaseSecurity baseSecurityManager;
+	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private ACMethodManager acMethodManager;
+	@Autowired
+	private AccessControlModule acModule;
 	
 	@Test
 	public void testManagers() {
@@ -77,7 +88,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		assertNotNull(dbInstance);
 		assertNotNull(resourceManager);
 		assertNotNull(repositoryManager);
-		assertNotNull(baseSecurityManager);
+		assertNotNull(securityManager);
 	}
 	
 	@Test
@@ -102,6 +113,217 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		assertTrue(re.getOlatResource().equalsByPersistableKey(savedOffer.getResource()));
 	}
 	
+	/**
+	 * Test free access to a group without waiting list
+	 */
+	@Test
+	public void testFreeAccesToBusinessGroup() {
+		//create a group with a free offer
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "Really free", null, null, false, false, null);
+		Offer offer = acService.createOffer(group.getResource(), "FreeGroup");
+		acService.save(offer);	
+		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
+		Assert.assertNotNull(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		//access it
+		AccessResult result = acService.accessResource(id, offerAccess, null);
+		Assert.assertNotNull(result);
+		Assert.assertTrue(result.isAccessible());
+		dbInstance.commitAndCloseSession();
+		
+		//is id a participant?
+		boolean participant = securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup());
+		Assert.assertTrue(participant);
+	}
+	
+	/**
+	 * Test free access to a group without waiting list and which is full
+	 */
+	@Test
+	public void testFreeAccesToBusinessGroup_full() {
+		//create a group with a free offer, fill 2 places on 2
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
+		
+		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
+		acService.save(offer);	
+		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
+		Assert.assertNotNull(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		//access it
+		AccessResult result = acService.accessResource(id3, offerAccess, null);
+		Assert.assertNotNull(result);
+		Assert.assertFalse(result.isAccessible());
+		dbInstance.commitAndCloseSession();
+		
+		//is id a waiting?
+		boolean participant = securityManager.isIdentityInSecurityGroup(id3, group.getPartipiciantGroup());
+		Assert.assertFalse(participant);
+		boolean waiting = securityManager.isIdentityInSecurityGroup(id3, group.getWaitingGroup());
+		Assert.assertFalse(waiting);
+	}
+	
+	/**
+	 * Test free access to a group with waiting list enough place
+	 */
+	@Test
+	public void testFreeAccesToBusinessGroupWithWaitingList_enoughPlace() {
+		//create a group with a free offer
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(10), true, false, null);
+		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
+		acService.save(offer);	
+		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
+		Assert.assertNotNull(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		//access it
+		AccessResult result = acService.accessResource(id, offerAccess, null);
+		Assert.assertNotNull(result);
+		Assert.assertTrue(result.isAccessible());
+		dbInstance.commitAndCloseSession();
+		
+		//is id a waiting?
+		boolean participant = securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup());
+		Assert.assertTrue(participant);
+		boolean waiting = securityManager.isIdentityInSecurityGroup(id, group.getWaitingGroup());
+		Assert.assertFalse(waiting);
+	}
+	
+	/**
+	 * Test free access to a group with waiting list enough place
+	 */
+	@Test
+	public void testFreeAccesToBusinessGroupWithWaitingList_full() {
+		//create a group with a free offer, fill 2 places on 2
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), true, false, null);
+		securityManager.addIdentityToSecurityGroup(id1, group.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
+		
+		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
+		acService.save(offer);	
+		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
+		Assert.assertNotNull(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		//access it
+		AccessResult result = acService.accessResource(id3, offerAccess, null);
+		Assert.assertNotNull(result);
+		Assert.assertTrue(result.isAccessible());
+		dbInstance.commitAndCloseSession();
+		
+		//is id a waiting?
+		boolean participant = securityManager.isIdentityInSecurityGroup(id3, group.getPartipiciantGroup());
+		Assert.assertFalse(participant);
+		boolean waiting = securityManager.isIdentityInSecurityGroup(id3, group.getWaitingGroup());
+		Assert.assertTrue(waiting);
+	}
+	
+	
+	/**
+	 * Test paypal scenario where a user begin the process to pay an access
+	 * to a group while an administrator is filling the group,
+	 */
+	@Test
+	public void testPaiedAccesToBusinessGroupWithWaitingList_enoughPlaceButAdmin() {
+		//enable paypal
+		boolean enabled = acModule.isPaypalEnabled();
+		if(!enabled) {
+			acModule.setPaypalEnabled(true);
+		}
+
+		//create a group with a free offer
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("pay-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), true, false, null);
+		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
+		acService.save(offer);	
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
+		Assert.assertFalse(methods.isEmpty());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		Assert.assertNotNull(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		//id1 start payment process
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess);
+		Assert.assertTrue(reserved);
+		dbInstance.commitAndCloseSession();
+		
+		//admin fill the group
+		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id3, group.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//id1 finish the process
+		AccessResult result = acService.accessResource(id1, offerAccess, null);
+		Assert.assertNotNull(result);
+		Assert.assertTrue(result.isAccessible());
+		dbInstance.commitAndCloseSession();
+		
+		//is id a waiting?
+		boolean participant = securityManager.isIdentityInSecurityGroup(id1, group.getPartipiciantGroup());
+		Assert.assertTrue(participant);
+		boolean waiting = securityManager.isIdentityInSecurityGroup(id1, group.getWaitingGroup());
+		Assert.assertFalse(waiting);
+		
+		if(!enabled) {
+			acModule.setPaypalEnabled(false);
+		}
+	}
+	
+	@Test
+	public void testPaiedAccesToBusinessGroup_full() {
+		//enable paypal
+		boolean enabled = acModule.isPaypalEnabled();
+		if(!enabled) {
+			acModule.setPaypalEnabled(true);
+		}
+
+		//create a group with a free offer
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("pay-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
+		acService.save(offer);	
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
+		Assert.assertFalse(methods.isEmpty());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		Assert.assertNotNull(offerAccess);
+		dbInstance.commitAndCloseSession();
+
+		//admin fill the group
+		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id3, group.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+
+		//id1 try to reserve a place before the payment process
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess);
+		Assert.assertFalse(reserved);
+		
+		if(!enabled) {
+			acModule.setPaypalEnabled(false);
+		}
+	}
+	
+	
 	private RepositoryEntry createRepositoryEntry() {
 		//create a repository entry
 		OLATResourceable resourceable = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
@@ -113,20 +335,12 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		re.setDisplayname("JunitRE" + UUID.randomUUID().toString().replace("-", ""));
 		re.setOlatResource(r);
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
-		
-		SecurityGroup ownerGroup = baseSecurityManager.createAndPersistSecurityGroup();
-		re.setOwnerGroup(ownerGroup);
-		
-		SecurityGroup participantGroup = baseSecurityManager.createAndPersistSecurityGroup();
-		re.setParticipantGroup(participantGroup);
-		
-		SecurityGroup tutorGroup = baseSecurityManager.createAndPersistSecurityGroup();
-		re.setTutorGroup(tutorGroup);
-		
-		repositoryManager.saveRepositoryEntry(re);
-		
-		dbInstance.commitAndCloseSession();
 
+		repositoryManager.createParticipantSecurityGroup(re);
+		repositoryManager.createTutorSecurityGroup(re);
+		repositoryManager.createOwnerSecurityGroup(re);
+		repositoryManager.saveRepositoryEntry(re);
+		dbInstance.commitAndCloseSession();
 		return re;
 	}
 }

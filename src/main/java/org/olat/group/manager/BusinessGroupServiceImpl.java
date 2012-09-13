@@ -62,6 +62,7 @@ import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
@@ -76,6 +77,7 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.AddToGroupsEvent;
+import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
@@ -84,6 +86,7 @@ import org.olat.group.model.BusinessGroupMembershipImpl;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupMembershipsChanges;
 import org.olat.group.model.DisplayMembers;
+import org.olat.group.model.EnrollState;
 import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -100,6 +103,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.user.UserDataDeletable;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -1154,6 +1158,58 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
 		  log.audit("removed identiy '" + identity.getName() + "' from securitygroup with key " + secGroup.getKey());
 		}
+	}
+	
+	@Override
+	public EnrollState enroll(final BusinessGroup group,  final Identity identity) {
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<EnrollState>(){
+			public EnrollState execute() {
+				log.info("doEnroll start: group=" + OresHelper.createStringRepresenting(group), identity.getName());
+				EnrollState enrollStatus = new EnrollState();
+
+				BusinessGroup reloadedGroup = loadBusinessGroup(group);
+				ResourceReservation reservation = acService.getReservation(identity, reloadedGroup.getResource());
+				
+				//reservation has the highest priority over max participant or other settings
+				if(reservation != null) {
+					addParticipant(null, identity, reloadedGroup);
+					enrollStatus.setEnrolled(BGMembership.participant);
+					log.info("doEnroll (reservation) - setIsEnrolled ", identity.getName());
+					if(reservation != null) {
+						acService.removeReservation(reservation);
+					}
+				} else if (reloadedGroup.getMaxParticipants() != null) {
+					int participantsCounter = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
+					int reservations = acService.countReservations(reloadedGroup.getResource());
+					
+					log.info("doEnroll - participantsCounter: " + participantsCounter + ", reservations: " + reservations + " maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getName());
+					if (reservation == null && (participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
+						// already full, show error and updated choose page again
+						if (reloadedGroup.getWaitingListEnabled().booleanValue()) {
+							addToWaitingList(null, identity, reloadedGroup);
+							enrollStatus.setEnrolled(BGMembership.waiting);
+						} else {
+							// No Waiting List => List is full
+							enrollStatus.setI18nErrorMessage("error.group.full");
+							enrollStatus.setFailed(true);
+						}
+					} else {
+						//enough place
+						addParticipant(null, identity, reloadedGroup);
+						enrollStatus.setEnrolled(BGMembership.participant);
+						log.info("doEnroll - setIsEnrolled ", identity.getName());
+					}
+				} else {
+					if (log.isDebug()) log.debug("doEnroll as participant beginTransaction");
+					addParticipant(null, identity, reloadedGroup);
+					enrollStatus.setEnrolled(BGMembership.participant);						
+					if (log.isDebug()) log.debug("doEnroll as participant committed");
+				}
+				
+				log.info("doEnroll end", identity.getName());
+				return enrollStatus;
+			}				
+		});// end of doInSync
 	}
 
 	@Override
