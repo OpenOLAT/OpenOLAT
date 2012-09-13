@@ -39,6 +39,8 @@ import java.net.URL;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import junit.framework.Assert;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -147,8 +149,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		URI newPageUri = getElementsUri(course).path("singlepage").build();
 		HttpPost newPageMethod = conn.createPost(newPageUri, MediaType.APPLICATION_JSON, true);
-		newPageMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(page));
 		entity.addPart("filename", new StringBody(page.getName()));
@@ -366,7 +366,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("longTitle", "Single-Page-long-0")
 			.queryParam("objectives", "Single-Page-objectives-0").build();
 		HttpPut newPageMethod = conn.createPut(newPageUri, MediaType.APPLICATION_JSON, true);
-		newPageMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		conn.addMultipart(newPageMethod, page.getName(), page);
 		
 		HttpResponse newPageCode = conn.execute(newPageMethod);
@@ -524,22 +523,23 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertEquals(enNode.getParentId(), course.getEditorRootNodeId());
 		
 		//create a test node
-		URL cpUrl = CoursesElementsTest.class.getResource("qti-demo.zip");
-		assertNotNull(cpUrl);
-		File cp = new File(cpUrl.toURI());
+		URL qtiDemoUrl = CoursesElementsTest.class.getResource("qti-demo.zip");
+		assertNotNull(qtiDemoUrl);
+		File qtiFile = new File(qtiDemoUrl.toURI());
+		Assert.assertEquals(7518, qtiFile.length());
 
 		URI repoEntriesUri = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut qtiRepoMethod = conn.createPut(repoEntriesUri, MediaType.APPLICATION_JSON, true);
-		qtiRepoMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		entity.addPart("file", new FileBody(cp));
+		entity.addPart("file", new FileBody(qtiFile));
 		entity.addPart("filename", new StringBody("qti-demo.zip"));
 		entity.addPart("resourcename", new StringBody("QTI demo"));
 		entity.addPart("displayname", new StringBody("QTI demo"));
 		qtiRepoMethod.setEntity(entity);
 		
 		HttpResponse qtiRepoCode = conn.execute(qtiRepoMethod);
-		assertTrue(qtiRepoCode.getStatusLine().getStatusCode() == 200 || qtiRepoCode.getStatusLine().getStatusCode() == 201);
+		int qtiHttpCode = qtiRepoCode.getStatusLine().getStatusCode();
+		assertTrue(qtiHttpCode == 200 || qtiHttpCode == 201);
 		RepositoryEntryVO newTestVO = conn.parse(qtiRepoCode, RepositoryEntryVO.class);
 		assertNotNull(newTestVO);
 		
@@ -604,7 +604,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		URI repoEntriesUri2 = UriBuilder.fromUri(getContextURI()).path("repo").path("entries").build();
 		HttpPut surveyRepoMethod = conn.createPut(repoEntriesUri2, MediaType.APPLICATION_JSON, true);
-		surveyRepoMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity surveyEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		surveyEntity.addPart("file", new FileBody(surveyFile));
 		surveyEntity.addPart("filename", new StringBody("questionnaire-demo.zip"));
@@ -830,7 +829,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		//update the root node
 		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
 		HttpPost newStructureMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON, true);
-		newStructureMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(page));
 		entity.addPart("filename", new StringBody(page.getName()));

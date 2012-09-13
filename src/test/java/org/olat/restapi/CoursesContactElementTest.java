@@ -164,6 +164,7 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 		assertEquals(config.getBooleanEntry(CONFIG_KEY_EMAILTOCOACHES), true);
 		assertEquals(config.getBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS), true);
 		
+		@SuppressWarnings("unchecked")
 		List<String> tos = (List<String>)config.get(CONFIG_KEY_EMAILTOADRESSES);
 		assertNotNull(tos);
 		assertEquals(2, tos.size());

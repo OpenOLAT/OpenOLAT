@@ -3,17 +3,11 @@ junit and integration tests in OpenOLAT 8
 
 * Preconditions
 -----------------------------------------
-- Make sure the following ports are not in use (Selenium, Tomcat 1, Tomcat 2, JMS, MBeanServer(s) )
-	4444 / 8181 / 8105 / 8109 / 8282 / 8205 / 8209 / 61616 / 3000 / 3001 / 3002
+- Make sure the following ports are not in use (Selenium, Tomcat )
+	14444 / 8080 / 8009 / 8089 
 
 - Make sure you have a MySQL database version 5.1 or 5.5 with the InnoDB as default engine 
   The server must be at localhost. To change the config see databaseCorecontext.xml
-
-- Edit src/test/profile/selenium/config/defaultcontext.xml and add the browserID line (Firefox 3.x only supported):
-    E.g. Firefox on linux box
-     <entry key="browserId" value="*firefox /usr/lib64/firefox/firefox"/>
-    E.g. Firefox verison on a mac
-     <entry key="browserId" value="*firefox /Applications/Firefox3.5.app/Contents/MacOS/firefox-bin"/>
 
 - Clone a clean project or remove any olat.local.properties you might have on the classpath. This is important!
 	
@@ -26,9 +20,6 @@ junit and integration tests in OpenOLAT 8
 
 * Setup (necessary only once)
 -----------------------------------------
-- Install tomcats
-	mvn verify -Pinstall-tomcats
-
 - Setup database users and tables in the pom.xml. The default settings are:
     <test.env.db.name>olattest</test.env.db.name>
     <test.env.db.user>olat</test.env.db.user>
@@ -66,17 +57,17 @@ junit and integration tests in OpenOLAT 8
 
 * Execute selenium functional integration tests
 -----------------------------------------
-- Selenium functional tests on GUI layer that load OpenOLAT in a Tomcat 7.0.27 managed by Arquillian
-	mvn package
+- First build the application without tests (arquillian need the library before mvn give them)
+    mvn -DskipTests=true -Parquillian clean package
+    
+- Run the tests
 	mvn -Parquillian surefire:test
 
 
 * Execute a single selenium functional integration test in Eclipse
 -----------------------------------------
-- Start Eclipse, refresh project and wait until Eclipse is finished with refreshing and compiling
-
-- Run the maven build to fill the libraries (The deployment take all the libraries from the standard build process)
-  mvn clean package
-
-- In Eclipse right-click a selenium testcase and select "run in jUnit"
+- First build the application without tests as before
+    mvn -DskipTests=true -Parquillian clean package
+ 
+- Run single test as JUnit Test in Eclipse
 

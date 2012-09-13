@@ -22,7 +22,6 @@ package org.olat.login;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,6 +32,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -112,9 +112,7 @@ public class FunctionalLoginTest {
 	@Test
 	@RunAsClient
 	public void loginWithRandomUser() throws IOException, URISyntaxException{
-
 		RestConnection restConnection = new RestConnection(deploymentUrl);
-
 
 		Assert.assertTrue(restConnection.login(functionalUtil.getUsername(), functionalUtil.getPassword()));
 
@@ -132,7 +130,6 @@ public class FunctionalLoginTest {
 		vo.putProperty("gender", "Female");//male or female
 		vo.putProperty("birthDay", "12/12/2009");
 
-
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("users").build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
 		restConnection.addJsonEntity(method, vo);
@@ -140,19 +137,10 @@ public class FunctionalLoginTest {
 
 		HttpResponse response = restConnection.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		InputStream body = response.getEntity().getContent();
+		EntityUtils.consume(response.getEntity());
 
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 		Assert.assertTrue(functionalUtil.login(browser));
-
-
-		//Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username); doesn't work
-
-		//		URI deleteRequest = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("/users/" + savedIdent.getKey()).build();
-		//		HttpDelete deleteMethod = restConnection.createDelete(deleteRequest, MediaType.APPLICATION_XML, true);
-		//		HttpResponse deleteResponse = restConnection.execute(deleteMethod);
-		//		assertEquals(200, deleteResponse.getStatusLine().getStatusCode());
-
 
 		restConnection.shutdown();
 	}

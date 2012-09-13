@@ -12,14 +12,19 @@
         <configuration>
             <property name="workDir">target/arquillianDeployments</property>
 			<property name="catalinaHome">target/arq-apache-tomcat-7.0.27</property>
-		<!-- <property name="javaVmArguments">-Xmx512m -XX:MaxPermSize=128m -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</property>  -->
+			<property name="javaVmArguments">-Xmx512m -XX:MaxPermSize=128m</property>
+			<!-- debugging arguments for javaVm: -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y -->
         </configuration>
     </container>
     
 	<extension qualifier="selenium">
 		<property name="browserCapabilities">firefox</property>
+		<!-- Path for Firefox if needed
 		<property name="capabilityWebdriverFirefoxBin">/Applications/Firefox.app/Contents/MacOS/firefox-bin</property>
-        <!-- <property name="browser">*googlechrome</property> -->
+        -->
+        <!-- Not all tests pass with Chrome (issue with file upload)
+        <property name="browser">*googlechrome</property>
+        -->
     </extension>
 
 </arquillian>
