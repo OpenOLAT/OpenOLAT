@@ -624,12 +624,6 @@ public class CourseFactory extends BasicManager {
 		
 		// set access configuration
 		re.setAccess(access);
-		
-		course = openCourseEditSession(course.getResourceableId());
-		// create group management
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		// import groups
-		cgm.importCourseBusinessGroups(courseExportData);
 
 		// create security group
 		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
@@ -663,6 +657,13 @@ public class CourseFactory extends BasicManager {
 		// members of this group are always participants also
 		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
 		re.setParticipantGroup(participantGroup);
+		
+		//import groups
+		course = openCourseEditSession(course.getResourceableId());
+		// create group management
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		// import groups
+		cgm.importCourseBusinessGroups(courseExportData);
 		
 		// deploy any referenced repository entries of the editor structure. This will also
 		// include any references in the run structure, since any node in the runstructure is also
