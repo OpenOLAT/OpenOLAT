@@ -40,6 +40,9 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalEPortfolioUtil {
+	public final static String EP_ARTEFACTS_BUSINESS_PATH = "EPArtefacts";
+	public final static String EP_MAPS_BUSINESS_PATH = "EPMaps";
+	
 	
 	public final static String EPORTFOLIO_CSS = "b_eportfolio";
 	public final static String EPORTFOLIO_MAP_CSS = "b_eportfolio_map";
@@ -132,7 +135,34 @@ public class FunctionalEPortfolioUtil {
 		setStructIconCss(STRUCT_ICON_CSS);
 	}
 
-
+	/**
+	 * @param browser
+	 * @param key
+	 * @param artefactTitle
+	 * @return
+	 * 
+	 * 
+	 */
+	public boolean openArtefactDetails(Selenium browser, Long key, String artefactTitle){
+		String epArtefactsBusinessPath = functionalUtil.getDeploymentUrl().toString() + "/url/HomeSite/" + key + "/" + EP_ARTEFACTS_BUSINESS_PATH;
+		
+//		do{
+//			browser.open(epArtefactsBusinessPath);
+//		}while();
+		
+		//TODO:JK: implement me
+		
+		return(false);
+	}
+	
+	public boolean openBinder(Selenium browser, Long key, String binderTitle){
+		String epMapsBusinessPath = functionalUtil.getDeploymentUrl().toString() + "/url/HomeSite/" + key + "/" + EP_MAPS_BUSINESS_PATH;
+		
+		//TODO:JK: implement me
+		
+		return(true);
+	}
+	
 	/**
 	 * @param binder
 	 * @param page

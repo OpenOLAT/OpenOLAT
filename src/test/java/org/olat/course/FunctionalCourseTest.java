@@ -86,7 +86,7 @@ public class FunctionalCourseTest {
 	
 	@Test
 	@RunAsClient
-	public void checkCreate(){
+	public void checkCreateUsingWizard(){
 		/* login */
 		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
 		
