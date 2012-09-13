@@ -63,6 +63,8 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 
 /**
@@ -580,7 +582,8 @@ public class COConfigForm extends FormBasicController {
 			
 			// no groups in group management -> directly show group create dialog
 			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
-			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseResource, true, null);
+			RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseRe, true, null);
 			listenTo(groupCreateCntrllr);
 			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCntrllr.getInitialComponent());
 			listenTo(cmc);
@@ -615,9 +618,10 @@ public class COConfigForm extends FormBasicController {
 			// user wants to fix problem with fixing group error link e.g. create one or more group at once.
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
 			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
+			RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
 			easyGroupList.setEnabled(false);
 			removeAsListenerAndDispose(groupCreateCntrllr);
-			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseResource, true, csvGroupName[0]);
+			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseRe, true, csvGroupName[0]);
 			listenTo(groupCreateCntrllr);
 
 			removeAsListenerAndDispose(cmc);

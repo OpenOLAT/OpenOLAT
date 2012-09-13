@@ -48,7 +48,6 @@ import org.olat.group.ui.edit.BusinessGroupEditResourceController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -164,11 +163,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 			addToRunContext("configuration", configuration);
 		}
 		List<RepositoryEntry> entries = repoTableModel.getObjects();
-		List<OLATResource> resources = new ArrayList<OLATResource>(entries.size());
-		for(RepositoryEntry entry:entries) {
-			resources.add(entry.getOlatResource());
-		}
-		configuration.setResources(resources);
+		configuration.setResources(entries);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

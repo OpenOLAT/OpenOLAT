@@ -88,6 +88,7 @@ import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
 import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -418,9 +419,9 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	 * @param ureq
 	 * @param wControl
 	 */
-	protected void doCreate(UserRequest ureq, WindowControl wControl, OLATResource resource) {				
+	protected void doCreate(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {				
 		removeAsListenerAndDispose(groupCreateController);
-		groupCreateController = new NewBGController(ureq, wControl, resource, false, null);
+		groupCreateController = new NewBGController(ureq, wControl, re, false, null);
 		listenTo(groupCreateController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupCreateController.getInitialComponent(), true, translate("create.form.title"));

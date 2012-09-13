@@ -61,6 +61,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.GroupVO;
@@ -85,7 +86,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	private Identity id1, id2;
 	private BusinessGroup g1, g2;
 	private BusinessGroup g3, g4;
-	private OLATResource course;
+	private RepositoryEntry course;
 
 	private RestConnection conn;
 	
@@ -113,7 +114,9 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
-		course =  rm.createOLATResourceInstance(resourceable);
+		OLATResource r =  rm.createOLATResourceInstance(resourceable);
+		rm.saveOLATResource(r);
+		course =  JunitTestHelper.createAndPersistRepositoryEntry(r, false);
 		DBFactory.getInstance().saveObject(course);
 		DBFactory.getInstance().closeSession();
 		

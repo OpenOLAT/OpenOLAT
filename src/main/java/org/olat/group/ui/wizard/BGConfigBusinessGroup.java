@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.util.vfs.Quota;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -38,7 +38,7 @@ public class BGConfigBusinessGroup {
 	private int folderAccess;
 	private Quota quota;
 	
-	private List<OLATResource> resources;
+	private List<RepositoryEntry> resources;
 	
 	public List<String> getToolsToEnable() {
 		return toolsToEnable;
@@ -72,11 +72,11 @@ public class BGConfigBusinessGroup {
 		this.quota = quota;
 	}
 
-	public List<OLATResource> getResources() {
+	public List<RepositoryEntry> getResources() {
 		return resources;
 	}
 
-	public void setResources(List<OLATResource> resources) {
+	public void setResources(List<RepositoryEntry> resources) {
 		this.resources = resources;
 	}
 }

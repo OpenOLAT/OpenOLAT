@@ -56,8 +56,9 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.group.LearningGroupWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
@@ -216,8 +217,8 @@ public class CourseGroupWebService {
 		Integer min = normalize(group.getMinParticipants());
 		Integer max = normalize(group.getMaxParticipants());
 		
-		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(course);
-		BusinessGroup bg = bgm.createBusinessGroup(ureq.getIdentity(), name, desc, min, max, false, false, resource);
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(course, false);
+		BusinessGroup bg = bgm.createBusinessGroup(ureq.getIdentity(), name, desc, min, max, false, false, courseRe);
 		GroupVO savedVO = ObjectFactory.get(bg);
 		return Response.ok(savedVO).build();
 	}

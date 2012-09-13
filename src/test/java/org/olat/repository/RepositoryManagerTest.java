@@ -229,7 +229,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getLearningResourcesAsStudentWithGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-lb-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studg", "tg", null, null, false, false, re.getOlatResource());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studg", "tg", null, null, false, false, re);
 		securityManager.addIdentityToSecurityGroup(id, group.getPartipiciantGroup());
 		dbInstance.commitAndCloseSession();
 
@@ -272,7 +272,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getLearningResourcesAsTeacherWithGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-teac-lb-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re.getOlatResource());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re);
 		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
 		dbInstance.commitAndCloseSession();
 
@@ -294,7 +294,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void queryByTypeLimitAccess() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-1-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-1", "tg", null, null, false, false, re.getOlatResource());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-1", "tg", null, null, false, false, re);
 		securityManager.addIdentityToSecurityGroup(id, group.getOwnerGroup());
 		dbInstance.commitAndCloseSession();
 		
@@ -317,7 +317,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, re.getOlatResource());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, re);
 		securityManager.addIdentityToSecurityGroup(id1, group.getOwnerGroup());
 		dbInstance.commitAndCloseSession();
 
@@ -490,7 +490,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-3-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		securityManager.addIdentityToSecurityGroup(id1, re.getOwnerGroup());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re.getOlatResource());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re);
 		securityManager.addIdentityToSecurityGroup(id2, group.getOwnerGroup());
 		dbInstance.commitAndCloseSession();
 		
@@ -547,7 +547,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		
 		securityManager.addIdentityToSecurityGroup(id1, re2.getParticipantGroup());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re1.getOlatResource());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re1);
 		securityManager.addIdentityToSecurityGroup(id2, group.getPartipiciantGroup());
 		dbInstance.commitAndCloseSession();
 		

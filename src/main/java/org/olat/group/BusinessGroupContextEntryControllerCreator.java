@@ -21,6 +21,7 @@ package org.olat.group;
 
 import java.util.Date;
 
+import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -28,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -54,12 +56,15 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 
 		Long gKey = ores.getResourceableId();
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+
 		Controller ctrl = null;
 		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
 		if(bgroup != null) {
-			//fxdiff VCRP-1,2: access control of resources
+			BGRightManager rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
 			if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
-					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
+					|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) 
+					|| rightManager.hasBGRight(Constants.PERMISSION_ACCESS, ureq.getIdentity(), bgroup.getResource())
+					|| isAccessControlled(bgroup)) {
 				ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup);
 			}
 		}
@@ -86,9 +91,12 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 		if (bgroup == null) {
 			return false;
 		}	
-		return ureq.getUserSession().getRoles().isOLATAdmin() ||
-				ureq.getUserSession().getRoles().isGroupManager() ||
-				bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup);
+		BGRightManager rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
+		return ureq.getUserSession().getRoles().isOLATAdmin()
+				|| ureq.getUserSession().getRoles().isGroupManager() 
+				|| bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup)  
+				|| rightManager.hasBGRight(Constants.PERMISSION_ACCESS, ureq.getIdentity(), bgroup.getResource())
+				|| isAccessControlled(bgroup);
 	}
 	
 	private boolean isAccessControlled(BusinessGroup bgroup) {

@@ -71,7 +71,7 @@ public interface BusinessGroupService {
 	 */
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
-			OLATResource resource);
+			RepositoryEntry resource);
 	
 	/**
 	 * Update the business group with the supplied arguments and do it in sync
@@ -276,11 +276,11 @@ public interface BusinessGroupService {
 	
 	public boolean hasResources(List<BusinessGroup> groups);
 	
-	public void addResourceTo(BusinessGroup group, OLATResource resource);
+	public void addResourceTo(BusinessGroup group, RepositoryEntry re);
 	
-	public void addResourcesTo(List<BusinessGroup> groups, List<OLATResource> resources);
+	public void addResourcesTo(List<BusinessGroup> groups, List<RepositoryEntry> resources);
 	
-	public void removeResourceFrom(BusinessGroup group, OLATResource resource);
+	public void removeResourceFrom(BusinessGroup group, RepositoryEntry re);
 	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
 	
@@ -506,7 +506,7 @@ public interface BusinessGroupService {
 	 * @param resource
 	 * @param fGroupExportXML
 	 */
-	public BusinessGroupEnvironment importGroups(OLATResource resource, File fGroupExportXML);
+	public BusinessGroupEnvironment importGroups(RepositoryEntry re, File fGroupExportXML);
 	
 	public void archiveGroups(List<BusinessGroup> groups, File exportFile);
 

@@ -36,7 +36,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +64,7 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 	
 	@Test
 	public void importLearningGroupsWithResource() throws URISyntaxException {
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		URL input = BusinessGroupImportExportTest.class.getResource("learninggroupexport_2.xml");
 		File importXml = new File(input.toURI());
@@ -72,14 +72,14 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();	
 		
 		//check if all three groups are imported
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource.getOlatResource(), 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(3, groups.size());
 		
 		//get first group (members true, true, false) (no collaboration tools)
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setExactName("Export group 1");
-		List<BusinessGroup> group1List = businessGroupService.findBusinessGroups(params, resource, 0, -1);
+		List<BusinessGroup> group1List = businessGroupService.findBusinessGroups(params, resource.getOlatResource(), 0, -1);
 		Assert.assertNotNull(group1List);
 		Assert.assertEquals(1, group1List.size());
 		//check settings of the first group
@@ -107,7 +107,7 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 
 		//get third group (members true, true, true) (all collaboration tools)
 		params.setExactName("Export group 3");
-		List<BusinessGroup> group3List = businessGroupService.findBusinessGroups(params, resource, 0, -1);
+		List<BusinessGroup> group3List = businessGroupService.findBusinessGroups(params, resource.getOlatResource(), 0, -1);
 		Assert.assertNotNull(group3List);
 		Assert.assertEquals(1, group3List.size());
 		//check settings of the first group
@@ -138,7 +138,7 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 	
 	@Test
 	public void importLearningGroupsAndAreasWithResource() throws URISyntaxException {
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		URL input = BusinessGroupImportExportTest.class.getResource("learninggroupexport_3.xml");
 		File importXml = new File(input.toURI());
@@ -146,17 +146,17 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if all three groups are imported
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource.getOlatResource(), 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(3, groups.size());
 		
 		//check if all three areas are imported
-		List<BGArea> areas = areaManager.findBGAreasInContext(resource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(resource.getOlatResource());
 		Assert.assertNotNull(areas);
 		Assert.assertEquals(3, areas.size());
 		
 		//check first area
-		BGArea area1 = areaManager.findBGArea("Area 1", resource);
+		BGArea area1 = areaManager.findBGArea("Area 1", resource.getOlatResource());
 		Assert.assertNotNull(area1);
 		Assert.assertEquals("Area 1", area1.getName());
 		Assert.assertEquals("<p>Area 1 description</p>", area1.getDescription());
@@ -168,7 +168,7 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		Assert.assertTrue(groupArea1.get(0).getName().equals("Export group 2") || groupArea1.get(1).getName().equals("Export group 2"));
 
 		//check empty area
-		BGArea area3 = areaManager.findBGArea("Area 3", resource);
+		BGArea area3 = areaManager.findBGArea("Area 3", resource.getOlatResource());
 		Assert.assertNotNull(area1);
 		Assert.assertEquals("Area 3", area3.getName());
 		//check relation to groups

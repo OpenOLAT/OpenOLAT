@@ -49,7 +49,7 @@ import org.olat.core.util.Encoder;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -150,7 +150,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
 			Boolean enableWaitinglist = new Boolean(true);
 			Boolean enableAutoCloseRanks = new Boolean(true);
-			OLATResource resource = JunitTestHelper.createRandomResource();
+			RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
 			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
 					bgWithWaitingListDesc, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
@@ -188,7 +188,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	
 	@Test
 	public void createBusinessGroupWithResource() {
-		OLATResource resource =  JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "gdao", "gdao-desc", -1, -1, false, false, resource);
 		
 		//commit the group
@@ -207,7 +207,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	public void testCreateUpdateBusinessGroup_v1() {
 		//create a group
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("grp-up-1-" + UUID.randomUUID().toString());
-		OLATResource resource =  JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(id, "up-1", "up-1-desc", -1, -1, false, false, resource);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
@@ -230,7 +230,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	public void testCreateUpdateBusinessGroup_v2() {
 		//create a group
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("grp-up-2-" + UUID.randomUUID().toString());
-		OLATResource resource =  JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(id, "up-2", "up-2-desc", -1, -1, false, false, resource);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
@@ -259,8 +259,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-2-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-3-" + UUID.randomUUID().toString());
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-4-" + UUID.randomUUID().toString());
-		
-		OLATResource resource =  JunitTestHelper.createRandomResource();
+
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(id0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), true, true, resource);
 		Assert.assertNotNull(group);
 
@@ -294,8 +294,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-2-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-3-" + UUID.randomUUID().toString());
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-4-" + UUID.randomUUID().toString());
-		
-		OLATResource resource =  JunitTestHelper.createRandomResource();
+
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(id0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), false, false, resource);
 		Assert.assertNotNull(group);
 
@@ -323,13 +323,13 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	
 	@Test
 	public void testGroupsOfBGContext() {
-		OLATResource c1 = JunitTestHelper.createRandomResource();
-		OLATResource c2 = JunitTestHelper.createRandomResource();
+		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry c2 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
 		SearchBusinessGroupParams params1 = new SearchBusinessGroupParams(null, false, false);
-		assertTrue(businessGroupService.findBusinessGroups(params1, c1, 0, -1).isEmpty());
-		assertTrue(businessGroupService.countBusinessGroups(params1, c1) == 0);
+		assertTrue(businessGroupService.findBusinessGroups(params1, c1.getOlatResource(), 0, -1).isEmpty());
+		assertTrue(businessGroupService.countBusinessGroups(params1, c1.getOlatResource()) == 0);
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false, c1);
@@ -347,8 +347,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
 		SearchBusinessGroupParams params2 = new SearchBusinessGroupParams(null, false, false);
-		Assert.assertEquals(3, businessGroupService.findBusinessGroups(params2, c1, 0, -1).size());
-		Assert.assertEquals(3, businessGroupService.countBusinessGroups(params2, c1));
+		Assert.assertEquals(3, businessGroupService.findBusinessGroups(params2, c1.getOlatResource(), 0, -1).size());
+		Assert.assertEquals(3, businessGroupService.countBusinessGroups(params2, c1.getOlatResource()));
 	}
 	
 	@Test
@@ -547,7 +547,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-2-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-3-" + UUID.randomUUID().toString());
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-4-" + UUID.randomUUID().toString());
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(id1, "move-bg-3", "move-desc", 0, 10, true, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(id2, "move-bg-3", "move-desc", 0, 10, true, false, resource);
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(id3, "move-bg-3", "move-desc", 0, 10, true, false, resource);
@@ -570,7 +570,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<Identity> identitiesToRemove = new ArrayList<Identity>();
 		identitiesToRemove.add(id1);
 		identitiesToRemove.add(id3);
-		businessGroupService.removeMembers(admin, identitiesToRemove, resource);
+		businessGroupService.removeMembers(admin, identitiesToRemove, resource.getOlatResource());
 		dbInstance.commitAndCloseSession();
 
 		//check in group1 stay only id2 in waiting list
@@ -730,7 +730,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	}
 	
 	private void doTestDeleteBusinessGroup(boolean withWaitingList) {
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 
 		BusinessGroup deleteTestGroup = businessGroupService.createBusinessGroup(id1, "deleteTestGroup-1",
 				"deleteTestGroup-1", -1, -1, withWaitingList, true, resource);

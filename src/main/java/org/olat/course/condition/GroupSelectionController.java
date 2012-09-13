@@ -44,6 +44,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.NewBGController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 
 /**
  * Description:<br>
@@ -94,7 +96,9 @@ public class GroupSelectionController extends FormBasicController {
 		if (source == createNew) {
 			// user wants to create a new group -> show group create form
 			removeAsListenerAndDispose(groupCreateCntrllr);
-			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseGrpMngr.getCourseResource(), true, null);
+			
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseGrpMngr.getCourseResource(), false);
+			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), re, true, null);
 			listenTo(groupCreateCntrllr);
 			
 			removeAsListenerAndDispose(cmc);

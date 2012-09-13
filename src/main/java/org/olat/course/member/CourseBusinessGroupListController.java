@@ -45,6 +45,7 @@ import org.olat.group.ui.main.BGResourcesCellRenderer;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
 /**
@@ -53,15 +54,15 @@ import org.olat.resource.OLATResource;
  */
 public class CourseBusinessGroupListController extends AbstractBusinessGroupListController {
 	
-	private final OLATResource resource;
+	private final RepositoryEntry re;
 	private final Link createGroup;
 	private final Link addGroup;
 	
 	private SelectBusinessGroupController selectController;
 	
-	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
+	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
 		super(ureq, wControl, "group_list");
-		this.resource = resource;
+		this.re = re;
 		
 		createGroup = LinkFactory.createButton("group.create", mainVC, this);
 		mainVC.put("createGroup", createGroup);
@@ -102,7 +103,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == createGroup) {
-			doCreate(ureq, getWindowControl(), resource);
+			doCreate(ureq, getWindowControl(), re);
 		} else if (source == addGroup) {
 			doSelectGroups(ureq);
 		} else {
@@ -141,7 +142,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	}
 	
 	protected void addGroupsToCourse(List<BusinessGroup> groups) {
-		List<OLATResource> resources = Collections.singletonList(resource);
+		List<RepositoryEntry> resources = Collections.singletonList(re);
 		businessGroupService.addResourcesTo(groups, resources);
 		reloadModel();
 		mainVC.setDirty(true);
@@ -154,6 +155,6 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 	@Override
 	protected OLATResource getResource() {
-		return resource;
+		return re.getOlatResource();
 	}
 }

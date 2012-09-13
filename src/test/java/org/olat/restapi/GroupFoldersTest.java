@@ -148,7 +148,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	    BaseSecurity secm = BaseSecurityManager.getInstance();
 			
 	    // 1) context one: learning groups
-	    OLATResource c1 = JunitTestHelper.createRandomResource();
+			RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 	    // create groups without waiting list
 	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
 	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);

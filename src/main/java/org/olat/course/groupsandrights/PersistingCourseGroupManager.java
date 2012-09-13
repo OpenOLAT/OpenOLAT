@@ -346,14 +346,15 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	@Override
 	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory) {
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, true);
 		File fGroupXML1 = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
 		if(fGroupXML1.exists()) {
-			BusinessGroupEnvironment env = businessGroupService.importGroups(courseResource, fGroupXML1);
+			BusinessGroupEnvironment env = businessGroupService.importGroups(courseRe, fGroupXML1);
 			envMapper.addBusinessGroupEnvironment(env);
 		}
 		File fGroupXML2 = new File(fImportDirectory, RIGHTGROUPEXPORT_XML);
 		if(fGroupXML2.exists()) {
-			BusinessGroupEnvironment env = businessGroupService.importGroups(courseResource, fGroupXML2);
+			BusinessGroupEnvironment env = businessGroupService.importGroups(courseRe, fGroupXML2);
 			envMapper.addBusinessGroupEnvironment(env);	
 		}
 		return envMapper;

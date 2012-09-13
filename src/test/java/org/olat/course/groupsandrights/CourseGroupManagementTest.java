@@ -44,7 +44,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +97,7 @@ public class CourseGroupManagementTest extends OlatTestCase {
 	/** rights tests */
 	@Test
 	public void testHasRightIsInMethodsByGroups() {
-		OLATResource course1 = JunitTestHelper.createRandomResource();
+		RepositoryEntry course1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
 		// create groups without waitinglist
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false,
@@ -163,7 +163,7 @@ public class CourseGroupManagementTest extends OlatTestCase {
 	/** rights tests */
 	@Test
 	public void testHasRightIsInMethodsByArea() {
-		OLATResource course1 = JunitTestHelper.createRandomResource();
+		RepositoryEntry course1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
 		// create groups without waitinglist
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false,
@@ -177,9 +177,9 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
 		securityManager.addIdentityToSecurityGroup(id3, g1.getOwnerGroup());
 		// areas
-		BGArea a1 = areaManager.createAndPersistBGArea("a1", "desca1", course1);
-		BGArea a2 = areaManager.createAndPersistBGArea("a2", null, course1);
-		BGArea a3 = areaManager.createAndPersistBGArea("a3", null, course1);
+		BGArea a1 = areaManager.createAndPersistBGArea("a1", "desca1", course1.getOlatResource());
+		BGArea a2 = areaManager.createAndPersistBGArea("a2", null, course1.getOlatResource());
+		BGArea a3 = areaManager.createAndPersistBGArea("a3", null, course1.getOlatResource());
 		areaManager.addBGToBGArea(g1, a1);
 		areaManager.addBGToBGArea(g2, a1);
 		areaManager.addBGToBGArea(g1, a2);

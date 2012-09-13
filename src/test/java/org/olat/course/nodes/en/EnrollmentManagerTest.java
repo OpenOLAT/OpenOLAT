@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,6 +58,8 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -69,7 +70,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class EnrollmentManagerTest extends OlatTestCase implements WindowControl {
 	//
-	private static Logger log = Logger.getLogger(EnrollmentManagerTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(EnrollmentManagerTest.class);
 	/*
 	 * ::Test Setup::
 	 */
@@ -114,7 +115,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
 			Boolean enableWaitinglist = new Boolean(true);
 			Boolean enableAutoCloseRanks = new Boolean(true);
-			OLATResource resource = JunitTestHelper.createRandomResource();
+			RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
 			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
 					bgWithWaitingListDesc, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
@@ -300,10 +301,6 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 	}
 
 	public WindowBackOffice getWindowBackOffice() {
-		// TODO Auto-generated method stub
 		return null;
 	};
-
-
 }
-

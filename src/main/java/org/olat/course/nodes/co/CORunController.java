@@ -136,11 +136,11 @@ public class CORunController extends BasicController {
 		if(areaKeys == null && StringHelper.containsNonWhitespace(areaNames)) {
 			areaKeys = areaManager.toAreaKeys(areaNames, cgm.getCourseResource());
 		}
-		if (coachesConfigured) {
+		if (coachesConfigured != null && coachesConfigured.booleanValue()) {
 			ContactList cl = retrieveCoachesFromAreas(areaKeys);
 			contactLists.push(cl);
 		}
-		if (partipsConfigured) {
+		if (partipsConfigured != null && partipsConfigured.booleanValue()) {
 			ContactList cl = retrieveParticipantsFromAreas(areaKeys);
 			contactLists.push(cl);
 		}

@@ -53,6 +53,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -220,9 +221,9 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void addBGToBGArea() {
 		//create a resource, an area, a group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area = areaManager.createAndPersistBGArea("area-" + areaName, "description:" + areaName, resource);
+		BGArea area = areaManager.createAndPersistBGArea("area-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "area-group", "area-group-desc", 0, -1, false, false, resource);
 
 		dbInstance.commitAndCloseSession();
@@ -233,10 +234,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 	
 	@Test
 	public void deleteBGArea() {
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -264,11 +265,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void addAndFindByResource() {
 		//create a resource, an area, a group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource);
-		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource.getOlatResource());
 
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -282,11 +283,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//count
-		int numOfAreas = areaManager.countBGAreasInContext(resource);
+		int numOfAreas = areaManager.countBGAreasInContext(resource.getOlatResource());
 		Assert.assertEquals(3, numOfAreas);
 		
 		//find areas
-		List<BGArea> areas = areaManager.findBGAreasInContext(resource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(resource.getOlatResource());
 		Assert.assertNotNull(areas);
 		Assert.assertEquals(3, areas.size());
 		Assert.assertTrue(areas.contains(area1));
@@ -297,10 +298,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void addAndFindByGroup() {
 		//create a resource, an area, a group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -331,10 +332,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void addAndFindByGroups() {
 		//create a resource, an area, a group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -386,9 +387,9 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void addFindAndDeleteRelation() {
 		//create a resource, an area, a group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -420,11 +421,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void findGroupsByAreas() {
 		//create a resource, 3 area and 2 group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource);
-		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -462,11 +463,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void countBGAreasOfBusinessGroups() {
 		//create a resource, 3 area and 2 group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("count-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("count-2-" + areaName, "description:" + areaName, resource);
-		BGArea area3 = areaManager.createAndPersistBGArea("count-3-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("count-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("count-2-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area3 = areaManager.createAndPersistBGArea("count-3-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "count-1-group", "count-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "count-2-group", "count-group-desc", 0, -1, false, false, resource);
@@ -497,10 +498,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void addAndDeleteRelations() {
 		//create a resource, an area, a group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -536,10 +537,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("attendee-2-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("attendee-3-" + UUID.randomUUID().toString());
 		//create a resource, an area, a group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -559,20 +560,20 @@ public class BGAreaManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//find with resource
-		List<BusinessGroup> groupId1 = areaManager.findBusinessGroupsOfAreaAttendedBy(id1, null, resource);
+		List<BusinessGroup> groupId1 = areaManager.findBusinessGroupsOfAreaAttendedBy(id1, null, resource.getOlatResource());
 		Assert.assertNotNull(groupId1);
 		Assert.assertEquals(1, groupId1.size());
 		Assert.assertTrue(groupId1.contains(group1));
 		
 		//find nothing with name and resource
 		List<Long> area2Keys = Collections.singletonList(area2.getKey());
-		List<BusinessGroup> groupId1Area2 = areaManager.findBusinessGroupsOfAreaAttendedBy(id1, area2Keys, resource);
+		List<BusinessGroup> groupId1Area2 = areaManager.findBusinessGroupsOfAreaAttendedBy(id1, area2Keys, resource.getOlatResource());
 		Assert.assertNotNull(groupId1Area2);
 		Assert.assertEquals(0, groupId1Area2.size());
 		
 		//find groups id 2 with name and resource
 		List<Long> area1Keys = Collections.singletonList(area1.getKey());
-		List<BusinessGroup> groupId2Area1 = areaManager.findBusinessGroupsOfAreaAttendedBy(id2, area1Keys, resource);
+		List<BusinessGroup> groupId2Area1 = areaManager.findBusinessGroupsOfAreaAttendedBy(id2, area1Keys, resource.getOlatResource());
 		Assert.assertNotNull(groupId2Area1);
 		Assert.assertEquals(2, groupId2Area1.size());
 		Assert.assertTrue(groupId2Area1.contains(group2));
@@ -583,11 +584,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 	public void isIdentityInBGArea() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("attendee-1-" + UUID.randomUUID().toString());
 		//create a resource, an area, a group
-		OLATResource resource = JunitTestHelper.createRandomResource();
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
-		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource);
-		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource);
-		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource);
+		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
@@ -605,24 +606,24 @@ public class BGAreaManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check in area 1
-		boolean testArea1 = areaManager.isIdentityInBGArea(id1, "area-1-" + areaName, null, resource);
+		boolean testArea1 = areaManager.isIdentityInBGArea(id1, "area-1-" + areaName, null, resource.getOlatResource());
 		Assert.assertTrue(testArea1);
 		//check in area 1
-		boolean testArea2 = areaManager.isIdentityInBGArea(id1, "area-2-" + areaName, null, resource);
+		boolean testArea2 = areaManager.isIdentityInBGArea(id1, "area-2-" + areaName, null, resource.getOlatResource());
 		Assert.assertTrue(testArea2);
 		//check in area 1
-		boolean testArea3 = areaManager.isIdentityInBGArea(id1, "area-3-" + areaName, null, resource);
+		boolean testArea3 = areaManager.isIdentityInBGArea(id1, "area-3-" + areaName, null, resource.getOlatResource());
 		Assert.assertFalse(testArea3);
 		
 		//check with keys
 		//check in area 1
-		boolean testArea4 = areaManager.isIdentityInBGArea(id1, null, area1.getKey(), resource);
+		boolean testArea4 = areaManager.isIdentityInBGArea(id1, null, area1.getKey(), resource.getOlatResource());
 		Assert.assertTrue(testArea4);
 		//check in area 1
-		boolean testArea5 = areaManager.isIdentityInBGArea(id1, null, area2.getKey(), resource);
+		boolean testArea5 = areaManager.isIdentityInBGArea(id1, null, area2.getKey(), resource.getOlatResource());
 		Assert.assertTrue(testArea5);
 		//check in area 1
-		boolean testArea6 = areaManager.isIdentityInBGArea(id1, null, area3.getKey(), resource);
+		boolean testArea6 = areaManager.isIdentityInBGArea(id1, null, area3.getKey(), resource.getOlatResource());
 		Assert.assertFalse(testArea6);
 	}
 	

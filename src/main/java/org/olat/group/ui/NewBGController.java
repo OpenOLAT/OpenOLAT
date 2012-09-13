@@ -42,7 +42,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -59,7 +59,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class NewBGController extends BasicController {
 
-	private OLATResource resource;
+	private RepositoryEntry re;
 	private BusinessGroupService businessGroupService;
 	private VelocityContainer contentVC;
 	private BusinessGroupFormController groupCreateController;
@@ -73,8 +73,8 @@ public class NewBGController extends BasicController {
 	 * @param bgContext
 	 * @param bulkMode
 	 */
-	public NewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
-		this(ureq, wControl, resource, true, null);
+	public NewBGController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
+		this(ureq, wControl, re, true, null);
 	}
 	/**
 	 * 
@@ -85,9 +85,9 @@ public class NewBGController extends BasicController {
 	 * @param bulkMode
 	 * @param csvGroupNames
 	 */
-	public NewBGController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvGroupNames) {
+	public NewBGController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, boolean bulkMode, String csvGroupNames) {
 		super(ureq, wControl);
-		this.resource = resource;
+		this.re = re;
 		this.bulkMode = bulkMode;
 		//
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -127,12 +127,12 @@ public class NewBGController extends BasicController {
 				newGroups = new ArrayList<BusinessGroup>();
 				if (bulkMode) {
 					for(String bgName:groupCreateController.getGroupNames()) {
-						BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
+						BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, re);
 						newGroups.add(group);
 					}
 				} else {
 					String bgName = groupCreateController.getGroupName();
-					BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, resource);
+					BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, re);
 					newGroups.add(group);
 				}
 

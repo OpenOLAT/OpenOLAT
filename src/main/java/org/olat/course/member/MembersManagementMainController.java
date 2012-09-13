@@ -153,7 +153,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 			mainVC.put("content", membersOverviewCtrl.getInitialComponent());
 		} else if(CMD_GROUPS.equals(cmd)) {
 			if(groupsCtrl == null) {
-				groupsCtrl = new CourseBusinessGroupListController(ureq, getWindowControl(), repoEntry.getOlatResource());
+				groupsCtrl = new CourseBusinessGroupListController(ureq, getWindowControl(), repoEntry);
 				listenTo(groupsCtrl);
 			}
 			groupsCtrl.reloadModel();

@@ -73,6 +73,8 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.shibboleth.ShibbolethModule;
 /**
@@ -337,7 +339,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			removeAsListenerAndDispose(groupCreateCtlr);
 			
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-			groupCreateCtlr = new NewBGController(ureq, getWindowControl(), courseResource, true, null);
+			RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+			groupCreateCtlr = new NewBGController(ureq, getWindowControl(), courseRe, true, null);
 			listenTo(groupCreateCtlr);
 			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCtlr.getInitialComponent());
 			listenTo(cmc);
@@ -371,8 +374,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			// or more group at once.
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
+			RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
 			removeAsListenerAndDispose(groupCreateCtlr);
-			groupCreateCtlr = new NewBGController(ureq, getWindowControl(), courseResource, true, csvGroupName[0]);
+			groupCreateCtlr = new NewBGController(ureq, getWindowControl(), courseRe, true, csvGroupName[0]);
 			listenTo(groupCreateCtlr);
 			
 			removeAsListenerAndDispose(cmc);

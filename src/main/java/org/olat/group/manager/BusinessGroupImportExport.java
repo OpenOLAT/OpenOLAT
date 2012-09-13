@@ -45,7 +45,7 @@ import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.properties.Property;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -200,7 +200,7 @@ public class BusinessGroupImportExport {
 		}
 	}
 
-	public BusinessGroupEnvironment importGroups(OLATResource resource, File fGroupExportXML) {
+	public BusinessGroupEnvironment importGroups(RepositoryEntry re, File fGroupExportXML) {
 		if (!fGroupExportXML.exists())
 			return new BusinessGroupEnvironment();
 
@@ -222,7 +222,7 @@ public class BusinessGroupImportExport {
 			for (Area area : groupConfig.getAreas().getGroups()) {
 				String areaName = area.name;
 				String areaDesc = (area.description != null && !area.description.isEmpty()) ? area.description.get(0) : "";
-				BGArea newArea = areaManager.createAndPersistBGArea(areaName, areaDesc, resource);
+				BGArea newArea = areaManager.createAndPersistBGArea(areaName, areaDesc, re.getOlatResource());
 				if(areaSet.add(newArea)) {
 					env.getAreas().add(new BGAreaReference(newArea, area.key, area.name));
 				}
@@ -250,7 +250,7 @@ public class BusinessGroupImportExport {
 					enableAutoCloseRanks = group.autoCloseRanks.booleanValue();
 				}
 				
-				BusinessGroup newGroup = businessGroupService.createBusinessGroup(null, groupName, groupDesc, groupMinParticipants, groupMaxParticipants, waitingList, enableAutoCloseRanks, resource);
+				BusinessGroup newGroup = businessGroupService.createBusinessGroup(null, groupName, groupDesc, groupMinParticipants, groupMaxParticipants, waitingList, enableAutoCloseRanks, re);
 				//map the group
 				env.getGroups().add(new BusinessGroupReference(newGroup, group.key, group.name));
 				// get tools config
@@ -283,7 +283,7 @@ public class BusinessGroupImportExport {
 				List<String> memberships = group.areaRelations;
 				if(memberships != null) {
 					for (String membership : memberships) {
-						BGArea area = areaManager.findBGArea(membership, resource);
+						BGArea area = areaManager.findBGArea(membership, re.getOlatResource());
 						if (area == null) {
 							throw new AssertException("Group-Area-Relationship in export, but area was not created during import.");
 						}

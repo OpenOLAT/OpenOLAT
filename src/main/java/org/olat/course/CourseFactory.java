@@ -832,11 +832,12 @@ public class CourseFactory extends BasicManager {
 	 * @param identity
 	 */
 	public static void archiveCourse(OLATResourceable res, String charset, Locale locale, Identity identity) {
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		PersistingCourseImpl course = (PersistingCourseImpl) loadCourse(res);
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
 		boolean isOLATAdmin = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN);
-		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, RepositoryManager.getInstance().lookupRepositoryEntry(res, false));
-		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(RepositoryManager.getInstance().lookupRepositoryEntry(res, false), identity);
+		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, courseRe);
+		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(courseRe, identity);
 		archiveCourse(identity, course, charset, locale, exportDirectory, isOLATAdmin, isOresOwner, isOresInstitutionalManager);
 	}
 		

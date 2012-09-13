@@ -113,7 +113,7 @@ public class CourseCreationHelper {
 	/**
 	 * @return the created course
 	 */
-	public final Object getUserObject() {
+	public final RepositoryEntry getUserObject() {
 		return addedEntry;
 	}
 
@@ -197,7 +197,7 @@ public class CourseCreationHelper {
 				// create group
 				BusinessGroup learningGroup = bgs.createBusinessGroup( null, groupBaseName + " "
 						+ (i + 1), null, 0, courseConfig.getSubscriberCount(), courseConfig.getEnableWaitlist(), courseConfig.getEnableFollowup(),
-						course.getCourseEnvironment().getCourseGroupManager().getCourseResource());
+						addedEntry);
 				// enable the contact collaboration tool
 				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(learningGroup);
 				ct.setToolEnabled(CollaborationTools.TOOL_CONTACT, true);

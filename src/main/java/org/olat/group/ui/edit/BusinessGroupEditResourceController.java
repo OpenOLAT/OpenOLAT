@@ -55,7 +55,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR>
@@ -180,22 +179,19 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	}
 	
 	private void doRemoveResource(RepositoryEntry entry) {
-		businessGroupService.removeResourceFrom(group, entry.getOlatResource());
+		businessGroupService.removeResourceFrom(group, entry);
 		repoTableModel.getObjects().remove(entry);
 		resourcesCtr.modelChanged();
 	}
 
 	private void doAddRepositoryEntry(List<RepositoryEntry> entries) {
-		List<OLATResource> resources = new ArrayList<OLATResource>();
 		List<RepositoryEntry> repoEntries = new ArrayList<RepositoryEntry>();
 		for(RepositoryEntry entry:entries) {
 			if(!repoTableModel.getObjects().contains(entry)) {
-				resources.add(entry.getOlatResource());
 				repoEntries.add(entry);
 			}
-			
 		}
-		businessGroupService.addResourcesTo(Collections.singletonList(group), resources);
+		businessGroupService.addResourcesTo(Collections.singletonList(group), repoEntries);
 		repoTableModel.addObjects(repoEntries);
 		resourcesCtr.modelChanged();
 	}

@@ -24,18 +24,21 @@
 */
 package org.olat.course.statistic.weekly;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class TestWeeklyStatisticManager_fillGaps extends TestCase {
+
+public class TestWeeklyStatisticManager_fillGaps {
 
 	private WeeklyStatisticManager manager_;
 
-	@Override
-	protected void setUp() throws Exception {
+
+	@Before
+	public void setUp() throws Exception {
 		manager_ = new WeeklyStatisticManager();
 	}
 
@@ -44,10 +47,12 @@ public class TestWeeklyStatisticManager_fillGaps extends TestCase {
 		assertListEquals(expectedOutput, resultingTestset);
 	}
 	
+	@Test
 	public void testNull() throws Exception {
-		assertNull(manager_.fillGapsInColumnHeaders(null));
+		Assert.assertNull(manager_.fillGapsInColumnHeaders(null));
 	}
 	
+	@Test
 	public void testOne() throws Exception {
 		for(int i=0; i<50; i++) {
 			String s;
@@ -57,26 +62,30 @@ public class TestWeeklyStatisticManager_fillGaps extends TestCase {
 				s = "2010-"+i;
 			}
 			List<String> resultingTestset = manager_.fillGapsInColumnHeaders(createList(s));
-			assertNull(resultingTestset);
+			Assert.assertNull(resultingTestset);
 		}
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		runTest(
 				createList("2010-01", "2010-02", "2010-03"), 
 				createList("2010-01", "2010-02", "2010-03"));
 	}
 
+	@Test
 	public void testYearChange() throws Exception {
 		runTest(
 				createList("2009-50", "2010-01", "2010-02", "2010-03"), 
 				createList("2009-50", "2009-51", "2009-52", "2009-53", "2010-01", "2010-02", "2010-03"));
 	}
 	
+	@Test
 	public void testAllYearChanges() throws Exception {
 		for(int i=2000; i<2200; i++) {
 			List<String> input = createList(i+"-50", (i+1)+"-03");
 			List<String> output = manager_.fillGapsInColumnHeaders(input);
+			Assert.assertNotNull(output);
 			
 			List<String> outputVariant1 = createList(i+"-50", i+"-51", i+"-52", (i+1)+"-01", (i+1)+"-02", (i+1)+"-03");
 			List<String> outputVariant2 = createList(i+"-50", i+"-51", i+"-52", i+"-53", (i+1)+"-01", (i+1)+"-02", (i+1)+"-03");
@@ -93,49 +102,54 @@ public class TestWeeklyStatisticManager_fillGaps extends TestCase {
 			} else if (!matchesVariant1 && !matchesVariant2 && matchesVariant3) {
 				// perfecto
 			} else {
-				fail("failed with input "+input);
+				Assert.fail("failed with input "+input);
 			}
 		}
 	}
 	
+	@Test
 	public void testWronglyFormatted() throws Exception {
 		runTest(
 				createList("2010-1", "2010-2", "2010-4"), 
 				createList("2010-1", "2010-02", "2010-2", "2010-03", "2010-04", "2010-4"));
 	}
 
+	@Test
 	public void testGapsA() throws Exception {
 		runTest(
 				createList("2010-01", "2010-02", "2010-04"), 
 				createList("2010-01", "2010-02", "2010-03", "2010-04"));
 	}
 
+	@Test
 	public void testGapsB() throws Exception {
 		runTest(
 				createList("2010-01", "2010-02", "2010-04", "2010-07"), 
 				createList("2010-01", "2010-02", "2010-03", "2010-04", "2010-05", "2010-06", "2010-07"));
 	}
 
+	@Test
 	public void testBigGap() throws Exception {
 		runTest(
 				createList("2009-50", "2010-12"), 
 				createList("2009-50", "2009-51", "2009-52", "2009-53", "2010-01", "2010-02", "2010-03", "2010-04", "2010-05", "2010-06", "2010-07", "2010-08", "2010-09", "2010-10", "2010-11", "2010-12"));
 	}
 
+	@Test
 	public void testWrongInputParams() throws Exception {
 		List<String> resultingTestset = manager_.fillGapsInColumnHeaders(createList("2010-50", "2010-12"));
-		assertNull(resultingTestset);
+		Assert.assertNull(resultingTestset);
 	}
 
 	private void assertListEquals(List<String> testset, List<String> resultingTestset) {
 		if (testset==null || resultingTestset==null) {
 			throw new IllegalArgumentException("testset and resultingtestset must not be empty");
 		}
-		assertEquals("size mismatch", testset.size(), resultingTestset.size());
+		Assert.assertEquals("size mismatch", testset.size(), resultingTestset.size());
 		for(int i=0; i<testset.size(); i++) {
 			String expectedStr = testset.get(i);
 			String actualStr = resultingTestset.get(i);
-			assertEquals("string at position "+i+" mismatch", expectedStr, actualStr);
+			Assert.assertEquals("string at position "+i+" mismatch", expectedStr, actualStr);
 		}
 	}
 

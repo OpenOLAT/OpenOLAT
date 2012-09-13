@@ -101,7 +101,6 @@ import org.olat.notifications.NotificationsManagerImpl;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -195,15 +194,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
-			OLATResource resource) {
+			RepositoryEntry re) {
 
 		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false);
-		if(resource instanceof OLATResourceImpl) {
-			businessGroupRelationDAO.addRelationToResource(group, resource);
-			//add coach and participant permission
-			securityManager.createAndPersistPolicyWithResource(group.getOwnerGroup(), Constants.PERMISSION_COACH, resource);
-			securityManager.createAndPersistPolicyWithResource(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
+		if(re != null) {
+			addResourceTo(group, re);
 		}
 		return group;
 	}
@@ -1420,16 +1416,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional
-	public void addResourceTo(BusinessGroup group, OLATResource resource) {
-		businessGroupRelationDAO.addRelationToResource(group, resource);
+	public void addResourceTo(BusinessGroup group, RepositoryEntry re) {
+		businessGroupRelationDAO.addRelationToResource(group, re.getOlatResource());
+		//add author permission
+		securityManager.createAndPersistPolicyWithResource(re.getOwnerGroup(), Constants.PERMISSION_ACCESS, group.getResource());
 		//add coach and participant permission
-		securityManager.createAndPersistPolicyWithResource(group.getOwnerGroup(), Constants.PERMISSION_COACH, resource);
-		securityManager.createAndPersistPolicyWithResource(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
+		securityManager.createAndPersistPolicyWithResource(group.getOwnerGroup(), Constants.PERMISSION_COACH, re.getOlatResource());
+		securityManager.createAndPersistPolicyWithResource(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
 	}
 
 	@Override
 	@Transactional
-	public void addResourcesTo(List<BusinessGroup> groups, List<OLATResource> resources) {
+	public void addResourcesTo(List<BusinessGroup> groups, List<RepositoryEntry> resources) {
 		if(groups == null || groups.isEmpty()) return;
 		if(resources == null || resources.isEmpty()) return;
 		
@@ -1441,15 +1439,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		//check for duplicate entries
 		List<BGResourceRelation> relations = businessGroupRelationDAO.findRelations(groupKeys, 0, -1);
 		for(BusinessGroup group:groups) {
-			for(OLATResource resource:resources) {
+			for(RepositoryEntry re:resources) {
 				boolean relationExists = false;
 				for(BGResourceRelation relation:relations) {
-					if(relation.getGroup().equals(group) && relation.getResource().equals(resource)) {
+					if(relation.getGroup().equals(group) && relation.getResource().equals(re.getOlatResource())) {
 						relationExists = true;
 					}
 				}
 				if(!relationExists) {
-					addResourceTo(group, resource);
+					addResourceTo(group, re);
 				}
 			}
 		}
@@ -1457,11 +1455,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional
-	public void removeResourceFrom(BusinessGroup group, OLATResource resource) {
-		businessGroupRelationDAO.deleteRelation(group, resource);
+	public void removeResourceFrom(BusinessGroup group, RepositoryEntry re) {
+		businessGroupRelationDAO.deleteRelation(group, re.getOlatResource());
+		//remove author permission
+		securityManager.deletePolicy(re.getOwnerGroup(), Constants.PERMISSION_ACCESS, group.getResource());
 		//remove permission
-		securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, resource);
-		securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
+		securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, re.getOlatResource());
+		securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
 	}
 
 	@Override
@@ -1556,8 +1556,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public BusinessGroupEnvironment importGroups(OLATResource resource, File fGroupExportXML) {
-		return businessGroupImportExport.importGroups(resource, fGroupExportXML);
+	public BusinessGroupEnvironment importGroups(RepositoryEntry re, File fGroupExportXML) {
+		return businessGroupImportExport.importGroups(re, fGroupExportXML);
 	}
 
 	@Override

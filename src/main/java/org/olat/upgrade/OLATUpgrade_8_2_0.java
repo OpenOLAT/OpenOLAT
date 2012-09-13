@@ -203,8 +203,8 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 	}
 	
 	private void processBusinessGroup(BusinessGroup group) {
-		List<OLATResource> resources = findOLATResourcesForBusinessGroup(group);
-		List<OLATResource> currentList = businessGroupService.findResources(Collections.singletonList(group), 0, -1);
+		List<RepositoryEntry> resources = findOLATResourcesForBusinessGroup(group);
+		List<RepositoryEntry> currentList = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		
 		boolean merge = false;
 		if(group.getResource() == null) {
@@ -229,7 +229,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		}
 
 		int count = 0;
-		for	(OLATResource resource:resources) {
+		for	(RepositoryEntry resource:resources) {
 			if(!currentList.contains(resource)) {
 				businessGroupService.addResourceTo(group, resource);
 				count++;
@@ -345,11 +345,15 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		return resources;
 	}
 	
-	private List<OLATResource> findOLATResourcesForBusinessGroup(BusinessGroup group) {
+	private List<RepositoryEntry> findOLATResourcesForBusinessGroup(BusinessGroup group) {
 		StringBuilder q = new StringBuilder();
-		q.append("select bgcr.resource from ").append(BGContext2Resource.class.getName()).append(" as bgcr where bgcr.groupContext.key=:contextKey");
+		q.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		 .append(" inner join fetch v.olatResource as ores ")
+		 .append(" where ores in (")
+		 .append("  select bgcr.resource from ").append(BGContext2Resource.class.getName()).append(" as bgcr where bgcr.groupContext.key=:contextKey")
+		 .append(" )");
 
-		List<OLATResource> resources = dbInstance.getCurrentEntityManager().createQuery(q.toString(), OLATResource.class)
+		List<RepositoryEntry> resources = dbInstance.getCurrentEntityManager().createQuery(q.toString(), RepositoryEntry.class)
 				.setParameter("contextKey", ((BusinessGroupImpl)group).getGroupContextKey())
 				.getResultList();
 		return resources;
