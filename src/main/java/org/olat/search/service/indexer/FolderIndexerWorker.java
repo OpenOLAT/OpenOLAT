@@ -60,12 +60,14 @@ public class FolderIndexerWorker implements Runnable{
 	private String filePath;
 	private FolderIndexerAccess accessRule;
 
-	private String threadId;
+	private final String threadId;
 	
 	private int state = 0;
+	private final FileDocumentFactory docFactory;
 
 	public FolderIndexerWorker(int threadId) {
 		this.threadId = Integer.toString(threadId);
+		docFactory = CoreSpringFactory.getImpl(FileDocumentFactory.class);
 	}
 
 	public void start() {
@@ -123,13 +125,13 @@ public class FolderIndexerWorker implements Runnable{
 	protected void doIndexVFSLeaf(SearchResourceContext leafResourceContext, VFSLeaf leaf, OlatFullIndexer writer, String fPath) {
 		if (log.isDebug()) log.debug("Analyse VFSLeaf=" + leaf.getName());
 		try {
-			if (CoreSpringFactory.getImpl(FileDocumentFactory.class).isFileSupported(leaf)) {
+			if (docFactory.isFileSupported(leaf)) {
 				String myFilePath = fPath + "/" + leaf.getName();
 				leafResourceContext.setFilePath(myFilePath);
 				//fxdiff FXOLAT-97: high CPU load tracker
 				WorkThreadInformations.setInfoFiles(myFilePath, leaf);
 				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
-  			Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
+  			Document document = docFactory.createDocument(leafResourceContext, leaf);
   			if(document != null) {//document wihich are disabled return null
   				writer.addDocument(document);
   			}
