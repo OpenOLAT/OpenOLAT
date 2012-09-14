@@ -26,6 +26,8 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -37,6 +39,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionContext;
@@ -231,11 +234,11 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		boolean dataFound = false;
 		DialogElementsPropertyManager depm = DialogElementsPropertyManager.getInstance();
 		DialogPropertyElements elements = depm.findDialogElements(course.getCourseEnvironment().getCoursePropertyManager(), this);
-		List list = new ArrayList();
+		List<DialogElement> list = new ArrayList<DialogElement>();
 		if (elements != null) list = elements.getDialogPropertyElements();
 
-		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			DialogElement element = (DialogElement) iter.next();
+		for (Iterator<DialogElement> iter = list.iterator(); iter.hasNext();) {
+			DialogElement element = iter.next();
 			doArchiveElement(element, exportDirectory);
 			//at least one element found
 			dataFound = true;
@@ -255,8 +258,8 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		VFSContainer exportContainer = new LocalFolderImpl(exportDirectory);
 		
 		// append export timestamp to avoid overwriting previous export 
-		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss_SSS");
-		String exportDirName = getShortTitle()+"_"+element.getForumKey()+"_"+formatter.format(new Date(System.currentTimeMillis()));
+		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss_SSS");
+		String exportDirName = Formatter.makeStringFilesystemSave(getShortTitle())+"_"+element.getForumKey()+"_"+formatter.format(new Date(System.currentTimeMillis()));
 		VFSContainer diaNodeElemExportContainer = exportContainer.createChildContainer(exportDirName);
 		// don't check quota
 		diaNodeElemExportContainer.setLocalSecurityCallback(new FullAccessCallback());

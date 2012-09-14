@@ -38,7 +38,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.LogDelegator;
@@ -364,52 +363,6 @@ public class Formatter extends LogDelegator {
 		StringBuilder sb = new StringBuilder(source.substring(start, stop));
 		if (-alen <= len) sb.insert(0, delim);
 		return sb.toString();
-	}
-
-	/**
-	 * some old testing
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		System.out.println("hello");
-		//	log.debug(linePrepend("asdfsdf. bla and. \n2.line\n3.third",">"));
-		//	log.debug(escape("bla<>and so on &&\nsecond line").toString());
-		
-		System.out.println(":" + StringEscapeUtils.escapeHtml("abcdef&<>") + ":");
-		System.out.println(":" + StringEscapeUtils.escapeHtml("&#256;<ba>abcdef&<>") + ":");
-		System.out.println(":" + StringEscapeUtils.escapeHtml("&#256;\n<ba>\nabcdef&<>") + ":");
-
-		System.out.println(":" + Formatter.truncate("abcdef", 0) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", 2) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", 4) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", 6) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", 7) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", 8) + ":");
-
-		System.out.println(":" + Formatter.truncate("abcdef", -2) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", -4) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", -6) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", -7) + ":");
-		System.out.println(":" + Formatter.truncate("abcdef", -8) + ":");
-		
-		Locale loc = new Locale("de");
-		Formatter f2 = new Formatter(loc);
-		Date d = new Date();
-		Calendar cal = Calendar.getInstance(loc);
-		cal.setTime(d);
-		cal.add(Calendar.HOUR_OF_DAY, 7);
-		// so ists 16:36 nachmittags
-		d = cal.getTime();
-		System.out.println(f2.formatDate(d));
-		System.out.println(f2.formatTime(d));
-		System.out.println(f2.formatDateAndTime(d));
-		
-		System.out.println("Now make String filesystem save");
-		//String ugly = "\"/asdf/?._||\"blaöäü";
-		String ugly = "guido/\\:? .|*\"\"<><guidoöäü";
-		System.out.println("input: "+ugly);
-		System.out.println("output: "+Formatter.makeStringFilesystemSave(ugly));
 	}
 
 	/**
