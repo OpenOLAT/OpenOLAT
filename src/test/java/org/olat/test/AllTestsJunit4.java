@@ -121,6 +121,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.service.usercomments.UserRatingsTest.class,
 	org.olat.course.auditing.UserNodeAuditManagerTest.class,
 	org.olat.shibboleth.util.ShibbolethAttributeTest.class,
+	org.olat.core.CoreSpringFactoryTest.class,
 	org.olat.portfolio.PortfolioModuleTest.class,
 	org.olat.portfolio.EPArtefactManagerTest.class,
 	org.olat.portfolio.EPFrontendManagerTest.class,
