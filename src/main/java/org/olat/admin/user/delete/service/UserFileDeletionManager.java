@@ -164,24 +164,31 @@ public class UserFileDeletionManager extends BasicManager implements UserDataDel
 						if (isLogDebugEnabled())  logDebug("process dir=" + nodeDirs[nodeIndex].getAbsolutePath());
 						String currentNodeId =  nodeDirs[nodeIndex].getName();
 						if (isLogDebugEnabled()) logDebug("currentNodeId=" + currentNodeId);
-						ICourse currentCourse = CourseFactory.loadCourse(Long.parseLong(currentCourseId));
-						if (isTaskNode(currentCourse, currentNodeId)) {
-							if (isLogDebugEnabled()) logDebug("found TACourseNode path=" + nodeDirs[nodeIndex].getAbsolutePath());
-							deleteUserDirectory(identity, nodeDirs[nodeIndex]);
-						} else if (isProjectBrokerNode(currentCourse, currentNodeId)) {
-							if (isLogDebugEnabled()) logDebug("found ProjectBrokerCourseNode path=" + nodeDirs[nodeIndex].getAbsolutePath());
-							// addional loop over project-id
-							File[] projectDirs = nodeDirs[nodeIndex].listFiles();
-							for (int projectIndex = 0; projectIndex < projectDirs.length; projectIndex++) {
-								deleteUserDirectory(identity, projectDirs[projectIndex]);
+						ICourse currentCourse = null;
+						try {
+							currentCourse = CourseFactory.loadCourse(Long.parseLong(currentCourseId));
+						} catch (Exception e) {
+							logError("could not load course with resid="+currentCourseId,e);
+						}
+						if (currentCourse != null) {
+							if (isTaskNode(currentCourse, currentNodeId)) {
+								if (isLogDebugEnabled()) logDebug("found TACourseNode path=" + nodeDirs[nodeIndex].getAbsolutePath());
+								deleteUserDirectory(identity, nodeDirs[nodeIndex]);
+							} else if (isProjectBrokerNode(currentCourse, currentNodeId)) {
+								if (isLogDebugEnabled()) logDebug("found ProjectBrokerCourseNode path=" + nodeDirs[nodeIndex].getAbsolutePath());
+								// addional loop over project-id
+								File[] projectDirs = nodeDirs[nodeIndex].listFiles();
+								for (int projectIndex = 0; projectIndex < projectDirs.length; projectIndex++) {
+									deleteUserDirectory(identity, projectDirs[projectIndex]);
+								}
+							} else {
+								logWarn("found dropbox or returnbox and node-type is NO Task- or ProjectBroker-Type courseId=" + currentCourseId + " nodeId=" + currentNodeId, null);
 							}
-						} else {
-							logWarn("found dropbox or returnbox and node-type is NO Task- or ProjectBroker-Type courseId=" + currentCourseId + " nodeId=" + currentNodeId, null);
 						}
 					}
 				}
 			}
-		} 
+		}
 	}
 
 	private boolean isProjectBrokerNode(ICourse currentCourse, String currentNodeId) {
@@ -205,7 +212,8 @@ public class UserFileDeletionManager extends BasicManager implements UserDataDel
 	}
 
 	private static FilenameFilter dropboxReturnboxFilter = new FilenameFilter() {
-		public boolean accept(@SuppressWarnings("unused") File dir, String name) {
+		@Override
+		public boolean accept(File dir, String name) {
 			// don't add overlayLocales as selectable availableLanguages
 			// (LocaleStrings_de__VENDOR.properties)
 			if (   name.equals(ReturnboxController.RETURNBOX_DIR_NAME) 
@@ -236,7 +244,8 @@ class UserFileFilter implements FilenameFilter  {
 		this.username = username;
 	}
 
-	public boolean accept(@SuppressWarnings("unused") File dir, String name) {
+	@Override
+	public boolean accept(File dir, String name) {
 		// don't add overlayLocales as selectable availableLanguages
 		// (LocaleStrings_de__VENDOR.properties)
 		if (   name.equals(username) ) { 
