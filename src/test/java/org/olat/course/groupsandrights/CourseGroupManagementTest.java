@@ -129,7 +129,7 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 
 		// test groups
-		CourseGroupManager gm = PersistingCourseGroupManager.getInstance(course1);
+		CourseGroupManager gm = PersistingCourseGroupManager.getInstance(course1.getOlatResource());
 		assertTrue(gm.isIdentityInGroup(id1, g1.getKey()));
 		assertTrue(gm.isIdentityInGroup(id1, g2.getKey()));
 		assertTrue(gm.isIdentityInGroup(id1, g3.getKey()));
@@ -203,7 +203,7 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 
 		// test groups
-		CourseGroupManager gm = PersistingCourseGroupManager.getInstance(course1);
+		CourseGroupManager gm = PersistingCourseGroupManager.getInstance(course1.getOlatResource());
 
 		// test areas
 		DBFactory.getInstance().closeSession();

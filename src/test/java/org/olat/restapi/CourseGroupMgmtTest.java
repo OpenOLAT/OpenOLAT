@@ -53,6 +53,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -86,10 +87,12 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	private Identity id1, id2;
 	private BusinessGroup g1, g2;
 	private BusinessGroup g3, g4;
-	private RepositoryEntry course;
+	private RepositoryEntry courseRepoEntry;
 
 	private RestConnection conn;
 	
+	@Autowired
+	DB dbInstance;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -116,13 +119,13 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
 		OLATResource r =  rm.createOLATResourceInstance(resourceable);
 		rm.saveOLATResource(r);
-		course =  JunitTestHelper.createAndPersistRepositoryEntry(r, false);
-		DBFactory.getInstance().saveObject(course);
-		DBFactory.getInstance().closeSession();
+		courseRepoEntry =  JunitTestHelper.createAndPersistRepositoryEntry(r, false);
+		dbInstance.saveObject(courseRepoEntry);
+		dbInstance.commitAndCloseSession();
 		
     // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, course);
-    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, course);
+    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, courseRepoEntry);
+    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, courseRepoEntry);
     // members
     securityManager.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
     securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
@@ -130,13 +133,13 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
     securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
     
     // groups
-    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, course);
-    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, course);
+    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, courseRepoEntry);
+    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, courseRepoEntry);
     // members
     securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
     securityManager.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
     
-    DBFactory.getInstance().closeSession(); // simulate user clicks
+    dbInstance.commitAndCloseSession(); // simulate user clicks
 	}
 	
   @After
@@ -155,8 +158,9 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetCourseGroups() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
-		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups").build();
+
+		Long courseId = courseRepoEntry.getOlatResource().getResourceableId();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -179,7 +183,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetCourseGroup() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups/" + g1.getKey()).build();
+		Long courseId = courseRepoEntry.getOlatResource().getResourceableId();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups/" + g1.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -199,7 +204,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		vo.setMinParticipants(new Integer(-1));
 		vo.setMaxParticipants(new Integer(-1));
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups").build();
+		Long courseId = courseRepoEntry.getOlatResource().getResourceableId();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method, vo);
 		
@@ -231,7 +237,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		vo.setMaxParticipants(g1.getMaxParticipants());
 		vo.setType(g1.getType());
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups/" + g1.getKey()).build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getResourceableId() + "/groups/" + g1.getKey()).build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method, vo);
 		HttpResponse response = conn.execute(method);
@@ -249,7 +255,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	public void testDeleteCourseGroup() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups/" + g1.getKey()).build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getResourceableId() + "/groups/" + g1.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		
@@ -263,7 +269,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	public void testBasicSecurityDeleteCall() throws IOException, URISyntaxException {
 		assertTrue(conn.login("rest-c-g-3", "A6B7C8"));
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups/" + g2.getKey()).build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getResourceableId() + "/groups/" + g2.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		
@@ -280,7 +286,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		vo.setMinParticipants(new Integer(-1));
 		vo.setMaxParticipants(new Integer(-1));
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups").build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getResourceableId() + "/groups").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method, vo);
 		
