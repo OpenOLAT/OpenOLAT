@@ -707,11 +707,17 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 */
 	@Override
 	public void exportNode(File fExportDirectory, ICourse course) {
-		// export only this taskfolder's tasks
-		File fTaskFolder = new File(FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course, this));
-		File fNodeExportDir = new File(fExportDirectory, this.getIdent());
+		// export the tasks
+		File fTaskFolder = new File(FolderConfig.getCanonicalRoot(), TACourseNode.getTaskFolderPathRelToFolderRoot(course, this));
+		File fNodeExportDir = new File(fExportDirectory, getIdent());
 		fNodeExportDir.mkdirs();
 		FileUtils.copyDirContentsToDir(fTaskFolder, fNodeExportDir, false, "export task course node");
+		
+		//export thes solutions
+		File fSolutionDir = new File(FolderConfig.getCanonicalRoot(), TACourseNode.getFoldernodesPathRelToFolderBase(course.getCourseEnvironment()) + "/" + getIdent());
+		File fSolExportDir = new File(new File(fExportDirectory, "solutions"), getIdent());
+		fSolExportDir.mkdirs();
+		FileUtils.copyDirContentsToDir(fSolutionDir, fSolExportDir, false, "export task course node solutions");
 	}
 
 	/**
@@ -721,9 +727,15 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 */
 	@Override
 	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
-		File fNodeImportDir = new File(importDirectory, this.getIdent());
+		//import tasks
+		File fNodeImportDir = new File(importDirectory, getIdent());
 		File fTaskfolderDir = new File(FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course, this));
 		FileUtils.copyDirContentsToDir(fNodeImportDir, fTaskfolderDir, false, "import task course node");
+	
+		File fSolutionDir = new File(FolderConfig.getCanonicalRoot(), TACourseNode.getFoldernodesPathRelToFolderBase(course.getCourseEnvironment()) + "/" + getIdent());
+		fSolutionDir.mkdirs();
+		File fSolImportDir = new File(new File(importDirectory, "solutions"), getIdent());
+		FileUtils.copyDirContentsToDir(fSolImportDir, fSolutionDir, false, "import task course node solutions");
 		return null;
 	}
 
