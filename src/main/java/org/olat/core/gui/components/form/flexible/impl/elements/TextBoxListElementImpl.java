@@ -28,7 +28,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.textboxlist.ResultMapProvider;
+import org.olat.core.gui.components.textboxlist.TextBoxListComponent;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -63,7 +65,17 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		component.dispatchRequest(ureq);		
+		String inputId = TextBoxListComponent.INPUT_SUFFIX + getFormDispatchId();
+		String cmd = ureq.getParameter(inputId);
+		if(StringHelper.containsNonWhitespace(cmd)) {
+			component.dispatchRequest(ureq);
+		} else {
+			//this one handle multipart/form too
+			String submitValue = getRootForm().getRequestParameter(inputId);
+			if(StringHelper.containsNonWhitespace(submitValue)) {
+				((TextBoxListElementComponent)component).setCmd(ureq, submitValue);
+			}	
+		}			
 	}
 
 	@Override

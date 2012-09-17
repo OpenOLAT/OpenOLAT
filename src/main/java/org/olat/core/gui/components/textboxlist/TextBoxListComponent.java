@@ -45,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -68,6 +69,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 
 	// if changed, do so also in multiselect.js!
 	public static final String MORE_RESULTS_INDICATOR = ".....";
+	public static final String INPUT_SUFFIX = "textboxlistinput";
 
 	private String inputHint;
 
@@ -147,14 +149,21 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-
 		String inputId = "textboxlistinput" + getFormDispatchId();
 		String cmd = ureq.getParameter(inputId);
 		if(cmd == null){
 			return;
 		}
+		setCmd(ureq, cmd);
+	}
+	
+	public void setCmd(UserRequest ureq, String cmd) {
+		if(!StringHelper.containsNonWhitespace(cmd)) {
+			return;
+		}
+		
 		String[] splitted = cmd.split(",");
-		ArrayList<String> cleanedItemValues = new ArrayList<String>();
+		List<String> cleanedItemValues = new ArrayList<String>();
 		for (String item : splitted) {
 			if (!StringUtils.isBlank(item))
 				cleanedItemValues.add(item.trim());
@@ -176,7 +185,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 
 		if (logger.isDebug())
 			logger.debug("doDispatchRequest --> firing textBoxListEvent with current items: " + cleanedItemValues);
-		fireEvent(ureq, new TextBoxListEvent(cleanedItemValues));
+		fireEvent(ureq, new TextBoxListEvent(cleanedItemValues));	
 	}
 
 	/**
