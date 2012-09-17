@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -153,8 +154,16 @@ public class ImportReferencesController extends BasicController {
 	}
 	
 	protected void importWithoutAsking (UserRequest ureq) {
+		//isolate the transaction
+		try {
+			DBFactory.getInstance().commitAndCloseSession();
+		} catch (Exception e) {
+			logError("", e);
+		}
+		
 		event (ureq, importButton, Event.DONE_EVENT);
 		fireEvent(ureq, Event.DONE_EVENT);
+		DBFactory.getInstance().commitAndCloseSession();
 	}
 
 	/**
@@ -285,6 +294,8 @@ public class ImportReferencesController extends BasicController {
 	 */
 	public static RepositoryEntry doImport(RepositoryEntryImportExport importExport, CourseNode node, int importMode, boolean keepSoftkey,
 			Identity owner) {
+		DBFactory.getInstance().commitAndCloseSession();
+		
 		File fExportedFile = importExport.importGetExportedFile();
 		FileResource fileResource = null;
 		try {
@@ -297,6 +308,8 @@ public class ImportReferencesController extends BasicController {
 				return null;
 			}
 		}
+		
+		DBFactory.getInstance().commitAndCloseSession();
 
 		// create repository entry
 		RepositoryManager rm = RepositoryManager.getInstance();

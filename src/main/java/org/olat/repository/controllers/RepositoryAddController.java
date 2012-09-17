@@ -360,6 +360,12 @@ public class RepositoryAddController extends BasicController {
 	}
 
 	protected void addFinished(UserRequest ureq) {
+		try {
+			DBFactory.getInstance().commitAndCloseSession();
+		} catch (Exception e) {
+			logError("", e);
+		}
+		
 		addedEntry = RepositoryManager.getInstance()
 			.createRepositoryEntryInstance(ureq.getIdentity().getName());
 
@@ -426,6 +432,9 @@ public class RepositoryAddController extends BasicController {
 		repositoryadd.contextPut("header",
 				translate("add.header.specific", new String[] {translate(ores.getResourceableTypeName())}));
 		repositoryadd.setPage(VELOCITY_ROOT + "/addDetails.html");
+		
+		System.out.println("rrrrrrrrrrr addFinished Commit and close");
+		DBFactory.getInstance().commitAndCloseSession();
 	}
 
 	protected void addCanceled(UserRequest ureq) {

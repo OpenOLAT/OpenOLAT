@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -61,6 +62,8 @@ public class BusinessGroupImportExport {
 
 	private GroupXStream xstream = new GroupXStream();
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -204,6 +207,8 @@ public class BusinessGroupImportExport {
 		if (!fGroupExportXML.exists())
 			return new BusinessGroupEnvironment();
 
+		//start with a new connection
+		dbInstance.commitAndCloseSession();
 		OLATGroupExport groupConfig = null;
 		try {
 			groupConfig = xstream.fromXML(fGroupExportXML);
@@ -218,6 +223,8 @@ public class BusinessGroupImportExport {
 		BusinessGroupEnvironment env = new BusinessGroupEnvironment();
 		Set<BGArea> areaSet = new HashSet<BGArea>();
 		// get areas
+		
+		int dbCount = 0;
 		if (groupConfig.getAreas() != null && groupConfig.getAreas().getGroups() != null) {
 			for (Area area : groupConfig.getAreas().getGroups()) {
 				String areaName = area.name;
@@ -225,6 +232,10 @@ public class BusinessGroupImportExport {
 				BGArea newArea = areaManager.createAndPersistBGArea(areaName, areaDesc, re.getOlatResource());
 				if(areaSet.add(newArea)) {
 					env.getAreas().add(new BGAreaReference(newArea, area.key, area.name));
+				}
+				
+				if(dbCount++ % 25 == 0) {
+					dbInstance.commitAndCloseSession();
 				}
 			}
 		}
@@ -305,8 +316,13 @@ public class BusinessGroupImportExport {
 					showWaitingList = group.showWaitingList;
 				}
 				businessGroupPropertyManager.updateDisplayMembers(newGroup, showOwners, showParticipants, showWaitingList, false, false, false);
+			
+				if(dbCount++ % 3 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
 			}
 		}
+		dbInstance.commitAndCloseSession();
 		return env;
 	}
 
