@@ -60,8 +60,8 @@ import org.olat.core.util.event.GenericEventListener;
 public class ClientManagerImpl extends BasicManager implements ClientManager {
 	// each client gets stored in a map under the username
 	// o_clusterNOK cache ?? what if the clientmanager runs on each vm? ok? why?
-	private Map<String, InstantMessagingClient> clients = Collections.synchronizedMap(new HashMap<String, InstantMessagingClient>());
-	Map<String, GenericEventListener> listeners = Collections.synchronizedMap(new HashMap<String, GenericEventListener>());
+	private Map<String, InstantMessagingClient> clients = new HashMap<String, InstantMessagingClient>();
+	private Map<String, GenericEventListener> listeners = Collections.synchronizedMap(new HashMap<String, GenericEventListener>());
 	/**
 	 * empty constructor
 	 */
@@ -84,15 +84,15 @@ public class ClientManagerImpl extends BasicManager implements ClientManager {
 		// we do not sync since "new InstantMessagingClient(...)" may last quite
 		// long.
 		InstantMessagingClient client;
-		client = clients.get(username);
-		if (client == null) {
-			String password = getInstantMessagingCredentialsForUser(username);
-			client = new InstantMessagingClient(username, password);
+		synchronized(clients) {
+			client = clients.get(username);
+			if (client == null) {
+				String password = getInstantMessagingCredentialsForUser(username);
+				client = new InstantMessagingClient(username, password);
 				clients.put(username, client);
-			return client;
-		} else {
-			return client;
+			}
 		}
+		return client;
 	}
 	
 	/**
@@ -102,8 +102,10 @@ public class ClientManagerImpl extends BasicManager implements ClientManager {
 	 * @param username
 	 * @return
 	 */
-	public boolean hasActiveInstantMessagingClient(String username){
+	public boolean hasActiveInstantMessagingClient(String username) {
+		synchronized(clients) {
 			return clients.containsKey(username);
+		}
 	}
 
 	/**
@@ -295,12 +297,16 @@ public class ClientManagerImpl extends BasicManager implements ClientManager {
 	 */
 	public void destroyInstantMessagingClient(String username) {
 		InstantMessagingClient client;
-		client = clients.get(username);
+		synchronized(clients) {
+			client = clients.get(username);
+		}
 		if (client != null) {
-				listeners.remove(username);
-				client.closeConnection(false);
-				client.setGroupChatManager(null);
+			listeners.remove(username);
+			client.closeConnection(false);
+			client.setGroupChatManager(null);
+			synchronized(clients) {
 				clients.remove(username);
+			}
 		}
 	}
 
@@ -309,9 +315,17 @@ public class ClientManagerImpl extends BasicManager implements ClientManager {
 	 * 
 	 * @return map
 	 */
+	@Override
 	public Map<String, InstantMessagingClient> getClients() {
-			HashMap<String, InstantMessagingClient> hm = new HashMap<String, InstantMessagingClient>(clients);
-			return hm;
+		synchronized(clients) {
+			return new HashMap<String, InstantMessagingClient>(clients);
+		}
 	}
 
+	@Override
+	public int getNumOfClients() {
+		synchronized(clients) {
+			return clients.size();
+		}
+	}
 }

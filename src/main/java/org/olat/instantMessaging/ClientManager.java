@@ -103,6 +103,12 @@ public interface ClientManager {
 	 * @return map
 	 */
 	public Map<String, InstantMessagingClient> getClients();
+	
+	/**
+	 * Return the number of clients
+	 * @return
+	 */
+	public int getNumOfClients();
 
 	/**
 	 * Looks if user has credentials for IM. If not (auth == null) a new accounts
