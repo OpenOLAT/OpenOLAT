@@ -26,14 +26,15 @@
 package org.olat.resource.references;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.hibernate.type.StandardBasicTypes;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
@@ -54,11 +55,14 @@ import org.olat.resource.OLATResourceManager;
  */
 public class ReferenceManager extends BasicManager {
 	
+	private static final OLog log = Tracing.createLoggerFor(ReferenceManager.class);
+	
 	private static ReferenceManager INSTANCE;
+	
+	private DB dbInstance;
 	private OLATResourceManager olatResourceManager;
 	
-	private ReferenceManager(OLATResourceManager olatResourceManager) {
-		this.olatResourceManager = olatResourceManager;
+	private ReferenceManager() {
 		INSTANCE = this;
 	}
 
@@ -67,6 +71,23 @@ public class ReferenceManager extends BasicManager {
 	 */
 	public static ReferenceManager getInstance() { return INSTANCE; }
 	
+
+	/**
+	 * [used by Spring]
+	 * @param dbInstance
+	 */
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param olatResourceManager
+	 */
+	public void setResourceManager(OLATResourceManager olatResourceManager) {
+		this.olatResourceManager = olatResourceManager;
+	}
+
 	/**
 	 * Add a new reference. The meaning of source and target is
 	 * such as the source references the target.
@@ -80,7 +101,7 @@ public class ReferenceManager extends BasicManager {
 		OLATResourceImpl sourceImpl = (OLATResourceImpl)olatResourceManager.findResourceable(source);
 		OLATResourceImpl targetImpl = (OLATResourceImpl)olatResourceManager.findResourceable(target);
 		ReferenceImpl ref = new ReferenceImpl(sourceImpl, targetImpl, userdata);
-		DBFactory.getInstance().saveObject(ref);
+		dbInstance.saveObject(ref);
 	}
 
 	/**
@@ -90,12 +111,15 @@ public class ReferenceManager extends BasicManager {
 	 * @return List of renerences.
 	 */
 	public List<ReferenceImpl> getReferences(OLATResourceable source) {
-		OLATResourceImpl sourceImpl = (OLATResourceImpl)olatResourceManager.findResourceable(source);
-		if (sourceImpl == null) return new ArrayList<ReferenceImpl>(0);
-		
-		return DBFactory.getInstance().find(
-				"select v from org.olat.resource.references.ReferenceImpl as v where v.source = ?",
-				sourceImpl.getKey(), StandardBasicTypes.LONG);
+		Long sourceKey = getResourceKey(source);
+		if (sourceKey == null) {
+			return new ArrayList<ReferenceImpl>(0);
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(ReferenceImpl.class.getName()).append(" as v where v.source.key=:sourceKey");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ReferenceImpl.class)
+				.setParameter("sourceKey", sourceKey)
+				.getResultList();
 	}
 	
 	/**
@@ -104,13 +128,31 @@ public class ReferenceManager extends BasicManager {
 	 * @param target
 	 * @return List of references.
 	 */
-	public List getReferencesTo(OLATResourceable target) {
-		OLATResourceImpl targetImpl = (OLATResourceImpl)olatResourceManager.findResourceable(target);
-		if (targetImpl == null) return new ArrayList(0);
-		
-		return DBFactory.getInstance().find(
-				"select v from org.olat.resource.references.ReferenceImpl as v where v.target = ?",
-				targetImpl.getKey(), StandardBasicTypes.LONG);
+	public List<ReferenceImpl> getReferencesTo(OLATResourceable target) {
+		Long targetKey = getResourceKey(target);
+		if (targetKey == null) {
+			return new ArrayList<ReferenceImpl>(0);
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(ReferenceImpl.class.getName()).append(" as v where v.target.key=:targetKey");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ReferenceImpl.class)
+				.setParameter("targetKey", targetKey)
+				.getResultList();
+	}
+	
+	private Long getResourceKey(OLATResourceable resource) {
+		Long sourceKey;
+		if(resource instanceof OLATResource) {
+			sourceKey = ((OLATResource)resource).getKey();
+		} else {
+			OLATResource sourceImpl = olatResourceManager.findResourceable(resource);
+			if (sourceImpl == null) {
+				sourceKey =  null;
+			} else {
+				sourceKey = sourceImpl.getKey();
+			}
+		}
+		return sourceKey;
 	}
 
 	/**
@@ -131,16 +173,19 @@ public class ReferenceManager extends BasicManager {
 	public String getReferencesToSummary(OLATResourceable target, Locale locale) {
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale);
 		StringBuilder result = new StringBuilder(100);
-		List refs = getReferencesTo(target);
+		List<ReferenceImpl> refs = getReferencesTo(target);
 		if (refs.size() == 0) return null;
-		for (Iterator iter = refs.iterator(); iter.hasNext();) {
-			ReferenceImpl ref = (ReferenceImpl) iter.next();
+		for (ReferenceImpl ref:refs) {
 			OLATResourceImpl source = ref.getSource();
-			
 			// special treatment for referenced courses: find out the course title
 			if (source.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-				ICourse course = CourseFactory.loadCourse(source);
-				result.append(translator.translate("ref.course", new String[] { course.getCourseTitle() }));
+				try {
+					ICourse course = CourseFactory.loadCourse(source);
+					result.append(translator.translate("ref.course", new String[] { course.getCourseTitle() }));
+				} catch (Exception e) {
+					log.error("", e);
+					result.append(translator.translate("ref.course", new String[] { "<strike>" + source.getKey().toString() + "</strike>" }));
+				}
 			} else {
 				result.append(translator.translate("ref.generic", new String[] { source.getKey().toString() }));
 			}
@@ -161,11 +206,9 @@ public class ReferenceManager extends BasicManager {
 	 * @param olatResource  an OLAT-Resource
 	 */
 	public void deleteAllReferencesOf(OLATResource olatResource) {
-		List references = ReferenceManager.getInstance().getReferences(olatResource);
-		for (Iterator iterator = references.iterator(); iterator.hasNext();) {
-			ReferenceImpl ref = (ReferenceImpl) iterator.next();
-			ReferenceManager.getInstance().delete( ref);
+		List<ReferenceImpl> references = getReferences(olatResource);
+		for (ReferenceImpl ref:references) {
+			delete(ref);
 		}
 	}
-
 }

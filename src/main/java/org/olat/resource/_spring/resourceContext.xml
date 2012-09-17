@@ -5,12 +5,13 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-<bean id="resourceManager" class="org.olat.resource.OLATResourceManager">
-	<property name="dbInstance" ref="database"/>
-</bean>
+	<bean id="resourceManager" class="org.olat.resource.OLATResourceManager">
+		<property name="dbInstance" ref="database"/>
+	</bean>
 
-<bean id="referenceManager" class="org.olat.resource.references.ReferenceManager">
-	<constructor-arg ref="resourceManager" />
-</bean>
+	<bean id="referenceManager" class="org.olat.resource.references.ReferenceManager">
+		<property name="dbInstance" ref="database"/>
+		<property name="resourceManager" ref="resourceManager"/>
+	</bean>
 
 </beans>
