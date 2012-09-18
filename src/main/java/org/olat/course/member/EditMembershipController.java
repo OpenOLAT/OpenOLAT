@@ -121,7 +121,7 @@ public class EditMembershipController extends FormBasicController {
 		super(ureq, wControl, "edit_member");
 		
 		this.member = null;
-		this.members = new ArrayList<Identity>(members);
+		this.members = (members == null ? null : new ArrayList<Identity>(members));
 		this.repoEntry = repoEntry;
 		this.withButtons = true;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
@@ -138,7 +138,7 @@ public class EditMembershipController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
 		this.member = null;
-		this.members = new ArrayList<Identity>(members);
+		this.members = (members == null ? null : new ArrayList<Identity>(members));
 		this.repoEntry = repoEntry;
 		this.withButtons = false;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
