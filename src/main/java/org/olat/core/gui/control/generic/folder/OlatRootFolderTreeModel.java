@@ -24,14 +24,12 @@
 */
 package org.olat.core.gui.control.generic.folder;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.util.StringHelper;
@@ -62,7 +60,7 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	static final long serialVersionUID = 1L;
 
 	private VFSItemFilter filter;
-	private Comparator<MetaTagged> comparator;
+	private Comparator<VFSItem> comparator;
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root) {
 		setRootNode(createNode(root));
@@ -79,7 +77,7 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	}
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root,
-			VFSItemFilter filter, Comparator<MetaTagged> comparator) {
+			VFSItemFilter filter, Comparator<VFSItem> comparator) {
 		this.filter = filter;
 		this.comparator = comparator;
 		setRootNode(createNode(root));
@@ -94,53 +92,21 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	 * @param root
 	 */
 	protected void makeChildren(OlatRootFolderTreeNode node, OlatRootFolderImpl root) {
-		List<MetaTagged> children = castToMetaTaggables(root.getItems(filter));
+		List<VFSItem> children = root.getItems(filter);
 		if (comparator != null) {
 			Collections.sort(children, comparator);
 		}
-		for (OlatRelPathImpl child : castToRelPathItems(children)) {
+		for (VFSItem child : children) {
 			// create a node for each child and add it
-			OlatRootFolderTreeNode childNode = createNode(child);
-			node.addChild(childNode);
-			if (child instanceof OlatRootFolderImpl) {
-				// add the child's children recursively
-				makeChildren(childNode, (OlatRootFolderImpl) child);
+			if(child instanceof OlatRelPathImpl) {
+				OlatRootFolderTreeNode childNode = createNode((OlatRelPathImpl)child);
+				node.addChild(childNode);
+				if (child instanceof OlatRootFolderImpl) {
+					// add the child's children recursively
+					makeChildren(childNode, (OlatRootFolderImpl) child);
+				}
 			}
 		}
-	}
-
-	/**
-	 * Cast the list of VFSItems to a list of OlatRelPathImpl instances.
-	 * 
-	 * @param items
-	 * @return The OlatRelPathImpl list
-	 */
-	private List<OlatRelPathImpl> castToRelPathItems(List<MetaTagged> items) {
-		List<OlatRelPathImpl> relPathItems = new ArrayList<OlatRelPathImpl>(
-				items.size());
-		for (MetaTagged item : items) {
-			if (item instanceof OlatRelPathImpl) {
-				relPathItems.add((OlatRelPathImpl) item);
-			}
-		}
-		return relPathItems;
-	}
-
-	/**
-	 * Cast the list of VFSItems to a list of OlatRelPathImpl instances.
-	 * 
-	 * @param items
-	 * @return The OlatRelPathImpl list
-	 */
-	private List<MetaTagged> castToMetaTaggables(List<VFSItem> items) {
-		List<MetaTagged> relPathItems = new ArrayList<MetaTagged>(items
-				.size());
-		for (VFSItem item : items) {
-			if (item instanceof MetaTagged) {
-				relPathItems.add((MetaTagged) item);
-			}
-		}
-		return relPathItems;
 	}
 
 	/**

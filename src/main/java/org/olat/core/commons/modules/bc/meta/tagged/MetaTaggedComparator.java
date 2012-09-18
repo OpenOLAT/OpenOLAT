@@ -25,35 +25,30 @@ import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaTitleComparator;
-import org.olat.core.util.vfs.VFSItem;
 
 /**
- * Compare the title or the filename
+ * Compares the title of two meta tagged objects.
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * <P>
+ * Initial Date: Jul 9, 2009 <br>
+ * 
+ * @author gwassmann
  */
-public class TitleComparator implements Comparator<VFSItem> {
-	private final Collator collator;
-	private final MetaTitleComparator comparator;
+public class MetaTaggedComparator implements Comparator<MetaTagged> {
+	private final Comparator<MetaInfo> comparator;
 
-	public TitleComparator(Collator collator) {
-		this.collator = collator;
+	public MetaTaggedComparator(Collator collator) {
 		comparator = new MetaTitleComparator(collator);
 	}
 
-	public TitleComparator(Locale locale) {
+	public MetaTaggedComparator(Locale locale) {
 		this(Collator.getInstance(locale));
 	}
 
-	public int compare(VFSItem i1, VFSItem i2) {
-		if(i1 instanceof MetaTagged && i2 instanceof MetaTagged) {
-			MetaInfo m1 = ((MetaTagged)i1).getMetaInfo();
-			MetaInfo m2 = ((MetaTagged)i2).getMetaInfo();
-			return comparator.compare(m1, m2);
-		}
-		
-		String t1 = i1.getName();
-		String t2 = i2.getName();
-		return collator.compare(t1, t2);
+	public int compare(MetaTagged i1, MetaTagged i2) {
+		MetaInfo m1 = i1.getMetaInfo();
+		MetaInfo m2 = i2.getMetaInfo();
+		return comparator.compare(m1, m2);
+
 	}
 }
