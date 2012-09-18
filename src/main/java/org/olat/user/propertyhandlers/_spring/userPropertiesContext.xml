@@ -235,6 +235,20 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.course.member.MemberInfoController">
+					<!-- First name and last name are already shown -->
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</list>
+						</property>
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.admin.user.UsermanagerUserSearchForm">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">

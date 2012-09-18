@@ -19,47 +19,120 @@
  */
 package org.olat.course.member;
 
+import java.util.Date;
+import java.util.List;
+
 import org.olat.NewControllerFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
+import org.olat.course.assessment.UserCourseInformations;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberInfoController extends BasicController {
+public class MemberInfoController extends FormBasicController {
 	
-	private final Link homeLink, contactLink, assessmentLink;
-	private final VelocityContainer mainVC;
-	private Long identityKey;
-	
-	public MemberInfoController(UserRequest ureq, WindowControl wControl, Identity identity) {
-		super(ureq, wControl);
-	
-		mainVC = createVelocityContainer("info_member");
-		
-		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), identity, true, false);
-		listenTo(dpc); // auto dispose
-		mainVC.put("image", dpc.getInitialComponent());
-		
-		
-		homeLink = LinkFactory.createButton("home",	mainVC, this);
-		homeLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_to_home");
-		contactLink = LinkFactory.createButton("contact",	mainVC, this);
-		contactLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_mail");
-		assessmentLink = LinkFactory.createButton("assessment",	mainVC, this);
-		assessmentLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_assessment");
+	private FormLink homeLink, contactLink, assessmentLink;
+	private StaticTextElement membershipCreationEl;
 
-		putInitialPanel(mainVC);
+	private final Identity identity;
+	private final Long repoEntryKey;
+	private final UserCourseInformations courseInfos;
+	
+	private final UserManager userManager;
+	private final UserCourseInformationsManager efficiencyStatementManager;
+	
+	public MemberInfoController(UserRequest ureq, WindowControl wControl, Identity identity, RepositoryEntry repoEntry) {
+		super(ureq, wControl, "info_member", Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale()));
+		
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		efficiencyStatementManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+	
+		this.identity = identity;
+		repoEntryKey = repoEntry.getKey();
+		
+		courseInfos = efficiencyStatementManager.getUserCourseInformations(repoEntry.getOlatResource().getResourceableId(), identity);
+		
+		initForm(ureq);
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		
+			Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), identity, true, false);
+			listenTo(dpc); // auto dispose
+			layoutCont.put("image", dpc.getInitialComponent());
+			layoutCont.contextPut("fullname", userManager.getUserDisplayName(identity.getUser()));
+		}
+		
+		//user properties
+		FormLayoutContainer userPropertiesContainer = FormLayoutContainer.createDefaultFormLayout("userProperties", getTranslator());
+		formLayout.add("userProperties", userPropertiesContainer);
+		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(getClass().getCanonicalName(), false);
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+
+			String propName = userPropertyHandler.getName();
+			String value = userPropertyHandler.getUserProperty(identity.getUser(), getLocale());
+			String key = userPropertyHandler.i18nFormElementLabelKey();
+			uifactory.addStaticTextElement("up_" + propName, key, value, userPropertiesContainer);
+		}
+
+		//course informations
+		FormLayoutContainer courseInfosContainer = FormLayoutContainer.createDefaultFormLayout("courseInfos", getTranslator());
+		formLayout.add("courseInfos", courseInfosContainer);
+		
+		Formatter formatter = Formatter.getInstance(getLocale());
+		
+		String lastVisit = null;
+		String numOfVisits = "0";
+		if(courseInfos != null) {
+			if(courseInfos.getRecentLaunch() != null) {
+				lastVisit = formatter.formatDate(courseInfos.getRecentLaunch());
+			}
+			if(courseInfos.getVisit() >= 0) {
+				numOfVisits = Integer.toString(courseInfos.getVisit());
+			}	
+		}
+		membershipCreationEl = uifactory.addStaticTextElement("firstTime", "course.membership.creation", "", courseInfosContainer);
+		uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, courseInfosContainer);
+		uifactory.addStaticTextElement("numOfVisits", "course.numOfVisits", numOfVisits, courseInfosContainer);
+		
+		//links
+		homeLink = uifactory.addFormLink("home", formLayout, "b_link_left_icon b_link_to_home");
+		formLayout.add("home", homeLink);
+		contactLink = uifactory.addFormLink("contact",	formLayout, "b_link_left_icon b_link_mail");
+		formLayout.add("contact", contactLink);
+		assessmentLink = uifactory.addFormLink("assessment",	formLayout, "b_link_left_icon b_link_assessment");
+		formLayout.add("assessment", assessmentLink);
+	}
+	
+	public void setMembershipCreation(Date date) {
+		if(date != null) {
+			Formatter formatter = Formatter.getInstance(getLocale());
+			membershipCreationEl.setValue(formatter.formatDate(date));
+		}
 	}
 	
 	@Override
@@ -68,16 +141,21 @@ public class MemberInfoController extends BasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == homeLink) {
-			String businessPath = "[Identity:" + identityKey + "]";
+			String businessPath = "[Identity:" + identity.getKey() + "]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} else if (source == contactLink) {
-			String businessPath = "[Identity:" + identityKey + "][Contact:0]";
+			String businessPath = "[Identity:" + identity.getKey() + "][Contact:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} else if (source == assessmentLink) {
-			String businessPath = "[Identity:" + identityKey + "]";
+			String businessPath =  "[RepositoryEntry:" + repoEntryKey + "][assessmentTool:0][Identity:" + identity.getKey() + "]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
 		}
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 }

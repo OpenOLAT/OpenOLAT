@@ -21,6 +21,7 @@ package org.olat.course.member;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -67,6 +68,7 @@ public class EditMembershipController extends FormBasicController {
 	private static final String[] repoRightsKeys = {"owner", "tutor", "participant"};
 	
 	private final Identity member;
+	private final List<Identity> members;
 	private List<RepositoryEntryMembership> memberships;
 	private List<BusinessGroupMembership> groupMemberships;
 	
@@ -81,6 +83,7 @@ public class EditMembershipController extends FormBasicController {
 			RepositoryEntry repoEntry) {
 		super(ureq, wControl, "edit_member");
 		this.member = member;
+		this.members = null;
 		this.repoEntry = repoEntry;
 		this.withButtons = true;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
@@ -88,7 +91,44 @@ public class EditMembershipController extends FormBasicController {
 		
 		memberships = repositoryManager.getRepositoryEntryMembership(repoEntry, member);
 
-		infoController = new MemberInfoController(ureq, wControl, member);
+		infoController = new MemberInfoController(ureq, wControl, member, repoEntry);
+		initForm(ureq);
+		loadModel(member);
+		
+		Date membershipCreation = null;
+		if(memberships != null) {
+			for(RepositoryEntryMembership membership:memberships) {
+				Date creationDate = membership.getCreationDate();
+				if(creationDate != null && (membershipCreation == null || membershipCreation.compareTo(creationDate) > 0)) {
+					membershipCreation = creationDate;
+				}
+			}
+		}
+		
+		if(groupMemberships != null) {
+			for(BusinessGroupMembership membership:groupMemberships) {
+				Date creationDate = membership.getCreationDate();
+				if(creationDate != null && (membershipCreation == null || membershipCreation.compareTo(creationDate) > 0)) {
+					membershipCreation = creationDate;
+				}
+			}
+		}
+		infoController.setMembershipCreation(membershipCreation);
+	}
+	
+	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
+			RepositoryEntry repoEntry) {
+		super(ureq, wControl, "edit_member");
+		
+		this.member = null;
+		this.members = new ArrayList<Identity>(members);
+		this.repoEntry = repoEntry;
+		this.withButtons = true;
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		
+		memberships = Collections.emptyList();
+
 		initForm(ureq);
 		loadModel(member);
 	}
@@ -98,6 +138,7 @@ public class EditMembershipController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
 		this.member = null;
+		this.members = new ArrayList<Identity>(members);
 		this.repoEntry = repoEntry;
 		this.withButtons = false;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
@@ -189,6 +230,14 @@ public class EditMembershipController extends FormBasicController {
 		//
 	}
 	
+	public Identity getMember() {
+		return member;
+	}
+
+	public List<Identity> getMembers() {
+		return members;
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		MemberPermissionChangeEvent e = new MemberPermissionChangeEvent(member);

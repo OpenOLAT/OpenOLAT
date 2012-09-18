@@ -19,7 +19,6 @@
  */
 package org.olat.course.member;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -212,23 +211,15 @@ public class MembersOverviewController extends BasicController implements Activa
 		
 		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
 		//commit changes to the repository entry
-		List<RepositoryEntryPermissionChangeEvent> repoChanges = new ArrayList<RepositoryEntryPermissionChangeEvent>();
-		for(Identity member:members) {
-			repoChanges.add(new RepositoryEntryPermissionChangeEvent(member, changes));
-		}
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
 		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, repoChanges);
 
 		//commit all changes to the group memberships
-		List<BusinessGroupMembershipChange> groupChanges = changes.getGroupChanges();
-		List<BusinessGroupMembershipChange> allModifications = new ArrayList<BusinessGroupMembershipChange>();
-		for(BusinessGroupMembershipChange groupChange:groupChanges) {
-			for(Identity member:members) {
-				allModifications.add(new BusinessGroupMembershipChange(member, groupChange));
-			}
-		}
+		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		businessGroupService.updateMemberships(getIdentity(), allModifications);
 		
 		MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+		//TODO group mail
 		System.out.println("Send mails: " + mailTemplate);
 	}
 	

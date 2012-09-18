@@ -109,6 +109,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	private Controller portfolioController;
 	
 	private GenericTreeNode folderNode;
+	private GenericTreeNode contactNode;
 
 	/**
 	 * @param ureq
@@ -182,6 +183,10 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			main.setContent(createComponent(ureq, cmd, chosenIdentity));
 			menuTree.setSelectedNode(folderNode);
 			folderRunController.activate(ureq, entries.subList(1, entries.size()), null);
+		} else if ("Contact".equals(type) && contactNode != null) {
+			String cmd = (String)contactNode.getUserObject();
+			main.setContent(createComponent(ureq, cmd, chosenIdentity));
+			menuTree.setSelectedNode(contactNode);
 		}
 	}
 
@@ -227,11 +232,11 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			root.addChild(folderNode);
 		}	
 		if ( !isDeleted) {
-			gtn = new GenericTreeNode();
-			gtn.setTitle(translate("menu.contact"));
-			gtn.setUserObject(CMD_CONTACT);
-			gtn.setAltText(translate("menu.contact.alt"));
-			root.addChild(gtn);
+			contactNode = new GenericTreeNode();
+			contactNode.setTitle(translate("menu.contact"));
+			contactNode.setUserObject(CMD_CONTACT);
+			contactNode.setAltText(translate("menu.contact.alt"));
+			root.addChild(contactNode);
 		}
 		if ( !isDeleted && ! isInvitee) {
 			PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
@@ -271,7 +276,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 			else
 				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			List calendars = new ArrayList();
+			List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 			calendars.add(calendarWrapper);
 			removeAsListenerAndDispose(calendarController);
 			calendarController = new WeeklyCalendarController(ureq, getWindowControl(), calendars,

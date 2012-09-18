@@ -55,12 +55,15 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.member.MemberListTableModel.Cols;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
@@ -87,6 +90,7 @@ public abstract class AbstractMemberListController extends BasicController {
 	private DialogBoxController leaveDialogBox;
 	protected CloseableModalController cmc;
 	private EditMembershipController editMemberCtrl;
+	private ContactFormController contactCtrl;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private final UserManager userManager;
@@ -176,9 +180,9 @@ public abstract class AbstractMemberListController extends BasicController {
 				if(TABLE_ACTION_REMOVE.equals(te.getAction())) {
 					confirmDelete(ureq, selectedItems);
 				} else if(TABLE_ACTION_EDIT.equals(te.getAction())) {
-					//TODO
+					openEdit(ureq, selectedItems);
 				}if(TABLE_ACTION_MAIL.equals(te.getAction())) {
-					//TODO
+					doSendMail(ureq, selectedItems);
 				}
 			}
 		} else if (source == leaveDialogBox) {
@@ -191,10 +195,16 @@ public abstract class AbstractMemberListController extends BasicController {
 		} else if(source == editMemberCtrl) {
 			if(event instanceof MemberPermissionChangeEvent) {
 				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
-				doChangePermission(e);
+				if(e.getMember() != null) {
+					doChangePermission(e);
+				} else {
+					doChangePermission(e, editMemberCtrl.getMembers());
+				}
 			}
 			
-			//do something
+			cmc.deactivate();
+			cleanUpPopups();
+		} else if (source == contactCtrl) {
 			cmc.deactivate();
 			cleanUpPopups();
 		} else if (source == cmc) {
@@ -209,7 +219,9 @@ public abstract class AbstractMemberListController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(editMemberCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
+		removeAsListenerAndDispose(contactCtrl);
 		cmc = null;
+		contactCtrl = null;
 		leaveDialogBox = null;
 		editMemberCtrl = null;
 	}
@@ -239,29 +251,80 @@ public abstract class AbstractMemberListController extends BasicController {
 		listenTo(cmc);
 	}
 	
+	protected void openEdit(UserRequest ureq, List<MemberView> members) {
+		List<Long> identityKeys = getMemberKeys(members);
+		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry);
+		listenTo(editMemberCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
+				true, translate("edit.member"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
 	protected void doChangePermission(MemberPermissionChangeEvent e) {
-		doChangeRepoPermission(e);
-		doChangeGroupPermissions(e.getGroupChanges());
+		List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
+		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, changes);
+
+		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges());
+		
+		//TODO group mail
+		System.out.println("Send mails: ");
 		
 		//make sure all is committed before loading the model again (I see issues without)
 		DBFactory.getInstance().commitAndCloseSession();
 		reloadModel();
 	}
 	
-	private void doChangeRepoPermission(RepositoryEntryPermissionChangeEvent e) {
-		//first change repository permission
-		List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList(e);
-		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, changes);
-	}
-	
-	private void doChangeGroupPermissions(List<BusinessGroupMembershipChange> changes) {
-		businessGroupService.updateMemberships(getIdentity(), changes);
+	protected void doChangePermission(MemberPermissionChangeEvent changes, List<Identity> members) {
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
+		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, repoChanges);
+
+		//commit all changes to the group memberships
+		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
+		businessGroupService.updateMemberships(getIdentity(), allModifications);
+		
+		//TODO group mail
+		System.out.println("Send mails: ");
+		
+		//make sure all is committed before loading the model again (I see issues without)
+		DBFactory.getInstance().commitAndCloseSession();
+		reloadModel();
 	}
 	
 	protected void doLeave(UserRequest ureq, List<Identity> members) {
 		repositoryManager.removeMembers(members, repoEntry);
 		businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource());
 		reloadModel();
+	}
+	
+	protected void doSendMail(UserRequest ureq, List<MemberView> members) {
+		List<Long> identityKeys = getMemberKeys(members);
+		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+		
+		ContactMessage contactMessage = new ContactMessage(getIdentity());
+		ContactList contactList = new ContactList(repoEntry.getDisplayname());
+		contactList.addAllIdentites(identities);
+		contactMessage.addEmailTo(contactList);
+		
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), false, true, false, false, contactMessage);
+		listenTo(contactCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent(),
+				true, translate("mail.member"));
+		cmc.activate();
+		listenTo(cmc);
+		
+	}
+	
+	protected List<Long> getMemberKeys(List<MemberView> members) {
+		List<Long> keys = new ArrayList<Long>(members.size());
+		if(members != null && !members.isEmpty()) {
+			for(MemberView member:members) {
+				keys.add(member.getIdentityKey());
+			}
+		}
+		return keys;
 	}
 
 	protected abstract SearchMembersParams getSearchParams();

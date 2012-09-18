@@ -19,6 +19,8 @@
  */
 package org.olat.course.member;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -38,12 +40,41 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		super(member);
 	}
 	
-
 	public List<BusinessGroupMembershipChange> getGroupChanges() {
 		return groupChanges;
 	}
 
 	public void setGroupChanges(List<BusinessGroupMembershipChange> changes) {
 		this.groupChanges = changes;
+	}
+	
+	public List<RepositoryEntryPermissionChangeEvent> generateRepositoryChanges(List<Identity> members) {
+		if(members == null || members.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = new ArrayList<RepositoryEntryPermissionChangeEvent>();
+		for(Identity member:members) {
+			repoChanges.add(new RepositoryEntryPermissionChangeEvent(member, this));
+		}
+		return repoChanges;
+	}
+	
+	public List<BusinessGroupMembershipChange> generateBusinessGroupMembershipChange(List<Identity> members) {
+		if(members == null || members.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<BusinessGroupMembershipChange> groupChanges = getGroupChanges();
+		if(groupChanges == null || groupChanges.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<BusinessGroupMembershipChange> allModifications = new ArrayList<BusinessGroupMembershipChange>();
+		for(BusinessGroupMembershipChange groupChange:groupChanges) {
+			for(Identity member:members) {
+				allModifications.add(new BusinessGroupMembershipChange(member, groupChange));
+			}
+		}
+		return allModifications;
 	}
 }
