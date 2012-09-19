@@ -158,7 +158,7 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		
 		logDebug("Adding user to roster group::" + groupId + " username: " + addedUsername);
 		
-		return buddyGroupService.addUserToSharedGroup(groupId, addedUsername);
+		return buddyGroupService.addUserToSharedGroup(groupId, imUsername);
 	}
 
 	/**
