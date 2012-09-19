@@ -95,8 +95,8 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(), null, getLocale()));
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
-		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "action", translate("table.header.edit")));
-		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "action", translate("table.header.remove")));
+		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "table.header.edit", translate("table.header.edit")));
+		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "table.header.remove", translate("table.header.remove")));
 		return 11;
 	}
 
@@ -136,7 +136,8 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		selectController = new SelectBusinessGroupController(ureq, getWindowControl());
 		listenTo(selectController);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectController.getInitialComponent(), true, translate("select.group"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				selectController.getInitialComponent(), true, translate("select.group"));
 		cmc.activate();
 		listenTo(cmc);
 	}

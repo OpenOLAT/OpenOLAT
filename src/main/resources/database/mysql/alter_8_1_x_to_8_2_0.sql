@@ -81,7 +81,7 @@ create or replace view o_re_strict_participant_v as (
    left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
    left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
    left join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup)
-   where re.membersonly=1 and re.accesscode=1
+   where (re.membersonly=1 and re.accesscode=1) or re.accesscode>=3
 );
 
 create or replace view o_re_strict_tutor_v as (
@@ -96,7 +96,7 @@ create or replace view o_re_strict_tutor_v as (
    left join o_gp_business_to_resource as bgroup_rel on (bgroup_rel.fk_resource = re.fk_olatresource)
    left join o_gp_business as bgroup on (bgroup.group_id = bgroup_rel.fk_group)
    left join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup)
-   where re.membersonly=1 and re.accesscode=1
+   where (re.membersonly=1 and re.accesscode=1) or re.accesscode>=3
 );
 
 create or replace view o_re_membership_v as (
