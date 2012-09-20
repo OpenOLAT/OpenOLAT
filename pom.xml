@@ -1182,17 +1182,17 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.6.0</version>
+			<version>1.7.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk15</artifactId>
-			<version>1.44</version>
+			<version>1.46</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15</artifactId>
-			<version>1.44</version>
+			<version>1.46</version>
 		</dependency>
 		<dependency>
 			<groupId>jdom</groupId>

@@ -26,7 +26,10 @@
 
 package org.olat.instantMessaging;
 
+import javax.net.SocketFactory;
+
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.XMPPConnection;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DB;
@@ -157,6 +160,10 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 			connConfig.setNotMatchingDomainCheckEnabled(false);
 			connConfig.setSASLAuthenticationEnabled(false);
 			connConfig.setReconnectionAllowed(false);
+			//disable the SSL connection to save a lot of memory
+			connConfig.setSecurityMode(SecurityMode.disabled);
+			//make sure that smackx doesn't use the SSLSocketFactory
+			connConfig.setSocketFactory(SocketFactory.getDefault());
 		}
 		return connConfig;
 	}

@@ -159,8 +159,6 @@ public class ClientManagerImpl extends BasicManager implements ClientManager {
 				if (listener != null){
 					listener.event(new InstantMessagingEvent(packet, "message"));
 					if (isLogDebugEnabled()) logDebug("routing message event to controller of: "+packet.getTo());
-				} else {
-					logWarn("could not find listener for IM message for username: "+username, null);
 				}
 			}
 		};
@@ -176,12 +174,8 @@ public class ClientManagerImpl extends BasicManager implements ClientManager {
 			public void processPacket(Packet packet) {
 				try {
 					GenericEventListener listener = listeners.get(username);
-					if (listener == null) {
-						logWarn("could not route presence event as presence listener is null for user: "+username, null);
-					} else {
+					if (listener != null) {
 						listener.event(new InstantMessagingEvent(packet, "presence"));
-						Presence presence = (Presence) packet;
-						if (isLogDebugEnabled()) logDebug("routing presence event to controller of: "+presence.getTo());
 					}
 				} catch(Throwable th){
 					logWarn("Presence package", th);
