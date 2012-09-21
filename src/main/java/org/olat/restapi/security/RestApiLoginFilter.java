@@ -135,9 +135,7 @@ public class RestApiLoginFilter implements Filter {
 				ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 				I18nManager.remove18nInfoFromThread();
 				Tracing.setUreq(null);
-				
-				DBFactory.getInstance().commit();
-				DBFactory.getInstance().closeSession();
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		} else {
 			throw new ServletException("Only accept HTTP Request");

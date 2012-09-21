@@ -194,10 +194,10 @@ public class BusinessGroupDAO {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" bgi ")
-			.append(" left join fetch bgi.ownerGroup ownerGroup")
-			.append(" left join fetch bgi.partipiciantGroup participantGroup")
-			.append(" left join fetch bgi.waitingGroup waitingGroup")
-			.append(" left join fetch bgi.resource resource")
+			.append(" inner join fetch bgi.ownerGroup ownerGroup")
+			.append(" inner join fetch bgi.partipiciantGroup participantGroup")
+			.append(" inner join fetch bgi.waitingGroup waitingGroup")
+			.append(" inner join fetch bgi.resource resource")
 			.append(" where bgi.key=:key");
 		
 		return em.createQuery(sb.toString(), BusinessGroup.class)

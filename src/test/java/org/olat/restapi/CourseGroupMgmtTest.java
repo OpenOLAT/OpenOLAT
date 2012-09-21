@@ -47,6 +47,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -241,7 +242,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method, vo);
 		HttpResponse response = conn.execute(method);
-		
+		EntityUtils.consume(response.getEntity());
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
     BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
@@ -258,7 +259,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getResourceableId() + "/groups/" + g1.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		
+		EntityUtils.consume(response.getEntity());
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
     BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
@@ -272,6 +273,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getResourceableId() + "/groups/" + g2.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
+		EntityUtils.consume(response.getEntity());
 		
 		assertEquals(401, response.getStatusLine().getStatusCode());
 	}
@@ -291,6 +293,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
+		EntityUtils.consume(response.getEntity());
 		assertEquals(401, response.getStatusLine().getStatusCode());
 	}
 	
