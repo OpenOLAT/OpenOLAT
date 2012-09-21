@@ -42,10 +42,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
 
 /**
@@ -66,13 +66,13 @@ public class CollaborationToolsSettingsController extends BasicController {
 
 	boolean lastCalendarEnabledState;
 	private Controller quotaCtr;
-	private OLATResourceable businessGroup;
+	private BusinessGroup businessGroup;
 
 	/**
 	 * @param ureq
 	 * @param tools
 	 */
-	public CollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl, OLATResourceable businessGroup) {
+	public CollaborationToolsSettingsController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		this.businessGroup = businessGroup;
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);

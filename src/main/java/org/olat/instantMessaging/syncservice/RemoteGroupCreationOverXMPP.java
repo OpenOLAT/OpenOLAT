@@ -24,8 +24,7 @@
 */
 package org.olat.instantMessaging.syncservice;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.Collection;
 
 import org.jivesoftware.smack.PacketCollector;
 import org.jivesoftware.smack.SmackConfiguration;
@@ -67,46 +66,24 @@ public class RemoteGroupCreationOverXMPP implements InstantMessagingGroupSynchro
 	}
 
 	/**
-	 * @see org.olat.instantMessaging.InstantMessagingGroupSynchronisation#addUserToSharedGroup(java.lang.String, org.olat.core.id.Identity)
-	 */
-	public boolean addUserToSharedGroup(String groupId, String username) {
-		boolean statusOk = sendPacket(new AddUserToGroup(username, groupId));
-		if (!statusOk) {
-			log.error("failed to add user to shard group: "+groupId + " username: "+username);
-		}
-		return statusOk;
-		
-	}
-
-	/**
-	 * @see org.olat.instantMessaging.InstantMessagingGroupSynchronisation#addUsersToSharedGroup(java.lang.String, java.util.List)
-	 */
-	public boolean addUsersToSharedGroup(String groupId, List<String> users) {
-		boolean statusOk = true;
-		for (Iterator<String> iterator = users.iterator(); iterator.hasNext();) {
-			String username = iterator.next();
-			if (!sendPacket(new AddUserToGroup(username, groupId))) {
-				log.error("adding user to shard group failed. group: "+groupId+" and user: "+username);
-				statusOk = false;
-			}
-		}
-		return statusOk;
-	}
-
-	/**
 	 * @see org.olat.instantMessaging.InstantMessagingGroupSynchronisation#createSharedGroup(java.lang.String, java.lang.String, java.util.List)
 	 */
-	public boolean createSharedGroup(String groupId, String displayName, List<String> initialMembers) {
-		//TODO:gs: pass description from groups as well
+	@Override
+	public boolean createSharedGroup(String groupId, String displayName) {
 		boolean statusOk = true;
 		if (!sendPacket(new GroupCreate(groupId, displayName, null))) {
 			log.error("could not create shared group: "+groupId);
 			statusOk = false;
 		}
-		if (initialMembers != null) {
+		return statusOk;
+	}
+	
+	@Override
+	public boolean addUserToSharedGroup(String groupId, Collection<String> users) {
+		boolean statusOk = true;
+		if (users != null && !users.isEmpty()) {
 			int cnt=0;
-			for (Iterator<String> iterator = initialMembers.iterator(); iterator.hasNext();) {
-				String username = iterator.next();
+			for (String username : users) {
 				if (!sendPacket(new AddUserToGroup(username, groupId))) {
 					log.error("adding user to shard group failed. group: "+groupId+" and user: "+username);
 					statusOk = false;
@@ -124,14 +101,11 @@ public class RemoteGroupCreationOverXMPP implements InstantMessagingGroupSynchro
 		}
 		return statusOk;
 	}
-	
-	public boolean createSharedGroup(String groupId, String displayName) {
-		return createSharedGroup(groupId, displayName, null);
-	}
 
 	/**
 	 * @see org.olat.instantMessaging.InstantMessagingGroupSynchronisation#deleteSharedGroup(java.lang.String)
 	 */
+	@Override
 	public boolean deleteSharedGroup(String groupId) {
 		boolean statusOk = sendPacket(new GroupDelete(groupId));
 		if(!statusOk) {
@@ -144,6 +118,7 @@ public class RemoteGroupCreationOverXMPP implements InstantMessagingGroupSynchro
 	/**
 	 * @see org.olat.instantMessaging.InstantMessagingGroupSynchronisation#removeUserFromSharedGroup(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public boolean removeUserFromSharedGroup(String groupId, String username) {
 		boolean statusOk =  sendPacket(new RemoveUserFromGroup(username, groupId));
 		if(!statusOk) {
@@ -155,22 +130,26 @@ public class RemoteGroupCreationOverXMPP implements InstantMessagingGroupSynchro
 	/**
 	 * @see org.olat.instantMessaging.InstantMessagingGroupSynchronisation#removeUsersFromSharedGroup(java.lang.String, java.lang.String[])
 	 */
-	public boolean removeUsersFromSharedGroup(String groupId, String[] users) {
-		for (int i = 0; i < users.length; i++) {
-			String username = users[i];
-			if (!sendPacket(new RemoveUserFromGroup(username, groupId))) {
+	@Override
+	public boolean removeUsersFromSharedGroup(String groupId, Collection<String> users) {
+		boolean allOk = true;
+		for (String username : users) {
+			Boolean ok = sendPacket(new RemoveUserFromGroup(username, groupId));
+			if (!ok) {
 				log.error("removing user from shared group failed. group: "+groupId+" and user: "+username);
 			}
+			allOk &= ok;
 		}
-		return true;
+		return allOk;
 	}
 
 	/**
 	 * @see org.olat.instantMessaging.InstantMessagingGroupSynchronisation#renameSharedGroup(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public boolean renameSharedGroup(String groupId, String displayName) {
 		//if group exists it will be renamed
-		return createSharedGroup(groupId, displayName, null);
+		return createSharedGroup(groupId, displayName);
 	}
 	
 	private boolean sendPacket(IQ packet) {

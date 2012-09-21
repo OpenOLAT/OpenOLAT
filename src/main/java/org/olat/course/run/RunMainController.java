@@ -471,16 +471,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 
 	private void initUserRolesAndRights(final Identity identity) {
-		CourseGroupManager cgm = this.course.getCourseEnvironment().getCourseGroupManager();
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// 1) course admins: users who are in repository entry owner group
 		// if user has the role InstitutionalResourceManager and has the same institution like author
 		// then set isCourseAdmin true
-		isCourseAdmin = cgm.isIdentityCourseAdministrator(identity) | RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(courseRepositoryEntry, identity);
+		isCourseAdmin = cgm.isIdentityCourseAdministrator(identity)
+				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(courseRepositoryEntry, identity);
 		// 2) course coaches: users who are in the owner group of any group of this
 		// course
 		isCourseCoach = cgm.isIdentityCourseCoach(identity);
 		// 3) all other rights are defined in the groupmanagement using the learning
 		// group rights
+		
 		courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT)));
 		courseRightsCache.put(CourseRights.RIGHT_COURSEEDITOR, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)));
 		courseRightsCache.put(CourseRights.RIGHT_ARCHIVING, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_ARCHIVING)));
@@ -1092,6 +1094,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 1) administrative tools
 		if (isCourseAdmin || isCourseCoach || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)
 				|| hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_ARCHIVING)
+				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || hasCourseRight(CourseRights.RIGHT_DB)
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 			myTool.addHeader(translate("header.tools"));
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {

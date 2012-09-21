@@ -29,6 +29,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.olat.test.MockServletContextWebContextLoader;
 import org.springframework.test.context.ContextConfiguration;
@@ -74,11 +77,17 @@ public class IMUnitTestWithoutOLAT extends AbstractJUnit4SpringContextTests {
 			assertFalse(im.hasAccount(tmpUsername));
 			assertTrue(im.createAccount(tmpUsername, password, fullname, username + j + email));
 			assertTrue(im.hasAccount(tmpUsername));
-			assertTrue(im.addUserToFriendsRoster(tmpUsermaster, groupId, groupname, tmpUsername));
+			List<String> userToAdd = new ArrayList<String>();
+			userToAdd.add(tmpUsermaster);
+			userToAdd.add(tmpUsername);
+			assertTrue(im.syncFriendsRoster(groupId, groupname, userToAdd, null));
 		}
 		assertTrue(im.renameRosterGroup(groupId, groupname + "CDEF"));
-		assertTrue(im.removeUserFromFriendsRoster(groupId, tmpUsermaster));
-		assertTrue(im.removeUserFromFriendsRoster(groupId, username + 1));
+		
+		List<String> userToRemove = new ArrayList<String>();
+		userToRemove.add(tmpUsermaster);
+		userToRemove.add(username + 1);
+		assertTrue(im.syncFriendsRoster(groupId, groupname, null, userToRemove));
 		assertTrue(im.deleteRosterGroup(groupId));
 		for (int j = 0; j < 4; j++) {
 			String tmpUsername = username + j;

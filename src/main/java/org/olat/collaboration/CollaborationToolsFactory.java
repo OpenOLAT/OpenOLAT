@@ -32,6 +32,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
+import org.olat.group.BusinessGroup;
 
 /**
  * Description:<BR>
@@ -72,7 +73,7 @@ public class CollaborationToolsFactory {
 	 * @param ores
 	 * @return CollaborationTools
 	 */
-	public CollaborationTools getOrCreateCollaborationTools(final OLATResourceable ores) {
+	public CollaborationTools getOrCreateCollaborationTools(final BusinessGroup ores) {
 		if (ores == null) throw new AssertException("Null is not allowed here, you have to provide an existing ores here!");
 		final String cacheKey = Long.valueOf(ores.getResourceableId()).toString();
 		//sync operation cluster wide

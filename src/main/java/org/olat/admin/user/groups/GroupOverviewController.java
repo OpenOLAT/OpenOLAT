@@ -51,8 +51,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -297,13 +295,7 @@ public class GroupOverviewController extends BasicController {
 					businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
 				}
 				// 2) remove as participant
-				final BusinessGroup toRemFromGroup = group;
-				//TODO gsync
-				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor() {
-					public void execute() {
-						businessGroupService.removeParticipant(getIdentity(), identity, toRemFromGroup);
-					}
-				});
+				businessGroupService.removeParticipants(getIdentity(), Collections.singletonList(identity), group);
 	
 				// 3) notify user about this action:
 				if(doSendMail){

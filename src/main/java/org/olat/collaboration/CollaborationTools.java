@@ -210,10 +210,10 @@ public class CollaborationTools implements Serializable {
 	public final static String KEY_FOLDER_ACCESS = "folder";
 
 	//o_clusterOK by guido
-	Hashtable<String, Boolean> cacheToolStates;
-	final OLATResourceable ores;
+	private Hashtable<String, Boolean> cacheToolStates;
+	private final BusinessGroup ores;
 	
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static OLog log = Tracing.createLoggerFor(CollaborationTools.class);
 	private transient CoordinatorManager coordinatorManager;
 
 	/**
@@ -221,7 +221,7 @@ public class CollaborationTools implements Serializable {
 	 * 
 	 * @param ores
 	 */
-	CollaborationTools(CoordinatorManager coordinatorManager, OLATResourceable ores) {
+	CollaborationTools(CoordinatorManager coordinatorManager, BusinessGroup ores) {
 		this.coordinatorManager = coordinatorManager;
 		this.ores = ores;
 		cacheToolStates = new Hashtable<String, Boolean>();

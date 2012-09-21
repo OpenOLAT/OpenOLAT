@@ -29,6 +29,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.After;
@@ -38,6 +40,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.instantMessaging.ui.ConnectedUsersListEntry;
@@ -53,9 +56,11 @@ import org.olat.test.OlatTestCase;
  * @author guido
  */
 public class IMUnitTest extends OlatTestCase {
-	String testUserA = "anIdentity1";
-	String testUserB = "anIdentity2";
-	String testUserC = "testuser@thankyou2010.com";
+	private static final OLog log = Tracing.createLoggerFor(OlatTestCase.class);
+	
+	private final String testUserA = "anIdentity1";
+	private final String testUserB = "anIdentity2";
+	private final String testUserC = "testuser@thankyou2010.com";
 	
 	
 	/**
@@ -76,7 +81,7 @@ public class IMUnitTest extends OlatTestCase {
 			DB db = DBFactory.getInstance();
 			db.closeSession();
 		} catch (Exception e) {
-			Tracing.logError("Exception in tearDown(): " + e, IMUnitTest.class);
+			log.error("Exception in tearDown(): ", e);
 		}
 	}
 	
@@ -125,7 +130,10 @@ public class IMUnitTest extends OlatTestCase {
 			assertTrue(im.countConnectedUsers() >= 2); //there is may be as well an admin user connected
 			
 			//add user to roster
-			im.addUserToFriendsRoster(testUserA, groupId, groupName, testUserB);
+			List<String> userToAdd = new ArrayList<String>(2);
+			userToAdd.add(testUserA);
+			userToAdd.add(testUserB);
+			im.syncFriendsRoster(groupId, groupName, userToAdd, null);
 			Thread.sleep(1000);
 			assertEquals(1, imClientA.getRoster().getGroup(groupName).getEntryCount());
 			Thread.sleep(1000);
@@ -133,7 +141,7 @@ public class IMUnitTest extends OlatTestCase {
 			Thread.sleep(1000);
 			assertEquals(1, imClientA.getRoster().getGroup(groupName+"ABC").getEntryCount());
 			Thread.sleep(1000);
-			im.removeUserFromFriendsRoster(groupId, testUserB);
+			im.syncFriendsRoster(groupId, groupName, null, Collections.singletonList(testUserB));
 			Thread.sleep(1000);
 			im.deleteRosterGroup(groupId);
 			Thread.sleep(1000);
@@ -157,10 +165,8 @@ public class IMUnitTest extends OlatTestCase {
 			assertTrue(InstantMessagingModule.getAdapter().deleteAccount(testUserB));
 			
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				log.error("", e);
 			}
-			
 		}
 	}
-	
 }

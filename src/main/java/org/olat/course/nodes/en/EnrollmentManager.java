@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.en;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -32,28 +33,25 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.model.BGMembership;
+import org.olat.group.model.EnrollState;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.model.ResourceReservation;
-import org.olat.testutils.codepoints.server.Codepoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -94,48 +92,16 @@ public class EnrollmentManager extends BasicManager {
 			// and: why can't we just have a group here and a max participants count and an identity to enrol?
 			// the group was chosen, so why do we need the groupNames and areaNames here???
 
-			Codepoint.codepoint(EnrollmentManager.class, "beforeDoInSync");
-		//TODO gsync
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
-				public void execute() {
-					logInfo("doEnroll start: group="+OresHelper.createStringRepresenting(group), identity.getName());
-					Codepoint.codepoint(EnrollmentManager.class, "doInSync1");
-					// 6_1_0-RC15: reload group object here another node might have changed this in the meantime
-					BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(group);					
-					if (reloadedGroup.getMaxParticipants() != null) {
-						int participantsCounter = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
-						int reservations = acService.countReservations(reloadedGroup.getResource());
-						//reservation has the highest priority over max participant
-						ResourceReservation reservation = acService.getReservation(identity, reloadedGroup.getResource());
-						logInfo("doEnroll - participantsCounter: " + participantsCounter + ", reservations: " + reservations + " maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getName());
-						if (reservation == null && (participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
-							// already full, show error and updated choose page again
-							if (!reloadedGroup.getWaitingListEnabled().booleanValue()) {
-								// No Waiting List => List is full
-								enrollStatus.setErrorMessage(trans.translate("error.group.full"));
-							} else {
-								boolean done = addUserToWaitingList(identity, reloadedGroup, enNode, coursePropertyManager, wControl, trans);
-								enrollStatus.setIsInWaitingList(done);
-							}
-						} else {
-							boolean done = addUserToParticipantList(identity, reloadedGroup, enNode, coursePropertyManager, wControl, trans);
-							Codepoint.codepoint(EnrollmentManager.class, "doInSync2");
-							enrollStatus.setIsEnrolled(done);
-							logInfo("doEnroll - setIsEnrolled ", identity.getName());
-							if(reservation != null) {
-								acService.removeReservation(reservation);
-							}
-						}
-					} else {
-						if (isLogDebugEnabled()) logDebug("doEnroll beginTransaction");
-						boolean done = addUserToParticipantList(identity, reloadedGroup, enNode, coursePropertyManager, wControl, trans);
-						enrollStatus.setIsEnrolled(done);						
-						if (isLogDebugEnabled()) logDebug("doEnroll committed");
-					}
-					logInfo("doEnroll end", identity.getName());
-				}				
-			});// end of doInSync
-			Codepoint.codepoint(EnrollmentManager.class, "afterDoInSync");
+			EnrollState state =businessGroupService.enroll(group, identity);
+			if(state.isFailed()) {
+				enrollStatus.setErrorMessage(trans.translate(state.getI18nErrorMessage()));
+			} else {
+				if(state.getEnrolled() == BGMembership.participant) {
+					addUserToParticipantList(identity, group, enNode, coursePropertyManager, wControl, trans);
+				} else if(state.getEnrolled() == BGMembership.waiting) {
+					addUserToWaitingList(identity, group, enNode, coursePropertyManager, wControl, trans);
+				}
+			}
 		} else {
 			enrollStatus.setErrorMessage(trans.translate("error.group.already.enrolled"));
 		}
@@ -147,22 +113,18 @@ public class EnrollmentManager extends BasicManager {
 			final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
 		if (isLogDebugEnabled()) logDebug("doCancelEnrollment");
 		// 1. Remove group membership, fire events, do loggin etc.
-	//TODO gsync
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(enrolledGroup, new SyncerExecutor(){
-			public void execute() {
-				// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
-				// and move the users accordingly
-				businessGroupService.removeParticipant(identity, identity, enrolledGroup);
-				logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
-				// 2. Remove enrollmentdate property
-				// only remove last time date, not firsttime
-				Property lastTime = coursePropertyManager
-				.findCourseNodeProperty(enNode, identity, null, ENCourseNode.PROPERTY_RECENT_ENROLLMENT_DATE);
-				if (lastTime != null) {
-					coursePropertyManager.deleteProperty(lastTime);
-				}
-			}});
-		
+		// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
+		// and move the users accordingly
+		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup);
+		logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
+
+		logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
+		// 2. Remove enrollmentdate property
+		// only remove last time date, not firsttime
+		Property lastTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null, ENCourseNode.PROPERTY_RECENT_ENROLLMENT_DATE);
+		if (lastTime != null) {
+			coursePropertyManager.deleteProperty(lastTime);
+		}
 
 		// 3. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createRemoveMyselfMailTemplate(enrolledGroup, identity);
@@ -176,19 +138,14 @@ public class EnrollmentManager extends BasicManager {
 	public void doCancelEnrollmentInWaitingList(final Identity identity, final BusinessGroup enrolledWaitingListGroup, final ENCourseNode enNode,
 			final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
 		// 1. Remove group membership, fire events, do loggin etc.
-		//TODO gsync
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(enrolledWaitingListGroup, new SyncerExecutor(){
-			public void execute() {
-				businessGroupService.removeFromWaitingList(identity, identity, enrolledWaitingListGroup);
-				// 2. Remove enrollmentdate property
-				// only remove last time date, not firsttime
-				Property lastTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null,
-						ENCourseNode.PROPERTY_RECENT_WAITINGLIST_DATE);
-				if (lastTime != null) {
-					coursePropertyManager.deleteProperty(lastTime);
-				}
-			}});
+		businessGroupService.removeFromWaitingList(identity, Collections.singletonList(identity), enrolledWaitingListGroup);
 		
+		// 2. Remove enrollmentdate property
+		// only remove last time date, not firsttime
+		Property lastTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null, ENCourseNode.PROPERTY_RECENT_WAITINGLIST_DATE);
+		if (lastTime != null) {
+			coursePropertyManager.deleteProperty(lastTime);
+		}
 
 		// 3. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createRemoveWaitinglistMailTemplate(enrolledWaitingListGroup, identity);
@@ -298,9 +255,6 @@ public class EnrollmentManager extends BasicManager {
 	// /////////////////
 	private boolean addUserToParticipantList(Identity identity, BusinessGroup group, ENCourseNode enNode,
 			CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
-		// 1. Add user to group, fire events, do loggin etc.
-		businessGroupService.addParticipant(identity, identity, group);
 		// 2. Set first enrollment date
 		String nowString = Long.toString(System.currentTimeMillis());
 		Property firstTime = coursePropertyManager
@@ -336,9 +290,7 @@ public class EnrollmentManager extends BasicManager {
 
 	private boolean addUserToWaitingList(Identity identity, BusinessGroup group, ENCourseNode enNode,
 			CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
-		// 1. Add user to group, fire events, do loggin etc.
-		businessGroupService.addToWaitingList(identity, identity, group);
+		// <- moved to bgs 1. Add user to group, fire events, do loggin etc.
 		// 2. Set first waiting-list date
 		String nowString = Long.toString(System.currentTimeMillis());
 		Property firstTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null,

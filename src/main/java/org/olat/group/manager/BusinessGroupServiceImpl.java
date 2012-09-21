@@ -96,7 +96,7 @@ import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.IMConfigSync;
 import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.syncservice.SyncSingleUserTask;
+import org.olat.instantMessaging.syncservice.SyncUserListTask;
 import org.olat.notifications.NotificationsManagerImpl;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -147,10 +147,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		userDeletionManager.registerDeletableUserData(this);
 	}
 	
+	@Override
 	public void registerDeletableGroupDataListener(DeletableGroupData listener) {
 		this.deleteListeners.add(listener);
 	}
 
+	@Override
 	public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale) {
 		List<String> deletableList = new ArrayList<String>();
 		for (DeletableGroupData deleteListener : deleteListeners) {
@@ -209,7 +211,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public BusinessGroup updateBusinessGroup(final Identity ureqIdentity, final BusinessGroup group, final String name, final String description,
 			final Integer minParticipants, final Integer maxParticipants) {
 		
-		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
+		final SyncUserListTask syncIM = new SyncUserListTask(group);
+		BusinessGroup updatedGroup = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
 				// refresh group to prevent stale object exception and context proxy issues
 				BusinessGroup bg = loadBusinessGroup(group);
@@ -220,16 +223,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				bg.setMinParticipants(minParticipants);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
 				//auto rank if possible
-				autoRankCheck(ureqIdentity, bg, previousMaxParticipants);
+				autoRankCheck(ureqIdentity, bg, previousMaxParticipants, syncIM);
 				return businessGroupDAO.merge(bg);
 			}
 		});
+		syncIM(syncIM, updatedGroup);
+		return updatedGroup;
 	}
-	
+
+	@Override
 	public BusinessGroup updateBusinessGroup(final Identity ureqIdentity, final BusinessGroup group, final String name, final String description,
 			final Integer minParticipants, final Integer maxParticipants, final Boolean waitingList, final Boolean autoCloseRanks) {
 		
-		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
+		final SyncUserListTask syncIM = new SyncUserListTask(group);
+		BusinessGroup updatedGroup =  CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
 				// refresh group to prevent stale object exception and context proxy issues
 				BusinessGroup bg = loadBusinessGroup(group);
@@ -247,13 +254,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				bg.setAutoCloseRanksEnabled(autoCloseRanks);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
 				//auto rank if possible
-				autoRankCheck(ureqIdentity, bg, previousMaxParticipants);
+				autoRankCheck(ureqIdentity, bg, previousMaxParticipants, syncIM);
 				return businessGroupDAO.merge(bg);
 			}
 		});
+		
+		return updatedGroup;
 	}
 	
-	private void autoRankCheck(Identity identity, BusinessGroup updatedGroup, Integer previousMaxParticipants) {
+	private void autoRankCheck(Identity identity, BusinessGroup updatedGroup, Integer previousMaxParticipants, SyncUserListTask syncIM) {
 		if(updatedGroup.getWaitingListEnabled() == null || !updatedGroup.getWaitingListEnabled().booleanValue()
 				|| updatedGroup.getAutoCloseRanksEnabled() == null || !updatedGroup.getAutoCloseRanksEnabled().booleanValue()) {
 			//do not check further, no waiting list, no automatic ranks
@@ -267,7 +276,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		
 		if(currentMaxNumber > previousMaxNumber) {
 			//I can rank up some users
-			transferFirstIdentityFromWaitingToParticipant(identity, updatedGroup);
+			transferFirstIdentityFromWaitingToParticipant(identity, updatedGroup, syncIM);
 		}
 	}
 
@@ -455,6 +464,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public BusinessGroup mergeBusinessGroups(final Identity merger, final BusinessGroup targetGroup, final List<BusinessGroup> groupsToMerge) {
 		groupsToMerge.remove(targetGroup);//to be sure
+		final SyncUserListTask syncIM = new SyncUserListTask(targetGroup);
 
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(targetGroup, new SyncerExecutor(){
 			public void execute() {
@@ -499,10 +509,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 				
 				for(Identity newOwner:newOwners) {
-					addOwner(merger, newOwner, targetGroup);
+					addOwner(merger, newOwner, targetGroup, syncIM);
 				}
 				for(Identity newParticipant:newParticipants) {
-					addParticipant(merger, newParticipant, targetGroup);
+					addParticipant(merger, newParticipant, targetGroup, syncIM);
 				}
 				for(Identity newWaiter:newWaiters) {
 					addToWaitingList(merger, newWaiter, targetGroup);
@@ -510,6 +520,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 		});
 		
+		syncIM(syncIM, targetGroup);
 		for(BusinessGroup group:groupsToMerge) {
 			deleteBusinessGroup(group);
 		}
@@ -524,6 +535,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	private void updateMembers(final Identity identity, final MembershipModification membersMod, final BusinessGroup group) {
+		final SyncUserListTask syncIM = new SyncUserListTask(group);
+		
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 			public void execute() {
 				List<Identity> currentOwners = securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
@@ -532,12 +545,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 				for(Identity owner:membersMod.getAddOwners()) {
 					if(!currentOwners.contains(owner)) {
-						addOwner(identity, owner, group);
+						addOwner(identity, owner, group, syncIM);
 					}
 				}
 				for(Identity participant:membersMod.getAddParticipants()) {
 					if(!currentParticipants.contains(participant)) {
-						addParticipant(identity, participant, group);
+						addParticipant(identity, participant, group, syncIM);
 					}
 				}
 				for(Identity waitingIdentity:membersMod.getAddToWaitingList()) {
@@ -553,7 +566,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 						ownerToRemove.add(removed);
 					}
 					if(currentParticipants.contains(removed)) {
-						removeParticipant(identity, removed, group);
+						removeParticipant(identity, removed, group, syncIM);
 					}
 					if(currentWaitingList.contains(removed)) {
 						removeFromWaitingList(identity, removed, group);
@@ -561,6 +574,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 				removeOwners(identity, ownerToRemove, group);
 		}});
+		
+		syncIM(syncIM, group);
 	}
 
 	@Override
@@ -604,8 +619,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		List<BusinessGroup> groups = loadBusinessGroups(changesMap.keySet());
 		for(final BusinessGroup group:groups) {
 			final BusinessGroupMembershipsChanges changesWrapper = changesMap.get(group.getKey());
+			final SyncUserListTask syncIM = new SyncUserListTask(group);
+			
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor() {
 				public void execute() {
+					
 					for(Identity id:changesWrapper.addToWaitingList) {
 						addToWaitingList(ureqIdentity, id, group);
 					}
@@ -613,19 +631,21 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 						removeFromWaitingList(ureqIdentity, id, group);
 					}
 					for(Identity id:changesWrapper.addTutors) {
-						addOwner(ureqIdentity, id, group);
+						addOwner(ureqIdentity, id, group, syncIM);
 					}
 					for(Identity id:changesWrapper.removeTutors) {
-						removeOwner(ureqIdentity, id, group);
+						removeOwner(ureqIdentity, id, group, syncIM);
 					}
 					for(Identity id:changesWrapper.addParticipants) {
-						addParticipant(ureqIdentity, id, group);
+						addParticipant(ureqIdentity, id, group, syncIM);
 					}
 					for(Identity id:changesWrapper.removeParticipants) {
-						removeParticipant(ureqIdentity, id, group);
+						removeParticipant(ureqIdentity, id, group, syncIM);
 					}
 				}
 			});
+			
+			syncIM(syncIM, group);
 		}
 	}
 
@@ -839,6 +859,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group) {
+		SyncUserListTask syncIM = new SyncUserListTask(group);
 		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		for (Identity identity : addIdentities) {
 			group = loadBusinessGroup(group); // reload business group
@@ -852,18 +873,22 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				response.getIdentitiesAlreadyInGroup().add(identity);
 			} else {
 	      // identity has permission and is not already in group => add it
-				addOwner(ureqIdentity, identity, group);
+				addOwner(ureqIdentity, identity, group, syncIM);
 				response.getAddedIdentities().add(identity);
 				log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + group.getOwnerGroup().getKey());
 			}
 		}
+		syncIM(syncIM, group);
 		return response;
 	}
 	
-	private void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group) {
+	private void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, SyncUserListTask syncIM) {
 		securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
 		// add user to buddies rosters
-		addToRoster(ureqIdentity, identity, group);
+		if(syncIM != null) {
+			syncIM.addUserToAdd(identity.getName());
+		}
+		
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
 		// do logging
@@ -871,14 +896,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		// send notification mail in your controller!
 	}
 	
-	@Override
-	public void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group) {
+	private void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group, SyncUserListTask syncIM) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 
 		securityManager.addIdentityToSecurityGroup(identityToAdd, group.getPartipiciantGroup());
-
 		// add user to buddies rosters
-		addToRoster(ureqIdentity, identityToAdd, group);
+		if(syncIM != null) {
+			syncIM.addUserToAdd(identityToAdd.getName());
+		}
+		
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identityToAdd);
 		// do logging
@@ -894,6 +920,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 			public void execute() {
 				final BusinessGroup currBusinessGroup = loadBusinessGroup(group); // reload business group
+				SyncUserListTask syncIM = new SyncUserListTask(currBusinessGroup);
+				
 				for (final Identity identity : addIdentities) {
 					if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
 						response.getIdentitiesWithoutPermission().add(identity);
@@ -905,22 +933,23 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 						response.getIdentitiesAlreadyInGroup().add(identity);
 					} else {
 						// identity has permission and is not already in group => add it
-						addParticipant(ureqIdentity, identity, currBusinessGroup);
+						addParticipant(ureqIdentity, identity, currBusinessGroup, syncIM);
 						response.getAddedIdentities().add(identity);
 						log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey());
 					}
 				}
+				
+				syncIM(syncIM, group);
 			}});
 		return response;
 	}
 
-	@Override
-	public void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group) {
+	private void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group, SyncUserListTask syncIM) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 
 		securityManager.removeIdentityFromSecurityGroup(identity, group.getPartipiciantGroup());
 		// remove user from buddies rosters
-		removeFromRoster(identity, group);
+		syncIM.addUserToRemove(identity.getName());
 		//remove subscriptions if user gets removed
 		removeSubscriptions(identity, group);
 		
@@ -931,7 +960,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		// Check if a waiting-list with auto-close-ranks is configurated
 		if ( group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue() ) {
 			// even when doOnlyPostRemovingStuff is set to true we really transfer the first Identity here
-			transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group);
+			transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, syncIM);
 		}	
 		// send notification mail in your controller!
 		
@@ -939,14 +968,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	
 	@Override
 	public void removeParticipants(final Identity ureqIdentity, final List<Identity> identities, final BusinessGroup group) {
+		final SyncUserListTask syncIM = new SyncUserListTask(group);
+		
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 			public void execute() {
 				for (Identity identity : identities) {
-				  removeParticipant(ureqIdentity, identity, group);
+				  removeParticipant(ureqIdentity, identity, group, syncIM);
 				  log.audit("removed identiy '" + identity.getName() + "' from securitygroup with key " + group.getPartipiciantGroup().getKey());
 				}
 			}
 		});
+		
+		syncIM(syncIM, group);
 	}
 
 	@Override
@@ -980,51 +1013,57 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			
 			Long groupKey = currentMembership.getGroupKey();
 			BusinessGroup nextGroup = keyToGroupMap.get(groupKey);
-
-			final BusinessGroup currentGroup = nextGroup;
-			nextGroupMembership = CoordinatorManager.getInstance().getCoordinator().getSyncer()
-					.doInSync(currentGroup, new SyncerCallback<BusinessGroupMembershipViewImpl>(){
-				
-				public BusinessGroupMembershipViewImpl execute() {
-					BusinessGroupMembershipViewImpl previsousComputedMembership = currentMembership;
-					BusinessGroupMembershipViewImpl membership;
-
-					do {
-						if(previsousComputedMembership != null) {
-							membership = previsousComputedMembership;
-							previsousComputedMembership = null;
-						} else if(itMembership.hasNext()) {
-							membership = itMembership.next();
-						} else {
-							//security, nothing to do
-							return null;
-						}
-						
-						if(currentGroup.getKey().equals(membership.getGroupKey())) {
-							Identity id = keyToIdentityMap.get(membership.getIdentityKey());
-							if(membership.getOwnerGroupKey() != null) {
-								removeOwner(ureqIdentity, id, currentGroup);
-							}
-							if(membership.getParticipantGroupKey() != null) {
-								removeParticipant(ureqIdentity, id, currentGroup);
-							}
-							if(membership.getWaitingGroupKey() != null) {
-								removeFromWaitingList(ureqIdentity, id, currentGroup);
-							}
-						} else {
-							return membership;
-						}
-					} while (itMembership.hasNext());
-
-					return null;
-				}
-			});
-
+			nextGroupMembership = removeGroupMembers(ureqIdentity, currentMembership, nextGroup, keyToIdentityMap, itMembership);
 		}
 	}
+	
+	private final BusinessGroupMembershipViewImpl removeGroupMembers(final Identity ureqIdentity, final BusinessGroupMembershipViewImpl currentMembership,
+			final BusinessGroup currentGroup, final Map<Long,Identity> keyToIdentityMap, final Iterator<BusinessGroupMembershipViewImpl> itMembership) {
+		
+		final SyncUserListTask syncIM = new SyncUserListTask(currentGroup);
+		BusinessGroupMembershipViewImpl next=  CoordinatorManager.getInstance().getCoordinator().getSyncer()
+				.doInSync(currentGroup, new SyncerCallback<BusinessGroupMembershipViewImpl>(){
+			
+			public BusinessGroupMembershipViewImpl execute() {
+				BusinessGroupMembershipViewImpl previsousComputedMembership = currentMembership;
+				BusinessGroupMembershipViewImpl membership;
 
-	@Override
-	public void addToWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group) {
+				do {
+					if(previsousComputedMembership != null) {
+						membership = previsousComputedMembership;
+						previsousComputedMembership = null;
+					} else if(itMembership.hasNext()) {
+						membership = itMembership.next();
+					} else {
+						//security, nothing to do
+						return null;
+					}
+					
+					if(currentGroup.getKey().equals(membership.getGroupKey())) {
+						Identity id = keyToIdentityMap.get(membership.getIdentityKey());
+						if(membership.getOwnerGroupKey() != null) {
+							removeOwner(ureqIdentity, id, currentGroup, syncIM);
+						}
+						if(membership.getParticipantGroupKey() != null) {
+							removeParticipant(ureqIdentity, id, currentGroup, syncIM);
+						}
+						if(membership.getWaitingGroupKey() != null) {
+							removeFromWaitingList(ureqIdentity, id, currentGroup);
+						}
+					} else {
+						return membership;
+					}
+				} while (itMembership.hasNext());
+
+				return null;
+			}
+		});
+		
+		syncIM(syncIM, currentGroup);
+		return next;
+	}
+
+	private void addToWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		securityManager.addIdentityToSecurityGroup(identity, group.getWaitingGroup());
 
@@ -1064,8 +1103,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return response;
 	}
 
-	@Override
-	public void removeFromWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group) {
+	private final void removeFromWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		securityManager.removeIdentityFromSecurityGroup(identity, group.getWaitingGroup());
 		// notify currently active users of this business group
@@ -1106,13 +1144,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			final BusinessGroup currBusinessGroup) {
 		
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
+		final SyncUserListTask syncIM = new SyncUserListTask(currBusinessGroup);
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup,new SyncerExecutor(){
 			public void execute() {
 				for (final Identity identity : identities) {
 					// check if idenity is allready in participant
 					if (!securityManager.isIdentityInSecurityGroup(identity,currBusinessGroup.getPartipiciantGroup()) ) {
 						// Idenity is not in participant-list => move idenity from waiting-list to participant-list
-						addParticipant(ureqIdentity, identity, currBusinessGroup);
+						addParticipant(ureqIdentity, identity, currBusinessGroup, syncIM);
 						removeFromWaitingList(ureqIdentity, identity, currBusinessGroup);
 						response.getAddedIdentities().add(identity);
 						// notification mail is handled in controller
@@ -1121,6 +1160,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					}
 				}
 			}});
+		
+		syncIM(syncIM, currBusinessGroup);
 		return response;
 	}
 
@@ -1165,10 +1206,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 				BusinessGroup reloadedGroup = loadBusinessGroup(group);
 				ResourceReservation reservation = acService.getReservation(identity, reloadedGroup.getResource());
+				SyncUserListTask syncIM = new SyncUserListTask(reloadedGroup);
 				
 				//reservation has the highest priority over max participant or other settings
 				if(reservation != null) {
-					addParticipant(null, identity, reloadedGroup);
+					addParticipant(null, identity, reloadedGroup, syncIM);
 					enrollStatus.setEnrolled(BGMembership.participant);
 					log.info("doEnroll (reservation) - setIsEnrolled ", identity.getName());
 					if(reservation != null) {
@@ -1191,17 +1233,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 						}
 					} else {
 						//enough place
-						addParticipant(null, identity, reloadedGroup);
+						addParticipant(null, identity, reloadedGroup, syncIM);
 						enrollStatus.setEnrolled(BGMembership.participant);
 						log.info("doEnroll - setIsEnrolled ", identity.getName());
 					}
 				} else {
 					if (log.isDebug()) log.debug("doEnroll as participant beginTransaction");
-					addParticipant(null, identity, reloadedGroup);
+					addParticipant(null, identity, reloadedGroup, syncIM);
 					enrollStatus.setEnrolled(BGMembership.participant);						
 					if (log.isDebug()) log.debug("doEnroll as participant committed");
 				}
 				
+				syncIM(syncIM, reloadedGroup);
 				log.info("doEnroll end", identity.getName());
 				return enrollStatus;
 			}				
@@ -1224,9 +1267,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		List<BusinessGroup> groups = loadBusinessGroups(ownerKeys);	
 		for (BusinessGroup group : groups) {
 			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getOwnerGroup())){
-//				seems not to work, but would be the way to go!
-//				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
-				addOwner(addingIdentity, ident, group);
+				//seems not to work, but would be the way to go!
+				//ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
+				SyncUserListTask syncIM = new SyncUserListTask(group);
+				addOwner(addingIdentity, ident, group, syncIM);
+				syncIM(syncIM, group);
 				ownerGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
 				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
@@ -1241,12 +1286,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		for (BusinessGroup group : participantGroups) {
 			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getPartipiciantGroup())) {
 				final BusinessGroup toAddGroup = group;
-//				seems not to work, but would be the way to go!
-//				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
+				final SyncUserListTask syncIM = new SyncUserListTask(group);
+				//seems not to work, but would be the way to go!
+				//ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
 				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 					public void execute() {
-						addParticipant(addingIdentity, ident, toAddGroup);
+						addParticipant(addingIdentity, ident, toAddGroup, syncIM);
 					}});
+				syncIM(syncIM, group);
 				participantGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
 				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
@@ -1275,7 +1322,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 
-	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group) {
+	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group, SyncUserListTask syncIM) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		// Check if waiting-list is enabled and auto-rank-up
 		if (group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue()
@@ -1307,7 +1354,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 							//            that get triggered in the next two methods to be of ActionType admin
 							//            This is needed to make sure the targetIdentity ends up in the o_loggingtable
 							ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-							addParticipant(ureqIdentity, firstWaitingListIdentity, group);
+							addParticipant(ureqIdentity, firstWaitingListIdentity, group, syncIM);
 							removeFromWaitingList(ureqIdentity, firstWaitingListIdentity, group);
 						} finally {
 							ThreadLocalUserActivityLogger.setStickyActionType(formerStickyActionType);
@@ -1330,21 +1377,25 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			log.warn("Called method transferFirstIdentityFromWaitingToParticipant but waiting-list or autoCloseRanks is disabled.");
 		}
 	}
-
-	private void addToRoster(Identity ureqIdentity, Identity identity, BusinessGroup group) {
-		if (InstantMessagingModule.isEnabled()) {
+	
+	private void syncIM(SyncUserListTask task, BusinessGroup group) {
+		if (!task.isEmpty() && InstantMessagingModule.isEnabled()) {
 			//evaluate whether to sync or not
 			IMConfigSync syncGroup = InstantMessagingModule.getAdapter().getConfig().getSyncGroupsConfig();
 			//only sync when a group is a certain type and this type is configured that you want to sync it
 			if(syncGroup.equals(IMConfigSync.allGroups) || 
 					(syncGroup.equals(IMConfigSync.perConfig) && isChatEnableFor(group))) { 
-				String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
-				String groupDisplayName = group.getName();
+
 				//course group enrolment is time critial so we move this in an separate thread and catch all failures 
-				TaskExecutorManager.getInstance().runTask(new SyncSingleUserTask(ureqIdentity, groupID, groupDisplayName, identity));
+				try {
+					TaskExecutorManager.getInstance().runTask(task);
+				} catch (Exception e) {
+					log.error("Error trying to sync the roster of the business group: " + group, e);
+				}
 			}
 		}
 	}
+	
 	private boolean isChatEnableFor(BusinessGroup group) {
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		if(tools == null) {
@@ -1353,10 +1404,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return tools.isToolEnabled(CollaborationTools.TOOL_CHAT);
 	}
 	
-	public void removeOwner(Identity ureqIdentity, Identity identityToRemove, BusinessGroup group) {
+	private void removeOwner(Identity ureqIdentity, Identity identityToRemove, BusinessGroup group, SyncUserListTask syncIM) {
 		securityManager.removeIdentityFromSecurityGroup(identityToRemove, group.getOwnerGroup());
 		// remove user from buddies rosters
-		removeFromRoster(identityToRemove, group);
+		syncIM.addUserToRemove(identityToRemove.getName());
 		
 		//remove subsciptions if user gets removed
 		removeSubscriptions(identityToRemove, group);
@@ -1373,10 +1424,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	
 	@Override
 	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup group) {
-		//fxdiff VCRP-2: access control
+		SyncUserListTask syncIM = new SyncUserListTask(group);
 		for(Identity identityToRemove:identitiesToRemove) {
-			removeOwner(ureqIdentity, identityToRemove, group);
+			removeOwner(ureqIdentity, identityToRemove, group, syncIM);
 		}
+		syncIM(syncIM, group);
 	}
 	
 	private void removeSubscriptions(Identity identity, BusinessGroup group) {
@@ -1388,16 +1440,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			Long groupKey = group.getKey();
 			if (resId != null && groupKey != null && resId.equals(groupKey)) {
 				notiMgr.unsubscribe(subscriber);
-			}
-		}
-	}
-
-	private void removeFromRoster(Identity identity, BusinessGroup group) {
-		if (InstantMessagingModule.isEnabled()) {
-			// only remove user from roster if not in other security group
-			if (!isIdentityInBusinessGroup(identity, group)) {
-				String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
-				InstantMessagingModule.getAdapter().removeUserFromFriendsRoster(groupID, identity.getName());
 			}
 		}
 	}

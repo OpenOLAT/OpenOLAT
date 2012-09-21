@@ -34,12 +34,12 @@ class BusinessGroupEntry {
 	private final Date creationDate;
 	
 	public BusinessGroupEntry(String name, Date creationDate) {
-		this.name = name.intern();
+		this.name = name == null ? null : name.intern();
 		this.creationDate = creationDate;
 	}
 	
 	public BusinessGroupEntry(BusinessGroup group) {
-		this.name = group.getName().intern();
+		this.name = group.getName() == null ? "???" : group.getName().intern();
 		this.creationDate = group.getCreationDate();
 	}
 	

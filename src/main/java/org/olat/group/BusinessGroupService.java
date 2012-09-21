@@ -339,21 +339,16 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public EnrollState enroll(final BusinessGroup group,  final Identity identity);
-
-	/**
-	 * Adds a user to a group as participant and does all the magic that needs to
-	 * be done: - add to security group (optional) - add to jabber roster - fire
-	 * multi-user event
-	 * @param ureqIdentity
-	 * @param identityToAdd The user who should be added
-	 * @param group
-	 * @param flags
-	 */
-	public void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group);
 	
 	/**
 	 * Adds a list of users to a group as participant and does all the magic that needs to
-	 * be done: - add to security group (optional) - add to jabber roster - fire multi-user
+	 * be done:
+	 * <ul>
+	 * 	<li>add to security group (optional)
+	 *  <li>add to jabber roster
+	 *  <li>fire multi-user
+	 * </ul>
+	 * Method execute in doInSync
 	 * event
 	 * @param ureqIdentity
 	 * @param addIdentities The users who should be added
@@ -363,21 +358,17 @@ public interface BusinessGroupService {
 	 */
 	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup);
 
-	/**
-	 * Remove a user from a group as participant and does all the magic that needs
-	 * to be done: - remove from security group (optional) - remove from jabber roster -
-	 * fire multi-user event
-	 * @param ureqIdentity
-	 * @param identity The user who should be removed
-	 * @param group
-	 * @param flags
-	 */
-	public void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group);
-	
+
 	/**
 	 * Remove a list of users from a group as participant and does all the magic that needs
-	 * to be done: - remove from secgroup (optional) - remove from jabber roster -
-	 * fire multi-user event
+	 * to be done:
+	 * <ul>
+	 * 	<li>remove from secgroup (optional)
+	 *  <li>remove from jabber roster -
+	 *  <li>fire multi-user event
+	 * </ul>
+	 * The method is made under doInSync.
+	 * 
 	 * @param ureqIdentity
 	 * @param identities The user who should be removed
 	 * @param group
@@ -395,20 +386,17 @@ public interface BusinessGroupService {
 	 */
 	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource);
 
-	/**
-	 * Adds a user to a waiting-list of a group and does all the magic that needs to
-	 * be done: - add to security group (optional) - add to jabber roster - send
-	 * notification email - fire multi-user event
-	 * @param ureqIdentity
-	 * @param identity
-	 * @param group
-	 */
-	public void addToWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group);
 	
 	/**
 	 * Adds a  list of users to a waiting-list of a group and does all the magic that needs to
-	 * be done: - add to security group (optional) - add to jabber roster - send
-	 * notification email - fire multi user event
+	 * be done:
+	 * <ul>
+	 * 	<li>add to security group (optional)
+	 *  <li>add to jabber roster
+	 *  <li>send notification email
+	 *  <li>fire multi user event
+	 * </ul>
+	 * Method executed under doInSync
 	 * @param ureqIdentity
 	 * @param addIdentities
 	 * @param currBusinessGroup
@@ -417,20 +405,6 @@ public interface BusinessGroupService {
 	 */
 	public BusinessGroupAddResponse addToWaitingList(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup);
 
-	
-	
-	/**
-	 * Remove a user from a waiting-list as participant and does all the magic that needs
-	 * to be done:<br/>
-	 * - remove from security group (optional) <br/>
-	 * - send notification email<br/>
-	 * - fire multi user event
-	 * @param ureqIdentity
-	 * @param identity
-	 * @param waitingListGroup
-	 */
-	public void removeFromWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup waitingListGroup);
-	
 	/**
 	 * Remove a list of users from a waiting-list as participant and does all the magic that needs
 	 * to be done:

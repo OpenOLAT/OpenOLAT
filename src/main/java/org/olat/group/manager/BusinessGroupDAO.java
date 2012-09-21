@@ -134,7 +134,7 @@ public class BusinessGroupDAO {
 	
 	public BusinessGroup load(Long id) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		BusinessGroup group = em.find(BusinessGroupImpl.class, id, LockModeType.NONE);
+		BusinessGroup group = em.find(BusinessGroupImpl.class, id);
 		return group;
 	}
 	

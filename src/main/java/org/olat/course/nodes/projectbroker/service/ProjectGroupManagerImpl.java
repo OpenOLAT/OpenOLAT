@@ -247,22 +247,23 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		final Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-	//TODO gsync
+
+		BusinessGroupAddResponse state = bgs.addParticipants(actionIdentity, identities, reloadedProject.getProjectGroup());
+		response.getAddedIdentities().addAll(state.getAddedIdentities());
+		response.getIdentitiesAlreadyInGroup().addAll(state.getAddedIdentities());
+		
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				for (final Identity identity : identities) {
 					if (!BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, reloadedProject.getProjectGroup().getPartipiciantGroup())) {
 						BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-						bgs.addParticipant(actionIdentity, identity, reloadedProject.getProjectGroup());
 						logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
-						response.getAddedIdentities().add(identity);
-					} else {
-						response.getIdentitiesAlreadyInGroup().add(identity);
-					}				
+					}		
 				}
 				return Boolean.TRUE;
 			}
 		});// end of doInSync
+		
 		if (autoSignOut && result.booleanValue()) {
 			ProjectBrokerManagerFactory.getProjectBrokerManager().signOutFormAllCandidateList(response.getAddedIdentities(), reloadedProject.getProjectBroker().getKey());
 		}

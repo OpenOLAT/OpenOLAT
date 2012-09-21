@@ -27,6 +27,7 @@
 package org.olat.instantMessaging;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -152,13 +153,44 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		boolean hasAccount = accountService.hasAccount(imUsername);
 		if (!hasAccount) clientManager.getInstantMessagingCredentialsForUser(addedUsername);
 		// we do not check whether a group already exists, we create it each time
-		List<String> list = new ArrayList<String>();
-		list.add(groupOwnerUsername);
-		buddyGroupService.createSharedGroup(groupId, groupname, list);
 		
+		buddyGroupService.createSharedGroup(groupId, groupname);
 		logDebug("Adding user to roster group::" + groupId + " username: " + addedUsername);
 		
-		return buddyGroupService.addUserToSharedGroup(groupId, imUsername);
+		List<String> list = new ArrayList<String>();
+		list.add(groupOwnerUsername);
+		list.add(imUsername);
+		return buddyGroupService.addUserToSharedGroup(groupId, list);
+	}
+	
+	@Override
+	public boolean syncFriendsRoster(String groupId, String groupname, Collection<String> addedUsers, Collection<String> removedUsers) {
+		List<String> addedIMUserList = new ArrayList<String>();
+		if(addedUsers != null) {
+			for(String addedUser:addedUsers) {
+				String imUsername = nameHelper.getIMUsernameByOlatUsername(addedUser);
+				addedIMUserList.add(imUsername);
+				boolean hasAccount = accountService.hasAccount(imUsername);
+				if (!hasAccount) {
+					clientManager.getInstantMessagingCredentialsForUser(imUsername);
+				}
+			}
+		}
+		
+		List<String> removedIMUserList = new ArrayList<String>();
+		if(removedUsers != null) {
+			for(String removedUser:removedUsers) {
+				removedIMUserList.add(nameHelper.getIMUsernameByOlatUsername(removedUser));
+			}
+		}
+		
+		boolean allOk = true;
+		if(!addedIMUserList.isEmpty()) {
+			allOk = buddyGroupService.createSharedGroup(groupId, groupname);
+			allOk = buddyGroupService.addUserToSharedGroup(groupId, addedIMUserList);
+		}
+		allOk = buddyGroupService.removeUsersFromSharedGroup(groupId, removedIMUserList);
+		return allOk;
 	}
 
 	/**
@@ -319,8 +351,10 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		}
 		String groupId = InstantMessagingModule.getAdapter().createChatRoomString(group);
 		if (users.size() > 0 ) { // only sync groups with users
-			if (!buddyGroupService.createSharedGroup(groupId, group.getName(), usernames)){
+			if (!buddyGroupService.createSharedGroup(groupId, group.getName())){
 				logError("could not create shared group: "+groupId, null);
+			} else {
+				buddyGroupService.addUserToSharedGroup(groupId, usernames);
 			}
 			logDebug("synchronizing group::" + group.toString());
 		} else {

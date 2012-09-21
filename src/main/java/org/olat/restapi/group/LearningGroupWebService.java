@@ -55,9 +55,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -65,6 +62,7 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -522,15 +520,8 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-		//TODO gsync
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
-				public Boolean execute() {
-					List<Identity> identityToAdd = Collections.singletonList(identity);
-					bgs.addOwners(ureq.getIdentity(), identityToAdd, group);
-					return Boolean.TRUE;
-				}
-			});// end of doInSync
-			
+
+			bgs.addOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to add an owner to a group", e);
@@ -574,21 +565,14 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			
 			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-		//TODO gsync
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
-				public Boolean execute() {
-					bgs.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
-					return Boolean.TRUE;
-				}
-			});// end of doInSync
-
+			
+			bgs.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to remove an owner to a group", e);
@@ -637,15 +621,14 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-		//TODO gsync
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
-				public Boolean execute() {
-					bgs.addParticipant(ureq.getIdentity(), identity, group);
-					return Boolean.TRUE;
-				}
-			});// end of doInSync
-			
-			return Response.ok().build();
+
+			BusinessGroupAddResponse state = bgs.addParticipants(ureq.getIdentity(), Collections.singletonList(identity), group);
+			if(state.getAddedIdentities().contains(identity)) {
+				return Response.ok().build();
+			} else if(state.getIdentitiesAlreadyInGroup().contains(identity)) {
+				return Response.ok().status(Status.NOT_MODIFIED).build();
+			}
+			return Response.serverError().status(Status.PRECONDITION_FAILED).build();
 		} catch (Exception e) {
 			log.error("Trying to add a participant to a group", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -693,12 +676,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			//TODO gsync
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
-				public void execute() {
-					bgs.removeParticipant(ureq.getIdentity(), identity, group);
-				}
-			});
+			bgs.removeParticipants(ureq.getIdentity(), Collections.singletonList(identity), group);
 
 			return Response.ok().build();
 		} catch (Exception e) {
