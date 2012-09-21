@@ -20,9 +20,9 @@
 			unsaved-value="null">
 			<generator class="hilo"/>
 		</id>
-		<version name="version" access="field" column="version" type="int"/>
-		<property  name="lastModified" column="lastmodified" type="timestamp" />
-		<property  name="creationDate" column="creationdate" type="timestamp" />
+		<property name="version" access="field" column="version" type="int"/>
+		<property name="lastModified" column="lastmodified" type="timestamp" />
+		<property name="creationDate" column="creationdate" type="timestamp" />
   		
   		<!--
   		lastUsage helps the SYSTEMADMIN to find the BusinessGroups
