@@ -42,7 +42,11 @@ public class GroupCellRenderer implements CustomCellRenderer {
 				boolean and = false;
 				for(BusinessGroupShort group:groups) {
 					and = and(sb, and);
-					sb.append(group.getName());
+					if(group.getName() == null) {
+						sb.append(group.getKey());
+					} else {
+						sb.append(group.getName());
+					}
 				}
 			}
 		}

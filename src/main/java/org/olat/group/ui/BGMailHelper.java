@@ -51,7 +51,8 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.repository.RepositoryEntry;
+import org.olat.group.BusinessGroupShort;
+import org.olat.repository.RepositoryEntryShort;
 
 
 public class BGMailHelper {
@@ -65,7 +66,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createAddParticipantMailTemplate(BusinessGroup group, Identity actor) {
+	public static MailTemplate createAddParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.added.subject";
 		String bodyKey = "notification.mail.added.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
@@ -80,7 +81,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createRemoveParticipantMailTemplate(BusinessGroup group, Identity actor) {
+	public static MailTemplate createRemoveParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.removed.subject";
 		String bodyKey = "notification.mail.removed.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
@@ -95,7 +96,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createDeleteGroupMailTemplate(BusinessGroup group, Identity actor) {
+	public static MailTemplate createDeleteGroupMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.deleted.subject";
 		String bodyKey = "notification.mail.deleted.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
@@ -110,7 +111,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createAddMyselfMailTemplate(BusinessGroup group, Identity actor) {
+	public static MailTemplate createAddMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.added.self.subject";
 		String bodyKey = "notification.mail.added.self.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
@@ -125,7 +126,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createRemoveMyselfMailTemplate(BusinessGroup group, Identity actor) {
+	public static MailTemplate createRemoveMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.removed.self.subject";
 		String bodyKey = "notification.mail.removed.self.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
@@ -140,7 +141,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createAddWaitinglistMailTemplate(BusinessGroup group, Identity actor) {
+	public static MailTemplate createAddWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.added.subject";
 		String bodyKey = "notification.mail.waitingList.added.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
@@ -155,7 +156,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createRemoveWaitinglistMailTemplate(BusinessGroup group, Identity actor) {
+	public static MailTemplate createRemoveWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.removed.subject";
 		String bodyKey = "notification.mail.waitingList.removed.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
@@ -171,7 +172,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createWaitinglistTransferMailTemplate(BusinessGroup group, Identity actor) {
+	public static MailTemplate createWaitinglistTransferMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.transfer.subject";
 		String bodyKey = "notification.mail.waitingList.transfer.body";
 		return createMailTemplate(group, actor, subjectKey, bodyKey);
@@ -186,13 +187,12 @@ public class BGMailHelper {
 	 * @param bodyKey
 	 * @return
 	 */
-	private static MailTemplate createMailTemplate(BusinessGroup group, Identity actor, String subjectKey, String bodyKey) {
+	private static MailTemplate createMailTemplate(BusinessGroupShort group, Identity actor, String subjectKey, String bodyKey) {
 		// build learning resources as list of url as string
 		StringBuilder learningResources = new StringBuilder();
-
 		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		List<RepositoryEntry> repoEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
-		for (RepositoryEntry entry: repoEntries) {
+		List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
+		for (RepositoryEntryShort entry: repoEntries) {
 			String title = entry.getDisplayname();
 			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
 			learningResources.append(title);
@@ -204,9 +204,10 @@ public class BGMailHelper {
 		final String courselist = learningResources.toString();
 		// get group name and description
 		final String groupname = group.getName();
-		final String groupdescription = FilterFactory.getHtmlTagAndDescapingFilter().filter(group.getDescription());
-		// get some data about the actor and fetch the translated subject / body via
-		// i18n module
+		final String groupdescription = (group instanceof BusinessGroup ?
+				FilterFactory.getHtmlTagAndDescapingFilter().filter(((BusinessGroup)group).getDescription()) : ""); 
+
+		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] { actor.getUser().getProperty(UserConstants.FIRSTNAME, null), actor.getUser().getProperty(UserConstants.LASTNAME, null), actor.getUser().getProperty(UserConstants.EMAIL, null),
 				actor.getName() };
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());

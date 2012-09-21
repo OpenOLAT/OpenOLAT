@@ -78,7 +78,7 @@ public abstract class PersistentObject implements CreateInfo, Persistable {
 	 * for hibernate only
 	 * @param key
 	 */
-	private void setKey(Long key) {
+	protected void setKey(Long key) {
 		this.key = key;
 	}
 	

@@ -37,6 +37,7 @@ import org.olat.group.model.EnrollState;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
 
 /**
@@ -283,6 +284,15 @@ public interface BusinessGroupService {
 	public void removeResourceFrom(BusinessGroup group, RepositoryEntry re);
 	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
+	
+	/**
+	 * Same as above but do a better caching
+	 * @param groups
+	 * @param firstResult
+	 * @param maxResults
+	 * @return
+	 */
+	public List<RepositoryEntryShort> findShortRepositoryEntries(Collection<BusinessGroupShort> groups, int firstResult, int maxResults);
 	
 	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<Long> groups, int firstResult, int maxResults);
 	

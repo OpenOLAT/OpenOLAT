@@ -73,17 +73,21 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 		
 		Boolean sendToTutorObj = (Boolean)getFromRunContext("tutors");
 		boolean sendToTutors = sendToTutorObj == null ? false : sendToTutorObj.booleanValue();
-		for(BusinessGroup group:groups) {
-			if(group.getOwnerGroup() != null && sendToTutors) {
-				secGroups.add(group.getOwnerGroup());
+		if(sendToTutors) {
+			for(BusinessGroup group:groups) {
+				if(group.getOwnerGroup() != null) {
+					secGroups.add(group.getOwnerGroup());
+				}
 			}
 		}
 		
 		Boolean sendToParticipantObj = (Boolean)getFromRunContext("participants");
 		boolean sendToParticipants = sendToParticipantObj == null ? false : sendToParticipantObj.booleanValue();
-		for(BusinessGroup group:groups) {
-			if(group.getPartipiciantGroup() != null && sendToParticipants) {
-				secGroups.add(group.getPartipiciantGroup());
+		if(sendToParticipants) {
+			for(BusinessGroup group:groups) {
+				if(group.getPartipiciantGroup() != null) {
+					secGroups.add(group.getPartipiciantGroup());
+				}
 			}
 		}
 

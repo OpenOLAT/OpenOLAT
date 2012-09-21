@@ -75,6 +75,7 @@
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>
+			<property name="hibernate.max_fetch_depth" value="10"/>
 			<property name="hibernate.ejb.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
 		</properties>
 	</persistence-unit>

@@ -69,8 +69,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		switch (Cols.values()[col]) {
 			case name:
 				String name = wrapped.getBusinessGroup().getName();
-				name = StringEscapeUtils.escapeHtml(name).toString();
-				return name;
+				return name == null ? "" : StringEscapeUtils.escapeHtml(name);
 			case description:
 				String description = wrapped.getBusinessGroupDescription();
 				description = FilterFactory.getHtmlTagsFilter().filter(description);

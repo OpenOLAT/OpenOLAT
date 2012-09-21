@@ -66,4 +66,18 @@ public class MembershipModification {
 	public void setRemovedIdentities(List<Identity> removedIdentities) {
 		this.removedIdentities = removedIdentities;
 	}
+	
+	public boolean isEmpty() {
+		return addOwners.isEmpty() && addParticipants.isEmpty()
+				&& addToWaitingList.isEmpty() && removedIdentities.isEmpty();
+	}
+	
+	public List<Identity> getAllIdentities() {
+		List<Identity> allIdentities = new ArrayList<Identity>();
+		allIdentities.addAll(addOwners);
+		allIdentities.addAll(addParticipants);
+		allIdentities.addAll(addToWaitingList);
+		allIdentities.addAll(removedIdentities);
+		return allIdentities;
+	}
 }

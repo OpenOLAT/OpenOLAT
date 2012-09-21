@@ -45,7 +45,12 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
@@ -218,9 +223,13 @@ public class MembersOverviewController extends BasicController implements Activa
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		businessGroupService.updateMemberships(getIdentity(), allModifications);
 		
-		MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
-		//TODO group mail
-		System.out.println("Send mails: " + mailTemplate);
+		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
+		if (template != null && !members.isEmpty()) {
+			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, members, null, null, template, getIdentity());
+			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
+		}
 	}
 	
 	private AbstractMemberListController updateAllMembers(UserRequest ureq) {

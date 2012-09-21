@@ -100,6 +100,7 @@ import org.olat.instantMessaging.syncservice.SyncUserListTask;
 import org.olat.notifications.NotificationsManagerImpl;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
@@ -865,51 +866,51 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			group = loadBusinessGroup(group); // reload business group
 			if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
 				response.getIdentitiesWithoutPermission().add(identity);
-			}
-			// Check if identity is already in group. make a db query in case
-			// someone in another workflow already added this user to this group. if
-			// found, add user to model
-			else if (securityManager.isIdentityInSecurityGroup(identity, group.getOwnerGroup())) {
-				response.getIdentitiesAlreadyInGroup().add(identity);
-			} else {
-	      // identity has permission and is not already in group => add it
-				addOwner(ureqIdentity, identity, group, syncIM);
+			} else if(addOwner(ureqIdentity, identity, group, syncIM)) {
 				response.getAddedIdentities().add(identity);
 				log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + group.getOwnerGroup().getKey());
+			} else {
+				response.getIdentitiesAlreadyInGroup().add(identity);
 			}
 		}
 		syncIM(syncIM, group);
 		return response;
 	}
 	
-	private void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, SyncUserListTask syncIM) {
-		securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
-		// add user to buddies rosters
-		if(syncIM != null) {
-			syncIM.addUserToAdd(identity.getName());
+	private boolean addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, SyncUserListTask syncIM) {
+		if (!securityManager.isIdentityInSecurityGroup(identity, group.getOwnerGroup())) {
+			securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
+			// add user to buddies rosters
+			if(syncIM != null) {
+				syncIM.addUserToAdd(identity.getName());
+			}
+			// notify currently active users of this business group
+			BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
+			// do logging
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
+			return true;
 		}
-		
-		// notify currently active users of this business group
-		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
-		// do logging
-		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
-		// send notification mail in your controller!
+		return false;
 	}
 	
-	private void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group, SyncUserListTask syncIM) {
+	private boolean addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group, SyncUserListTask syncIM) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 
-		securityManager.addIdentityToSecurityGroup(identityToAdd, group.getPartipiciantGroup());
-		// add user to buddies rosters
-		if(syncIM != null) {
-			syncIM.addUserToAdd(identityToAdd.getName());
+		if(!securityManager.isIdentityInSecurityGroup(identityToAdd, group.getPartipiciantGroup())) {
+			securityManager.addIdentityToSecurityGroup(identityToAdd, group.getPartipiciantGroup());
+			// add user to buddies rosters
+			if(syncIM != null) {
+				syncIM.addUserToAdd(identityToAdd.getName());
+			}
+			
+			// notify currently active users of this business group
+			BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identityToAdd);
+			// do logging
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToAdd));
+			// send notification mail in your controller!
+			return true;
 		}
-		
-		// notify currently active users of this business group
-		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identityToAdd);
-		// do logging
-		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToAdd));
-		// send notification mail in your controller!
+		return false;
 	}
 
 	@Override
@@ -917,30 +918,24 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			final BusinessGroup group) {
 		
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
+		final SyncUserListTask syncIM = new SyncUserListTask(group);
+		
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 			public void execute() {
 				final BusinessGroup currBusinessGroup = loadBusinessGroup(group); // reload business group
-				SyncUserListTask syncIM = new SyncUserListTask(currBusinessGroup);
-				
 				for (final Identity identity : addIdentities) {
 					if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
 						response.getIdentitiesWithoutPermission().add(identity);
-					}
-					// Check if identity is already in group. make a db query in case
-					// someone in another workflow already added this user to this group. if
-					// found, add user to model
-					else if (securityManager.isIdentityInSecurityGroup(identity, currBusinessGroup.getPartipiciantGroup())) {
-						response.getIdentitiesAlreadyInGroup().add(identity);
-					} else {
-						// identity has permission and is not already in group => add it
-						addParticipant(ureqIdentity, identity, currBusinessGroup, syncIM);
+					} else if(addParticipant(ureqIdentity, identity, currBusinessGroup, syncIM)) {
 						response.getAddedIdentities().add(identity);
 						log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey());
+					} else {
+						response.getIdentitiesAlreadyInGroup().add(identity);
 					}
 				}
-				
-				syncIM(syncIM, group);
 			}});
+
+		syncIM(syncIM, group);
 		return response;
 	}
 
@@ -1516,6 +1511,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Transactional(readOnly=true)
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findRepositoryEntries(groups, firstResult, maxResults);
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<RepositoryEntryShort> findShortRepositoryEntries(Collection<BusinessGroupShort> groups, int firstResult, int maxResults) {
+		return businessGroupRelationDAO.findShortRepositoryEntries(groups, firstResult, maxResults);
 	}
 	
 	@Override

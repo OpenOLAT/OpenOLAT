@@ -21,6 +21,7 @@ package org.olat.group.model;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroupView;
 
 /**
  * 
@@ -30,25 +31,29 @@ public class BusinessGroupMembershipChange extends Event {
 	private static final long serialVersionUID = 8499004967313689825L;
 
 	private final Identity member;
-	private final Long groupKey;
+	private final BusinessGroupView group;
 	
 	private Boolean tutor;
 	private Boolean participant;
 	private Boolean waitingList;
 	
-	public BusinessGroupMembershipChange(Identity member, Long groupKey) {
+	public BusinessGroupMembershipChange(Identity member, BusinessGroupView group) {
 		super("id-perm-changed");
 		this.member = member;
-		this.groupKey = groupKey;
+		this.group = group;
 	}
 	
 	public BusinessGroupMembershipChange(Identity member, BusinessGroupMembershipChange origin) {
-		this(member, origin.getGroupKey());
+		this(member, origin.getGroup());
 		tutor = origin.tutor;
 		participant = origin.participant;
 		waitingList = origin.waitingList;	
 	}
-	
+
+	public BusinessGroupView getGroup() {
+		return group;
+	}
+
 	public Identity getMember() {
 		return member;
 	}
@@ -78,6 +83,6 @@ public class BusinessGroupMembershipChange extends Event {
 	}
 
 	public Long getGroupKey() {
-		return groupKey;
+		return group.getKey();
 	}
 }

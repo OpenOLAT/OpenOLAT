@@ -268,7 +268,7 @@ public class EditMembershipController extends FormBasicController {
 		
 		for(MemberOption option:tableDataModel.getObjects()) {
 			BGPermission bgPermission = PermissionHelper.getPermission(option.getGroupKey(), member, groupMemberships);
-			BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(member, option.getGroupKey());
+			BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(member, option.getGroup());
 			boolean bgTutor = option.getTutor().isAtLeastSelected(1);
 			change.setTutor(bgPermission.isTutor() == bgTutor ? null : new Boolean(bgTutor));
 			boolean bgParticipant = option.getParticipant().isAtLeastSelected(1);
@@ -291,6 +291,10 @@ public class EditMembershipController extends FormBasicController {
 		
 		public MemberOption(BusinessGroupView group) {
 			this.group = group;
+		}
+		
+		public BusinessGroupView getGroup() {
+			return group;
 		}
 		
 		public Long getGroupKey() {

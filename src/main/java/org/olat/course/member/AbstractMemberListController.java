@@ -57,12 +57,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.member.MemberListTableModel.Cols;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.ui.BGMailHelper;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -267,12 +272,15 @@ public abstract class AbstractMemberListController extends BasicController {
 		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, changes);
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges());
-		
-		//TODO group mail
-		System.out.println("Send mails: ");
-		
 		//make sure all is committed before loading the model again (I see issues without)
 		DBFactory.getInstance().commitAndCloseSession();
+		
+		if(e.getGroupChanges() != null && !e.getGroupChanges().isEmpty()) {
+			for (BusinessGroupMembershipChange mod : e.getGroupChanges()) {
+				sendMailAfterChangePermission(mod);
+			}
+		}
+
 		reloadModel();
 	}
 	
@@ -283,13 +291,42 @@ public abstract class AbstractMemberListController extends BasicController {
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		businessGroupService.updateMemberships(getIdentity(), allModifications);
+		DBFactory.getInstance().commitAndCloseSession();
 		
-		//TODO group mail
-		System.out.println("Send mails: ");
-		
+		if(allModifications != null && !allModifications.isEmpty()) {
+			for (BusinessGroupMembershipChange mod : allModifications) {
+				sendMailAfterChangePermission(mod);
+			}
+		}
+
 		//make sure all is committed before loading the model again (I see issues without)
 		DBFactory.getInstance().commitAndCloseSession();
 		reloadModel();
+	}
+	
+	protected void sendMailAfterChangePermission(BusinessGroupMembershipChange mod) {
+		MailTemplate template = null;
+		if(mod.getParticipant() != null) {
+			if(mod.getParticipant().booleanValue()) {
+				 template = BGMailHelper.createAddParticipantMailTemplate(mod.getGroup(), mod.getMember());
+			} else {
+				 template = BGMailHelper.createRemoveParticipantMailTemplate(mod.getGroup(), mod.getMember());
+			}
+		}
+		
+		if(mod.getWaitingList() != null) {
+			if(mod.getWaitingList().booleanValue()) {
+				template = BGMailHelper.createAddWaitinglistMailTemplate(mod.getGroup(), mod.getMember());
+			} else {
+				template = BGMailHelper.createRemoveWaitinglistMailTemplate(mod.getGroup(), mod.getMember());
+			}
+		}
+		
+		if(template != null) {	
+			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+			MailerResult mailerResult = mailer.sendMail(null, mod.getMember(), null, null, template, null);
+			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
+		}
 	}
 	
 	protected void doLeave(UserRequest ureq, List<Identity> members) {

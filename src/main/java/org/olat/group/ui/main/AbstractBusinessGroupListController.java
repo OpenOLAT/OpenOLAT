@@ -63,8 +63,13 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
@@ -559,7 +564,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				//send emails
+				//mails are send by the last controller of the wizard
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -608,7 +613,14 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	
 	private void finishUserManagement(MembershipModification mod, List<BusinessGroup> groups, MailTemplate template, boolean sendMail) {
 		businessGroupService.updateMembership(getIdentity(), mod, groups);
-		//TODO send mails
+		
+		if (template != null && !mod.isEmpty()) {
+			List<Identity> movedIdentities = mod.getAllIdentities();
+			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, movedIdentities, null, null, template, getIdentity());
+			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
+		}
 	}
 	
 	private void doSelect(UserRequest ureq, List<BGTableItem> items) {

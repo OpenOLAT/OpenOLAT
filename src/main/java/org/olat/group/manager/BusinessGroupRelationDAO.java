@@ -29,12 +29,15 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -250,11 +253,35 @@ public class BusinessGroupRelationDAO {
 			query.setMaxResults(maxResults);
 		}
 		
+		List<Long> groupKeys = PersistenceHelper.toKeys(groups);
+		query.setParameter("groupKeys", groupKeys);
+		return query.getResultList();
+	}
+
+	public List<RepositoryEntryShort> findShortRepositoryEntries(Collection<BusinessGroupShort> groups, int firstResult, int maxResults) {
+		if(groups == null || groups.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new org.olat.group.model.BGRepositoryEntryShortImpl(v.key, v.displayname) from ").append(RepositoryEntry.class.getName()).append(" as v ")
+			.append(" inner join v.olatResource as ores ")
+			.append(" where ores in (")
+			.append("  select bgcr.resource from ").append(BGResourceRelation.class.getName()).append(" as bgcr where bgcr.group.key in (:groupKeys)")
+			.append(" )");
+
+		TypedQuery<RepositoryEntryShort> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RepositoryEntryShort.class);
+		query.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+
 		List<Long> groupKeys = new ArrayList<Long>();
-		for(BusinessGroup group:groups) {
+		for(BusinessGroupShort group:groups) {
 			groupKeys.add(group.getKey());
 		}
 		query.setParameter("groupKeys", groupKeys);
+		query.setHint("org.hibernate.cacheable", Boolean.TRUE);
 		return query.getResultList();
 	}
 	
