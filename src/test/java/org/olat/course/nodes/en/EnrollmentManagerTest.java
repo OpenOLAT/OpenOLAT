@@ -23,17 +23,8 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */ 
-
 package org.olat.course.nodes.en;
 
-// um click emulieren:
-/*
- * 1) generiere Persistentes Object 2) -> DB...evict() entferne Instanz aus
- * HibernateSession 3) aktionen testen, z.b. update failed, falls object nicht
- * in session
- */
-// DB.getInstance().evict();
-// DB.getInstance().loadObject(); püft ob schon in hibernate session.
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -58,7 +49,6 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.info.WindowControlInfo;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -79,18 +69,18 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Description: <BR/>TODO: Class Description for BusinessGroupManagerImplTest
+ * Description: <BR/>
+ * Test the enrollment
  * <P/> Initial Date: Jul 28, 2004
  * 
  * @author patrick
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-
 public class EnrollmentManagerTest extends OlatTestCase implements WindowControl {
 	//
 	private static OLog log = Tracing.createLoggerFor(EnrollmentManagerTest.class);
@@ -137,8 +127,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 			log.info("TEST bgWithWaitingList.getMaxParticipants()=" + bgWithWaitingList.getMaxParticipants() );
 			log.info("TEST bgWithWaitingList.getWaitingListEnabled()=" + bgWithWaitingList.getWaitingListEnabled() );
 			// create mock objects
-			String PACKAGE = Util.getPackageName(EnrollmentManagerTest.class);
-			testTranslator = new PackageTranslator(PACKAGE, new Locale("de"));
+			testTranslator = Util.createPackageTranslator(EnrollmentManagerTest.class, new Locale("de"));
 			// Identities
 			wg1 = JunitTestHelper.createAndPersistIdentityAsUser("wg1");
 			wg2 = JunitTestHelper.createAndPersistIdentityAsUser("wg2");
@@ -309,11 +298,11 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 				
 				enrollmentManager.doEnroll(identity, group, enNode, coursePropertyManager, EnrollmentManagerTest.this /*WindowControl mock*/, testTranslator,
 						new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, courseGroupManager);
+				DBFactory.getInstance().commitAndCloseSession();
 			} catch (Exception e) {
 				log.error("", e);
 			}	finally {
 				doneSignal.countDown();
-				DBFactory.getInstance().commitAndCloseSession();
 			}
 		}
 	}
