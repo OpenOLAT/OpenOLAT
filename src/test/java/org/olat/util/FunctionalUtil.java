@@ -297,6 +297,10 @@ public class FunctionalUtil {
 		return(waitForPageToUnloadElement(browser, locator, WaitLimitAttribute.VERY_SAVE));
 	}
 	
+	public String currentBusinessPath(Selenium browser){
+		return(browser.getExpression("o_info.businessPath"));
+	}
+	
 	/**
 	 * @param browser
 	 * @param locator

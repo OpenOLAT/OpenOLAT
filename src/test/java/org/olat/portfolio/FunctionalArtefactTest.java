@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -36,6 +37,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.modules.fo.portfolio.ForumArtefact;
+import org.olat.modules.wiki.portfolio.WikiArtefact;
+import org.olat.portfolio.FunctionalArtefactTest.Binder.Page;
+import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.Artefact;
+import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.BlogArtefact;
+import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.JournalArtefact;
+import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.TextArtefact;
+import org.olat.portfolio.model.artefacts.FileArtefact;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
@@ -48,6 +57,7 @@ import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
 
 import com.thoughtworks.selenium.DefaultSelenium;
+import com.thoughtworks.selenium.Selenium;
 
 /**
  * 
@@ -161,7 +171,7 @@ public class FunctionalArtefactTest {
 	Object[] prepareVerification(String binderName, String binderDescription,
 			String pageName, String pageDescription,
 			String structureName, String structureDescription,
-			String artefactName, String artefactDescription, String[] artefactTags, Object artefactContent){
+			Class<?> artefactClass, String artefactName, String artefactDescription, String[] artefactTags, String[] artefactContent){
 		Binder binder = findBinderByName(this.map, binderName);
 		
 		if(binder == null){
@@ -173,6 +183,7 @@ public class FunctionalArtefactTest {
 		
 		if(page == null){
 			page = binder.new Page(pageName, pageDescription);
+			page.parent = binder;
 			binder.page.add(page);
 		}
 		
@@ -180,6 +191,7 @@ public class FunctionalArtefactTest {
 		
 		if(structure == null && structureName != null){
 			structure = page.new Structure(structureName, structureDescription);
+			structure.parent = page;
 			page.child.add(structure);
 		}
 		
@@ -190,11 +202,13 @@ public class FunctionalArtefactTest {
 		}
 		
 		if(artefact == null){
-			artefact = page.new Artefact(artefactName, artefactDescription, artefactTags, artefactContent);
+			artefact = ArtefactFactory.newArtefact(page, artefactClass, artefactName, artefactDescription, artefactTags, artefactContent);
 			
 			if(structure != null){
+				artefact.parent = structure;
 				structure.child.add(artefact);
 			}else{
+				artefact.parent = page;
 				page.child.add(artefact);
 			}
 		}
@@ -209,7 +223,7 @@ public class FunctionalArtefactTest {
 			return(null);
 		
 		for(Binder current: binder){
-			if(name.equals(current.name)){
+			if(name.equals(current.binderName)){
 				return(current);
 			}
 		}	
@@ -222,7 +236,7 @@ public class FunctionalArtefactTest {
 			return(null);
 		
 		for(Binder.Page current: page){
-			if(name.equals(current.name)){
+			if(name.equals(current.pageName)){
 				return(current);
 			}
 		}	
@@ -235,7 +249,7 @@ public class FunctionalArtefactTest {
 			return(null);
 		
 		for(Object current: list){
-			if(current instanceof Binder.Page.Artefact && name.equals(((Binder.Page.Artefact) current).name)){
+			if(current instanceof Binder.Page.Artefact && name.equals(((Binder.Page.Artefact) current).artefactName)){
 				return((Binder.Page.Artefact) current);
 			}
 		}	
@@ -248,7 +262,7 @@ public class FunctionalArtefactTest {
 			return(null);
 		
 		for(Object current: list){
-			if(current instanceof Binder.Page.Structure && name.equals(((Binder.Page.Structure) current).name)){
+			if(current instanceof Binder.Page.Structure && name.equals(((Binder.Page.Structure) current).structureName)){
 				return((Binder.Page.Structure) current);
 			}
 		}	
@@ -257,17 +271,147 @@ public class FunctionalArtefactTest {
 	}
 	
 	boolean checkArtefact(Binder.Page.Artefact artefact){
+		if(artefact.parent instanceof Binder.Page.Structure){
+			if(!functionalEportfolioUtil.openArtefact(browser,
+					((Binder)((Binder.Page)((Binder.Page.Structure) artefact.parent).parent).parent).binderName,
+					((Binder.Page)((Binder.Page.Structure) artefact.parent).parent).pageName, 
+					((Binder.Page.Structure) artefact.parent).structureName,
+					artefact.artefactName)){
+				return(false);
+			}
+		}else{
+			if(!functionalEportfolioUtil.openArtefact(browser,
+					((Binder)((Binder.Page)((Binder.Page.Structure) artefact.parent).parent).parent).binderName,
+					((Binder.Page)((Binder.Page.Structure) artefact.parent).parent).pageName, 
+					null,
+					artefact.artefactName)){
+				return(false);
+			}
+		}
 		
-		if(!functionalEportfolioUtil.openArtefactDetails(browser, user.getKey(), artefact.name)){
+		/* check tags */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(functionalEportfolioUtil.getArtefactCss())
+		.append("')]//div[contains(@class, '")
+		.append(functionalEportfolioUtil.getTagIconCss())
+		.append("')]//div[");
+		
+		boolean hasPrev = false;
+		
+		for(String currentTag: artefact.tags){
+			if(hasPrev){
+				selectorBuffer.append(" and ");
+			}else{
+				hasPrev = true;
+			}
+			
+			selectorBuffer.append("contains(text(), '")
+			.append(currentTag)
+			.append("')");
+		}
+		
+		selectorBuffer.append("]");
+		
+		if(!browser.isElementPresent(selectorBuffer.toString())){
 			return(false);
 		}
 		
-		//TODO:JK: implement me
+		/* compare business paths */
+		/* business paths aren't reliable, yet */
+//		if(!functionalEportfolioUtil.clickArtefactContent(browser)){
+//			return(false);
+//		}
+//		
+//		String path0 = functionalUtil.currentBusinessPath(browser);
+//		
+//		if(!artefact.open(browser, deploymentUrl)){
+//			return(false);
+//		}
+//		
+//		String path1 = functionalUtil.currentBusinessPath(browser);
+//		
+//		if(path0 == null || !path0.equals(path1)){
+//			return(false);
+//		}
+		
+		/* verify content */
+		String currentContent = null;
+		
+		while((currentContent = artefact.nextContent()) != null){
+			if(!browser.isTextPresent(currentContent)){
+				return(false);
+			}
+		}
+		
 		return(true);
 	}
 	
 	boolean checkMap(Binder binder){
-		//TODO:JK: implement me
+		if(!functionalEportfolioUtil.openBinder(browser, binder.binderName)){
+			return(false);
+		}
+		
+		/* check binder structure */
+		for(Binder.Page currentPage: binder.page){
+			if(currentPage.ignore){
+				continue;
+			}
+			
+			/* check page */
+			if(!functionalEportfolioUtil.pageExists(browser, binder.binderName, currentPage.pageName)){
+				return(false);
+			}
+			
+			//TODO:JK: doesn't check the page's description
+			
+			/* traverse tree */
+			for(Object currentPageChild: currentPage.child){
+				if(currentPageChild instanceof Binder.Page.Artefact){
+					Binder.Page.Artefact currentArtefact = (Binder.Page.Artefact) currentPageChild;
+					
+					if(currentArtefact.ignore){
+						continue;
+					}
+					
+					/* check artefact */
+					if(!functionalEportfolioUtil.artefactExists(browser, binder.binderName, currentPage.pageName, null, currentArtefact.artefactName)){
+						return(false);
+					}
+
+					//TODO:JK: doesn't check the artefact's description
+				}else{
+					Binder.Page.Structure currentStructure = (Binder.Page.Structure) currentPageChild;
+			
+					if(currentStructure.ignore){
+						continue;
+					}
+					
+					/*  check structure */
+					if(!functionalEportfolioUtil.structureExists(browser, binder.binderName, currentPage.pageName, currentStructure.structureName)){
+						return(false);
+					}
+					
+					//TODO:JK: doesn't check the structure's description
+					
+					/* traverse tree */
+					for(Binder.Page.Artefact currentArtefact: currentStructure.child){
+						if(currentArtefact.ignore){
+							continue;
+						}
+						
+						/* check artefact */
+						if(!functionalEportfolioUtil.artefactExists(browser, binder.binderName, currentPage.pageName, currentStructure.structureName, currentArtefact.artefactName)){
+							return(false);
+						}
+						
+						//TODO:JK: doesn't check the artefact's description
+					}
+				}
+			}	
+		}
+		
 		return(true);
 	}
 
@@ -280,7 +424,7 @@ public class FunctionalArtefactTest {
 		Object[] retval = prepareVerification(FORUM_BINDER, null,
 				FORUM_PAGE, null,
 				FORUM_STRUCTURE, null,
-				FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS, null);
+				ForumArtefact.class, FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS, null);
 		
 		Binder binder = (Binder) retval[0];
 		Binder.Page page = (Binder.Page) retval[1];
@@ -301,7 +445,8 @@ public class FunctionalArtefactTest {
 
 		/* post message to forum */
 		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
-
+		artefact.businessPath = functionalUtil.currentBusinessPath(browser);
+		
 		/* add artefact */
 		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE,
 				FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS,
@@ -316,9 +461,7 @@ public class FunctionalArtefactTest {
 		page.ignore = false;
 		
 		structure.ignore = false;
-		
-		//TODO:JK: find a way to retrieve resourceable key
-		//artefact.content = new String(deploymentUrl.toString() + "/url/RepositoryEntry/" + course.getRepoEntryKey() + "/CourseNode/");
+
 		artefact.ignore = false;
 		
 		/* verify */
@@ -329,6 +472,22 @@ public class FunctionalArtefactTest {
 	@Test
 	@RunAsClient
 	public void checkCollectWikiArticle() throws URISyntaxException, IOException{
+		/*
+		 * Prepare for verification
+		 */		
+		Object[] retval = prepareVerification(FORUM_BINDER, null,
+				FORUM_PAGE, null,
+				FORUM_STRUCTURE, null,
+				WikiArtefact.class, FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS, null);
+		
+		Binder binder = (Binder) retval[0];
+		Binder.Page page = (Binder.Page) retval[1];
+		Binder.Page.Structure structure = (Binder.Page.Structure) retval[2];
+		Binder.Page.Artefact artefact = (Binder.Page.Artefact) retval[3];
+		
+		/*
+		 * Test case
+		 */
 		/* import wiki via rest */
 		RepositoryEntryVO vo = functionalVOUtil.importWiki(deploymentUrl);
 
@@ -340,16 +499,49 @@ public class FunctionalArtefactTest {
 
 		/* create an article for the wiki */
 		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
+		artefact.businessPath = functionalUtil.currentBusinessPath(browser);
 
 		/* add artefact */
 		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE,
 				WIKI_ARTEFACT_TITLE, WIKI_ARTEFACT_DESCRIPTION, WIKI_TAGS,
 				functionalEportfolioUtil));
+		
+		/*
+		 * Test for content and make assumptions if the changes were applied.
+		 * Keep it simple use quick access with business paths.
+		 */
+		binder.ignore = false;
+		
+		page.ignore = false;
+		
+		structure.ignore = false;
+
+		artefact.ignore = false;
+		
+		/* verify */
+		Assert.assertTrue(checkArtefact(artefact));
+		Assert.assertTrue(checkMap(binder));
 	}
 
 	@Test
 	@RunAsClient
 	public void checkCollectBlogPost() throws URISyntaxException, IOException{
+		/*
+		 * Prepare for verification
+		 */		
+		Object[] retval = prepareVerification(FORUM_BINDER, null,
+				FORUM_PAGE, null,
+				FORUM_STRUCTURE, null,
+				BlogArtefact.class, FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS, null);
+		
+		Binder binder = (Binder) retval[0];
+		Binder.Page page = (Binder.Page) retval[1];
+		Binder.Page.Structure structure = (Binder.Page.Structure) retval[2];
+		Binder.Page.Artefact artefact = (Binder.Page.Artefact) retval[3];
+		
+		/*
+		 * Test case
+		 */
 		/* deploy course with REST */
 		CourseVO course = functionalVOUtil.importCourseIncludingBlog(deploymentUrl);	
 
@@ -362,16 +554,49 @@ public class FunctionalArtefactTest {
 		/* blog */
 		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, course.getRepoEntryKey(), 0,
 				BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
+		artefact.businessPath = functionalUtil.currentBusinessPath(browser);
 
 		/* add artefact */
 		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE,
 				BLOG_ARTEFACT_TITLE, BLOG_ARTEFACT_DESCRIPTION, BLOG_TAGS,
 				functionalEportfolioUtil));
+		
+		/*
+		 * Test for content and make assumptions if the changes were applied.
+		 * Keep it simple use quick access with business paths.
+		 */
+		binder.ignore = false;
+		
+		page.ignore = false;
+		
+		structure.ignore = false;
+
+		artefact.ignore = false;
+		
+		/* verify */
+		Assert.assertTrue(checkArtefact(artefact));
+		Assert.assertTrue(checkMap(binder));
 	}
 
 	@Test
 	@RunAsClient
 	public void checkAddTextArtefact(){
+		/*
+		 * Prepare for verification
+		 */		
+		Object[] retval = prepareVerification(FORUM_BINDER, null,
+				FORUM_PAGE, null,
+				FORUM_STRUCTURE, null,
+				TextArtefact.class, FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS, null);
+		
+		Binder binder = (Binder) retval[0];
+		Binder.Page page = (Binder.Page) retval[1];
+		Binder.Page.Structure structure = (Binder.Page.Structure) retval[2];
+		Binder.Page.Artefact artefact = (Binder.Page.Artefact) retval[3];
+		
+		/*
+		 * Test case
+		 */
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 
@@ -380,11 +605,43 @@ public class FunctionalArtefactTest {
 				TEXT_ARTEFACT_CONTENT,
 				TEXT_ARTEFACT_TITLE, TEXT_ARTEFACT_DESCRIPTION,
 				TEXT_ARTEFACT_TAGS));
+		
+		/*
+		 * Test for content and make assumptions if the changes were applied.
+		 * Keep it simple use quick access with business paths.
+		 */
+		binder.ignore = false;
+		
+		page.ignore = false;
+		
+		structure.ignore = false;
+
+		artefact.ignore = false;
+		
+		/* verify */
+		Assert.assertTrue(checkArtefact(artefact));
+		Assert.assertTrue(checkMap(binder));
 	}
 
 	@Test
 	@RunAsClient
 	public void checkUploadFileArtefact() throws URISyntaxException, MalformedURLException{
+		/*
+		 * Prepare for verification
+		 */		
+		Object[] retval = prepareVerification(FORUM_BINDER, null,
+				FORUM_PAGE, null,
+				FORUM_STRUCTURE, null,
+				FileArtefact.class, FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS, null);
+		
+		Binder binder = (Binder) retval[0];
+		Binder.Page page = (Binder.Page) retval[1];
+		Binder.Page.Structure structure = (Binder.Page.Structure) retval[2];
+		Binder.Page.Artefact artefact = (Binder.Page.Artefact) retval[3];
+		
+		/*
+		 * Test case
+		 */
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 
@@ -393,11 +650,43 @@ public class FunctionalArtefactTest {
 				FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_PATH).toURI(),
 				FILE_ARTEFACT_TITLE, FILE_ARTEFACT_DESCRIPTION,
 				FILE_ARTEFACT_TAGS));
+		
+		/*
+		 * Test for content and make assumptions if the changes were applied.
+		 * Keep it simple use quick access with business paths.
+		 */
+		binder.ignore = false;
+		
+		page.ignore = false;
+		
+		structure.ignore = false;
+
+		artefact.ignore = false;
+		
+		/* verify */
+		Assert.assertTrue(checkArtefact(artefact));
+		Assert.assertTrue(checkMap(binder));
 	}
 
 	@Test
 	@RunAsClient
 	public void checkCreateLearningJournal(){
+		/*
+		 * Prepare for verification
+		 */		
+		Object[] retval = prepareVerification(FORUM_BINDER, null,
+				FORUM_PAGE, null,
+				FORUM_STRUCTURE, null,
+				JournalArtefact.class, FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS, null);
+		
+		Binder binder = (Binder) retval[0];
+		Binder.Page page = (Binder.Page) retval[1];
+		Binder.Page.Structure structure = (Binder.Page.Structure) retval[2];
+		Binder.Page.Artefact artefact = (Binder.Page.Artefact) retval[3];
+		
+		/*
+		 * Test case 
+		 */
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 
@@ -405,8 +694,22 @@ public class FunctionalArtefactTest {
 		Assert.assertTrue(functionalEportfolioUtil.createLearningJournal(browser, LEARNING_JOURNAL_BINDER, LEARNING_JOURNAL_PAGE, LEARNING_JOURNAL_STRUCTURE,
 				LEARNING_JOURNAL_TITLE, LEARNING_JOURNAL_DESCRIPTION,
 				LEARNING_JOURNAL_TAGS));
+		
+		/*
+		 * Test for content and make assumptions if the changes were applied.
+		 * Keep it simple use quick access with business paths.
+		 */
+		binder.ignore = false;
+		
+		page.ignore = false;
+		
+		structure.ignore = false;
 
-		System.out.println();
+		artefact.ignore = false;
+		
+		/* verify */
+		Assert.assertTrue(checkArtefact(artefact));
+		Assert.assertTrue(checkMap(binder));
 	}
 
 	/**
@@ -416,53 +719,228 @@ public class FunctionalArtefactTest {
 	 * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
 	 */
 	class Binder{
-		String name;
+		String binderName;
 		String description;
 		List<Page> page = new ArrayList<Page>();
 		boolean ignore = true;
 
 		Binder(String name, String description){
-			this.name = name;
+			this.binderName = name;
 			this.description = description;
 		}
 		
 		class Page{
-			String name;
+			Object parent = null;
+			String pageName;
 			String description;
 			List child = new ArrayList();
 			boolean ignore = true;
 			
 			Page(String name, String description){
-				this.name = name;
+				this.pageName = name;
 				this.description = description;
 			}
 			
 			class Structure{
-				String name;
+				Object parent = null;
+				String structureName;
 				String description;
 				List<Artefact> child = new ArrayList<Artefact>();
 				boolean ignore = true;
 				
 				Structure(String name, String description){
-					this.name = name;
+					this.structureName = name;
 					this.description = description;
 				}
 			}
 
-			class Artefact{
-				String name;
+			abstract class Artefact{
+				Object parent = null;
+				String artefactName;
 				String description;
 				String[] tags;
-				Object content; /* in general a URL but for text artefact a String */
+				String[] content;
+				String businessPath;
 				boolean ignore = true;
 				
-				Artefact(String name, String description, String[] tags, Object content){
-					this.name = name;
+				Artefact(String name, String description, String[] tags, String[] content){
+					this.artefactName = name;
 					this.description = description;
 					this.tags = tags;
 					this.content = content;
 				}
+				
+				boolean open(Selenium browser, URL deploymentUrl){
+					browser.open(businessPath);
+					
+					return(true);
+				}
+				
+				abstract String nextContent();
+			}
+			
+			class ForumArtefact extends Artefact{
+				String postTitle;
+				String postContent;
+				int nthContent = 0;
+				
+				ForumArtefact(String name, String description, String[] tags, String[] content) {
+					super(name, description, tags, content);
+				}
+				
+				String nextContent(){
+					if(nthContent == 0){
+						nthContent++;
+						
+						return(postTitle);
+					}else if(nthContent == 1){
+						nthContent = -1;
+						
+						return(postContent);
+					}else{
+						return(null);
+					}
+				}
+			}
+			
+			class BlogArtefact extends Artefact{
+				String postTitle;
+				String postContent;
+				int nthContent = 0;
+				
+				BlogArtefact(String name, String description, String[] tags, String[] content) {
+					super(name, description, tags, content);
+				}
+				
+				String nextContent(){
+					if(nthContent == 0){
+						nthContent++;
+						
+						return(postTitle);
+					}else if(nthContent == 1){
+						nthContent = -1;
+						
+						return(postContent);
+					}else{
+						return(null);
+					}
+				}
+			}
+			
+			class WikiArtefact extends Artefact{
+				String article;
+				int prevLine = 0;
+				boolean passed = false;
+				
+				WikiArtefact(String name, String description, String[] tags, String[] content) {
+					super(name, description, tags, content);
+				}
+				
+				String nextContent(){
+					int prevLine = this.prevLine;
+					this.prevLine = article.indexOf('\n', prevLine + 1);
+					
+					if(this.prevLine == -1 && !passed){
+						passed = true;
+						this.prevLine = article.length();
+					}
+					
+					return(stripWikiSyntax(article.substring(prevLine, this.prevLine)));
+				}
+				
+				String stripWikiSyntax(String line){
+					//TODO:JK: this method is kept very simple
+					line = line.replaceAll("==", "");
+					
+					return(line);
+				}
+			}
+			
+			class TextArtefact extends Artefact{
+				String content;
+				boolean passed = false;
+				
+				TextArtefact(String name, String description, String[] tags, String[] content) {
+					super(name, description, tags, content);
+				}
+
+				boolean open(Selenium browser, URL deploymentUrl){
+					/* empty */
+					
+					return(true);
+				}
+				
+				String nextContent(){
+					if(!passed){
+						passed = true;
+						
+						return(content);
+					}else{
+						return(null);
+					}
+				}
+			}
+			
+			class FileArtefact extends Artefact{
+				String content;
+				boolean passed = false;
+				
+				FileArtefact(String name, String description, String[] tags, String[] content) {
+					super(name, description, tags, content);
+				}
+
+				boolean open(Selenium browser, URL deploymentUrl){
+					/* empty */
+					
+					return(true);
+				}
+				
+				String nextContent(){
+					if(!passed){
+						return(content);
+					}else{					
+						return(null);
+					}
+				}
+			}
+			
+			class JournalArtefact extends Artefact{
+				JournalArtefact(String name, String description, String[] tags, String[] content) {
+					super(name, description, tags, content);
+				}
+
+				boolean open(Selenium browser, URL deploymentUrl){
+					return(functionalEportfolioUtil.openArtefact(browser, binderName, pageName, ((parent instanceof Structure) ? null: ((Structure) parent).structureName), artefactName));
+				}
+				
+				String nextContent(){
+					return(null);
+				}
 			}
 		}
+	}
+}
+
+class ArtefactFactory{
+	static Artefact newArtefact(Page page, Class<?> artefactClass, String name, String description, String[] tags, String[] content){
+		if(artefactClass == null){
+			return(null);
+		}
+		
+		if(artefactClass.equals(ForumArtefact.class)){
+			return(page.new ForumArtefact(name, description, tags, content));
+		}else if(artefactClass.equals(BlogArtefact.class)){
+			return(page.new BlogArtefact(name, description, tags, content));
+		}else if(artefactClass.equals(WikiArtefact.class)){
+			return(page.new WikiArtefact(name, description, tags, content));
+		}else if(artefactClass.equals(TextArtefact.class)){
+			return(page.new TextArtefact(name, description, tags, content));
+		}else if(artefactClass.equals(FileArtefact.class)){
+			return(page.new FileArtefact(name, description, tags, content));
+		}else if(artefactClass.equals(JournalArtefact.class)){
+			return(page.new JournalArtefact(name, description, tags, content));
+		}
+		
+		return(null);
 	}
 }

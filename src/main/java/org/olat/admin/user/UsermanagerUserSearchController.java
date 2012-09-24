@@ -618,7 +618,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 	
 	Map <String,FormItem>items;
 	/**
-	 * @param name
+	 * @param binderName
 	 * @param cancelbutton
 	 */
 	public UsermanagerUserSearchForm(UserRequest ureq, WindowControl wControl) {

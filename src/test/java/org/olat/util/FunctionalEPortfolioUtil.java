@@ -42,9 +42,12 @@ public class FunctionalEPortfolioUtil {
 	public final static String EP_ARTEFACTS_BUSINESS_PATH = "EPArtefacts";
 	public final static String EP_MAPS_BUSINESS_PATH = "EPMaps";
 	
-	
 	public final static String EPORTFOLIO_CSS = "b_eportfolio";
 	public final static String EPORTFOLIO_MAP_CSS = "b_eportfolio_map";
+	public final static String EPORTFOLIO_PAGE_CSS = "b_eportfolio_page";
+	public final static String EPORTFOLIO_STRUCTURE_CSS = "b_eportfolio_structure";
+	public final static String EPORTFOLIO_ARTEFACT_CSS = "b_artefact";
+	public final static String EPORTFOLIO_ARTEFACT_DETAILS_CSS = "o_sel_artefact_details";
 	
 	public final static String HOME_PORTAL_EDIT_LINK_CSS = "o_sel_add_artfeact";
 	public final static String ADD_TEXT_ARTEFACT_CSS = "o_sel_add_text_artfeact";
@@ -69,6 +72,10 @@ public class FunctionalEPortfolioUtil {
 	public final static String PAGE_ICON_CSS = "b_eportfolio_link";
 	public final static String STRUCT_ICON_CSS = "b_ep_struct_icon";
 	
+	public final static String ARTEFACT_CSS = "b_artefact";
+	public final static String TAG_ICON_CSS = "b_tag_icon";
+
+	
 	public enum ArtefactDisplay {
 		TABLE,
 		THUMBNAILS,
@@ -76,6 +83,10 @@ public class FunctionalEPortfolioUtil {
 	
 	private String eportfolioCss;
 	private String eportfolioMapCss;
+	private String eportfolioPageCss;
+	private String eportfolioStructureCss;
+	private String eportfolioArtefactCss;
+	private String eportfolioArtefactDetailsCss;
 	
 	private String homePortalEditLinkCss;
 	private String addTextArtefactCss;
@@ -100,6 +111,9 @@ public class FunctionalEPortfolioUtil {
 	private String pageIconCss;
 	private String structIconCss;
 	
+	private String artefactCss;
+	private String tagIconCss;
+	
 	private FunctionalUtil functionalUtil;
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	
@@ -109,6 +123,10 @@ public class FunctionalEPortfolioUtil {
 		
 		setEPortfolioCss(EPORTFOLIO_CSS);
 		setEPortfolioMapCss(EPORTFOLIO_MAP_CSS);
+		setEPortfolioPageCss(EPORTFOLIO_PAGE_CSS);
+		setEPortfolioStructureCss(EPORTFOLIO_STRUCTURE_CSS);
+		setEPortfolioArtefactCss(EPORTFOLIO_ARTEFACT_CSS);
+		setEPortfolioArtefactDetailsCss(EPORTFOLIO_ARTEFACT_DETAILS_CSS);
 		
 		setHomePortalEditLinkCss(HOME_PORTAL_EDIT_LINK_CSS);
 		setAddTextArtefactCss(ADD_TEXT_ARTEFACT_CSS);
@@ -132,6 +150,9 @@ public class FunctionalEPortfolioUtil {
 		
 		setPageIconCss(PAGE_ICON_CSS);
 		setStructIconCss(STRUCT_ICON_CSS);
+		
+		setArtefactCss(ARTEFACT_CSS);
+		setTagIconCss(TAG_ICON_CSS);
 	}
 
 	/**
@@ -140,7 +161,7 @@ public class FunctionalEPortfolioUtil {
 	 * @param artefactTitle
 	 * @return
 	 * 
-	 * 
+	 * Opens the artefact details popup.
 	 */
 	public boolean openArtefactDetails(Selenium browser, Long key, String artefactTitle){
 		String epArtefactsBusinessPath = functionalUtil.getDeploymentUrl().toString() + "/url/HomeSite/" + key + "/" + EP_ARTEFACTS_BUSINESS_PATH;
@@ -154,12 +175,32 @@ public class FunctionalEPortfolioUtil {
 		return(false);
 	}
 	
+	/**
+	 * @param browser
+	 * @return
+	 * 
+	 * Clicks within the artefact details popup the link to it's content.
+	 */
+	public boolean clickArtefactContent(Selenium browser){
+		//TODO:JK: implement me
+		
+		return(false);
+	}
+	
+	/**
+	 * @param browser
+	 * @param key
+	 * @param binderTitle
+	 * @return
+	 * 
+	 * Opens the specified binder.
+	 */
 	public boolean openBinder(Selenium browser, Long key, String binderTitle){
 		String epMapsBusinessPath = functionalUtil.getDeploymentUrl().toString() + "/url/HomeSite/" + key + "/" + EP_MAPS_BUSINESS_PATH;
 		
 		//TODO:JK: implement me
 		
-		return(true);
+		return(false);
 	}
 	
 	/**
@@ -368,6 +409,14 @@ public class FunctionalEPortfolioUtil {
 		return(true);
 	}
 	
+	/**
+	 * @param browser
+	 * @param binder
+	 * @param title
+	 * @return
+	 * 
+	 * Checks if the specified page exists.
+	 */
 	public boolean pageExists(Selenium browser, String binder, String title){
 		if(!openBinder(browser, binder))
 			return(false);
@@ -387,6 +436,37 @@ public class FunctionalEPortfolioUtil {
 		}else{
 			return(false);
 		}
+	}
+	
+	/**
+	 * @param browser
+	 * @param binder
+	 * @param title
+	 * @return
+	 * 
+	 * Opens the specified page.
+	 */
+	public boolean openPage(Selenium browser, String binder, String title){
+		if(!openBinder(browser, binder))
+			return(false);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getEPortfolioTableOfContentsCss())
+		.append("')]//ul//li[contains(@class, '")
+		.append(getEPortfolioTOCLevel1Css())
+		.append("')]//a//span[contains(text(), '")
+		.append(title)
+		.append("')]/..");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
 	}
 	
 	/**
@@ -524,7 +604,7 @@ public class FunctionalEPortfolioUtil {
 		StringWriter sw = new StringWriter();
 
 		try {
-			engine.evaluate(context, sw, "eportfolioTOCStructurePosition", FunctionalHomeSiteUtil.class.getResourceAsStream("EPortfolioTOCStructurePosition.vm"));
+			engine.evaluate(context, sw, "eportfolioTOCStructurePosition", FunctionalEPortfolioUtil.class.getResourceAsStream("EPortfolioTOCStructurePosition.vm"));
 
 			Integer i = new Integer(browser.getEval(sw.toString()));
 
@@ -621,6 +701,71 @@ public class FunctionalEPortfolioUtil {
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoadElement(browser, createSelector(binder, page, title));
+		
+		return(true);
+	}
+	
+	public boolean artefactExists(Selenium browser, String binder, String page, String structure, String artefact){
+		if(!openPage(browser, binder, page)){
+			return(false);
+		}
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getEPortfolioMapCss())
+		.append("')]");
+		
+		if(structure != null){
+			selectorBuffer.append("//div[contains(@class, '")
+			.append(getEPortfolioStructureCss())
+			.append("')]//h5[text()='")
+			.append(structure)
+			.append("']/..");
+		}
+		
+		selectorBuffer.append("//div[contains(@class, '")
+		.append(getEPortfolioArtefactCss())
+		.append("')]//h4[text()='")
+		.append(artefact)
+		.append("']");
+		
+		if(browser.isElementPresent(selectorBuffer.toString())){
+			return(true);
+		}else{
+			return(false);
+		}
+	}
+	
+	public boolean openArtefact(Selenium browser, String binder, String page, String structure, String artefact){
+		if(!openPage(browser, binder, page))
+			return(false);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getEPortfolioMapCss())
+		.append("')]");
+		
+		if(structure != null){
+			selectorBuffer.append("//div[contains(@class, '")
+			.append(getEPortfolioStructureCss())
+			.append("')]//h5[text()='")
+			.append(structure)
+			.append("']/..");
+		}
+		
+		selectorBuffer.append("//div[contains(@class, '")
+		.append(getEPortfolioArtefactCss())
+		.append("')]//h4[text()='")
+		.append(artefact)
+		.append("']/..//a[contains(@class, '")
+		.append(getEPortfolioArtefactDetailsCss())
+		.append("')]");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -942,8 +1087,40 @@ public class FunctionalEPortfolioUtil {
 	
 	public void setEPortfolioMapCss(String eportfolioMapCss) {
 		this.eportfolioMapCss = eportfolioMapCss;
+	}	
+
+	public String getEPortfolioPageCss() {
+		return eportfolioPageCss;
 	}
-	
+
+	public void setEPortfolioPageCss(String eportfolioPageCss) {
+		this.eportfolioPageCss = eportfolioPageCss;
+	}
+
+	public String getEPortfolioStructureCss() {
+		return eportfolioStructureCss;
+	}
+
+	public void setEPortfolioStructureCss(String eportfolioStructureCss) {
+		this.eportfolioStructureCss = eportfolioStructureCss;
+	}
+
+	public String getEPortfolioArtefactCss() {
+		return eportfolioArtefactCss;
+	}
+
+	public void setEPortfolioArtefactCss(String eportfolioArtefactCss) {
+		this.eportfolioArtefactCss = eportfolioArtefactCss;
+	}
+
+	public String getEPortfolioArtefactDetailsCss() {
+		return eportfolioArtefactDetailsCss;
+	}
+
+	public void setEPortfolioArtefactDetailsCss(String eportfolioArtefactDetailsCss) {
+		this.eportfolioArtefactDetailsCss = eportfolioArtefactDetailsCss;
+	}
+
 	public String getHomePortalEditLinkCss() {
 		return homePortalEditLinkCss;
 	}
@@ -1084,5 +1261,21 @@ public class FunctionalEPortfolioUtil {
 
 	public void setStructIconCss(String structIconCss) {
 		this.structIconCss = structIconCss;
+	}
+
+	public String getArtefactCss() {
+		return artefactCss;
+	}
+
+	public void setArtefactCss(String artefactCss) {
+		this.artefactCss = artefactCss;
+	}
+
+	public String getTagIconCss() {
+		return tagIconCss;
+	}
+
+	public void setTagIconCss(String tagIconCss) {
+		this.tagIconCss = tagIconCss;
 	}
 }

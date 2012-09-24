@@ -391,7 +391,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	/**
 	 * Find catalog entries for certain identity
 	 * 
-	 * @param name
+	 * @param binderName
 	 * @return List of catalog entries
 	 */
 	public List getCatalogEntriesOwnedBy(Identity identity) {
