@@ -22,8 +22,11 @@ div.b_selectiontree {
 	#b_col3 { background-image: url(../openolat/images/edit_bg.png); background-position: top left; background-repeat:repeat;}
 	div.b_tabbedpane_wrapper div.b_tabbedpane_content { background:#fff;}	
 }
+/* --- BREADCRUMBS ---- */
 
-
+div.o_course_members div.b_breadcumb_path ul li.b_first {
+	background-image: url(../openolat/images/le_resources/book-open-text-image.png);
+}
 /* --- MODULES: SINGLEPAGE ---- */
 a.b_preview { background-image: url(../openolat/images/docs/document_preview.png); background-repeat: no-repeat; background-position: left; padding: 2px 0 2px 20px;}
 fieldset a.b_preview, div.b_tabbedpane_wrapper a.b_preview { position: absolute;}

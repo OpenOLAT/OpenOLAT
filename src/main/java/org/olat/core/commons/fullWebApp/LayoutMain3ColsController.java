@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.fullWebApp;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +29,8 @@ import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
@@ -81,6 +84,8 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	private boolean fullScreen = false;
 	private BaseChiefController thebaseChief;
 
+	private List<Link> breadCrumbLinks = new ArrayList<Link>();
+
 	/**
 	 * Constructor for creating a 3 col based menu on the main area. This
 	 * constructor uses the default column width configuration
@@ -113,10 +118,14 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	public LayoutMain3ColsController(UserRequest ureq, WindowControl wControl, Component col1, Component col2, Component col3,
 			String layoutConfigKey, LayoutMain3ColsConfig defaultConfiguration) {
 		super(ureq, wControl);
-		this.layoutMainVC = createVelocityContainer("main_3cols");
+		layoutMainVC = createVelocityContainer("main_3cols");
 		this.layoutConfigKey = layoutConfigKey;
 
 		localLayoutConfig = getGuiPrefs(ureq, defaultConfiguration);
+		
+		Link back = LinkFactory.createLink("back", layoutMainVC, this);
+		back.setCustomDisplayText("My course");
+		layoutMainVC.put("back", back);
 
 		// Push colums to velocity
 		panel1 = new Panel("panel1");
@@ -130,8 +139,37 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		panel3 = new Panel("panel3");
 		layoutMainVC.put("col3", panel3);
 		setCol3(col3);
-
+		
+		layoutMainVC.contextPut("breadCrumbs", breadCrumbLinks);
 		putInitialPanel(layoutMainVC);
+	}
+	
+	public String getToolbarCssClass() {
+		return (String)layoutMainVC.getContext().get("toolBarCssClass");
+	}
+	
+	public void setToolbarCssClass(String cssClass) {
+		layoutMainVC.contextPut("toolBarCssClass", cssClass);
+	}
+	
+	public void addBreadCrumbLink(Link link) {
+		breadCrumbLinks.add(link);
+		layoutMainVC.put(link.getComponentName(), link);
+		layoutMainVC.setDirty(true);
+	}
+	
+	public void removeBreadCrumbLink(Link link) {
+		breadCrumbLinks.remove(link);
+		layoutMainVC.remove(link);
+		layoutMainVC.setDirty(true);
+	}
+	
+	public void popBreadCrumbLink() {
+		if(!breadCrumbLinks.isEmpty()) {
+			Link link = breadCrumbLinks.remove(breadCrumbLinks.size() - 1);
+			layoutMainVC.remove(link);
+		}
+		layoutMainVC.setDirty(true);
 	}
 	
 	public void setAsFullscreen(UserRequest ureq) {

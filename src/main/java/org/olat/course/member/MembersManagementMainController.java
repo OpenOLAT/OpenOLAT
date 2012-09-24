@@ -89,12 +89,20 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		menuTree.addListener(this);
 
 		mainVC = createVelocityContainer("main_members");
-		back = LinkFactory.createLinkBack(mainVC, this);
-		mainVC.put("backLink", back);
 
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, mainVC, "members-" + repoEntry.getKey());
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
+		
+		columnLayoutCtr.setToolbarCssClass("o_course_members");
+		//add crumb course
+		back = LinkFactory.createLink("course", mainVC, this);
+		back.setCustomDisplayText(course.getCourseTitle());
+		columnLayoutCtr.addBreadCrumbLink(back);
+		//add this controller crumb
+		Link memberLink = LinkFactory.createLink("members", mainVC, this);
+		memberLink.setCustomDisplayText(translate("menu.breadcrumbs"));
+		columnLayoutCtr.addBreadCrumbLink(memberLink);
 		
 		selectMenuItem(ureq, CMD_MEMBERS);
 	}

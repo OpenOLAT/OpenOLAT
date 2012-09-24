@@ -65,7 +65,7 @@ public class CustomDBMainController extends GenericMainController {
 		toolC = ToolFactory.createToolController(getWindowControl());
 		listenTo(toolC);
 		toolC.addHeader(translate("tool.name"));
-		toolC.addLink("cmd.new_db", translate("command.new_db"), null, "b_new");
+		toolC.addLink("cmd.new_db", translate("command.new_db"), null, "b_toolbox_link b_new");
 		toolC.addLink("cmd.close", translate("command.closedb"), null, "b_toolbox_close");
 		setToolController(toolC);
 		
@@ -77,6 +77,8 @@ public class CustomDBMainController extends GenericMainController {
 		addChildNodeToPrepend(root);
 
 		init(ureq);
+		
+		getMenuTree().setRootVisible(false);
 	}
 
 	@Override

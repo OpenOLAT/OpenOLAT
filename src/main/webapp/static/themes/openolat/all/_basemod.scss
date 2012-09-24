@@ -48,6 +48,15 @@ body {
 	border-bottom: 1px solid lightGrey;
 }
 
+#b_main_toolbar {
+	clear: both;
+	height: 20px;
+	padding: 4px 0 1px 3px;
+	margin: 0 0 1px 0; 
+	background-color: #fefefe;
+	//@include o-box-shadow(0,0,3px,#D3D3D3);
+}
+
 $mainMinHeight: 550px;
 #b_main {
 	background:#fff;
