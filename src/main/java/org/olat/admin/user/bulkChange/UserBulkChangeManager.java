@@ -51,8 +51,13 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.AddToGroupsEvent;
+import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.ui.BGMailHelper;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -187,13 +192,7 @@ public class UserBulkChangeManager extends BasicManager {
 				}
 			}
 			
-			// FXOLAT-101: add identity to new groups:
-			if (ownGroups.size() != 0 || partGroups.size() != 0){
-				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-				AddToGroupsEvent groupsEv = new AddToGroupsEvent(ownGroups, partGroups, mailGroups);
-				bgs.addIdentityToGroups(groupsEv, identity, addingIdentity);
-			}			
-			
+
 			// set status
 			if (roleChangeMap.containsKey("Status")) {
 				Integer status = Integer.parseInt(roleChangeMap.get("Status"));
@@ -216,6 +215,45 @@ public class UserBulkChangeManager extends BasicManager {
 			db.intermediateCommit();
 		} // for identities
 
+		// FXOLAT-101: add identity to new groups:
+		if (ownGroups.size() != 0 || partGroups.size() != 0) {
+			List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
+			for(Identity selIdentity:selIdentities) {
+				if(ownGroups != null && !ownGroups.isEmpty()) {
+					for(Long tutorGroupKey:ownGroups) {
+						BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(selIdentity, tutorGroupKey);
+						change.setTutor(Boolean.TRUE);
+						changes.add(change);
+					}
+				}
+				if(partGroups != null && !partGroups.isEmpty()) {
+					for(Long partGroupKey:partGroups) {
+						BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(selIdentity, partGroupKey);
+						change.setParticipant(Boolean.TRUE);
+						changes.add(change);
+					}
+				}
+			}
+
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			bgs.updateMemberships(addingIdentity, changes);
+			DBFactory.getInstance().commit();
+			
+			if(mailGroups != null && !mailGroups.isEmpty()) {
+				List<BusinessGroup> notifGroups = bgs.loadBusinessGroups(mailGroups);
+				for (BusinessGroup group : notifGroups) {
+					for(Identity selIdentity:selIdentities) {
+						MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, addingIdentity);
+						MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+						MailerResult mailerResult = mailer.sendMail(null, selIdentity, null, null, mailTemplate, null);
+						if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
+							logDebug("Problems sending Group invitation mail for identity: " + selIdentity.getName() + " and group: " 
+									+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public String evaluateValueWithUserContext(String valToEval, Context vcContext) {

@@ -25,11 +25,15 @@
 
 package org.olat.admin.user.imp;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.AuthHelper;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -48,8 +52,13 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.AddToGroupsEvent;
+import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.ui.BGMailHelper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -70,8 +79,9 @@ public class UserImportController extends BasicController {
 	private VelocityContainer mainVC;
 	private Link startLink;
 	
-	StepsMainRunController importStepsController;
+	private StepsMainRunController importStepsController;
 	
+	private final BaseSecurity securityManager;
 	private final BusinessGroupService businessGroupService;
 
 	/**
@@ -82,6 +92,7 @@ public class UserImportController extends BasicController {
 	 */
 	public UserImportController(UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
 		super(ureq, wControl);
+		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.canCreateOLATPassword = canCreateOLATPassword;
 		mainVC = createVelocityContainer("importindex");
@@ -98,7 +109,7 @@ public class UserImportController extends BasicController {
 			if (event == Event.CANCELLED_EVENT) {
 				getWindowControl().pop();
 				removeAsListenerAndDispose(importStepsController);
-			} else if (event == Event.CHANGED_EVENT) {
+			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				getWindowControl().pop();
 				removeAsListenerAndDispose(importStepsController);
 				showInfo("import.success");
@@ -170,14 +181,17 @@ public class UserImportController extends BasicController {
 							List<String> singleUser = it_news.next();
 							doCreateAndPersistIdentity(singleUser);
 						}
-						// fxdiff: 101 add to groups
-						Identity addingIdentity = ureq1.getIdentity();
+
+						@SuppressWarnings("unchecked")
 						List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
+						@SuppressWarnings("unchecked")
 						List<Long> partGroups = (List<Long>) runContext.get("partGroups");
+						@SuppressWarnings("unchecked")
 						List<Long> mailGroups = (List<Long>) runContext.get("mailGroups");
+
 						if (ownGroups.size() != 0 || partGroups.size() != 0){
 							List<Object> allIdents = (List<Object>) runContext.get("idents");
-							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, mailGroups, addingIdentity);
+							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, mailGroups);
 						}
 						hasChanges = true;
 					}
@@ -195,29 +209,60 @@ public class UserImportController extends BasicController {
 			getWindowControl().pushAsModalDialog(importStepsController.getInitialComponent());
 		}
 	}
-
-	//fxdiff: 101 add idents to groups
-	void processGroupAdditionForAllIdents(List<Object> allIdents, List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, Identity addingIdentity) {
-
-		int counter = 0;
+	
+	private Collection<Identity> getIdentities(List<Object> allIdents) {
+		Set<Identity> identities = new HashSet<Identity>(allIdents.size());
+		List<String> usernames = new ArrayList<String>();
 		for (Object o : allIdents) {
-			Identity ident;
 			if (o instanceof Identity) {
-				// existing user
-				ident = (Identity) o;
-			} else {
+				identities.add((Identity)o);	
+			} else if(o instanceof List) {
+				@SuppressWarnings("unchecked")
 				List<String> userArray = (List<String>) o;
-				String identName = userArray.get(1);
-				ident = BaseSecurityManager.getInstance().findIdentityByName(identName);
+				usernames.addAll(userArray);
 			}
-			if(ident != null){
-				AddToGroupsEvent groupsEv = new AddToGroupsEvent(ownGroups, partGroups, mailGroups);
-				businessGroupService.addIdentityToGroups(groupsEv, ident, addingIdentity);
-				counter ++;
-				if (counter % 5 == 0) {
-					DBFactory.getInstance().intermediateCommit();
+		}
+
+		List<Identity> nextIds = securityManager.findIdentitiesByName(usernames);
+		identities.addAll(nextIds);
+		return identities;
+	}
+
+	private void processGroupAdditionForAllIdents(List<Object> allIdents, List<Long> tutorGroups, List<Long> partGroups, List<Long> mailGroups) {
+		Collection<Identity> identities = getIdentities(allIdents);
+		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
+		for(Identity identity:identities) {
+			if(tutorGroups != null && !tutorGroups.isEmpty()) {
+				for(Long tutorGroupKey:tutorGroups) {
+					BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(identity, tutorGroupKey);
+					change.setTutor(Boolean.TRUE);
+					changes.add(change);
 				}
-			}			
-		}		
+			}
+			if(partGroups != null && !partGroups.isEmpty()) {
+				for(Long partGroupKey:partGroups) {
+					BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(identity, partGroupKey);
+					change.setParticipant(Boolean.TRUE);
+					changes.add(change);
+				}
+			}
+		}
+		businessGroupService.updateMemberships(getIdentity(), changes);
+		DBFactory.getInstance().commit();
+		
+		if(mailGroups != null && !mailGroups.isEmpty()) {
+			List<BusinessGroup> notifGroups = businessGroupService.loadBusinessGroups(mailGroups);
+			for (BusinessGroup group : notifGroups) {
+				for(Identity identity:identities) {
+					MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, getIdentity());
+					MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+					MailerResult mailerResult = mailer.sendMail(null, identity, null, null, mailTemplate, null);
+					if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
+						logDebug("Problems sending Group invitation mail for identity: " + identity.getName() + " and group: " 
+								+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
+					}
+				}
+			}
+		}
 	}
 }

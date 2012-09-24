@@ -28,19 +28,18 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -152,7 +151,6 @@ public class UserBulkChangePasswordController extends BasicController {
 		private TextElement userListTextArea;
 		private SelectionElement acceptDisclaimer;
 		private SelectionElement langGerman;
-		private FormSubmit submitButton;
 
 		public ChangePasswordForm(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl);
@@ -175,7 +173,7 @@ public class UserBulkChangePasswordController extends BasicController {
 			
 			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 			formLayout.add(buttonLayout);
-			submitButton = FormUIFactory.getInstance().addFormSubmitButton("bulk.psw.submit", buttonLayout);
+			FormUIFactory.getInstance().addFormSubmitButton("bulk.psw.submit", buttonLayout);
 			
 			acceptDisclaimer.select("xx", true);
 			langGerman.select("xx", true);

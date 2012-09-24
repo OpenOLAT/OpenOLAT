@@ -156,8 +156,7 @@ class UserBulkChangeStep01 extends BasicStep {
 		}
 
 		@Override
-		protected boolean validateFormLogic(@SuppressWarnings("unused")
-		UserRequest ureq) {
+		protected boolean validateFormLogic(UserRequest ureq) {
 			// always true, because no changes are required
 			return true;
 		}

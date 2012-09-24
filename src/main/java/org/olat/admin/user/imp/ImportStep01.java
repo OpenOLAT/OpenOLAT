@@ -173,7 +173,6 @@ class ImportStep01 extends BasicStep {
 class UserNewOldCustomFlexiCellRenderer extends CSSIconFlexiCellRenderer {
 
 	@Override
-	@SuppressWarnings("unused")
 	protected String getCellValue(Object cellValue) {
 		return "";
 	}

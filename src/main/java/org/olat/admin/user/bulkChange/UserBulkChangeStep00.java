@@ -258,10 +258,8 @@ class UserBulkChangeStep00 extends BasicStep {
 			return true;
 		}
 
-		@SuppressWarnings({ "unchecked", "unchecked" })
 		@Override
-		protected void initForm(FormItemContainer formLayout, Controller listener, @SuppressWarnings("unused")
-		UserRequest ureq) {
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			MultipleSelectionElement checkbox;
 			checkBoxes = new ArrayList<MultipleSelectionElement>();
 			formItems = new ArrayList<FormItem>();
@@ -300,14 +298,13 @@ class UserBulkChangeStep00 extends BasicStep {
 
 			// add SingleSelect for language
 			Map<String, String> locdescs = I18nManager.getInstance().getEnabledLanguagesTranslated();
-			Set lkeys = locdescs.keySet();
+			Set<String> lkeys = locdescs.keySet();
 			String[] languageKeys = new String[lkeys.size()];
 			String[] languageValues = new String[lkeys.size()];
 			// fetch languages
 			int p = 0;
-			I18nManager i18n = I18nManager.getInstance();
-			for (Iterator iter = lkeys.iterator(); iter.hasNext();) {
-				String key = (String) iter.next();
+			for (Iterator<String> iter = lkeys.iterator(); iter.hasNext();) {
+				String key = iter.next();
 				languageKeys[p] = key;
 				languageValues[p] = locdescs.get(key);
 				p++;

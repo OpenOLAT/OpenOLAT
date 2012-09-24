@@ -29,6 +29,7 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -48,7 +49,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
@@ -59,6 +59,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.AddToGroupsEvent;
+import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.main.BGRoleCellRenderer;
@@ -86,7 +87,6 @@ public class GroupOverviewController extends BasicController {
 	
 	private Link addGroups;
 	private CloseableModalController cmc;
-	private CloseableModalWindowWrapperController calloutCtrl;
 	private GroupSearchController groupsCtrl;
 	private GroupLeaveDialogBoxController removeFromGrpDlg;
 
@@ -183,11 +183,10 @@ public class GroupOverviewController extends BasicController {
 			groupsCtrl = new GroupSearchController(ureq, getWindowControl());
 			listenTo(groupsCtrl);
 			
-			calloutCtrl = new CloseableModalWindowWrapperController(ureq, getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent(), "ccgroupadd");
-			calloutCtrl.setInitialWindowSize(500, 400);
+			cmc = new CloseableModalController(getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent());
 //			calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, groupsCtrl.getInitialComponent(), addGroups, translate("add.groups"), false, null);
-			listenTo(calloutCtrl);
-			calloutCtrl.activate();
+			listenTo(cmc);
+			cmc.activate();
 		}
 	}
 	
@@ -221,20 +220,17 @@ public class GroupOverviewController extends BasicController {
 			}
 		}	else if (source == groupsCtrl && event instanceof AddToGroupsEvent){
 			AddToGroupsEvent groupsEv = (AddToGroupsEvent) event;
-			if (groupsEv.getOwnerGroupKeys().isEmpty() && groupsEv.getParticipantGroupKeys().isEmpty()){
+			if (groupsEv.getOwnerGroupKeys().isEmpty() && groupsEv.getParticipantGroupKeys().isEmpty()) {
 				// no groups selected
 				showWarning("group.add.result.none");
 			} else {
-				if (calloutCtrl != null) calloutCtrl.deactivate();				
-				String[] resultTextArgs = businessGroupService.addIdentityToGroups(groupsEv, identity, getIdentity());
-				if (resultTextArgs != null){
-					String message = translate("group.add.result", resultTextArgs);
-					getWindowControl().setInfo(message);
-				} else {		
-					showWarning("group.add.result.none");
+				if (cmc != null) {
+					cmc.deactivate();				
 				}
+				doAddToGroups(groupsEv);
 				updateModel(ureq);
-			}			
+			}
+			cleanUpPopups();
 		} else if (source == removeFromGrpDlg){
 			if(event == Event.DONE_EVENT) {
 				boolean sendMail = removeFromGrpDlg.isSendMail();
@@ -252,8 +248,43 @@ public class GroupOverviewController extends BasicController {
 	private void cleanUpPopups() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(removeFromGrpDlg);
+		removeAsListenerAndDispose(groupsCtrl);
 		cmc = null;
+		groupsCtrl = null;
 		removeFromGrpDlg = null;
+	}
+	
+	private void doAddToGroups(AddToGroupsEvent e) {
+		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
+		if(e.getOwnerGroupKeys() != null && !e.getOwnerGroupKeys().isEmpty()) {
+			for(Long tutorGroupKey:e.getOwnerGroupKeys()) {
+				BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(identity, tutorGroupKey);
+				change.setTutor(Boolean.TRUE);
+				changes.add(change);
+			}
+		}
+		if(e.getParticipantGroupKeys() != null && !e.getParticipantGroupKeys().isEmpty()) {
+			for(Long partGroupKey:e.getParticipantGroupKeys()) {
+				BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(identity, partGroupKey);
+				change.setParticipant(Boolean.TRUE);
+				changes.add(change);
+			}
+		}
+		businessGroupService.updateMemberships(getIdentity(), changes);
+		DBFactory.getInstance().commit();
+		
+		if(e.getMailForGroupsList() != null && !e.getMailForGroupsList().isEmpty()) {
+			List<BusinessGroup> notifGroups = businessGroupService.loadBusinessGroups(e.getMailForGroupsList());
+			for (BusinessGroup group : notifGroups) {
+				MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, getIdentity());
+				MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+				MailerResult mailerResult = mailer.sendMail(null, identity, null, null, mailTemplate, null);
+				if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
+					logDebug("Problems sending Group invitation mail for identity: " + identity.getName() + " and group: " 
+							+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
+				}
+			}
+		}
 	}
 	
 	private void doLeave(UserRequest ureq, List<BusinessGroup> groupsToLeave) {

@@ -75,7 +75,6 @@ import org.olat.group.DeletableReference;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
@@ -1194,77 +1193,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		log.info("doEnroll end", identity.getName());
 		return enrollStatus;
 	}
-
-	@Override
-	public String[] addIdentityToGroups(final AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity) {
-		String[] resultTextArgs = new String[2];
-		boolean addToAnyGroup = false;
-
-		// notify user about add for following groups:
-		List<Long> notifyAboutAdd = new ArrayList<Long>();
-		List<Long> mailKeys = groupsEv.getMailForGroupsList();
-		
-		// add to owner groups
-		List<Long> ownerKeys = groupsEv.getOwnerGroupKeys();
-		String ownerGroupnames = "";
-
-		List<BusinessGroup> groups = loadBusinessGroups(ownerKeys);	
-		for (BusinessGroup group : groups) {
-			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getOwnerGroup())){
-				//seems not to work, but would be the way to go!
-				//ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
-				SyncUserListTask syncIM = new SyncUserListTask(group);
-				addOwner(addingIdentity, ident, group, syncIM);
-				syncIM(syncIM, group);
-				ownerGroupnames += group.getName() + ", ";
-				addToAnyGroup = true;
-				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
-			}
-		}
-		resultTextArgs[0] = ownerGroupnames.substring(0, ownerGroupnames.length() > 0 ? ownerGroupnames.length() - 2 : 0);
-
-		// add to participant groups
-		List<Long> participantKeys = groupsEv.getParticipantGroupKeys();
-		String participantGroupnames = "";
-		List<BusinessGroup> participantGroups = loadBusinessGroups(participantKeys);	
-		for (BusinessGroup group : participantGroups) {
-			if (group != null) {
-				BusinessGroup toAddGroup = businessGroupDAO.loadForUpdate(group.getKey());
-				SyncUserListTask syncIM = new SyncUserListTask(group);
-				//seems not to work, but would be the way to go!
-				//ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
-				addParticipant(addingIdentity, ident, toAddGroup, syncIM);
-				//release lock
-				dbInstance.commit();
-						
-				syncIM(syncIM, group);
-				participantGroupnames += group.getName() + ", ";
-				addToAnyGroup = true;
-				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
-			}			
-		}
-		resultTextArgs[1] = participantGroupnames.substring(0, participantGroupnames.length() > 0 ? participantGroupnames.length() - 2 : 0);
-		
-		// send notification mails
-
-		List<BusinessGroup> notifGroups = loadBusinessGroups(notifyAboutAdd);
-		for (BusinessGroup group : notifGroups) {
-			MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, addingIdentity);
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailerResult mailerResult = mailer.sendMail(null, ident, null, null, mailTemplate, null);
-			if (mailerResult.getReturnCode() != MailerResult.OK){
-				log.debug("Problems sending Group invitation mail for identity: " + ident.getName() + " and group: " 
-						+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
-			}
-		}		
-		
-		if (addToAnyGroup) {
-			return resultTextArgs;
-		} else {
-			return null;
-		}
-	}
-
 
 	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group, SyncUserListTask syncIM) {
 

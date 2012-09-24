@@ -41,11 +41,9 @@ public class DummyJob extends JobWithDB {
 	/**
 	 * @see org.springframework.scheduling.quartz.QuartzJobBean#executeInternal(org.quartz.JobExecutionContext)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	public void executeWithDB(JobExecutionContext arg0)
 	throws JobExecutionException {
-		System.out.println("dummy job called...");
+		log.debug("dummy job called...");
 	}
-
 }

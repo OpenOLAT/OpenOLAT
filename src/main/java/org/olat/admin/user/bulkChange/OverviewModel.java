@@ -19,11 +19,9 @@
  */
 package org.olat.admin.user.bulkChange;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Description:<br>
@@ -34,13 +32,11 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author rhaag
  */
-public class OverviewModel extends DefaultTableDataModel {
+public class OverviewModel extends DefaultTableDataModel<List<String>> {
 
 	private int columnCount = 0;
-	private List<UserPropertyHandler> userPropertyHandlers;
-	private static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 
-	public OverviewModel(List objects, int columnCount) {
+	public OverviewModel(List<List<String>> objects, int columnCount) {
 		super(objects);
 		this.columnCount = columnCount;
 	}
@@ -52,24 +48,8 @@ public class OverviewModel extends DefaultTableDataModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		Object o = getObject(row);
-		List<Object> dataArray = null;
-		dataArray = (ArrayList<Object>) o;
-
-		String value = (String) dataArray.get(col);
+		List<String> dataArray = getObject(row);
+		String value = dataArray.get(col);
 		return (value == null ? "n/a" : value);
-		
-		//überflüssig: ?
-//		if (col == 0) return ((Identity) o).getName();
-//
-//		if (col > 1 && col < getColumnCount() - 4) {
-//			// get user property for this column for an already existing user
-//			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 3);
-//			String value = userPropertyHandler.getUserProperty(((Identity) o).getUser(), getLocale());
-//			return (value == null ? "n/a" : value);
-//		}
-
-//		return null;
 	}
-
 }

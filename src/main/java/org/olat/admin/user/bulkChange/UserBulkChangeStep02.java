@@ -20,11 +20,11 @@
 package org.olat.admin.user.bulkChange;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -35,6 +35,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -43,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -56,6 +58,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BusinessGroupTableModel;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -75,7 +79,9 @@ class UserBulkChangeStep02 extends BasicStep {
 	static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 	public List<UserPropertyHandler> userPropertyHandlers;
 	private static VelocityEngine velocityEngine;
-	static UserBulkChangeManager ubcMan;
+	
+	private final UserBulkChangeManager ubcMan;
+	private final BusinessGroupService businessGroupService;
 
 	static {
 		// init velocity engine
@@ -95,6 +101,7 @@ class UserBulkChangeStep02 extends BasicStep {
 		super(ureq);
 		setI18nTitleAndDescr("step2.description", null);
 	  setNextStep(Step.NOSTEP);
+	  businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		ubcMan = UserBulkChangeManager.getInstance();
 	}
 
@@ -143,15 +150,13 @@ class UserBulkChangeStep02 extends BasicStep {
 		}
 
 		@Override
-		protected boolean validateFormLogic(@SuppressWarnings("unused")
-		UserRequest ureq) {
+		protected boolean validateFormLogic(UserRequest ureq) {
 			return true;
 		}
 
 		@SuppressWarnings("unchecked")
 		@Override
-		protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused")
-		Controller listener, UserRequest ureq) {
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			FormLayoutContainer formLayoutVertical = FormLayoutContainer.createVerticalFormLayout("vertical", getTranslator());
 			formLayout.add(formLayoutVertical);
 
@@ -273,7 +278,7 @@ class UserBulkChangeStep02 extends BasicStep {
 			uifactory.addTableElement("newUsers", tableDataModel, formLayoutVertical);
 
 			//fxdiff: 101 add group overview
-			HashSet<Long> allGroups = new HashSet<Long>(); 
+			Set<Long> allGroups = new HashSet<Long>(); 
 			List<Long> ownGroups = (List<Long>) getFromRunContext("ownerGroups");
 			List<Long> partGroups = (List<Long>) getFromRunContext("partGroups");
 			allGroups.addAll(ownGroups);
@@ -286,15 +291,15 @@ class UserBulkChangeStep02 extends BasicStep {
 				FlexiTableColumnModel groupColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.group.name"));
 				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("description"));
-				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.group.type"));
 				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.role"));
 				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("send.email"));
-				
-				FlexiTableDataModel groupDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new GroupAddOverviewModel(Arrays.asList(allGroups.toArray(new Long[]{})), ownGroups, partGroups, mailGroups, getTranslator()), groupColumnModel);
+
+				List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(allGroups);
+				TableDataModel<BusinessGroup> model = new GroupAddOverviewModel(groups, ownGroups, partGroups, mailGroups, getTranslator()); 
+				FlexiTableDataModel groupDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(model, groupColumnModel);
 				
 				uifactory.addTableElement("groupOverview", groupDataModel, formLayout);
 			}
-			
 		}
 
 		/**

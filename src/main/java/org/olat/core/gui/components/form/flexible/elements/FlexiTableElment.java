@@ -25,9 +25,11 @@
 */ 
 package org.olat.core.gui.components.form.flexible.elements;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
+
 /**
  * 
  */
-public interface FlexiTableElment {
+public interface FlexiTableElment extends FormItem {
 	
 }

@@ -39,13 +39,13 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * Description: Table model for user mass import.
  */
-public class Model extends DefaultTableDataModel {
+public class Model extends DefaultTableDataModel<Object> {
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
 	private int columnCount = 0;
 
-	public Model(List objects, int columnCount) {
+	public Model(List<Object> objects, int columnCount) {
 		super(objects);
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
 		this.columnCount = columnCount;

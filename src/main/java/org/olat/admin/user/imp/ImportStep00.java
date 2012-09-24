@@ -121,7 +121,7 @@ class ImportStep00 extends BasicStep {
 
 		@Override
 		protected void doDispose() {
-		// TODO Auto-generated method stub
+			//
 		}
 
 		@SuppressWarnings("synthetic-access")
@@ -140,8 +140,7 @@ class ImportStep00 extends BasicStep {
 		}
 
 		@Override
-		protected boolean validateFormLogic(@SuppressWarnings("unused")
-		UserRequest ureq) {
+		protected boolean validateFormLogic(UserRequest ureq) {
 			String inp = textAreaElement.getValue();
 			String defaultlang = I18nModule.getDefaultLocale().toString();
 			List<String> importedEmails = new ArrayList<String>();
@@ -157,6 +156,7 @@ class ImportStep00 extends BasicStep {
 			if (tk != null) {
 				for (TemporaryKey temporaryKey : tk) {
 					XStream xml = new XStream();
+					@SuppressWarnings("unchecked")
 					Map<String, String> mails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
 					for(Map.Entry<String, String> mailEntry:mails.entrySet()) {
 						tempEmailsInUse.add(mailEntry.getKey());
@@ -341,8 +341,7 @@ class ImportStep00 extends BasicStep {
 		}
 
 		@Override
-		protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused")
-		Controller listener, UserRequest ureq) {
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("title");
 
 			textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step0.html");
@@ -382,7 +381,7 @@ class ImportStep00 extends BasicStep {
 		private Mapper createMapper(UserRequest ureq) {
 			final String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
 			Mapper m = new Mapper() {
-				@SuppressWarnings({ "unused", "synthetic-access" })
+				@SuppressWarnings({"synthetic-access" })
 				public MediaResource handle(String relPath, HttpServletRequest request) {
 					setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 					String headerLine = translate("table.user.login") + " *";

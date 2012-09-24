@@ -1027,6 +1027,20 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 	
 	@Override
+	public List<Identity> findIdentitiesByName(Collection<String> identityNames) {
+		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where ident.name in (:username)");
+		
+		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("username", identityNames)
+				.getResultList();
+		return identities;
+	}
+
+	@Override
 	public Identity findIdentityByUser(User user) {
 		if (user == null) return null;
 		
