@@ -22,6 +22,7 @@
 		<property name="activeDirectory" value="${ldap.activeDirectory}" />
 		<property name="ldapDateFormat" value="${ldap.dateFormat}" />
 		<property name="ldapUrl" value="${ldap.ldapUrl}" />
+		<property name="ldapConnectionTimeout" value="${ldap.connectionTimeout}" />
 		<!-- System user: used for getting all users and connection testing -->
     	<property name="ldapSystemDN" value="${ldap.ldapSystemDN}" />
     	<property name="ldapSystemPW" value="${ldap.ldapSystemPW}" />

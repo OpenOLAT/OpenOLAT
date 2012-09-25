@@ -79,6 +79,7 @@ public class LDAPLoginModule implements Initializable {
 	private static String systemPW;
 	// List of bases where to find users
 	private static List<String> ldapBases;
+	private static Integer connectionTimeout;
 	// Use a valid ldap password and save it as olat password to reduce dependency
 	// to LDAP server availability and allow WeDAV access
 	private static boolean cacheLDAPPwdAsOLATPwdOnLogin;
@@ -139,6 +140,8 @@ public class LDAPLoginModule implements Initializable {
 			log.info("LDAP login is disabled");
 			return;
 		}
+		log.info("Starting LDAP module");
+		
 		// Create LDAP Security Group if not existing. Used to identify users that
 		// have to be synced with LDAP
 		SecurityGroup ldapGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
@@ -204,14 +207,10 @@ public class LDAPLoginModule implements Initializable {
 		if (ldapManager.bindSystem() == null) {
 			// don't disable ldap, maybe just a temporary problem, but still report
 			// problem in logfile
-			log.warn("LDAP connection test failed during module initialization, edit config or contact network administrator");
+			log.error("LDAP connection test failed during module initialization, edit config or contact network administrator");
+		} else {
+			log.info("LDAP login is enabled");
 		}
-		// OK, everything finished checkes passed
-		log.info("LDAP login is enabled");
-
-		/*
-		 * 
-		 */
 		
 		// Sync LDAP Users on Startup
 		if (isLdapSyncOnStartup()) {
@@ -510,6 +509,10 @@ public class LDAPLoginModule implements Initializable {
 		}
 		ldapBases = listToUse;
 	}
+	
+	public void setLdapConnectionTimeout(Integer timeout) {
+		connectionTimeout = timeout;
+	}
 
 	public void setUserAttributeMapper(Map<String, String> userAttributeMapper) {
 		// trim map
@@ -612,6 +615,10 @@ public class LDAPLoginModule implements Initializable {
 
 	public static List<String> getLdapBases() {
 		return ldapBases;
+	}
+	
+	public static Integer getLdapConnectionTimeout() {
+		return connectionTimeout;
 	}
 
 	public static String getLdapUserObjectClass() {

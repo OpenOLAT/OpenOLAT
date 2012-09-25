@@ -84,6 +84,7 @@ import org.olat.user.UserManager;
  */
 public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEventListener {
 
+	private static final String TIMEOUT_KEY = "com.sun.jndi.ldap.connect.timeout";
 	private static final TimeZone UTC_TIME_ZONE;
 	private static boolean batchSyncIsRunning = false;
 	private static Date lastSyncDate = null; // first sync is always a full sync
@@ -187,6 +188,9 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
 		env.put(Context.SECURITY_PRINCIPAL, LDAPLoginModule.getLdapSystemDN());
 		env.put(Context.SECURITY_CREDENTIALS, LDAPLoginModule.getLdapSystemPW());
+		if(LDAPLoginModule.getLdapConnectionTimeout() != null) {
+			env.put(TIMEOUT_KEY, LDAPLoginModule.getLdapConnectionTimeout().toString());
+		}
 
 		// check ssl
 		if (LDAPLoginModule.isSslEnabled()) {
@@ -257,6 +261,9 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
 		env.put(Context.SECURITY_PRINCIPAL, userDN);
 		env.put(Context.SECURITY_CREDENTIALS, pwd);
+		if(LDAPLoginModule.getLdapConnectionTimeout() != null) {
+			env.put(TIMEOUT_KEY, LDAPLoginModule.getLdapConnectionTimeout().toString());
+		}
 		if (LDAPLoginModule.isSslEnabled()) {
 			enableSSL(env);
 		}
