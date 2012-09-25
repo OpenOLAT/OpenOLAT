@@ -306,6 +306,8 @@ public class Feed implements OLATResourceable, Serializable {
 	 */
 	public boolean remove(Item item) {
 		itemIds.remove(item.getGuid());
+		// Remove below works also when object identity is not the same as
+		// item.equals has been overwritten to match on the GUID
 		return items.remove(item);
 	}
 

@@ -344,6 +344,10 @@ public class Item implements Serializable, Dated {
 		return guid == null ? 39745 : guid.hashCode();
 	}
 	
+	/**
+	 * Overwrite equals method so that different object in the vm that actually
+	 * represent the same item are recognized as such. Eg in the remove method of the feed
+	 */
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;

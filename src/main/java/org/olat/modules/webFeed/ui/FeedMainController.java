@@ -169,6 +169,10 @@ public class FeedMainController extends BasicController implements Activateable2
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		// feed for this event and make sure the updated feed object is in the view
+		feed = feedManager.getFeed(feed);
+		vcInfo.contextPut("feed", feed);
+		
 		if (source == editFeedButton) {
 			lock = feedManager.acquireLock(feed, ureq.getIdentity());
 			if (lock.isSuccess()) {

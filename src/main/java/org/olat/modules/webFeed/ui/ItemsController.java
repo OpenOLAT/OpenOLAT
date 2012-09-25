@@ -389,7 +389,10 @@ public class ItemsController extends BasicController implements Activateable2 {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		FeedManager feedManager = FeedManager.getInstance();
+		// feed for this event and make sure the updated feed object is in the view
 		Feed feed = feedManager.getFeed(feedResource);
+		vcItems.contextPut("feed", feed);
+		
 		if (source == addItemButton) {
 			currentItem = new Item();
 			currentItem.setDraft(true);
@@ -403,14 +406,20 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		} else if (editButtons != null && editButtons.contains(source)) {
 			currentItem = (Item) ((Link) source).getUserObject();
-			lock = feedManager.acquireLock(feed, currentItem, getIdentity());
-			if (lock.isSuccess()) {
-
-				itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
-				activateModalDialog(itemFormCtr);
+			// check if still available, maybe deleted by other user in the meantime
+			if (feed.getItems().contains(currentItem)) {
+				lock = feedManager.acquireLock(feed, currentItem, getIdentity());
+				if (lock.isSuccess()) {
+					
+					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
+					activateModalDialog(itemFormCtr);
+				} else {
+					showInfo("feed.item.is.being.edited.by", lock.getOwner().getName());
+				}				
 			} else {
-				showInfo("feed.item.is.being.edited.by", lock.getOwner().getName());
+				showInfo("feed.item.is.being.edited.by", "unknown");
 			}
+			
 		} else if (deleteButtons != null && deleteButtons.contains(source)) {
 			Item item = (Item) ((Link) source).getUserObject();
 			confirmDialogCtr = activateYesNoDialog(ureq, null, translate("feed.item.confirm.delete"), confirmDialogCtr);
@@ -421,7 +430,16 @@ public class ItemsController extends BasicController implements Activateable2 {
 			displayItemController(ureq, item);
 
 		} else if (source == makeInternalButton) {
-			feedManager.updateFeedMode(Boolean.FALSE, feed);
+			if (feed.isUndefined()) {
+				feedManager.updateFeedMode(Boolean.FALSE, feed);				
+			} else if (feed.isExternal()) {
+				// Very special case: another user concurrently changed feed to external. Do nothing
+				vcItems.setDirty(true);
+				return;
+			}
+			// else nothing to do, already set to internal by a concurrent user
+			
+			// Add temporary item and open edit dialog
 			addItemButton = LinkFactory.createButton("feed.add.item", vcItems, this);
 			addItemButton.setElementCssClass("o_sel_feed_item_new");
 			currentItem = new Item();
@@ -435,15 +453,19 @@ public class ItemsController extends BasicController implements Activateable2 {
 			activateModalDialog(itemFormCtr);
 			// do logging
 			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(), LoggingResourceable.wrap(feed));
+			
 
 		} else if (source == makeExternalButton) {
-			feedManager.updateFeedMode(Boolean.TRUE, feed);
-			vcItems.setDirty(true);
-			// Ask listening FeedMainController to open and handle a new external
-			// feed dialog.
-			fireEvent(ureq, HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT);
-			// do logging
-			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(), LoggingResourceable.wrap(feed));
+			if (feed.isUndefined()) {
+				feedManager.updateFeedMode(Boolean.TRUE, feed);
+				vcItems.setDirty(true);
+				// Ask listening FeedMainController to open and handle a new external
+				// feed dialog.
+				fireEvent(ureq, HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT);
+				// do logging
+				ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(), LoggingResourceable.wrap(feed));
+			} 
+			// else nothing to do, already set to external by a concurrent user
 
 		} else if (source == olderItemsLink) {
 			helper.olderItems();
@@ -492,7 +514,11 @@ public class ItemsController extends BasicController implements Activateable2 {
 				dts.activate(ureq, dt, null);
 			}
 		}
-
+		
+		// Check if someone else added an item, reload everything
+		if (!isSameAllItems(feed.getFilteredItems(callback, ureq.getIdentity()))) {
+			resetItems(ureq, feed);
+		}
 	}
 
 	/**
@@ -501,7 +527,10 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 */
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		FeedManager feedManager = FeedManager.getInstance();
+		// reload feed for this event and make sure the updated feed object is in the view
 		Feed feed = feedManager.getFeed(feedResource);
+		vcItems.contextPut("feed", feed);
+
 		if (source == cmc) {
 			if (event.equals(CloseableModalController.CLOSE_MODAL_EVENT)) {
 				removeAsListenerAndDispose(cmc);
