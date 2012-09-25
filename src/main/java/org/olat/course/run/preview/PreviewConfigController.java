@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -77,7 +77,7 @@ public class PreviewConfigController extends MainLayoutBasicController {
 	private boolean isCoach = false;
 	private boolean isCourseAdmin = false;
 	private String role = PreviewSettingsForm.ROLE_STUDENT;
-	private LayoutMain3ColsPreviewController previewLayoutCtr;
+	private LayoutMain3ColsController previewLayoutCtr;
 	private final OLATResourceable ores;
 	
 	private final BGAreaManager areaManager;
@@ -104,14 +104,10 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		
 		configVc.put("previewsettingsform", psf.getInitialComponent());
 		// Use layout wrapper for proper display. Use col3 as main column
-		previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, wControl, null, null, configVc, null);
+		previewLayoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, configVc, null);
+		previewLayoutCtr.addCssClassToMain("b_preview");
 		listenTo(previewLayoutCtr); // for later auto disposal
-		
-	}
-
-	public void activate() {
-		//init preview view
-		previewLayoutCtr.activate();
+		putInitialPanel(previewLayoutCtr.getInitialComponent());
 	}
 
 	/**

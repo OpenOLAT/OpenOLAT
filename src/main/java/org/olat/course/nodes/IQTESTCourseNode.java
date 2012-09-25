@@ -31,6 +31,7 @@ import java.util.Locale;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
@@ -55,9 +56,6 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.export.QTIExportFormatter;
-import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
-import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -83,9 +81,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
 	 */
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
+	@Override
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		TabbableController childTabCntrllr = IQUIFactory.createIQTestEditController(ureq, wControl, course, this, course.getCourseEnvironment().getCourseGroupManager(), euce); 
+		TabbableController childTabCntrllr = IQUIFactory.createIQTestEditController(ureq, wControl, stackPanel, course, this, course.getCourseEnvironment().getCourseGroupManager(), euce); 
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
 				.getCourseGroupManager(), euce, childTabCntrllr);
@@ -460,7 +459,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnvironment) {
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, UserCourseEnvironment userCourseEnvironment) {
 		return IQUIFactory.createIQTestDetailsEditController(userCourseEnvironment.getCourseEnvironment().getCourseResourceableId(), this.getIdent(),
 				userCourseEnvironment.getIdentityEnvironment().getIdentity(), this.getReferencedRepositoryEntry(), AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
 	}

@@ -48,6 +48,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -205,6 +206,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private Link filterCourseNodesButton;
 
 	private BulkAssessmentMainController bamc;
+	private final StackedController stackPanel;
 
 	private OLATResourceable ores;
 
@@ -223,13 +225,13 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @param course
 	 * @param assessmentCallback
 	 */
-AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
+AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
 		super(ureq, wControl);
 		
 		Translator translator = Util.createPackageTranslator(org.olat.course.assessment.AssessmentMainController.class, getTranslator().getLocale(), getTranslator());
 		setTranslator(translator);
-
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
+		this.stackPanel = stackPanel;
 		this.ores = ores;
 		this.callback = assessmentCallback;
 		this.localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>();
@@ -343,7 +345,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 
 			// select user
 			assessedIdentityWrapper = AssessmentHelper.wrapIdentity(focusOnIdentity, localUserCourseEnvironmentCache, initialLaunchDates, course, null);
-			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, focusOnIdentity, course, true);
+			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(), ureq, stackPanel, focusOnIdentity, course, true);
 			listenTo(identityAssessmentController);
 			setContent(identityAssessmentController.getInitialComponent());
 		}
@@ -579,12 +581,12 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					if (this.currentCourseNode == null) {
 						Identity assessedIdentity = assessedIdentityWrapper.getIdentity();
 						removeAsListenerAndDispose(identityAssessmentController);
-						identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, assessedIdentity, course, true);
+						identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(), ureq, stackPanel, assessedIdentity, course, true);
 						listenTo(identityAssessmentController);
 						setContent(identityAssessmentController.getInitialComponent());
 					} else {
 						removeAsListenerAndDispose(assessmentEditController);
-						assessmentEditController = new AssessmentEditController(ureq, getWindowControl(),course, currentCourseNode, assessedIdentityWrapper);
+						assessmentEditController = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, currentCourseNode, assessedIdentityWrapper);
 						listenTo(assessmentEditController);
 						main.setContent(assessmentEditController.getInitialComponent());
 					}

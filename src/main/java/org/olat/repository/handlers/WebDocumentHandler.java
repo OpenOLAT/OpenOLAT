@@ -121,7 +121,7 @@ public class WebDocumentHandler extends FileHandler implements RepositoryHandler
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(OLATResourceable res,  UserRequest ureq, WindowControl wControl) {
 		/* For the time beeing, disable launching web ressources...
 		FileResourceManager frm = FileResourceManager.getInstance();
 		ureq.getDispatchResult().setResultingMediaResource(frm.getAsInlineMediaResource(res));

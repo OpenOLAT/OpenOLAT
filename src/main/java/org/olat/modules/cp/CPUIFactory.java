@@ -206,5 +206,26 @@ public class CPUIFactory {
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
 		return layoutCtr;
 	}
+	
+	/**
+	 * Creates a main layout controller that can be activated. It provides a
+	 * "close preview" link that automatically deactivates this controller form
+	 * the GUI stack
+	 * <p>
+	 * Use this when you want the user to be able to preview a CP
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param rootContainer The VFS root container where the CP is found on disk
+	 * @param showMenu true to display the menu, false to hide the menu
+	 * @return A main layout preview controller
+	 */
+	public LayoutMain3ColsController createMainLayoutPreviewController_v2(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu) {
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, null, null);		
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), null, cpCtr.getInitialComponent(), rootContainer.getName());
+		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
+		layoutCtr.addCssClassToMain("b_preview");
+		return layoutCtr;
+	}
 		
 }

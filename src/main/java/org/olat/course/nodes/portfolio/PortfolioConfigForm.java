@@ -21,7 +21,7 @@
 package org.olat.course.nodes.portfolio;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -80,14 +81,16 @@ public class PortfolioConfigForm extends FormBasicController {
 	private StaticTextElement mapNameElement;
 	
 	private Controller previewCtr;
-	private LayoutMain3ColsBackController columnLayoutCtr;
+	private Controller columnLayoutCtr;
 	private boolean isDirty;
 	private final PortfolioCourseNode courseNode;
+	private final StackedController stackPanel;
 	
-	public PortfolioConfigForm(UserRequest ureq, WindowControl wControl, ICourse course, PortfolioCourseNode courseNode) {
+	public PortfolioConfigForm(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, PortfolioCourseNode courseNode) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
+		this.stackPanel = stackPanel;
 
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		eSTMgr = (EPStructureManager) CoreSpringFactory.getBean("epStructureManager");
@@ -192,9 +195,9 @@ public class PortfolioConfigForm extends FormBasicController {
 			}
 			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
 			listenTo(previewCtr);
-			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, null, previewCtr.getInitialComponent(), "portfolio" + map.getKey());
-			ctr.activate();
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, previewCtr.getInitialComponent(), "portfolio" + map.getKey());
 			columnLayoutCtr = ctr;
+			stackPanel.pushController(translate("preview.map"), columnLayoutCtr);
 			listenTo(columnLayoutCtr);
 		}
 	}

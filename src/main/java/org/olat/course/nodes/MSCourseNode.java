@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -116,7 +117,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
 	 */
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, UserCourseEnvironment euce) {
 		MSCourseNodeEditController childTabCntrllr = new MSCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
@@ -418,7 +419,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnvironment) {
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Details controler not available in MS nodes", null);
 	}
 

@@ -44,8 +44,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
-import org.olat.core.gui.control.generic.tool.ToolController;
-import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.course.CourseFactory;
@@ -82,7 +80,6 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	private Panel main;
 	private Controller resC, contentCtr;
 	
-	private ToolController toolC;
 	private OLATResourceable ores;
 	
 	private Locale locale;
@@ -116,14 +113,8 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
 		menuTree.addListener(this);
-
-		// Tool and action box
-		toolC = ToolFactory.createToolController(getWindowControl());
-		listenTo(toolC);
-		toolC.addHeader(translate("tool.name"));
-		toolC.addLink("cmd.close",translate("command.closearchiver"), null, "b_toolbox_close");
 				
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, toolC.getInitialComponent(), main, "course" + ores.getResourceableId());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, main, "course" + ores.getResourceableId());
 		listenTo(columnLayoutCtr); // cleanup on dispose
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
@@ -158,18 +149,6 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		listenTo(resC);
 		main.setContent(this.resC.getInitialComponent());
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == toolC) {
-			if (event.getCommand().equals("cmd.close")) {
-				fireEvent(ureq, Event.DONE_EVENT);
-			}
-		}
-	}
-
 	
 	/**
 	 * Generates the archiver menu
@@ -315,7 +294,6 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	protected void doDispose() {
 		// controllers disposed by BasicController:
 		columnLayoutCtr = null;
-		toolC = null;
 		resC = null;
 		contentCtr = null;		
 	}	

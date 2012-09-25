@@ -83,7 +83,7 @@ public class RepoBookmarkHandler implements BookmarkHandler {
 					log.warn("Could not create dTab for bookmark with title::" + bookmark.getTitle() + " and ores::" + ores);
 					return true;
 				}
-				Controller launchController = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
+				Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
 				dt.setController(launchController);
 				dts.addDTab(dt);
 			}

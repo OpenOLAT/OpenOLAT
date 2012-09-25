@@ -298,7 +298,7 @@ public class FunctionalUtil {
 	}
 	
 	public String currentBusinessPath(Selenium browser){
-		return(browser.getExpression("o_info.businessPath"));
+		return(browser.getEval("window.o_info.businessPath"));
 	}
 	
 	/**
@@ -893,8 +893,9 @@ public class FunctionalUtil {
 		
 		waitForPageToLoadElement(browser, locatorBuffer.toString());
 		
-		browser.focus(locatorBuffer.toString());
+		//browser.focus(locatorBuffer.toString());
 		browser.click(locatorBuffer.toString());
+		//waitForPageToUnloadElement(browser, locatorBuffer.toString());
 		
 		return(true);
 	}

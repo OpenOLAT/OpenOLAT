@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -124,8 +123,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	
 	private ConditionEditController accessibilityCondContr;
 	private ScormCourseNode scormNode;
-
-	private LayoutMain3ColsPreviewController previewLayoutCtr;
 
 	private TabbedPane myTabbedPane;
 
@@ -242,7 +239,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				boolean showMenu = config.getBooleanSafe(CONFIG_SHOWMENU, true);
 				boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 				
-				if (previewLayoutCtr != null) previewLayoutCtr.dispose();
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
 				ScormAPIandDisplayController previewController = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null, cpRoot, null, course.getResourceableId().toString(),
 						ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, true, fullWindow);				
@@ -383,10 +379,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	 */
 	protected void doDispose() {
     //child controllers registered with listenTo() get disposed in BasicController
-		if (previewLayoutCtr != null) {
-			previewLayoutCtr.dispose();
-			previewLayoutCtr = null;
-		}
 	}
 
 	public String[] getPaneKeys() {

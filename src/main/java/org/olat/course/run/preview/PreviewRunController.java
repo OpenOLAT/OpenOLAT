@@ -29,7 +29,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -82,7 +82,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 	 * @param identEnv
 	 * @param cenv
 	 */
-	public PreviewRunController(UserRequest ureq, WindowControl wControl, IdentityEnvironment identEnv, CourseEnvironment cenv, String role, LayoutMain3ColsPreviewController previewLayoutCtr) { 
+	public PreviewRunController(UserRequest ureq, WindowControl wControl, IdentityEnvironment identEnv, CourseEnvironment cenv, String role, LayoutMain3ColsController previewLayoutCtr) { 
 		super(ureq, wControl);
 		// set up the components
 		luTree = new MenuTree(null, "luTreeRun", this);

@@ -58,7 +58,7 @@ public class RepositoyUIFactory {
 	 * @return null if no entry was found, a no access message controller if not allowed to launch or the launch 
 	 * controller if successful.
 	 */
-	public static MainLayoutController createLaunchController(RepositoryEntry re, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
+	public static MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		if (re == null) return null;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		if (!rm.isAllowedToLaunch(ureq, re)) {
@@ -84,7 +84,7 @@ public class RepositoyUIFactory {
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 		}
 		
-		MainLayoutController ctrl = handler.createLaunchController(re.getOlatResource(), initialViewIdentifier, ureq, bwControl);
+		MainLayoutController ctrl = handler.createLaunchController(re.getOlatResource(), ureq, bwControl);
 		if (ctrl == null) throw new AssertException("could not create controller for repositoryEntry "+re); 
 		if (ctrl instanceof MainLayoutController) {
 			return ctrl;			

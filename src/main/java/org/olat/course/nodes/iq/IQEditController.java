@@ -36,12 +36,13 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.commons.file.filechooser.FileChooseCreateEditController;
 import org.olat.commons.file.filechooser.LinkChooseCreateEditController;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -187,9 +188,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	private Link changeTestButton;
 	private IQEditReplaceWizard replaceWizard;
 	private List<Identity> learners;
-	private LayoutMain3ColsPreviewController previewLayoutCtr;
+	private Controller previewLayoutCtr;
 	private CloseableModalController cmc;
 	private Link editTestButton;
+	private final StackedController stackPanel;
 
 	/**
 	 * Constructor for the IMS QTI edit controller for a test course node
@@ -201,9 +203,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	IQEditController(UserRequest ureq, WindowControl wControl, ICourse course, IQTESTCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
+	IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQTESTCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
 		super(ureq, wControl);
-		
+		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
 		//o_clusterOk by guido: save to hold reference to course inside editor
 		this.course = course;
@@ -235,9 +237,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	 IQEditController(UserRequest ureq, WindowControl wControl, ICourse course, IQSELFCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
+	 IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSELFCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
 		super(ureq, wControl);
-		
+		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
 		this.course = course;
 		this.courseNode = courseNode;
@@ -266,9 +268,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	 IQEditController(UserRequest ureq, WindowControl wControl, ICourse course, IQSURVCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
+	 IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSURVCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
 		super(ureq, wControl);
-		
+		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
 		this.course = course;
 		this.courseNode = courseNode;
@@ -383,12 +385,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			}
 		} else if (source == previewLink){
 			// handle preview
-			if (previewLayoutCtr != null) previewLayoutCtr.dispose();
 			Controller previewController = IQManager.getInstance().createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), course
 					.getResourceableId().longValue(), courseNode.getIdent());
-			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, null, previewController.getInitialComponent(), null);
-			previewLayoutCtr.addDisposableChildController(previewController);
-			previewLayoutCtr.activate();
+			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
+			stackPanel.pushController("Preview", previewLayoutCtr);
 			
 		} else if (source == chooseTestButton){// initiate search controller
 			if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {

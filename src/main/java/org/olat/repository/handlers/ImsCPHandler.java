@@ -125,7 +125,7 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 		LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
 		

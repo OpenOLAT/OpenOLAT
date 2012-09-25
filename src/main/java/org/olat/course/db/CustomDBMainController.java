@@ -66,7 +66,6 @@ public class CustomDBMainController extends GenericMainController {
 		listenTo(toolC);
 		toolC.addHeader(translate("tool.name"));
 		toolC.addLink("cmd.new_db", translate("command.new_db"), null, "b_toolbox_link b_new");
-		toolC.addLink("cmd.close", translate("command.closedb"), null, "b_toolbox_close");
 		setToolController(toolC);
 		
 		//set main node
@@ -99,10 +98,7 @@ public class CustomDBMainController extends GenericMainController {
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == toolC) {
-			if (event.getCommand().equals("cmd.close")) {
-				doDispose();
-				fireEvent(ureq, Event.DONE_EVENT);
-			} else if (event.getCommand().equals("cmd.new_db")) {
+			if (event.getCommand().equals("cmd.new_db")) {
 				removeAsListenerAndDispose(addController);
 				addController = new CustomDBAddController(ureq, getWindowControl());
 				listenTo(addController);

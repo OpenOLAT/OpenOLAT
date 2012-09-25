@@ -51,6 +51,7 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -182,15 +183,14 @@ public class CourseFactory extends BasicManager {
 	 *          activated (subscription subtype)
 	 * @return run controller for the given course resourceable
 	 */
-	public static MainLayoutController createLaunchController(UserRequest ureq, WindowControl wControl, final OLATResourceable olatResource,
-			String initialViewIdentifier) {
+	public static MainLayoutController createLaunchController(UserRequest ureq, WindowControl wControl, final OLATResourceable olatResource) {
 		ICourse course = loadCourse(olatResource);
 		boolean isDebug = Tracing.isDebugEnabled(CourseFactory.class);
 		long startT = 0;
 		if(isDebug){
 			startT = System.currentTimeMillis();
 		}
-		MainLayoutController launchC = new RunMainController(ureq, wControl, course, initialViewIdentifier, true, true);
+		MainLayoutController launchC = new RunMainController(ureq, wControl, course, true, true);
 		if(isDebug){
 			Tracing.logDebug("Runview for [["+course.getCourseTitle()+"]] took [ms]"+(System.currentTimeMillis() - startT), CourseFactory.class);
 		}
@@ -207,9 +207,9 @@ public class CourseFactory extends BasicManager {
 	 * @return editor controller for the given course resourceable; if the editor
 	 *         is already locked, it returns a controller with a lock message
 	 */
-	public static Controller createEditorController(UserRequest ureq, WindowControl wControl, OLATResourceable olatResource) {
+	public static Controller createEditorController(UserRequest ureq, WindowControl wControl, StackedController stack, OLATResourceable olatResource) {
 		ICourse course = loadCourse(olatResource);
-		EditorMainController emc = new EditorMainController(ureq, wControl, course);
+		EditorMainController emc = new EditorMainController(ureq, wControl, course, stack);
 		if (!emc.getLockEntry().isSuccess()) {
 			// get i18n from the course runmaincontroller to say that this editor is
 			// already locked by another person
@@ -217,8 +217,6 @@ public class CourseFactory extends BasicManager {
 			Translator translator = Util.createPackageTranslator(RunMainController.class, ureq.getLocale());
 			wControl.setWarning(translator.translate("error.editoralreadylocked", new String[] { emc.getLockEntry().getOwner().getName() }));
 			return null;
-			//return new MonologController(ureq.getLocale(), translator.translate("error.editoralreadylocked", new String[] { emc.getLockEntry()
-			//		.getOwner().getName() }), null, true);
 		}
 		//set the logger if editor is started
 		//since 5.2 groups / areas can be created from the editor -> should be logged.
@@ -818,7 +816,7 @@ public class CourseFactory extends BasicManager {
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);	
 			
-			RunMainController launchC = new RunMainController(ureq, bwControl, course, null, false, false);
+			RunMainController launchC = new RunMainController(ureq, bwControl, course, false, false);
 			return launchC;			
 		}		
 	}

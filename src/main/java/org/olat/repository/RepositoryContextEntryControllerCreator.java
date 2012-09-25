@@ -48,7 +48,7 @@ public class RepositoryContextEntryControllerCreator extends DefaultContextEntry
 
 		RepositoryManager repom = RepositoryManager.getInstance();
 		RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
-		Controller ctrl = RepositoyUIFactory.createLaunchController(re, null, ureq, wControl);
+		Controller ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);
 		return ctrl;
 
 	}

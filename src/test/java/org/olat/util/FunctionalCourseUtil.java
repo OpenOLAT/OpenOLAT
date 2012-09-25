@@ -640,6 +640,14 @@ public class FunctionalCourseUtil {
 			
 			browser.click(selector);
 			
+			selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-selected')]//a//span[contains(text(), '")
+			.append((structure != null) ? structure: page)
+			.append("')]");
+			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			
 			/* click finish */
 			functionalUtil.clickWizardFinish(browser);
 			functionalUtil.waitForPageToUnloadElement(browser, selector);

@@ -35,7 +35,6 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -57,17 +56,13 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class RepositorySite implements SiteInstance {
 	private static final OLATResourceable ORES_REPO = OresHelper.lookupType(RepositoryMainController.class);
 
-	// refer to the definitions in org.olat
-	private static final String PACKAGE = Util.getPackageName(BaseChiefController.class);
-
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 	/**
 	 * 
 	 */
 	public RepositorySite(Locale loc) {
-		//TODO:fj:b cache all Translators in olat, introduce ChangeableTranslator (with method setLocale(...))
-		Translator trans = new PackageTranslator(PACKAGE, loc);
+		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
 		origNavElem = new DefaultNavElement(trans.translate("topnav.dr"), trans.translate("topnav.dr.alt"), "o_site_repository");		
 		origNavElem.setAccessKey("r".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
@@ -89,7 +84,7 @@ public class RepositorySite implements SiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositorySite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_REPO, null, ureq, bwControl, true);
+		MainLayoutController c = ControllerFactory.createLaunchController(ORES_REPO, ureq, bwControl, true);
 		return c;
 	}
 

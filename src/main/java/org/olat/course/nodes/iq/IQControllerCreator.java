@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
@@ -53,7 +54,7 @@ public interface IQControllerCreator {
 	 * @param euce
 	 * @return
 	 */
-	public TabbableController createIQTestEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+	public TabbableController createIQTestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
 			IQTESTCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce);
 
 	/**
@@ -66,7 +67,7 @@ public interface IQControllerCreator {
 	 * @param euce
 	 * @return
 	 */
-	public TabbableController createIQSelftestEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+	public TabbableController createIQSelftestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
 			IQSELFCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce);
 
 	/**
@@ -79,7 +80,7 @@ public interface IQControllerCreator {
 	 * @param euce
 	 * @return
 	 */
-	public TabbableController createIQSurveyEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+	public TabbableController createIQSurveyEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
 			IQSURVCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce);
 
 	/**
