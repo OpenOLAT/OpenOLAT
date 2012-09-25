@@ -38,7 +38,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
@@ -54,7 +54,7 @@ import org.olat.resource.OLATResource;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CourseAreasController extends BasicController {
+public class CourseAreasController extends MainLayoutBasicController {
 	
 	private static final String TABLE_ACTION_EDIT = "tbl_edit";
 	private static final String TABLE_ACTION_DELETE = "tbl_del";

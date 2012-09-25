@@ -33,6 +33,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -75,6 +76,8 @@ public class IdentityAssessmentEditController extends BasicController {
 	private IdentityAssessmentOverviewController assessmentOverviewCtr;
 	private UserCourseEnvironment assessedUserCourseEnvironment;
 	private Link backLink;
+	private final StackedController stackPanel;
+	
 	private OLATResourceable ores;
 	private final boolean headers;
 
@@ -86,15 +89,16 @@ public class IdentityAssessmentEditController extends BasicController {
 	 * @param course
 	 * @param mayEdit true: user may edit the assessment, false: readonly view (user view)
 	 */
-	public IdentityAssessmentEditController(WindowControl wControl, UserRequest ureq, 
+	public IdentityAssessmentEditController(WindowControl wControl, UserRequest ureq, StackedController stackPanel,
 			Identity assessedIdentity, ICourse course, boolean mayEdit) {
-		this(wControl, ureq, assessedIdentity, course, mayEdit, true); 
+		this(wControl, ureq, stackPanel, assessedIdentity, course, mayEdit, true); 
 	}
 		
-	public IdentityAssessmentEditController(WindowControl wControl, UserRequest ureq, 
+	public IdentityAssessmentEditController(WindowControl wControl, UserRequest ureq, StackedController stackPanel,
 			Identity assessedIdentity, ICourse course, boolean mayEdit, boolean headers) {
 
 		super(ureq, wControl);
+		this.stackPanel = stackPanel;
 		this.mayEdit = mayEdit;
 		this.main = new Panel("main");
 		this.assessedUserCourseEnvironment = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
@@ -173,7 +177,7 @@ public class IdentityAssessmentEditController extends BasicController {
 			UserCourseInformationsManager userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 			Date initialLaunchDate = userCourseInformationsManager.getInitialLaunchDate(ores.getResourceableId(),  assessedUserCourseEnvironment.getIdentityEnvironment().getIdentity());
 			AssessedIdentityWrapper assessedIdentityWrapper = AssessmentHelper.wrapIdentity(assessedUserCourseEnvironment, initialLaunchDate, courseNode);
-			assessmentEditCtr = new AssessmentEditController(ureq, getWindowControl(), course, courseNode, assessedIdentityWrapper);			
+			assessmentEditCtr = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, courseNode, assessedIdentityWrapper);			
 			listenTo(assessmentEditCtr);
 			main.setContent(assessmentEditCtr.getInitialComponent());
 		} else {

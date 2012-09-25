@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.course.ICourse;
@@ -60,12 +61,6 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	protected AbstractAccessableCourseNode(String type) {
 		super(type);
 	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(UserRequest, WindowControl, ICourse, UserCourseEnvironment)
-	 */
-	abstract public TabbableController createEditController(UserRequest ureq, WindowControl wControl, ICourse course,
-			UserCourseEnvironment euce);
 
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(UserRequest, WindowControl, UserCourseEnvironment, NodeEvaluation, String)

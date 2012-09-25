@@ -155,7 +155,7 @@ public class WikiHandler implements RepositoryHandler {
 	 *      java.lang.String, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		Controller controller = null;
 		
 		//check role

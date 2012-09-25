@@ -371,7 +371,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 				OLATResourceable ores = repositoryEntry.getOlatResource();
 				
 				removeAsListenerAndDispose(previewCtr);
-				previewCtr = typeToLaunch.createLaunchController(ores, null, ureq, getWindowControl());
+				previewCtr = typeToLaunch.createLaunchController(ores, ureq, getWindowControl());
 				listenTo(previewCtr);
 				
 				removeAsListenerAndDispose(previewModalCtr);

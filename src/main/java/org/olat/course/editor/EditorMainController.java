@@ -45,6 +45,7 @@ import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
@@ -165,7 +166,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_MOVECOPYNODE_ERROR_SELECTFIRST = "movecopynode.error.selectfirst";
 	private static final String NLS_MOVECOPYNODE_ERROR_ROOTNODE = "movecopynode.error.rootnode";
 	private static final String NLS_COURSEFOLDER_NAME = "coursefolder.name";
-	private static final String NLS_COURSEFOLDER_CLOSE = "coursefolder.close";
 	private static final String NLS_ADMIN_HEADER = "command.admin.header";
 	private static final String NLS_MULTI_SPS = "command.multi.sps";
 	
@@ -185,8 +185,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private ToolController toolC;
 	private MoveCopySubtreeController moveCopyController;
 	private InsertNodeController insertNodeController;
-	private FolderRunController folderController;
-	private CourseAreasController areasController;
+	private Controller folderController;
+	private Controller areasController;
 	private DialogBoxController deleteDialogController;		
 	private LayoutMain3ColsController columnLayoutCtr;
 	
@@ -205,12 +205,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private CloseableModalController cmc;
 	
 	private MultiSPController multiSPChooserCtr;
+	private final StackedController stackPanel;
 
 	private final OLATResourceable ores;
 	
 	private OLog log = Tracing.createLoggerFor(this.getClass());
 	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
-
 	
 	/**
 	 * Constructor for the course editor controller
@@ -219,9 +219,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param wControl The window controller
 	 * @param course The course
 	 */
-	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
+	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, StackedController externStack) {
 		super(ureq,wControl);
 		this.ores = ores;
+		stackPanel = externStack == null
+				? new StackedController(getWindowControl(), getTranslator(), "o_course_breadcrumbs") : externStack;
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the course editor to be of type 'admin'
@@ -309,7 +311,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			toolC.addLink(CMD_COURSEAREAS, translate(NLS_COMMAND_COURSEAREAS), CMD_COURSEAREAS, "o_toolbox_courseareas");
 			toolC.addLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), CMD_COURSEPREVIEW, "b_toolbox_preview" );
 			toolC.addLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), CMD_PUBLISH,"b_toolbox_publish" );
-			toolC.addLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), null, "b_toolbox_close");
+			if(externStack == null) {
+				toolC.addLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), null, "b_toolbox_close");
+			}
 
 			toolC.addHeader(translate(NLS_HEADER_INSERTNODES));
 			CourseNodeFactory cnf = CourseNodeFactory.getInstance();
@@ -334,7 +338,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, toolC.getInitialComponent(), main, "course" + course.getResourceableId());			
 			columnLayoutCtr.addCssClassToMain("o_editor");
 			listenTo(columnLayoutCtr);
-			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			
+			if(externStack == null) {
+				putInitialPanel(stackPanel.getInitialComponent());
+				stackPanel.pushController(course.getCourseTitle(), columnLayoutCtr);
+			} else {
+				putInitialPanel(columnLayoutCtr.getInitialComponent());
+			}
 
 			// add as listener to course so we are being notified about course events:
 			// - deleted events
@@ -477,7 +487,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		String type = chosenNode.getType();
 		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
 		if (cnConfig.isEnabled()) {
-			nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), course, euce);
+			nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), stackPanel, course, euce);
 			listenTo(nodeEditCntrllr);
 			nodeEditCntrllr.addTabs(tabbedNodeConfig);
 		} 
@@ -638,32 +648,26 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					
 			} else if (event.getCommand().equals(CMD_COURSEPREVIEW)) {
 				previewController = new PreviewConfigController(ureq, getWindowControl(), course);
-				listenTo(previewController);		
-				previewController.activate();
+				listenTo(previewController);
+				stackPanel.pushController(translate("command.coursepreview"), previewController);
 				
 			} else if (event.getCommand().equals(CMD_COURSEFOLDER)) {
 				// Folder for course with custom link model to jump to course nodes
 				VFSContainer namedCourseFolder = new NamedContainerImpl(translate(NLS_COURSEFOLDER_NAME), course.getCourseFolderContainer());
 				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
 				removeAsListenerAndDispose(folderController);
-				folderController = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
-				folderController.addLoggingResourceable(LoggingResourceable.wrap(course));
-				listenTo(folderController);
-
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate(NLS_COURSEFOLDER_CLOSE), folderController.getInitialComponent());
-				listenTo(cmc);
-				cmc.activate();
+				FolderRunController folderMainCtl = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
+				folderMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
+				folderController = new LayoutMain3ColsController(ureq, getWindowControl(), folderMainCtl);
+				stackPanel.pushController(translate("command.coursefolder"), folderController);
+				
 			} else if (event.getCommand().equals(CMD_COURSEAREAS)) {
 				removeAsListenerAndDispose(areasController);
-				areasController = new CourseAreasController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager().getCourseResource());
-				areasController.addLoggingResourceable(LoggingResourceable.wrap(course));
-				listenTo(areasController);
+				CourseAreasController areasMainCtl = new CourseAreasController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager().getCourseResource());
+				areasMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
+				areasController = new LayoutMain3ColsController(ureq, getWindowControl(), areasMainCtl);
+				stackPanel.pushController(translate("command.courseareas"), areasController);
 				
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate(NLS_COURSEFOLDER_CLOSE), areasController.getInitialComponent());
-				listenTo(cmc);
-				cmc.activate();
 			} else if (event.getCommand().equals(CMD_MULTI_SP)) {
 				removeAsListenerAndDispose(multiSPChooserCtr);
 				VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer();

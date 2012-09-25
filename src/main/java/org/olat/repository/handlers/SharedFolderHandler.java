@@ -141,7 +141,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	 * @param wControl
 	 * @return Controller
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
 		SharedFolderDisplayController sfdCtr = new SharedFolderDisplayController(ureq, wControl, sfContainer, res, false);
 		// use on column layout

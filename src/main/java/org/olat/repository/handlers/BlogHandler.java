@@ -155,7 +155,7 @@ public class BlogHandler implements RepositoryHandler {
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl control) {
-		return createLaunchController(res, null, ureq, control);
+		return createLaunchController(res, ureq, control);
 	}
 
 	/**
@@ -163,7 +163,7 @@ public class BlogHandler implements RepositoryHandler {
 	 *      java.lang.String, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq,
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq,
 			WindowControl wControl) {
 		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();

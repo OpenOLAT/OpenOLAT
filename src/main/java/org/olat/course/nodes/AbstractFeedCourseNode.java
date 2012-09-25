@@ -27,7 +27,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
@@ -109,15 +108,6 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		postExportCondition(preConditionPoster, envMapper, backwardsCompatible);
 		postExportCondition(preConditionModerator, envMapper, backwardsCompatible);
 	}
-
-	/**
-	 * @see org.olat.course.nodes.AbstractAccessableCourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public abstract TabbableController createEditController(UserRequest ureq, WindowControl wControl, ICourse course,
-			UserCourseEnvironment euce);
 
 	/**
 	 * @see org.olat.course.nodes.AbstractAccessableCourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,

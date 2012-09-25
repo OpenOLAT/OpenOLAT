@@ -696,7 +696,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(businessOres);
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, dt.getWindowControl());
 				
-				Controller ctrl = typeToLaunch.createLaunchController(ores, null, ureq, bwControl);
+				Controller ctrl = typeToLaunch.createLaunchController(ores, ureq, bwControl);
 				// if resource is an image, PDF or eq. (e.g. served by resulting media request), no controller is returned.
 				// FIXME:fj:test this
 				if (ctrl == null) {

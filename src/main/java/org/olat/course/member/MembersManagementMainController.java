@@ -25,8 +25,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -59,7 +57,6 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	private static final String CMD_BOOKING = "cmd.booking";
 	private static final String CMD_RIGHTS = "cmd.rights";
 
-	private final Link back;
 	private final MenuTree menuTree;
 	private final VelocityContainer mainVC;
 	private final LayoutMain3ColsController columnLayoutCtr;
@@ -93,16 +90,6 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, mainVC, "members-" + repoEntry.getKey());
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
-		
-		columnLayoutCtr.setToolbarCssClass("o_course_members");
-		//add crumb course
-		back = LinkFactory.createLink("course", mainVC, this);
-		back.setCustomDisplayText(course.getCourseTitle());
-		columnLayoutCtr.addBreadCrumbLink(back);
-		//add this controller crumb
-		Link memberLink = LinkFactory.createLink("members", mainVC, this);
-		memberLink.setCustomDisplayText(translate("menu.breadcrumbs"));
-		columnLayoutCtr.addBreadCrumbLink(memberLink);
 		
 		selectMenuItem(ureq, CMD_MEMBERS);
 	}
@@ -147,8 +134,6 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 				Object cmd = selTreeNode.getUserObject();
 				selectMenuItem(ureq, cmd);
 			}
-		} else if (source == back) {
-			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 	

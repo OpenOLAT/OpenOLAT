@@ -32,7 +32,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
-import org.olat.core.gui.control.winmgr.JSCommand;
 
 /**
  * <h3>Description:</h3>

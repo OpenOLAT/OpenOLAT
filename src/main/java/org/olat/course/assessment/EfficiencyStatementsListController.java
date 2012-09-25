@@ -172,7 +172,7 @@ public class EfficiencyStatementsListController extends BasicController {
 							//fxdiff BAKS-7 Resume function
 							dt = dts.createDTab(ores, re, efficiencyStatement.getShortTitle());
 							if (dt == null) return;
-							Controller launchController = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
+							Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
 							dt.setController(launchController);
 							dts.addDTab(dt);
 						}
@@ -232,7 +232,6 @@ public class EfficiencyStatementsListController extends BasicController {
 		/**
 		 * @see org.olat.core.gui.components.table.CustomCellRenderer#render(org.olat.core.gui.render.StringOutput, org.olat.core.gui.render.Renderer, java.lang.Object, java.util.Locale, int, java.lang.String)
 		 */
-		@SuppressWarnings("unused")
 		@Override
 		public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 			sb.append("<span class=\"b_eportfolio_add_again\" title=\"")

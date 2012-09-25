@@ -86,7 +86,7 @@ public interface RepositoryHandler {
 	 * @param wControl
 	 * @return Controller able to launch resourceable.
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl);
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl);
 	
 	/**
 	 * Called if a user wants to edit a Resourceable that this handler can provide an editor for. 

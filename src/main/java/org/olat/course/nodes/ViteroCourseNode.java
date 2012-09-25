@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -78,7 +79,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
 			UserCourseEnvironment userCourseEnv) {
 		updateModuleConfigDefaults(false);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());

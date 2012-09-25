@@ -29,7 +29,6 @@ import java.util.Locale;
 
 import org.olat.ControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
@@ -71,7 +70,7 @@ public class GUIDemoSite implements SiteInstance {
 	 * @see org.olat.navigation.SiteInstance#createController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_TESTING, null, ureq, wControl, true);
+		MainLayoutController c = ControllerFactory.createLaunchController(ORES_TESTING, ureq, wControl, true);
 		return c;
 	}
 

@@ -142,8 +142,8 @@ public class CourseHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
-		MainLayoutController courseCtrl = CourseFactory.createLaunchController(ureq, wControl, res, initialViewIdentifier);
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+		MainLayoutController courseCtrl = CourseFactory.createLaunchController(ureq, wControl, res);
 		//fxdiff VCRP-1: access control of learn resources
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, courseCtrl);
 		return wrapper;
@@ -167,7 +167,7 @@ public class CourseHandler implements RepositoryHandler {
 	 */
 	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		//throw new AssertException("a course is not directly editable!!! (reason: lock is never released), res-id:"+res.getResourceableId());
-		return CourseFactory.createEditorController(ureq, wControl, res);
+		return CourseFactory.createEditorController(ureq, wControl, null, res);
 	}
 
 	/**

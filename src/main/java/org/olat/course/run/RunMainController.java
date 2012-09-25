@@ -43,6 +43,8 @@ import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -65,7 +67,6 @@ import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -73,7 +74,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.GenericEventListener;
@@ -149,7 +149,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private RepositoryEntry courseRepositoryEntry;
 	private MenuTree luTree;
 	private Panel contentP;
-	private Panel all;
+	private StackedController all;
 
 	private NavigationHandler navHandler;
 	private UserCourseEnvironment uce;
@@ -203,25 +203,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param offerBookmark - whether to offer bookmarks or not
 	 * @param showCourseConfigLink  Flag to enable/disable link to detail-page in tool menu. 
 	 */
-	public RunMainController(final UserRequest ureq, final WindowControl wControl, final ICourse course, final String initialViewIdentifier,
+	public RunMainController(final UserRequest ureq, final WindowControl wControl, final ICourse course,
 			final boolean offerBookmark, final boolean showCourseConfigLink) {
-		this(ureq, wControl, course, initialViewIdentifier, offerBookmark, showCourseConfigLink, false);
-	}
-
-	/**
-	 * fxdiff: change these two constructors to allow setting of launchFromSite
-	 * for CourseSite
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param course
-	 * @param initialViewIdentifier
-	 * @param offerBookmark
-	 * @param showCourseConfigLink
-	 * @param launchFromSite allows to set disposed controller after init!
-	 */
-	public RunMainController(final UserRequest ureq, final WindowControl wControl, final ICourse course, final String initialViewIdentifier,
-			final boolean offerBookmark, final boolean showCourseConfigLink, final boolean launchFromSite) {
 
 		super(ureq, wControl);
 		
@@ -244,7 +227,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 		
 		// set up the components
-		all = new Panel("allofcourse");
+		all = new StackedController(getWindowControl(), getTranslator(), "o_course_breadcumbs");
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setExpandSelectedNode(false);
 		contentP = new Panel("building_block_content");
@@ -267,58 +250,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		uce.getScoreAccounting().evaluateAll();
 		navHandler = new NavigationHandler(uce, false);
 
-		// jump to either the forum or the folder if the business-launch-path says
-		// so.
-		boolean showAssessmentTool = false;
-		
-		BusinessControl bc = getWindowControl().getBusinessControl();
-		ContextEntry ce = bc.popLauncherContextEntry();
-		if (ce != null) {
-			logDebug("businesscontrol (for further jumps) would be:" + bc, null);
-			OLATResourceable ores = ce.getOLATResourceable();
-			logDebug("OLATResourceable=" + ores, null);
-			if (OresHelper.isOfType(ores, CourseNode.class)) {
-				// TODO, don't use CourseNode.class, but a lookup using the ClassToId
-				// class
-				// jump to the coursenode with id
-				Long nodeId = ores.getResourceableId();
-				String nodeIdS = nodeId.toString();
-				currentCourseNode = course.getRunStructure().getNode(nodeIdS);
-				if (currentCourseNode == null) {
-					// (e.g. a coursenode that no longer is accessible or existing)
-					// -> fallback to root node (automatically done later), and drop wrong
-					// remaining contexts
-					logDebug("currentCourseNode=null => dropLauncherEntries for nodeIdS=" + nodeIdS, null);
-					bc.dropLauncherEntries();
-				}
-			} else if ("assessmentTool".equals(ores.getResourceableTypeName())) {
-				showAssessmentTool = true;
-			}
-		}
-		
-		String subsubId = null;
-		String assessmentViewIdentifier = null;
-		// activate assessent tool or node as the first screen
-		if (initialViewIdentifier != null) {
-			if (initialViewIdentifier.equals("assessmentTool")) {
-				showAssessmentTool = true;
-				// assessmentViewIdentifier must be null
-			} else if (initialViewIdentifier.equals("assessmentTool:nodeChoose")) {
-				showAssessmentTool = true;
-				assessmentViewIdentifier = "node-choose";
-			} else {
-				// check for subsubIdent
-				if (initialViewIdentifier.indexOf(":") != -1) {
-					String[] viewIdentifier = initialViewIdentifier.split(":");
-					currentCourseNode = course.getRunStructure().getNode(viewIdentifier[0]);
-					subsubId = viewIdentifier[1];
-				} else {
-					currentCourseNode = course.getRunStructure().getNode(initialViewIdentifier);
-				}
-			}
-		}
-
-		updateTreeAndContent(ureq, currentCourseNode, subsubId);
+		updateTreeAndContent(ureq, currentCourseNode, null);
 		
 		//set the launch date after the evaluation
 		setLaunchDates(identity);
@@ -370,47 +302,31 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else {
 				glossaryMarkerCtr.setTextMarkingEnabled(state.booleanValue());
 			}
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, toolComp, glossaryMarkerCtr.getInitialComponent(), "course" + this.course.getResourceableId());				
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, toolComp, glossaryMarkerCtr.getInitialComponent(), "course" + course.getResourceableId());				
 		} else {
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, toolComp, contentP, "courseRun" + this.course.getResourceableId());							
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, toolComp, contentP, "courseRun" + course.getResourceableId());							
 		}
 		listenTo(columnLayoutCtr);
 
 		// activate the custom course css if any
 		setCustomCSS(CourseFactory.getCustomCourseCss(ureq.getUserSession(), uce.getCourseEnvironment()));
 
-		// decide what is show fist - a tool since activaded this way or the regular
-		// course view
-		if (showAssessmentTool) {
-			List<ContextEntry> entries = null;
-			if(StringHelper.containsNonWhitespace(assessmentViewIdentifier)) {
-				entries = BusinessControlFactory.getInstance().createCEListFromResourceType(assessmentViewIdentifier);
-			}
-			launchAssessmentTool(ureq, entries);
-			coursemain = createVelocityContainer("index");
-			coursemain.put("coursemain", all);
-		} else {
-			all.setContent(columnLayoutCtr.getInitialComponent());
-			coursemain = createVelocityContainer("index");
-			// see function gotonode in functions.js to see why we need the
-			// repositoryentry-key here:
-			// it is to correctly apply external links using course-internal links via
-			// javascript
-			coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
-			coursemain.put("coursemain", all);
-		}
-		
+		all.pushController(courseTitle, columnLayoutCtr);
+		listenTo(all);
+		coursemain = createVelocityContainer("index");
+		// see function gotonode in functions.js to see why we need the repositoryentry-key here:
+		// it is to correctly apply external links using course-internal links via javascript
+		coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
+		coursemain.put("coursemain", all.getInitialComponent());
+
 		putInitialPanel(coursemain);
 
-		if (!launchFromSite) {
-			// disposed message controller
-			// must be created beforehand
-			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
-			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, courseRepositoryEntry);
-			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
-					courseCloser.getInitialComponent(), "disposed course" + this.course.getResourceableId());
-			setDisposedMsgController(disposedRestartController);
-		}
+		// disposed message controller must be created beforehand
+		Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
+		Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, courseRepositoryEntry);
+		Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
+				courseCloser.getInitialComponent(), "disposed course" + course.getResourceableId());
+		setDisposedMsgController(disposedRestartController);
 
 		// add as listener to course so we are being notified about course events:
 		// - publish changes
@@ -652,7 +568,39 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 		}
 	}
-		
+	
+	private void eventDone(UserRequest ureq) {
+		if (isInEditor) {
+			isInEditor = false; // for clarity
+			removeAsListenerAndDispose(currentToolCtr);
+			currentToolCtr = null;
+			if (needsRebuildAfterPublish) {
+				needsRebuildAfterPublish = false;
+				
+			  // rebuild up the running structure for this user, after publish;
+				uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), CourseFactory.loadCourse(course.getResourceableId()).getCourseEnvironment());
+				// build score now
+				uce.getScoreAccounting().evaluateAll();
+				navHandler = new NavigationHandler(uce, false);
+				
+				// rebuild and jump to root node
+				updateTreeAndContent(ureq, null, null);
+				// and also tools (maybe new assessable nodes -> show efficiency
+				// statment)
+				removeAsListenerAndDispose(toolC);
+				toolC = initToolController(ureq.getIdentity(), ureq);
+				listenTo(toolC);
+				
+				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
+				columnLayoutCtr.setCol2(toolComp);
+			}
+		} else {
+			// release current node controllers resources and do cleanup if it was not the editor!
+			removeAsListenerAndDispose(currentToolCtr);
+			currentToolCtr = null;
+		}
+	}
+	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
@@ -662,39 +610,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// event from the current tool (editor, groupmanagement, archiver)		
 		if (source == currentToolCtr) {
 			if (event == Event.DONE_EVENT) {
-				// for all other tools just pop
-				all.setContent(columnLayoutCtr.getInitialComponent());
 				// special check for editor
-				if (isInEditor) {
-					isInEditor = false; // for clarity
-					removeAsListenerAndDispose(currentToolCtr);
-					currentToolCtr = null;
-					if (needsRebuildAfterPublish) {
-						needsRebuildAfterPublish = false;
-						
-					  // rebuild up the running structure for this user, after publish;
-						uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), CourseFactory.loadCourse(course.getResourceableId()).getCourseEnvironment());
-						// build score now
-						uce.getScoreAccounting().evaluateAll();
-						navHandler = new NavigationHandler(uce, false);
-						
-						// rebuild and jump to root node
-						updateTreeAndContent(ureq, null, null);
-						// and also tools (maybe new assessable nodes -> show efficiency
-						// statment)
-						removeAsListenerAndDispose(toolC);
-						toolC = initToolController(ureq.getIdentity(), ureq);
-						listenTo(toolC);
-						
-						Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-						columnLayoutCtr.setCol2(toolComp);
-					}
-				} else {
-					// release current node controllers resources and do cleanup if it was not the editor!
-					removeAsListenerAndDispose(currentToolCtr);
-					currentToolCtr = null;
-				}
+				eventDone(ureq);
 			}
+		} else if (source == all) {
+			if(event instanceof PopEvent) {
+				PopEvent pop = (PopEvent)event;
+				if(pop.getController() == currentToolCtr) {
+					eventDone(ureq);
+				}	
+			}	
 		} else if (source == currentNodeController) {
 			if (event instanceof OlatCmdEvent) {
 				OlatCmdEvent oe = (OlatCmdEvent) event;
@@ -760,7 +685,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// check if the group still exists and the user is really in this group
 			// (security, changed group)
 			if (group != null && businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
-				// create group without admin flag enabled eventhough the user might be
+				// create group without admin flag enabled even though the user might be
 				// coach. the flag is not needed here
 				// since the groups knows itself if the user is coach and the user sees
 				// only his own groups.
@@ -782,42 +707,36 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 		} else if (cmd.equals(COMMAND_EDIT)) {
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-				Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), course);
-				//user activity logger which was initialised with course run
-				//
+				Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), all, course);
+				//user activity logger which was initialized with course run
 				if(ec != null){
 					//we are in editing mode
 					currentToolCtr = ec;
 					listenTo(currentToolCtr);
-					//currentToolCtr.addControllerListener(this); //deprecated, replaced by listenTo from BasicController
 					isInEditor = true;
-					all.setContent(currentToolCtr.getInitialComponent());
-				}else{
-					//editor could not be created
-					//message already pushed as Error Box 
+					all.pushController(translate("command.openeditor"), currentToolCtr);
 				}
-				
 			} else throw new OLATSecurityException("wanted to activate editor, but no according right");
 
 		} else if (cmd.equals("unifiedusermngt")) {
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 				currentToolCtr = new MembersManagementMainController(ureq, getWindowControl(), courseRepositoryEntry);
 				listenTo(currentToolCtr);
-				all.setContent(currentToolCtr.getInitialComponent());
+				all.pushController(translate("command.opensimplegroupmngt"), currentToolCtr);
 			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
 			
 		} else if (cmd.equals("statistic")) {
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				currentToolCtr = new StatisticMainController(ureq, getWindowControl(), course);
 				listenTo(currentToolCtr);
-				all.setContent(currentToolCtr.getInitialComponent());
+				all.pushController(translate("command.openstatistic"), currentToolCtr);
 			} else throw new OLATSecurityException("clicked statistic, but no according right");
 		//fxdiff: open a panel to manage the course dbs
 		} else if (cmd.equals("customDb")) {
 			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
 				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
 				listenTo(currentToolCtr);
-				all.setContent(currentToolCtr.getInitialComponent());
+				all.pushController(translate("command.opendb"), currentToolCtr);
 			} else throw new OLATSecurityException("clicked dbs, but no according right");
 
 		}else if (cmd.equals("archiver")) {
@@ -861,7 +780,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 				});
 				listenTo(currentToolCtr);
-				all.setContent(currentToolCtr.getInitialComponent());
+				all.pushController(translate("command.openarchiver"), currentToolCtr);
 			} else throw new OLATSecurityException("clicked archiver, but no according right");
 
 		} else if (cmd.equals("assessment")) {
@@ -939,21 +858,21 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 1) course admins and users with tool right: full access
 		if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin) {
 			Activateable2 assessmentToolCtr = 
-				AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course, new FullAccessAssessmentCallback(isCourseAdmin));
+				AssessmentUIFactory.createAssessmentMainController(ureq, swControl, all, course, new FullAccessAssessmentCallback(isCourseAdmin));
 			assessmentToolCtr.activate(ureq, null, null);
 			currentToolCtr = (Controller)assessmentToolCtr;
 			listenTo(currentToolCtr);
-			all.setContent(currentToolCtr.getInitialComponent());
+			all.pushController(translate("command.openassessment"), currentToolCtr);
 			return assessmentToolCtr;
 		}
 		// 2) users with coach right: limited access to coached groups
 		else if (isCourseCoach) {
-			Activateable2 assessmentToolCtr = AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course,
+			Activateable2 assessmentToolCtr = AssessmentUIFactory.createAssessmentMainController(ureq, swControl, all, course,
 					new CoachingGroupAccessAssessmentCallback());
 			assessmentToolCtr.activate(ureq, null, null);
 			currentToolCtr = (Controller)assessmentToolCtr;
 			listenTo(currentToolCtr);
-			all.setContent(currentToolCtr.getInitialComponent());
+			all.pushController(translate("command.openassessment"), currentToolCtr);
 			return assessmentToolCtr;
 		} else throw new OLATSecurityException("clicked assessment tool in course::" + course.getResourceableId()
 				+ ", but no right to launch it. Username::" + ureq.getIdentity().getName());
@@ -1332,7 +1251,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
 					Activateable2 assessmentCtrl = launchAssessmentTool(ureq, null);
-					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					
+					List<ContextEntry> subEntries;
+					if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
+						subEntries = entries.subList(2, entries.size());
+					} else {
+						subEntries = entries.subList(1, entries.size());
+					}
 					assessmentCtrl.activate(ureq, subEntries, firstEntry.getTransientState());
 				} catch (OLATSecurityException e) {
 					//the wrong link to the wrong person

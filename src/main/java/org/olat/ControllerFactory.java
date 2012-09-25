@@ -76,7 +76,7 @@ public class ControllerFactory {
 	 *          call will just return null.
 	 * @return the created controller
 	 */
-	public static MainLayoutController createLaunchController(OLATResourceable olatResourceable, String initialViewIdentifier, UserRequest ureq,
+	public static MainLayoutController createLaunchController(OLATResourceable olatResourceable, UserRequest ureq,
 			WindowControl wControl, boolean exceptIfNoneFound) {
 		Roles roles = ureq.getUserSession().getRoles();
 		if (olatResourceable == null) {
@@ -105,7 +105,7 @@ public class ControllerFactory {
 			// entry key
 			RepositoryManager rm = RepositoryManager.getInstance();
 			RepositoryEntry re = rm.lookupRepositoryEntry(olatResourceable.getResourceableId());
-			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, initialViewIdentifier, ureq, wControl);
+			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);
 			if (ctrl != null) return ctrl;
 
 		} else if (OresHelper.isOfType(olatResourceable, CourseModule.class)) {
@@ -117,7 +117,7 @@ public class ControllerFactory {
 			// can only be called by a repoentry
 			RepositoryManager rm = RepositoryManager.getInstance();
 			RepositoryEntry re = rm.lookupRepositoryEntry(olatResourceable, false);
-			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, initialViewIdentifier, ureq, wControl);
+			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);
 			if (ctrl != null) return ctrl;
 		} else if (OresHelper.isOfType(olatResourceable, AssessmentManager.class)) {
 			// gets called by subscription launcher
@@ -131,9 +131,11 @@ public class ControllerFactory {
 			// publisher data provides not existing assessmentManager resource
 			OLATResourceable fakedCourseResource = OresHelper.createOLATResourceableInstance(CourseModule.class, olatResourceable.getResourceableId());
 			RepositoryEntry re = rm.lookupRepositoryEntry(fakedCourseResource, false);
-			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, "assessmentTool", ureq, wControl);
-			
-			if (ctrl != null) return ctrl;
+			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);
+			if (ctrl != null) {
+				//TODO "assessmentTool"
+				return ctrl;
+			}
 		} else if (OresHelper.isOfType(olatResourceable, DropboxController.class)) {
 			// JumpIn-handling for task-dropbox notification 
 			RepositoryManager rm = RepositoryManager.getInstance();
@@ -142,14 +144,17 @@ public class ControllerFactory {
 			if (re == null) {
 				return null;// found no repositoryEntry => return null
 			}
-			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, "assessmentTool:nodeChoose", ureq, wControl);	
-			if (ctrl != null) return ctrl;
+			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);	
+			if (ctrl != null) {
+				//TODO "assessmentTool:nodeChoose"
+				return ctrl;
+			}
 		} else if (OresHelper.isOfType(olatResourceable, ReturnboxController.class)) {
 			// JumpIn-handling for task-returnbox notification 
 			RepositoryManager rm = RepositoryManager.getInstance();
 			OLATResourceable fakedCourseResource = OresHelper.createOLATResourceableInstance(CourseModule.class, olatResourceable.getResourceableId());
 			RepositoryEntry re = rm.lookupRepositoryEntry(fakedCourseResource, false);
-			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, initialViewIdentifier, ureq, wControl);	
+			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);	
 			if (ctrl != null) return ctrl;
 		}
 
@@ -188,8 +193,8 @@ public class ControllerFactory {
 			MainLayoutController ctrl;
 			if(re == null){
 				ctrl = null;
-			}else{
-				ctrl = RepositoyUIFactory.createLaunchController(re, initialViewIdentifier, ureq, wControl);
+			} else {
+				ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);
 			}
 			if (ctrl != null) return ctrl;
 		}
