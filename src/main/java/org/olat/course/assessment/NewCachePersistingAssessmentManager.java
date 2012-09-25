@@ -184,13 +184,6 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	public void preloadCache(Identity identity) {
 		// triggers loading of data of the given user.
 		getOrLoadScorePassedAttemptsMap(identity, false);
-		return;
-	}
-	
-	public void preloadCache() {
-		// ignore, since lazy loading will load identities' cache
-		//o_clusterREVIEW test performance when in assessment manager and course has e.g. 500 users -> how long do 500 queries take?
-		// -> is one full fetch needed instead?
 	}
 	
 	/**

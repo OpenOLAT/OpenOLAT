@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.fullWebApp;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -84,8 +83,23 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	private boolean fullScreen = false;
 	private BaseChiefController thebaseChief;
 
-	private List<Link> breadCrumbLinks = new ArrayList<Link>();
-
+	
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param colCtrl3
+	 */
+	public LayoutMain3ColsController(UserRequest ureq, WindowControl wControl, Controller colCtrl3) {
+		this(ureq,wControl, null, null, colCtrl3.getInitialComponent(), null, null);
+		listenTo(colCtrl3);
+		if(colCtrl3 instanceof Activateable2) {
+			activateableDelegate2 = (Activateable2)colCtrl3;
+		}
+	}
+	
+	
 	/**
 	 * Constructor for creating a 3 col based menu on the main area. This
 	 * constructor uses the default column width configuration
@@ -139,37 +153,8 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		panel3 = new Panel("panel3");
 		layoutMainVC.put("col3", panel3);
 		setCol3(col3);
-		
-		layoutMainVC.contextPut("breadCrumbs", breadCrumbLinks);
+
 		putInitialPanel(layoutMainVC);
-	}
-	
-	public String getToolbarCssClass() {
-		return (String)layoutMainVC.getContext().get("toolBarCssClass");
-	}
-	
-	public void setToolbarCssClass(String cssClass) {
-		layoutMainVC.contextPut("toolBarCssClass", cssClass);
-	}
-	
-	public void addBreadCrumbLink(Link link) {
-		breadCrumbLinks.add(link);
-		layoutMainVC.put(link.getComponentName(), link);
-		layoutMainVC.setDirty(true);
-	}
-	
-	public void removeBreadCrumbLink(Link link) {
-		breadCrumbLinks.remove(link);
-		layoutMainVC.remove(link);
-		layoutMainVC.setDirty(true);
-	}
-	
-	public void popBreadCrumbLink() {
-		if(!breadCrumbLinks.isEmpty()) {
-			Link link = breadCrumbLinks.remove(breadCrumbLinks.size() - 1);
-			layoutMainVC.remove(link);
-		}
-		layoutMainVC.setDirty(true);
 	}
 	
 	public void setAsFullscreen(UserRequest ureq) {

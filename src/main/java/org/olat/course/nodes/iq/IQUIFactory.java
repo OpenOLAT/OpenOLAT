@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
@@ -65,19 +66,19 @@ public class IQUIFactory {
 		IQUIFactory.iqControllerCreator = specificIqControllerCreator;
 	}
 
-	public static TabbableController createIQTestEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+	public static TabbableController createIQTestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
 			IQTESTCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
-		return IQUIFactory.iqControllerCreator.createIQTestEditController(ureq, wControl, course, courseNode, groupMgr, euce);
+		return IQUIFactory.iqControllerCreator.createIQTestEditController(ureq, wControl, stackPanel, course, courseNode, groupMgr, euce);
 	}
 
-	public static TabbableController createIQSelftestEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+	public static TabbableController createIQSelftestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
 			IQSELFCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
-		return IQUIFactory.iqControllerCreator.createIQSelftestEditController(ureq, wControl, course, courseNode, groupMgr, euce);
+		return IQUIFactory.iqControllerCreator.createIQSelftestEditController(ureq, wControl, stackPanel, course, courseNode, groupMgr, euce);
 	}
 
-	public static TabbableController createIQSurveyEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+	public static TabbableController createIQSurveyEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
 			IQSURVCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce) {
-		return IQUIFactory.iqControllerCreator.createIQSurveyEditController(ureq, wControl, course, courseNode, groupMgr, euce);
+		return IQUIFactory.iqControllerCreator.createIQSurveyEditController(ureq, wControl, stackPanel,  course, courseNode, groupMgr, euce);
 	}
 
 	public static Controller createIQTestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,

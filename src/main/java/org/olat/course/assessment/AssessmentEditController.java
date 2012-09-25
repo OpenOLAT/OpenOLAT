@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -44,7 +45,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.ICourse;
@@ -94,7 +94,7 @@ public class AssessmentEditController extends BasicController {
 	 * @param courseNode The assessable course node
 	 * @param assessedIdentityWrapper The wrapped assessed identity
 	 */
-	public AssessmentEditController(UserRequest ureq, WindowControl wControl, ICourse course, AssessableCourseNode courseNode,
+	public AssessmentEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, AssessableCourseNode courseNode,
 			AssessedIdentityWrapper assessedIdentityWrapper) {
 		super(ureq, wControl);
 		this.assessedIdentityWrapper = assessedIdentityWrapper;
@@ -137,7 +137,7 @@ public class AssessmentEditController extends BasicController {
 			// Add the users details controller
 			if (courseNode.hasDetails()) {
 				detailView.contextPut("hasDetails", Boolean.TRUE);
-				detailsEditController = courseNode.getDetailsEditController(ureq, wControl, uce);
+				detailsEditController = courseNode.getDetailsEditController(ureq, wControl, stackPanel, uce);
 				listenTo(detailsEditController);
 				detailView.put("detailsController", detailsEditController.getInitialComponent());
 			} else {

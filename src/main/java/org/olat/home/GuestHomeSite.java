@@ -35,7 +35,6 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
@@ -46,9 +45,6 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class GuestHomeSite implements SiteInstance {
 	private static final OLATResourceable ORES_GUEST = OresHelper.lookupType(GuestHomeMainController.class);
-
-	// refer to the definitions in org.olat
-	private static final String PACKAGE = Util.getPackageName(BaseChiefController.class);
 	
 	private NavElement origNavElem;
 	private NavElement curNavElem;
@@ -56,7 +52,7 @@ public class GuestHomeSite implements SiteInstance {
 	 * 
 	 */
 	public GuestHomeSite(Locale loc) {	
-		Translator trans = new PackageTranslator(PACKAGE, loc);
+		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
 		origNavElem = new DefaultNavElement(trans.translate("topnav.guesthome"), trans.translate("topnav.guesthome.alt"), "o_site_home");		
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
@@ -72,7 +68,7 @@ public class GuestHomeSite implements SiteInstance {
 	 * @see org.olat.navigation.SiteInstance#createController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_GUEST, null, ureq, wControl, true);
+		MainLayoutController c = ControllerFactory.createLaunchController(ORES_GUEST, ureq, wControl, true);
 		return c;
 	}
 

@@ -36,7 +36,6 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -54,18 +53,12 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class AdminSite implements SiteInstance {
 	private static final OLATResourceable ORES_OLATADMINS = OresHelper.lookupType(SystemAdminMainController.class);
-	
-	// refer to the definitions in org.olat
-	private static final String PACKAGE = Util.getPackageName(BaseChiefController.class);
-	
-	
+
 	private NavElement origNavElem;
 	private NavElement curNavElem;
-	/**
-	 * 
-	 */
+
 	public AdminSite(Locale loc) {
-		Translator trans = new PackageTranslator(PACKAGE, loc);
+		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
 		
 		origNavElem = new DefaultNavElement(trans.translate("topnav.admin"), trans.translate("topnav.admin.alt"), "o_site_admin");
 		curNavElem = new DefaultNavElement(origNavElem);
@@ -85,7 +78,7 @@ public class AdminSite implements SiteInstance {
 		//fxdiff BAKS-7 Resume function
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(AdminSite.class, 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_OLATADMINS, null, ureq, bwControl, true);
+		MainLayoutController c = ControllerFactory.createLaunchController(ORES_OLATADMINS, ureq, bwControl, true);
 		return c;
 	}
 

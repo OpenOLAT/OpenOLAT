@@ -342,7 +342,7 @@ public class CatalogController extends BasicController implements Activateable2 
 						// does not yet exist -> create and add
 						dt = dts.createDTab(ores, repoEntry, displayName);
 						if (dt == null) return;
-						Controller launchController = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
+						Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
 						dt.setController(launchController);
 						dts.addDTab(dt);
 					}

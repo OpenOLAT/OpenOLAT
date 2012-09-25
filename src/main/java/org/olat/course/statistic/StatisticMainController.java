@@ -31,49 +31,26 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
-import org.olat.core.gui.control.generic.tool.ToolController;
-import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.course.ICourse;
 
 /**
  * Initial Date:  03.12.2009 <br>
  * @author bja
  */
-public class StatisticMainController extends GenericMainController{
+public class StatisticMainController extends GenericMainController {
 
-	private ToolController toolC;
 	private ICourse course;
 
 	public StatisticMainController(UserRequest ureq, WindowControl windowControl, ICourse course) {
 		super(ureq, windowControl);
 		this.course = course;
-	
-		// Tool and action box
-		toolC = ToolFactory.createToolController(getWindowControl());
-		listenTo(toolC);
-		toolC.addHeader(translate("tool.name"));
-		toolC.addLink("cmd.close", translate("command.closestatistic"), null, "b_toolbox_close");
-		setToolController(toolC);
-		
 		init(ureq);
+		getMenuTree().setRootVisible(false);
 	}
 
 	@Override
 	protected void doDispose() {
 		// controllers disposed by BasicController:
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == toolC) {
-			if (event.getCommand().equals("cmd.close")) {
-				doDispose();
-				fireEvent(ureq, Event.DONE_EVENT);
-			}
-		}
 	}
 
 	@Override
@@ -91,5 +68,4 @@ public class StatisticMainController extends GenericMainController{
 		//no own tree events to handle
 		return null;
 	}
-	
 }

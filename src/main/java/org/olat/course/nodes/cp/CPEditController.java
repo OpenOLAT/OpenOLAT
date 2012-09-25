@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -113,8 +114,9 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	private Link chooseCPButton;
 	private Link changeCPButton;
 
-	private LayoutMain3ColsPreviewController previewCtr;
+	private Controller previewCtr;
 	private CloseableModalController cmc;
+	private final StackedController stackPanel;
 
 	/**
 	 * @param cpNode
@@ -122,10 +124,11 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	 * @param wControl
 	 * @param course
 	 */
-	public CPEditController(CPCourseNode cpNode, UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
+	public CPEditController(CPCourseNode cpNode, UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.cpNode = cpNode;
-		this.config = cpNode.getModuleConfiguration();		
+		this.config = cpNode.getModuleConfiguration();
+		this.stackPanel = stackPanel;
 
 		main = new Panel("cpmain");		
 		
@@ -206,8 +209,9 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				Boolean showMenuB = config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU);
 				// pre: showMenuB != null
 				removeAsListenerAndDispose(previewCtr);
-				previewCtr = CPUIFactory.getInstance().createMainLayoutPreviewController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot), showMenuB.booleanValue());
-				previewCtr.activate();
+				
+				previewCtr = CPUIFactory.getInstance().createMainLayoutPreviewController_v2(ureq, getWindowControl(), new LocalFolderImpl(cpRoot), showMenuB.booleanValue());
+				stackPanel.pushController(translate("preview.cp"), previewCtr);
 			}
 		} else if (source == editLink) {
 			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, cpNode);

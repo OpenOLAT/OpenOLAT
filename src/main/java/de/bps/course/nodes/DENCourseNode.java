@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -80,7 +81,7 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq,
-			WindowControl wControl, ICourse course, UserCourseEnvironment userCourseEnv) {
+			WindowControl wControl, StackedController stackPanel, ICourse course, UserCourseEnvironment userCourseEnv) {
 		DENEditController childTabCntrllr = new DENEditController(getModuleConfiguration(), ureq, wControl, this, course, userCourseEnv);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// needed for DENEditController.isConfigValid()

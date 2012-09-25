@@ -68,7 +68,9 @@ public class GroupAndContextTableModel extends DefaultTableDataModel<BusinessGro
         BusinessGroup businessGroup = objects.get(row);
         switch (col) {
             case 0 :
-                return StringEscapeUtils.escapeHtml(businessGroup.getName()).toString();
+            		String groupName = businessGroup.getName();
+            		if(groupName == null) return "???";
+                return StringEscapeUtils.escapeHtml(businessGroup.getName());
             case 1 :
             	String tmp = businessGroup.getDescription();
             	tmp = FilterFactory.getHtmlTagsFilter().filter(tmp);

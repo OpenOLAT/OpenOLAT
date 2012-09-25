@@ -68,7 +68,7 @@ public class InviteeHomeSite implements SiteInstance {
 	 * @see org.olat.navigation.SiteInstance#createController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_INVITEE, null, ureq, wControl, true);
+		MainLayoutController c = ControllerFactory.createLaunchController(ORES_INVITEE, ureq, wControl, true);
 		return c;
 	}
 

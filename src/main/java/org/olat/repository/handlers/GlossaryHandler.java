@@ -143,7 +143,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	 * @param wControl
 	 * @return Controller
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(res);
 
 		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);

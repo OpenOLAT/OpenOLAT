@@ -46,6 +46,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -66,8 +67,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.control.generic.tool.ToolController;
-import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -138,7 +137,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private MenuTree menuTree;
 	private Panel main;
 	
-	private ToolController toolC;
 	private VelocityContainer index, groupChoose, userChoose, nodeChoose, wrapper;
 
 	private NodeTableDataModel nodeTableModel;
@@ -179,6 +177,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	
 	private BulkAssessmentMainController bamc;
 	private EfficiencyStatementAssessmentController esac;
+	private final StackedController stackPanel;
 
 	private OLATResourceable ores;
 	
@@ -189,10 +188,11 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @param course
 	 * @param assessmentCallback
 	 */
-AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
+AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, OLATResourceable ores, IAssessmentCallback assessmentCallback) {
 		super(ureq, wControl);		
 		
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
+		this.stackPanel = stackPanel;
 		this.ores = ores;
 		this.callback = assessmentCallback;
 		localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>();
@@ -272,15 +272,9 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
 		menuTree.addListener(this);
 
-		// Tool and action box
-		toolC = ToolFactory.createToolController(getWindowControl());
-		listenTo(toolC);
-		toolC.addHeader(translate("tool.name"));
-		toolC.addLink("cmd.close", translate("command.closeassessment"), null, "b_toolbox_close");
-
 		// Start on index page
 		main.setContent(index);
-		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, toolC.getInitialComponent(), main, "course" + course.getResourceableId());
+		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, main, "course" + course.getResourceableId());
 		listenTo(columLayoutCtr); // cleanup on dispose
 		putInitialPanel(columLayoutCtr.getInitialComponent());
 		
@@ -300,7 +294,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			// select user
 			assessedIdentityWrapper = AssessmentHelper.wrapIdentity(focusOnIdentity, localUserCourseEnvironmentCache, initialLaunchDates, course, null);
 			
-			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, assessedIdentityWrapper.getIdentity(), course, true);
+			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(), ureq, stackPanel, assessedIdentityWrapper.getIdentity(), course, true);
 			listenTo(identityAssessmentController);
 			setContent(identityAssessmentController.getInitialComponent());
 		}
@@ -389,23 +383,17 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == toolC) {
-			if (event.getCommand().equals("cmd.close")) {
-				disposeChildControllerAndReleaseLocks(); // cleanup locks from children
-				fireEvent(ureq, Event.DONE_EVENT);
-			}
-		}
-		else if (source == groupListCtr) {
+		if (source == groupListCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_CHOOSE_GROUP)) {
 					int rowid = te.getRowId();
-					GroupAndContextTableModel groupListModel = (GroupAndContextTableModel) groupListCtr.getTableDataModel();
-					this.currentGroup = groupListModel.getObject(rowid);
-					this.identitiesList = getGroupIdentitiesFromGroupmanagement(this.currentGroup);
+					GroupAndContextTableModel groupListModel = (GroupAndContextTableModel)groupListCtr.getTableDataModel();
+					currentGroup = groupListModel.getObject(rowid);
+					identitiesList = getGroupIdentitiesFromGroupmanagement(currentGroup);
 					// Init the user list with this identitites list
-					doUserChooseWithData(ureq, this.identitiesList, this.currentGroup, this.currentCourseNode);
+					doUserChooseWithData(ureq, identitiesList, currentGroup, currentCourseNode);
 				}
 			}
 		}
@@ -648,12 +636,12 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	private void initIdentityEditController(UserRequest ureq, ICourse course) {
 		if (currentCourseNode == null) {
 			removeAsListenerAndDispose(identityAssessmentController);
-			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, assessedIdentityWrapper.getIdentity(), course, true);
+			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, stackPanel, assessedIdentityWrapper.getIdentity(), course, true);
 			listenTo(identityAssessmentController);
 			setContent(identityAssessmentController.getInitialComponent());
 		} else {
 			removeAsListenerAndDispose(assessmentEditController);
-			assessmentEditController = new AssessmentEditController(ureq, getWindowControl(),course, currentCourseNode, assessedIdentityWrapper);
+			assessmentEditController = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, currentCourseNode, assessedIdentityWrapper);
 			listenTo(assessmentEditController);
 			main.setContent(assessmentEditController.getInitialComponent());
 		}
@@ -765,27 +753,6 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		// set main vc to userchoose
 		setContent(userChoose);
 	}
-	
-	//fxdiff FXOLAT-108: improve results table of tests
-	/*
-	private void doSimpleUserChoose(UserRequest ureq, List<Identity> identities) {
-		// Init table headers
-		removeAsListenerAndDispose(userListCtr);
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setPreferencesOffered(true, "assessmentSimpleUserList");
-		tableConfig.setTableEmptyMessage(translate("userchoose.nousers"));		
-		
-		userListCtr = UserControllerFactory.createTableControllerFor(tableConfig, identities, ureq, getWindowControl(), CMD_CHOOSE_USER);
-		listenTo(userListCtr);
-
-		userChoose.contextPut("showBack", Boolean.FALSE);
-		userChoose.contextPut("showGroup", Boolean.FALSE);			
-		
-		userChoose.put("userlisttable", userListCtr.getInitialComponent());
-		// set main vc to userchoose
-		setContent(userChoose);
-	}
-	*/
 
 	private void doNodeChoose(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(ores);
@@ -1102,11 +1069,10 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 */
 	protected void doDispose() {
 		// controllers disposed by BasicController
-			toolC = null;
-			userListCtr = null;
+		userListCtr = null;
 		nodeListCtr = null;
-			groupListCtr = null;
-			csc = null;
+		groupListCtr = null;
+		csc = null;
 		assessmentEditController = null;
 		identityAssessmentController = null;
 		

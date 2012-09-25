@@ -21,7 +21,7 @@
 package org.olat.course.nodes.portfolio;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -41,7 +42,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackImpl;
 import org.olat.portfolio.EPUIFactory;
@@ -61,7 +61,6 @@ import org.olat.repository.RepositoryEntry;
  */
 public class PortfolioResultDetailsController extends FormBasicController {
 	private final EPFrontendManager ePFMgr;
-	private ModuleConfiguration config;
 	private Identity assessedIdentity;
 	private PortfolioStructureMap map;
 	
@@ -70,13 +69,13 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	private StaticTextElement deadlineEl;
 	private DeadlineController deadlineCtr;
 	private CloseableCalloutWindowController deadlineCalloutCtr;
+	private final StackedController stackPanel;
 	
-	public PortfolioResultDetailsController(UserRequest ureq, WindowControl wControl, PortfolioCourseNode courseNode,
+	public PortfolioResultDetailsController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, PortfolioCourseNode courseNode,
 			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
-		
-		this.config = courseNode.getModuleConfiguration();
 
+		this.stackPanel = stackPanel;
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		
@@ -140,8 +139,8 @@ public class PortfolioResultDetailsController extends FormBasicController {
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
 			Controller viewCtr = EPUIFactory.createPortfolioStructureMapController(ureq, getWindowControl(), map, secCallback);
 			listenTo(viewCtr);
-			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, null, viewCtr.getInitialComponent(), "portfolio" + map.getKey());
-			ctr.activate();
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), viewCtr);
+			stackPanel.pushController("Map", ctr);
 			
 		} else if (source == changeDeadlineLink) {
 			if (deadlineCalloutCtr == null){

@@ -25,11 +25,12 @@
 
 package org.olat.course.nodes.tu;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -68,12 +69,13 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 
 	private ModuleConfiguration config;	
 	private VelocityContainer myContent;
+	private final StackedController stackPanel;
 
 	private TUConfigForm tuConfigForm;	
 	private TUCourseNode courseNode;
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane myTabbedPane;
-	private LayoutMain3ColsPreviewController previewLayoutCtr;
+	private LayoutMain3ColsController previewLayoutCtr;
 	private Link previewButton;
 	private ICourse course; //used only for preview of the current node
 
@@ -86,13 +88,14 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 	 * @param tuCourseNode The current single page course node
 	 * @param course
 	 */
-	public TUEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, 
+	public TUEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, StackedController stackPanel,
 			TUCourseNode tuCourseNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
 		this.config = config;
 		this.courseNode = tuCourseNode;
 		this.course = course;
+		this.stackPanel = stackPanel;
 		
 		myContent = this.createVelocityContainer("edit");
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
@@ -128,9 +131,8 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 			}
 			if (previewLayoutCtr != null) previewLayoutCtr.dispose();
 			// preview layout: only center column (col3) used
-			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, null, tunnelRunCtr.getInitialComponent(), null);
-			previewLayoutCtr.addDisposableChildController(tunnelRunCtr); // cascade dispose
-			previewLayoutCtr.activate();
+			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), tunnelRunCtr);
+			stackPanel.pushController("Preview", previewLayoutCtr);
 		}
 	}
 

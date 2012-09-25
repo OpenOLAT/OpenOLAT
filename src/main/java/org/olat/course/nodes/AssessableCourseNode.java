@@ -26,6 +26,7 @@
 package org.olat.course.nodes;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -142,7 +143,7 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @param userCourseEnvironment
 	 * @return a controller or null if hasDetails=false
 	 */
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnvironment);
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, UserCourseEnvironment userCourseEnvironment);
 	/**
 	 * 
 	 * @param scoreEvaluation if scoreEvaluation.getScore() != null, then the score will be updated, and/or if scoreEvaluation.getPassed() != null, then 'passed' will be updated

@@ -83,7 +83,7 @@ public class GroupsSite implements SiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(GroupsSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_GROUPS, null, ureq, bwControl, true);
+		MainLayoutController c = ControllerFactory.createLaunchController(ORES_GROUPS, ureq, bwControl, true);
 		return c;
 	}
 

@@ -50,10 +50,8 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.handlers.FileHandler;
 import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
@@ -80,7 +78,7 @@ public abstract class QTIHandler extends FileHandler implements RepositoryHandle
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		Resolver resolver = new ImsRepositoryResolver(res);
 		IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
 		MainLayoutController runController = res.getResourceableTypeName().equals(SurveyFileResource.TYPE_NAME) ?

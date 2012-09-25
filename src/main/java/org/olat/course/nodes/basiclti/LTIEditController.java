@@ -25,11 +25,12 @@
 
 package org.olat.course.nodes.basiclti;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -44,8 +45,8 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.BasicLTICourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.ModuleConfiguration;
 
@@ -73,9 +74,10 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 	private BasicLTICourseNode courseNode;
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane myTabbedPane;
-	private LayoutMain3ColsPreviewController previewLayoutCtr;
+	private Controller previewLayoutCtr;
 	private Link previewButton;
 	private Controller tunnelRunCtr;
+	private final StackedController stackPanel;
 
 	/**
 	 * Constructor for tunneling editor controller 
@@ -86,12 +88,13 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 	 * @param course
 	 */
 	public LTIEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, 
-			BasicLTICourseNode ltCourseNode, ICourse course, UserCourseEnvironment euce) {
+			StackedController stackPanel, BasicLTICourseNode ltCourseNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
 		this.config = config;
 		this.courseNode = ltCourseNode;
 		this.editCourseEnv = course.getCourseEnvironment();
+		this.stackPanel = stackPanel;
 		
 		myContent = this.createVelocityContainer("edit");
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
@@ -127,11 +130,10 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 			
 			// preview layout: only center column (col3) used
 			removeAsListenerAndDispose(previewLayoutCtr);
-			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, null, tunnelRunCtr.getInitialComponent(), null);
-			previewLayoutCtr.addDisposableChildController(tunnelRunCtr); // cascade dispose
+
+			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), tunnelRunCtr);
 			listenTo(previewLayoutCtr);
-			
-			previewLayoutCtr.activate();
+			this.stackPanel.pushController("Preview", previewLayoutCtr);
 		}
 	}
 
