@@ -189,10 +189,15 @@ public class FileChooseCreateEditController extends BasicController{
 		this.allowRelativeLinks = allowRelLinks == null ? false : allowRelLinks.booleanValue();
 		this.myContent = createVelocityContainer("chosenfile");
 		editButton = LinkFactory.createButtonSmall("command.edit", myContent, this);
+		editButton.setElementCssClass("o_sel_filechooser_edit");
 		deleteButton = LinkFactory.createButtonSmall("command.delete", myContent, this);
+		deleteButton.setElementCssClass("o_sel_filechooser_delete");
 		changeFileButtonOne = LinkFactory.createButtonSmall("command.changefile", myContent, this);
+		changeFileButtonOne.setElementCssClass("o_sel_filechooser_change");
 		changeFileButtonTwo = LinkFactory.createButtonSmall("command.choosecreatefile", myContent, this);
+		changeFileButtonTwo.setElementCssClass("o_sel_filechooser_create");
 		previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", getTranslator().translate(NLS_FOLDER_DISPLAYNAME) + chosenFile, Link.NONTRANSLATED, myContent, this);
+		previewLink.setElementCssClass("o_sel_filechooser_preview");
 		previewLink.setCustomEnabledLinkCSS("b_preview");
 		previewLink.setTitle(getTranslator().translate("command.preview"));
 		
@@ -672,7 +677,7 @@ class NewFileForm extends FormBasicController {
 
 }
 
-@SuppressWarnings("unused")
+
 class AllowRelativeLinksForm extends FormBasicController {
 	
 	private SelectionElement allowRelativeLinks;
