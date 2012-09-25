@@ -398,9 +398,9 @@ public class FunctionalEPortfolioUtil {
 		/* fill in dialog - save */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[@id='")
+		selectorBuffer.append("xpath=(//div[@id='")
 		.append(getAddBinderBoxId())
-		.append("']//form//button[last()]");
+		.append("']//form//button)[last()]");
 		
 		browser.click(selectorBuffer.toString());
 		
@@ -588,7 +588,13 @@ public class FunctionalEPortfolioUtil {
 		selectorBuffer.append("//div[contains(@class, '")
 		.append(getEPortfolioTableOfContentsCss())
 		.append("')]//ul//li");
-		
+
+		page = page.replaceAll("\\\\", "&92;");
+		page = page.replaceAll("/", "&47;");
+
+		title = title.replaceAll("\\\\", "&92;");
+		title = title.replaceAll("/", "&47;");
+				
 		VelocityContext context = new VelocityContext();
 
 		context.put("tocSelector", selectorBuffer.toString());
@@ -770,6 +776,17 @@ public class FunctionalEPortfolioUtil {
 		return(true);
 	}
 	
+	public boolean closeArtefact(Selenium browser){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, 'x-tool-close')]");
+		
+		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
+		
+		return(true);
+	}
+	
 	/**
 	 * @param browser
 	 * @return
@@ -852,6 +869,13 @@ public class FunctionalEPortfolioUtil {
 			i++;
 		}
 		
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=(//form//div[contains(@class, '")
+		.append(functionalUtil.getWizardCss())
+		.append("')]//input[@type='text'])[" + i + "]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		functionalUtil.clickWizardNext(browser);
 		
 		return(true);
@@ -912,6 +936,14 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selector);
 		
 		browser.click(selector);
+		
+		locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-selected')]//a//span[contains(text(), '")
+		.append((structure != null) ? structure: page)
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
@@ -991,6 +1023,14 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(selector);
 		
+		locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-selected')]//a//span[contains(text(), '")
+		.append((structure != null) ? structure: page)
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
 		
@@ -1047,6 +1087,14 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selector);
 		
 		browser.click(selector);
+		
+		locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-selected')]//a//span[contains(text(), '")
+		.append((structure != null) ? structure: page)
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);

@@ -7,30 +7,30 @@ if(document.querySelector){
     var page = "${page}";
     var structure = "${structure}";
     
-    var selection = window.document.evaluate(selector, window.document.body, null, XPathResult.ANY_TYPE, null);
+    var selection = window.document.evaluate(selector, window.document.body, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     
-    for(i = 0; i < selection.length; i++){
-        var current = selection.item(i);
+    for(i = 0; i < selection.snapshotLength; i++){
+        var current = selection.snapshotItem(i);
         
-        if(current.className.indexOf(level1) >= 0){
-            var currentPage = window.document.evaluate("//a//span[text()=\'" + page + "\']", current, null, XPathResult.ANY_TYPE, null);
+        if(current != null && current.className.indexOf(level1) != -1){
+            var currentPage = window.document.evaluate("(" + selector + ")[" + (i + 1) + "]" + "//a//span[contains(text(), \'" + page + "\')]", window.document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
             
-            if(currentPage != null){
-                current = selection.item(i + 1);
-                
-                for(j = 0; current.className.indexOf(level2) >= 0; j++){
-                    current = selection.item(i + 1 + j);
+            if(currentPage.snapshotLength > 0){
+                current = selection.snapshotItem(i + 1);
+
+                for(j = 0; current != null && current.className.indexOf(level2) != -1; j++){
+                    current = selection.snapshotItem	(i + 1 + j);
                     
-                    var currentStructure = window.document.evaluate("//a//span[text()=\'" + structure + "\']", current, null, XPathResult.ANY_TYPE, null);
+                    var currentStructure = window.document.evaluate("(" + selector + ")[" + (i + 1 + j + 1) + "]" + "//a//span[contains(text(), \'" + structure + "\')]", window.document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                     
-                    if(currentStructure != null){
+                    if(currentStructure.snapshotLength > 0){
                         position = i + 1 + j;
                         break;
                     }
                 }
-                
+             
                 break;
-            }
+             }
         }
     }
 }
