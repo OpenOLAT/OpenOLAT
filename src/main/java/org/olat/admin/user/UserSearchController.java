@@ -340,9 +340,10 @@ public class UserSearchController extends BasicController {
 	 * @return
 	 */
 	protected List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
-	  return BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(
-			(login.equals("") ? null : login),
+		int maxResults = securityModule.getUserSearchMaxResultsValue() > 0 ? securityModule.getUserSearchMaxResultsValue() + 1 : -1;
+		login = (login.equals("") ? null : login);
+		return BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(login ,
 			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
-			null, null, null, null, null);
+			null, null, null, null, null, 0, maxResults);
 	}
 }

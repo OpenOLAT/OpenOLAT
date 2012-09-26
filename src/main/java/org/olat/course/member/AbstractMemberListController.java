@@ -402,7 +402,7 @@ public abstract class AbstractMemberListController extends BasicController {
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			idParams.setLogin(params.getLogin());
 		}
-		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(idParams);
+		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
 
 		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
 		List<MemberView> memberList = new ArrayList<MemberView>();

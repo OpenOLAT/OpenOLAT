@@ -175,7 +175,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setIdentityKeys(Collections.singletonList(id.getKey()));
 		
-		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
 		Assert.assertNotNull(ids);
 		Assert.assertEquals(1, ids.size());
 		Assert.assertEquals(id, ids.get(0));
@@ -196,7 +196,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setLogin(login);
 		
-		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
 		Assert.assertNotNull(ids);
 		Assert.assertEquals(1, ids.size());
 		Assert.assertEquals(id, ids.get(0));
@@ -221,7 +221,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		props.put(UserConstants.FIRSTNAME, firstName);
 		params.setUserProperties(props);
 		
-		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
 		Assert.assertNotNull(ids);
 		Assert.assertEquals(1, ids.size());
 		Assert.assertEquals(id, ids.get(0));
@@ -243,7 +243,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		params.setLogin(login);
 		params.setIdentityKeys(Collections.singletonList(id.getKey()));
 		
-		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
 		Assert.assertNotNull(ids);
 		Assert.assertEquals(1, ids.size());
 		Assert.assertEquals(id, ids.get(0));
@@ -269,7 +269,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		params.setUserProperties(props);
 		params.setIdentityKeys(Collections.singletonList(id.getKey()));
 		
-		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params);
+		List<Identity> ids = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
 		Assert.assertNotNull(ids);
 		Assert.assertEquals(1, ids.size());
 		Assert.assertEquals(id, ids.get(0));

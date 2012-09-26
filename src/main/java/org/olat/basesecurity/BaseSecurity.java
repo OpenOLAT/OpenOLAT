@@ -504,7 +504,10 @@ public interface BaseSecurity {
 	 * @param params
 	 * @return
 	 */
-	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params);
+	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults);
+	
+	public List<Identity> getVisibleIdentitiesByPowerSearch(String login, Map<String, String> userProperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups, PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter,
+			Date createdBefore, int firstResult, int maxResults);
 	
 	/**
 	 * Get a list of identities that match the following conditions. All

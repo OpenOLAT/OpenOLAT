@@ -1226,12 +1226,22 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#getVisibleIdentitiesByPowerSearch(java.lang.String, java.util.Map, boolean, org.olat.basesecurity.SecurityGroup[], org.olat.basesecurity.PermissionOnResourceable[], java.lang.String[], java.util.Date, java.util.Date)
 	 */
+  @Override
 	public List<Identity> getVisibleIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
 			SecurityGroup[] groups, PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore) {
 		return getIdentitiesByPowerSearch(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, 
-				                              authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT)); 
+				                              authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT), 0, -1); 
 	}
 	
+  @Override
+	public List<Identity> getVisibleIdentitiesByPowerSearch(String login, Map<String, String> userProperties,
+			boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups, PermissionOnResourceable[] permissionOnResources,
+			String[] authProviders, Date createdAfter, Date createdBefore, int firstResult, int maxResults) {
+		return getIdentitiesByPowerSearch(new SearchIdentityParams(login, userProperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, 
+        authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT), firstResult, maxResults); 
+	}
+
+  @Override
 	public long countIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
 			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
 		DBQuery dbq = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), true);
@@ -1239,18 +1249,25 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return count.longValue();
 	}
 
-  /**
+	/**
 	 * @see org.olat.basesecurity.Manager#getIdentitiesByPowerSearch(java.lang.String, java.util.Map, boolean, org.olat.basesecurity.SecurityGroup[], org.olat.basesecurity.PermissionOnResourceable[], java.lang.String[], java.util.Date, java.util.Date, java.lang.Integer)
    */
+  @Override
 	public List<Identity> getIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
-			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
+			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status) {
 		DBQuery dbq = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), false);
 		return dbq.list();
 	}
 	
 	@Override
-	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params) {
+	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults) {
 		DBQuery dbq = createIdentitiesByPowerQuery(params, false);
+		if(firstResult >= 0) {
+			dbq.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			dbq.setMaxResults(maxResults);
+		}
 		@SuppressWarnings("unchecked")
 		List<Identity> identities = dbq.list();
 		return identities;
