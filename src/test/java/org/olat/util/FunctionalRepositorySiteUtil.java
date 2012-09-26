@@ -36,6 +36,7 @@ public class FunctionalRepositorySiteUtil {
 	public final static String REPOSITORY_POPUP_CSS = "o_sel_edit_repositoryentry_popup";
 	public final static String REPOSITORY_SAVE_DETAILS_CSS = "o_sel_repo_save_details";
 	public final static String REPOSITORY_ADD_FORWARD_CSS = "o_sel_repo_add_forward";
+	public final static String REPOSITORY_ADD_TEMPLATE_FORWARD_CSS = "o_sel_repo_add_template_forward";
 	
 	public final static String COURSE_WIZARD_PUBLISH_CHECKBOX = "publishCheckbox";
 	public final static String COURSE_WIZARD_ACCESS_OPTION_ID = "o_fioaccessChooser_SELBOX";
@@ -69,6 +70,28 @@ public class FunctionalRepositorySiteUtil {
 		LAST_ACCESS,
 		DETAILED_VIEW;
 	}
+	
+	public final static String IMPORT_COURSE_CSS = "o_sel_repo_import_course";
+	public final static String IMPORT_CP_LEARNING_CONTENT_CSS = "o_sel_repo_import_cp";
+	public final static String IMPORT_SCORM_CSS = "o_sel_repo_import_scorm";
+	public final static String IMPORT_WIKI_CSS = "o_sel_repo_import_wiki";
+	public final static String IMPORT_PODCAST_CSS = "o_sel_repo_import_podcast";
+	public final static String IMPORT_BLOG_CSS = "o_sel_repo_import_blog";
+	public final static String IMPORT_TEST_CSS = "o_sel_repo_import_test";
+	public final static String IMPORT_QUESTIONAIRE_CSS = "o_sel_repo_import_questionnaire";
+	public final static String IMPORT_GLOSSARY_CSS = "o_sel_repo_import_glossary";
+	public final static String IMPORT_OTHER_CSS = "o_sel_repo_import_doc";
+	
+	public final static String CREATE_COURSE_CSS = "o_sel_repo_new_course";
+	public final static String CREATE_CP_LEARNING_CONTENT_CSS = "o_sel_repo_new_cp";
+	public final static String CREATE_WIKI_CSS = "o_sel_repo_new_wiki";
+	public final static String CREATE_PODCAST_CSS = "o_sel_repo_new_podcast";
+	public final static String CREATE_BLOG_CSS = "o_sel_repo_new_blog";
+	public final static String CREATE_PORTFOLIO_CSS = "o_sel_repo_new_portfolio";
+	public final static String CREATE_TEST_CSS = "o_sel_repo_new_test";
+	public final static String CREATE_QUESTIONAIRE_CSS = "o_sel_repo_new_questionnaire";
+	public final static String CREATE_FOLDER_CSS = "o_sel_repo_new_sharedfolder";
+	public final static String CREATE_GLOSSARY_CSS = "o_sel_repo_new_glossary";
 	
 	public final static String CP_LEARNING_CONTENT_ALIAS = "cp";
 	public final static String WIKI_ALIAS = "wiki";
@@ -211,6 +234,7 @@ public class FunctionalRepositorySiteUtil {
 	private String repositoryPopupCss;
 	private String repositorySaveDetailsCss;
 	private String repositoryAddForwardCss;
+	private String repositoryAddTemplateForwardCss;
 	
 	private String courseWizardPublishCheckbox;
 	private String courseWizardAccessOptionCss;
@@ -234,6 +258,28 @@ public class FunctionalRepositorySiteUtil {
 	private String repositorySiteResourceFolderCss;
 	private String repositorySiteGlossaryCss;
 
+	private String importCourseCss;
+	private String importCPLearningContentCss;
+	private String importScormCss;
+	private String importWikiCss;
+	private String importPodcastCss;
+	private String importBlogCss;
+	private String importTestCss;
+	private String importQuestionaireCss;
+	private String importGlossaryCss;
+	private String importOtherCss;
+	
+	private String createCourseCss;
+	private String createCPLearningContentCss;
+	private String createWikiCss;
+	private String createPodcastCss;
+	private String createBlogCss;
+	private String createPortfolioCss;
+	private String createTestCss;
+	private String createQuestionaireCss;
+	private String createFolderCss;
+	private String createGlossaryCss;
+	
 	private String toolboxContentCss;
 	private String toolboxCourseCss;
 	private String toolboxContentPackageCss;
@@ -253,6 +299,7 @@ public class FunctionalRepositorySiteUtil {
 		setRepositoryPopupCss(REPOSITORY_POPUP_CSS);
 		setRepositorySaveDetailsCss(REPOSITORY_SAVE_DETAILS_CSS);
 		setRepositoryAddForwardCss(REPOSITORY_ADD_FORWARD_CSS);
+		setRepositoryAddTemplateForwardCss(REPOSITORY_ADD_TEMPLATE_FORWARD_CSS);
 		
 		setCourseWizardPublishCheckbox(COURSE_WIZARD_PUBLISH_CHECKBOX);
 		setCourseWizardAccessOptionId(COURSE_WIZARD_ACCESS_OPTION_ID);
@@ -275,6 +322,28 @@ public class FunctionalRepositorySiteUtil {
 		setRepositorySiteQuestionairesCss(REPOSITORY_SITE_QUESTIONAIRES_CSS);
 		setRepositorySiteResourceFolderCss(REPOSITORY_SITE_RESOURCE_FOLDER_CSS);
 		setRepositorySiteGlossaryCss(REPOSITORY_SITE_GLOSSARY_CSS);
+
+		setImportCourseCss(IMPORT_COURSE_CSS);
+		setImportCPLearningContentCss(IMPORT_CP_LEARNING_CONTENT_CSS);
+		setImportScormCss(IMPORT_SCORM_CSS);
+		setImportWikiCss(IMPORT_WIKI_CSS);
+		setImportPodcastCss(IMPORT_PODCAST_CSS);
+		setImportBlogCss(IMPORT_BLOG_CSS);
+		setImportTestCss(IMPORT_TEST_CSS);
+		setImportQuestionaireCss(IMPORT_QUESTIONAIRE_CSS);
+		setImportGlossaryCss(IMPORT_GLOSSARY_CSS);
+		setImportOtherCss(IMPORT_OTHER_CSS);
+
+		setCreateCourseCss(CREATE_COURSE_CSS);
+		setCreateCPLearningContentCss(CREATE_CP_LEARNING_CONTENT_CSS);
+		setCreateWikiCss(CREATE_WIKI_CSS);
+		setCreatePodcastCss(CREATE_PODCAST_CSS);
+		setCreateBlogCss(CREATE_BLOG_CSS);
+		setCreatePortfolioCss(CREATE_PORTFOLIO_CSS);
+		setCreateTestCss(CREATE_TEST_CSS);
+		setCreateQuestionaireCss(CREATE_QUESTIONAIRE_CSS);
+		setCreateFolderCss(CREATE_FOLDER_CSS);
+		setCreateGlossaryCss(CREATE_GLOSSARY_CSS);
 		
 		setToolboxContentCss(TOOLBOX_CONTENT_CSS);
 		setToolboxCourseCss(TOOLBOX_COURSE_CSS);
@@ -666,7 +735,7 @@ public class FunctionalRepositorySiteUtil {
 			throw(new IOException("can't open olat site of learning resources"));
 		
 		/* open wizard */
-		if(!clickCreate(browser, getToolboxBlogCss()))
+		if(!clickCreate(browser, getCreateBlogCss()))
 			throw(new IOException("can't open create wizard of blog"));
 		
 		if(!openDetailView(browser, title, 0))
@@ -753,7 +822,7 @@ public class FunctionalRepositorySiteUtil {
 	 * Creates an empty course afterwards the course editor is opened.
 	 */
 	public boolean createCourseUsingEditor(Selenium browser, String title, String description){
-		if(!clickCreate(browser, getToolboxCourseCss())){
+		if(!clickCreate(browser, getCreateCourseCss())){
 			return(false);
 		}
 		
@@ -768,7 +837,7 @@ public class FunctionalRepositorySiteUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, '")
-		.append(getRepositoryAddForwardCss())
+		.append(getRepositoryAddTemplateForwardCss())
 		.append("')]//button)[last()]");
 
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -795,7 +864,7 @@ public class FunctionalRepositorySiteUtil {
 	 */
 	public boolean createCourseUsingWizard(Selenium browser, String title, String description,
 			CourseWizardElement[] element, String catalog, boolean  publish, CourseWizardAccess access){
-		if(!clickCreate(browser, getToolboxCourseCss())){
+		if(!clickCreate(browser, getCreateCourseCss())){
 			return(false);
 		}
 		
@@ -810,7 +879,7 @@ public class FunctionalRepositorySiteUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, '")
-		.append(getRepositoryAddForwardCss())
+		.append(getRepositoryAddTemplateForwardCss())
 		.append("')]//button)[last()]");
 
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -877,6 +946,15 @@ public class FunctionalRepositorySiteUtil {
 		this.repositoryAddForwardCss = repositoryAddForwardCss;
 	}
 	
+	public String getRepositoryAddTemplateForwardCss() {
+		return repositoryAddTemplateForwardCss;
+	}
+
+	public void setRepositoryAddTemplateForwardCss(
+			String repositoryAddTemplateForwardCss) {
+		this.repositoryAddTemplateForwardCss = repositoryAddTemplateForwardCss;
+	}
+
 	public String getCourseWizardPublishCheckbox() {
 		return courseWizardPublishCheckbox;
 	}
@@ -1037,6 +1115,166 @@ public class FunctionalRepositorySiteUtil {
 
 	public void setRepositorySiteGlossaryCss(String repositorySiteGlossaryCss) {
 		this.repositorySiteGlossaryCss = repositorySiteGlossaryCss;
+	}
+
+	public String getImportCourseCss() {
+		return importCourseCss;
+	}
+
+	public void setImportCourseCss(String importCourseCss) {
+		this.importCourseCss = importCourseCss;
+	}
+
+	public String getImportCPLearningContentCss() {
+		return importCPLearningContentCss;
+	}
+
+	public void setImportCPLearningContentCss(String importCPLearningContentCss) {
+		this.importCPLearningContentCss = importCPLearningContentCss;
+	}
+
+	public String getImportScormCss() {
+		return importScormCss;
+	}
+
+	public void setImportScormCss(String importScormCss) {
+		this.importScormCss = importScormCss;
+	}
+
+	public String getImportWikiCss() {
+		return importWikiCss;
+	}
+
+	public void setImportWikiCss(String importWikiCss) {
+		this.importWikiCss = importWikiCss;
+	}
+
+	public String getImportPodcastCss() {
+		return importPodcastCss;
+	}
+
+	public void setImportPodcastCss(String importPodcastCss) {
+		this.importPodcastCss = importPodcastCss;
+	}
+
+	public String getImportBlogCss() {
+		return importBlogCss;
+	}
+
+	public void setImportBlogCss(String importBlogCss) {
+		this.importBlogCss = importBlogCss;
+	}
+
+	public String getImportTestCss() {
+		return importTestCss;
+	}
+
+	public void setImportTestCss(String importTestCss) {
+		this.importTestCss = importTestCss;
+	}
+
+	public String getImportQuestionaireCss() {
+		return importQuestionaireCss;
+	}
+
+	public void setImportQuestionaireCss(String importQuestionaireCss) {
+		this.importQuestionaireCss = importQuestionaireCss;
+	}
+
+	public String getImportGlossaryCss() {
+		return importGlossaryCss;
+	}
+
+	public void setImportGlossaryCss(String importGlossaryCss) {
+		this.importGlossaryCss = importGlossaryCss;
+	}
+
+	public String getImportOtherCss() {
+		return importOtherCss;
+	}
+
+	public void setImportOtherCss(String importOtherCss) {
+		this.importOtherCss = importOtherCss;
+	}
+
+	public String getCreateCourseCss() {
+		return createCourseCss;
+	}
+
+	public void setCreateCourseCss(String createCourseCss) {
+		this.createCourseCss = createCourseCss;
+	}
+
+	public String getCreateCPLearningContentCss() {
+		return createCPLearningContentCss;
+	}
+
+	public void setCreateCPLearningContentCss(String createCPLearningContentCss) {
+		this.createCPLearningContentCss = createCPLearningContentCss;
+	}
+
+	public String getCreateWikiCss() {
+		return createWikiCss;
+	}
+
+	public void setCreateWikiCss(String createWikiCss) {
+		this.createWikiCss = createWikiCss;
+	}
+
+	public String getCreatePodcastCss() {
+		return createPodcastCss;
+	}
+
+	public void setCreatePodcastCss(String createPodcastCss) {
+		this.createPodcastCss = createPodcastCss;
+	}
+
+	public String getCreateBlogCss() {
+		return createBlogCss;
+	}
+
+	public void setCreateBlogCss(String createBlogCss) {
+		this.createBlogCss = createBlogCss;
+	}
+
+	public String getCreatePortfolioCss() {
+		return createPortfolioCss;
+	}
+
+	public void setCreatePortfolioCss(String createPortfolioCss) {
+		this.createPortfolioCss = createPortfolioCss;
+	}
+
+	public String getCreateTestCss() {
+		return createTestCss;
+	}
+
+	public void setCreateTestCss(String createTestCss) {
+		this.createTestCss = createTestCss;
+	}
+
+	public String getCreateQuestionaireCss() {
+		return createQuestionaireCss;
+	}
+
+	public void setCreateQuestionaireCss(String createQuestionaireCss) {
+		this.createQuestionaireCss = createQuestionaireCss;
+	}
+
+	public String getCreateFolderCss() {
+		return createFolderCss;
+	}
+
+	public void setCreateFolderCss(String createFolderCss) {
+		this.createFolderCss = createFolderCss;
+	}
+
+	public String getCreateGlossaryCss() {
+		return createGlossaryCss;
+	}
+
+	public void setCreateGlossaryCss(String createGlossaryCss) {
+		this.createGlossaryCss = createGlossaryCss;
 	}
 
 	public String getToolboxContentCss() {

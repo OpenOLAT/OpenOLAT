@@ -47,6 +47,7 @@ public class FunctionalCourseUtil {
 	public final static String COURSE_EDITOR_INSERT_CONTENT_CSS = "b_toolbox_content";
 	public final static String CREATE_COURSE_NODE_TARGET_POSITION_ITEM_CSS = "b_selectiontree_item";
 	
+	public final static String COURSE_EDITOR_OVERVIEW_RADIO_GROUP_CSS = "";
 	public final static String COURSE_EDITOR_CHOOSE_OVERVIEW_FILE_CSS = "o_sel_filechooser_create";
 	public final static String COURSE_EDITOR_UPLOAD_OVERVIEW_FILE_CSS = "o_sel_upload_buttons";
 	
@@ -273,6 +274,7 @@ public class FunctionalCourseUtil {
 	private String courseEditorPublishWizardAccessId;
 	private String courseEditorPublishWizardCatalogId;
 	
+	private String courseEditorOverviewRadioGroupCss;
 	private String courseEditorInsertContentCss;
 	private String createCourseNodeTargetPositionItemCss;
 	
@@ -329,6 +331,7 @@ public class FunctionalCourseUtil {
 		setCourseEditorPublishWizardAccessId(COURSE_EDITOR_PUBLISH_WIZARD_ACCESS_ID);
 		setCourseEditorPublishWizardCatalogId(COURSE_EDITOR_PUBLISH_WIZARD_CATALOG_ID);
 		
+		setCourseEditorOverviewRadioGroupCss(COURSE_EDITOR_OVERVIEW_RADIO_GROUP_CSS);
 		setCourseEditorInsertContentCss(COURSE_EDITOR_INSERT_CONTENT_CSS);
 		setCreateCourseNodeTargetPositionItemCss(CREATE_COURSE_NODE_TARGET_POSITION_ITEM_CSS);
 		
@@ -498,7 +501,7 @@ public class FunctionalCourseUtil {
 	 * Reads the external link of the currently open course node within the editor.
 	 */
 	public String readExternalLink(Selenium browser){
-		if(functionalUtil.openContentTab(browser, 0)){
+		if(!functionalUtil.openContentTab(browser, 0)){
 			return(null);
 		}
 		
@@ -518,7 +521,7 @@ public class FunctionalCourseUtil {
 	 * Reads the internal link of the currently open course node within the editor.
 	 */
 	public String readInternalLink(Selenium browser){
-		if(functionalUtil.openContentTab(browser, 0)){
+		if(!functionalUtil.openContentTab(browser, 0)){
 			return(null);
 		}
 		
@@ -572,6 +575,11 @@ public class FunctionalCourseUtil {
 			return(false);
 		}
 		
+		/* configure course to display single page */
+		if(!functionalUtil.clickRadio(browser, getCourseEditorOverviewRadioGroupCss(), CourseOverview.SINGLEPAGE.getValue())){
+			return(false);
+		}
+		
 		/* click "select or create page" */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -587,6 +595,7 @@ public class FunctionalCourseUtil {
 		
 		selectorBuffer.append("xpath=//form//input[@type='file']");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.focus(selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), file.toURL().getPath());
 		
@@ -603,7 +612,7 @@ public class FunctionalCourseUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		functionalUtil.waitForPageToLoad(browser);
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}
@@ -1483,6 +1492,15 @@ public class FunctionalCourseUtil {
 	public void setCourseEditorPublishWizardCatalogId(
 			String courseEditorPublishWizardCatalogId) {
 		this.courseEditorPublishWizardCatalogId = courseEditorPublishWizardCatalogId;
+	}
+
+	public String getCourseEditorOverviewRadioGroupCss() {
+		return courseEditorOverviewRadioGroupCss;
+	}
+
+	public void setCourseEditorOverviewRadioGroupCss(
+			String courseEditorOverviewRadioGroupCss) {
+		this.courseEditorOverviewRadioGroupCss = courseEditorOverviewRadioGroupCss;
 	}
 
 	public String getCourseEditorInsertContentCss() {

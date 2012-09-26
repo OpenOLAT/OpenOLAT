@@ -26,22 +26,41 @@ package org.olat.util;
 public class FunctionalHtmlUtil {
 	/**
 	 * @param html
+	 * @param insertNewlines
 	 * @return
 	 * 
 	 * Strips all markup of specified string.
 	 */
-	public String stripTags(String html){
+	public String stripTags(String html, boolean insertNewlines){
 		StringBuffer textBuffer = new StringBuffer();
 		int offset = 0;
 		int nextOffset = 0;
 		
+		html = html.substring(html.indexOf('>', html.indexOf("<body")) + 1, html.indexOf("</body"));
+		
 		while((nextOffset = html.indexOf('<', offset)) != -1){
-			textBuffer.append(html.substring(offset, nextOffset));
+			String currentText = html.substring(offset, nextOffset);
+			
+			if(!currentText.matches("^[\\s]+$")){
+				textBuffer.append(currentText);
+				
+				if(insertNewlines && !currentText.endsWith("\n")){
+					textBuffer.append('\n');
+				}
+			}
 			
 			offset = html.indexOf('>', nextOffset) + 1;
 		}
 		 
-		textBuffer.append(html.substring(offset));
+		String currentText = html.substring(offset);
+		
+		if(!currentText.matches("^[\\s]+$")){
+			textBuffer.append(currentText);
+			
+			if(insertNewlines && !currentText.endsWith("\n")){
+				textBuffer.append('\n');
+			}
+		}
 		
 		return(textBuffer.toString());
 	}

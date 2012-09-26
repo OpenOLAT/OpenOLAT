@@ -25,12 +25,22 @@ import org.junit.runners.Suite;
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	org.olat.login.FunctionalLoginTest.class,
 	org.olat.login.FunctionalResumeTest.class,
-	org.olat.portfolio.FunctionalArtefactTest.class
+	org.olat.portal.FunctionalSettingsTest.class,
+	org.olat.portfolio.FunctionalArtefactTest.class,
+	org.olat.course.FunctionalBackTest.class,
+	org.olat.course.FunctionalCourseTest.class,
+	org.olat.course.nodes.cp.FunctionalCPTest.class,
+	org.olat.course.nodes.feed.FunctionalBlogTest.class,
+	org.olat.course.nodes.feed.FunctionalPodcastTest.class,
+	org.olat.course.nodes.iq.FunctionalIQTestTest.class,
+	org.olat.course.nodes.portfolio.FunctionalPortfolioTest.class,
+	org.olat.course.nodes.wiki.FunctionalWikiTest.class
 })
 public class Selenium2TestsJunit4 {
 	//

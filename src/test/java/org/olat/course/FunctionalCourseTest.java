@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -39,6 +40,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.portfolio.FunctionalArtefactTest;
 import org.olat.test.ArquillianDeployments;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalCourseUtil.CourseEditorCourseTab;
@@ -64,7 +66,7 @@ public class FunctionalCourseTest {
 	public final static String EDITOR_COURSE_TITLE = "editor-course";
 	public final static String EDITOR_COURSE_CHANGED_TITLE = "editor-course-renamed";
 	public final static String EDITOR_COURSE_DESCRIPTION = "course create within editor";
-	public final static String EDITOR_COURSE_OVERVIEW_FILE = "/org/olat/course/overview.html";
+	public final static String EDITOR_COURSE_OVERVIEW_FILE = "/org/olat/course/overview_comprehensive_guide_to_c_programming.html";
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -89,6 +91,7 @@ public class FunctionalCourseTest {
 		if(!initialized){
 			functionalUtil = new FunctionalUtil();
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
+			functionalHtmlUtil = new FunctionalHtmlUtil();
 
 			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
 			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
@@ -97,7 +100,7 @@ public class FunctionalCourseTest {
 		}
 	}
 	
-	//@Ignore
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreateUsingWizard(){
@@ -126,7 +129,7 @@ public class FunctionalCourseTest {
 	
 	@Test
 	@RunAsClient
-	public void checkCreateUsingEditor() throws FileNotFoundException, IOException{
+	public void checkCreateUsingEditor() throws FileNotFoundException, IOException, URISyntaxException{
 		/* login */
 		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
 		
@@ -137,13 +140,12 @@ public class FunctionalCourseTest {
 		Assert.assertTrue(functionalRepositorySiteUtil.createCourseUsingEditor(browser, EDITOR_COURSE_TITLE, EDITOR_COURSE_DESCRIPTION));
 		
 		/* set single page as overview */
-		File overview = new File(EDITOR_COURSE_OVERVIEW_FILE);
-		Assert.assertTrue(functionalCourseUtil.uploadOverviewPage(browser, overview.toURI()));
+		Assert.assertTrue(functionalCourseUtil.uploadOverviewPage(browser, FunctionalCourseTest.class.getResource(EDITOR_COURSE_OVERVIEW_FILE).toURI()));
 		
 		/* publish entire course */
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
 		
-		/* rename short title */
+		/* change short title and save */
 		Assert.assertTrue(functionalCourseUtil.openCourseEditorCourseTab(browser, CourseEditorCourseTab.TITLE_AND_DESCRIPTION));
 		
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -151,6 +153,16 @@ public class FunctionalCourseTest {
 		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[1]");
 		
 		browser.type(selectorBuffer.toString(), EDITOR_COURSE_CHANGED_TITLE);
+		
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//button[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')])[last()]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		/* publish entire course */
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
@@ -165,8 +177,16 @@ public class FunctionalCourseTest {
 		
 		browser.open(courseLink);
 		functionalUtil.waitForPageToLoad(browser);
+
+		String originalText = functionalHtmlUtil.stripTags(IOUtils.toString(FunctionalCourseTest.class.getResourceAsStream(EDITOR_COURSE_OVERVIEW_FILE)), true);
+
+		browser.selectFrame("dom=document.getElementsByClassName('b_module_singlepage_wrapper')[0].getElementsByTagName('iframe')[0]" );
+		String source = browser.getHtmlSource();
+		String currentText = functionalHtmlUtil.stripTags(source, true);
+		browser.selectFrame("relative=up");
 		
-		browser.isTextPresent(functionalHtmlUtil.stripTags(IOUtils.toString(new FileInputStream(overview))));
+		
+		Assert.assertTrue(originalText.equals(currentText));
 		
 		selectorBuffer = new StringBuffer();
 		

@@ -154,6 +154,7 @@ public class FunctionalVOUtil {
 	 * Imports the specified course via REST.
 	 */
 	public CourseVO importCourse(URL deploymentUrl, String path, String filename, String resourcename, String displayname) throws URISyntaxException, IOException{
+		//TODO:JK: may be replace this code because the course will just be deployed and not imported 
 		URL cpUrl = FunctionalVOUtil.class.getResource(path);
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
