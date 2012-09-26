@@ -113,6 +113,8 @@ public class UserSearchController extends BasicController {
 	private String actionKeyChoose;
 	private boolean isAdministrativeUser;
 	private Link backLink;
+	
+	private final BaseSecurityModule securityModule;
 
 	public static final String ACTION_KEY_CHOOSE = "action.choose";
 	public static final String ACTION_KEY_CHOOSE_FINISH = "action.choose.finish";
@@ -162,6 +164,7 @@ public class UserSearchController extends BasicController {
 		super(ureq, wControl);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 	  // Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends UserSearchController and re-use translations
 		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator( new PackageTranslator(PACKAGE, ureq.getLocale()) );	
 		myContent = new VelocityContainer("olatusersearch", VELOCITY_ROOT + "/usersearch.html", pT, this);
@@ -187,7 +190,7 @@ public class UserSearchController extends BasicController {
 		myContent.contextPut("showButton","false");
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean autoCompleteAllowed = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAutoComplete(roles);
+		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 		boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
 		if (ajax && autoCompleteAllowed) {
 			// insert a autocompleter search
@@ -291,6 +294,11 @@ public class UserSearchController extends BasicController {
 				listenTo(tableCtr);
 				
 				List<Identity> users = searchUsers(login,	userPropertiesSearch, true);
+				int maxResults = securityModule.getUserSearchMaxResultsValue();
+				if(maxResults > 0 && users.size() > maxResults) {
+					users = users.subList(0, maxResults);
+					showWarning("error.search.maxResults", Integer.toString(maxResults));
+				}
 				if (!users.isEmpty()) {
 					tdm = new UserTableDataModel(users, ureq.getLocale(), isAdministrativeUser);
 					// add the data column descriptors

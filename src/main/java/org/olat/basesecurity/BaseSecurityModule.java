@@ -63,6 +63,9 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private static final String USERSEARCHAUTOCOMPLETE_USERMANAGERS = "userSearchAutocompleteForUsermanagers";
 	private static final String USERSEARCHAUTOCOMPLETE_GROUPMANAGERS = "userSearchAutocompleteForUsermanagers";
 	private static final String USERSEARCHAUTOCOMPLETE_ADMINISTRATORS = "userSearchAutocompleteForAdministrators";
+	private static final String USERSEARCH_MAXRESULTS = "userSearchMaxResults";
+	
+	
 	/**
 	 * default values
 	 */
@@ -84,6 +87,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public static Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
 	private static String defaultAuthProviderIdentifier;
 
+	private String userSearchMaxResults;
 	private String userSearchAutocompleteForUsers;
 	private String userSearchAutocompleteForAuthors;
 	private String userSearchAutocompleteForUsermanagers;
@@ -138,6 +142,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		userSearchAutocompleteForUsermanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERMANAGERS, "enable", true);
 		userSearchAutocompleteForGroupmanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, "enable", true);
 		userSearchAutocompleteForAdministrators = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, "enable", true);
+		userSearchMaxResults = getStringConfigParameter(USERSEARCH_MAXRESULTS, "-1", true);
 	}
 
 	@Override
@@ -165,6 +170,11 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			userSearchAutocompleteForAdministrators = enabled;
+		}
+		
+		String maxResults = getStringPropertyValue(USERSEARCH_MAXRESULTS, true);
+		if(StringHelper.containsNonWhitespace(maxResults)) {
+			userSearchMaxResults = maxResults;
 		}
 	}
 
@@ -232,6 +242,23 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public void setUserSearchAutocompleteForAdministrators(String enable) {
 		setStringProperty(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, enable, true);
 	}
+	
+	public int getUserSearchMaxResultsValue() {
+		if(StringHelper.containsNonWhitespace(userSearchMaxResults)) {
+			try {
+				return Integer.parseInt(userSearchMaxResults);
+			} catch (NumberFormatException e) {
+				logError("userSearchMaxResults as the wrong format", e);
+			}
+		}
+		return -1;
+	}
 
+	public String getUserSearchMaxResults() {
+		return userSearchMaxResults;
+	}
 
+	public void setUserSearchMaxResults(String maxResults) {
+		setStringProperty(USERSEARCH_MAXRESULTS, maxResults, true);
+	}
 }

@@ -40,6 +40,7 @@ depends-on="database, i18nModule, triggerI18nModuleInit">
 						userSearchAutocompleteForUsermanagers=${usersearch.autocomplete.usermanagers}
 						userSearchAutocompleteForGroupmanagers=${usersearch.autocomplete.groupmanagers}
 						userSearchAutocompleteForAdministrators=${usersearch.autocomplete.administrators}
+						userSearchMaxResults=${usersearch.maxResults}
             
 						sysGroupUsermanager.canCreateUser=true
 						sysGroupUsermanager.canDeleteUser=false
