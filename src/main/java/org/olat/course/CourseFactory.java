@@ -593,7 +593,7 @@ public class CourseFactory extends BasicManager {
 			Tracing.logError("Error deploying course from ZIP: " + exportedCourseZIPFile.getAbsolutePath(), CourseFactory.class);
 			return null;
 		}
-		File courseExportData = ImportCourseController.getExportDataDir(course);
+		File courseExportData = course.getCourseExportDataDir().getBasefile();
 		// get the export data directory
 		// create the repository entry
 		RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("administrator");

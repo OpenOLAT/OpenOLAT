@@ -43,6 +43,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
@@ -152,6 +153,15 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 */
 	public OlatRootFolderImpl getCourseBaseContainer() {
 		return courseRootContainer;
+	}
+	
+	@Override
+	public OlatRootFolderImpl getCourseExportDataDir() {
+		OlatRootFolderImpl vfsExportDir = (OlatRootFolderImpl)getCourseBaseContainer().resolve(ICourse.EXPORTED_DATA_FOLDERNAME);
+		if (vfsExportDir == null) {
+			vfsExportDir = (OlatRootFolderImpl)getCourseBaseContainer().createChildContainer(ICourse.EXPORTED_DATA_FOLDERNAME);
+		}
+		return vfsExportDir;
 	}
 
 	/**

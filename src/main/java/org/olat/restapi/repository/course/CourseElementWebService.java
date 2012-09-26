@@ -1561,9 +1561,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		Boolean isSolutionEnabled = (Boolean)moduleConfig.get(TACourseNode.CONF_SOLUTION_ENABLED);
 		config.setIsSolutionEnabled(isSolutionEnabled == null ? Boolean.TRUE : isSolutionEnabled);
 		//get the conditions
-		List lstConditions = courseNode.getConditionExpressions();
-		for(Object obj : lstConditions) {
-			ConditionExpression cond = (ConditionExpression) obj;
+		List<ConditionExpression> lstConditions = courseNode.getConditionExpressions();
+		for(ConditionExpression cond : lstConditions) {
 			String id = cond.getId();
 			String expression = cond.getExptressionString();
 			if(id.equals(TACourseNode.ACCESS_TASK))

@@ -27,11 +27,11 @@ import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -51,25 +51,31 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.repository.ImportGlossaryReferencesController;
+import org.olat.course.repository.ImportPortfolioReferencesController;
+import org.olat.course.repository.ImportReferencesController;
+import org.olat.course.repository.ImportSharedfolderReferencesController;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.glossary.GlossaryManager;
+import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -77,6 +83,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
@@ -226,8 +233,8 @@ public class CoursesWebService {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
-		Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
+		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		Identity identity = ureq.getIdentity();
 		
 		File tmpFile = null;
 		try {
@@ -238,8 +245,8 @@ public class CoursesWebService {
 				Long accessRaw = partsReader.getLongValue("access");
 				int access = accessRaw != null ? accessRaw.intValue() : RepositoryEntry.ACC_OWNERS;
 				String softKey = partsReader.getValue("softkey");
-				
-				ICourse course = importCourse(identity, tmpFile, softKey, access);
+				String displayName = partsReader.getValue("displayname");
+				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, access);
 				CourseVO vo = ObjectFactory.get(course);
 				return Response.ok(vo).build();
 			}
@@ -256,10 +263,112 @@ public class CoursesWebService {
 		return Response.ok(vo).build();
 	}
 	
-	public static ICourse importCourse(Identity identity, File fCourseImportZIP, String softKey, int access) {
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(fCourseImportZIP, identity.getName(), softKey, access);
-		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+	public static ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP,
+			String displayName, String softKey, int access) {
+		
+		OLATResource newCourseResource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
+		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, fCourseImportZIP);
+		if (course == null) {
+			return null;
+		}
+		
+		if(!StringHelper.containsNonWhitespace(displayName)) {
+			RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(course.getCourseExportDataDir().getBasefile());
+			displayName = importExport.getDisplayName();
+		}
+		if(!StringHelper.containsNonWhitespace(displayName)) {
+			displayName = "import-" + UUID.randomUUID().toString();
+		}
+		
+		// create empty run structure
+		course = CourseFactory.openCourseEditSession(course.getResourceableId());
+		Structure runStructure = course.getRunStructure();
+		runStructure.getRootNode().removeAllChildren();
+		CourseFactory.saveCourse(course.getResourceableId());
+		
+		//import all references
+		List<CourseEditorTreeNode> nodeList = new ArrayList<CourseEditorTreeNode>();
+		collectNodesAsList((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), nodeList);
+		processNodeList(ureq, course, nodeList);
+		
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		if (courseConfig.hasCustomSharedFolder()) {
+			processSharedFolder(ureq, course);
+		} 
+		else if (courseConfig.hasGlossary()) {
+			processGlossary(ureq, course);
+		}
+
+		//make the repository
+		RepositoryEntry re = createCourseRepositoryEntry(identity, displayName, softKey, newCourseResource);
+		prepareSecurityGroup(identity, re, access);
+		
+		//update tree
+		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(course.getCourseTitle(), 25)); //do not use truncate!
+		course.getRunStructure().getRootNode().setLongTitle(displayName);
+		CourseEditorTreeNode editorRootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
+		editorRootNode.getCourseNode().setShortTitle(Formatter.truncateOnly(course.getCourseTitle(), 25)); //do not use truncate!
+		editorRootNode.getCourseNode().setLongTitle(course.getCourseTitle());
+		// mark entire structure as dirty/new so the user can re-publish
+		markDirtyNewRecursively(editorRootNode);
+		// root has already been created during export. Unmark it.
+		editorRootNode.setNewnode(false);
+		
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), false);
+		
+		//publish
+		CourseFactory.publishCourse(course, identity, ureq.getLocale());
+
 		return course;
+	}
+	
+	private static void processSharedFolder(UserRequest ureq, ICourse course) {
+		// if shared folder controller exists we did already import this one.
+		RepositoryEntryImportExport sfImportExport
+			= SharedFolderManager.getInstance().getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
+		ImportSharedfolderReferencesController.doImport(sfImportExport, course, false, ureq.getIdentity());
+	}
+
+	private static void processGlossary(UserRequest ureq, ICourse course) {
+		// if glossary controller exists we did already import this one.
+		RepositoryEntryImportExport sfImportExport
+			= GlossaryManager.getInstance().getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
+		ImportGlossaryReferencesController.doImport(sfImportExport, course, false, ureq.getIdentity());
+	}
+	
+	/**
+	 * Mark whole tree (incl. root node) "dirty" and "new" recursively.
+	 * 
+	 * @param editorRootNode
+	 */
+	private static void markDirtyNewRecursively(CourseEditorTreeNode editorRootNode) {
+		editorRootNode.setDirty(true);
+		editorRootNode.setNewnode(true);
+		if (editorRootNode.getChildCount() > 0) {
+			for (int i = 0; i < editorRootNode.getChildCount(); i++) {
+				markDirtyNewRecursively((CourseEditorTreeNode)editorRootNode.getChildAt(i));
+			}
+		}
+	}
+	
+	private static void collectNodesAsList(CourseEditorTreeNode rootNode, List<CourseEditorTreeNode> nl) {
+		nl.add(rootNode);
+		for (int i = 0; i < rootNode.getChildCount(); i++) {
+			collectNodesAsList((CourseEditorTreeNode)rootNode.getChildAt(i), nl);
+		}
+	}
+	
+	private static void processNodeList(UserRequest ureq, ICourse course, List<CourseEditorTreeNode> nodeList) {
+		for (CourseEditorTreeNode nextNode : nodeList) {
+			Controller ctrl = nextNode.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, false, ureq, new ErrorWindowControl());
+			if (ctrl != null) {
+				if (ctrl instanceof ImportReferencesController) {
+					((ImportReferencesController) ctrl).importWithoutAsking (ureq);
+				} else if (ctrl instanceof ImportPortfolioReferencesController) {
+					((ImportPortfolioReferencesController) ctrl).importWithoutAsking (ureq);
+				}
+			}
+		}
 	}
 	
 	public static ICourse copyCourse(Long copyFrom, UserRequest ureq, String name, String longTitle, CourseConfigVO courseConfigVO) {
@@ -300,7 +409,7 @@ public class CoursesWebService {
 			OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResourceable);
 			preparedEntry.setOlatResource(ores);
 			// create security group
-			prepareSecurityGroup(ureq.getIdentity(), preparedEntry);
+			prepareSecurityGroup(ureq.getIdentity(), preparedEntry, RepositoryEntry.ACC_OWNERS);
 			// copy image if available
 			RepositoryManager.getInstance().copyImage(src, preparedEntry);
 			
@@ -324,35 +433,43 @@ public class CoursesWebService {
 		String learningObjectives = shortTitle + " (Example of creating a new course)";
 
 		try {
-			// create the course resource
 			OLATResourceable oresable = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
-
 			// create a repository entry
-			RepositoryEntry addedEntry = RepositoryManager.getInstance().createRepositoryEntryInstance(initialAuthor.getName());
-			addedEntry.setCanDownload(false);
-			addedEntry.setCanLaunch(true);
-			addedEntry.setDisplayname(shortTitle);
-			addedEntry.setResourcename("-");
-			// Do set access for owner at the end, because unfinished course should be
-			// invisible
-			// addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-			addedEntry.setAccess(0);// Access for nobody
-
-			// Set the resource on the repository entry and save the entry.
-			// bind resource and repository entry
-			OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(oresable);
-			addedEntry.setOlatResource(ores);
-
+			RepositoryEntry addedEntry = createCourseRepositoryEntry(initialAuthor, shortTitle, null, oresable);
 			// create an empty course
 			CourseFactory.createEmptyCourse(oresable, shortTitle, longTitle, learningObjectives);
-			prepareSecurityGroup(initialAuthor, addedEntry);
+			prepareSecurityGroup(initialAuthor, addedEntry, RepositoryEntry.ACC_OWNERS);
 			return prepareCourse(addedEntry, courseConfigVO);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
 	
-	private static void prepareSecurityGroup(Identity identity, RepositoryEntry addedEntry) {
+	private static RepositoryEntry createCourseRepositoryEntry(Identity initialAuthor, String shortTitle, 
+			String softKey, OLATResourceable oresable) {
+		// create a repository entry
+		RepositoryEntry addedEntry = RepositoryManager.getInstance().createRepositoryEntryInstance(initialAuthor.getName());
+		addedEntry.setCanDownload(false);
+		addedEntry.setCanLaunch(true);
+		addedEntry.setDisplayname(shortTitle);
+		addedEntry.setResourcename("-");
+		if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
+			addedEntry.setSoftkey(softKey);
+		}
+		// Do set access for owner at the end, because unfinished course should be
+		// invisible
+		// addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
+		addedEntry.setAccess(0);// Access for nobody
+
+		// Set the resource on the repository entry and save the entry.
+		// bind resource and repository entry
+		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(oresable);
+		addedEntry.setOlatResource(ores);
+		
+		return addedEntry;//!!!no update at this point
+	}
+	
+	private static void prepareSecurityGroup(Identity identity, RepositoryEntry addedEntry, int access) {
 		// create security group
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
@@ -381,7 +498,7 @@ public class CoursesWebService {
 		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
 		addedEntry.setParticipantGroup(participantGroup);
 		// Do set access for owner at the end, because unfinished course should be invisible
-		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
+		addedEntry.setAccess(access);
 		RepositoryManager.getInstance().saveRepositoryEntry(addedEntry);
 	}
 	

@@ -153,7 +153,7 @@ public class ImportReferencesController extends BasicController {
 		putInitialPanel(mainPanel);
 	}
 	
-	protected void importWithoutAsking (UserRequest ureq) {
+	public void importWithoutAsking (UserRequest ureq) {
 		//isolate the transaction
 		try {
 			DBFactory.getInstance().commitAndCloseSession();
