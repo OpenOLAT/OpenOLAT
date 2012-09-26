@@ -12,7 +12,7 @@
 	#if ($security.mayArchiveForum() && $hasThreads)
 		$r.render("archive.forum")
 	#end
-	#if ($security.mayFilterForUser() && $hasThreads)
+	#if ($security.mayFilterForUser() && $hasThreads && $r.available("filter"))
 		$r.render("filter")
 	#end
 	</div>

@@ -35,7 +35,13 @@ depends-on="database, i18nModule, triggerI18nModuleInit">
         <property name="arguments">
         			<!-- Important: Set tomcats policy to allow read/write access to Root and TmpDir  -->
                     <value>
-	                    sysGroupUsermanager.canCreateUser=true
+						userSearchAutocompleteForUsers=${usersearch.autocomplete.users}
+						userSearchAutocompleteForAuthors=${usersearch.autocomplete.authors}
+						userSearchAutocompleteForUsermanagers=${usersearch.autocomplete.usermanagers}
+						userSearchAutocompleteForGroupmanagers=${usersearch.autocomplete.groupmanagers}
+						userSearchAutocompleteForAdministrators=${usersearch.autocomplete.administrators}
+            
+						sysGroupUsermanager.canCreateUser=true
 						sysGroupUsermanager.canDeleteUser=false
 						sysGroupUsermanager.canCreatePassword=true
 						sysGroupUsermanager.canModifyPassword=true

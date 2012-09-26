@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.ControllerFactory;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -190,6 +191,7 @@ public class ForumController extends BasicController implements GenericEventList
 	private Controller searchController;
 	
 	private final OLATResourceable forumOres;
+	private final BaseSecurityModule securityModule;
 
 
 	/**
@@ -202,6 +204,7 @@ public class ForumController extends BasicController implements GenericEventList
 		super(ureq, wControl);
 		this.forum = forum;
 		this.focallback = focallback;
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		addLoggingResourceable(LoggingResourceable.wrap(forum));
 		
 		forumOres = OresHelper.createOLATResourceableInstance(Forum.class,forum.getKey());
@@ -223,9 +226,12 @@ public class ForumController extends BasicController implements GenericEventList
 		msgCreateButton.setElementCssClass("o_sel_forum_thread_new");
 		archiveForumButton = LinkFactory.createButtonSmall("archive.forum", vcListTitles, this);
 		archiveForumButton.setElementCssClass("o_sel_forum_archive");
-		filterForUserButton = LinkFactory.createButtonSmall("filter", vcListTitles, this);
-		filterForUserButton.setElementCssClass("o_sel_forum_filter");
-
+		
+		if(securityModule.isUserAllowedAutoComplete(ureq.getUserSession().getRoles())) {
+			filterForUserButton = LinkFactory.createButtonSmall("filter", vcListTitles, this);
+			filterForUserButton.setElementCssClass("o_sel_forum_filter");
+		}
+		
 		if(!this.isGuestOnly(ureq)) {
 		  SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 		  searchController = searchServiceUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
@@ -688,15 +694,17 @@ public class ForumController extends BasicController implements GenericEventList
 	////////////////////////////////////////
 	
 	private void showFilterForUserView(UserRequest ureq) {
-		searchMode = true;
-		backLinkSearchListTitles = LinkFactory.createCustomLink("backLinkLT", "back", "listalltitles", Link.LINK_BACK, vcFilterView, this);
-		
-		removeAsListenerAndDispose(filterForUserCtr);
-		filterForUserCtr = new FilterForUserController(ureq, getWindowControl(), forum);
-		listenTo(filterForUserCtr);
-		
-		vcFilterView.put("filterForUser", filterForUserCtr.getInitialComponent());
-		forumPanel.setContent(vcFilterView);
+		if(securityModule.isUserAllowedAutoComplete(ureq.getUserSession().getRoles())) {
+			searchMode = true;
+			backLinkSearchListTitles = LinkFactory.createCustomLink("backLinkLT", "back", "listalltitles", Link.LINK_BACK, vcFilterView, this);
+			
+			removeAsListenerAndDispose(filterForUserCtr);
+			filterForUserCtr = new FilterForUserController(ureq, getWindowControl(), forum);
+			listenTo(filterForUserCtr);
+			
+			vcFilterView.put("filterForUser", filterForUserCtr.getInitialComponent());
+			forumPanel.setContent(vcFilterView);
+		}
 	}
 
 	private void showThreadOverviewView() {
@@ -829,7 +837,7 @@ public class ForumController extends BasicController implements GenericEventList
 			//prepare the table data
 			msgs = fm.getMessagesByForum(forum);
 			threadList = prepareListTitles(msgs);
-			DefaultTableDataModel tdm = new DefaultTableDataModel(threadList) {
+			DefaultTableDataModel<Message> tdm = new DefaultTableDataModel<Message>(threadList) {
 				
 					@Override
 					public Object getValueAt(int row, int col) {

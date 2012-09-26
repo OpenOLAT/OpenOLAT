@@ -29,7 +29,9 @@ import org.olat.NewControllerFactory;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date: May 4, 2004
@@ -56,6 +58,11 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private static final String CONFIG_USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = "sysGroupUsermanager.canBypassEmailverification";
 	private static final String CONFIG_USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = "sysGroupUsermanager.canEditAllProfileFields";
 	
+	private static final String USERSEARCHAUTOCOMPLETE_USERS = "userSearchAutocompleteForUsers";
+	private static final String USERSEARCHAUTOCOMPLETE_AUTHORS = "userSearchAutocompleteForAuthors";
+	private static final String USERSEARCHAUTOCOMPLETE_USERMANAGERS = "userSearchAutocompleteForUsermanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_GROUPMANAGERS = "userSearchAutocompleteForUsermanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_ADMINISTRATORS = "userSearchAutocompleteForAdministrators";
 	/**
 	 * default values
 	 */
@@ -76,7 +83,12 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public static Boolean USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = true;
 	public static Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
 	private static String defaultAuthProviderIdentifier;
-	
+
+	private String userSearchAutocompleteForUsers;
+	private String userSearchAutocompleteForAuthors;
+	private String userSearchAutocompleteForUsermanagers;
+	private String userSearchAutocompleteForGroupmanagers;
+	private String userSearchAutocompleteForAdministrators;
 
 
 	private BaseSecurityModule(String defaultAuthProviderIdentifier) {
@@ -95,7 +107,8 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public void init() {
 		// fxdiff: Add controller factory extension point to launch user admin site
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(User.class.getSimpleName(),
-				new UserAdminContextEntryControllerCreator());	
+				new UserAdminContextEntryControllerCreator());
+		updateProperties();
 	}
 
 	@Override
@@ -120,18 +133,104 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_BYPASS_EMAILVERIFICATION, USERMANAGER_CAN_BYPASS_EMAILVERIFICATION);
 		USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS, USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS);
 		
-		
+		userSearchAutocompleteForUsers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERS, "enable", true);
+		userSearchAutocompleteForAuthors = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_AUTHORS, "enable", true);
+		userSearchAutocompleteForUsermanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERMANAGERS, "enable", true);
+		userSearchAutocompleteForGroupmanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, "enable", true);
+		userSearchAutocompleteForAdministrators = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, "enable", true);
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		updateProperties();
+	}
+	
+	private void updateProperties() {
+		String enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAutocompleteForUsers = enabled;
+		}
+		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_AUTHORS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAutocompleteForAuthors = enabled;
+		}
+		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERMANAGERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAutocompleteForUsermanagers = enabled;
+		}
+		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAutocompleteForGroupmanagers = enabled;
+		}
+		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAutocompleteForAdministrators = enabled;
+		}
 	}
 
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
+	}
+	
+	public boolean isUserAllowedAutoComplete(Roles roles) {
+		if(roles == null) return false;
+		if(roles.isOLATAdmin()) {
+			return "enabled".equals(userSearchAutocompleteForAdministrators);
+		}
+		if(roles.isGroupManager()) {
+			return "enabled".equals(userSearchAutocompleteForGroupmanagers);
+		}
+		if(roles.isUserManager()) {
+			return "enabled".equals(userSearchAutocompleteForUsermanagers);
+		}
+		if(roles.isAuthor()) {
+			return "enabled".equals(userSearchAutocompleteForAuthors);
+		}
+		if(roles.isInvitee()) {
+			return false;
+		}
+		return "enabled".equals(userSearchAutocompleteForUsers);
+	}
+	
+	public String isUserSearchAutocompleteForUsers() {
+		return userSearchAutocompleteForUsers;
+	}
+
+	public void setUserSearchAutocompleteForUsers(String enable) {
+		setStringProperty(USERSEARCHAUTOCOMPLETE_USERS, enable, true);
+	}
+
+	public String isUserSearchAutocompleteForAuthors() {
+		return userSearchAutocompleteForAuthors;
+	}
+
+	public void setUserSearchAutocompleteForAuthors(String enable) {
+		setStringProperty(USERSEARCHAUTOCOMPLETE_AUTHORS, enable, true);
+	}
+
+	public String isUserSearchAutocompleteForUsermanagers() {
+		return userSearchAutocompleteForUsermanagers;
+	}
+
+	public void setUserSearchAutocompleteForUsermanagers(String enable) {
+		setStringProperty(USERSEARCHAUTOCOMPLETE_USERMANAGERS, enable, true);
+	}
+
+	public String isUserSearchAutocompleteForGroupmanagers() {
+		return userSearchAutocompleteForGroupmanagers;
+	}
+
+	public void setUserSearchAutocompleteForGroupmanagers(String enable) {
+		setStringProperty(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, enable, true);
+	}
+
+	public String isUserSearchAutocompleteForAdministrators() {
+		return userSearchAutocompleteForAdministrators;
+	}
+
+	public void setUserSearchAutocompleteForAdministrators(String enable) {
+		setStringProperty(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, enable, true);
 	}
 
 

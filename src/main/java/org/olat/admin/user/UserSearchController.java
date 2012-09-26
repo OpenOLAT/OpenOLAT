@@ -26,8 +26,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -184,8 +186,10 @@ public class UserSearchController extends BasicController {
 		myContent.contextPut("noList","false");			
 		myContent.contextPut("showButton","false");
 		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean autoCompleteAllowed = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAutoComplete(roles);
 		boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
-		if (ajax) {
+		if (ajax && autoCompleteAllowed) {
 			// insert a autocompleter search
 			ListProvider provider = new UserSearchListProvider();
 			autocompleterC = new AutoCompleterController(ureq, getWindowControl(), provider, null, isAdmin, 60, 3, null);
@@ -199,10 +203,8 @@ public class UserSearchController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), myContent.getTranslator());
 		listenTo(tableCtr);
 		
-		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
-		
-		
+
 		putInitialPanel(myContent);
 	}
 
@@ -246,7 +248,7 @@ public class UserSearchController extends BasicController {
 			}
 		} else if (source == autocompleterC) {
 			EntriesChosenEvent ece = (EntriesChosenEvent)event;
-			List res = ece.getEntries();
+			List<String> res = ece.getEntries();
 			// if we get the event, we have a result or an incorrect selection see OLAT-5114 -> check for empty
 			String mySel = res.isEmpty() ? null : (String) res.get(0);
 			if (( mySel == null) || mySel.trim().equals("")) {
