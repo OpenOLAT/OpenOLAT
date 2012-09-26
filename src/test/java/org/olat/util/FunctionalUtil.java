@@ -103,6 +103,8 @@ public class FunctionalUtil {
 	
 	public final static String MCE_CONTENT_BODY_CSS = "mceContentBody";
 	
+	public final static String BUTTON_DIRTY_CSS = "b_button_dirty";
+	
 	private String username;
 	private String password;
 	
@@ -138,6 +140,8 @@ public class FunctionalUtil {
 	private String wizardFinishCss;
 	
 	private String mceContentBodyCss;
+	
+	private String buttonDirtyCss;
 	
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	private FunctionalGroupsSiteUtil functionalGroupsSiteUtil;
@@ -195,6 +199,8 @@ public class FunctionalUtil {
 		wizardFinishCss = WIZARD_FINISH_CSS;
 		
 		mceContentBodyCss = MCE_CONTENT_BODY_CSS;
+		
+		buttonDirtyCss = BUTTON_DIRTY_CSS;
 		
 		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(this);
 		functionalGroupsSiteUtil = new FunctionalGroupsSiteUtil(this);
@@ -1144,5 +1150,13 @@ public class FunctionalUtil {
 	public void setFunctionalAdministrationSiteUtil(
 			FunctionalAdministrationSiteUtil functionalAdministrationSiteUtil) {
 		this.functionalAdministrationSiteUtil = functionalAdministrationSiteUtil;
+	}
+
+	public String getButtonDirtyCss() {
+		return buttonDirtyCss;
+	}
+
+	public void setButtonDirtyCss(String buttonDirtyCss) {
+		this.buttonDirtyCss = buttonDirtyCss;
 	}
 }

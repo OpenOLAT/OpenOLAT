@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -345,18 +344,15 @@ public class FunctionalArtefactTest {
 //		}
 		
 		/* verify content */
-		//FIXME:JK: wiki's content should be checked, as well.
-		//if(!(artefact instanceof Binder.Page.WikiArtefact)){
-			artefact.open(browser, deploymentUrl);
+		artefact.open(browser, deploymentUrl);
 
-			String currentContent = null;
+		String currentContent = null;
 
-			while((currentContent = artefact.nextContent()) != null){
-				if(!browser.isTextPresent(currentContent)){
-					return(false);
-				}
+		while((currentContent = artefact.nextContent()) != null){
+			if(!browser.isTextPresent(currentContent)){
+				return(false);
 			}
-		//}
+		}
 		
 		return(true);
 	}
@@ -723,7 +719,6 @@ public class FunctionalArtefactTest {
 		
 		structure.ignore = false;
 
-		//FIXME:JK: should really not be ignored
 		artefact.ignore = false;
 		
 		/* verify */

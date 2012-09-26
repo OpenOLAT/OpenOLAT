@@ -748,6 +748,42 @@ public class FunctionalRepositorySiteUtil {
 	 * @param browser
 	 * @param title
 	 * @param description
+	 * @return true on success
+	 * 
+	 * Creates an empty course afterwards the course editor is opened.
+	 */
+	public boolean createCourseUsingEditor(Selenium browser, String title, String description){
+		if(!clickCreate(browser, getToolboxCourseCss())){
+			return(false);
+		}
+		
+		if(!fillInRepositoryEntryPopup(browser, title, description)){
+			return(false);
+		}
+		
+		/* select course editor */
+		functionalUtil.clickRadio(browser, null, NextSteps.COURSE_EDITOR.getValue());
+		
+		/* click next */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getRepositoryAddForwardCss())
+		.append("')]//button)[last()]");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param title
+	 * @param description
 	 * @param element
 	 * @param catalog
 	 * @param publish
