@@ -492,21 +492,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * disposed and a specific message should be displayed.
 	 * @param disposeMsgControllerCreator
 	 */
-	protected void setDisposedMsgController(Controller disposeMsgController){
-		if(disposedMessageController != null){
-			//COMMENT:2008-04-27:pb only one disposed Message Controller allowed within a class hierarchy
-			//so far no case in my mind where overriding makes sense.
-			//typically a XYZRunMainController implementing a MainLayoutBasicController 
-			//will dispose all its children and place a disposed message in case of
-			//an external event.
-			String clazz = disposedMessageController.getClass().getName();
-			Component comp = disposeMsgController.getInitialComponent();
-			String compName = comp != null ? comp.getComponentName() : "Component is null";
-			throw new AssertException("already defined disposedMsgController: "+clazz+" | "+ compName);
-		}
-		disposedMessageController  = disposeMsgController;
+	protected void setDisposedMsgController(Controller disposeMsgController) {
+		disposedMessageController = disposeMsgController;
 	}
-	
-
-
 }

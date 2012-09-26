@@ -220,8 +220,27 @@ create table  if not exists o_ac_reservation (
 );
 alter table o_ac_offer ENGINE = InnoDB;
 
-
-
+-- add course database entry
+create table o_co_db_entry (
+   id int8 not null,
+   version int8 not null,
+   lastmodified timestamp,
+   creationdate timestamp,
+   courseid int8,
+   identity int8,
+   category varchar(32),
+   name varchar(255) not null,
+   floatvalue decimal(65,30),
+   longvalue int8,
+   stringvalue varchar(255),
+   textvalue TEXT,
+   primary key (id)
+);
+alter table o_co_db_entry ENGINE = InnoDB;
+create index o_co_db_course_idx on o_co_db_entry (courseid);
+create index o_co_db_cat_idx on o_co_db_entry (category);
+create index o_co_db_name_idx on o_co_db_entry (name);
+alter table o_co_db_entry add constraint FK_DB_ENTRY_TO_IDENT foreign key (identity) references o_bs_identity (id);
 
 
 

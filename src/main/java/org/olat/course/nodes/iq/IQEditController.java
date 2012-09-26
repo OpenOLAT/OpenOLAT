@@ -388,7 +388,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			Controller previewController = IQManager.getInstance().createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), course
 					.getResourceableId().longValue(), courseNode.getIdent());
 			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
-			stackPanel.pushController("Preview", previewLayoutCtr);
+			stackPanel.pushController(translate("preview"), previewLayoutCtr);
 			
 		} else if (source == chooseTestButton){// initiate search controller
 			if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
@@ -415,7 +415,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				} else {//survey
 					types = new String[]{SurveyFileResource.TYPE_NAME};
 				}
-				RepositoryEntry re = courseNode.getReferencedRepositoryEntry();
 				//look if there are PASSED entries in changelog
 				//if yes create archive of results and all users can be notified about the changed test configuration
 				String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
@@ -644,8 +643,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		VFSContainer vfsUnzippedRoot = new LocalFolderImpl(unzippedRoot);
 		VFSItem vfsQTI = vfsUnzippedRoot.resolve("qti.xml");
 		if (vfsQTI==null){
-			throw new AssertException("qti file did not exist even it should be guaranteed by repositor check-in "
-					+ ((LocalFileImpl)vfsQTI).getBasefile().getAbsolutePath());
+			throw new AssertException("qti file did not exist even it should be guaranteed by repositor check-in ");
 		}
 		//ensures that InputStream is closed in every case.
 		Document doc = QTIHelper.getDocument((LocalFileImpl)vfsQTI);

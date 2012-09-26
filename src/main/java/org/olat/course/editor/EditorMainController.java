@@ -46,6 +46,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.StackedControllerImpl;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
@@ -223,7 +224,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		super(ureq,wControl);
 		this.ores = ores;
 		stackPanel = externStack == null
-				? new StackedController(getWindowControl(), getTranslator(), "o_course_breadcrumbs") : externStack;
+				? new StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcrumbs") : externStack;
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the course editor to be of type 'admin'

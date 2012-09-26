@@ -20,13 +20,14 @@
  */
 package org.olat.course.db;
 
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.layout.GenericMainController;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -46,14 +47,14 @@ import org.olat.properties.Property;
  * Initial Date:  7 avr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class CustomDBMainController extends GenericMainController {
+public class CustomDBMainController extends MainLayoutBasicController {
 	
 	public static final String CUSTOM_DB = "custom_db";
 	
-	private ICourse course;
-	private ToolController toolC;
+	private final ICourse course;
+	private final ToolController toolC;
 	
-	private CustomDBController dbController;
+	private final CustomDBController dbController;
 	private CustomDBAddController addController;
 	private CloseableModalController cmc;
 
@@ -66,18 +67,14 @@ public class CustomDBMainController extends GenericMainController {
 		listenTo(toolC);
 		toolC.addHeader(translate("tool.name"));
 		toolC.addLink("cmd.new_db", translate("command.new_db"), null, "b_toolbox_link b_new");
-		setToolController(toolC);
-		
-		//set main node
-		GenericTreeNode root = new GenericTreeNode();
-		root.setTitle(translate("main.menu.title"));
-		root.setAltText(translate("main.menu.title.alt"));
-		root.setUserObject("dbs");
-		addChildNodeToPrepend(root);
 
-		init(ureq);
+		dbController = new CustomDBController(ureq, getWindowControl(), course.getResourceableId());
+		listenTo(dbController);
 		
-		getMenuTree().setRootVisible(false);
+		LayoutMain3ColsController columnLayoutCtr
+			= new LayoutMain3ColsController(ureq, getWindowControl(), null, toolC.getInitialComponent(), dbController.getInitialComponent(), "cdb-" + course.getResourceableId());
+		listenTo(columnLayoutCtr);
+		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
 
 	@Override
@@ -91,11 +88,17 @@ public class CustomDBMainController extends GenericMainController {
 		addController = null;
 		cmc = null;
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == toolC) {
 			if (event.getCommand().equals("cmd.new_db")) {
@@ -116,15 +119,6 @@ public class CustomDBMainController extends GenericMainController {
 			cmc.deactivate();
 			disposeAddController();
 		}
-	}
-	
-	@Override
-	protected Controller handleOwnMenuTreeEvent(Object uobject, UserRequest ureq) {
-		if("dbs".equals(uobject)) {
-			dbController = new CustomDBController(ureq, getWindowControl(), course.getResourceableId());
-			return dbController;
-		}
-		return null;
 	}
 	
 	private void addCustomDb(final String category) {

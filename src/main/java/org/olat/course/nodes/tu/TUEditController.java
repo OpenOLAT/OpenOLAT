@@ -132,7 +132,7 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 			if (previewLayoutCtr != null) previewLayoutCtr.dispose();
 			// preview layout: only center column (col3) used
 			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), tunnelRunCtr);
-			stackPanel.pushController("Preview", previewLayoutCtr);
+			stackPanel.pushController(translate("preview"), previewLayoutCtr);
 		}
 	}
 

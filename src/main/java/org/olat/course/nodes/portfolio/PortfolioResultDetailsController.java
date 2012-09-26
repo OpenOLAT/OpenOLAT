@@ -21,6 +21,7 @@
 package org.olat.course.nodes.portfolio;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -139,9 +140,13 @@ public class PortfolioResultDetailsController extends FormBasicController {
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
 			Controller viewCtr = EPUIFactory.createPortfolioStructureMapController(ureq, getWindowControl(), map, secCallback);
 			listenTo(viewCtr);
-			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), viewCtr);
-			stackPanel.pushController("Map", ctr);
-			
+			if(stackPanel == null) {
+				LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, null, viewCtr.getInitialComponent(), "portfolio" + map.getKey());
+				ctr.activate();
+			} else {
+				LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), viewCtr);
+				stackPanel.pushController(translate("preview.map"), ctr);
+			}
 		} else if (source == changeDeadlineLink) {
 			if (deadlineCalloutCtr == null){
 				popupDeadlineBox(ureq);

@@ -133,7 +133,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 
 			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), tunnelRunCtr);
 			listenTo(previewLayoutCtr);
-			this.stackPanel.pushController("Preview", previewLayoutCtr);
+			this.stackPanel.pushController(translate("preview"), previewLayoutCtr);
 		}
 	}
 

@@ -218,6 +218,26 @@ create table o_ac_reservation (
    primary key (reservation_id)
 );
 
+-- course db
+create table o_co_db_entry (
+   id int8 not null,
+   version int4 not null,
+   lastmodified timestamp,
+   creationdate timestamp,
+   courseid int8,
+   identity int8,
+   category varchar(32),
+   name varchar(255) not null,
+   floatvalue decimal(65,30),
+   longvalue int8,
+   stringvalue varchar(255),
+   textvalue TEXT,
+   primary key (id)
+);
+create index o_co_db_course_idx on o_co_db_entry (courseid);
+create index o_co_db_cat_idx on o_co_db_entry (category);
+create index o_co_db_name_idx on o_co_db_entry (name);
+alter table o_co_db_entry add constraint FKB60B1BA5F7E870XY foreign key (identity) references o_bs_identity;
 
 
 

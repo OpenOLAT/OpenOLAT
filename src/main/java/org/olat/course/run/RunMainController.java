@@ -45,6 +45,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.StackedControllerImpl;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -227,7 +228,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 		
 		// set up the components
-		all = new StackedController(getWindowControl(), getTranslator(), "o_course_breadcumbs");
+		all = new StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcumbs");
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setExpandSelectedNode(false);
 		contentP = new Panel("building_block_content");
