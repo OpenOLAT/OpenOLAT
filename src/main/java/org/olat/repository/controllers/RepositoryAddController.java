@@ -433,7 +433,6 @@ public class RepositoryAddController extends BasicController {
 				translate("add.header.specific", new String[] {translate(ores.getResourceableTypeName())}));
 		repositoryadd.setPage(VELOCITY_ROOT + "/addDetails.html");
 		
-		System.out.println("rrrrrrrrrrr addFinished Commit and close");
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 

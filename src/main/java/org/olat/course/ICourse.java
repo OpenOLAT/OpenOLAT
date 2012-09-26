@@ -81,6 +81,8 @@ public interface ICourse extends OLATResourceable {
 	 * @return the container to the coursefolder of this course
 	 */
 	public VFSContainer getCourseFolderContainer();
+	
+	public OlatRootFolderImpl getCourseExportDataDir();
 
 	/**
 	 * @return The course title. This is the display name of the course repository entry

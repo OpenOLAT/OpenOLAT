@@ -115,7 +115,7 @@ public class ImportPortfolioReferencesController extends BasicController {
 		putInitialPanel(mainPanel);
 	}
 
-	protected void importWithoutAsking (UserRequest ureq) {
+	public void importWithoutAsking (UserRequest ureq) {
 		event (ureq, importButton, Event.DONE_EVENT);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

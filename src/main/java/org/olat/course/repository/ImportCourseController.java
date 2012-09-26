@@ -128,7 +128,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 		// create group management
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// import groups
-		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(getExportDataDir(course));
+		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(course.getCourseExportDataDir().getBasefile());
 		//upgrade to the current version of the course
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseResource());
 		course.postImport(envMapper);
@@ -193,12 +193,6 @@ public class ImportCourseController extends BasicController implements IAddContr
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		//nothing to do
-/*		if (source == finishedMessage) {
-			getWindowControl().pop();
-			// save the editor tree model, to persist any changes made during import.
-			course.saveEditorTreeModel();
-			callback.finished(ureq);
-		}*/
 	}
 
 	/**
@@ -342,7 +336,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	private void processSharedFolder(UserRequest ureq) {
 		// if shared folder controller exists we did already import this one.
 		if (sharedFolderImportController == null) {
-			RepositoryEntryImportExport sfImportExport = SharedFolderManager.getInstance().getRepositoryImportExport(getExportDataDir(course));
+			RepositoryEntryImportExport sfImportExport = SharedFolderManager.getInstance().getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
 			
 			removeAsListenerAndDispose(sharedFolderImportController);
 			sharedFolderImportController = new ImportSharedfolderReferencesController(sfImportExport, course, ureq, getWindowControl());
@@ -355,7 +349,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	private void processGlossary(UserRequest ureq) {
 		// if glossary controller exists we did already import this one.
 		if (glossaryImportController == null) {
-			RepositoryEntryImportExport sfImportExport = GlossaryManager.getInstance().getRepositoryImportExport(getExportDataDir(course));
+			RepositoryEntryImportExport sfImportExport = GlossaryManager.getInstance().getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
 			
 			removeAsListenerAndDispose(glossaryImportController);
 			glossaryImportController = new ImportGlossaryReferencesController(sfImportExport, course, ureq, getWindowControl());
@@ -367,7 +361,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	
 	private void cleanupExportDataDir() {
 		if (course == null) return;
-		File fExportedDataDir = getExportDataDir(course);
+		File fExportedDataDir = course.getCourseExportDataDir().getBasefile();
 		if (fExportedDataDir.exists())
 			FileUtils.deleteDirsAndFiles(fExportedDataDir, true, true);
 	}
@@ -400,7 +394,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 		while (nodeListPos < nodeList.size()) {
 			CourseEditorTreeNode nextNode = nodeList.get(nodeListPos);
 			nodeListPos++;
-			Controller ctrl = nextNode.getCourseNode().importNode(getExportDataDir(course), course, false, ureq, getWindowControl());
+			Controller ctrl = nextNode.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, false, ureq, getWindowControl());
 			if (ctrl != null) {
 				// this node needs a controller to do its import job.
 				removeAsListenerAndDispose(activeImportController);
@@ -424,19 +418,6 @@ public class ImportCourseController extends BasicController implements IAddContr
 			}
 		}
 		return true;
-	}
-	
-	/**
-	 * The folder where nodes export their data to.
-	 * 
-	 * @param theCourse
-	 * @return File
-	 */
-	public static File getExportDataDir(ICourse theCourse) {
-		LocalImpl vfsExportDir = (LocalImpl)theCourse.getCourseBaseContainer().resolve(ICourse.EXPORTED_DATA_FOLDERNAME);
-		if (vfsExportDir == null)
-			vfsExportDir = (OlatRootFolderImpl)theCourse.getCourseBaseContainer().createChildContainer(ICourse.EXPORTED_DATA_FOLDERNAME);
-		return vfsExportDir.getBasefile();
 	}
 	
 	protected void doDispose() {

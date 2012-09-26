@@ -174,7 +174,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testImportCourse() throws IOException, URISyntaxException {
-		URL cpUrl = CoursesTest.class.getResource("Very_small_course.zip");
+		URL cpUrl = CoursesTest.class.getResource("Course_with_blog.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
