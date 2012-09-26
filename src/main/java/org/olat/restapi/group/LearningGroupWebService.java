@@ -71,6 +71,7 @@ import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.modules.wiki.restapi.GroupWikiWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
+import org.olat.restapi.support.vo.GroupConfigurationVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.user.restapi.UserVO;
@@ -261,6 +262,58 @@ public class LearningGroupWebService {
 		//save the updated group
 		GroupVO savedVO = ObjectFactory.get(mergedBg);
 		return Response.ok(savedVO).build();
+	}
+	
+	@POST
+	@Path("{groupKey}/configuration")
+	public Response postGroupConfiguration(@PathParam("groupKey") Long groupKey, final GroupConfigurationVO group, @Context HttpServletRequest request) {
+		if(!isGroupManager(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		final BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		if(bg == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		String[] selectedTools = group.getTools();
+		if(selectedTools == null) {
+			selectedTools = new String[0];
+		}
+		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		for (int i=CollaborationTools.TOOLS.length; i-->0; ) {
+			boolean enable = false;
+			String tool = CollaborationTools.TOOLS[i];
+			for(String selectedTool:selectedTools) {
+				if(tool.equals(selectedTool)) {
+					enable = true;
+				}
+			}
+			tools.setToolEnabled(tool, enable);
+		}
+		
+		DisplayMembers displayMembers = bgs.getDisplayMembers(bg);
+		if(group.getOwnersVisible() != null) {
+			displayMembers.setShowOwners(group.getOwnersVisible().booleanValue());
+		}
+		if(group.getParticipantsVisible() != null) {
+			displayMembers.setShowParticipants(group.getParticipantsVisible().booleanValue());
+		}
+		if(group.getWaitingListVisible() != null) {
+			displayMembers.setShowWaitingList(group.getWaitingListVisible().booleanValue());
+		}
+		if(group.getOwnersPublic() != null) {
+			displayMembers.setOwnersPublic(group.getOwnersPublic().booleanValue());
+		}
+		if(group.getParticipantsPublic() != null) {
+			displayMembers.setParticipantsPublic(group.getParticipantsPublic().booleanValue());
+		}
+		if(group.getWaitingListPublic() != null) {
+			displayMembers.setWaitingListPublic(group.getWaitingListPublic().booleanValue());
+		}
+		bgs.updateDisplayMembers(bg, displayMembers);
+		return Response.ok().build();
 	}
 	
 	/**

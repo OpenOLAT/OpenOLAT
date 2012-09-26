@@ -48,6 +48,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -78,6 +79,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.restapi.support.vo.GroupConfigurationVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
@@ -441,6 +443,60 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
     assertEquals(bg.getDescription(), "rest-g5 description");
 	}
 	
+	@Test
+	public void testCreateCourseGroupWithConfiguration() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//create the group
+		GroupVO vo = new GroupVO();
+		vo.setName("rest-g6-new");
+		vo.setDescription("rest-g6 description");
+		vo.setType("BuddyGroup");
+		URI request = UriBuilder.fromUri(getContextURI()).path("groups").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		GroupVO newGroupVo = conn.parse(response, GroupVO.class); 
+		assertNotNull(newGroupVo);
+		
+		//update the configuration
+		GroupConfigurationVO configVo = new GroupConfigurationVO();
+		configVo.setTools(new String[]{ "hasFolder", "hasNews" });
+		configVo.setOwnersVisible(Boolean.TRUE);
+		configVo.setParticipantsVisible(Boolean.FALSE);
+		URI configRequest = UriBuilder.fromUri(getContextURI()).path("groups").path(newGroupVo.getKey().toString()).path("configuration").build();
+		HttpPost configMethod = conn.createPost(configRequest, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(configMethod, configVo);
+		HttpResponse configResponse = conn.execute(configMethod);
+		assertTrue(configResponse.getStatusLine().getStatusCode() == 200 || configResponse.getStatusLine().getStatusCode() == 201);
+		EntityUtils.consume(configResponse.getEntity());
+
+		//check group
+
+		BusinessGroup bg = businessGroupService.loadBusinessGroup(newGroupVo.getKey());
+		assertNotNull(bg);
+		assertEquals(bg.getKey(), newGroupVo.getKey());
+		assertEquals(bg.getName(), "rest-g6-new");
+		assertEquals(bg.getDescription(), "rest-g6 description");
+		//check collaboration tools configuration
+		CollaborationTools tools = CollaborationToolsFactory.getInstance().getCollaborationToolsIfExists(bg);
+		assertNotNull(tools);
+		assertTrue(tools.isToolEnabled(CollaborationTools.TOOL_FOLDER));
+		assertTrue(tools.isToolEnabled(CollaborationTools.TOOL_NEWS));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_CALENDAR));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_CHAT));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_CONTACT));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_FORUM));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_WIKI));
+		//check display members
+		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(bg);
+		assertTrue(displayMembers.isShowOwners());
+		assertFalse(displayMembers.isShowParticipants());
+		assertFalse(displayMembers.isShowWaitingList());
+	}
 	
 	@Test
 	public void testDeleteCourseGroup() throws IOException, URISyntaxException {
