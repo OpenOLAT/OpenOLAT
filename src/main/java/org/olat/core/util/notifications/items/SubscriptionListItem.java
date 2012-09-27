@@ -40,26 +40,32 @@ import org.olat.core.util.notifications.SubscriptionInfo;
 public class SubscriptionListItem {
 
 	private final String link;
+	private final String businessPath; 
 	private final Date date;
 	private final String description;
 	private final String descriptionTooltip;
 	private final String iconCssClass;
 	private Object userObject;
 	
-	public SubscriptionListItem(String desc, String url, Date dateInfo, String iconCssClass) {
-		this(desc, null, url, dateInfo, iconCssClass);
+	public SubscriptionListItem(String desc, String url, String businessPath, Date dateInfo, String iconCssClass) {
+		this(desc, null, url, businessPath, dateInfo, iconCssClass);
 	}
 	
-	public SubscriptionListItem(String desc, String tooltip, String url, Date dateInfo, String iconCssClass) {	
+	public SubscriptionListItem(String desc, String tooltip, String url, String businessPath, Date dateInfo, String iconCssClass) {	
 		this.description = desc;
 		this.descriptionTooltip = tooltip;
 		this.link = url;
+		this.businessPath = businessPath;
 		this.date = dateInfo;
 		this.iconCssClass = iconCssClass;
 	}
 	
 	public String getLink() {
 		return link;
+	}
+
+	public String getBusinessPath() {
+		return businessPath;
 	}
 
 	public Date getDate() {

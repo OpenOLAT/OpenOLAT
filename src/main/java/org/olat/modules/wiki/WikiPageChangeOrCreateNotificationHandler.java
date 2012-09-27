@@ -142,17 +142,18 @@ public class WikiPageChangeOrCreateNotificationHandler extends LogDelegator impl
 								}
 
 								//build Businesscontrol-Path						
-								String bControlString = businessControlString + element.getPageName() + "]";						
+								String businessPath = null;						
 								String urlToSend = null;
 								if(p.getBusinessPath() != null) {
-									urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bControlString);
+									businessPath = businessControlString + element.getPageName() + "]";		
+									urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 								}
 								
 								// string[] gets filled into translation key by adding {0...n} to
 								// the string
 								Identity ident = BaseSecurityManager.getInstance().loadIdentityByKey(Long.valueOf(element.getModifyAuthor()));
 								String desc = translator.translate("notifications.entry", new String[] { element.getPageName(), NotificationHelper.getFormatedName(ident)});							
-								subListItem = new SubscriptionListItem(desc, urlToSend, modDate, CSS_CLASS_WIKI_PAGE_CHANGED_ICON);
+								subListItem = new SubscriptionListItem(desc, urlToSend, businessPath,  modDate, CSS_CLASS_WIKI_PAGE_CHANGED_ICON);
 								si.addSubscriptionListItem(subListItem);
 							} else {
 								//there are no more new pages so we stop here

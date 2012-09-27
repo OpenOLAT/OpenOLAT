@@ -84,7 +84,7 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 						String desc = trans.translate("notifications.entry", new String[] { denNode.getLongTitle(), changer });
 
 						Date modDate = new Date();
-						subListItem = new SubscriptionListItem(desc, null, modDate, cssClass);
+						subListItem = new SubscriptionListItem(desc, null, null, modDate, cssClass);
 						si.addSubscriptionListItem(subListItem);
 					}
 				}

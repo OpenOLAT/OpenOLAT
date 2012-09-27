@@ -40,12 +40,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.notifications.SubscriptionInfo;
+import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.notifications.restapi.vo.SubscriptionInfoVO;
+import org.olat.notifications.restapi.vo.SubscriptionListItemVO;
 import org.olat.restapi.security.RestSecurityHelper;
 
 /**
@@ -96,12 +101,57 @@ public class NotificationsWebService {
 		for(Map.Entry<Subscriber, SubscriptionInfo> entry: subsInfoMap.entrySet()) {
 			SubscriptionInfo info = entry.getValue();
 			if(info.hasNews()) {
-				voes.add(new SubscriptionInfoVO(info));
+				Subscriber subscriber = entry.getKey();
+				voes.add(createSubscriptionInfoVO(subscriber.getPublisher(), info));
 			}
 		}
 		SubscriptionInfoVO[] voesArr = new SubscriptionInfoVO[voes.size()];
 		voes.toArray(voesArr);
 		return Response.ok(voesArr).build();
+	}
+	
+	private SubscriptionInfoVO createSubscriptionInfoVO(Publisher publisher, SubscriptionInfo info) {
+		SubscriptionInfoVO infoVO  = new SubscriptionInfoVO(info);
+		if(info.getSubscriptionListItems() != null && !info.getSubscriptionListItems().isEmpty()) {
+			List<SubscriptionListItemVO> itemVOes = new ArrayList<SubscriptionListItemVO>(info.getSubscriptionListItems().size());
+			
+			String publisherType = publisher.getType();
+			String resourceType = publisher.getResName();
+			for(SubscriptionListItem item:info.getSubscriptionListItems()) {
+				SubscriptionListItemVO itemVO = new SubscriptionListItemVO(item); 
+				//resource specific
+				if("BusinessGroup".equals(resourceType)) {
+					itemVO.setGroupKey(publisher.getResId());
+				} else if("CourseModule".equals(resourceType)) {
+					itemVO.setCourseKey(publisher.getResId());
+					itemVO.setCourseNodeId(publisher.getSubidentifier());
+				}
+				
+				//publisher specififc
+				if("Forum".equals(publisherType)) {
+					//extract the message id
+					List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(item.getBusinessPath());
+					if(ces.size() > 0) {
+						ContextEntry lastCe = ces.get(ces.size() - 1);
+						if("Message".equals(lastCe.getOLATResourceable().getResourceableTypeName())) {
+							itemVO.setMessageKey(lastCe.getOLATResourceable().getResourceableId());
+						}
+					}	
+				} else if("FolderModule".equals(publisherType)) {
+					List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(item.getBusinessPath());
+					if(ces.size() > 0) {
+						ContextEntry lastCe = ces.get(ces.size() - 1);
+						if(lastCe.getOLATResourceable().getResourceableTypeName().startsWith("path=")) {
+							String path = BusinessControlFactory.getInstance().getPath(lastCe);
+							itemVO.setPath(path);
+						}
+					}	
+				}
+				itemVOes.add(itemVO);
+			}
+			infoVO.setItems(itemVOes);
+		}
+		return infoVO;
 	}
 	
 	private Date parseDate(String date, Locale locale) {

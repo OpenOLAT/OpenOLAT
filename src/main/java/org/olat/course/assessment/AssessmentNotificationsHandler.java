@@ -380,12 +380,13 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 								}
 
 								String urlToSend = null;
+								String businessPath = null;
 								if(p.getBusinessPath() != null) {
-									String businessPath = p.getBusinessPath() + "[assessmentTool:0][Identity:" + assessedIdentity.getKey() + "][CourseNode:" + test.getIdent() + "]";
+									businessPath = p.getBusinessPath() + "[assessmentTool:0][Identity:" + assessedIdentity.getKey() + "][CourseNode:" + test.getIdent() + "]";
 									urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 								}
 								
-								SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, modDate, CSS_CLASS_USER_ICON);
+								SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, CSS_CLASS_USER_ICON);
 								if(si == null) {
 									String title = translator.translate("notifications.header", new String[]{course.getCourseTitle()});
 									String css = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(test.getType()).getIconCSSClass();

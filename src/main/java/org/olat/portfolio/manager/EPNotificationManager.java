@@ -68,15 +68,15 @@ public class EPNotificationManager {
 			if ("page".equals(notification.getType())) {
 				String bPath = rootBusinessPath + "[EPPage:" + notification.getPageKey() + "]";
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-				item = new SubscriptionListItem(translator.translate("li.newpage", title), linkUrl, notification.getCreationDate(), "b_ep_page_icon");
+				item = new SubscriptionListItem(translator.translate("li.newpage", title), linkUrl, bPath, notification.getCreationDate(), "b_ep_page_icon");
 				item.setUserObject(notification.getPageKey());
 			} else {
-				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
+				String bPath = rootBusinessPath;
 				if (notification.getPageKey() != null) {
-					String bPath = rootBusinessPath + "[EPPage:" + notification.getPageKey() + "]";
-					linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+					bPath = rootBusinessPath + "[EPPage:" + notification.getPageKey() + "]";
 				}
-				item = new SubscriptionListItem(translator.translate("li.newstruct", title), linkUrl, notification.getCreationDate(), "b_ep_struct_icon");
+				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+				item = new SubscriptionListItem(translator.translate("li.newstruct", title), linkUrl, bPath, notification.getCreationDate(), "b_ep_struct_icon");
 				item.setUserObject(notification.getPageKey());
 			}
 			if(item != null) {
@@ -100,7 +100,7 @@ public class EPNotificationManager {
 
 			String bPath = rootBusinessPath + "[EPPage:" + pageKey + "]";
 			String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-			SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newartefact", title), linkUrl, link.getCreationDate(), "b_eportfolio_link");
+			SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newartefact", title), linkUrl, bPath, link.getCreationDate(), "b_eportfolio_link");
 			item.setUserObject(pageKey);
 			items.add(item);
 		}
@@ -117,20 +117,20 @@ public class EPNotificationManager {
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
 				if (rating.getLastModified() != null) {
 					// there is a modified date, also add this as a listitem
-					items.add(new SubscriptionListItem(translator.translate("li.changerating", title), linkUrl, rating.getLastModified(), "b_star_icon"));
+					items.add(new SubscriptionListItem(translator.translate("li.changerating", title), linkUrl, rootBusinessPath, rating.getLastModified(), "b_star_icon"));
 				}
-				items.add(new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, rating.getCreationDate(), "b_star_icon"));
+				items.add(new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, rootBusinessPath, rating.getCreationDate(), "b_star_icon"));
 			} else {
 				String bPath = rootBusinessPath + "[EPPage:" + rating.getPageKey() + "]";
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
 				String[] title = new String[] { rating.getTitle(), userManager.getUserDisplayName(rating.getAuthor()) };
 				if (rating.getLastModified() != null) {
 					// there is a modified date, also add this as a listitem
-					SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.changerating", title ), linkUrl, rating.getLastModified(), "b_star_icon");
+					SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.changerating", title ), linkUrl, bPath, rating.getLastModified(), "b_star_icon");
 					item.setUserObject(rating.getPageKey());
 					items.add(item);
 				}
-				SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, rating.getCreationDate(), "b_star_icon");
+				SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, bPath, rating.getCreationDate(), "b_star_icon");
 				item.setUserObject(rating.getPageKey());
 				items.add(item);
 			}
@@ -147,12 +147,12 @@ public class EPNotificationManager {
 			if(comment.getPageKey() == null) {
 				String[] title = new String[] { comment.getMapTitle(), userManager.getUserDisplayName(comment.getAuthor()) };
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
-				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, comment.getCreationDate(), "b_info_icon");
+				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, rootBusinessPath, comment.getCreationDate(), "b_info_icon");
 			} else {
 				String bPath = rootBusinessPath + "[EPPage:" + comment.getPageKey() + "]";
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
 				String[] title = new String[] { comment.getTitle(), userManager.getUserDisplayName(comment.getAuthor()) };
-				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, comment.getCreationDate(), "b_info_icon");
+				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, bPath, comment.getCreationDate(), "b_info_icon");
 				item.setUserObject(comment.getPageKey());
 			}
 			items.add(item);

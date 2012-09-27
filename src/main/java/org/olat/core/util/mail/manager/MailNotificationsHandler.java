@@ -98,7 +98,7 @@ public class MailNotificationsHandler extends LogDelegator implements Notificati
 						String subject = mail.getSubject();
 						String businessPath = "[Inbox:" + mail.getKey() + "]";
 						String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-						SubscriptionListItem subListItem = new SubscriptionListItem(subject, urlToSend, mail.getCreationDate(), "o_co_icon");
+						SubscriptionListItem subListItem = new SubscriptionListItem(subject, urlToSend, businessPath, mail.getCreationDate(), "o_co_icon");
 						si.addSubscriptionListItem(subListItem);
 					}
 				}

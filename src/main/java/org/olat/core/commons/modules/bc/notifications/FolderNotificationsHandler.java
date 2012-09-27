@@ -82,7 +82,7 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 		Publisher p = subscriber.getPublisher();
 		Date latestNews = p.getLatestNewsDate();
 
-		String businessPath = p.getBusinessPath() + "[path=";
+		String genericBusinessPath = p.getBusinessPath() + "[path=";
 		
 		SubscriptionInfo si;
 		// there could be news for me, investigate deeper
@@ -110,10 +110,12 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 
 					String desc = translator.translate("notifications.entry", new String[] { title, NotificationHelper.getFormatedName(ident) });
 					String urlToSend = null;
+					String businessPath = null;
 					if(p.getBusinessPath() != null) {
-						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath + fi.getRelPath() + "]");
+						businessPath = genericBusinessPath + fi.getRelPath() + "]";
+						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 					}
-					subListItem = new SubscriptionListItem(desc, urlToSend, modDate, iconCssClass);
+					subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass);
 					si.addSubscriptionListItem(subListItem);
 				}
 			} else {

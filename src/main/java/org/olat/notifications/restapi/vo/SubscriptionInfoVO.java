@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.olat.core.util.notifications.SubscriptionInfo;
-import org.olat.core.util.notifications.items.SubscriptionListItem;
 
 
 /**
@@ -61,11 +60,6 @@ public class SubscriptionInfoVO {
 		key = info.getKey();
 		type = info.getType();
 		title = info.getTitle(SubscriptionInfo.MIME_PLAIN);
-		if(info.getSubscriptionListItems() != null) {
-			for(SubscriptionListItem item:info.getSubscriptionListItems()) {
-				items.add(new SubscriptionListItemVO(item));
-			}
-		}
 	}
 
 	public Long getKey() {

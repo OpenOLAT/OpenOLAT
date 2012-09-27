@@ -104,11 +104,13 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 					final String descKey = "notifications.entry" + (mInfo.getCreationDate().equals(mInfo.getLastModified()) ? "" : ".modified");
 					final String desc = translator.translate(descKey, new String[] { title, name });
 					String urlToSend = null;
+					String businessPath = null;
 					if(p.getBusinessPath() != null) {
-						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessControlString + mInfo.getKey().toString() + "]");
+						businessPath = businessControlString + mInfo.getKey().toString() + "]";
+						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 					}
 					
-					SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, modDate, ForumHelper.CSS_ICON_CLASS_MESSAGE);
+					SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, ForumHelper.CSS_ICON_CLASS_MESSAGE);
 					si.addSubscriptionListItem(subListItem);
 				}
 			} else {

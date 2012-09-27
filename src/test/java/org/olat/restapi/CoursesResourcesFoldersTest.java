@@ -41,6 +41,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -98,11 +99,11 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	private void copyFileInResourceFolder(VFSContainer container, String filename, String prefix) {
+	private void copyFileInResourceFolder(VFSContainer container, String filename, String prefix) throws IOException {
 		InputStream pageStream = CoursesElementsTest.class.getResourceAsStream(filename);
 		VFSLeaf item = container.createChildLeaf(prefix + filename);
 		OutputStream outStream = item.getOutputStream(false);
-		FileUtils.copy(pageStream, outStream);
+		IOUtils.copy(pageStream, outStream);
 		FileUtils.closeSafely(pageStream);
 		FileUtils.closeSafely(outStream);
 	}

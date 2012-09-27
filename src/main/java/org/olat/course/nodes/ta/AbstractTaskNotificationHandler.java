@@ -99,14 +99,15 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 							String fullUserName = getUserNameFromFilePath(filePath);
 							
 							Date modDate = fi.getLastModified();
-							String desc = translator.translate(getNotificationEntryKey(), new String[] { filePath, fullUserName }); 
-							String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(p.getBusinessPath());
+							String desc = translator.translate(getNotificationEntryKey(), new String[] { filePath, fullUserName });
+							String businessPath = p.getBusinessPath();
+							String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 							
 							String iconCssClass =  null;
 							if (metaInfo != null) {
 								iconCssClass = metaInfo.getIconCssClass();
 							}
-							subListItem = new SubscriptionListItem(desc, urlToSend, modDate, iconCssClass);
+							subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass);
 							si.addSubscriptionListItem(subListItem);						
 						}
 			} else {

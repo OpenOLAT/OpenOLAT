@@ -89,6 +89,26 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testFindIdentityByNames() {
+		//create a user it
+		String name1 = "find-me-1-" + UUID.randomUUID().toString();
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser(name1);
+		String name2 = "find-me-2-" + UUID.randomUUID().toString();
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser(name2);
+		dbInstance.commitAndCloseSession();
+		
+		//find it
+		List<String> names = new ArrayList<String>(2);
+		names.add(name1);
+		names.add(name2);
+		List<Identity> foundIds = securityManager.findIdentitiesByName(names);
+		Assert.assertNotNull(foundIds);
+		Assert.assertEquals(2, foundIds.size());
+		Assert.assertTrue(foundIds.contains(id1));
+		Assert.assertTrue(foundIds.contains(id2));
+	}
+	
+	@Test
 	public void testGetSecurityGroupsForIdentity() {
 		// create
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser( "find-sec-" + UUID.randomUUID().toString());

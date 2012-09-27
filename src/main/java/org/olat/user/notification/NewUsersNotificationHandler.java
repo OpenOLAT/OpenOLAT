@@ -75,7 +75,7 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 						String businessPath = "[Identity:" + newUser.getKey() + "]";
 						String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 						Date modDate = newUser.getCreationDate();
-						subListItem = new SubscriptionListItem(desc, urlToSend, modDate, CSSHelper.CSS_CLASS_USER);
+						subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, CSSHelper.CSS_CLASS_USER);
 						si.addSubscriptionListItem(subListItem);
 					}
 				}

@@ -99,10 +99,11 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 						Date modDate = element.getDate();
 
 						String desc = translator.translate("notifications.entry", new String[] { filename, NotificationHelper.getFormatedName(ident) });
-						String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(p.getBusinessPath());
+						String businessPath = p.getBusinessPath();
+						String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 						String cssClass = CSSHelper.createFiletypeIconCssClassFor(filename);
 
-						subListItem = new SubscriptionListItem(desc, urlToSend, modDate, cssClass);
+						subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, cssClass);
 						si.addSubscriptionListItem(subListItem);
 					}
 				}

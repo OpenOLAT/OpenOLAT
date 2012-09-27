@@ -43,6 +43,16 @@ public class SubscriptionListItemVO {
 	private String description;
 	private String iconCssClass;
 	
+	private String type;
+	private Long groupKey;
+	private Long courseKey;
+	private String courseNodeId;
+	
+	//to the message of a forum
+	private Long messageKey;
+	//to the file path
+	private String path;
+	
 	public SubscriptionListItemVO() {
 		//make JAXB happy
 	}
@@ -84,5 +94,53 @@ public class SubscriptionListItemVO {
 
 	public void setIconCssClass(String iconCssClass) {
 		this.iconCssClass = iconCssClass;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Long getGroupKey() {
+		return groupKey;
+	}
+
+	public void setGroupKey(Long groupKey) {
+		this.groupKey = groupKey;
+	}
+
+	public Long getCourseKey() {
+		return courseKey;
+	}
+
+	public void setCourseKey(Long courseKey) {
+		this.courseKey = courseKey;
+	}
+
+	public String getCourseNodeId() {
+		return courseNodeId;
+	}
+
+	public void setCourseNodeId(String courseNodeId) {
+		this.courseNodeId = courseNodeId;
+	}
+
+	public Long getMessageKey() {
+		return messageKey;
+	}
+
+	public void setMessageKey(Long messageKey) {
+		this.messageKey = messageKey;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
 	}
 }

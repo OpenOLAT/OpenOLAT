@@ -147,7 +147,7 @@ public class CalendarNotificationHandler extends LogDelegator implements Notific
 							String desc = translator.translate("cal.notifications.entry", new String[] { subject, dateStr, location, author });
 							String businessPath = bPath + "[path=" + kalendarEvent.getID() + ":0]";
 							String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-							SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, modDate, CSS_CLASS_CALENDAR_ICON);
+							SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, CSS_CLASS_CALENDAR_ICON);
 							si.addSubscriptionListItem(subListItem);
 						}
 					}

@@ -289,7 +289,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		if(file == null) {
 			file = newFolder1.createChildLeaf("portrait.jpg");
 			OutputStream out = file.getOutputStream(true);
-			InputStream in = UserMgmtTest.class.getResourceAsStream("portrait.jpg");
+			InputStream in = GroupFoldersTest.class.getResourceAsStream("portrait.jpg");
 			FileUtils.copy(in, out, file.getSize());
 			FileUtils.closeSafely(in);
 			FileUtils.closeSafely(out);
