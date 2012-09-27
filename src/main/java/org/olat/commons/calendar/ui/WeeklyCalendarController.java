@@ -40,12 +40,14 @@ import org.olat.commons.calendar.ImportCalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarComparator;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.notification.CalendarNotificationManager;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.components.WeeklyCalendarComponent;
 import org.olat.commons.calendar.ui.events.KalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIEditEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIImportEvent;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -72,12 +74,11 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.PublisherData;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
 import org.olat.util.logging.activity.LoggingResourceable;
-
-import de.bps.olat.util.notifications.SubscriptionProvider;
-import de.bps.olat.util.notifications.SubscriptionProviderImpl;
 
 public class WeeklyCalendarController extends BasicController implements Activateable2, CalendarController, GenericEventListener {
 
@@ -127,6 +128,8 @@ public class WeeklyCalendarController extends BasicController implements Activat
 	private boolean modifiedCalenderDirty = false;
 	
 	private ILoggingAction calLoggingAction;
+	
+	private final CalendarNotificationManager calendarNotificationsManager;
 
 	/**
 	 * Display week view of calendar. Add the calendars to be displayed via
@@ -183,6 +186,8 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		
 		setBasePackage(CalendarManager.class);
 		
+		calendarNotificationsManager = CoreSpringFactory.getImpl(CalendarNotificationManager.class);
+		
 		this.calendarWrappers = calendarWrappers;
 		this.importedCalendarWrappers = importedCalendarWrappers;
 		this.calendarSubscription = calendarSubscription;
@@ -224,11 +229,10 @@ public class WeeklyCalendarController extends BasicController implements Activat
 
 	  // subscription, see OLAT-3861
 		if (!isGuest && !calendarWrappers.isEmpty()) {
-			SubscriptionProvider provider = new SubscriptionProviderImpl(caller, calendarWrappers.get(0));
-			subsContext = provider.getSubscriptionContext();
+			subsContext = calendarNotificationsManager.getSubscriptionContext(calendarWrappers.get(0));
 			// if sc is null, then no subscription is desired
 			if (subsContext != null) {
-				csc = provider.getContextualSubscriptionController(ureq, getWindowControl());
+				csc = getContextualSubscriptionController(ureq, calendarWrappers.get(0), subsContext);
 				vcMain.put("calsubscription", csc.getInitialComponent());
 			}
 		}
@@ -258,6 +262,24 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		this.putInitialPanel(mainPanel);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(CalendarManager.class));
+	}
+
+	private ContextualSubscriptionController getContextualSubscriptionController(UserRequest ureq, KalendarRenderWrapper kalendarRenderWrapper, SubscriptionContext context) {
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		if ((caller.equals(CalendarController.CALLER_COURSE) || caller.equals(CalendarManager.TYPE_COURSE))) {
+			Long courseId = kalendarRenderWrapper.getLinkProvider().getControler().getCourseId();
+			
+			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(CalendarManager.class), String.valueOf(courseId), businessPath);
+			return new ContextualSubscriptionController(ureq, getWindowControl(), context, pdata);
+		}
+		if ((caller.equals(CalendarController.CALLER_COLLAB) || caller.equals(CalendarManager.TYPE_GROUP))) {
+			BusinessGroup businessGroup = calendarNotificationsManager.getBusinessGroup(kalendarRenderWrapper);
+			if(businessGroup != null) {
+				PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(CalendarManager.class), String.valueOf(businessGroup.getResourceableId()), businessPath);
+				return new ContextualSubscriptionController(ureq, getWindowControl(), context, pdata);
+			}
+		}
+		return null;
 	}
 	
 	public void setEnableRemoveFromPersonalCalendar(boolean enable) {
@@ -301,11 +323,11 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		}
 	}
 
-	public void setCalendars(List calendars) {
-		setCalendars(calendars, new ArrayList());
+	public void setCalendars(List<KalendarRenderWrapper> calendars) {
+		setCalendars(calendars, new ArrayList<KalendarRenderWrapper>());
 	}
 
-	public void setCalendars(List calendars, List importedCalendars) {
+	public void setCalendars(List<KalendarRenderWrapper> calendars, List<KalendarRenderWrapper> importedCalendars) {
 		this.calendarWrappers = calendars;
 		Collections.sort(calendarWrappers, KalendarComparator.getInstance());
 		weeklyCalendar.setKalendars(calendarWrappers);
@@ -315,7 +337,7 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		Collections.sort(calendarWrappers, KalendarComparator.getInstance());
 		Collections.sort(importedCalendarWrappers, KalendarComparator.getInstance());
 		
-		ArrayList allCalendarWrappers = new ArrayList(calendarWrappers);
+		List<KalendarRenderWrapper> allCalendarWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
 		allCalendarWrappers.addAll(importedCalendarWrappers);
 		weeklyCalendar.setKalendars(allCalendarWrappers);
 		
@@ -353,7 +375,7 @@ public class WeeklyCalendarController extends BasicController implements Activat
 			weeklyCalendar.setFocus(cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR));
 		} else if (source == searchLink) {
 			
-			ArrayList allCalendarWrappers = new ArrayList(calendarWrappers);
+			List<KalendarRenderWrapper> allCalendarWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
 			allCalendarWrappers.addAll(importedCalendarWrappers);
 			
 			removeAsListenerAndDispose(searchController);
@@ -502,17 +524,13 @@ public class WeeklyCalendarController extends BasicController implements Activat
 			if (subsContext != null) {
 				// group or course calendar -> prepared subscription context is the right one
 				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
-			} else if(this.caller.equals(CALLER_HOME) && affectedCal != null) {
+			} else if(caller.equals(CALLER_HOME) && affectedCal != null) {
 				// one can add/edit/remove dates of group and course calendars from the home calendar view -> choose right subscription context
-				KalendarRenderWrapper calWrapper = null;
-				for( Object calWrapperObj : calendarWrappers) {
-					calWrapper = (KalendarRenderWrapper) calWrapperObj;
-					if(affectedCal == calWrapper.getKalendar()) break;
-				}
-				if(calWrapper != null) {
-					SubscriptionProvider provider = new SubscriptionProviderImpl(calWrapper);
-					SubscriptionContext tmpSubsContext = provider.getSubscriptionContext();
-					NotificationsManager.getInstance().markPublisherNews(tmpSubsContext, ureq.getIdentity());
+				for( KalendarRenderWrapper calWrapper : calendarWrappers) {
+					if(affectedCal == calWrapper.getKalendar()) {
+						SubscriptionContext tmpSubsContext = calendarNotificationsManager.getSubscriptionContext(calWrapper);
+						NotificationsManager.getInstance().markPublisherNews(tmpSubsContext, ureq.getIdentity());
+					}
 				}
 			}
 		}

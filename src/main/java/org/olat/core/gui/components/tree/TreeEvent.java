@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 * @author Felix Jost
 */
 public class TreeEvent extends Event {
+	private static final long serialVersionUID = -1303677873858926922L;
 	/**
 	 * Comment for <code>COMMAND_TREENODE_CLICKED</code>
 	 */
@@ -62,7 +63,7 @@ public class TreeEvent extends Event {
 	public static final TreeEvent CANCELLED_TREEEVENT = new TreeEvent(COMMAND_CANCELLED, "");
 		
 	private String nodeId;
-	private List nodeIds;
+	private List<String> nodeIds;
 	private String subCommand;
 
 	/**
@@ -84,7 +85,7 @@ public class TreeEvent extends Event {
 	 * @param command
 	 * @param nodeIds
 	 */
-	public TreeEvent(String command, List nodeIds) {
+	public TreeEvent(String command, List<String> nodeIds) {
 		this(command, null, nodeIds);
 	}
 	
@@ -92,7 +93,7 @@ public class TreeEvent extends Event {
 	 * @param command
 	 * @param nodeIds
 	 */
-	public TreeEvent(String command, String subCommand, List nodeIds) {
+	public TreeEvent(String command, String subCommand, List<String> nodeIds) {
 		super(command);
 		this.subCommand = subCommand;
 		this.nodeIds = nodeIds;
@@ -108,7 +109,7 @@ public class TreeEvent extends Event {
 	/**
 	 * @return
 	 */
-	public List getNodeIds() {
+	public List<String> getNodeIds() {
 		return nodeIds;
 	}
 	

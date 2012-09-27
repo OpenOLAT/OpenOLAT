@@ -20,6 +20,7 @@
 package org.olat.course.nodes.cal;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.collaboration.CollaborationTools;
@@ -119,7 +120,7 @@ public class CourseCalendars {
 		KalendarRenderWrapper courseKalendarWrapper = getCourseCalendarWrapper(ureq, ores, ne);
 		// add link provider
 		ICourse course = CourseFactory.loadCourse(ores);
-		CourseLinkProviderController clpc = new CourseLinkProviderController(course, ureq, wControl);
+		CourseLinkProviderController clpc = new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl);
 		courseKalendarWrapper.setLinkProvider(clpc);
 		calendars.add(courseKalendarWrapper);
 		

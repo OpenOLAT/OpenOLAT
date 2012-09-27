@@ -46,11 +46,11 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -64,11 +64,15 @@ public class CourseLinkProviderController extends BasicController implements Lin
 	private VelocityContainer clpVC;
 	private KalendarEvent kalendarEvent;
 	private SelectionTree selectionTree;
-	private OLATResourceable ores;
+	private final OLATResourceable ores;
+	private final List<ICourse> availableCourses;
 
-	public CourseLinkProviderController(ICourse course, UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, new PackageTranslator(Util.getPackageName(CalendarManager.class), ureq.getLocale()));
+	public CourseLinkProviderController(ICourse course, List<ICourse> courses, UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, Util.createPackageTranslator(CalendarManager.class, ureq.getLocale()));
+
 		this.ores = course;
+		this.availableCourses = new ArrayList<ICourse>(courses);
+		
 		setVelocityRoot(Util.getPackageVelocityRoot(CalendarManager.class));	
 		clpVC = createVelocityContainer("calCLP");	
 		selectionTree = new SelectionTree("clpTree", getTranslator());
@@ -77,9 +81,13 @@ public class CourseLinkProviderController extends BasicController implements Lin
 		selectionTree.setAllowEmptySelection(true);
 		selectionTree.setShowCancelButton(true);
 		selectionTree.setFormButtonKey(CAL_LINKS_SUBMIT);
-		selectionTree.setTreeModel(new CourseNodeSelectionTreeModel(course));
+		selectionTree.setTreeModel(new CourseNodeSelectionTreeModel(courses));
 		clpVC.put("tree", selectionTree);
 		putInitialPanel(clpVC);
+	}
+
+	public Long getCourseId() {
+		return ores.getResourceableId();
 	}
 
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -114,44 +122,50 @@ public class CourseLinkProviderController extends BasicController implements Lin
 		}
 	}
 
-	private void rebuildKalendarEventLinks(TreeNode node, List selectedNodeIDs, List kalendarEventLinks) {
-		if (selectedNodeIDs.contains(node.getIdent())) {
+	private void rebuildKalendarEventLinks(INode node, List<String> selectedNodeIDs, List<KalendarEventLink> kalendarEventLinks) {
+		if (selectedNodeIDs.contains(node.getIdent()) && node instanceof LinkTreeNode) {
 			// assemble link
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
-			OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(node.getIdent()));
-			List<ContextEntry> ces = new ArrayList<ContextEntry>();
-			ces.add(BusinessControlFactory.getInstance().createContextEntry(re));
-			ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
-			String extLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);
-			KalendarEventLink link = new KalendarEventLink(COURSE_LINK_PROVIDER, node.getIdent(), node.getTitle(), extLink, node.getIconCssClass());
-			kalendarEventLinks.add(link);
-			node.setSelected(true);
+			LinkTreeNode treeNode = (LinkTreeNode)node;
+			OLATResourceable courseOres = treeNode.getCourse();
+			if(courseOres != null) {
+				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, true);
+				List<ContextEntry> ces = new ArrayList<ContextEntry>();
+				ces.add(BusinessControlFactory.getInstance().createContextEntry(re));
+				if(treeNode.getCourseNode() != null) {
+					String courseNodeId = treeNode.getCourseNode().getIdent();
+					OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(courseNodeId));
+					ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
+				}
+				String extLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);
+				KalendarEventLink link = new KalendarEventLink(COURSE_LINK_PROVIDER, node.getIdent(), treeNode.getTitle(), extLink, treeNode.getIconCssClass());
+				kalendarEventLinks.add(link);
+				treeNode.setSelected(true);
+			}
 		}
 		for (int i = 0; i < node.getChildCount(); i++) {
-			rebuildKalendarEventLinks((TreeNode)node.getChildAt(i), selectedNodeIDs, kalendarEventLinks);
+			rebuildKalendarEventLinks(node.getChildAt(i), selectedNodeIDs, kalendarEventLinks);
 		}
 	}
 	
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		//
 	}
 
 	public CourseLinkProviderController getControler() {
 		return this;
 	}
 
-	public Long getCourseID() {
-	  return ores.getResourceableId();
-	}
-
 	public void setKalendarEvent(KalendarEvent kalendarEvent) {
 		this.kalendarEvent = kalendarEvent;
 		clearSelection(selectionTree.getTreeModel().getRootNode());
-		for (Iterator iter = kalendarEvent.getKalendarEventLinks().iterator(); iter.hasNext();) {
-			KalendarEventLink link = (KalendarEventLink) iter.next();
+		for (KalendarEventLink link: kalendarEvent.getKalendarEventLinks()) {
 			if (!link.getProvider().equals(COURSE_LINK_PROVIDER)) continue;
 			String nodeId = link.getId();
 			TreeNode node = selectionTree.getTreeModel().getNodeById(nodeId);
+			if(node == null) {
+				nodeId = availableCourses.get(0).getResourceableId() + "_" + nodeId;
+				node = selectionTree.getTreeModel().getNodeById(nodeId);
+			}
 			if (node != null) {
 				node.setSelected(true);
 			}
@@ -182,24 +196,61 @@ public class CourseLinkProviderController extends BasicController implements Lin
 		super.addControllerListener(controller);
 	}
 	
-}
+	private static class CourseNodeSelectionTreeModel extends GenericTreeModel {
+		private static final long serialVersionUID = -7863033366847344767L;
 
-class CourseNodeSelectionTreeModel extends GenericTreeModel {
-	
-	public CourseNodeSelectionTreeModel(ICourse course) {
-		setRootNode(buildTree(course.getRunStructure().getRootNode()));
-	}
+		public CourseNodeSelectionTreeModel(List<ICourse> courses) {
+			if(courses.size() == 1) {
+				ICourse course = courses.get(0);
+				setRootNode(buildTree(course, course.getRunStructure().getRootNode()));
+			} else {
+				LinkTreeNode rootNode = new LinkTreeNode("", null, null);
+				for(ICourse course:courses) {
+					LinkTreeNode node = new LinkTreeNode(course.getCourseTitle(), course, null);
+					node.setAltText(course.getCourseTitle());
+					node.setIdent(course.getResourceableId().toString());
+					node.setIconCssClass("o_CourseModule_icon");
 
-	private GenericTreeNode buildTree(CourseNode courseNode) {
-		GenericTreeNode node = new GenericTreeNode(courseNode.getShortTitle(), null);
-		node.setAltText(courseNode.getLongTitle());
-		node.setIdent(courseNode.getIdent());
-		node.setIconCssClass("o_" + courseNode.getType() + "_icon");
-		for (int i = 0; i < courseNode.getChildCount(); i++) {
-			CourseNode childNode = (CourseNode)courseNode.getChildAt(i);
-			node.addChild(buildTree(childNode));
+					LinkTreeNode childNode = buildTree(course, course.getRunStructure().getRootNode());
+					node.addChild(childNode);
+					rootNode.addChild(node);
+				}
+				setRootNode(rootNode);
+			}
 		}
-		return node;
+
+		private LinkTreeNode buildTree(ICourse course, CourseNode courseNode) {
+			LinkTreeNode node = new LinkTreeNode(courseNode.getShortTitle(), course, courseNode);
+			node.setAltText(courseNode.getLongTitle());
+			node.setIdent(course.getResourceableId() + "_" + courseNode.getIdent());
+			node.setIconCssClass("o_" + courseNode.getType() + "_icon");
+			node.setUserObject(course);
+			for (int i = 0; i < courseNode.getChildCount(); i++) {
+				CourseNode childNode = (CourseNode)courseNode.getChildAt(i);
+				node.addChild(buildTree(course, childNode));
+			}
+			return node;
+		}
 	}
 	
+	private static class LinkTreeNode extends GenericTreeNode {
+		private static final long serialVersionUID = -6043669089871217496L;
+		private final ICourse course;
+		private final CourseNode courseNode;
+		
+		public LinkTreeNode(String title, ICourse course, CourseNode courseNode) {
+			super(title, null);
+			
+			this.course = course;
+			this.courseNode = courseNode;
+		}
+
+		public ICourse getCourse() {
+			return course;
+		}
+
+		public CourseNode getCourseNode() {
+			return courseNode;
+		}
+	}
 }

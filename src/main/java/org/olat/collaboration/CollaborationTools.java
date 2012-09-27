@@ -129,7 +129,8 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * @author guido
  */
 public class CollaborationTools implements Serializable {
-	
+
+	private static final long serialVersionUID = -155629068939748789L;
 	boolean dirty = false;
 	private final static String TRUE = "true";
 	private final static String FALSE = "false";
@@ -419,15 +420,17 @@ public class CollaborationTools implements Serializable {
 	
 		// add linking
 		List<OLATResource> resources = CoreSpringFactory.getImpl(BusinessGroupService.class).findResources(Collections.singleton(businessGroup), 0, -1);
+		
+		List<ICourse> courses = new ArrayList<ICourse>(resources.size());
 		for (OLATResource resource:resources) {
 			if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
 				ICourse course = CourseFactory.loadCourse(resource);
-				CourseLinkProviderController clp = new CourseLinkProviderController(course, ureq, wControl);
-				calRenderWrapper.setLinkProvider(clp);
-				// for the time being only internal learning groups are supported, therefore we only get
-				// the first course reference.
-				break;
+				courses.add(course);
 			}
+		}
+		if(!courses.isEmpty()) {
+			CourseLinkProviderController clp = new CourseLinkProviderController(null, courses, ureq, wControl);
+			calRenderWrapper.setLinkProvider(clp);
 		}
 
 		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();

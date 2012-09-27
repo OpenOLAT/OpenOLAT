@@ -43,6 +43,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
+import org.olat.commons.calendar.notification.CalendarNotificationManager;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -108,7 +109,6 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
-import org.olat.course.repository.ImportCourseController;
 import org.olat.course.repository.ImportGlossaryReferencesController;
 import org.olat.course.repository.ImportSharedfolderReferencesController;
 import org.olat.course.run.RunMainController;
@@ -129,9 +129,6 @@ import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.util.logging.activity.LoggingResourceable;
-
-import de.bps.olat.util.notifications.SubscriptionProvider;
-import de.bps.olat.util.notifications.SubscriptionProviderImpl;
 
 
 /**
@@ -421,14 +418,14 @@ public class CourseFactory extends BasicManager {
 	private static void clearCalenderSubscriptions(OLATResourceable res) {
 		//set Publisher state to 1 (= ressource is deleted) for all calendars of the course
 		CalendarManager calMan = CalendarManagerFactory.getInstance().getCalendarManager();
+		CalendarNotificationManager notificationManager = CoreSpringFactory.getImpl(CalendarNotificationManager.class);
 		NotificationsManager nfm = NotificationsManager.getInstance();
 		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);
 		List<BusinessGroup> learningGroups = courseGroupManager.getAllBusinessGroups();
 		//all learning and right group calendars
 		for (BusinessGroup bg : learningGroups) {
 			KalendarRenderWrapper calRenderWrapper = calMan.getGroupCalendar(bg);
-			SubscriptionProvider subProvider = new SubscriptionProviderImpl(calRenderWrapper);
-			SubscriptionContext subsContext = subProvider.getSubscriptionContext();
+			SubscriptionContext subsContext = notificationManager.getSubscriptionContext(calRenderWrapper);
 			Publisher pub = nfm.getPublisher(subsContext);
 			if (pub != null) {
 				pub.setState(1); //int 0 is OK -> all other is not OK
@@ -443,8 +440,7 @@ public class CourseFactory extends BasicManager {
 			 */
 			KalendarRenderWrapper courseCalendar = calMan.getCalendarForDeletion(res);
 			if(courseCalendar != null) {
-				SubscriptionProvider subProvider = new SubscriptionProviderImpl(courseCalendar, res);
-				SubscriptionContext subContext = subProvider.getSubscriptionContext();
+				SubscriptionContext subContext = notificationManager.getSubscriptionContext(courseCalendar, res);
 				OLATResourceable oresToDelete = OresHelper.createOLATResourceableInstance(subContext.getResName(), subContext.getResId());
 				nfm.deletePublishersOf(oresToDelete);
 			}

@@ -29,6 +29,7 @@ package org.olat.commons.calendar.ui;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.control.Controller;
 
 public interface CalendarController extends Controller {
@@ -59,14 +60,14 @@ public interface CalendarController extends Controller {
 	 * 
 	 * @param calendars
 	 */
-	public void setCalendars(List calendars);
+	public void setCalendars(List<KalendarRenderWrapper> calendars);
 	
 	/**
 	 * Sets the list of KalendarRenderWrappers for this calendar controller.
 	 * 
 	 * @param calendars
 	 */
-	public void setCalendars(List calendars, List importedCalendars);
+	public void setCalendars(List<KalendarRenderWrapper> calendars, List<KalendarRenderWrapper> importedCalendars);
 	
 	/**
 	 * Sets the calendar dirty. The calendar controller should

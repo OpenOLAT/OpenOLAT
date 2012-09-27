@@ -26,6 +26,7 @@
 package org.olat.home;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -172,7 +173,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 					courseCalendarWrapper.getKalendarConfig().setCss(courseKalendarConfig.getCss());
 					courseCalendarWrapper.getKalendarConfig().setVis(courseKalendarConfig.isVis());
 				}
-				courseCalendarWrapper.setLinkProvider(new CourseLinkProviderController(course, ureq, wControl));
+				courseCalendarWrapper.setLinkProvider(new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl));
 				calendars.add(courseCalendarWrapper);
 			} catch (CorruptedCourseException e) {
 				log.error("Corrupted course: " + courseResourceableID, null);

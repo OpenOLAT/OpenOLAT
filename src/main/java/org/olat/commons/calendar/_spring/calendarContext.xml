@@ -42,4 +42,7 @@
 	<bean id="calendarImportJob" class="org.springframework.scheduling.quartz.JobDetailBean">
 	  <property name="jobClass" value="org.olat.commons.calendar.ImportCalendarJob" />
 	</bean>
+	
+	<bean id="calendarNotificationManager" class="org.olat.commons.calendar.notification.CalendarNotificationManagerImpl">
+	</bean>
 </beans>

@@ -26,6 +26,7 @@
 package org.olat.course.run.calendar;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,7 +43,6 @@ import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -64,7 +64,7 @@ public class CourseCalendarController extends BasicController {
 	public CourseCalendarController(UserRequest ureq, WindowControl wControl, OLATResourceable course) {
 		super(ureq, wControl);
 		this.ores = course;
-		List calendars = getListOfCalendarWrappers(ureq);
+		List<KalendarRenderWrapper> calendars = getListOfCalendarWrappers(ureq);
 		CourseCalendarSubscription calendarSubscription = new CourseCalendarSubscription(
 				courseKalendarWrapper.getKalendar(), ureq.getUserSession().getGuiPreferences());
 		calendarController = new WeeklyCalendarController(
@@ -73,8 +73,8 @@ public class CourseCalendarController extends BasicController {
 		putInitialPanel(calendarController.getInitialComponent());
 	}
 
-	private List getListOfCalendarWrappers(UserRequest ureq) {
-		List calendars = new ArrayList();
+	private List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq) {
+		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		// add course calendar
 		ICourse course = CourseFactory.loadCourse(ores);
@@ -93,7 +93,7 @@ public class CourseCalendarController extends BasicController {
 			courseKalendarWrapper.getKalendarConfig().setVis(config.isVis());
 		}
 		// add link provider
-		CourseLinkProviderController clpc = new CourseLinkProviderController(course, ureq, getWindowControl());
+		CourseLinkProviderController clpc = new CourseLinkProviderController(course, Collections.<ICourse>singletonList(course), ureq, getWindowControl());
 		courseKalendarWrapper.setLinkProvider(clpc);
 		calendars.add(courseKalendarWrapper);
 		
@@ -113,11 +113,11 @@ public class CourseCalendarController extends BasicController {
 		return calendars;
 	}
 	
-	private void addCalendars(UserRequest ureq, List groups, boolean isOwner, LinkProvider linkProvider, List calendars) {
+	private void addCalendars(UserRequest ureq, List<BusinessGroup> groups, boolean isOwner, LinkProvider linkProvider,
+			List<KalendarRenderWrapper> calendars) {
 		CollaborationToolsFactory collabFactory = CollaborationToolsFactory.getInstance();
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		for (Iterator iter = groups.iterator(); iter.hasNext();) {
-			BusinessGroup bGroup = (BusinessGroup) iter.next();
+		for (BusinessGroup bGroup:groups) {
 			CollaborationTools collabTools = collabFactory.getOrCreateCollaborationTools(bGroup);
 			if (!collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) continue;
 			KalendarRenderWrapper groupCalendarWrapper = calendarManager.getGroupCalendar(bGroup);
@@ -147,7 +147,7 @@ public class CourseCalendarController extends BasicController {
 
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof KalendarModifiedEvent) {
-			List calendars = getListOfCalendarWrappers(ureq);
+			List<KalendarRenderWrapper> calendars = getListOfCalendarWrappers(ureq);
 			calendarController.setCalendars(calendars);
 		}
 	}

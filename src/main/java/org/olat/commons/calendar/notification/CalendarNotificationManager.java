@@ -14,27 +14,28 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * BPS Bildungsportal Sachsen GmbH, http://www.bps-system.de
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package de.bps.olat.util.notifications;
+package org.olat.commons.calendar.notification;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.notifications.ContextualSubscriptionController;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.group.BusinessGroup;
 
 /**
  * 
- * Description:<br>
- * Managed different subscription sources.
- * 
- * <P>
- * Initial Date:  29.04.2009 <br>
- * @author bja
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface SubscriptionProvider {
-	public SubscriptionContext getSubscriptionContext();
+public interface CalendarNotificationManager {
 	
-	public ContextualSubscriptionController getContextualSubscriptionController(UserRequest ureq, WindowControl wControl);
+
+	public SubscriptionContext getSubscriptionContext(KalendarRenderWrapper courseCalendar);
+	
+	public SubscriptionContext getSubscriptionContext(KalendarRenderWrapper courseCalendar, OLATResourceable res);
+	
+	
+	public BusinessGroup getBusinessGroup(KalendarRenderWrapper wrapper);
+
 }

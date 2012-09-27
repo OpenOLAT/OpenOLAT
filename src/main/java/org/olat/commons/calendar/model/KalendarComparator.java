@@ -30,15 +30,13 @@ import java.util.Comparator;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 
-public class KalendarComparator implements Comparator {
+public class KalendarComparator implements Comparator<KalendarRenderWrapper> {
 
 	private static final KalendarComparator INSTANCE = new KalendarComparator();
 	
 	public static final KalendarComparator getInstance() { return INSTANCE; }
 	
-	public int compare(Object arg0, Object arg1) {
-		KalendarRenderWrapper calendar0 = (KalendarRenderWrapper)arg0;
-		KalendarRenderWrapper calendar1 = (KalendarRenderWrapper)arg1;
+	public int compare(KalendarRenderWrapper calendar0, KalendarRenderWrapper calendar1) {
 		// if of the same type, order by display name
 		if (calendar0.getKalendar().getType() == calendar1.getKalendar().getType())
 			return calendar0.getKalendarConfig().getDisplayName().compareTo(
