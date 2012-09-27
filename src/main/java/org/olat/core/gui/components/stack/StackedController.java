@@ -19,7 +19,6 @@
  */
 package org.olat.core.gui.components.stack;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 
 /**
@@ -27,10 +26,6 @@ import org.olat.core.gui.control.Controller;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface StackedController extends Controller {
-	
-	public void popController();
-	
-	public void popControllers(UserRequest ureq);
 	
 	public void pushController(String displayName, Controller controller);
 

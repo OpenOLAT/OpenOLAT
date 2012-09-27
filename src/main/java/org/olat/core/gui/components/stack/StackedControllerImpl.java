@@ -56,7 +56,6 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 		setInitialComponent(mainVC);
 	}
 	
-	@Override
 	public void popController() {
 		if(stack.size() > 1) {
 			Link link = stack.remove(stack.size() - 1);
@@ -65,7 +64,6 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 		}
 	}
 
-	@Override
 	public void popControllers(UserRequest ureq) {
 		if(stack.size() > 1) {
 			Controller popedCtrl = null;

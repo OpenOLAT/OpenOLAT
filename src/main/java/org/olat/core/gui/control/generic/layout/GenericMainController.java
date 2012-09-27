@@ -32,13 +32,18 @@ import org.olat.core.extensions.action.ActionExtension;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -51,6 +56,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -67,18 +73,20 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author patrickb, www.uzh.ch, slightly changed to allow specialised forms of
  *         GenericActionExtension
  */
-public abstract class GenericMainController extends MainLayoutBasicController {
+public abstract class GenericMainController extends MainLayoutBasicController implements StackedController {
 
 	private static final String GMCMT = "GMCMenuTree";
 
 	private MenuTree olatMenuTree;
 	private Panel content;
+	private VelocityContainer stackVC;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private Controller contentCtr;
-	private Controller toolCtr;
-	private List<GenericTreeNode> nodesToAppend;
-	private List<GenericTreeNode> nodesToPrepend;
-	private String className;
+	private final List<GenericTreeNode> nodesToAppend;
+	private final List<GenericTreeNode> nodesToPrepend;
+	private final String className;
+	private final List<Link> stack = new ArrayList<Link>(3);
+	
 
 	public GenericMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -109,11 +117,22 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 		listenTo(contentCtr); // auto dispose later
 		Component resComp = contentCtr.getInitialComponent();
 		content.setContent(resComp);
-		Component toolContent = toolCtr != null ? toolCtr.getInitialComponent() : null;
 
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, toolContent, content, className);
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, null, content, className);
 		listenTo(columnLayoutCtr); // auto dispose later
-		putInitialPanel(columnLayoutCtr.getInitialComponent());
+		
+		//create the stack
+		String stackPage = Util.getPackageVelocityRoot(StackedController.class) + "/stack.html";
+		stackVC = new VelocityContainer(null, "vc_stack", stackPage, getTranslator(), this);
+		stackVC.put("content", columnLayoutCtr.getInitialComponent());
+		//add the root
+		Link link = LinkFactory.createLink("gcrumb_root", stackVC, this);
+		link.setCustomDisplayText(firstNode.getTitle());
+		link.setUserObject(this);
+		stack.add(link);
+		stackVC.contextPut("breadCrumbs", stack);
+		
+		putInitialPanel(stackVC);
 	}
 
 	/**
@@ -130,24 +149,6 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 	
 	protected void addCssClassToMain(String cssClass) {
 		columnLayoutCtr.addCssClassToMain(cssClass);
-	}
-	
-	/**
-	 * set the column2 or the rightmost column (in left-to-right) for the tool
-	 * controller. Previous toolcontroller is disposed.
-	 * 
-	 * @param toolController
-	 */
-	protected void setToolController(Controller toolController) {
-		if (toolCtr != null) {
-			// there is already a tool controller, dispose it
-			toolCtr.dispose();
-		}
-		toolCtr = toolController;
-		if (columnLayoutCtr != null) {
-			columnLayoutCtr.setCol2(toolCtr.getInitialComponent());
-		}// else method called from within constructor before columnLayoutCtr is
-			// initialized, see init(..) which sets the toolcontroller content
 	}
 
 	/**
@@ -286,8 +287,36 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 	}
 
 	@Override
+	public void pushController(String displayName, Controller controller) {
+		Link link = LinkFactory.createLink("gcrumb_" + stack.size(), stackVC, this);
+		link.setCustomDisplayText(displayName);
+		link.setUserObject(controller);
+		stack.add(link);
+		content.setContent(controller.getInitialComponent());
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == olatMenuTree) {
+		if(stack.contains(source)) {
+			int index = stack.indexOf(source);
+			if(index < (stack.size() - 1)) {
+				Controller popedCtrl = null;
+				for(int i=stack.size(); i-->(index+1); ) {
+					Link link = stack.remove(i);
+					popedCtrl = (Controller)link.getUserObject();
+					popedCtrl.dispose();
+				}
+
+				Link currentLink = stack.get(index);
+				Controller currentCtrl  = (Controller)currentLink.getUserObject();
+				if(currentCtrl == this) {
+					content.setContent(contentCtr.getInitialComponent());
+				} else {
+					content.setContent(currentCtrl.getInitialComponent());
+				}
+				stackVC.setDirty(true);
+			}
+		} else if (source == olatMenuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				// process menu commands
 				TreeNode selTreeNode = olatMenuTree.getSelectedNode();
@@ -361,7 +390,11 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 			}
 		}
 
-		return ae.createController(ureq, bwControl, null);
+		Controller ctrl = ae.createController(ureq, bwControl, null);
+		if(ctrl instanceof StackedControllerAware) {
+			((StackedControllerAware)ctrl).setStackedController(this);
+		}
+		return ctrl;
 	}
 
 	private Controller getContentCtr(Object uobject, UserRequest ureq) {
