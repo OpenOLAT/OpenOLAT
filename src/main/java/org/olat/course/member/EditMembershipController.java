@@ -160,21 +160,23 @@ public class EditMembershipController extends FormBasicController {
 		for(BusinessGroupView group:groups) {
 			MemberOption option = new MemberOption(group);
 			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), member, groupMemberships);
-			option.setTutor(createSelection(bgPermission.isTutor()));
-			option.setParticipant(createSelection(bgPermission.isParticipant()));
-			option.setWaiting(createSelection(bgPermission.isWaitingList()));
+			option.setTutor(createSelection(bgPermission.isTutor(), true));
+			option.setParticipant(createSelection(bgPermission.isParticipant(), true));
+			boolean waitingListEnable = group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue();
+			option.setWaiting(createSelection(bgPermission.isWaitingList(), waitingListEnable));
 			options.add(option);
 		}
 		
 		tableDataModel.setObjects(options);
 	}
 	
-	private MultipleSelectionElement createSelection(boolean selected) {
+	private MultipleSelectionElement createSelection(boolean selected, boolean enabled) {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout("checkbox",1));
 		selection.setKeysAndValues(keys, values, null);
 		flc.add(name, selection);
 		selection.select(keys[0], selected);
+		selection.setEnabled(enabled);
 		return selection;
 	}
 
@@ -273,7 +275,7 @@ public class EditMembershipController extends FormBasicController {
 			change.setTutor(bgPermission.isTutor() == bgTutor ? null : new Boolean(bgTutor));
 			boolean bgParticipant = option.getParticipant().isAtLeastSelected(1);
 			change.setParticipant(bgPermission.isParticipant() == bgParticipant ? null : new Boolean(bgParticipant));
-			boolean bgWaitingList = option.getWaiting().isAtLeastSelected(1);
+			boolean bgWaitingList = option.getWaiting().isEnabled() && option.getWaiting().isAtLeastSelected(1);
 			change.setWaitingList(bgPermission.isWaitingList() == bgWaitingList ? null : new Boolean(bgWaitingList));
 
 			if(change.getTutor() != null || change.getParticipant() != null || change.getWaitingList() != null) {
@@ -407,6 +409,4 @@ public class EditMembershipController extends FormBasicController {
 			return i18n;
 		}
 	}
-	
-
 }

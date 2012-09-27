@@ -251,7 +251,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			elm.setEnabled(isEnabled);
 		}
 		// set container dirty to render new values
-		this.formLayoutContainer.setDirty(true);
+		formLayoutContainer.setDirty(true);
 	}
 	
 	
@@ -332,6 +332,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i, (cssClasses == null ? null : cssClasses[i]));
 			formLayoutContainer.put(getName()+"_"+keys[i], ssec);
 			items[i] = getName()+"_"+keys[i];
+			ssec.setEnabled(isEnabled());
 			
 			if (GUIInterna.isLoadPerformanceMode()) {
 				if (getRootForm()!=null) {

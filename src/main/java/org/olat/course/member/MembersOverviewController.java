@@ -138,7 +138,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			String segmentCName = sve.getComponentName();
 			Component clickedLink = mainVC.getComponent(segmentCName);
 			if (clickedLink == allMembersLink) {
-				selectedCtrl =updateAllMembers(ureq);
+				selectedCtrl = updateAllMembers(ureq);
 			} else if (clickedLink == ownersLink){
 				selectedCtrl = updateOwners(ureq);
 			} else if (clickedLink == tutorsLink){
@@ -183,7 +183,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(runContext);
+				addMembers(ureq, runContext);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -200,7 +200,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(runContext);
+				addMembers(ureq, runContext);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -210,7 +210,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
 	
-	protected void addMembers(StepsRunContext runContext) {
+	protected void addMembers(UserRequest ureq, StepsRunContext runContext) {
 		@SuppressWarnings("unchecked")
 		List<Identity> members = (List<Identity>)runContext.get("members");
 		
@@ -229,6 +229,17 @@ public class MembersOverviewController extends BasicController implements Activa
 			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
 			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, members, null, null, template, getIdentity());
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
+		}
+		
+		switchToAllMembers(ureq);
+	}
+	
+	private void switchToAllMembers(UserRequest ureq) {
+		if(selectedCtrl != null && selectedCtrl == allMemberListCtrl) {
+			allMemberListCtrl.reloadModel();
+		} else {
+			selectedCtrl = updateAllMembers(ureq);
+			segmentView.select(allMembersLink);
 		}
 	}
 	
