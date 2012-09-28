@@ -50,9 +50,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
@@ -80,7 +83,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public abstract class AbstractMemberListController extends BasicController {
+public abstract class AbstractMemberListController extends BasicController implements Activateable2 {
 
 	protected static final String USER_PROPS_ID = MemberListController.class.getCanonicalName();
 	
@@ -159,6 +162,11 @@ public abstract class AbstractMemberListController extends BasicController {
 		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
 		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
 		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_REMOVE, "table.header.remove", translate("table.header.remove")));
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
 	}
 
 	@Override

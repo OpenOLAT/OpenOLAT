@@ -287,6 +287,27 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 	}
 
 	@Override
+	public void popUpToRootController(UserRequest ureq) {
+		if(stack.size() > 1) {
+			Controller popedCtrl = null;
+			for(int i=stack.size(); i-->1; ) {
+				Link link = stack.remove(i);
+				popedCtrl = (Controller)link.getUserObject();
+				popedCtrl.dispose();
+			}
+			
+			//set the root controller
+			Link rootLink = stack.get(0);
+			Controller rootController  = (Controller)rootLink.getUserObject();
+			if(rootController == this) {
+				content.setContent(contentCtr.getInitialComponent());
+			} else {
+				content.setContent(rootController.getInitialComponent());
+			}
+		}
+	}
+
+	@Override
 	public void pushController(String displayName, Controller controller) {
 		Link link = LinkFactory.createLink("gcrumb_" + stack.size(), stackVC, this);
 		link.setCustomDisplayText(displayName);

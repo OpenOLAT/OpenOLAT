@@ -30,13 +30,18 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ActionType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -52,10 +57,10 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class MembersManagementMainController extends MainLayoutBasicController  implements Activateable2 {
 	
-	private static final String CMD_MEMBERS = "cmd.members";
-	private static final String CMD_GROUPS = "cmd.groups";
-	private static final String CMD_BOOKING = "cmd.booking";
-	private static final String CMD_RIGHTS = "cmd.rights";
+	private static final String CMD_MEMBERS = "Members";
+	private static final String CMD_GROUPS = "Groups";
+	private static final String CMD_BOOKING = "Booking";
+	private static final String CMD_RIGHTS = "Rights";
 
 	private final MenuTree menuTree;
 	private final VelocityContainer mainVC;
@@ -131,52 +136,67 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		if (source == menuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				TreeNode selTreeNode = menuTree.getSelectedNode();				
-				Object cmd = selTreeNode.getUserObject();
+				String cmd = (String)selTreeNode.getUserObject();
 				selectMenuItem(ureq, cmd);
 			}
 		}
 	}
 	
-	private void selectMenuItem(UserRequest ureq, Object cmd) {
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry currentEntry = entries.get(0);
+		String cmd = currentEntry.getOLATResourceable().getResourceableTypeName();
+		Controller selectedCtrl = selectMenuItem(ureq, cmd);
+		if(selectedCtrl instanceof Activateable2) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			((Activateable2)selectedCtrl).activate(ureq, subEntries, currentEntry.getTransientState());
+		}
+	}
+	
+	private Controller selectMenuItem(UserRequest ureq, String cmd) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(cmd, 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		addToHistory(ureq, bwControl);
+		
+		Controller selectedCtrl = null;
 		if(CMD_MEMBERS.equals(cmd)) {
 			if(membersOverviewCtrl == null) {
-				membersOverviewCtrl = new MembersOverviewController(ureq, getWindowControl(), repoEntry);
+				membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, repoEntry);
 				listenTo(membersOverviewCtrl);
 			}
 			mainVC.put("content", membersOverviewCtrl.getInitialComponent());
+			selectedCtrl = membersOverviewCtrl;
 		} else if(CMD_GROUPS.equals(cmd)) {
 			if(groupsCtrl == null) {
-				groupsCtrl = new CourseBusinessGroupListController(ureq, getWindowControl(), repoEntry);
+				groupsCtrl = new CourseBusinessGroupListController(ureq, bwControl, repoEntry);
 				listenTo(groupsCtrl);
 			}
 			groupsCtrl.reloadModel();
 			mainVC.put("content", groupsCtrl.getInitialComponent());
+			selectedCtrl = groupsCtrl;
 		} else if(CMD_BOOKING.equals(cmd)) {
 			if(ordersController == null) {
-				ordersController = new OrdersAdminController(ureq, getWindowControl(), repoEntry.getOlatResource());
+				ordersController = new OrdersAdminController(ureq, bwControl, repoEntry.getOlatResource());
 				listenTo(ordersController);
 			}
 			mainVC.put("content", ordersController.getInitialComponent());
+			selectedCtrl = ordersController;
 		} else if(CMD_RIGHTS.equals(cmd)) {
 			if(rightsController == null) {
-				rightsController = new GroupsAndRightsController(ureq, getWindowControl(), repoEntry.getOlatResource());
+				rightsController = new GroupsAndRightsController(ureq, bwControl, repoEntry.getOlatResource());
 				listenTo(rightsController);
 			}
 			mainVC.put("content", rightsController.getInitialComponent());
+			selectedCtrl = rightsController;
 		}
 		
 		TreeNode selTreeNode = TreeHelper.findNodeByUserObject(cmd, menuTree.getTreeModel().getRootNode());
 		if (selTreeNode != null && !selTreeNode.getIdent().equals(menuTree.getSelectedNodeId())) {
 			menuTree.setSelectedNodeId(selTreeNode.getIdent());
 		}
+		return selectedCtrl;
 	}
-
-
-
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-
-	}
-	
-
 }

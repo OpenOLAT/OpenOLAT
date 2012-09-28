@@ -69,6 +69,13 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class MembersOverviewController extends BasicController implements Activateable2 {
 	
+	private static final String SEG_ALL_MEMBERS = "All";
+	private static final String SEG_OWNERS_MEMBERS = "Owners";
+	private static final String SEG_TUTORS_MEMBERS = "Coaches";
+	private static final String SEG_PARTICIPANTS_MEMBERS = "Participants";
+	private static final String SEG_WAITING_MEMBERS = "Waiting";
+	private static final String SEG_SEARCH_MEMBERS = "Search";
+	
 	private final Link allMembersLink, ownersLink, tutorsLink, participantsLink, waitingListLink, searchLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
@@ -117,7 +124,6 @@ public class MembersOverviewController extends BasicController implements Activa
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
 		mainVC.put("importMembers", importMemberLink);
 		
-		
 		putInitialPanel(mainVC);
 	}
 	
@@ -128,7 +134,30 @@ public class MembersOverviewController extends BasicController implements Activa
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry currentEntry = entries.get(0);
+		String segment = currentEntry.getOLATResourceable().getResourceableTypeName();
+		List<ContextEntry> subEntries = entries.subList(1, entries.size());
+		if(SEG_ALL_MEMBERS.equals(segment)) {
+			updateAllMembers(ureq).activate(ureq, subEntries, currentEntry.getTransientState());
+			segmentView.select(allMembersLink);
+		} else if(SEG_OWNERS_MEMBERS.equals(segment)) {
+			updateOwners(ureq).activate(ureq, subEntries, currentEntry.getTransientState());
+			segmentView.select(ownersLink);
+		} else if(SEG_TUTORS_MEMBERS.equals(segment)) {
+			updateTutors(ureq).activate(ureq, subEntries, currentEntry.getTransientState());
+			segmentView.select(tutorsLink);
+		} else if(SEG_PARTICIPANTS_MEMBERS.equals(segment)) {
+			updateParticipants(ureq).activate(ureq, subEntries, currentEntry.getTransientState());
+			segmentView.select(participantsLink);
+		} else if(SEG_WAITING_MEMBERS.equals(segment)) {
+			updateWaitingList(ureq).activate(ureq, subEntries, currentEntry.getTransientState());
+			segmentView.select(waitingListLink);
+		} else if(SEG_SEARCH_MEMBERS.equals(segment)) {
+			updateSearch(ureq).activate(ureq, subEntries, currentEntry.getTransientState());
+			segmentView.select(searchLink);
+		}
 	}
 
 	@Override
@@ -245,7 +274,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	
 	private AbstractMemberListController updateAllMembers(UserRequest ureq) {
 		if(allMemberListCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AllMembers", 0l);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_ALL_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(true, true, true, true, true, false);
@@ -261,7 +290,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	
 	private AbstractMemberListController updateOwners(UserRequest ureq) {
 		if(ownersCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Owners", 0l);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_OWNERS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(true, false, false, false, false, false);
@@ -278,7 +307,7 @@ public class MembersOverviewController extends BasicController implements Activa
 
 	private AbstractMemberListController updateTutors(UserRequest ureq) {
 		if(tutorsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Tutors", 0l);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_TUTORS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, true, false, true, false, false);
@@ -295,7 +324,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	
 	private AbstractMemberListController updateParticipants(UserRequest ureq) {
 		if(participantsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Tutors", 0l);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_PARTICIPANTS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, false, true, false, true, false);
@@ -312,7 +341,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	
 	private AbstractMemberListController updateWaitingList(UserRequest ureq) {
 		if(waitingCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("WaitingList", 0l);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_WAITING_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, false, false, false, false, true);
@@ -329,7 +358,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	
 	private AbstractMemberListController updateSearch(UserRequest ureq) {
 		if(searchCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_SEARCH_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			searchCtrl = new MemberSearchController(ureq, bwControl, repoEntry);

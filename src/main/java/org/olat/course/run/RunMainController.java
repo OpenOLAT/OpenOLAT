@@ -720,11 +720,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else throw new OLATSecurityException("wanted to activate editor, but no according right");
 
 		} else if (cmd.equals("unifiedusermngt")) {
-			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
-				currentToolCtr = new MembersManagementMainController(ureq, getWindowControl(), courseRepositoryEntry);
-				listenTo(currentToolCtr);
-				all.pushController(translate("command.opensimplegroupmngt"), currentToolCtr);
-			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
+			launchMembersManagement(ureq);
 			
 		} else if (cmd.equals("statistic")) {
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
@@ -786,7 +782,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		} else if (cmd.equals("assessment")) {
 			launchAssessmentTool(ureq, null);
-
 		} else if (cmd.equals("efficiencystatement")) {
 			// will not be disposed on course run dispose, popus up as new
 			// browserwindow
@@ -849,6 +844,22 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			pbw.open(ureq);
 			//
 		} 
+	}
+	
+	private MembersManagementMainController launchMembersManagement(UserRequest ureq) {
+		if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
+			if(!(currentToolCtr instanceof MembersManagementMainController)) {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("MembersMgmt", 0l);
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+				currentToolCtr = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), courseRepositoryEntry);
+				listenTo(currentToolCtr);
+				
+				all.popUpToRootController(ureq);
+				all.pushController(translate("command.opensimplegroupmngt"), currentToolCtr);
+			}
+			return (MembersManagementMainController)currentToolCtr;
+		} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
 	}
 
 	private Activateable2 launchAssessmentTool(UserRequest ureq, List<ContextEntry> entries) {
@@ -1264,6 +1275,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					//the wrong link to the wrong person
 				}
 			}
+		} else if("MembersMgmt".equals(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			launchMembersManagement(ureq).activate(ureq, subEntries, firstEntry.getTransientState());
 		}
 	}
 

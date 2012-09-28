@@ -64,7 +64,8 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 		}
 	}
 
-	public void popControllers(UserRequest ureq) {
+	@Override
+	public void popUpToRootController(UserRequest ureq) {
 		if(stack.size() > 1) {
 			Controller popedCtrl = null;
 			for(int i=stack.size(); i-->1; ) {
@@ -72,6 +73,11 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 				popedCtrl = (Controller)link.getUserObject();
 				popedCtrl.dispose();
 			}
+			
+			//set the root controller
+			Link rootLink = stack.get(0);
+			Controller rootController  = (Controller)rootLink.getUserObject();
+			setContent(rootController); 
 			fireEvent(ureq, new PopEvent(popedCtrl));
 		}
 	}
