@@ -30,6 +30,8 @@ import org.olat.core.gui.components.htmlheader.jscss.CustomCSSProvider;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.guistack.GuiStack;
+import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.id.OLATResourceable;
 
 /**
@@ -46,11 +48,19 @@ public interface DTab extends Disposable, CustomCSSProvider {
 	 * @return the windowcontrol
 	 */
 	public WindowControl getWindowControl();
+	
+	public GuiStack getGuiStackHandle();
 
 	/**
 	 * @return the title
 	 */
 	public String getTitle();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public NavElement getNavElement();
 
 	/**
 	 * @return the olat resourceable
@@ -63,6 +73,8 @@ public interface DTab extends Disposable, CustomCSSProvider {
 	//fxdiff BAKS-7 Resume function
 	public OLATResourceable getInitialOLATResourceable();
 
+	
+	public Controller getController();
 	/**
 	 * @param launchController
 	 */

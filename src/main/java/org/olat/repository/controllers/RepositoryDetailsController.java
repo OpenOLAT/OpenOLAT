@@ -173,7 +173,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private boolean jumpfromcourse = false;
 	private boolean corrupted;
 	public static final String ACTIVATE_EDITOR = "activateEditor";
-	public static final String ACTIVATE_RUN = "activateRun";
 	
 	private DisplayCourseInfoForm courseInfoForm;
 	private DisplayInfoForm displayInfoForm;
@@ -676,44 +675,12 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		}
 		
 		try {
-			RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntry);
-			OLATResourceable ores = repositoryEntry.getOlatResource();
-			String displayName = getDisplayName(ureq.getLocale());
-
-			//was brasato:: DTabs dts = getWindowControl().getDTabs();
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			DTab dt = dts.getDTab(ores);
-			if (dt == null) {
-				// does not yet exist -> create and add
-				//fxdiff BAKS-7 Resume function
-				dt = dts.createDTab(ores, repositoryEntry, displayName);
-				if (dt == null) {
-					return false;
-				}
-				
-				// build up the context path
-				OLATResourceable businessOres = repositoryEntry;
-				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(businessOres);
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, dt.getWindowControl());
-				
-				Controller ctrl = typeToLaunch.createLaunchController(ores, ureq, bwControl);
-				// if resource is an image, PDF or eq. (e.g. served by resulting media request), no controller is returned.
-				// FIXME:fj:test this
-				if (ctrl == null) {
-					return false;
-				}
-				dt.setController(ctrl);
-				dts.addDTab(dt);
+			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+			boolean ok = NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			if(ok) {
+				fireEvent(ureq, LAUNCHED_EVENT);
 			}
-			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_RUN);
-			dts.activate(ureq, dt, entries);	
-			/**
-			 * close detail page after resource is closed
-			 * DONE_EVENT will be catched by RepositoryMainController
-			 */ 
-			//fxdiff FXOLAT-128: back/resume function
-			fireEvent(ureq, LAUNCHED_EVENT);
-			return true;
+			return ok;
 		} catch (CorruptedCourseException e) {
 			logError("Corrupted course: " + repositoryEntry, e);
 			return false;
@@ -872,7 +839,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				return;
 			}
 			dt.setController(editorController);
-			dts.addDTab(dt);
+			dts.addDTab(ureq, dt);
 		}
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
 		dts.activate(ureq, dt, entries);

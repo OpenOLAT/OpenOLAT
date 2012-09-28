@@ -75,6 +75,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryModule;
 import org.olat.core.id.context.HistoryPoint;
+import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.AssertException;
@@ -110,13 +111,15 @@ public class BaseFullWebappController extends BasicController implements Generic
 	// NEW FROM FullChiefController
 	private Controller headerCtr, topnavCtr, footerCtr;
 	private SiteInstance curSite;
-	private DTabImpl curDTab;
-	private SiteInstance prevSite;
+	private DTab curDTab;
+	
+	private final List<TabState> siteAndTabs = new ArrayList<TabState>();
 
 	// the dynamic tabs list
 	private List<DTab> dtabs;
 	private List<String> dtabsLinkNames;
 	private List<Controller> dtabsControllers;
+	private Map<DTab,HistoryPoint> dtabToBusinessPath = new HashMap<DTab,HistoryPoint>();
 	// used as link id which is load url safe (e.g. replayable
 	private int dtabCreateCounter = 0;
 	// the sites list
@@ -249,8 +252,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 				BaseFullWebappController.this.activateStatic(ureq, className, null, entries);
 			}
 
-			public void addDTab(DTab dt) {
-				BaseFullWebappController.this.addDTab(dt);
+			public void addDTab(UserRequest ureq, DTab dt) {
+				BaseFullWebappController.this.addDTab(ureq, dt);
 			}
 			//fxdiff BAKS-7 Resume function
 			public DTab createDTab(OLATResourceable ores, String title) {
@@ -265,8 +268,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 				return BaseFullWebappController.this.getDTab(ores);
 			}
 
-			public void removeDTab(DTab dt) {
-				BaseFullWebappController.this.removeDTab(dt);
+			public void removeDTab(UserRequest ureq, DTab dt) {
+				BaseFullWebappController.this.removeDTab(ureq, dt);
 			}
 			
 		};
@@ -416,11 +419,11 @@ public class BaseFullWebappController extends BasicController implements Generic
 		}
 		if (sites != null) {
 			// ------ activate now main
-			prevSite = sites.get(0);
+			SiteInstance s = sites.get(0);
 			if (contentCtrl == null) {
 				//activate site only if no content was set -> allow content before activation of default site.
-				activateSite(prevSite, ureq, null, null);
-				siteToBusinessPath.put(prevSite, ureq.getUserSession().getLastHistoryPoint());
+				activateSite(s, ureq, null, null);
+				updateBusinessPath(ureq, s);
 			}
 		}
 		if (sites == null && contentCtrl == null) { 
@@ -430,8 +433,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 
 		// set maintenance message
 		String stickyMessage = GlobalStickyMessage.getGlobalStickyMessage();
-		this.mainVc.contextPut("hasStickyMessage", (stickyMessage == null ? Boolean.FALSE : Boolean.TRUE));					
-		this.mainVc.contextPut("stickyMessage", stickyMessage);		
+		mainVc.contextPut("hasStickyMessage", (stickyMessage == null ? Boolean.FALSE : Boolean.TRUE));					
+		mainVc.contextPut("stickyMessage", stickyMessage);		
 		
 		addCustomThemeJS();
 	}
@@ -458,10 +461,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 			String mC = link.getCommand().substring(0, 1);
 			if (mC.equals("t")) { // activate normal tab
 				SiteInstance s = (SiteInstance) link.getUserObject();
-				//fxdiff BAKS-7 Resume function
-				if(prevSite != null) {
-					siteToBusinessPath.put(prevSite, ureq.getUserSession().getLastHistoryPoint());
-				}
+				//fix the state of the last tab/site
+				updateBusinessPath(ureq);
 				
 				HistoryPoint point = null;
 				if(siteToBusinessPath.containsKey(s)) {
@@ -471,15 +472,24 @@ public class BaseFullWebappController extends BasicController implements Generic
 				if(point != null) {
 					BusinessControlFactory.getInstance().addToHistory(ureq, point);
 				}
-
-				HistoryPoint currentPoint = ureq.getUserSession().getLastHistoryPoint();
-				siteToBusinessPath.put(s, currentPoint);
+				updateBusinessPath(ureq, s);
 			} else if (mC.equals("a")) { // activate dyntab
 				DTab dt = (DTab) link.getUserObject();
-				doActivateDTab((DTabImpl) dt);
+				//fix the state of the last tab/site
+				updateBusinessPath(ureq);
+				
+				HistoryPoint point = null;
+				if(dtabToBusinessPath.containsKey(dt)) {
+					point = dtabToBusinessPath.get(dt);
+				}
+
+				doActivateDTab(dt);
+				if(point != null) {
+					BusinessControlFactory.getInstance().addToHistory(ureq, point);
+				}
 			} else if (mC.equals("c")) { // close dyntab
 				DTab dt = (DTab) link.getUserObject();
-				requestCloseTab(dt);
+				requestCloseTab(ureq, dt);
 			}
 		} else if (source == getWindowControl().getWindowBackOffice().getWindow()) {
 			if (event == Window.OLDTIMESTAMPCALL) {
@@ -525,18 +535,19 @@ public class BaseFullWebappController extends BasicController implements Generic
 		
 		OLATResourceable ores = state.getOLATResourceable();
 		DTab dt = getDTab(ores);
-		if(dt instanceof DTabImpl) {
-			DTabImpl dti = (DTabImpl)dt;
-			doActivateDTab(dti);
-			if(dti.getController() instanceof Activateable2) {
-				((Activateable2)dti.getController()).activate(ureq, entries, null);
+		if(dt != null) {
+			doActivateDTab(dt);
+			if(dt.getController() instanceof Activateable2) {
+				((Activateable2)dt.getController()).activate(ureq, entries, null);
 			}
-		} else if (dt == null) {
+			updateBusinessPath(ureq, dt);
+		} else {
 			StateEntry s = state.getTransientState();
 			if(s instanceof StateSite && sites != null) {
 				SiteInstance site = ((StateSite)s).getSite();
 				for(SiteInstance savedSite:sites) {
 					if(site.getClass().equals(savedSite.getClass())) {
+						updateBusinessPath(ureq, savedSite);
 						activateSite(savedSite, ureq, null, entries);
 					}
 				}
@@ -545,7 +556,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		int tabIndex = dtabsControllers.indexOf(source);
 		if (tabIndex > -1) {
@@ -554,7 +564,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			// finished.
 			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event == Event.FAILED_EVENT) {
 				DTab tab = dtabs.get(tabIndex);
-				removeDTab(tab);//disposes also tab and controllers
+				removeDTab(ureq, tab);//disposes also tab and controllers
 			}
 		}
 
@@ -577,6 +587,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 			dtabsControllers = null;
 			sites = null;
 			siteToBornSite = null;
+			siteToBusinessPath = null;
+			dtabToBusinessPath = null;	
 		}
 		//clear the DTabs Service
 		Window myWindow = getWindowControl().getWindowBackOffice().getWindow();
@@ -640,20 +652,18 @@ public class BaseFullWebappController extends BasicController implements Generic
 	private void doActivateSite(SiteInstance s, GuiStack gs) {
 		removeCurrentCustomCSSFromView();
 
-		curDTab = null;
-		if (curSite != null) {
-			prevSite = s;
-		}
-		curSite = s;
+		// set curSite
+		setCurrent(s, null);
+		
 		setGuiStack(gs);
-		navVc.contextPut("pageTitle", curSite.getNavElement().getTitle());
+		navVc.contextPut("pageTitle", s.getNavElement().getTitle());
 		navVc.setDirty(true);
 		// add css for this site
 		BornSiteInstance bs = siteToBornSite.get(s);
 		if (bs != null)	addCurrentCustomCSSToView(bs.getCustomCSS());
 	}
 
-	private void doActivateDTab(DTabImpl dtabi) {
+	private void doActivateDTab(DTab dtabi) {
 		
 		//System.err.println(">>>>> dynamic site >>>>");
 		getWindowControl().getWindowBackOffice().getWindow().setAttribute("BUSPATH", dtabi.getWindowControl());
@@ -663,15 +673,16 @@ public class BaseFullWebappController extends BasicController implements Generic
 		
 		removeCurrentCustomCSSFromView();
 
-		curDTab = dtabi;
-		curSite = null;
+		//set curDTab
+		setCurrent(null, dtabi);
+		
 		setGuiStack(dtabi.getGuiStackHandle());
 		// set description as page title, getTitel() might contain trucated values
 		//TODO:gs:a html escaping or removing should be done everywhere where text input fields are written to velocity. Best would be to not allow it in the input fields or escape it there
-		navVc.contextPut("pageTitle", curDTab.getNavElement().getDescription());
+		navVc.contextPut("pageTitle", dtabi.getNavElement().getDescription());
 		navVc.setDirty(true);
 		// add css for this tab
-		addCurrentCustomCSSToView(curDTab.getCustomCSS());
+		addCurrentCustomCSSToView(dtabi.getCustomCSS());
 	}
 
 	/**
@@ -712,7 +723,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 		return dtabs.get(pos);
 	}
 
-	private void removeDTab(DTabImpl delt) {
+	public void removeDTab(UserRequest ureq, DTab delt) {
 		// remove from tab list and mapper table
 		synchronized (dtabs) {//o_clusterOK dtabs are per user session only - user session is always in the same vm
 			// make dtabs and dtabsControllers access synchronized
@@ -731,41 +742,71 @@ public class BaseFullWebappController extends BasicController implements Generic
 			}
 			// Remove tab itself
 			dtabs.remove(delt);
+			dtabToBusinessPath.remove(delt);
 			dtabsLinkNames.remove(dtabIndex);
 			Controller tabCtr = dtabsControllers.get(dtabIndex);
 			dtabsControllers.remove(tabCtr);
+
+			for(Iterator<TabState> it=siteAndTabs.iterator(); it.hasNext(); ) {
+				if(it.next().getDtab() == delt) {
+					it.remove();
+				}
+			}
 
 			navVc.setDirty(true);
 			// remove created links for dtab out of container
 			navVc.remove(navVc.getComponent("a" + delt.hashCode()));
 			navVc.remove(navVc.getComponent("ca" + delt.hashCode()));
 			navVc.remove(navVc.getComponent("cp" + delt.hashCode()));
-			if (delt == curDTab && prevSite != null) { // if we close the current tab -> return to the
-				// latest selected static tab
-				// pre: prevSite != null
-				// activate previous chosen static site -> this site has already been
-				// constructed and is thus in the cache
-				SiteInstance si = prevSite;
-				BornSiteInstance bs = siteToBornSite.get(si);
-				// bs != null since clicked previously
-				GuiStack gsh = bs.getGuiStackHandle();
-				doActivateSite(si, gsh);
+			if (delt == curDTab) { // if we close the current tab -> return to the previous
+				popTheTabState(ureq);
 			} // else just remove the dtabs
 			delt.dispose();//dispose tab and controllers in tab
+		}
+	}
+	
+	private void popTheTabState(UserRequest ureq) {
+		if(siteAndTabs.isEmpty()) {
+			SiteInstance home = sites.get(0);
+			BornSiteInstance bs = siteToBornSite.get(home);
+			doActivateSite(home, bs.getGuiStackHandle());
+		}
+		
+		TabState state = siteAndTabs.remove(siteAndTabs.size() - 1);
+		if(state.getSite() != null) {
+			// latest selected static tab
+			// activate previous chosen static site -> this site has already been
+			// constructed and is thus in the cache
+			SiteInstance si = state.getSite();
+			BornSiteInstance bs = siteToBornSite.get(si);
+			// bs != null since clicked previously
+			GuiStack gsh = bs.getGuiStackHandle();
+			doActivateSite(si, gsh);
+			if(siteToBusinessPath.containsValue(si)) {
+				ureq.getUserSession().addToHistory(ureq, siteToBusinessPath.get(si));
+			}
+		} else if (state.getDtab() != null && !state.getDtab().getController().isDisposed()) {
+			DTab tab = state.getDtab();
+			doActivateDTab(tab);
+			if(dtabToBusinessPath.containsKey(tab)) {
+				ureq.getUserSession().addToHistory(ureq, dtabToBusinessPath.get(tab));
+			}
+		} else {
+			popTheTabState(ureq);
 		}
 	}
 
 	/**
 	 * @param dt
 	 */
-	private void requestCloseTab(DTab dt) {
-		final DTabImpl delt = (DTabImpl) dt;
+	private void requestCloseTab(UserRequest ureq, DTab delt) {
+
 		Controller c = delt.getController(); // FIXME:fj: test
 		// vetoableclosecontroller
 		if (c instanceof VetoableCloseController) {
 			VetoableCloseController vcc = (VetoableCloseController) c;
 			// rembember current dtab, and swap to the temporary one
-			DTabImpl reTab = curDTab;
+			DTab reTab = curDTab;
 			doActivateDTab(delt);
 			boolean immediateClose = vcc.requestForClose();
 			if (!immediateClose) {
@@ -774,10 +815,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 				if (reTab != null) {
 					doActivateDTab(reTab);
 				}
-				removeDTab(delt);
+				removeDTab(ureq, delt);
 			}
 		} else {
-			removeDTab(delt);
+			removeDTab(ureq, delt);
 		}
 	}
 
@@ -826,8 +867,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 	/**
 	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#addDTab(org.olat.core.gui.control.generic.dtabs.DTab)
 	 */
-	public void addDTab(DTab dt) {
-		// FIXME:fj:restrict to say 7 elements
+	public void addDTab(UserRequest ureq, DTab dt) {
 		DTab old = getDTab(dt.getOLATResourceable());
 		if (old != null) {
 			//do make a red screen for that
@@ -859,8 +899,9 @@ public class BaseFullWebappController extends BasicController implements Generic
 			cplink.setTooltip(translate("close"), false);
 			cplink.setUserObject(dt);
 
-			Controller dtabCtr = ((DTabImpl) dt).getController();
+			Controller dtabCtr = dt.getController();
 			dtabCtr.addControllerListener(this);
+			updateBusinessPath(ureq, dt);
 			// add to tabs controller lookup table for later event dispatching
 			dtabsControllers.add(dtabCtr);
 			// increase DTab added counter.
@@ -896,6 +937,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 			final Activateable2 activateable = ((Activateable2) c);
 			activateable.activate(ureq, entries, null);
 		}
+		updateBusinessPath(ureq, dtabi);
+		
 		//fxdiff BAKS-7 Resume function
 		//update the panels after activation
 		setGuiStack(dtabi.getGuiStackHandle());
@@ -928,14 +971,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 				return;
 			}
 		}
-
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#removeDTab(org.olat.core.gui.control.generic.dtabs.DTab)
-	 */
-	public void removeDTab(DTab dt) {
-		this.removeDTab((DTabImpl) dt);
 	}
 
 	public void event(Event event) {
@@ -976,8 +1011,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 			// msg can be set to show only on one node or on all nodes
 			String msg = GlobalStickyMessage.getGlobalStickyMessage();//either null, or the global message or the per-node-message
 			Boolean hasStickyMessage = Boolean.valueOf(msg != null);
-			this.mainVc.contextPut("hasStickyMessage", hasStickyMessage);
-			this.mainVc.contextPut("stickyMessage", msg != null ? msg : "");		}
+			mainVc.contextPut("hasStickyMessage", hasStickyMessage);
+			mainVc.contextPut("stickyMessage", msg != null ? msg : "");		}
 	}
 
 	/**
@@ -997,6 +1032,80 @@ public class BaseFullWebappController extends BasicController implements Generic
 	public boolean isDTabActive(DTab dtab) {
 		return curDTab != null && dtab == curDTab;
 	}
-
 	
+	private void setCurrent(SiteInstance site, DTab tab) {
+		curSite = site;
+		curDTab = tab;
+		siteAndTabs.add(new TabState(tab, site));
+		
+		//limite the size
+		if(siteAndTabs.size() > 30) {
+			while(siteAndTabs.size() > 30) {
+				siteAndTabs.remove(0);
+			}
+		}
+	}
+	
+	private void updateBusinessPath(UserRequest ureq) {
+		if(siteAndTabs.isEmpty()) return;
+		
+		TabState tabState = siteAndTabs.get(siteAndTabs.size() - 1);
+		if(tabState.getSite() != null) {
+			updateBusinessPath(ureq, tabState.getSite());
+		} else if (tabState.getDtab() != null) {
+			updateBusinessPath(ureq, tabState.getDtab());
+		}
+	}
+	
+	private void updateBusinessPath(UserRequest ureq, SiteInstance site) {
+		if(site == null) return;
+
+		String businessPath = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getAsString();
+		HistoryPoint point = ureq.getUserSession().getLastHistoryPoint();
+		int index = businessPath.indexOf(':');
+		if(index > 0 && point != null && point.getBusinessPath() != null) {
+			String start = businessPath.substring(0, index);
+			if(!point.getBusinessPath().startsWith(start)) {
+				//if a controller has not set its business path, don't pollute the mapping
+				siteToBusinessPath.put(site, new HistoryPointImpl(ureq.getUuid(), businessPath, null));
+				return;
+			}
+		}
+		siteToBusinessPath.put(site, point);
+	}
+	
+	private void updateBusinessPath(UserRequest ureq, DTab tab) {
+		if(tab == null) return;
+
+		String businessPath = tab.getController().getWindowControlForDebug().getBusinessControl().getAsString();
+		HistoryPoint point = ureq.getUserSession().getLastHistoryPoint();
+		int index = businessPath.indexOf(']');
+		if(index > 0 && point != null && point.getBusinessPath() != null) {
+			String start = businessPath.substring(0, index);
+			if(!point.getBusinessPath().startsWith(start)) {
+				//if a controller has not set its business path, don't pollute the mapping
+				dtabToBusinessPath.put(tab, new HistoryPointImpl(ureq.getUuid(), businessPath, null));
+				return;
+			}
+		}
+		dtabToBusinessPath.put(tab, point);
+	}
+	
+	private static class TabState {
+		private final DTab dtab;
+		private final SiteInstance site;
+		
+		private TabState(DTab dtab, SiteInstance site) {
+			this.dtab = dtab;
+			this.site = site;
+		}
+
+		public DTab getDtab() {
+			return dtab;
+		}
+
+		public SiteInstance getSite() {
+			return site;
+		}
+	}
 }

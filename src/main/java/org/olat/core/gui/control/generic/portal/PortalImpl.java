@@ -375,14 +375,14 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	 * links correctly
 	 */
 	private void updatePositionChangeLinks(){
-		Iterator colIter = portalColumns.iterator();
+		Iterator<List<String>> colIter = portalColumns.iterator();
 		int colcount = 0;
 		while (colIter.hasNext()) {
-			List rows = (List) colIter.next();
-			Iterator rowIter = rows.iterator();
+			List<String> rows = colIter.next();
+			Iterator<String> rowIter = rows.iterator();
 			int rowcount = 0;
 			while (rowIter.hasNext()) {
-				String portletName = (String) rowIter.next();
+				String portletName = rowIter.next();
 				PortletContainer pc = this.portletContainers.get(portletName);
 				// up command
 				if(rowcount == 0) pc.setCanMoveUp(false);

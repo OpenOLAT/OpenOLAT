@@ -174,7 +174,7 @@ public class EfficiencyStatementsListController extends BasicController {
 							if (dt == null) return;
 							Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
 							dt.setController(launchController);
-							dts.addDTab(dt);
+							dts.addDTab(ureq, dt);
 						}
 						dts.activate(ureq, dt, null);  // null: do not activate to a certain view
 

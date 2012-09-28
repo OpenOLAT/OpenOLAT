@@ -131,10 +131,10 @@ public class NewControllerFactory extends LogDelegator {
 	 * @param ureq
 	 * @param origControl
 	 */
-	public void launch(String businessPath, UserRequest ureq, WindowControl origControl) {
+	public boolean launch(String businessPath, UserRequest ureq, WindowControl origControl) {
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
 	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, origControl);
-	  launch(ureq, bwControl);
+	  return launch(ureq, bwControl);
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class NewControllerFactory extends LogDelegator {
 	 * @param ureq
 	 * @param wControl
 	 */
-	public void launch(UserRequest ureq, WindowControl wControl) {
+	public boolean launch(UserRequest ureq, WindowControl wControl) {
 		BusinessControl bc = wControl.getBusinessControl();
 		ContextEntry mainCe = bc.popLauncherContextEntry();
 		OLATResourceable ores = mainCe.getOLATResourceable();
@@ -173,7 +173,7 @@ public class NewControllerFactory extends LogDelegator {
 		DTab dt = dts.getDTab(ores);
 		if (dt != null) {
 			// tab already open => close it
-			dts.removeDTab(dt);// disposes also dt and controllers
+			dts.removeDTab(ureq, dt);// disposes also dt and controllers
 		}
 
 		String firstType = mainCe.getOLATResourceable().getResourceableTypeName();
@@ -181,11 +181,11 @@ public class NewControllerFactory extends LogDelegator {
 		ContextEntryControllerCreator typeHandler = contextEntryControllerCreators.get(firstType);
 		if (typeHandler == null) {
 			logWarn("Cannot found an handler for context entry: " + mainCe, null);
-			return;//simply return and don't throw a red screen
+			return false;//simply return and don't throw a red screen
 		}
 		if (!typeHandler.validateContextEntryAndShowError(mainCe, ureq, wControl)){
 			//simply return and don't throw a red screen
-			return;
+			return false;
 		}
 
 		//fxdiff BAKS-7 Resume function
@@ -213,6 +213,7 @@ public class NewControllerFactory extends LogDelegator {
 
 			TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
 			dts.activateStatic(ureq, siteClassName, context.getContext());
+			return true;
 		} else {
 			List<ContextEntry> entries = new ArrayList<ContextEntry>();
 			while(bc.hasContextEntry()) {
@@ -226,8 +227,10 @@ public class NewControllerFactory extends LogDelegator {
 			dt = dts.createDTab(context.getTabResource(), re, context.getName());
 			if (dt == null) {
 				// user error message is generated in BaseFullWebappController, nothing to do here
+				return false;
 			} else {
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dt.getWindowControl());
+				ureq.getUserSession().addToHistory(ureq, bc);
 				Controller launchC = typeHandler.createController(mainCe, ureq, bwControl);
 				if (launchC == null) {
 					throw new AssertException("ControllerFactory could not create a controller to be launched. Please validate businesspath " 
@@ -235,8 +238,9 @@ public class NewControllerFactory extends LogDelegator {
 				}
 
 				dt.setController(launchC);
-				dts.addDTab(dt);
+				dts.addDTab(ureq, dt);
 				dts.activate(ureq, dt, context.getContext()); // null: do not activate to a certain view
+				return true;
 			}
 		}
 	}

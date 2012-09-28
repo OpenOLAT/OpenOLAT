@@ -94,7 +94,7 @@ public class DisposedCourseRestartController extends BasicController {
 			}
 			DTab dt = dts.getDTab(ores);
 			// remove and dispose "old course run"
-			dts.removeDTab(dt);//disposes also dt and controllers
+			dts.removeDTab(ureq, dt);//disposes also dt and controllers
 			/*
 			 * create new tab with "refreshed course run" and activate the course
 			 */
@@ -104,7 +104,7 @@ public class DisposedCourseRestartController extends BasicController {
 															// dts.create...
 			Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
 			dt.setController(launchController);
-			dts.addDTab(dt);
+			dts.addDTab(ureq, dt);
 			dts.activate(ureq, dt, null);
 			/*
 			 * last but not least dispose myself - to clean up.

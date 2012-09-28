@@ -319,10 +319,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	//fxdiff BAKS-7 Resume function
 	public void addToHistory(UserRequest ureq, HistoryPoint point) {
 		if(point == null) return;
-		if(Tracing.isDebugEnabled(UserSession.class)) {
-			Tracing.logDebug(ureq.getUuid() + " Add business path: " + point.getBusinessPath(), UserSession.class);
-		}
-		//System.out.println(ureq.getUuid() + " Add business path: " + point.getBusinessPath());
+		//System.out.println(ureq.getUuid() + " Add point to history: " + point.getBusinessPath());
 		history.add(new HistoryPointImpl(ureq.getUuid(), point.getBusinessPath(), point.getEntries()));
 	}
 	
@@ -331,10 +328,6 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		List<ContextEntry> entries = businessControl.getEntries();
 		String businessPath = businessControl.getAsString();
 		if(StringHelper.containsNonWhitespace(businessPath)) {
-			if(Tracing.isDebugEnabled(UserSession.class)) {
-				Tracing.logDebug(ureq.getUuid() + " Add business path: " + businessPath, UserSession.class);
-			}
-			//System.out.println(ureq.getUuid() + " Add business path: " + businessPath);
 			String uuid = ureq.getUuid();
 			if(!history.isEmpty()) {
 				//consolidate
@@ -345,6 +338,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 					}
 				}
 			}
+			//System.out.println(ureq.getUuid() + " Add business path: " + businessPath);
 			history.push(new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
 			if(history.size() > 20) {
 				history.remove(0);

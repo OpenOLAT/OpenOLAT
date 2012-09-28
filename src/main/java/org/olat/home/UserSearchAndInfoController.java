@@ -84,7 +84,7 @@ public class UserSearchAndInfoController extends BasicController {
 						if (dt == null) return;
 						UserInfoMainController uimc = new UserInfoMainController(ureq, dt.getWindowControl(), chosenIdentity);
 						dt.setController(uimc);
-						dts.addDTab(dt);
+						dts.addDTab(ureq, dt);
 					}
 					dts.activate(ureq, dt, null);
 				}

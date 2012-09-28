@@ -455,18 +455,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// get new run controller.
 		currentNodeController = nclr.getRunController();
+		addToHistory(ureq, currentNodeController);
+		
 		//fxdiff BAKS-7 Resume function
-		if(currentNodeController instanceof Activateable2) {
-			((Activateable2)currentNodeController).activate(ureq, entries, state);
-		} else if (currentNodeController instanceof TitledWrapperController) {
+		if (currentNodeController instanceof TitledWrapperController) {
 			Controller contentcontroller = ((TitledWrapperController)currentNodeController).getContentController();
+			addToHistory(ureq, contentcontroller);
 			if(contentcontroller instanceof Activateable2) {
 				((Activateable2)contentcontroller).activate(ureq, entries, state);
-			} else {
-				addToHistory(ureq, currentNodeController);
 			}
-		} else {
-			addToHistory(ureq, currentNodeController);
+		} else if(currentNodeController instanceof Activateable2) {
+			((Activateable2)currentNodeController).activate(ureq, entries, state);
 		}
 		contentP.setContent(currentNodeController.getInitialComponent());
 		// enableCustomCourseCSS(ureq);

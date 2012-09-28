@@ -344,7 +344,7 @@ public class CatalogController extends BasicController implements Activateable2 
 						if (dt == null) return;
 						Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
 						dt.setController(launchController);
-						dts.addDTab(dt);
+						dts.addDTab(ureq, dt);
 					}
 					dts.activate(ureq, dt, null); // null: start with main entry point of controller
 				} else if (repoEntry.getCanDownload()) {

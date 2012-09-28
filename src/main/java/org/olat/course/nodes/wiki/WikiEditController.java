@@ -235,7 +235,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 					return;
 				}
 				dt.setController(editorController);
-				dts.addDTab(dt);
+				dts.addDTab(ureq, dt);
 			}
 			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
 			dts.activate(ureq, dt, entries);

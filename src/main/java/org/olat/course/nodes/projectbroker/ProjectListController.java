@@ -368,7 +368,7 @@ public class ProjectListController extends BasicController implements GenericEve
 				if (dt == null) return;
 				UserInfoMainController uimc = new UserInfoMainController(ureq, dt.getWindowControl(), ident);
 				dt.setController(uimc);
-				dts.addDTab(dt);
+				dts.addDTab(ureq, dt);
 			}
 			dts.activate(ureq, dt, null);
 	}
