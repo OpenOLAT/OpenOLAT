@@ -121,6 +121,11 @@
 				<value>targetResName</value>
 			</list>
 		</property>
+		<property name="anonymizedProperties">
+			<list>
+				<value>userName</value>
+			</list>		
+		</property>
 	</bean>
 	
 	
