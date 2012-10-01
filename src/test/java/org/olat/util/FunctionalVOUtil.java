@@ -198,7 +198,7 @@ public class FunctionalVOUtil {
 	 * Imports the "All Elements Course" via REST.
 	 */
 	public CourseVO importAllElementsCourse(URL deploymentUrl) throws URISyntaxException, IOException{
-		return(importCourse(deploymentUrl, "/org/olat/course/All_Elements_Course.zip", "All_Elements_Course.zip", "All Elements Course", "All Elements Course"));
+		return(importCourse(deploymentUrl, "/org/olat/course/All_Elements_Course_Without_External_Content.zip", "All_Elements_Course_Without_External_Content.zip", "All Elements Course Without External Content", "All Elements Course Without External Content"));
 	}
 
 	/**

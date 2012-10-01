@@ -42,7 +42,7 @@ public class FunctionalHtmlUtil {
 			String currentText = html.substring(offset, nextOffset);
 			
 			if(!currentText.matches("^[\\s]+$")){
-				textBuffer.append(currentText);
+				textBuffer.append(currentText.trim());
 				
 				if(insertNewlines && !currentText.endsWith("\n")){
 					textBuffer.append('\n');
