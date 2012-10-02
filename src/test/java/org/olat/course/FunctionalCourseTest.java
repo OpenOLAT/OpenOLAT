@@ -100,7 +100,6 @@ public class FunctionalCourseTest {
 		}
 	}
 	
-	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreateUsingWizard(){

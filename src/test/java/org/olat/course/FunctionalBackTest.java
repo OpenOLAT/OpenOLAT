@@ -31,6 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
@@ -86,6 +87,7 @@ public class FunctionalBackTest {
 		user = userVO.get(0);
 	}
 	
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkBack() throws URISyntaxException, IOException{

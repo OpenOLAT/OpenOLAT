@@ -53,8 +53,8 @@ public class FunctionalVOUtil {
 
 	public final static String WAIT_LIMIT = "15000";
 	
-	public final static String ALL_ELEMENTS_COURSE_DISPLAYNAME = "All Elements Course";
-	public final static String ALL_ELEMENTS_COURSE_FILENAME = "All_Elements_Course.zip";
+	public final static String ALL_ELEMENTS_COURSE_DISPLAYNAME = "All Elements Course Without External Content";
+	public final static String ALL_ELEMENTS_COURSE_FILENAME = "All_Elements_Course_Without_External_Content.zip";
 
 	public enum SysGroups{
 		USERMANAGERS,

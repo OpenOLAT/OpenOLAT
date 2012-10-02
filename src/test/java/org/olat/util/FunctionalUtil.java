@@ -87,7 +87,8 @@ public class FunctionalUtil {
 	public final static String OLAT_SITE_HOME_CSS = "o_site_home";
 	public final static String OLAT_SITE_GROUPS_CSS = "o_site_groups";
 	public final static String OLAT_SITE_LEARNING_RESOURCES_CSS = "o_site_repository";
-	public final static String OLAT_SITE_GROUP_ADMINISTRATION_CSS = "o_site_groupsmanagement";
+	//TODO:JK: remove
+	//public final static String OLAT_SITE_GROUP_ADMINISTRATION_CSS = "o_site_groupsmanagement";
 	public final static String OLAT_SITE_USER_MANAGEMENT_CSS = "o_site_useradmin";
 	public final static String OLAT_SITE_ADMINISTRATION_CSS = "o_site_admin";
 
@@ -125,7 +126,8 @@ public class FunctionalUtil {
 	private String olatSiteHomeCss;
 	private String olatSiteGroupsCss;
 	private String olatSiteLearningResourcesCss;
-	private String olatSiteGroupAdministrationCss;
+	//TODO:JK: remove
+	//private String olatSiteGroupAdministrationCss;
 	private String olatSiteUserManagementCss;
 	private String olatSiteAdministrationCss;
 	
@@ -184,7 +186,8 @@ public class FunctionalUtil {
 		olatSiteHomeCss = OLAT_SITE_HOME_CSS;
 		olatSiteGroupsCss = OLAT_SITE_GROUPS_CSS;
 		olatSiteLearningResourcesCss = OLAT_SITE_LEARNING_RESOURCES_CSS;
-		olatSiteGroupAdministrationCss = OLAT_SITE_GROUP_ADMINISTRATION_CSS;
+		//TODO:JK: remove
+		//olatSiteGroupAdministrationCss = OLAT_SITE_GROUP_ADMINISTRATION_CSS;
 		olatSiteUserManagementCss = OLAT_SITE_USER_MANAGEMENT_CSS;
 		olatSiteAdministrationCss = OLAT_SITE_ADMINISTRATION_CSS;
 		
@@ -1018,6 +1021,8 @@ public class FunctionalUtil {
 		this.olatSiteLearningResourcesCss = olatSiteLearningResourcesCss;
 	}
 
+	//TODO:JK: remove
+	/*
 	public String getOlatSiteGroupAdministrationCss() {
 		return olatSiteGroupAdministrationCss;
 	}
@@ -1026,7 +1031,8 @@ public class FunctionalUtil {
 			String olatSiteGroupAdministrationCss) {
 		this.olatSiteGroupAdministrationCss = olatSiteGroupAdministrationCss;
 	}
-
+	*/
+	
 	public String getOlatSiteUserManagementCss() {
 		return olatSiteUserManagementCss;
 	}

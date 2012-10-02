@@ -1281,8 +1281,6 @@ public class FunctionalCourseUtil {
 		if(!createRepositoryResource(browser, getTestChooseRepositoryFileCss(), title, description)){
 			return(false);
 		}
-		
-		functionalUtil.waitForPageToLoad(browser);
 				
 		return(true);
 	}

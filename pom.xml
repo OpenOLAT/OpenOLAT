@@ -577,13 +577,17 @@
 						<artifactId>maven-surefire-plugin</artifactId>
 						<version>2.12</version>
 						<configuration>
+							<forkMode>always</forkMode>
 							<systemProperties>
 								<arquillian.launch>tomcat-7-managed</arquillian.launch>
 							</systemProperties>
 							<testNGArtifactName>none:none</testNGArtifactName>
+							<!-- commented out because surefire plugin doesn't understand @Suite annotation of JUnit and openolat won't undeploy.
 							<includes>
-               					 <include>org/olat/test/Selenium2TestsJunit4.java</include>
-              				</includes>
+               					 <include>org/olat/test/Selenium2TestsJunit4.java</include>  
+              				</includes> 
+              				-->
+              				<test>**/Functional*Test.java</test>
 						</configuration>
 					</plugin>
 				</plugins>

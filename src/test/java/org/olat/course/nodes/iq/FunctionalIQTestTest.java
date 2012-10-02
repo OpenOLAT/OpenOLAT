@@ -90,20 +90,26 @@ public class FunctionalIQTestTest {
 	@Test
 	@RunAsClient
 	public void checkCreate() throws URISyntaxException, IOException{
+		/* import empty course via REST */
 		CourseVO course = functionalVOUtil.importEmptyCourse(deploymentUrl);
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
 		
-		/*  */
+		/* open the imported course and start editor */
 		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
 		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
 		
+		/* create course node and assign qti test to it */
 		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.IQ_TEST, IQ_TEST_SHORT_TITLE, IQ_TEST_LONG_TITLE, IQ_TEST_DESCRIPTION, 0));
 		Assert.assertTrue(functionalCourseUtil.createQTITest(browser, IQ_TEST_SHORT_TITLE, IQ_TEST_DESCRIPTION));
 		
+		/* publish entire course */
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
 		
+		/* close editor, open course and click nth course node */
+		Assert.assertTrue(functionalCourseUtil.closeActiveTab(browser));
+		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
 		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 	}
 }

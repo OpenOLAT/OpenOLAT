@@ -181,7 +181,7 @@ public class FunctionalSettingsTest {
 		FunctionalLocatorPairsFactory pairsFactory = new FunctionalLocatorPairsFactory(functionalUtil);
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteHomeCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteHomeCss()));
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteAdministrationCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteAdministrationCss()));
-		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()));
+		//pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()));
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteGroupsCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteGroupsCss()));
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteLearningResourcesCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteLearningResourcesCss()));
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteUserManagementCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteUserManagementCss()));
@@ -326,7 +326,7 @@ public class FunctionalSettingsTest {
 		FunctionalLocatorPairsFactory pairsFactory = new FunctionalLocatorPairsFactory(functionalUtil);
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteHomeCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteHomeCss()));
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteAdministrationCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteAdministrationCss()));
-		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()));
+		//pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteGroupAdministrationCss()));
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteGroupsCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteGroupsCss()));
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteLearningResourcesCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteLearningResourcesCss()));
 		pages.put(pairsFactory.getLocatorOfSite(functionalUtil.getOlatSiteUserManagementCss()), pairsFactory.getApprovalOfSite(functionalUtil.getOlatSiteUserManagementCss()));

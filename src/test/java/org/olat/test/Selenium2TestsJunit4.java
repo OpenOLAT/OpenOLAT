@@ -23,6 +23,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
+ * Description:<br/>
+ * May be deprecated, see pom.xml surefire configuration.
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com

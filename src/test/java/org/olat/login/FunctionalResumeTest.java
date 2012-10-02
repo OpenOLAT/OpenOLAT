@@ -39,6 +39,7 @@ import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
+import org.olat.util.FunctionalCourseUtil.AccessSettings;
 import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.FunctionalVOUtil;
 
@@ -90,9 +91,9 @@ public class FunctionalResumeTest {
 		/* create xpath to check if course is open */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//li[@class='b_nav_tab b_nav_active b_resource_CourseModule']")
+		selectorBuffer.append("xpath=//li[contains(@class, 'b_resource_CourseModule')]")
 		.append("//a[@title='")
-		.append(functionalVOUtil.getAllElementsCourseFilename().substring(0, functionalVOUtil.getAllElementsCourseFilename().indexOf('.')))
+		.append(functionalVOUtil.getAllElementsCourseDisplayname())
 		.append("']");
 		
 		String courseXPath = selectorBuffer.toString();
@@ -106,7 +107,7 @@ public class FunctionalResumeTest {
 		/* open course and check if it's open */
 		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
 		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
-
+		
 		/*
 		 * There's a need to click something in the course because
 		 * else it won't open up again after resume.
