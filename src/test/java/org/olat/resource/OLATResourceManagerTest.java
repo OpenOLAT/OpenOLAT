@@ -35,6 +35,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,6 +43,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.DBRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.OlatTestCase;
@@ -51,7 +53,6 @@ import org.olat.testutils.codepoints.client.CodepointClientFactory;
 import org.olat.testutils.codepoints.client.CodepointRef;
 import org.olat.testutils.codepoints.client.CommunicationException;
 import org.olat.testutils.codepoints.client.TemporaryPausedThread;
-import org.olat.testutils.codepoints.server.impl.JMSCodepointServer;
 
 /**
  * A <b>OLATResourceManagerTest </b> is used for SecurityResourceManager
@@ -61,6 +62,7 @@ import org.olat.testutils.codepoints.server.impl.JMSCodepointServer;
  *  
  */
 public class OLATResourceManagerTest extends OlatTestCase implements OLATResourceable {
+	private static final OLog log = Tracing.createLoggerFor(OLATResourceManagerTest.class);
 	private static final String CODEPOINT_SERVER_ID = "OLATResourceManagerTest";
 
 
@@ -150,19 +152,20 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.resource.OLATResourceManager.findOrPersistResourceable");
 			codepointRef.enableBreakpoint();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 			fail("Could not initialzed CodepointClient");
 		}
+		
+		final String resourceName = UUID.randomUUID().toString();
 		
 		// thread 1
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(new TestResourceable());
+					OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(new TestResourceable(resourceName));
 					assertNotNull(ores);
 					statusList.add(ores);
-					System.out.println("testConcurrentFindOrPersistResourceable thread1 finished");
+					log.info("testConcurrentFindOrPersistResourceable thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
@@ -175,10 +178,10 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 			public void run() {
 				try {
 					sleep(1000);
-					OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(new TestResourceable());
+					OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(new TestResourceable(resourceName));
 					assertNotNull(ores);
 					statusList.add(ores);
-					System.out.println("testConcurrentFindOrPersistResourceable thread2 finished");
+					log.info("testConcurrentFindOrPersistResourceable thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
@@ -192,18 +195,18 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 		try {
 			// to see all registered code-points: comment-in next 2 lines
 			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
-			// System.out.println("codepointList=" + codepointList);
-			System.out.println("testConcurrentFindOrPersistResourceable start waiting for breakpoint reached");
+			// log.info("codepointList=" + codepointList);
+			log.info("testConcurrentFindOrPersistResourceable start waiting for breakpoint reached");
 			TemporaryPausedThread[] threads = codepointRef.waitForBreakpointReached(1000);
 			assertTrue("Did not reach breakpoint", threads.length > 0);
-			System.out.println("threads[0].getCodepointRef()=" + threads[0].getCodepointRef());
+			log.info("threads[0].getCodepointRef()=" + threads[0].getCodepointRef());
 			codepointRef.disableBreakpoint(true);
-			System.out.println("testConcurrentFindOrPersistResourceable breakpoint reached => continue");
+			log.info("testConcurrentFindOrPersistResourceable breakpoint reached => continue");
 		} catch (BreakpointStateException e) {
-			e.printStackTrace();
+			log.error("", e);
 			fail("Codepoints: BreakpointStateException=" + e.getMessage());
 		} catch (CommunicationException e) {
-			e.printStackTrace();
+			log.error("", e);
 			fail("Codepoints: CommunicationException=" + e.getMessage());
 		}
 	
@@ -216,8 +219,7 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 		assertTrue("Threads did not finish in 5sec", loopCount<5);
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			System.out.println("exception: "+exception.getMessage());
-			exception.printStackTrace();
+			log.error("exception: ", exception);
 		}
 		if (exceptionHolder.size() > 0) {
 			assertTrue("It throws an exception in test => see sysout exception[0]=" + exceptionHolder.get(0).getMessage(), exceptionHolder.size() == 0);	
@@ -225,7 +227,7 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 		assertEquals("Missing created OresResource in statusList",2, statusList.size());
 		assertEquals("Created OresResource has not same key",statusList.get(0).getKey(), statusList.get(1).getKey());
 		codepointClient.close();
-		System.out.println("testConcurrentFindOrPersistResourceable finish successful");
+		log.info("testConcurrentFindOrPersistResourceable finish successful");
 		
 	}
 
@@ -237,8 +239,7 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 			// Setup for code-points
 			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
 		} catch (Exception e) {
-			Tracing.logError("Error while generating database tables or opening hibernate session",
-				e, this.getClass());
+			log.error("Error while generating database tables or opening hibernate session", e);
 		}
 	}
 
@@ -273,7 +274,7 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 		try {
 			Thread.sleep(milis);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 	}
 
@@ -320,16 +321,20 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 	///////////////////////////////
 	// Inner class TestResourceable
 	///////////////////////////////
-	class TestResourceable implements OLATResourceable {
+	private static class TestResourceable implements OLATResourceable {
+		private final String resName;
+		
+		public TestResourceable(String resourceName) {
+			this.resName = resourceName;
+		}
 
 		public Long getResourceableId() {
-	        return new Long(123123999);
-        }
+			return new Long(123123999);
+		}
 
 		public String getResourceableTypeName() {
-	        // TODO Auto-generated method stub
-	        return "TestResourceable";
-        }
+			return resName;
+		}
 		
 	}
 	
