@@ -547,8 +547,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 				SiteInstance site = ((StateSite)s).getSite();
 				for(SiteInstance savedSite:sites) {
 					if(site.getClass().equals(savedSite.getClass())) {
-						updateBusinessPath(ureq, savedSite);
 						activateSite(savedSite, ureq, null, entries);
+						//updateBusinessPath(ureq, savedSite);
 					}
 				}
 			}
@@ -1067,10 +1067,12 @@ public class BaseFullWebappController extends BasicController implements Generic
 			String start = businessPath.substring(0, index);
 			if(!point.getBusinessPath().startsWith(start)) {
 				//if a controller has not set its business path, don't pollute the mapping
-				siteToBusinessPath.put(site, new HistoryPointImpl(ureq.getUuid(), businessPath, null));
+				List<ContextEntry> entries = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getEntries();
+				siteToBusinessPath.put(site, new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
 				return;
 			}
 		}
+		
 		siteToBusinessPath.put(site, point);
 	}
 	
@@ -1084,7 +1086,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 			String start = businessPath.substring(0, index);
 			if(!point.getBusinessPath().startsWith(start)) {
 				//if a controller has not set its business path, don't pollute the mapping
-				dtabToBusinessPath.put(tab, new HistoryPointImpl(ureq.getUuid(), businessPath, null));
+				List<ContextEntry> entries = tab.getController().getWindowControlForDebug().getBusinessControl().getEntries();
+				dtabToBusinessPath.put(tab, new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
 				return;
 			}
 		}
