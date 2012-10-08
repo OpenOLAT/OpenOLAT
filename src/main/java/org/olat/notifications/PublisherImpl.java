@@ -39,6 +39,9 @@ import org.olat.core.util.notifications.Publisher;
  * @author Felix Jost
  */
 public class PublisherImpl extends PersistentObject implements Publisher {
+
+	private static final long serialVersionUID = -7684628889607509977L;
+	
 	private String type; // e.g. Forum
 	private String resName; // e.g. CourseModule
 	private Long resId; // e.g. 2343284327
@@ -181,5 +184,21 @@ public class PublisherImpl extends PersistentObject implements Publisher {
 	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
-}
 
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 54212 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof PublisherImpl) {
+			PublisherImpl p = (PublisherImpl)obj;
+			return getKey() != null && getKey().equals(p.getKey());
+		}
+		return false;
+	}
+}

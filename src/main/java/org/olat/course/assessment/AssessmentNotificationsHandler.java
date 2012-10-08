@@ -176,7 +176,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	}
 
 	/**
-	 * Signal the <code>NotificationsManagerImpl</code> about assessment news
+	 * Signal the <code>NotificationsManager</code> about assessment news
 	 * available for a course.<br>
 	 * <br>
 	 * <b>PRE CONDITIONS</b>
@@ -194,7 +194,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	}
 
 	/**
-	 * Signal the <code>NotificationsManagerImpl</code> about assessment news
+	 * Signal the <code>NotificationsManager</code> about assessment news
 	 * available on a course.<br>
 	 * <br>
 	 * <b>PRE CONDITIONS</b>
@@ -208,7 +208,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	private void markPublisherNews(Identity ident, ICourse course) {
 		SubscriptionContext subsContext = getAssessmentSubscriptionContext(course);
 		if (subsContext != null) {
-			NotificationsManager.getInstance().markPublisherNews(subsContext, ident);
+			NotificationsManager.getInstance().markPublisherNews(subsContext, ident, true);
 		}
 	}
 

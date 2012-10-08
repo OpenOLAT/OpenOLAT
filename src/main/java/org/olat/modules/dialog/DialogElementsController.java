@@ -187,11 +187,11 @@ public class DialogElementsController extends BasicController {
 		removeAsListenerAndDispose(tableCtr);
 		tableCtr = new TableController(tableConf, ureq, getWindowControl(), getTranslator());
 		DialogPropertyElements elements = dialogElmsMgr.findDialogElements(coursePropMgr, courseNode);
-		List list = new ArrayList();
+		List<DialogElement> list = new ArrayList<DialogElement>();
 		tableModel = new DialogElementsTableModel(getTranslator(), callback, courseNode.getModuleConfiguration());
 		if (elements != null) list = elements.getDialogPropertyElements();
-		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			DialogElement element = (DialogElement) iter.next();
+		for (Iterator<DialogElement> iter = list.iterator(); iter.hasNext();) {
+			DialogElement element = iter.next();
 			Integer msgCount = forumMgr.countMessagesByForumID(element.getForumKey());
 			element.setMessagesCount(msgCount);
 			element.setNewMessages(new Integer(msgCount.intValue()
@@ -287,7 +287,7 @@ public class DialogElementsController extends BasicController {
 
 					// inform subscription manager about new element
 					if (subsContext != null) {
-						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 					}
 					//everything when well so save the property
 					dialogElmsMgr.addDialogElement(coursePropMgr, courseNode, element);
@@ -330,7 +330,7 @@ public class DialogElementsController extends BasicController {
 
 					// inform subscription manager about new element
 					if (subsContext != null) {
-						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 					}
 					//everything when well so save the property
 					dialogElmsMgr.addDialogElement(coursePropMgr, courseNode, element);

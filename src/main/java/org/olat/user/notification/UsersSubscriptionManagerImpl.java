@@ -138,7 +138,7 @@ public class UsersSubscriptionManagerImpl extends UsersSubscriptionManager imple
 	 */
 	public void markPublisherNews() {
 		SubscriptionContext context = getNewUsersSubscriptionContext();
-		NotificationsManager.getInstance().markPublisherNews(context, null);
+		NotificationsManager.getInstance().markPublisherNews(context, null, true);
 	}
 
 	/**

@@ -41,6 +41,8 @@ import org.olat.core.util.notifications.Subscriber;
  * @author Felix Jost
  */
 public class SubscriberImpl extends PersistentObject implements Subscriber {
+	private static final long serialVersionUID = 6165097156137862263L;
+
 	// reference to the subscribed publisher
 	private Publisher publisher;
 	
@@ -125,6 +127,20 @@ public class SubscriberImpl extends PersistentObject implements Subscriber {
 	public void setLastModified(Date date) {
 		this.lastModified = date;
 	}
-
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 813184 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof SubscriberImpl) {
+			SubscriberImpl s = (SubscriberImpl)obj;
+			return getKey() != null && getKey().equals(s.getKey());
+		}
+		return false;
+	}
 }
-

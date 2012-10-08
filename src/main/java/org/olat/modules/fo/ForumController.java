@@ -589,7 +589,7 @@ public class ForumController extends BasicController implements GenericEventList
 			fm.updateMessage(currentMsg, changeLastModifiedDate, null);
 			// if notification is enabled -> notify the publisher about news
 			if (subsContext != null) {
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 			}
 
 			// do logging
@@ -611,7 +611,7 @@ public class ForumController extends BasicController implements GenericEventList
 		DBFactory.getInstance().intermediateCommit();
 		// if notification is enabled -> notify the publisher about news
 		if (subsContext != null) {
-			NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+			NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 		}
 		currentMsg = m;
 		markRead(m, ureq.getIdentity());
@@ -631,7 +631,7 @@ public class ForumController extends BasicController implements GenericEventList
 		fm.addTopMessage(ureq.getIdentity(), forum, m);
 		// if notification is enabled -> notify the publisher about news
 		if (subsContext != null) {
-			NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+			NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 		}
 		currentMsg = m;
 		markRead(m, ureq.getIdentity());

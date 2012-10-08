@@ -229,7 +229,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		if (secCallback != null) {
 			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
 			if (subsContext != null) {
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 			}
 		}
 		// Notify everybody

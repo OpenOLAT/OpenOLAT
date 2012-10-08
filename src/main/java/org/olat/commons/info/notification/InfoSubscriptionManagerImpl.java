@@ -120,6 +120,6 @@ public class InfoSubscriptionManagerImpl extends InfoSubscriptionManager {
 	@Override
 	public void markPublisherNews(OLATResourceable resource, String subPath) {
 		SubscriptionContext context = getInfoSubscriptionContext(resource, subPath);
-		notificationsManager.markPublisherNews(context, null);
+		notificationsManager.markPublisherNews(context, null, true);
 	}
 }

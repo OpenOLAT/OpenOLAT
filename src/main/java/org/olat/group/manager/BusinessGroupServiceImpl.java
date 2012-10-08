@@ -95,7 +95,6 @@ import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.IMConfigSync;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.syncservice.SyncUserListTask;
-import org.olat.notifications.NotificationsManagerImpl;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
@@ -136,6 +135,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -762,7 +763,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	
 			// delete the publisher attached to this group (e.g. the forum and folder
 			// publisher)
-			NotificationsManagerImpl.getInstance().deletePublishersOf(group);
+			notificationsManager.deletePublishersOf(group);
 	
 			// delete potential jabber group roster
 			if (InstantMessagingModule.isEnabled()) {

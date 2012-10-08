@@ -208,7 +208,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 				runDENTable.setTableDataModel(runTableData);
 				fireEvent(ureq, Event.DONE_EVENT);
 				// inform subscription context about changes
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 				// </OPAL-122>
 			}
 		} else if(authorOptions == source) {

@@ -583,7 +583,7 @@ public class VFSDirContext extends BaseDirContext {
 		VFSSecurityCallback callback = folder.getLocalSecurityCallback();
 		if(callback != null && callback.getSubscriptionContext() != null) {
 			SubscriptionContext subContext = callback.getSubscriptionContext();
-			NotificationsManager.getInstance().markPublisherNews(subContext, null);
+			NotificationsManager.getInstance().markPublisherNews(subContext, null, true);
 		}
 		
 		if(childLeaf instanceof MetaTagged) {

@@ -32,7 +32,7 @@ import java.util.Locale;
 
 /**
  * Description:<br>
- * NotificationsHandler is stateless and represents a starting point for all subscription activities for a given type, see NotificationsManagerImpl.java
+ * NotificationsHandler is stateless and represents a starting point for all subscription activities for a given type, see NotificationsManager.java
  * 
  * <P>
  * Initial Date:  25.10.2004 <br>

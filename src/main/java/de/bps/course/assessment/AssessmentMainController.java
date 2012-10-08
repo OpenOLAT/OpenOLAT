@@ -685,26 +685,6 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 			columLayoutCtr.setCol2(toolC.getInitialComponent());
 		}
 	}
-	
-
-	/**
-	 * Notify subscribers when test are passed or attemps count change
-	 * EXPERIMENTAL!!!!!
-	 */
-	/*private void doNotifyAssessmentEvent(AssessmentChangedEvent ace) {
-		String assessmentChangeType = ace.getCommand();
-		// notify only comment has been changed
-		if (assessmentChangeType == AssessmentChangedEvent.TYPE_PASSED_CHANGED
-			|| assessmentChangeType == AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED)
-		{
-			// if notification is enabled -> notify the publisher about news
-			if (subsContext != null)
-			{
-				NotificationsManagerImpl.getInstance().markPublisherNews(subsContext, ace.getIdentity());
-			}
-		}
-	}*/
-
 
 	/**
 	 * Updates the local user course environment cache if the given event is for an identity

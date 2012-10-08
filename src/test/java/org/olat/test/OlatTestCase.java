@@ -129,6 +129,12 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Exception e) {
 			e.printStackTrace();
+
+			try {
+				DBFactory.getInstance().rollbackAndCloseSession();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 	

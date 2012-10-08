@@ -247,7 +247,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	}
 
 	public void event(Event event) {
-		// check if our tablemodel -is- affected (see NotificationsManagerImpl where the event is fired),
+		// check if our tablemodel -is- affected (see NotificationsManager where the event is fired),
 		// (if we are subscriber of the publisher which data has changed)
 		if (event instanceof PersistsEvent) {
 			PersistsEvent pe = (PersistsEvent) event;

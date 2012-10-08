@@ -692,11 +692,7 @@ public class MailManager extends BasicManager {
 			}
 
 			SubscriptionContext subContext = getSubscriptionContext();
-			Publisher publisher = NotificationsManager.getInstance().getPublisher(subContext);
-			if(publisher != null && publisher.getKey() != null) {
-				publisher.setLatestNewsDate(new Date());
-				notificationsManager.updatePublisher(publisher);
-			}
+			notificationsManager.markPublisherNews(subContext, null, false);
 			return mail;
 		} catch (AddressException e) {
 			logError("Cannot send e-mail: ", e);

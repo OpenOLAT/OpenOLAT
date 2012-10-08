@@ -181,7 +181,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 				if (secCallback != null) {
 					SubscriptionContext subsContext = secCallback.getSubscriptionContext();
 					if (subsContext != null) {
-						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 					}
 				}
 				fireEvent(ureq, new FolderEvent(move ? FolderEvent.MOVE_EVENT : FolderEvent.COPY_EVENT, fileSelection.renderAsHtml()));

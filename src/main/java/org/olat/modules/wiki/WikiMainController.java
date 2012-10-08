@@ -174,8 +174,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 		this.ores = ores;
 		this.securityCallback = securityCallback;
 		this.subsContext = securityCallback.getSubscriptionContext();
-		
-		if (securityCallback == null) throw new AssertException("WikiSecurityCallback is null! You must provide an security callback!", null);
 		this.ident = ureq.getIdentity();
 		WikiPage page = null;
 		Wiki wiki = getWiki();
@@ -847,7 +845,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 						if (page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) wikiMenuComp.setWikiContent(page.getContent());
 						WikiManager.getInstance().saveWikiPage(ores, page, true, wiki);
 						// inform subscription context about changes
-						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 
 						updatePageContext(ureq, page);
 			}

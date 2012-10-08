@@ -315,7 +315,7 @@ public class DropboxController extends BasicController {
 					subsContext = DropboxFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv, node);
 					// inform subscription manager about new element
 					if (subsContext != null) {
-						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 					}													
 					// configuration is already translated, don't use showInfo(i18nKey)! 
 					//FIXME:FG:6.2: fix problem in info message, not here

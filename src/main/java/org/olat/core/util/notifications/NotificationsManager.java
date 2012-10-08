@@ -146,11 +146,6 @@ public abstract class NotificationsManager extends BasicManager {
 	public abstract List<Identity> getSubscriberIdentities(Publisher publisher);
 
 	/**
-	 * @param publisher
-	 */
-	public abstract void updatePublisher(Publisher publisher);
-
-	/**
 	 * sets the latest visited date of the subscription to 'now' .assumes the
 	 * identity is already subscribed to the publisher
 	 * 
@@ -166,7 +161,7 @@ public abstract class NotificationsManager extends BasicManager {
 	 * @param subscriptionContext
 	 * @param ignoreNewsFor
 	 */
-	public abstract void markPublisherNews(SubscriptionContext subscriptionContext, Identity ignoreNewsFor);
+	public abstract void markPublisherNews(SubscriptionContext subscriptionContext, Identity ignoreNewsFor, boolean sendEvent);
 
 	public abstract void registerAsListener(GenericEventListener gel, Identity ident);
 
@@ -226,7 +221,7 @@ public abstract class NotificationsManager extends BasicManager {
 	 * @param subscriptionContext
 	 * @return true when the subscriptionContext refers to the publisher p
 	 */
-	public abstract boolean matches(Publisher p, SubscriptionContext subscriptionContext);
+	//public abstract boolean matches(Publisher p, SubscriptionContext subscriptionContext);
 
 	/**
 	 * @param subscriber

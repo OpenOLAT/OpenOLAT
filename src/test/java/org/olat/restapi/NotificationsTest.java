@@ -140,7 +140,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 			if(!notificationManager.isSubscribed(userAndForumSubscriberId, forumSubContext)) {
 				notificationManager.subscribe(userAndForumSubscriberId, forumSubContext, forumPdata);
 			}
-			notificationManager.markPublisherNews(forumSubContext, userSubscriberId);
+			notificationManager.markPublisherNews(forumSubContext, userSubscriberId, true);
 
 			//generate one notification
 			String randomLogin = UUID.randomUUID().toString().replace("-", "");
@@ -285,7 +285,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 				new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), businessPath);
 		notificationManager.subscribe(id, forumSubContext, forumPdata);
 		Message message = createMessage(id, forum);
-		notificationManager.markPublisherNews(forumSubContext, null);
+		notificationManager.markPublisherNews(forumSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		//get the notification
@@ -328,7 +328,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		String filename = addFile(folder);
 		
 		//mark as published
-		notificationManager.markPublisherNews(folderSubContext, null);
+		notificationManager.markPublisherNews(folderSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		//get the notification
@@ -376,7 +376,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 				new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), businessPath);
 		notificationManager.subscribe(id, forumSubContext, forumPdata);
 		Message message = createMessage(id, forum);
-		notificationManager.markPublisherNews(forumSubContext, null);
+		notificationManager.markPublisherNews(forumSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		//get the notification
@@ -425,7 +425,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		PublisherData folderPdata = new PublisherData("FolderModule", relPath, businessPath);
 		notificationManager.subscribe(id, folderSubContext, folderPdata);
 		String filename = addFile(folder);
-		notificationManager.markPublisherNews(folderSubContext, null);
+		notificationManager.markPublisherNews(folderSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 
 		//get the notification

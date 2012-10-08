@@ -523,13 +523,13 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		if (weeklyCalendar.isDirty()) {
 			if (subsContext != null) {
 				// group or course calendar -> prepared subscription context is the right one
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 			} else if(caller.equals(CALLER_HOME) && affectedCal != null) {
 				// one can add/edit/remove dates of group and course calendars from the home calendar view -> choose right subscription context
 				for( KalendarRenderWrapper calWrapper : calendarWrappers) {
 					if(affectedCal == calWrapper.getKalendar()) {
 						SubscriptionContext tmpSubsContext = calendarNotificationsManager.getSubscriptionContext(calWrapper);
-						NotificationsManager.getInstance().markPublisherNews(tmpSubsContext, ureq.getIdentity());
+						NotificationsManager.getInstance().markPublisherNews(tmpSubsContext, ureq.getIdentity(), true);
 					}
 				}
 			}
