@@ -51,12 +51,10 @@ import org.olat.core.gui.control.WindowControl;
 class EntryForm extends FormBasicController {
 	
 	// NLS support
-	
 	private static final String NLS_ENTRY_LEAF = "entry.leaf";
 	private static final String NLS_ENTRY_CATEGORY = "entry.category";
 	private static final String NLS_ENTRY_DESCRIPTION = "entry.description";
 	private static final String NLS_FORM_LEGENDE_MANDATORY = "form.legende.mandatory";
-	private static final String NLS_INPUT_TOOLONG = "input.toolong";
 
 	// private stuff
 	
@@ -94,6 +92,10 @@ class EntryForm extends FormBasicController {
 		tName.setValue(ce.getName());
 		taDescription.setValue(ce.getDescription());
 	}
+	
+	public void setElementCssClass(String cssClass) {
+		flc.setElementCssClass(cssClass);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -113,6 +115,7 @@ class EntryForm extends FormBasicController {
 		taDescription = uifactory.addTextAreaElement("description", NLS_ENTRY_DESCRIPTION, 255, 5, 60, true, "", formLayout);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
+		buttonLayout.setElementCssClass("o_sel_catalog_entry_form_buttons");
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());

@@ -34,7 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
@@ -49,7 +49,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
@@ -61,8 +60,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
@@ -326,30 +323,17 @@ public class CatalogController extends BasicController implements Activateable2 
 						+ ", title " + cur.getName());
 				// launch entry if launchable, otherwise offer it as download / launch
 				// it as non-html in browser
-				String displayName = cur.getName();
-				RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repoEntry);
-				OLATResource ores = repoEntry.getOlatResource();
-				if (ores == null) throw new AssertException("repoEntry had no olatresource, repoKey = " + repoEntry.getKey());
 				if (repoEntry.getCanLaunch()) {
-					// we can create a controller and launch
-					// it in OLAT, e.g. if it is a
-					// content-packacking or a course
-
-					//was brasato:: DTabs dts = getWindowControl().getDTabs();
-					DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-					DTab dt = dts.getDTab(ores);
-					if (dt == null) {
-						// does not yet exist -> create and add
-						dt = dts.createDTab(ores, repoEntry, displayName);
-						if (dt == null) return;
-						Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
-						dt.setController(launchController);
-						dts.addDTab(ureq, dt);
-					}
-					dts.activate(ureq, dt, null); // null: start with main entry point of controller
+					String businessPath = "[RepositoryEntry:" + repoEntry.getKey() + "]";
+					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 				} else if (repoEntry.getCanDownload()) {
+					OLATResource ores = repoEntry.getOlatResource();
+					if (ores == null) {
+						throw new AssertException("repoEntry had no olatresource, repoKey = " + repoEntry.getKey());
+					}
 					// else not launchable in olat, but downloadable -> send the document
 					// directly to browser but "downloadable" (pdf, word, excel)
+					RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repoEntry);
 					MediaResource mr = handler.getAsMediaResource(ores, false);
 					RepositoryManager.getInstance().incrementDownloadCounter(repoEntry);
 					ureq.getDispatchResult().setResultingMediaResource(mr);
@@ -454,6 +438,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				}
 				removeAsListenerAndDispose(addEntryForm);
 				addEntryForm = new EntryForm(ureq, getWindowControl(), false);
+				addEntryForm.setElementCssClass("o_sel_catalog_add_category_popup");
 				listenTo(addEntryForm);
 				
 				// open form in dialog
@@ -495,6 +480,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				}
 				removeAsListenerAndDispose(editEntryForm);
 				editEntryForm = new EntryForm(ureq, getWindowControl(), false);
+				editEntryForm.setElementCssClass("o_sel_catalog_edit_category_popup");
 				listenTo(editEntryForm);
 				
 				editEntryForm.setFormFields(currentCatalogEntry);// fill the
@@ -593,6 +579,7 @@ public class CatalogController extends BasicController implements Activateable2 
 			else if (event.getCommand().equals(ACTION_ADD_STRUCTURE)) {
 				removeAsListenerAndDispose(addStructureForm);
 				addStructureForm = new EntryForm(ureq, getWindowControl(), false);
+				addStructureForm.setElementCssClass("o_sel_catalog_add_root_category_popup");
 				listenTo(addStructureForm);
 				
 				removeAsListenerAndDispose(cmc);
