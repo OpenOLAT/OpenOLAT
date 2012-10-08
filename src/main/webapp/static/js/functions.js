@@ -907,7 +907,7 @@ function showInfoBox(title, format){
 	// Factory method to create message box
 	function createBox(t, s){
 	        return ['<div class="b_msg-div msg">',
-	                '<div class="b_msg_info_content b_msg_info_winicon"><h3>', t, '</h3>', s, '<br/><br/>',
+	                '<div class="b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>', t, '</h3>', s, '<br/><br/>',
 	                '</div>'
 	                ].join('');
 	}
@@ -946,6 +946,7 @@ function showMessageBox(type, title, message, buttonCallback){
 		var msg = Ext.MessageBox.show({
 			title: title,
 			msg: message,
+			cls: 'o_sel_'+type+'_message',
 			icon: 'b_msg_'+type+'_winicon',
 			minWidth: 300,
 			buttons: Ext.MessageBox.OK,
