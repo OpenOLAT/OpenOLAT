@@ -169,20 +169,48 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 		right:0px;
 		top:0px;
 		padding:4px 15px 0px 0px;
+		line-height: $top_nav_line_height;
+		min-height: $top_nav_line_height;
 		ul {margin:0;}
-		#o_topnav_search input {
-			line-height: 1.3em;
-			margin: 0;
-			width: 10em;
+
+		/* fix horizontal alignment by explicitly setting line-height everywhere */		
+	    li, div, span {
+			line-height: $top_nav_line_height;
+	    }
+	    /* fix horizontal alignment by removing top and bottom padding on icons */
+	    .b_with_small_icon_right {
+	  		padding: 0 20px 0 0;
+	  	}
+	  	.b_with_small_icon_left {
+			padding: 0 0 0 20px;
+	  	}
+	  	.b_small_icon {
+	  		height: $top_nav_line_height;
+	  	}
+	    #o_topnav_langchooser {
+	    	select {
+	    		font-size: 90%;
+	    	}
+	    }
+		#o_topnav_search {
+			input {
+	    		font-size: 90%;
+				margin: 0;
+				width: 10em;
+			}
+			a.o_fulltext_search_button {
+		  		height: $top_nav_line_height;
+				background-position: 50% 50%;
+			}  
 		}
 		#o_topnav_printview a {
-			background: url(../openolat/images/printer.png) no-repeat top right;
-			padding: 2px 20px 2px 0;
+			background: url(../openolat/images/printer.png) no-repeat right 50%;
+			padding: 0 20px 0 0;
 			margin: 0;
 		}
 		#o_topnav_logout a {
-			background: url('../openolat/images/control/control-power.png') no-repeat top right;
-			padding: 2px 20px 2px 0;
+			background: url('../openolat/images/control/control-power.png') no-repeat right 50%;
+			padding: 0 20px 0  0;
 			margin: 0;
 			font-weight: bold;
 		}
