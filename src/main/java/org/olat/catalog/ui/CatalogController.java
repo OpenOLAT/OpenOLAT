@@ -881,20 +881,26 @@ public class CatalogController extends BasicController implements Activateable2 
 			 */
 			catalogToolC.addHeader(getTranslator().translate("tools.edit.header"));			
 			
-			catalogToolC.addLink(ACTION_ADD_BOOKMARK, translate(NLS_TOOLS_ADD_BOOKMARK),TOOL_BOOKMARK,null);			// new bookmark link
+			catalogToolC.addLink(ACTION_ADD_BOOKMARK, translate(NLS_TOOLS_ADD_BOOKMARK), TOOL_BOOKMARK, null, "o_sel_catalog_add_bookmark", false);			// new bookmark link
 			catalogToolC.setEnabled(TOOL_BOOKMARK, canBookmark);
 			
 			if (canAdministrateCategory || canAddLinks) {
-				if (canAdministrateCategory) catalogToolC.addLink(ACTION_EDIT_CTLGCATEGORY, translate(NLS_TOOLS_EDIT_CATALOG_CATEGORY));
-				if (canAdministrateCategory) catalogToolC.addLink(ACTION_EDIT_CTLGCATOWNER,
-						translate(NLS_TOOLS_EDIT_CATALOG_CATEGORY_OWNERGROUP));
-				if (canAddLinks) catalogToolC.addLink(ACTION_NEW_CTGREQUEST, translate(NLS_TOOLS_NEW_CATALOG_CATEGORYREQUEST));
-
-				if (canAdministrateCategory && currentCatalogEntryLevel > 0)
-				// delete root? very dangerous, disabled!
-				catalogToolC.addLink(ACTION_DELETE_CTLGCATEGORY, translate(NLS_TOOLS_DELETE_CATALOG_ENTRY));
-				if (canAdministrateCategory && currentCatalogEntryLevel > 0)
-					catalogToolC.addLink(ACTION_MOVE_ENTRY, translate(NLS_TOOLS_MOVE_CATALOG_ENTRY));
+				if (canAdministrateCategory) {
+					catalogToolC.addLink(ACTION_EDIT_CTLGCATEGORY, translate(NLS_TOOLS_EDIT_CATALOG_CATEGORY), null, null, "o_sel_catalog_edit_category", false);
+				}
+				if (canAdministrateCategory) {
+					catalogToolC.addLink(ACTION_EDIT_CTLGCATOWNER, translate(NLS_TOOLS_EDIT_CATALOG_CATEGORY_OWNERGROUP), null, null, "o_sel_catalog_category_owner", false);
+				}
+				if (canAddLinks) {
+					catalogToolC.addLink(ACTION_NEW_CTGREQUEST, translate(NLS_TOOLS_NEW_CATALOG_CATEGORYREQUEST), null, null, "o_sel_catalog_contact_owner", false);
+				}
+				if (canAdministrateCategory && currentCatalogEntryLevel > 0) {
+					// delete root? very dangerous, disabled!
+					catalogToolC.addLink(ACTION_DELETE_CTLGCATEGORY, translate(NLS_TOOLS_DELETE_CATALOG_ENTRY), null, null, "o_sel_catalog_delete_category", false);
+				}
+				if (canAdministrateCategory && currentCatalogEntryLevel > 0) {
+					catalogToolC.addLink(ACTION_MOVE_ENTRY, translate(NLS_TOOLS_MOVE_CATALOG_ENTRY), null, null, "o_sel_catalog_move_category", false);
+				}
 			}
 
 			/*
@@ -902,10 +908,15 @@ public class CatalogController extends BasicController implements Activateable2 
 			 */
 			if(isOLATAdmin || isLocalTreeAdmin || isAuthor){
 					if (canAddSubCategories || canAddLinks) catalogToolC.addHeader(translate(NLS_TOOLS_ADD_HEADER));
-					if (canAddSubCategories) catalogToolC.addLink(ACTION_ADD_CTLGCATEGORY, translate(NLS_TOOLS_ADD_CATALOG_CATEGORY));
-					if (canAddLinks) catalogToolC.addLink(ACTION_ADD_CTLGLINK, translate(NLS_TOOLS_ADD_CATALOG_LINK));
-					if (currentCatalogEntryLevel == 0 && isOLATAdmin && cm.getChildrenOf(currentCatalogEntry).isEmpty())
-						catalogToolC.addLink(ACTION_ADD_STRUCTURE, translate(NLS_TOOLS_PASTESTRUCTURE));
+					if (canAddSubCategories) {
+						catalogToolC.addLink(ACTION_ADD_CTLGCATEGORY, translate(NLS_TOOLS_ADD_CATALOG_CATEGORY), null, null, "o_sel_catalog_add_category", false);
+					}
+					if (canAddLinks) {
+						catalogToolC.addLink(ACTION_ADD_CTLGLINK, translate(NLS_TOOLS_ADD_CATALOG_LINK), null, null, "o_sel_catalog_add_link_to_resource", false);
+					}
+					if (currentCatalogEntryLevel == 0 && isOLATAdmin && cm.getChildrenOf(currentCatalogEntry).isEmpty()) {
+						catalogToolC.addLink(ACTION_ADD_STRUCTURE, translate(NLS_TOOLS_PASTESTRUCTURE), null, null, "o_sel_catalog_add_root_category", false);
+					}
 			}	
 		}
 		return catalogToolC;
