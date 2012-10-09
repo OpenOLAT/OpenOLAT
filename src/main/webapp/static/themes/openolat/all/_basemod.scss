@@ -276,8 +276,10 @@ but had to include here, don't want to change all layout.scss **/
 			display: inline; 
 		} 
 		/* make powerd-by buttons a bit less colorful to not distract user from learning */
-		@include o-opacity(60);
-		&:hover { @include o-opacity(100); }
+		img {	
+			@include o-opacity(60);
+			&:hover { @include o-opacity(100); }
+		}
 		
 	}
 	/*  social links (FB, twitter, google) from SocialModule.java */
