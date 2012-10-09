@@ -56,6 +56,9 @@ $headerfont : Century Gothic, Apple Gothic, sans-serif !default;
 /* the overall default font-size */ 
 $defaultfontsize : 75% !default;
 
+/* min and max content width */
+$page_width_max : 1324px !default;
+$page_width_min : 740px !default;
 
 /* enable business / kmu mode */
 $enablebiz : false !default;
