@@ -68,6 +68,7 @@ public class FunctionalRepositorySiteUtil {
 	public final static String REPOSITORY_SITE_RESOURCE_FOLDER_CSS = "o_sel_repo_sharefolder";
 	public final static String REPOSITORY_SITE_GLOSSARY_CSS = "o_sel_repo_glossary";
 	
+	public final static String CATALOG_NAVIGATION_CSS = "o_catalog_nav";
 	public final static String CATALOG_ADD_SUBCATEGORY = "o_sel_catalog_add_category";
 	public final static String CATALOG_ADD_LEARNING_RESOURCE = "o_sel_catalog_add_link_to_resource";
 	public final static String CATALOG_ADD_SUBCATEGORY_POPUP_CSS = "o_sel_catalog_add_category_popup";
@@ -274,6 +275,7 @@ public class FunctionalRepositorySiteUtil {
 	private String repositorySiteResourceFolderCss;
 	private String repositorySiteGlossaryCss;
 
+	private String catalogNavigationCss;
 	private String catalogAddSubcategoryCss;
 	private String catalogAddLearningResourceCss;
 	private String catalogAddSubcategoryPopupCss;
@@ -347,6 +349,7 @@ public class FunctionalRepositorySiteUtil {
 		setRepositorySiteResourceFolderCss(REPOSITORY_SITE_RESOURCE_FOLDER_CSS);
 		setRepositorySiteGlossaryCss(REPOSITORY_SITE_GLOSSARY_CSS);
 
+		setCatalogNavigationCss(CATALOG_NAVIGATION_CSS);
 		setCatalogAddSubcategoryCss(CATALOG_ADD_SUBCATEGORY);
 		setCatalogAddLearningResourceCss(CATALOG_ADD_LEARNING_RESOURCE);
 		setCatalogAddSubcategoryPopupCss(CATALOG_ADD_SUBCATEGORY_POPUP_CSS);
@@ -393,6 +396,26 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * @param name
+	 * @return
+	 * 
+	 * creates a single selector.
+	 */
+	private String createCatalogSelector(String name){
+		StringBuffer selector = new StringBuffer();
+		
+		selector.append("xpath=//div[contains(@class, '")
+		.append(getCatalogSubcategoryListCss())
+		.append("')]//a//span[contains(@class, '")
+		.append(getCatalogSubcategoryIconCss())
+		.append("') and text()='")
+		.append(name)
+		.append("']/..");
+		
+		return(selector.toString());
+	}
+	
+	/**
 	 * @param path
 	 * @return
 	 * 
@@ -408,20 +431,10 @@ public class FunctionalRepositorySiteUtil {
 		ArrayList<String> selectors = new ArrayList<String>();
 		
 		while(categoryMatcher.find()){
-			StringBuffer selector = new StringBuffer();
-			
-			selector.append("xpath=//div[contains(@class, '")
-			.append(getCatalogSubcategoryListCss())
-			.append("')]//a//span[contains(@class, '")
-			.append(getCatalogSubcategoryIconCss())
-			.append("') and text()='")
-			.append(categoryMatcher.group(1))
-			.append("']/..");
-			
-			selectors.add(selector.toString());
+			selectors.add(createCatalogSelector(categoryMatcher.group(1)));
 		}
 		
-		return((String[]) selectors.toArray());
+		return(selectors.toArray(new String[selectors.size()]));
 	}
 	
 	/**
@@ -442,18 +455,38 @@ public class FunctionalRepositorySiteUtil {
 			return(false);
 		}
 		
+		/* click on catalog root */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getCatalogNavigationCss())
+		.append("')]//a");
+		
+		if(browser.isElementPresent(selectorBuffer.toString())){
+			browser.click(selectorBuffer.toString());
+		}
+		
 		/* create selectors to open desired path within catalog and open it */
 		String[] selectors = createCatalogSelectors(path);
 		
-		for(String currentSelector: selectors){
-			functionalUtil.waitForPageToLoadElement(browser, currentSelector);
-			browser.click(currentSelector);
+		if(selectors != null){
+			for(String currentSelector: selectors){
+				functionalUtil.waitForPageToLoadElement(browser, currentSelector);
+				browser.click(currentSelector);
+			}
+			
+			functionalUtil.waitForPageToUnloadElement(browser, selectors[selectors.length - 1]);
 		}
 		
-		functionalUtil.waitForPageToUnloadElement(browser, selectors[selectors.length - 1]);
+		/* check if catalog already exists */
+		String selector = createCatalogSelector(name);
+		
+		if(browser.isElementPresent(selector)){
+			return(true);
+		}
 		
 		/* click create */
-		StringBuffer selectorBuffer = new StringBuffer();
+		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getCatalogAddSubcategoryCss())
@@ -1258,6 +1291,14 @@ public class FunctionalRepositorySiteUtil {
 
 	public void setRepositorySiteGlossaryCss(String repositorySiteGlossaryCss) {
 		this.repositorySiteGlossaryCss = repositorySiteGlossaryCss;
+	}
+
+	public String getCatalogNavigationCss() {
+		return catalogNavigationCss;
+	}
+
+	public void setCatalogNavigationCss(String catalogNavigationCss) {
+		this.catalogNavigationCss = catalogNavigationCss;
 	}
 
 	public String getCatalogAddSubcategoryCss() {

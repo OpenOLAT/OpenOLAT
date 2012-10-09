@@ -54,6 +54,8 @@ public class FunctionalCourseUtil {
 	public final static String ADD_TO_CATALOG_YES_VALUE = "yes";
 	public final static String ADD_TO_CATALOG_NO_VALUE = "no";
 	public final static String CATALOG_SUBCATEGORY_ICON_CSS = "o_catalog_cat_icon";
+	public final static String ADD_TO_CATALOG_CSS = null; //TODO:JK: add css class
+	public final static String CATALOG_CSS = null; //TODO:JK: add css class
 	
 	public final static String COURSE_EDITOR_INSERT_CONTENT_CSS = "b_toolbox_content";
 	public final static String CREATE_COURSE_NODE_TARGET_POSITION_ITEM_CSS = "b_selectiontree_item";
@@ -291,6 +293,8 @@ public class FunctionalCourseUtil {
 	private String courseEditorPublishWizardAccessId;
 	private String courseEditorPublishWizardCatalogId;
 	private String catalogSubcategoryIconCss;
+	private String addToCatalogCss;
+	private String catalogCss;
 	
 	private String courseEditorOverviewRadioGroupCss;
 	private String courseEditorInsertContentCss;
@@ -356,6 +360,8 @@ public class FunctionalCourseUtil {
 		setCourseEditorPublishWizardAccessId(COURSE_EDITOR_PUBLISH_WIZARD_ACCESS_ID);
 		setCourseEditorPublishWizardCatalogId(COURSE_EDITOR_PUBLISH_WIZARD_CATALOG_ID);
 		setCatalogSubcategoryIconCss(CATALOG_SUBCATEGORY_ICON_CSS);
+		setAddToCatalogCss(ADD_TO_CATALOG_CSS);
+		setCatalogCss(CATALOG_CSS);
 		
 		setCourseEditorOverviewRadioGroupCss(COURSE_EDITOR_OVERVIEW_RADIO_GROUP_CSS);
 		setCourseEditorInsertContentCss(COURSE_EDITOR_INSERT_CONTENT_CSS);
@@ -709,7 +715,7 @@ public class FunctionalCourseUtil {
 			selectors.add(selector.toString());
 		}
 		
-		return((String[]) selectors.toArray());
+		return(selectors.toArray(new String[selectors.size()]));
 	}
 	
 	/**
@@ -758,12 +764,36 @@ public class FunctionalCourseUtil {
 		if(catalog != null){
 			functionalUtil.selectOption(browser, getCourseEditorPublishWizardCatalogId(), ADD_TO_CATALOG_YES_VALUE);
 			
+			/* click add to catalog */
+			selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=//a[contains(@class, '")
+			.append(getAddToCatalogCss())
+			.append("')]");
+			
+			browser.click(selectorBuffer.toString());
+			
 			String[] catalogSelectors = createCatalogSelectors(catalog);
 			
 			for(String catalogSelector: catalogSelectors){
 				functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
 				browser.click(catalogSelector);
 			}
+			
+			/* click choose */
+			selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=//div[contains(@class, '")
+			.append(getCatalogCss())
+			.append("')]//a[contains(@class, '")
+			.append(functionalUtil.getButtonDirtyCss())
+			.append("')]");
+			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			
+			browser.click(selectorBuffer.toString());
+			
+			functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		}else{
 			functionalUtil.selectOption(browser, getCourseEditorPublishWizardCatalogId(), ADD_TO_CATALOG_NO_VALUE);
 		}
@@ -1359,7 +1389,7 @@ public class FunctionalCourseUtil {
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(FunctionalRepositorySiteUtil.SearchField.ID.getEntryCss())
+		.append(getRepositoryPopupCss())
 		.append("')]//tr[contains(@class, '")
 		.append(functionalUtil.getTableFirstChildCss())
 		.append("') and contains(@class, '")
@@ -1370,6 +1400,8 @@ public class FunctionalCourseUtil {
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}
@@ -1653,6 +1685,22 @@ public class FunctionalCourseUtil {
 	public void setCourseEditorPublishWizardCatalogId(
 			String courseEditorPublishWizardCatalogId) {
 		this.courseEditorPublishWizardCatalogId = courseEditorPublishWizardCatalogId;
+	}
+
+	public String getAddToCatalogCss() {
+		return addToCatalogCss;
+	}
+
+	public void setAddToCatalogCss(String addToCatalogCss) {
+		this.addToCatalogCss = addToCatalogCss;
+	}
+
+	public String getCatalogCss() {
+		return catalogCss;
+	}
+
+	public void setCatalogCss(String catalogCss) {
+		this.catalogCss = catalogCss;
 	}
 
 	public String getCatalogSubcategoryIconCss() {

@@ -26,16 +26,19 @@ import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.util.FunctionalCourseUtil;
+import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
@@ -47,6 +50,7 @@ import com.thoughtworks.selenium.DefaultSelenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
+@RunWith(Arquillian.class)
 public class FunctionalCatalogTest {
 	public final static int COURSES = 2;
 	
@@ -124,13 +128,15 @@ public class FunctionalCatalogTest {
 		/*
 		 * create or configure content
 		 */
+		functionalUtil.login(browser);
+		
 		/* create categories */
 		for(int i = 0; i < SUBCATEGORY_PATHS.length; i++){
 			String currentPath = SUBCATEGORY_PATHS[i];
 			String currentName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
 			String currentDescription = SUBCATEGORY_DESCRIPTIONS[i];
 			
-			Assert.assertTrue(functionalRepositorySiteUtil.createCatalogSubcategory(browser, currentPath, currentName, currentDescription));
+			Assert.assertTrue(functionalRepositorySiteUtil.createCatalogSubcategory(browser, currentPath.substring(0, currentPath.lastIndexOf('/')), currentName, currentDescription));
 		}
 		
 		/* edit course and publish thereby adding it to catalog  */
@@ -144,7 +150,7 @@ public class FunctionalCatalogTest {
 			String currentPath = SUBCATEGORY_PATHS[i];
 			String currentName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
 			
-			Assert.assertTrue(functionalCourseUtil.createWiki(browser, currentName + " wiki", "colaborative " + currentName + " wiki"));
+			Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.WIKI, "wiki", currentName + " wiki", "colaborative " + currentName + " wiki", 0));
 			Assert.assertTrue(functionalCourseUtil.chooseWiki(browser, wikiVO[i].getKey()));
 			
 			/* publish course */
