@@ -166,6 +166,7 @@ requests and therefore the session in never invalidated -->
 	<bean id="searchIndexCronGenerator" class="org.olat.search.service.indexer.IndexCronGenerator">
 		<property name="tomcatId" value="${tomcat.id}" />
 		<property name="enabled" value="${search.indexing.cronjob}" />
+		<property name="cronExpression" value="${search.indexing.cronjob.expression}" />
 	</bean>
 	
 	<bean id="org.olat.search.job.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">

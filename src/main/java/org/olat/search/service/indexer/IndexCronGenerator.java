@@ -19,6 +19,9 @@
  */
 package org.olat.search.service.indexer;
 
+import org.olat.core.logging.LogDelegator;
+import org.olat.core.util.StringHelper;
+import org.quartz.CronExpression;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
@@ -30,10 +33,11 @@ import org.springframework.beans.factory.FactoryBean;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 //fxdiff FXOLAT-221: start indexer at different times for each instance
-public class IndexCronGenerator implements FactoryBean<String> {
+public class IndexCronGenerator extends LogDelegator implements FactoryBean<String> {
 	
 	private int tomcatId;
 	private String enabled;
+	private String cronExpression;
 	
 	/**
 	 * [used by Spring]
@@ -51,11 +55,33 @@ public class IndexCronGenerator implements FactoryBean<String> {
 		this.enabled = enabled;
 	}
 	
+	/**
+	 * [used by Spring]
+	 * @param cronExpression
+	 */
+	public void setCronExpression(String cronExpression) {
+		if (CronExpression.isValidExpression(cronExpression)) {
+			this.cronExpression = cronExpression;			
+		} else {
+			if (StringHelper.containsNonWhitespace(cronExpression) && isCronEnabled()) {
+				// was not empty, so someone tried to set someting here, let user know that it was garbage
+				logWarn("Configured cron expression is not valid::"
+						+ cronExpression
+						+ " check your search.indexing.cronjob.expression property",
+						null);
+			}
+			this.cronExpression = null;
+		}
+	}
+	
 	public boolean isCronEnabled() {
 		return "enabled".equals(enabled);
 	}
 	
 	public String getCron() {
+		if (cronExpression != null) {
+			return cronExpression;
+		}
 		int shiftHours = tomcatId % 4;
 		String hours;
 		switch(shiftHours) {
