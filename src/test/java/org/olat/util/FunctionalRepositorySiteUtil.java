@@ -20,6 +20,7 @@
 package org.olat.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,6 +73,8 @@ public class FunctionalRepositorySiteUtil {
 	public final static String CATALOG_ADD_SUBCATEGORY_POPUP_CSS = "o_sel_catalog_add_category_popup";
 	public final static String CATALOG_SUBCATEGORY_ICON_CSS = "o_catalog_sub_icon";
 	public final static String CATALOG_SUBCATEGORY_LIST_CSS = "o_catalog_itemlist";
+	
+	public final static String COURSE_MODULE_ICON_CSS = "o_CourseModule_icon";
 	
 	public enum Column {
 		AC,
@@ -277,6 +280,8 @@ public class FunctionalRepositorySiteUtil {
 	private String catalogSubcategoryListCss;
 	private String catalogSubcategoryIconCss;
 	
+	private String courseModuleIconCss;
+	
 	private String importCourseCss;
 	private String importCPLearningContentCss;
 	private String importScormCss;
@@ -348,6 +353,8 @@ public class FunctionalRepositorySiteUtil {
 		setCatalogSubcategoryListCss(CATALOG_SUBCATEGORY_LIST_CSS);
 		setCatalogSubcategoryIconCss(CATALOG_SUBCATEGORY_ICON_CSS);
 		
+		setCourseModuleIconCss(COURSE_MODULE_ICON_CSS);
+		
 		setImportCourseCss(IMPORT_COURSE_CSS);
 		setImportCPLearningContentCss(IMPORT_CP_LEARNING_CONTENT_CSS);
 		setImportScormCss(IMPORT_SCORM_CSS);
@@ -398,23 +405,23 @@ public class FunctionalRepositorySiteUtil {
 		}
 		
 		Matcher categoryMatcher = categoryPattern.matcher(path);
-		String[] selectors = new String[categoryMatcher.groupCount()];
+		ArrayList<String> selectors = new ArrayList<String>();
 		
-		for(int i = 0; categoryMatcher.find(); i++){
+		while(categoryMatcher.find()){
 			StringBuffer selector = new StringBuffer();
 			
 			selector.append("xpath=//div[contains(@class, '")
 			.append(getCatalogSubcategoryListCss())
 			.append("')]//a//span[contains(@class, '")
 			.append(getCatalogSubcategoryIconCss())
-			.append("' and text()='")
+			.append("') and text()='")
 			.append(categoryMatcher.group(1))
-			.append("')]/..");
+			.append("']/..");
 			
-			selectors[i] = selector.toString();
+			selectors.add(selector.toString());
 		}
 		
-		return(selectors);
+		return((String[]) selectors.toArray());
 	}
 	
 	/**
@@ -1293,6 +1300,14 @@ public class FunctionalRepositorySiteUtil {
 
 	public void setCatalogSubcategoryIconCss(String catalogSubcategoryIconCss) {
 		this.catalogSubcategoryIconCss = catalogSubcategoryIconCss;
+	}
+
+	public String getCourseModuleIconCss() {
+		return courseModuleIconCss;
+	}
+
+	public void setCourseModuleIconCss(String courseModuleIconCss) {
+		this.courseModuleIconCss = courseModuleIconCss;
 	}
 
 	public String getImportCourseCss() {

@@ -21,6 +21,9 @@ package org.olat.util;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -34,6 +37,8 @@ import com.thoughtworks.selenium.Selenium;
  */
 public class FunctionalCourseUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalCourseUtil.class);
+	
+	private final static Pattern categoryPattern = Pattern.compile("/([^/]+)");
 	
 	public final static String COURSE_RUN_CSS = "o_course_run";
 	public final static String COURSE_OPEN_EDITOR_CSS = "o_sel_course_open_editor";
@@ -81,8 +86,14 @@ public class FunctionalCourseUtil {
 	public final static String FEED_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_feed_choose_repofile";
 	public final static String MAP_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_map_choose_repofile";
 	
+	public final static String REPOSITORY_POPUP_CSS = "o_sel_search_referenceable_entries";
+	
 	public final static String REPOSITORY_POPUP_CREATE_RESOURCE_CSS = "o_sel_repo_popup_create_resource";
 	public final static String REPOSITORY_POPUP_IMPORT_RESOURCE_CSS = "o_sel_repo_popup_import_resource";
+	
+	public final static String REPOSITORY_POPUP_ALL_RESOURCES_CSS = "o_sel_repo_popup_all_resources";
+	public final static String REPOSITORY_POPUP_MY_RESOURCES_CSS = "o_sel_repo_popup_my_resources";
+	public final static String REPOSITORY_POPUP_SEARCH_RESOURCES_CSS = "o_sel_repo_popup_search_resources";
 	
 	public final static String MAP_EDIT_CSS = "o_sel_edit_map";
 	
@@ -312,7 +323,14 @@ public class FunctionalCourseUtil {
 	private String feedChooseRepositoryFileCss;
 	private String mapChooseRepositoryFileCss;
 
+	private String repositoryPopupCss;
+	
 	private String repositoryPopupCreateResourceCss;
+	private String repositoryPopupImportResourceCss;
+	
+	private String repositoryPopupAllResourcesCss;
+	private String repositoryPopupMyResourcesCss;
+	private String repositoryPopupSearchResourcesCss;
 	
 	private String mapEditCss;
 	
@@ -370,7 +388,14 @@ public class FunctionalCourseUtil {
 		setFeedChooseRepositoryFileCss(FEED_CHOOSE_REPOSITORY_FILE_CSS);
 		setMapChooseRepositoryFileCss(MAP_CHOOSE_REPOSITORY_FILE_CSS);
 		
+		setRepositoryPopupCss(REPOSITORY_POPUP_CSS);
+		
 		setRepositoryPopupCreateResourceCss(REPOSITORY_POPUP_CREATE_RESOURCE_CSS);
+		setRepositoryPopupImportResourceCss(REPOSITORY_POPUP_IMPORT_RESOURCE_CSS);
+		
+		setRepositoryPopupAllResourcesCss(REPOSITORY_POPUP_ALL_RESOURCES_CSS);
+		setRepositoryPopupMyResourcesCss(REPOSITORY_POPUP_MY_RESOURCES_CSS);
+		setRepositoryPopupSearchResourcesCss(REPOSITORY_POPUP_SEARCH_RESOURCES_CSS);
 		
 		setMapEditCss(MAP_EDIT_CSS);
 		
@@ -403,11 +428,35 @@ public class FunctionalCourseUtil {
 	public boolean open(Selenium browser, int nth){
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//ul[contains(@class, 'b_tree_l1')]//li[")
+		selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l1')]//li)[")
 		.append(nth + 1)
 		.append("]//a");
 		
 		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param alias
+	 * @param nth
+	 * @return true on success
+	 * 
+	 * Opens the nth course element of course node type specified by alias in the current course.
+	 */
+	public boolean open(Selenium browser, CourseNodeAlias alias, int nth){
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l1')]//li]//a[contains(@class, '")
+		.append(alias.getIconCss())
+		.append("')])[")
+		.append(nth + 1)
+		.append("]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -632,9 +681,35 @@ public class FunctionalCourseUtil {
 	 * Creates xpath selectors to select catalog within the tree.
 	 */
 	public String[] createCatalogSelectors(String path){
-		//TODO:JK: implement me
+		if(path == null ||
+				!path.startsWith("/")){
+			return(null);
+		}
 		
-		return(null);
+		Matcher categoryMatcher = categoryPattern.matcher(path);
+		ArrayList<String> selectors = new ArrayList<String>();
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//li//a[contains(@class, '")
+		.append(functionalUtil.getTreeNodeAnchorCss())
+		.append("')]//a");
+		
+		selectors.add(selectorBuffer.toString());
+		
+		while(categoryMatcher.find()){
+			StringBuffer selector = new StringBuffer();
+			
+			selector.append("xpath=//li//a[contains(@class, '")
+			.append(functionalUtil.getTreeNodeAnchorCss())
+			.append("')]//a//span[text()='")
+			.append(categoryMatcher.group(1))
+			.append("')]/..");
+			
+			selectors.add(selector.toString());
+		}
+		
+		return((String[]) selectors.toArray());
 	}
 	
 	/**
@@ -1236,6 +1311,69 @@ public class FunctionalCourseUtil {
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
+	private boolean chooseRepositoryResource(Selenium browser, String chooseRepositoryCss, long key){
+		/* click on "choose, create or import file" button */
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(chooseRepositoryCss)
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
+		
+		/* click search link */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getRepositoryPopupSearchResourcesCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* type key and search */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(FunctionalRepositorySiteUtil.SearchField.ID.getEntryCss())
+		.append("')]//input[@type='text']");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), Long.toString(key));
+		
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getRepositoryPopupCss())
+		.append("')]//a[contains(@class, '")
+		.append(functionalUtil.getButtonCss())
+		.append("')])[last()]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* choose resource */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(FunctionalRepositorySiteUtil.SearchField.ID.getEntryCss())
+		.append("')]//tr[contains(@class, '")
+		.append(functionalUtil.getTableFirstChildCss())
+		.append("') and contains(@class, '")
+		.append(functionalUtil.getTableLastChildCss())
+		.append("')]//td[contains(@class, '")
+		.append(functionalUtil.getTableLastChildCss())
+		.append("')]//a");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
 	/**
 	 * @param browser
 	 * @param chooseRepositoryCss
@@ -1331,6 +1469,23 @@ public class FunctionalCourseUtil {
 		return(true);
 	}
 	
+	/**
+	 * @param browser
+	 * @param wikiId
+	 * @return
+	 * 
+	 * Choose an existing wiki.
+	 */
+	public boolean chooseWiki(Selenium browser, long wikiId){
+		if(!openCourseEditorWikiTab(browser, CourseEditorWikiTab.LEARNING_CONTENT))
+			return(false);
+		
+		if(!chooseRepositoryResource(browser, getWikiChooseRepositoryFileCss(), wikiId)){
+			return(false);
+		}
+		
+		return(true);
+	}
 	/**
 	 * @param browser
 	 * @param title
@@ -1696,12 +1851,56 @@ public class FunctionalCourseUtil {
 		this.mapChooseRepositoryFileCss = mapChooseRepositoryFileCss;
 	}
 
+	public String getRepositoryPopupCss() {
+		return repositoryPopupCss;
+	}
+
+	public void setRepositoryPopupCss(String repositoryPopupCss) {
+		this.repositoryPopupCss = repositoryPopupCss;
+	}
+
 	public String getRepositoryPopupCreateResourceCss() {
 		return repositoryPopupCreateResourceCss;
 	}
 
 	public void setRepositoryPopupCreateResourceCss(String repositoryPopupCreateResourceCss) {
 		this.repositoryPopupCreateResourceCss = repositoryPopupCreateResourceCss;
+	}
+
+	public String getRepositoryPopupImportResourceCss() {
+		return repositoryPopupImportResourceCss;
+	}
+
+	public void setRepositoryPopupImportResourceCss(
+			String repositoryPopupImportResourceCss) {
+		this.repositoryPopupImportResourceCss = repositoryPopupImportResourceCss;
+	}
+
+	public String getRepositoryPopupAllResourcesCss() {
+		return repositoryPopupAllResourcesCss;
+	}
+
+	public void setRepositoryPopupAllResourcesCss(
+			String repositoryPopupAllResourcesCss) {
+		this.repositoryPopupAllResourcesCss = repositoryPopupAllResourcesCss;
+	}
+
+	public String getRepositoryPopupMyResourcesCss() {
+		return repositoryPopupMyResourcesCss;
+	}
+
+	public void setRepositoryPopupMyResourcesCss(
+			String repositoryPopupMyResourcesCss) {
+		this.repositoryPopupMyResourcesCss = repositoryPopupMyResourcesCss;
+	}
+
+	public String getRepositoryPopupSearchResourcesCss() {
+		return repositoryPopupSearchResourcesCss;
+	}
+
+	public void setRepositoryPopupSearchResourcesCss(
+			String repositoryPopupSearchResourcesCss) {
+		this.repositoryPopupSearchResourcesCss = repositoryPopupSearchResourcesCss;
 	}
 
 	public String getMapEditCss() {

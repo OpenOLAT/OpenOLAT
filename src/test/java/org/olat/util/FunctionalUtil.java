@@ -104,7 +104,12 @@ public class FunctionalUtil {
 	
 	public final static String MCE_CONTENT_BODY_CSS = "mceContentBody";
 	
+	public final static String BUTTON_CSS = "b_button";
 	public final static String BUTTON_DIRTY_CSS = "b_button_dirty";
+	public final static String TABLE_FIRST_CHILD_CSS = "b_first_child";
+	public final static String TABLE_LAST_CHILD_CSS = "b_last_child";
+	public final static String TREE_NODE_ANCHOR_CSS = "x-tree-node-anchor";
+	public final static String TREE_NODE_CSS = "x-tree-node";
 	
 	public final static String NOTIFICATION_BOX_CSS = "o_sel_info_message";
 	
@@ -145,7 +150,12 @@ public class FunctionalUtil {
 	
 	private String mceContentBodyCss;
 	
+	private String buttonCss;
 	private String buttonDirtyCss;
+	private String tableFirstChildCss;
+	private String tableLastChildCss;
+	private String treeNodeAnchorCss;
+	private String treeNodeCss;
 	
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	private FunctionalGroupsSiteUtil functionalGroupsSiteUtil;
@@ -205,7 +215,12 @@ public class FunctionalUtil {
 		
 		mceContentBodyCss = MCE_CONTENT_BODY_CSS;
 		
+		buttonCss = BUTTON_CSS;
 		buttonDirtyCss = BUTTON_DIRTY_CSS;
+		tableFirstChildCss = TABLE_FIRST_CHILD_CSS;
+		tableLastChildCss = TABLE_LAST_CHILD_CSS;
+		treeNodeAnchorCss = TREE_NODE_ANCHOR_CSS;
+		treeNodeCss = TREE_NODE_CSS;
 		
 		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(this);
 		functionalGroupsSiteUtil = new FunctionalGroupsSiteUtil(this);
@@ -1178,11 +1193,51 @@ public class FunctionalUtil {
 		this.functionalAdministrationSiteUtil = functionalAdministrationSiteUtil;
 	}
 
+	public String getButtonCss() {
+		return buttonCss;
+	}
+
+	public void setButtonCss(String buttonCss) {
+		this.buttonCss = buttonCss;
+	}
+
 	public String getButtonDirtyCss() {
 		return buttonDirtyCss;
 	}
 
 	public void setButtonDirtyCss(String buttonDirtyCss) {
 		this.buttonDirtyCss = buttonDirtyCss;
+	}
+
+	public String getTableFirstChildCss() {
+		return tableFirstChildCss;
+	}
+
+	public void setTableFirstChildCss(String tableFirstChildCss) {
+		this.tableFirstChildCss = tableFirstChildCss;
+	}
+
+	public String getTableLastChildCss() {
+		return tableLastChildCss;
+	}
+
+	public void setTableLastChildCss(String tableLastChildCss) {
+		this.tableLastChildCss = tableLastChildCss;
+	}
+
+	public String getTreeNodeAnchorCss() {
+		return treeNodeAnchorCss;
+	}
+
+	public void setTreeNodeAnchorCss(String treeNodeAnchorCss) {
+		this.treeNodeAnchorCss = treeNodeAnchorCss;
+	}
+
+	public String getTreeNodeCss() {
+		return treeNodeCss;
+	}
+
+	public void setTreeNodeCss(String treeNodeCss) {
+		this.treeNodeCss = treeNodeCss;
 	}
 }

@@ -28,6 +28,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
+import org.olat.util.FunctionalRepositorySiteUtil.RepositorySiteAction;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 
@@ -46,18 +48,24 @@ import com.thoughtworks.selenium.DefaultSelenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalCatalogTest {
+	public final static int COURSES = 2;
 	
 	public final static String[] SUBCATEGORY_PATHS = {
 		"/programming",
 		"/programming/c",
 		"/programming/java"
-		};
+	};
 	public final static String[] SUBCATEGORY_DESCRIPTIONS = {
 		"here you may find courses and resources related to programming",
 		"about the C programming language",
 		"about the Java programming language"
-		};
+	};
 	
+	public final static String[] SUBCATECORY_PATHS_INCLUDING_RESOURCE = {
+		SUBCATEGORY_PATHS[1],
+		SUBCATEGORY_PATHS[2]
+	};
+
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();
@@ -100,28 +108,87 @@ public class FunctionalCatalogTest {
 		 * prerequisites for test created via REST
 		 */
 		/* import wiki */
-		RepositoryEntryVO[] wikiVO = new RepositoryEntryVO[2]; 
+		RepositoryEntryVO[] wikiVO = new RepositoryEntryVO[COURSES]; 
 		
-		wikiVO[0] = functionalVOUtil.importWiki(deploymentUrl);
-		wikiVO[1] = functionalVOUtil.importWiki(deploymentUrl);
+		for(int i = 0; i < COURSES; i++){
+			wikiVO[i] = functionalVOUtil.importWiki(deploymentUrl);
+		}
 		
 		/* import course */
-		CourseVO[] courseVO = new CourseVO[2];
+		CourseVO[] courseVO = new CourseVO[COURSES];
 		
-		courseVO[0] = functionalVOUtil.importEmptyCourse(deploymentUrl);
-		courseVO[1] = functionalVOUtil.importEmptyCourse(deploymentUrl);
-		
+		for(int i = 0; i < COURSES; i++){
+			courseVO[i] = functionalVOUtil.importEmptyCourse(deploymentUrl);
+		}
+
 		/*
 		 * create or configure content
 		 */
+		/* create categories */
+		for(int i = 0; i < SUBCATEGORY_PATHS.length; i++){
+			String currentPath = SUBCATEGORY_PATHS[i];
+			String currentName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+			String currentDescription = SUBCATEGORY_DESCRIPTIONS[i];
+			
+			Assert.assertTrue(functionalRepositorySiteUtil.createCatalogSubcategory(browser, currentPath, currentName, currentDescription));
+		}
 		
-		//TODO:JK: implement me
+		/* edit course and publish thereby adding it to catalog  */
+		for(int i = 0; i < COURSES; i++){
+			/* open course in edit mode */	
+			Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, courseVO[i].getRepoEntryKey()));
+			
+			Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
+			
+			/* choose wiki */
+			String currentPath = SUBCATEGORY_PATHS[i];
+			String currentName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+			
+			Assert.assertTrue(functionalCourseUtil.createWiki(browser, currentName + " wiki", "colaborative " + currentName + " wiki"));
+			Assert.assertTrue(functionalCourseUtil.chooseWiki(browser, wikiVO[i].getKey()));
+			
+			/* publish course */
+			Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, SUBCATEGORY_PATHS[i]));
+			
+			/* close course */
+			Assert.assertTrue(functionalCourseUtil.closeActiveTab(browser));
+		}
 		
 		/*
 		 * verify content
 		 */
+		/* open catalog */
+		Assert.assertTrue(functionalUtil.openSite(browser, FunctionalUtil.OlatSite.LEARNING_RESOURCES));
 		
-		//TODO:JK: implement me
+		Assert.assertTrue(functionalRepositorySiteUtil.openActionByMenuTree(browser, RepositorySiteAction.CATALOG));
+		
+		/* verify resources */
+		for(int i = 0; i < COURSES; i++){
+			String[] selectors = functionalRepositorySiteUtil.createCatalogSelectors(SUBCATECORY_PATHS_INCLUDING_RESOURCE[i]);
+			
+			for(String currentSelector: selectors){
+				/* click first course and retrieve business path */
+				StringBuffer selectorBuffer = new StringBuffer();
+				
+				selectorBuffer.append("xpath=//a[contains(@class, '")
+				.append(functionalRepositorySiteUtil.getCourseModuleIconCss())
+				.append("')]");
+				
+				browser.click(selectorBuffer.toString());
+				
+				functionalUtil.waitForPageToLoad(browser);
+				
+				String businessPath0 = functionalUtil.currentBusinessPath(browser);
+				
+				/* open course and retrieve business path */
+				functionalRepositorySiteUtil.openCourse(browser, courseVO[i].getRepoEntryKey());
+				
+				String businessPath1 = functionalUtil.currentBusinessPath(browser);
+				
+				/* assert collected business paths to be equal */
+				Assert.assertEquals(businessPath1, businessPath0);
+			}
+		}
 	}
 	
 }
