@@ -269,10 +269,13 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private void initLinks() {
 	  	// link to search all referencable entries
 		searchEntriesLink = LinkFactory.createCustomLink("searchEntriesLink", CMD_SEARCH_ENTRIES, "referencableSearch." + CMD_SEARCH_ENTRIES, Link.LINK, mainVC, this);
+		searchEntriesLink.setElementCssClass("o_sel_repo_popup_search_resources");
 		// link to show all referencable entries
 		allEntriesLink = LinkFactory.createCustomLink("allEntriesLink", CMD_ALL_ENTRIES, "referencableSearch." + CMD_ALL_ENTRIES, Link.LINK, mainVC, this);
+		allEntriesLink.setElementCssClass("o_sel_repo_popup_all_resources");
 		// link to show all my entries
 		myEntriesLink = LinkFactory.createCustomLink("myEntriesLink", CMD_MY_ENTRIES, "referencableSearch." + CMD_MY_ENTRIES, Link.LINK, mainVC, this);
+		myEntriesLink.setElementCssClass("o_sel_repo_popup_my_resources");
 	}
 
 	/**
