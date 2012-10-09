@@ -77,8 +77,8 @@ public class FunctionalBackTest {
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
-		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalHomeSiteUtil = functionalUtil.getFunctionalHomeSiteUtil();
+		functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
 		
 		/* create test user with REST */

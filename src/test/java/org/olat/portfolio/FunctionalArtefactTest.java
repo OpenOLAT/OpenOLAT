@@ -150,9 +150,9 @@ public class FunctionalArtefactTest {
 		if(!initialized){
 			functionalUtil = new FunctionalUtil();
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-			functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
+			functionalHomeSiteUtil = functionalUtil.getFunctionalHomeSiteUtil();
 
-			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
 			functionalEportfolioUtil = new FunctionalEPortfolioUtil(functionalUtil, functionalHomeSiteUtil);
 

@@ -22,6 +22,9 @@ package org.olat.util;
 import java.net.MalformedURLException;
 import java.net.URI;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+
 import com.thoughtworks.selenium.Selenium;
 
 /**
@@ -30,6 +33,8 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalCourseUtil {
+	private final static OLog log = Tracing.createLoggerFor(FunctionalCourseUtil.class);
+	
 	public final static String COURSE_RUN_CSS = "o_course_run";
 	public final static String COURSE_OPEN_EDITOR_CSS = "o_sel_course_open_editor";
 	
@@ -43,6 +48,7 @@ public class FunctionalCourseUtil {
 	public final static String COURSE_EDITOR_PUBLISH_WIZARD_CATALOG_ID = "o_fiocatalogBox_SELBOX";
 	public final static String ADD_TO_CATALOG_YES_VALUE = "yes";
 	public final static String ADD_TO_CATALOG_NO_VALUE = "no";
+	public final static String CATALOG_SUBCATEGORY_ICON_CSS = "o_catalog_cat_icon";
 	
 	public final static String COURSE_EDITOR_INSERT_CONTENT_CSS = "b_toolbox_content";
 	public final static String CREATE_COURSE_NODE_TARGET_POSITION_ITEM_CSS = "b_selectiontree_item";
@@ -273,6 +279,7 @@ public class FunctionalCourseUtil {
 	private String courseEditorPublishWizardSelectAllCss;
 	private String courseEditorPublishWizardAccessId;
 	private String courseEditorPublishWizardCatalogId;
+	private String catalogSubcategoryIconCss;
 	
 	private String courseEditorOverviewRadioGroupCss;
 	private String courseEditorInsertContentCss;
@@ -330,6 +337,7 @@ public class FunctionalCourseUtil {
 		setCourseEditorPublishWizardSelectAllCss(COURSE_EDITOR_PUBLISH_WIZARD_SELECT_ALL_CSS);
 		setCourseEditorPublishWizardAccessId(COURSE_EDITOR_PUBLISH_WIZARD_ACCESS_ID);
 		setCourseEditorPublishWizardCatalogId(COURSE_EDITOR_PUBLISH_WIZARD_CATALOG_ID);
+		setCatalogSubcategoryIconCss(CATALOG_SUBCATEGORY_ICON_CSS);
 		
 		setCourseEditorOverviewRadioGroupCss(COURSE_EDITOR_OVERVIEW_RADIO_GROUP_CSS);
 		setCourseEditorInsertContentCss(COURSE_EDITOR_INSERT_CONTENT_CSS);
@@ -623,7 +631,7 @@ public class FunctionalCourseUtil {
 	 * 
 	 * Creates xpath selectors to select catalog within the tree.
 	 */
-	private String[] createCatalogSelectors(String path){
+	public String[] createCatalogSelectors(String path){
 		//TODO:JK: implement me
 		
 		return(null);
@@ -1490,6 +1498,14 @@ public class FunctionalCourseUtil {
 	public void setCourseEditorPublishWizardCatalogId(
 			String courseEditorPublishWizardCatalogId) {
 		this.courseEditorPublishWizardCatalogId = courseEditorPublishWizardCatalogId;
+	}
+
+	public String getCatalogSubcategoryIconCss() {
+		return catalogSubcategoryIconCss;
+	}
+
+	public void setCatalogSubcategoryIconCss(String catalogSubcategoryIconCss) {
+		this.catalogSubcategoryIconCss = catalogSubcategoryIconCss;
 	}
 
 	public String getCourseEditorOverviewRadioGroupCss() {

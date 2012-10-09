@@ -44,13 +44,16 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.junit.Assert;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 
 public class FunctionalVOUtil {
-
+	private final static OLog log = Tracing.createLoggerFor(FunctionalVOUtil.class);
+	
 	public final static String WAIT_LIMIT = "15000";
 	
 	public final static String ALL_ELEMENTS_COURSE_DISPLAYNAME = "All Elements Course Without External Content";

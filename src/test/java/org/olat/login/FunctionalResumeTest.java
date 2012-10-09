@@ -77,8 +77,8 @@ public class FunctionalResumeTest {
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
-		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+		functionalHomeSiteUtil = functionalUtil.getFunctionalHomeSiteUtil();
+		functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
 	}
 	
@@ -90,7 +90,7 @@ public class FunctionalResumeTest {
 		
 		/* create xpath to check if course is open */
 		StringBuffer selectorBuffer = new StringBuffer();
-		
+
 		selectorBuffer.append("xpath=//li[contains(@class, 'b_resource_CourseModule')]")
 		.append("//a[@title='")
 		.append(functionalVOUtil.getAllElementsCourseDisplayname())

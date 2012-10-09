@@ -79,7 +79,7 @@ public class FunctionalBlogTest {
 			functionalUtil = new FunctionalUtil();
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 
-			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
 
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());

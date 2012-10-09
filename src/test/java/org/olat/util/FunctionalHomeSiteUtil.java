@@ -547,6 +547,7 @@ public class FunctionalHomeSiteUtil {
 			return(false);
 		}
 
+		//FIXME:JK: this is a known bottleneck, but can't be set to -1 until notifications will be clicked away!
 		if(!checkCurrentAction || !checkCurrentAction(browser, action, Long.parseLong(functionalUtil.getWaitLimit()))){
 			StringBuffer selectorBuffer = new StringBuffer();
 

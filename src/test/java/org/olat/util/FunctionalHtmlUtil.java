@@ -19,11 +19,16 @@
  */
 package org.olat.util;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+
 /**
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalHtmlUtil {
+	private final static OLog log = Tracing.createLoggerFor(FunctionalHtmlUtil.class);
+	
 	/**
 	 * @param html
 	 * @param insertNewlines

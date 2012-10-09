@@ -21,7 +21,11 @@ package org.olat.util;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalUtil.OlatSite;
 
 import com.thoughtworks.selenium.Selenium;
@@ -32,6 +36,9 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalRepositorySiteUtil {	
+	private final static OLog log = Tracing.createLoggerFor(FunctionalRepositorySiteUtil.class);
+	
+	private final static Pattern categoryPattern = Pattern.compile("/([^/]+)");
 	
 	public final static String REPOSITORY_POPUP_CSS = "o_sel_edit_repositoryentry_popup";
 	public final static String REPOSITORY_SAVE_DETAILS_CSS = "o_sel_repo_save_details";
@@ -59,6 +66,12 @@ public class FunctionalRepositorySiteUtil {
 	public final static String REPOSITORY_SITE_QUESTIONAIRES_CSS = "o_sel_repo_survey";
 	public final static String REPOSITORY_SITE_RESOURCE_FOLDER_CSS = "o_sel_repo_sharefolder";
 	public final static String REPOSITORY_SITE_GLOSSARY_CSS = "o_sel_repo_glossary";
+	
+	public final static String CATALOG_ADD_SUBCATEGORY = "o_sel_catalog_add_category";
+	public final static String CATALOG_ADD_LEARNING_RESOURCE = "o_sel_catalog_add_link_to_resource";
+	public final static String CATALOG_ADD_SUBCATEGORY_POPUP_CSS = "o_sel_catalog_add_category_popup";
+	public final static String CATALOG_SUBCATEGORY_ICON_CSS = "o_catalog_sub_icon";
+	public final static String CATALOG_SUBCATEGORY_LIST_CSS = "o_catalog_itemlist";
 	
 	public enum Column {
 		AC,
@@ -258,6 +271,12 @@ public class FunctionalRepositorySiteUtil {
 	private String repositorySiteResourceFolderCss;
 	private String repositorySiteGlossaryCss;
 
+	private String catalogAddSubcategoryCss;
+	private String catalogAddLearningResourceCss;
+	private String catalogAddSubcategoryPopupCss;
+	private String catalogSubcategoryListCss;
+	private String catalogSubcategoryIconCss;
+	
 	private String importCourseCss;
 	private String importCPLearningContentCss;
 	private String importScormCss;
@@ -323,6 +342,12 @@ public class FunctionalRepositorySiteUtil {
 		setRepositorySiteResourceFolderCss(REPOSITORY_SITE_RESOURCE_FOLDER_CSS);
 		setRepositorySiteGlossaryCss(REPOSITORY_SITE_GLOSSARY_CSS);
 
+		setCatalogAddSubcategoryCss(CATALOG_ADD_SUBCATEGORY);
+		setCatalogAddLearningResourceCss(CATALOG_ADD_LEARNING_RESOURCE);
+		setCatalogAddSubcategoryPopupCss(CATALOG_ADD_SUBCATEGORY_POPUP_CSS);
+		setCatalogSubcategoryListCss(CATALOG_SUBCATEGORY_LIST_CSS);
+		setCatalogSubcategoryIconCss(CATALOG_SUBCATEGORY_ICON_CSS);
+		
 		setImportCourseCss(IMPORT_COURSE_CSS);
 		setImportCPLearningContentCss(IMPORT_CP_LEARNING_CONTENT_CSS);
 		setImportScormCss(IMPORT_SCORM_CSS);
@@ -360,6 +385,117 @@ public class FunctionalRepositorySiteUtil {
 		setFunctionalUtil(functionalUtil);
 	}
 	
+	/**
+	 * @param path
+	 * @return
+	 * 
+	 * Creates xpath selectors to select catalog within the tree.
+	 */
+	public String[] createCatalogSelectors(String path){
+		if(path == null ||
+				!path.startsWith("/")){
+			return(null);
+		}
+		
+		Matcher categoryMatcher = categoryPattern.matcher(path);
+		String[] selectors = new String[categoryMatcher.groupCount()];
+		
+		for(int i = 0; categoryMatcher.find(); i++){
+			StringBuffer selector = new StringBuffer();
+			
+			selector.append("xpath=//div[contains(@class, '")
+			.append(getCatalogSubcategoryListCss())
+			.append("')]//a//span[contains(@class, '")
+			.append(getCatalogSubcategoryIconCss())
+			.append("' and text()='")
+			.append(categoryMatcher.group(1))
+			.append("')]/..");
+			
+			selectors[i] = selector.toString();
+		}
+		
+		return(selectors);
+	}
+	
+	/**
+	 * @param browser
+	 * @param path
+	 * @param name
+	 * @param description
+	 * @return
+	 * 
+	 * Adds a subcategory to catalog on the specified path.
+	 */
+	public boolean createCatalogSubcategory(Selenium browser, String path, String name, String description){
+		if(!functionalUtil.openSite(browser, FunctionalUtil.OlatSite.LEARNING_RESOURCES)){
+			return(false);
+		}
+		
+		if(!openActionByMenuTree(browser, RepositorySiteAction.CATALOG)){
+			return(false);
+		}
+		
+		/* create selectors to open desired path within catalog and open it */
+		String[] selectors = createCatalogSelectors(path);
+		
+		for(String currentSelector: selectors){
+			functionalUtil.waitForPageToLoadElement(browser, currentSelector);
+			browser.click(currentSelector);
+		}
+		
+		functionalUtil.waitForPageToUnloadElement(browser, selectors[selectors.length - 1]);
+		
+		/* click create */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getCatalogAddSubcategoryCss())
+		.append("')]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		/* fill in name */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(getCatalogAddSubcategoryPopupCss())
+		.append("')]//input[@type='text']");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), name);
+		
+		/* fill in description */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(getCatalogAddSubcategoryPopupCss())
+		.append("')]//textarea");
+		
+		browser.type(selectorBuffer.toString(), description);
+		
+		/* click save */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//form//div[contains(@class, '")
+		.append(getCatalogAddSubcategoryPopupCss())
+		.append("')]//button[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')])[last()]");
+		
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param column
+	 * @return
+	 * 
+	 * Select displayed columns of repository table.
+	 */
 	public boolean displayColumns(Selenium browser, List<Column> column){
 		//TODO:JK: implement me
 		
@@ -1115,6 +1251,48 @@ public class FunctionalRepositorySiteUtil {
 
 	public void setRepositorySiteGlossaryCss(String repositorySiteGlossaryCss) {
 		this.repositorySiteGlossaryCss = repositorySiteGlossaryCss;
+	}
+
+	public String getCatalogAddSubcategoryCss() {
+		return catalogAddSubcategoryCss;
+	}
+
+	public void setCatalogAddSubcategoryCss(String catalogAddSubcategoryCss) {
+		this.catalogAddSubcategoryCss = catalogAddSubcategoryCss;
+	}
+
+	public String getCatalogAddLearningResourceCss() {
+		return catalogAddLearningResourceCss;
+	}
+
+	public void setCatalogAddLearningResourceCss(
+			String catalogAddLearningResourceCss) {
+		this.catalogAddLearningResourceCss = catalogAddLearningResourceCss;
+	}
+
+	public String getCatalogAddSubcategoryPopupCss() {
+		return catalogAddSubcategoryPopupCss;
+	}
+
+	public void setCatalogAddSubcategoryPopupCss(
+			String catalogAddSubcategoryPopupCss) {
+		this.catalogAddSubcategoryPopupCss = catalogAddSubcategoryPopupCss;
+	}
+
+	public String getCatalogSubcategoryListCss() {
+		return catalogSubcategoryListCss;
+	}
+
+	public void setCatalogSubcategoryListCss(String catalogSubcategoryListCss) {
+		this.catalogSubcategoryListCss = catalogSubcategoryListCss;
+	}
+
+	public String getCatalogSubcategoryIconCss() {
+		return catalogSubcategoryIconCss;
+	}
+
+	public void setCatalogSubcategoryIconCss(String catalogSubcategoryIconCss) {
+		this.catalogSubcategoryIconCss = catalogSubcategoryIconCss;
 	}
 
 	public String getImportCourseCss() {

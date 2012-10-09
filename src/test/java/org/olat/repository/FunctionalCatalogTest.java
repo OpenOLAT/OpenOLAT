@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.cp;
+package org.olat.repository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -26,20 +26,18 @@ import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
-import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 
@@ -47,11 +45,18 @@ import com.thoughtworks.selenium.DefaultSelenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-@RunWith(Arquillian.class)
-public class FunctionalCPTest {
-	public final static String CP_LEARNING_CONTENT_SHORT_TITLE = "cp learning content";
-	public final static String CP_LEARNING_CONTENT_LONG_TITLE = "test cp learning content";
-	public final static String CP_LEARNING_CONTENT_DESCRIPTION = "learning content";
+public class FunctionalCatalogTest {
+	
+	public final static String[] SUBCATEGORY_PATHS = {
+		"/programming",
+		"/programming/c",
+		"/programming/java"
+		};
+	public final static String[] SUBCATEGORY_DESCRIPTIONS = {
+		"here you may find courses and resources related to programming",
+		"about the C programming language",
+		"about the Java programming language"
+		};
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -63,12 +68,13 @@ public class FunctionalCPTest {
 
 	@ArquillianResource
 	URL deploymentUrl;
-	
+
 	static FunctionalUtil functionalUtil;
 	static FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	static FunctionalCourseUtil functionalCourseUtil;
-	static FunctionalVOUtil functionalVOUtil;
 
+	static FunctionalVOUtil functionalVOUtil;
+	
 	static boolean initialized = false;
 	
 	@Before
@@ -81,29 +87,41 @@ public class FunctionalCPTest {
 			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
 
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-
+			
 			initialized = true;
 		}
 	}
-	
+
+	@Ignore
 	@Test
 	@RunAsClient
-	public void checkCreate() throws URISyntaxException, IOException{
-		CourseVO course = functionalVOUtil.importEmptyCourse(deploymentUrl);
+	public void checkCreateSubcategory() throws URISyntaxException, IOException{
+		/*
+		 * prerequisites for test created via REST
+		 */
+		/* import wiki */
+		RepositoryEntryVO[] wikiVO = new RepositoryEntryVO[2]; 
 		
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
+		wikiVO[0] = functionalVOUtil.importWiki(deploymentUrl);
+		wikiVO[1] = functionalVOUtil.importWiki(deploymentUrl);
 		
-		/*  */
-		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
-		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
+		/* import course */
+		CourseVO[] courseVO = new CourseVO[2];
 		
-		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.CP, CP_LEARNING_CONTENT_SHORT_TITLE, CP_LEARNING_CONTENT_LONG_TITLE, CP_LEARNING_CONTENT_DESCRIPTION, 0));
-		Assert.assertTrue(functionalCourseUtil.createCPLearningContent(browser, CP_LEARNING_CONTENT_SHORT_TITLE, CP_LEARNING_CONTENT_DESCRIPTION));
+		courseVO[0] = functionalVOUtil.importEmptyCourse(deploymentUrl);
+		courseVO[1] = functionalVOUtil.importEmptyCourse(deploymentUrl);
 		
-		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
+		/*
+		 * create or configure content
+		 */
 		
-		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		//TODO:JK: implement me
+		
+		/*
+		 * verify content
+		 */
+		
+		//TODO:JK: implement me
 	}
-
+	
 }

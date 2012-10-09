@@ -86,8 +86,8 @@ public class FunctionalPortfolioTest {
 			functionalUtil = new FunctionalUtil();
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 
-			functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
-			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+			functionalHomeSiteUtil = functionalUtil.getFunctionalHomeSiteUtil();
+			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
 			functionalEPortfolioUtil = new FunctionalEPortfolioUtil(functionalUtil, functionalHomeSiteUtil);
 			

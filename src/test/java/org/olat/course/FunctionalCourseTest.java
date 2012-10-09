@@ -93,7 +93,7 @@ public class FunctionalCourseTest {
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 			functionalHtmlUtil = new FunctionalHtmlUtil();
 
-			functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(functionalUtil);
+			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
 
 			initialized = true;

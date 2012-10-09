@@ -75,7 +75,7 @@ public class FunctionalSettingsTest {
 		functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 		
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
-		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
+		functionalHomeSiteUtil = functionalUtil.getFunctionalHomeSiteUtil();
 		
 		portalColumnCount = 2;
 	}

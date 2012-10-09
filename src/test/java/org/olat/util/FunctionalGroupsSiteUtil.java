@@ -19,6 +19,9 @@
  */
 package org.olat.util;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+
 import com.thoughtworks.selenium.Selenium;
 
 /**
@@ -26,7 +29,8 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalGroupsSiteUtil {
-
+	private final static OLog log = Tracing.createLoggerFor(FunctionalGroupsSiteUtil.class);
+	
 	public enum GroupsSiteAction {
 		MY_GROUPS,
 		PUBLISHED_GROUPS,

@@ -106,6 +106,8 @@ public class FunctionalUtil {
 	
 	public final static String BUTTON_DIRTY_CSS = "b_button_dirty";
 	
+	public final static String NOTIFICATION_BOX_CSS = "o_sel_info_message";
+	
 	private String username;
 	private String password;
 	
@@ -406,6 +408,12 @@ public class FunctionalUtil {
 		return(checkCurrentSite(browser, site, -1));
 	}
 	
+	/**
+	 * @param browser
+	 * @param site
+	 * @param timeout
+	 * @return
+	 */
 	public boolean checkCurrentSite(Selenium browser, OlatSite site, long timeout){
 		String selectedCss = findCssClassOfSite(site);
 		
@@ -507,6 +515,7 @@ public class FunctionalUtil {
 			return(false);
 		}
 		
+		//FIXME:JK: this is a known bottleneck, but can't be set to -1 until notifications will be clicked away!
 		if(checkCurrentSite(browser, site, Long.parseLong(getWaitLimit()))){
 			if(resetSite(browser, site)){
 				return(true);
@@ -532,6 +541,13 @@ public class FunctionalUtil {
 		resetSite(browser, site);
 		
 		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 */
+	public void clickAwayNotification(Selenium browser){
+		//TODO:JK: the impatients and fearless may want to implement this method but be aware there may be more than one notification at the same time
 	}
 	
 	/**
@@ -709,6 +725,8 @@ public class FunctionalUtil {
 		.append(radioIndex)
 		.append("]");
 		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
 		browser.click(selectorBuffer.toString());
 		
 		return(true);
@@ -730,6 +748,8 @@ public class FunctionalUtil {
 		.append("//input[@type='radio' and @value='")
 		.append(value)
 		.append("']");
+
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		browser.click(selectorBuffer.toString());
 

@@ -29,6 +29,8 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalHomeSiteUtil.EPortfolioAction;
 import org.olat.util.FunctionalUtil.OlatSite;
 
@@ -39,6 +41,8 @@ import com.thoughtworks.selenium.Selenium;
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
 public class FunctionalEPortfolioUtil {
+	private final static OLog log = Tracing.createLoggerFor(FunctionalEPortfolioUtil.class);
+	
 	public final static String EP_ARTEFACTS_BUSINESS_PATH = "EPArtefacts";
 	public final static String EP_MAPS_BUSINESS_PATH = "EPMaps";
 	
