@@ -162,6 +162,7 @@ class PublishStepCatalog extends BasicStep {
 			flc.contextPut("choice", value);
 			boolean activate = "yes".equals(value);
 			addToCatalog = uifactory.addFormLink("publish.catalog.add", flc, Link.BUTTON_SMALL);
+			addToCatalog.setElementCssClass("o_sel_publish_add_to_catalog");
 			addToCatalog.setVisible(activate);
 			if(activate) {
 				List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(repositoryEntry);
