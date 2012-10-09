@@ -218,7 +218,7 @@ create table  if not exists o_ac_reservation (
    fk_resource bigint not null,
    primary key (reservation_id)
 );
-alter table o_ac_offer ENGINE = InnoDB;
+alter table o_ac_reservation ENGINE = InnoDB;
 
 -- add course database entry
 create table o_co_db_entry (
