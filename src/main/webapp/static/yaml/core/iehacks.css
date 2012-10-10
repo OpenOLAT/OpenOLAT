@@ -269,31 +269,31 @@
    */
   #b_col1,  #b_col2 { display:inline; }
 
-  .c20l, .b_c25l, .b_c33l, .b_c38l, .c40l, .b_c50l, .c60l, .b_c62l, .b_c66l, .b_c75l, .c80l,
-  .c20r, .b_c25r, .b_c33r, .b_c38r, .c40r, .b_c50r, .c60r, .b_c66r, .b_c62r, .b_c75r, .c80r { display:inline; }
+  .b_c20l, .b_c25l, .b_c33l, .b_c38l, .b_c40l, .b_c50l, .b_c60l, .b_c62l, .b_c66l, .b_c75l, .b_c80l,
+  .b_c20r, .b_c25r, .b_c33r, .b_c38r, .b_c40r, .b_c50r, .b_c60r, .b_c66r, .b_c62r, .b_c75r, .b_c80r { display:inline; }
 
   /* Fix for:"Linking to anchors in elements within the containing block" Problem in IE5.x & IE 6.0 */
-  * html .equalize, * html .equalize .b_subcolumns { overflow:visible; display:block; }
-  .equalize, .equalize .b_subcolumns { overflow:hidden; display:block; }
+  * html .b_equalize, * html .b_equalize .b_subcolumns { overflow:visible; display:block; }
+  .b_equalize, .b_equalize .b_subcolumns { overflow:hidden; display:block; }
 
   /* transform CSS tables back into floats */
-  .equalize .c20l,.equalize .c40l,.equalize .c60l,.equalize .c80l,
-  .equalize .b_c25l,.equalize .b_c33l,.equalize .b_c38l,.equalize .b_c50l,
-  .equalize .b_c62l,.equalize .b_c66l,.equalize .b_c75l {
+  .b_equalize .b_c20l,.b_equalize .b_c40l,.b_equalize .b_c60l,.b_equalize .b_c80l,
+  .b_equalize .b_c25l,.b_equalize .b_c33l,.b_equalize .b_c38l,.b_equalize .b_c50l,
+  .b_equalize .b_c62l,.b_equalize .b_c66l,.b_equalize .b_c75l {
     float:left; display:inline;
     padding-bottom:32767px;
     margin-bottom:-32767px;
   }
-  .equalize .c20r,.equalize .c40r,.equalize .c60r,.equalize .c80r,
-  .equalize .b_c25r,.equalize .b_c33r,.equalize .b_c38r,.equalize .b_c50r,
-  .equalize .b_c62r,.equalize .b_c66r,.equalize .b_c75r {
+  .b_equalize .b_c20r,.b_equalize .b_c40r,.b_equalize .b_c60r,.b_equalize .b_c80r,
+  .b_equalize .b_c25r,.b_equalize .b_c33r,.b_equalize .b_c38r,.b_equalize .b_c50r,
+  .b_equalize .b_c62r,.b_equalize .b_c66r,.b_equalize .b_c75r {
     float:right; margin-left:-5px; display:inline;
     padding-bottom:32767px;
     margin-bottom:-32767px;
   }
 
-  .no-ie-padding .c20l,.no-ie-padding .c40l,.no-ie-padding .c60l,.no-ie-padding .c80l,
-  .no-ie-padding .c20r,.no-ie-padding .c40r,.no-ie-padding .c60r,.no-ie-padding .c80r,
+  .no-ie-padding .b_c20l,.no-ie-padding .b_c40l,.no-ie-padding .b_c60l,.no-ie-padding .b_c80l,
+  .no-ie-padding .b_c20r,.no-ie-padding .b_c40r,.no-ie-padding .b_c60r,.no-ie-padding .b_c80r,
   .no-ie-padding .b_c25l,.no-ie-padding .b_c33l,.no-ie-padding .b_c38l,.no-ie-padding .b_c50l,
   .no-ie-padding .b_c62l,.no-ie-padding .b_c66l,.no-ie-padding .b_c75l,
   .no-ie-padding .b_c25r,.no-ie-padding .b_c33r,.no-ie-padding .b_c38r,.no-ie-padding .b_c50r,

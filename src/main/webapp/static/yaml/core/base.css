@@ -194,28 +194,28 @@
   .b_subcolumns { display:table; width:100%; table-layout:fixed; }
   .b_subcolumns_oldgecko { width: 100%; float:left; }
 
-  .c20l, .b_c25l, .b_c33l, .c40l, .b_c38l, .b_c50l, .c60l, .b_c62l, .b_c66l, .b_c75l, .c80l { float:left; }
-  .c20r, .b_c25r, .b_c33r, .c40r, .b_c38r, .b_c50r, .c60r, .b_c66r, .b_c62r, .b_c75r, .c80r { float:right; margin-left:-5px; }
+  .b_c20l, .b_c25l, .b_c33l, .b_c40l, .b_c38l, .b_c50l, .b_c60l, .b_c62l, .b_c66l, .b_c75l, .b_c80l { float:left; }
+  .b_c20r, .b_c25r, .b_c33r, .b_c40r, .b_c38r, .b_c50r, .b_c60r, .b_c66r, .b_c62r, .b_c75r, .b_c80r { float:right; margin-left:-5px; }
 
-  .c20l, .c20r { width:20%; }
-  .c40l, .c40r { width:40%; }
-  .c60l, .c60r { width:60%; }
-  .c80l, .c80r { width:80%; }
+  .b_c20l, .b_c20r { width:20%; }
   .b_c25l, .b_c25r { width:25%; }
   .b_c33l, .b_c33r { width:33.333%; }
+  .b_c38l, .b_c38r { width:38.2%; }
+  .b_c40l, .b_c40r { width:40%; }
   .b_c50l, .b_c50r { width:50%; }
+  .b_c60l, .b_c60r { width:60%; }
+  .b_c62l, .b_c62r { width:61.8%; }
   .b_c66l, .b_c66r { width:66.666%; }
   .b_c75l, .b_c75r { width:75%; }
-  .b_c38l, .b_c38r { width:38.2%; }
-  .b_c62l, .b_c62r { width:61.8%; }
+  .b_c80l, .b_c80r { width:80%; }
 
   .b_subc  { padding:0 0.5em; }
   .b_subcl { padding:0 1em 0 0; }
   .b_subcr { padding:0 0 0 1em; }
 
-  .equalize, .equalize .b_subcolumns { table-layout:fixed; }
+  .b_equalize, .b_equalize .b_subcolumns { table-layout:fixed; }
 
-  .equalize > div {
+  .b_equalize > div {
     display:table-cell;
     float:none; 
     margin:0; 
@@ -246,5 +246,5 @@
 
   /* (en) generic class to hide elements for print */
   /* (de) Allgemeine CSS Klasse, um beliebige Elemente in der Druckausgabe auszublenden */
-  .noprint { display:none !important; }
+  .b_noprint { display:none !important; }
 }
