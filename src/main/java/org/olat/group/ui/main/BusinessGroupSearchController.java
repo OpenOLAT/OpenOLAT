@@ -216,7 +216,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 				try {
 					new Long(id.getValue());
 				} catch (NumberFormatException e) {
-					id.setErrorKey("", null);
+					id.setErrorKey("search.id.format", null);
 					allOk &= false;
 				}
 			}
