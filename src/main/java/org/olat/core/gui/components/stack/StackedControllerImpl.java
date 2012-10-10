@@ -43,6 +43,7 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 	
 	private final List<Link> stack = new ArrayList<Link>(3);
 	private final VelocityContainer mainVC;
+	private final Link backLink;
 	
 	public StackedControllerImpl(WindowControl wControl, Translator trans, String mainCssClass) {
 		super(wControl);
@@ -53,6 +54,12 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 		if(StringHelper.containsNonWhitespace(mainCssClass)) {
 			mainVC.contextPut("mainCssClass", mainCssClass);
 		}
+		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
+		backLink = LinkFactory.createCustomLink("back", "back", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, mainVC, this);
+		backLink.setCustomEnabledLinkCSS("b_breadcumb_back");
+		backLink.setCustomDisplayText("\u25C4"); // unicode back arrow (black left pointer symbol)
+		backLink.setTitle(trans.translate("back"));
+		
 		setInitialComponent(mainVC);
 	}
 	
@@ -93,6 +100,14 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (source.equals(backLink)) {
+			if (stack.size() > 1) {
+				// back means to one level down, change source to the stack item one below current
+				source = stack.get(stack.size()-2);
+				// now continue as if user manually pressed a stack item in the list
+			}
+		}
+		
 		if(stack.contains(source)) {
 			int index = stack.indexOf(source);
 			if(index < (stack.size() - 1)) {

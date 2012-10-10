@@ -45,16 +45,24 @@ body {
 }
 #b_page_wrapper {
 //	@include o-border-radius(6px);
-	border-bottom: 1px solid lightGrey;
 }
 
 #b_main_toolbar {
 	clear: both;
-	height: 20px;
-	padding: 4px 0 1px 3px;
-	margin: 0 0 1px 0; 
-	background-color: #fefefe;
-	//@include o-box-shadow(0,0,3px,#D3D3D3);
+	height: $tool_bar_height;
+	line-height: $tool_bar_height;
+	vertical-align: middle;
+	margin: 0; 
+	padding: 1px 0 0 0;
+	border-bottom: 1px solid $tool_bar_border;
+	background-color: $tool_bar_bg;
+	@include o-box-shadow(0,0,14px,$main_shadow_color);
+	
+	ul li a {
+		span {
+			line-height: $tool_bar_height;		
+		}
+	}
 }
 
 $mainMinHeight: 550px;
@@ -62,8 +70,9 @@ $mainMinHeight: 550px;
 	background:#fff;
 	min-height: $mainMinHeight; /* min height, should prevent "flashing" of OO sky-banner on slow connections */
 	clear:both;
-	@include o-box-shadow(0,0,14px,#D3D3D3);
+	@include o-box-shadow(0,2px,14px,$main_shadow_color);
 }
+
 #b_page{
 
 	// the "to-top"-link
@@ -336,17 +345,76 @@ div.b_menu_toolbar {
 	
 /* breadcrumbs */
 div.b_breadcumb {}
+
 div.b_breadcumb_path { 
-	padding: 0; margin: 0; float:left; display: inline;
+	padding: 0; 
+	margin: 0; 
+	float:left; display: inline;
 	ul { 
-		padding: 0; margin: 0; list-style: none; float:left;  display: inline; 
-		li { padding: 0 7px 0 14px; margin: 0; list-style: none; float:left;  display: inline; background: url(../openolat/images/breadcrumb-separator.png) no-repeat left center; }
-		li.b_first { background: url(../openolat/images/home.png) no-repeat top left; padding-left: 25px; }
-		li a { color: #464444; }
-		li span.b_disabled { color: #000; padding: 0 10px 0 0; margin: 0; }
+		padding: 0; 
+		margin: 0; 
+		list-style: none; 
+		float:left;  display: inline; 
+		li { 
+			padding: 0 7px 0 14px; 
+			margin: 0;
+			list-style: none; 
+			float:left;	display: inline; 
+			background: url(../openolat/images/breadcrumb-separator.png) no-repeat left 50%; 
+		}
+		li.b_first { 
+			background: url(../openolat/images/home.png) no-repeat 5px 50%; 
+			padding-left: 25px; 
+		}
+		li a { 
+			color: #464444;
+		}
+		li span.b_disabled { 
+			color: #000; 
+			padding: 0 10px 0 0; 
+			margin: 0; 
+		}
 	}
 }
-div.b_breadcumb_content { clear: both;  margin-top: 0.5em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;}
+
+/* normal breadcrumb styles */
+div.b_breadcumb div.b_breadcumb_path {}
+
+/* toolbar breadcrumb specific styles */
+#b_main_toolbar div.b_breadcumb_path { 
+	ul { 
+		a {
+			color: $tool_bar_color;
+			font-weight: bold;
+			&:hover {
+				color: $tool_bar_hover;
+				text-decoration: none;
+			}
+		}
+		
+		li.b_breadcumb_back {
+			background: transparent;
+			padding: 0 7px 0 7px; 
+			margin: 0 2px 0 0;
+			border-right: 1px solid $tool_bar_border;
+			a {
+				font-type: Arial; /* for special arrow key */
+				color: $tool_bar_color;
+				font-weight: normal;
+				&:hover {
+					color: $tool_bar_hover;
+				}
+			}
+		}
+	}
+}
+
+div.b_breadcumb_content { 
+	clear: both;  
+	margin-top: 0.5em; 
+	padding-top: 0.5em; 
+	border-top: 1px solid #ACAAAA;
+}
 
 /* --------------- TOOLBAR ------------ */
 

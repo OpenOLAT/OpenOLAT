@@ -35,6 +35,16 @@ $fullScreenModalMarginPercents: 2% !default;
 
 /* top navigation */
 $top_nav_line_height : 1.5em !default;
+$top_nav_active_tabs_bg : #fff !default;
+
+/* toolbar with breadcrumb */
+$tool_bar_height : 24px !default;
+$tool_bar_bg : $top_nav_active_tabs_bg !default;
+$tool_bar_border : $basegray_ultra_light !default;
+$tool_bar_color : #2D2E2D !default;
+$tool_bar_hover : #585A58 !default;
+
+$main_shadow_color : #D3D3D3 !default;
 
 /* menu navigation */
 $tree_level_margin : 1em !default;
@@ -65,9 +75,9 @@ $enablebiz : false !default;
 
 /* defines the body-background */
 @mixin bodybg(){
-	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 88px;
+	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 81px;
 	
 	@if $enablebiz == true {
-		background: #ECECEC url('../openolat/images/sky.png') repeat-x left 175px;
+		background: #ECECEC url('../openolat/images/sky.png') repeat-x left 179px;
 	}
 }

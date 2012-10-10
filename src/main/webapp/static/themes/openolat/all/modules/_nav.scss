@@ -50,7 +50,7 @@
 				&.b_nav_active,&:hover,&.b_exception {
 					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
 					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
-					background:#fff;
+					background:$top_nav_active_tabs_bg;
 				}
 				&.b_nav_active a {
 				}
@@ -90,7 +90,7 @@
 				&.b_nav_active,&:hover {
 					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
 					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
-					background:#fff;
+					background:$top_nav_active_tabs_bg;
 				}
 				&.b_nav_active a {
 				}
