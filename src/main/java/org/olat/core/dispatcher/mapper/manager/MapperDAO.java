@@ -47,6 +47,7 @@ public class MapperDAO {
 	public PersistedMapper persistMapper(String sessionId, String mapperId, Serializable mapper) {
 		PersistedMapper m = new PersistedMapper();
 		m.setMapperId(mapperId);
+		m.setLastModified(new Date());
 		m.setOriginalSessionId(sessionId);
 		
 		String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);

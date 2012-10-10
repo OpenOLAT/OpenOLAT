@@ -98,6 +98,35 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testUpdatePublisherContext() {
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("PS", new Long(123), identifier);
+		PublisherData publisherData = new PublisherData("testPublisherSubscriber", "e.g. forumdata=keyofforum", null);
+		
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commitAndCloseSession();
+		//check values
+		Assert.assertNotNull(publisher);
+		Assert.assertEquals("PS", publisher.getResName());
+		Assert.assertEquals(new Long(123), publisher.getResId());
+		Assert.assertEquals(identifier, publisher.getSubidentifier());
+
+		//modify
+		String modifiedIdentifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext modifiedContext = new SubscriptionContext("PSModified", new Long(12300), modifiedIdentifier);
+		notificationManager.updatePublisher(context, modifiedContext);
+		dbInstance.commitAndCloseSession();
+		
+		//check if exists
+		Publisher reloadedPublisher = notificationManager.getPublisher(modifiedContext);
+		Assert.assertNotNull(reloadedPublisher);
+		Assert.assertEquals(publisher, reloadedPublisher);
+		Assert.assertEquals("PSModified", reloadedPublisher.getResName());
+		Assert.assertEquals(new Long(12300), reloadedPublisher.getResId());
+		Assert.assertEquals(modifiedIdentifier, reloadedPublisher.getSubidentifier());
+	}
+	
+	@Test
 	public void  testAllPublishers() {
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("All", new Long(123), identifier);

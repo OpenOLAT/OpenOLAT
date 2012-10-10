@@ -751,6 +751,17 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		}
 		return notificationHandlers.get(type);		
 	}
+	
+	@Override
+	public Publisher updatePublisher(SubscriptionContext oldContext, SubscriptionContext newContext) {
+		Publisher p = getPublisherForUpdate(oldContext);
+
+		p.setResId(newContext.getResId());
+		p.setResName(newContext.getResName());
+		p.setSubidentifier(newContext.getSubidentifier());
+		
+		return DBFactory.getInstance().getCurrentEntityManager().merge(p);
+	}
 
 	/**
 	 * @param subscriber
