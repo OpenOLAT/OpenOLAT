@@ -259,24 +259,24 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		if (isPreview) {
 			courseId = new Long(CodeHelper.getRAMUniqueID()).toString();
 			scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
-					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, doActivate,
+					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, false, doActivate,
 					fullWindow);
 		} else {
 			courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
 			if (isAssessable) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, doActivate, fullWindow);
+						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow);
 				// <OLATCE-289>
 				// scormNode.incrementUserAttempts(userCourseEnv);
 				// </OLATCE-289>
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, doActivate, fullWindow);
+						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow);
 			} else {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
-						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, doActivate,
+						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, isAssessable, doActivate,
 						fullWindow);
 			}
 		}
@@ -297,7 +297,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		if (!jsEncoding.equals(NodeEditController.CONFIG_JS_ENCODING_AUTO)) {
 			scormDispC.setJSEncoding(jsEncoding);
 		}
-		scormDispC.addControllerListener(this);
+		listenTo(scormDispC);
 		// the scormDispC activates itself
 	}
 
@@ -312,7 +312,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		if (isAssessable) {
 			// do a sum-of-scores over all sco scores
 			float score = 0f;
-			for (Iterator it_score = scoScores.values().iterator(); it_score.hasNext();) {
+			for (Iterator<Object> it_score = scoScores.values().iterator(); it_score.hasNext();) {
 				String aScore = (String) it_score.next();
 				float ascore = Float.parseFloat(aScore);
 				score += ascore;

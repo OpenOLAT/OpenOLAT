@@ -72,7 +72,7 @@ public class BlogArtefactDetailsController extends BasicController {
 		VFSLeaf itemXml = (VFSLeaf)artefactContainer.resolve(BlogArtefact.BLOG_FILE_NAME);
 		if(itemXml != null) {
 			
-			String mapperBase = registerMapper(new Mapper() {			
+			String mapperBase = registerMapper(ureq, new Mapper() {			
 				@SuppressWarnings("unused")
 				@Override
 				public MediaResource handle(String relPath, HttpServletRequest request) {

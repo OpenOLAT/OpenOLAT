@@ -36,10 +36,11 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -82,7 +83,6 @@ public class AjaxController extends DefaultController {
 	private Panel pollperiodPanel;
 	// protected only for performance improvement
 	protected List<WindowCommand> windowcommands = new ArrayList<WindowCommand>(3);
-	private MapperRegistry mreg;
 	private Mapper m, sbm;
 	private boolean showJSON = false;
 	protected final WindowBackOfficeImpl wboImpl;
@@ -126,8 +126,7 @@ public class AjaxController extends DefaultController {
 			}
 		};
 
-		mreg = MapperRegistry.getInstanceFor(ureq.getUserSession());
-		String uri = mreg.register(m);
+		String uri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), m);
 		myContent.contextPut("mapuri", uri);
 		myContent.contextPut("iframeName", iframeName);
 		myContent.contextPut("showJSON", Boolean.valueOf(showJSON));
@@ -186,8 +185,8 @@ public class AjaxController extends DefaultController {
 				return smr;
 			}
 		};
-		
-		myContent.contextPut("sburi", mreg.register(sbm));
+		String sburi = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), sbm);
+		myContent.contextPut("sburi", sburi);
 	}
 
 	/**
@@ -308,8 +307,10 @@ public class AjaxController extends DefaultController {
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		mreg.deregister(m);
-		mreg.deregister(sbm);
+		List<Mapper> mappers = new ArrayList<Mapper>();
+		mappers.add(m);
+		mappers.add(sbm);
+		CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
 		if (ajaxEnabled && pollCount == 0) {
 			//the controller should be older than 40s otherwise poll may not started yet
 			if ((System.currentTimeMillis() - creationTime) > 40000) log.warn("Client did not send a single polling request though ajax is enabled!");

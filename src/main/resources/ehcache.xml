@@ -68,6 +68,13 @@
         overflowToDisk="false"
         />
 
+	<cache name="org.olat.core.util.cache.n.impl.svm.SingleVMCacher@org.olat.core.dispatcher.mapper.MapperService_mapper__0"
+        maxElementsInMemory="10000"
+        eternal="false"
+        timeToIdleSeconds="300"
+        timeToLiveSeconds="300"
+        overflowToDisk="false"
+        />
 
 
 	<!-- 

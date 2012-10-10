@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,7 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPluginFactory;
 import org.olat.core.gui.control.Disposable;
@@ -362,8 +363,7 @@ public class RichTextConfiguration implements Disposable {
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
 	private String domID;
-	//
-	private MapperRegistry mapreg;
+	
 	private Mapper contentMapper;
 
 	/**
@@ -1372,19 +1372,19 @@ public class RichTextConfiguration implements Disposable {
 		};
 		// Register mapper for this user. This mapper is cleaned up in the
 		// dispose method (RichTextElementImpl will clean it up)
-		mapreg = MapperRegistry.getInstanceFor(usess);
+
 		String uri;
 		
 		// Register mapper as cacheable
 		String mapperID = VFSManager.getRealPath(documentBaseContainer);
 		if (mapperID == null) {
 			// Can't cache mapper, no cacheable context available
-			uri = mapreg.register(contentMapper);
+			uri = CoreSpringFactory.getImpl(MapperService.class).register(usess, contentMapper);
 		} else {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			uri = mapreg.registerCacheable(mapperID, contentMapper);				
+			uri = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperID, contentMapper);				
 		}
 		
 		if (relFilePath != null) {
@@ -1638,17 +1638,13 @@ public class RichTextConfiguration implements Disposable {
 		}
 	}
 
-
-	
 	/**
 	 * @see org.olat.core.gui.control.Disposable#dispose()
 	 */
 	public void dispose() {
-		if (contentMapper != null && mapreg!= null) {
-			mapreg.deregister(contentMapper);
+		if (contentMapper != null) {
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.singletonList(contentMapper));
 			contentMapper = null;
-			mapreg = null;
 		}		
 	}
-
 }

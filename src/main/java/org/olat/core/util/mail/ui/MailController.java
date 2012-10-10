@@ -73,7 +73,7 @@ public class MailController extends FormBasicController {
 		mailManager = MailManager.getInstance();
 		attachments = MailManager.getInstance().getAttachments(mail);
 		if(!attachments.isEmpty()) {
-			mapperBaseURI = registerMapper(new MailAttachmentMapper(mail, mailManager));
+			mapperBaseURI = registerMapper(ureq, new MailAttachmentMapper(mail, mailManager));
 		}
 		initForm(ureq);
 	}

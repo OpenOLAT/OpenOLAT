@@ -165,7 +165,7 @@ public class TreeController extends BasicController {
 				return mediaResource;
 			}
 		};
-		String dataMapperUri = registerMapper(treeDataMapper);
+		String dataMapperUri = registerMapper(ureq, treeDataMapper);
 		mainVC.contextPut("dataMapperUri", dataMapperUri);
 
 		// Some variables for the tree

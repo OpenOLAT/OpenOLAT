@@ -38,10 +38,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperDispatcher;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.testutils.codepoints.server.Codepoint;
 /**
@@ -130,18 +129,17 @@ public class DispatcherAction implements Dispatcher {
 			 * GLOBAL MAPPED and MAPPED PATHS
 			 */
 			if (pathInfo.startsWith(PATH_MAPPED)) {
-				// Session specific file mappers. When registered as cacheable
-				// mappers the browser might cache the delivered ressources
-				// using the last modified date.
-				// mapped paths (per usersession) -> /m/...
-				MapperRegistry mreg = MapperRegistry.getInstanceFor( UserSession.getUserSession(request) );
-				 
+				
  				// OLAT-5368: an intermediate commit is necessary here to close open transactions which could otherwise
  				// run into the 2 min timeout and cause errors. The code does a return after serving the file anyway
  				// and would do a commit right there as well - so this doesn't break the transaction semantics.
  				DBFactory.getInstance(false).intermediateCommit();
  				
-				mreg.execute(request, response, subtractContextPath(request, pathInfo));
+ 				// Session specific file mappers. When registered as cacheable
+				// mappers the browser might cache the delivered ressources
+				// using the last modified date.
+				// mapped paths (per usersession) -> /m/...
+				new MapperDispatcher().execute(request, response, subtractContextPath(request, pathInfo));
 				return;
 			} else if (pathInfo.startsWith(PATH_GLOBAL_MAPPED)) {
 				// Dynamic files that can be cached by browsers based on last modified

@@ -97,7 +97,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, "members");
 		
-		avatarBaseURL = registerCacheableMapper("avatars-members", new AvatarMapper());
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new AvatarMapper());
 		
 		rm = RepositoryManager.getInstance();
 		securityManager = BaseSecurityManager.getInstance();

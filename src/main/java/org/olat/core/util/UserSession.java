@@ -755,6 +755,9 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 				//do not logout administrators
 				try {
 					userSession.signOffAndClear();
+					if(userSession.getSessionInfo() != null && userSession.getSessionInfo().getSession() != null) {
+						userSession.getSessionInfo().getSession().invalidate();
+					}
 					invalidateCounter++;
 				} catch(Exception ex) {
 					// Session already signed off => do nothing and continues

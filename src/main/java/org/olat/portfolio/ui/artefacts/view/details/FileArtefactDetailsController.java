@@ -25,7 +25,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -108,8 +107,7 @@ public class FileArtefactDetailsController extends BasicController {
 				mr = new VFSMediaResource(thumb);
 			}
 			if(mr != null) {
-				String thumbMapper = MapperRegistry.getInstanceFor(ureq.getUserSession()).register(new Mapper() {					
-					@SuppressWarnings("unused")
+				String thumbMapper = registerMapper(ureq, new Mapper() {
 					@Override
 					public MediaResource handle(String relPath, HttpServletRequest request) {
 						return mr;
@@ -126,7 +124,6 @@ public class FileArtefactDetailsController extends BasicController {
 		
 		viewPanel.setContent(vC);
 	}
-	
 	
 	@SuppressWarnings("unused")
 	private void initUploadView(UserRequest ureq){
@@ -145,8 +142,7 @@ public class FileArtefactDetailsController extends BasicController {
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
-
-	@SuppressWarnings("unused")
+	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == delLink) {			

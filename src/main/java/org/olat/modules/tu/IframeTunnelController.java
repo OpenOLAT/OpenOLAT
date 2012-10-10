@@ -202,7 +202,7 @@ public class IframeTunnelController extends BasicController implements Cloneable
 				}
 			};
 	
-			String amapPath = registerMapper(mapper);
+			String amapPath = registerMapper(ureq, mapper);
 			String alluri = amapPath + startUri;
 			if (firstQueryString != null) {
 				alluri+="?"+firstQueryString;

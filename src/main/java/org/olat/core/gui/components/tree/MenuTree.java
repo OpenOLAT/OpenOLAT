@@ -33,7 +33,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -112,7 +113,6 @@ public class MenuTree extends Component {
 	private String dragAndDropGroup;
 	private String dndFeedbackUri;
 	
-	private MapperRegistry mreg;
 	private final JSAndCSSComponent dragAndDropCmp;
 	
 	// for recording / visual marking purposes
@@ -309,9 +309,8 @@ public class MenuTree extends Component {
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		if(dragAndDropEnabled) {
 			dragAndDropCmp.validate(ureq, vr);
-			if(mreg == null && treeModel instanceof DnDTreeModel) {
-				mreg = MapperRegistry.getInstanceFor(ureq.getUserSession());
-				dndFeedbackUri = mreg.register(new DnDFeedbackMapper(this));
+			if(dndFeedbackUri == null && treeModel instanceof DnDTreeModel) {
+				dndFeedbackUri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), new DnDFeedbackMapper(this));
 			}
 		}
 		super.validate(ureq, vr);

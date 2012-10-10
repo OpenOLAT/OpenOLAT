@@ -19,10 +19,13 @@
  */
 package org.olat.core.gui.components.htmlheader.jscss;
 
+import java.util.Collections;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.media.MediaResource;
@@ -52,7 +55,6 @@ public class CustomCSS extends LogDelegator implements Disposable {
 	private String relCssFilename;
 	private String relCssFileIframe;
 	private Mapper cssUriMapper;
-	private MapperRegistry registry;
 	private JSAndCSSComponent jsAndCssComp;
 	private Object DISPOSE_LOCK = new Object();
 
@@ -100,19 +102,17 @@ public class CustomCSS extends LogDelegator implements Disposable {
 	 * @param cssBaseContainer
 	 * @param uSess
 	 */
-	private void registerMapper(final VFSContainer cssBaseContainer,
-			UserSession uSess) {
-		this.registry = MapperRegistry.getInstanceFor(uSess);
+	private void registerMapper(final VFSContainer cssBaseContainer, UserSession uSess) {
 		// Register mapper as cacheable
 		String mapperID = VFSManager.getRealPath(cssBaseContainer);
 		if (mapperID == null) {
 			// Can't cache mapper, no cacheable context available
-			this.mapperBaseURI  = registry.register(cssUriMapper);
+			mapperBaseURI  = CoreSpringFactory.getImpl(MapperService.class).register(uSess, cssUriMapper);
 		} else {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID + System.currentTimeMillis();
-			this.mapperBaseURI  = registry.registerCacheable(mapperID, cssUriMapper);				
+			mapperBaseURI  = CoreSpringFactory.getImpl(MapperService.class).register(uSess, mapperID, cssUriMapper);
 		}
 	}
 
@@ -170,9 +170,8 @@ public class CustomCSS extends LogDelegator implements Disposable {
 	 */
 	public void dispose() {
 		synchronized (DISPOSE_LOCK) {
-			if (registry != null && cssUriMapper != null) {
-				registry.deregister(cssUriMapper);
-				registry = null;
+			if (cssUriMapper != null) {
+				CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.singletonList(cssUriMapper));
 				cssUriMapper = null;			
 				jsAndCssComp = null;				
 			}

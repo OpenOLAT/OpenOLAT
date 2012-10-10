@@ -153,7 +153,7 @@ public class LTIRunController extends BasicController {
 					return mediares;
 				}
 			};
-			String backMapperUrl = registerMapper(talkbackMapper);
+			String backMapperUrl = registerMapper(ureq, talkbackMapper);
 
 			String serverUri = ureq.getHttpReq().getScheme()+"://"+ureq.getHttpReq().getServerName()+":"+ureq.getHttpReq().getServerPort();
 
@@ -177,7 +177,7 @@ public class LTIRunController extends BasicController {
 			logDebug("Basic LTI Post data: "+postData, null);
 
 		}
-		String mapperUri = registerMapper(contentMapper);
+		String mapperUri = registerMapper(ureq, contentMapper);
 		run.contextPut("mapperUri", mapperUri + "/");
 
 		main.setContent(run);

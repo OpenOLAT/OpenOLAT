@@ -68,7 +68,7 @@ public class PaypalAccessController extends FormBasicController implements FormC
 		paypalManager = CoreSpringFactory.getImpl(PaypalManager.class);
 		
 		String businessPath = wControl.getBusinessControl().getAsString();
-		mapperUri = registerMapper(new PaypalMapper(businessPath, paypalManager));
+		mapperUri = registerMapper(ureq, new PaypalMapper(businessPath, paypalManager));
 			
 		initForm(ureq);
 	}
@@ -81,7 +81,7 @@ public class PaypalAccessController extends FormBasicController implements FormC
 		paypalManager = CoreSpringFactory.getImpl(PaypalManager.class);
 
 		String businessPath = wControl.getBusinessControl().getAsString();
-		mapperUri = registerMapper(new PaypalMapper(businessPath, paypalManager));
+		mapperUri = registerMapper(ureq, new PaypalMapper(businessPath, paypalManager));
 			
 		initForm(ureq);
 	}

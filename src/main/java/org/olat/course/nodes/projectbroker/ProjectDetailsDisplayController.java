@@ -248,7 +248,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 					this.openInNewBrowserWindow(ureq, layoutCtrlr);
 				}
 			} else if (source == attachedFileLink) {
-				doFileDelivery( project, courseEnv, courseNode);
+				doFileDelivery(ureq, project, courseEnv, courseNode);
 			} else if (source == changeProjectStateToNotAssignButton) {
 				ProjectBrokerManagerFactory.getProjectBrokerManager().setProjectState(project, Project.STATE_NOT_ASSIGNED);
 				myContent.remove(changeProjectStateToNotAssignButton);
@@ -274,13 +274,13 @@ public class ProjectDetailsDisplayController extends BasicController {
 		}
 	}
 	
-	private void doFileDelivery(final Project project, final CourseEnvironment courseEnv, final CourseNode cNode) {
+	private void doFileDelivery(UserRequest ureq, final Project project, final CourseEnvironment courseEnv, final CourseNode cNode) {
 		// Create a mapper to deliver the auto-download of the file. We have to
 		// create a dedicated mapper here
 		// and can not reuse the standard briefcase way of file delivering, some
 		// very old fancy code
 		// Mapper is cleaned up automatically by basic controller
-		String baseUrl = registerMapper(new Mapper() {
+		String baseUrl = registerMapper(ureq, new Mapper() {
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(ProjectBrokerManagerFactory.getProjectBrokerManager().getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
 				//ignore the relPath, we know it from the constructor of the DisplayOrDownloadComponent usin the mapper

@@ -26,18 +26,18 @@
 package org.olat.modules.scorm;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -53,8 +53,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -77,15 +75,15 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 
 	// private static final String ACTIVITY_CONTENTPACKING_GET_FILE =
 	// "CONTENTPACKING_GET_FILE";
-	private static final String LMS_INITIALIZE = "LMSInitialize";
-	private static final String LMS_GETVALUE = "LMSGetValue";
-	private static final String LMS_SETVALUE = "LMSSetValue";
-	private static final String LMS_FINISH = "LMSFinish";
-	private static final String LMS_GETLASTERROR = "LMSGetLastError";
-	private static final String LMS_GETERRORSTRING = "LMSGetErrorString";
-	private static final String LMS_GETDIAGNOSTIC = "LMSGetDiagnostic";
-	private static final String LMS_COMMIT = "LMSCommit";
-	private static final String SCORM_CONTENT_FRAME = "scormContentFrame";
+	protected static final String LMS_INITIALIZE = "LMSInitialize";
+	protected static final String LMS_GETVALUE = "LMSGetValue";
+	protected static final String LMS_SETVALUE = "LMSSetValue";
+	protected static final String LMS_FINISH = "LMSFinish";
+	protected static final String LMS_GETLASTERROR = "LMSGetLastError";
+	protected static final String LMS_GETERRORSTRING = "LMSGetErrorString";
+	protected static final String LMS_GETDIAGNOSTIC = "LMSGetDiagnostic";
+	protected static final String LMS_COMMIT = "LMSCommit";
+	protected static final String SCORM_CONTENT_FRAME = "scormContentFrame";
 	private String scorm_lesson_mode;
 	private VelocityContainer myContent;
 	private MenuTree menuTree;
@@ -95,8 +93,6 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 	private OLATApiAdapter scormAdapter;
 	private String username;
 	private Link nextScoTop, nextScoBottom, previousScoTop, previousScoBottom;
-	private MapperRegistry mapreg;
-	private Mapper mapper;
 
 	/**
 	 * @param ureq
@@ -111,7 +107,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 	 * @param credit_mode add null for the default value or "credit", "no-credit"
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback, File cpRoot, String resourceId, String courseIdNodeId, String lesson_mode,
-			String credit_mode, boolean previewMode, boolean activate, boolean fullWindow) {
+			String credit_mode, boolean previewMode, boolean assessable, boolean activate, boolean fullWindow) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -131,8 +127,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		myContent.put("apiadapter", jsAdapter);
 		
 		// init SCORM adapter
-		scormAdapter = new OLATApiAdapter(apiCallback);	
-
+		scormAdapter = new OLATApiAdapter();	
+		scormAdapter.addAPIListener(apiCallback);
 		scormAdapter.init(cpRoot, resourceId, courseIdNodeId, FolderConfig.getCanonicalRoot(), this.username, ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, loc)+", "+ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, loc), lesson_mode, credit_mode, this.hashCode());
 
 		// at this point we know the filelocation for our xstream-sco-score file (FIXME:fj: do better
@@ -224,59 +220,9 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		listenTo(columnLayoutCtr);
 		
 		//scrom API calls get handled by this mapper
-		mapreg = MapperRegistry.getInstanceFor(ureq.getUserSession());
-		mapper = new Mapper() {
-
-			public MediaResource handle(String relPath, HttpServletRequest request) {
-				String apiCall = request.getParameter("apiCall");
-				String apiCallParamOne = request.getParameter("apiCallParamOne");
-				String apiCallParamTwo = request.getParameter("apiCallParamTwo");
-				
-				logDebug("scorm api request by user:"+ username +": " + apiCall + "('" + apiCallParamOne + "' , '" + apiCallParamTwo + "')", null);
-				
-
-				String returnValue = "";
-				StringMediaResource smr = new StringMediaResource();
-				smr.setContentType("text/html");
-				smr.setEncoding("utf-8");
-				
-				if (apiCall != null && apiCall.equals("initcall")) {
-					//used for Mozilla / firefox only to get more time for fireing the onunload stuff triggered by overwriting the content.
-					smr.setData("<html><body></body></html>");
-					return smr;
-				}
-				
-
-				if (apiCall != null) {
-					if (apiCall.equals(LMS_INITIALIZE)) {
-						returnValue = scormAdapter.LMSInitialize(apiCallParamOne);
-					} else if (apiCall.equals(LMS_GETVALUE)) {
-						returnValue = scormAdapter.LMSGetValue(apiCallParamOne);
-					} else if (apiCall.equals(LMS_SETVALUE)) {
-						returnValue = scormAdapter.LMSSetValue(apiCallParamOne, apiCallParamTwo);
-					} else if (apiCall.equals(LMS_COMMIT)) {
-						returnValue = scormAdapter.LMSCommit(apiCallParamOne);
-					} else if (apiCall.equals(LMS_FINISH)) {
-						returnValue = scormAdapter.LMSFinish(apiCallParamOne);
-					} else if (apiCall.equals(LMS_GETLASTERROR)) {
-						returnValue = scormAdapter.LMSGetLastError();
-					} else if (apiCall.equals(LMS_GETDIAGNOSTIC)) {
-						returnValue = scormAdapter.LMSGetDiagnostic(apiCallParamOne);
-					} else if (apiCall.equals(LMS_GETERRORSTRING)) {
-						returnValue = scormAdapter.LMSGetErrorString(apiCallParamOne);
-					}
-					smr.setData("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><p>"
-							+ returnValue + "</p></body></html>");
-					return smr;
-					
-				}
-				smr.setData("");
-				return smr;
-			}};
-			
-		String scormCallbackUri = mapreg.register(mapper);
+		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessable, cpRoot, scormAdapter);
+		String scormCallbackUri = registerMapper(ureq, mapper);
 		myContent.contextPut("scormCallbackUri", scormCallbackUri+"/");
-
 	}
 	
 	/**

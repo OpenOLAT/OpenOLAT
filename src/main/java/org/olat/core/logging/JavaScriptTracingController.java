@@ -123,7 +123,7 @@ public class JavaScriptTracingController extends BasicController {
 				return mediaResource;
 			}
 		};
-		String mapperUri = registerMapper(mapper);
+		String mapperUri = registerMapper(ureq, mapper);
 
 		// push some variables to the header that are needed to initialize the
 		// JS Tracing

@@ -36,8 +36,6 @@ import java.util.Set;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
@@ -192,8 +190,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private LayoutMain3ColsController columnLayoutCtr;
 	
 	private LockResult lockEntry;
-	private Mapper cssUriMapper;
-	private MapperRegistry mapreg;
 	
 	private HtmlHeaderComponent hc;
 	private EditorUserCourseEnvironmentImpl euce;
@@ -1025,9 +1021,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		
 		doReleaseEditLock();
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_CLOSE, getClass());
-		if (mapreg !=null && cssUriMapper != null) {
-			mapreg.deregister(cssUriMapper);
-		}
 	}
 	
 	private void doReleaseEditLock() {

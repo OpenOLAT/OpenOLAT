@@ -81,7 +81,7 @@ class ContextHelpPageCrumbController extends CrumbBasicController  {
 		this.page = page;
 		contextHelpWrapperVC = createVelocityContainer("contexthelpwrapper");		
 		// Initialize the page mapper - must be done before calling createHelpPage()
-		initPageResourceMapper();	
+		initPageResourceMapper(ureq);	
 		pageTranslator = new PackageTranslator(bundleName, getLocale());
 		contextHelpPageVC = createHelpPage(bundleName, page);								
 		
@@ -102,7 +102,7 @@ class ContextHelpPageCrumbController extends CrumbBasicController  {
 	 * with the default language and last but not least with the fallback
 	 * language.
 	 */
-	private void initPageResourceMapper() {
+	private void initPageResourceMapper(UserRequest ureq) {
 		// Add page resources mapper
 		Mapper pageResourceMapper = new Mapper() {
 			public MediaResource handle(String relPath, HttpServletRequest request) {
@@ -138,7 +138,7 @@ class ContextHelpPageCrumbController extends CrumbBasicController  {
 			}
 		};
 		// we use user scope mappers because global mappers can only be instantiated once
-		chelpStaticDirUrl = registerMapper(pageResourceMapper);
+		chelpStaticDirUrl = registerMapper(ureq, pageResourceMapper);
 	}
 
 	/**

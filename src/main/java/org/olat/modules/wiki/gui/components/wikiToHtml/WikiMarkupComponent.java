@@ -31,9 +31,10 @@ import org.jamwiki.DataHandler;
 import org.jamwiki.Environment;
 import org.jamwiki.parser.ParserInput;
 import org.jamwiki.parser.jflex.JFlexParser;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -147,18 +148,18 @@ public class WikiMarkupComponent extends Component {
 			}
 		};
 		//datahandler.setImageURI(MapperRegistry.getInstanceFor(ureq.getUserSession()).register(contentMapper)+"/"+WikiContainer.MEDIA_FOLDER_NAME+"/");
-		MapperRegistry mr = MapperRegistry.getInstanceFor(ureq.getUserSession());
+
 		String mapperPath;
 		// Register mapper as cacheable
 		String mapperID = VFSManager.getRealPath(wikiContainer);
 		if (mapperID == null) {
 			// Can't cache mapper, no cacheable context available
-			mapperPath  = mr.register(contentMapper);
+			mapperPath = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), contentMapper);
 		} else {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			mapperPath  = mr.registerCacheable(mapperID, contentMapper);				
+			mapperPath = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperID, contentMapper);				
 		}
 		imageBaseUri = mapperPath + "/" + WikiContainer.MEDIA_FOLDER_NAME + "/";
 	}

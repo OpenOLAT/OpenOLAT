@@ -159,7 +159,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			
 			String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
 			printMapper = new CPPrintMapper(ctm, rootContainer, themeBaseUri);
-			mapperBaseURL = registerMapper(printMapper);
+			mapperBaseURL = registerMapper(ureq, printMapper);
 			printMapper.setBaseUri(mapperBaseURL);
 		}
 		

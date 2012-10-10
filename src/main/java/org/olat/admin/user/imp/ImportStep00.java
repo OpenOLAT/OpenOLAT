@@ -350,7 +350,7 @@ class ImportStep00 extends BasicStep {
 
 			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
 			excelMapper = createMapper(ureq);
-			String mapperURI = registerMapper(excelMapper);
+			String mapperURI = registerMapper(ureq, excelMapper);
 			textContainer.contextPut("mapperURI", mapperURI);
 
 			// get mandatory user-properties and set as text

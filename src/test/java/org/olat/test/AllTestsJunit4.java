@@ -133,6 +133,8 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.service.tagging.SimpleTagProposalManagerTest.class,
 	org.olat.commons.coordinate.singlevm.SingleVMLockerTest.class,
 	org.olat.core.commons.service.tagging.TaggingManagerTest.class,
+	org.olat.core.dispatcher.mapper.MapperDAOTest.class,
+	org.olat.core.dispatcher.mapper.MapperServiceTest.class,
 	org.olat.restapi.AuthenticationTest.class,
 	org.olat.restapi.CatalogTest.class,
 	org.olat.restapi.CourseGroupMgmtTest.class,

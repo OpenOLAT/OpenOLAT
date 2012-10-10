@@ -29,8 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -69,10 +70,8 @@ public abstract class BasicController extends DefaultController {
 	private Translator fallbackTranslator;
 	private OLog logger;
 
-	private MapperRegistry mreg;
-	private List<Mapper> mappers = null;
-
-	private List<Controller> childControllers = null;
+	private List<Mapper> mappers;
+	private List<Controller> childControllers;
 
 	/**
 	 * easy to use controller template. Extending the BasicController allows to
@@ -89,7 +88,6 @@ public abstract class BasicController extends DefaultController {
 		this.translator = Util.createPackageTranslator(this.getClass(), locale);
 		this.fallbackTranslator = null;
 		this.velocity_root = Util.getPackageVelocityRoot(this.getClass());
-		this.mreg = MapperRegistry.getInstanceFor(ureq.getUserSession());
 		this.logger = Tracing.createLoggerFor(this.getClass());
 	}
 	
@@ -118,7 +116,6 @@ public abstract class BasicController extends DefaultController {
 		this.translator = Util.createPackageTranslator(this.getClass(), locale,
 				fallBackTranslator);
 		this.velocity_root = Util.getPackageVelocityRoot(this.getClass());
-		this.mreg = MapperRegistry.getInstanceFor(ureq.getUserSession());
 		this.logger = Tracing.createLoggerFor(this.getClass());
 	}
 
@@ -126,9 +123,7 @@ public abstract class BasicController extends DefaultController {
 	protected void doPreDispose() {
 		// deregister all mappers if needed
 		if (mappers != null) {
-			for (Mapper m : mappers) {
-				mreg.deregister(m);
-			}
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
 		}
 
 		// dispose child controller if needed
@@ -200,8 +195,8 @@ public abstract class BasicController extends DefaultController {
 	 * @return The mapper base URL
 	 */
 
-	protected String registerMapper(Mapper m) {
-		return registerCacheableMapper(null, m);
+	protected String registerMapper(UserRequest ureq, Mapper m) {
+		return registerCacheableMapper(ureq, null, m);
 	}
 
 	/**
@@ -216,33 +211,20 @@ public abstract class BasicController extends DefaultController {
 	 *            the mapper that delivers the resources
 	 * @return The mapper base URL
 	 */
-	protected String registerCacheableMapper(String cacheableMapperID, Mapper m) {
-		if (mappers == null)
+	protected String registerCacheableMapper(UserRequest ureq, String cacheableMapperID, Mapper m) {
+		if (mappers == null) {
 			mappers = new ArrayList<Mapper>(2);
+		}
 		String mapperBaseURL; 
 		if (cacheableMapperID == null) {
 			// use non cacheable as fallback
-			mapperBaseURL =  mreg.register(m);			
+			mapperBaseURL =  CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), m);			
 		} else {
-			mapperBaseURL =  mreg.registerCacheable(cacheableMapperID, m);			
+			mapperBaseURL =  CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), cacheableMapperID, m);			
 		}
 		// registration was successful, add to our mapper list
 		mappers.add(m);
 		return mapperBaseURL;
-	}
-
-	/**
-	 * Note: must not be called from doDispose(), all registered mappers are
-	 * disposed automatically
-	 * 
-	 * @param m
-	 */
-	protected void deregisterMapper(Mapper m) {
-		boolean success = mappers != null && mappers.remove(m);
-		if (!success)
-			throw new AssertException(
-					"removing a mapper which was not registered");
-		mreg.deregister(m);
 	}
 
 	/**

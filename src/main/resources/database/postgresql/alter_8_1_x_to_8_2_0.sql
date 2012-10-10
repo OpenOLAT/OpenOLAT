@@ -239,5 +239,15 @@ create index o_co_db_cat_idx on o_co_db_entry (category);
 create index o_co_db_name_idx on o_co_db_entry (name);
 alter table o_co_db_entry add constraint FKB60B1BA5F7E870XY foreign key (identity) references o_bs_identity;
 
-
+-- add mapper table
+create table o_mapper (
+   id int8 not null,
+   lastmodified timestamp,
+   creationdate timestamp,
+   mapper_uuid varchar(64),
+   orig_session_id varchar(32),
+   xml_config varchar(4000),
+   primary key (id)
+);
+create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 

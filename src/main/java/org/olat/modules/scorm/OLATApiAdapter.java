@@ -33,9 +33,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -50,6 +52,8 @@ import org.olat.modules.scorm.server.beans.LMSDataHandler;
 import org.olat.modules.scorm.server.beans.LMSResultsBean;
 import org.olat.modules.scorm.server.sequence.ItemSequence;
 
+import ch.ethz.pfplms.scorm.api.ApiAdapter;
+
 /**
  * OLATApiAdapter implements the ApiAdapter Interface from the pfplms code which was initially
  * designed for applet use. For the 'Backend' it uses portions of the code developed for the reload
@@ -59,7 +63,7 @@ import org.olat.modules.scorm.server.sequence.ItemSequence;
  * @author guido
  */
 public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm.api.ApiAdapterInterface {
-	private	ch.ethz.pfplms.scorm.api.ApiAdapter core; 
+	private final	ApiAdapter core; 
 	//private ScormTrackingManager scormTracking;
 	
 	private Hashtable<String,String> olatScoCmi = new Hashtable<String,String>();
@@ -77,7 +81,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 	private LMSDataHandler odatahandler;
 	private ScormManager scormManager;
 	private SettingsHandlerImpl scormSettingsHandler;
-	private final ScormAPICallback apiCallback;
+	private final List<ScormAPICallback> apiCallbacks = new ArrayList<ScormAPICallback>(2);
 	// 
 	private Properties scoresProp; // keys: sahsId; values = raw score of an sco
 	
@@ -87,9 +91,12 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 	/**
 	 * creates a new API adapter
 	 */
-	OLATApiAdapter (ScormAPICallback apiCallback) {
-		this.apiCallback = apiCallback;
-		core = new ch.ethz.pfplms.scorm.api.ApiAdapter ();
+	OLATApiAdapter () {
+		core = new ApiAdapter();
+	}
+	
+	public void addAPIListener(ScormAPICallback apiCallback) {
+		apiCallbacks.add(apiCallback);
 	}
 
 	/**
@@ -127,6 +134,14 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 			 
 		
 		scormManager = new ScormManager(cpRoot.getAbsolutePath(), true, true, true, scormSettingsHandler);
+	}
+	
+	public String getCreditMode() {
+		return scormSettingsHandler.getCreditMode();
+	}
+	
+	public String getLessonMode() {
+		return scormSettingsHandler.getLessonMode();
 	}
 
 	private final void say (String s) {
@@ -290,20 +305,24 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 						FileUtils.closeSafely(os);
 					}
 					// notify
-					if (apiCallback != null) {
-						apiCallback.lmsCommit(olatScoId, scoresProp);
+					if (!apiCallbacks.isEmpty()) {
+						for(ScormAPICallback apiCallback:apiCallbacks) {
+							apiCallback.lmsCommit(olatScoId, scoresProp);
+						}
 					}
 				}
 			}
 		// <OLATCE-289>
 		}else{
 				//if "isACommit" is false, this is a lmsFinish and the apiCallback shall save the points an passed information
-				if (apiCallback != null) {
+				if (!apiCallbacks.isEmpty()) {
 					String rawScore = cmiData.get(SCORE_IDENT);
 					if (rawScore != null && !rawScore.equals("")) {
 						scoresProp.put(olatScoId, rawScore);
 					}
-					apiCallback.lmsFinish(olatScoId, scoresProp);
+					for(ScormAPICallback apiCallback:apiCallbacks) {
+						apiCallback.lmsFinish(olatScoId, scoresProp);
+					}
 				}
 			// </OLATCE-289>
 		}

@@ -49,6 +49,7 @@ How to add a new job:
             <ref bean="updateQtiResultsTriggerOnyx"/>
             <ref bean="countUserOnlineTrigger"/>
             <ref bean="acReservationCleanupJob"/>
+            <ref bean="mapperSlayerTrigger"/>
         </list>
     </property>
 </bean>

@@ -503,7 +503,7 @@ public class FolderRunController extends BasicController implements Activateable
 				// and can not reuse the standard briefcase way of file delivering, some
 				// very old fancy code
 				// Mapper is cleaned up automatically by basic controller
-				String baseUrl = registerMapper(new Mapper() {
+				String baseUrl = registerMapper(ureq, new Mapper() {
 					public MediaResource handle(String relPath, HttpServletRequest request) {
 						VFSLeaf vfsfile = (VFSLeaf) folderComponent.getRootContainer().resolve(relPath);
 						if (vfsfile == null) {

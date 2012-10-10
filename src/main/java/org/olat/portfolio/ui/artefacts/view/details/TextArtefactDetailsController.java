@@ -71,12 +71,12 @@ public class TextArtefactDetailsController extends BasicController {
 		this.artefact = artefact;
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		vC = createVelocityContainer("textDetails");
-		init();
+		init(ureq);
 
 		putInitialPanel(vC);
 	}
 
-	private void init() {
+	private void init(UserRequest ureq) {
 		String artFulltextContent = ePFMgr.getArtefactFullTextContent(artefact);
 		if (!readOnlyMode) {
 			// prepare an edit link
@@ -87,7 +87,7 @@ public class TextArtefactDetailsController extends BasicController {
 		} else {
 			// register a mapper to deliver uploaded media files
 			final VFSContainer artefactFolder = ePFMgr.getArtefactContainer(artefact);
-			String mapperBase = registerMapper(new Mapper() {			
+			String mapperBase = registerMapper(ureq, new Mapper() {			
 				@SuppressWarnings("unused")
 				@Override
 				public MediaResource handle(String relPath, HttpServletRequest request) {
@@ -121,7 +121,7 @@ public class TextArtefactDetailsController extends BasicController {
 			// close callout, refresh artefact-details
 			calloutCtrl.deactivate();
 			removeAsListenerAndDispose(calloutCtrl);
-			init();
+			init(ureq);
 		}
 	}
 

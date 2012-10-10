@@ -81,7 +81,7 @@ public class GlobalMapperRegistry implements Dispatcher {
 	 * @param mapper
 	 * @return the path under which this mapper will be called, without / at the end, e.g. /olat/g/521org.olat.demo.tabledemo.MyController (the 521 here is the versionId to guarantee the uniqueness across releases to trick out buggy css browser caches)
 	 */
-	public String register(Class globalNameClass, Mapper mapper) {
+	public String register(Class<?> globalNameClass, Mapper mapper) {
 		String globalName = Settings.getBuildIdentifier()+globalNameClass.getName();
 		if (pathToMapper.containsKey(globalName)) {
 			throw new AssertException("Could not register global named mapper, name already used::" + globalName);

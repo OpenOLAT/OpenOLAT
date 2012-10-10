@@ -33,8 +33,9 @@ import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.control.JSAndCSSAdder;
@@ -318,8 +319,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 			}
 		};
 
-		MapperRegistry mr = MapperRegistry.getInstanceFor(ureq.getUserSession());
-		String fetchUri = mr.register(mapper);
+		String fetchUri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapper);
 		this.mapperUri = fetchUri + "/";
 	}
 

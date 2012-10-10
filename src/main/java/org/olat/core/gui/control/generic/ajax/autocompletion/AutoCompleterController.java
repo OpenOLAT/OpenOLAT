@@ -121,7 +121,7 @@ public class AutoCompleterController extends BasicController {
 		mapper = new AutoCompleterMapper(noResults, showDisplayKey, gprovider);
 			
 		// Add mapper URL to JS data store in velocity
-		String fetchUri = registerMapper(mapper);
+		String fetchUri = registerMapper(ureq, mapper);
 		final String fulluri = fetchUri; // + "/" + fileName;
 		myContent.contextPut("mapuri", fulluri+"/autocomplete.json");
 		putInitialPanel(myContent);

@@ -27,6 +27,7 @@
 package org.olat.core.gui.components;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,8 +39,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.dispatcher.mapper.MapperRegistry;
+import org.olat.core.dispatcher.mapper.MapperDispatcher;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
@@ -462,7 +465,7 @@ public class Window extends Container {
 								MediaResourceMapper extMRM = new MediaResourceMapper();
 								extMRM.setMediaResource(mmr);
 								//FIXME:fj:b deregister old mapper, or reuse current one
-								String res = MapperRegistry.getInstanceFor(ureq.getUserSession()).register(extMRM)+"/";
+								String res = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), extMRM) + "/";
 								// e.g. res = /olat/m/10001/
 								Command rmrcom = CommandFactory.createParentRedirectForExternalResource(res);
 								wbackofficeImpl.sendCommandTo(rmrcom);

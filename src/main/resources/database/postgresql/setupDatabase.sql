@@ -1008,6 +1008,18 @@ create table o_as_user_course_infos (
    primary key (id)
 );
 
+-- add mapper table
+create table o_mapper (
+   id int8 not null,
+   lastmodified timestamp,
+   creationdate timestamp,
+   mapper_uuid varchar(64),
+   orig_session_id varchar(32),
+   xml_config varchar(4000),
+   primary key (id)
+);
+create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
+
 -- user view
 create view o_bs_identity_short_v as (
    select

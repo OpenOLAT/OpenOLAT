@@ -123,7 +123,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		mapper = new AutoCompleterMapper(noResults, showDisplayKey, gprovider);
 		
 		// Add mapper URL to JS data store in velocity
-		String fetchUri = registerMapper(mapper);
+		String fetchUri = registerMapper(ureq, mapper);
 		final String fulluri = fetchUri; // + "/" + fileName;
 		flc.contextPut("mapuri", fulluri+"/autocomplete.json");
 	}
