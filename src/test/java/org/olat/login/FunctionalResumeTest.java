@@ -79,7 +79,7 @@ public class FunctionalResumeTest {
 		functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 		functionalHomeSiteUtil = functionalUtil.getFunctionalHomeSiteUtil();
 		functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
-		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+		functionalCourseUtil = functionalRepositorySiteUtil.getFunctionalCourseUtil();
 	}
 	
 	@Test

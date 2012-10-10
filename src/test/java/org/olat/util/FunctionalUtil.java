@@ -548,6 +548,7 @@ public class FunctionalUtil {
 		.append(selectedCss)
 		.append(" a");
 		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		waitForPageToLoad(browser);
 		waitForPageToLoadElement(browser, selectorBuffer.toString(), WaitLimitAttribute.NORMAL);
@@ -937,9 +938,9 @@ public class FunctionalUtil {
 		
 		waitForPageToLoadElement(browser, locatorBuffer.toString());
 		
-		//browser.focus(locatorBuffer.toString());
+		browser.focus(locatorBuffer.toString());
 		browser.click(locatorBuffer.toString());
-		//waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		waitForPageToUnloadElement(browser, locatorBuffer.toString());
 		
 		return(true);
 	}

@@ -51,8 +51,6 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @RunWith(Arquillian.class)
 public class FunctionalCatalogTest {
-	public final static int COURSES = 2;
-	
 	public final static String[] SUBCATEGORY_PATHS = {
 		"/programming",
 		"/programming/c",
@@ -64,7 +62,7 @@ public class FunctionalCatalogTest {
 		"about the Java programming language"
 	};
 	
-	public final static String[] SUBCATECORY_PATHS_INCLUDING_RESOURCE = {
+	public final static String[] SUBCATEGORY_PATHS_INCLUDING_RESOURCE = {
 		SUBCATEGORY_PATHS[1],
 		SUBCATEGORY_PATHS[2]
 	};
@@ -95,7 +93,7 @@ public class FunctionalCatalogTest {
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 
 			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
-			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+			functionalCourseUtil = functionalRepositorySiteUtil.getFunctionalCourseUtil();
 
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 			
@@ -106,20 +104,22 @@ public class FunctionalCatalogTest {
 	@Test
 	@RunAsClient
 	public void checkCreateSubcategory() throws URISyntaxException, IOException{
+		int courses = SUBCATEGORY_PATHS_INCLUDING_RESOURCE.length;
+		
 		/*
 		 * prerequisites for test created via REST
 		 */
 		/* import wiki */
-		RepositoryEntryVO[] wikiVO = new RepositoryEntryVO[COURSES]; 
+		RepositoryEntryVO[] wikiVO = new RepositoryEntryVO[courses]; 
 		
-		for(int i = 0; i < COURSES; i++){
+		for(int i = 0; i < courses; i++){
 			wikiVO[i] = functionalVOUtil.importWiki(deploymentUrl);
 		}
 		
 		/* import course */
-		CourseVO[] courseVO = new CourseVO[COURSES];
+		CourseVO[] courseVO = new CourseVO[courses];
 		
-		for(int i = 0; i < COURSES; i++){
+		for(int i = 0; i < courses; i++){
 			courseVO[i] = functionalVOUtil.importEmptyCourse(deploymentUrl);
 		}
 
@@ -138,14 +138,14 @@ public class FunctionalCatalogTest {
 		}
 		
 		/* edit course and publish thereby adding it to catalog  */
-		for(int i = 0; i < COURSES; i++){
+		for(int i = 0; i < courses; i++){
 			/* open course in edit mode */	
 			Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, courseVO[i].getRepoEntryKey()));
 			
 			Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
 			
 			/* choose wiki */
-			String currentPath = SUBCATECORY_PATHS_INCLUDING_RESOURCE[i];
+			String currentPath = SUBCATEGORY_PATHS_INCLUDING_RESOURCE[i];
 			String currentName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
 			
 			Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.WIKI, "wiki", currentName + " wiki", "colaborative " + currentName + " wiki", 0));
@@ -167,7 +167,7 @@ public class FunctionalCatalogTest {
 		Assert.assertTrue(functionalRepositorySiteUtil.openActionByMenuTree(browser, RepositorySiteAction.CATALOG));
 		
 		/* verify resources */
-		for(int i = 0; i < COURSES; i++){
+		for(int i = 0; i < courses; i++){
 			
 			/* click on catalog root */
 			StringBuffer selectorBuffer = new StringBuffer();
@@ -181,7 +181,7 @@ public class FunctionalCatalogTest {
 			}
 			
 			/* navigate tree */
-			String[] selectors = functionalRepositorySiteUtil.createCatalogSelectors(SUBCATECORY_PATHS_INCLUDING_RESOURCE[i]);
+			String[] selectors = functionalRepositorySiteUtil.createCatalogSelectors(SUBCATEGORY_PATHS_INCLUDING_RESOURCE[i]);
 			
 			for(String currentSelector: selectors){
 				functionalUtil.waitForPageToLoadElement(browser, currentSelector.toString());

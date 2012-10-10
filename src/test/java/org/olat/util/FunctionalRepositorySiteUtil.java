@@ -318,7 +318,11 @@ public class FunctionalRepositorySiteUtil {
 	private String toolboxSharedfolderCss;
 	private String toolboxGlossaryCss;
 	
+	private String courseTabActiveCss;
+	private String courseTabCloseCss;
+	
 	private FunctionalUtil functionalUtil;
+	private FunctionalCourseUtil functionalCourseUtil;
 	
 	
 	public FunctionalRepositorySiteUtil(FunctionalUtil functionalUtil){
@@ -392,7 +396,11 @@ public class FunctionalRepositorySiteUtil {
 		setToolboxSharedfolderCss(TOOLBOX_SHAREDFOLDER_CSS);
 		setToolboxGlossaryCss(TOOLBOX_GLOSSARY_CSS);
 		
+		setCourseTabActiveCss(FunctionalCourseUtil.COURSE_TAB_ACTIVE_CSS);
+		setCourseTabCloseCss(FunctionalCourseUtil.COURSE_TAB_CLOSE_CSS);
+		
 		setFunctionalUtil(functionalUtil);
+		functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, this);
 	}
 	
 	/**
@@ -688,8 +696,30 @@ public class FunctionalRepositorySiteUtil {
 		.append(selectedCss)
 		.append(" * a");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @return
+	 * 
+	 * Waits until course has been loaded.
+	 */
+	private boolean waitForPageToLoadCourse(Selenium browser){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		//FIXME:JK: this isn't very safe because there may be more than one open courses
+		selectorBuffer.append("xpath=//li[contains(@class, '")
+		.append(getCourseTabActiveCss())
+		.append("')]//a[contains(@class, '")
+		.append(getCourseTabCloseCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}
@@ -703,7 +733,8 @@ public class FunctionalRepositorySiteUtil {
 	 */
 	public boolean openCourse(Selenium browser, long key){
 		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + key);
-		functionalUtil.waitForPageToLoad(browser);
+		
+		waitForPageToLoadCourse(browser);
 		
 		return(true);
 	}
@@ -749,7 +780,8 @@ public class FunctionalRepositorySiteUtil {
 		.append("//a");
 
 		browser.click(selectorBuffer.toString());
-		functionalUtil.waitForPageToLoad(browser);
+
+		waitForPageToLoadCourse(browser);
 		
 		return(true);
 	}
@@ -1070,13 +1102,25 @@ public class FunctionalRepositorySiteUtil {
 		}
 		
 		functionalUtil.clickWizardNext(browser);
+		functionalUtil.waitForPageToUnloadElement(browser, "//div[contains(@class, 'b_wizard')]//input[@type='checkbox']");
 		
 		/* catalog */
 		if(catalog != null){
-			//TODO:JK: implement me
+			String[] catalogSelectors = functionalCourseUtil.createCatalogSelectors(catalog);
+			
+			for(String catalogSelector: catalogSelectors){
+				functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
+
+				if(browser.isElementPresent(catalogSelector + "/../img[contains(@class, 'x-tree-elbow-end-plus')]")){
+					browser.doubleClick(catalogSelector);
+				}else{
+					browser.click(catalogSelector);
+				}
+			}
 		}
 		
 		functionalUtil.clickWizardNext(browser);
+		functionalUtil.waitForPageToUnloadElement(browser, "//div[contains(@class, 'b_wizard')]//div[contains(@class, 'x-tree-node')]");
 		
 		/* publish */
 		if(!publish){
@@ -1599,11 +1643,35 @@ public class FunctionalRepositorySiteUtil {
 		this.toolboxGlossaryCss = toolboxGlossaryCss;
 	}
 
+	public String getCourseTabActiveCss() {
+		return courseTabActiveCss;
+	}
+
+	public void setCourseTabActiveCss(String courseTabActiveCss) {
+		this.courseTabActiveCss = courseTabActiveCss;
+	}
+
+	public String getCourseTabCloseCss() {
+		return courseTabCloseCss;
+	}
+
+	public void setCourseTabCloseCss(String courseTabCloseCss) {
+		this.courseTabCloseCss = courseTabCloseCss;
+	}
+
 	public FunctionalUtil getFunctionalUtil() {
 		return functionalUtil;
 	}
 
 	public void setFunctionalUtil(FunctionalUtil functionalUtil) {
 		this.functionalUtil = functionalUtil;
+	}
+
+	public FunctionalCourseUtil getFunctionalCourseUtil() {
+		return functionalCourseUtil;
+	}
+
+	public void setFunctionalCourseUtil(FunctionalCourseUtil functionalCourseUtil) {
+		this.functionalCourseUtil = functionalCourseUtil;
 	}
 }

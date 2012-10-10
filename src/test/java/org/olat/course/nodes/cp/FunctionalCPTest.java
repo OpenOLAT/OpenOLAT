@@ -78,7 +78,7 @@ public class FunctionalCPTest {
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
 
 			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
-			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+			functionalCourseUtil = functionalRepositorySiteUtil.getFunctionalCourseUtil();
 
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 

@@ -88,7 +88,7 @@ public class FunctionalPortfolioTest {
 
 			functionalHomeSiteUtil = functionalUtil.getFunctionalHomeSiteUtil();
 			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
-			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+			functionalCourseUtil = functionalRepositorySiteUtil.getFunctionalCourseUtil();
 			functionalEPortfolioUtil = new FunctionalEPortfolioUtil(functionalUtil, functionalHomeSiteUtil);
 			
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());

@@ -797,6 +797,7 @@ public class FunctionalCourseUtil {
 			
 			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 			
+			browser.focus(selectorBuffer.toString());
 			browser.click(selectorBuffer.toString());
 			
 			functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());

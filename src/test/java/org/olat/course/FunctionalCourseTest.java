@@ -94,7 +94,7 @@ public class FunctionalCourseTest {
 			functionalHtmlUtil = new FunctionalHtmlUtil();
 
 			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
-			functionalCourseUtil = new FunctionalCourseUtil(functionalUtil, functionalRepositorySiteUtil);
+			functionalCourseUtil = functionalRepositorySiteUtil.getFunctionalCourseUtil();
 
 			initialized = true;
 		}
@@ -179,7 +179,9 @@ public class FunctionalCourseTest {
 
 		String originalText = functionalHtmlUtil.stripTags(IOUtils.toString(FunctionalCourseTest.class.getResourceAsStream(EDITOR_COURSE_OVERVIEW_FILE)), true);
 
-		browser.selectFrame("dom=document.getElementsByClassName('b_module_singlepage_wrapper')[0].getElementsByTagName('iframe')[0]" );
+		String spIFrameSelector = "dom=document.getElementsByClassName('b_module_singlepage_wrapper')[0].getElementsByTagName('iframe')[0]";
+		functionalUtil.waitForPageToLoadElement(browser, spIFrameSelector);
+		browser.selectFrame(spIFrameSelector);
 		String source = browser.getHtmlSource();
 		String currentText = functionalHtmlUtil.stripTags(source, true);
 		browser.selectFrame("relative=up");
