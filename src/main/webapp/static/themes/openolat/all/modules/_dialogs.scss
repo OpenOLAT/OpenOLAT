@@ -76,10 +76,25 @@ div.b_callout_content { max-width: 60em; overflow: hidden;}
 div.x-tip-tc, div.x-tip-bc { background-repeat: repeat ! important;}
 div.x-tip-body p{margin-bottom:0px;}
 div.x-tip-mc {background: #e9f2ff ! important;}
+
 /* ajax busy icon*/
-body.b_ajax_busy { cursor: wait; }
-div.b_ajax_busy {background: url(../openolat/images/ajax-loader.gif) no-repeat; position: absolute; left:50% ; top: 10px; width:28px; height: 28px; z-index:5001;}
-	
+body.b_ajax_busy { 
+	cursor: wait; 
+}
+div.b_ajax_busy { 
+	position: absolute; 
+	z-index:5001; 
+	left:50%; 
+	top: 10px; 
+	height: 32px; 
+	width: 32px; 
+	background-repeat: no-repeat;
+	background-image:  url(images/ajax-loader.svg);
+}	
+/* fallback for browsers with no SVG support (uses modernizr for detection)
+html.no-svg div.b_ajax_busy { 
+	background-image: url(../openolat/images/ajax-loader.gif);
+}
 	
 /* DIALOG */
 div.b_window.b_dialogbox { 
