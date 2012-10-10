@@ -54,8 +54,8 @@ public class FunctionalCourseUtil {
 	public final static String ADD_TO_CATALOG_YES_VALUE = "yes";
 	public final static String ADD_TO_CATALOG_NO_VALUE = "no";
 	public final static String CATALOG_SUBCATEGORY_ICON_CSS = "o_catalog_cat_icon";
-	public final static String ADD_TO_CATALOG_CSS = null; //TODO:JK: add css class
-	public final static String CATALOG_CSS = null; //TODO:JK: add css class
+	public final static String ADD_TO_CATALOG_CSS = "o_sel_publish_add_to_catalog";
+	public final static String CATALOG_CSS = "o_sel_catalog_chooser_tree";
 	
 	public final static String COURSE_EDITOR_INSERT_CONTENT_CSS = "b_toolbox_content";
 	public final static String CREATE_COURSE_NODE_TARGET_POSITION_ITEM_CSS = "b_selectiontree_item";
@@ -699,7 +699,7 @@ public class FunctionalCourseUtil {
 		
 		selectorBuffer.append("xpath=//li//a[contains(@class, '")
 		.append(functionalUtil.getTreeNodeAnchorCss())
-		.append("')]//a");
+		.append("')]");
 		
 		selectors.add(selectorBuffer.toString());
 		
@@ -707,10 +707,10 @@ public class FunctionalCourseUtil {
 			StringBuffer selector = new StringBuffer();
 			
 			selector.append("xpath=//li//a[contains(@class, '")
-			.append(functionalUtil.getTreeNodeAnchorCss())
-			.append("')]//a//span[text()='")
+			.append(functionalUtil.getTreeNodeCss())
+			.append("')]//span[text()='")
 			.append(categoryMatcher.group(1))
-			.append("')]/..");
+			.append("']/..");
 			
 			selectors.add(selector.toString());
 		}
@@ -747,6 +747,7 @@ public class FunctionalCourseUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
+		functionalUtil.waitForPageToLoad(browser);
 		functionalUtil.clickWizardNext(browser);
 		
 		/* access options */
@@ -777,7 +778,12 @@ public class FunctionalCourseUtil {
 			
 			for(String catalogSelector: catalogSelectors){
 				functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
-				browser.click(catalogSelector);
+
+				if(browser.isElementPresent(catalogSelector + "/../img[contains(@class, 'x-tree-elbow-end-plus')]")){
+					browser.doubleClick(catalogSelector);
+				}else{
+					browser.click(catalogSelector);
+				}
 			}
 			
 			/* click choose */

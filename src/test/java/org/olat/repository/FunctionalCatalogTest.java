@@ -31,7 +31,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
@@ -104,7 +103,6 @@ public class FunctionalCatalogTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreateSubcategory() throws URISyntaxException, IOException{
@@ -147,14 +145,14 @@ public class FunctionalCatalogTest {
 			Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
 			
 			/* choose wiki */
-			String currentPath = SUBCATEGORY_PATHS[i];
+			String currentPath = SUBCATECORY_PATHS_INCLUDING_RESOURCE[i];
 			String currentName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
 			
 			Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.WIKI, "wiki", currentName + " wiki", "colaborative " + currentName + " wiki", 0));
 			Assert.assertTrue(functionalCourseUtil.chooseWiki(browser, wikiVO[i].getKey()));
 			
 			/* publish course */
-			Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, SUBCATEGORY_PATHS[i]));
+			Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, currentPath));
 			
 			/* close course */
 			Assert.assertTrue(functionalCourseUtil.closeActiveTab(browser));
@@ -170,30 +168,57 @@ public class FunctionalCatalogTest {
 		
 		/* verify resources */
 		for(int i = 0; i < COURSES; i++){
+			
+			/* click on catalog root */
+			StringBuffer selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=//div[contains(@class, '")
+			.append(functionalRepositorySiteUtil.getCatalogNavigationCss())
+			.append("')]//a");
+			
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				browser.click(selectorBuffer.toString());
+			}
+			
+			/* navigate tree */
 			String[] selectors = functionalRepositorySiteUtil.createCatalogSelectors(SUBCATECORY_PATHS_INCLUDING_RESOURCE[i]);
 			
 			for(String currentSelector: selectors){
-				/* click first course and retrieve business path */
-				StringBuffer selectorBuffer = new StringBuffer();
-				
-				selectorBuffer.append("xpath=//a[contains(@class, '")
-				.append(functionalRepositorySiteUtil.getCourseModuleIconCss())
-				.append("')]");
-				
-				browser.click(selectorBuffer.toString());
-				
-				functionalUtil.waitForPageToLoad(browser);
-				
-				String businessPath0 = functionalUtil.currentBusinessPath(browser);
-				
-				/* open course and retrieve business path */
-				functionalRepositorySiteUtil.openCourse(browser, courseVO[i].getRepoEntryKey());
-				
-				String businessPath1 = functionalUtil.currentBusinessPath(browser);
-				
-				/* assert collected business paths to be equal */
-				Assert.assertEquals(businessPath1, businessPath0);
+				functionalUtil.waitForPageToLoadElement(browser, currentSelector.toString());
+				browser.click(currentSelector);
 			}
+			
+			functionalUtil.waitForPageToLoad(browser);
+			
+			/* click first course and retrieve business path */
+			selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=(//a[contains(@class, '")
+			.append(functionalRepositorySiteUtil.getCourseModuleIconCss())
+			.append("')])");
+			
+			/* create business path and try to find it */
+			String businessPath0 = functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + courseVO[i].getRepoEntryKey();
+			boolean found = false;
+			
+			for(int j = 0; j < browser.getXpathCount(selectorBuffer.toString().substring(6)).intValue(); j++){
+				functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			
+				browser.click(selectorBuffer.toString() + "[" + (j + 1) + "]");
+			
+				functionalUtil.waitForPageToLoad(browser);
+			
+				String businessPath1 = functionalUtil.currentBusinessPath(browser);
+				functionalCourseUtil.closeActiveTab(browser);
+				
+				if(businessPath1.contains(businessPath0)){
+					found = true;
+					break;
+				}
+			}
+			
+			/* assert collected business paths to be equal */
+			Assert.assertTrue(found);
 		}
 	}
 	
