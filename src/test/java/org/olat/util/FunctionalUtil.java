@@ -32,6 +32,7 @@ import org.olat.util.FunctionalRepositorySiteUtil.RepositorySiteAction;
 import org.olat.util.FunctionalUserManagementSiteUtil.UserManagementSiteAction;
 
 import com.thoughtworks.selenium.Selenium;
+import com.thoughtworks.selenium.SeleniumException;
 
 /**
  * 
@@ -230,10 +231,10 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Loads the specified page with default deployment url.
+	 * 
 	 * @param browser
 	 * @param page
-	 * 
-	 * Loads the specified page with default deployment url.
 	 */
 	public void loadPage(Selenium browser, String page){
 		/* create url */
@@ -250,10 +251,19 @@ public class FunctionalUtil {
 		waitForPageToLoad(browser);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 */
 	public void waitForPageToLoad(Selenium browser){
 		waitForPageToLoad(browser, WaitLimitAttribute.VERY_SAVE);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param wait
+	 */
 	public void waitForPageToLoad(Selenium browser, WaitLimitAttribute wait){
 		String waitLimit = Long.toString(Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend()));
 		
@@ -261,27 +271,45 @@ public class FunctionalUtil {
 	}
 
 	/**
-	 * @param browser
-	 * @param locator
-	 * @return true on success otherwise false
-	 * 
 	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
 	 * specified by locator.
+	 * 
+	 * @param browser
+	 * @param locator
+	 * @param throwException
+	 * @return true on success otherwise false
+	 * @throws SeleniumException
 	 */
-	public boolean waitForPageToLoadElement(Selenium browser, String locator){
-		return(waitForPageToLoadElement(browser, locator, WaitLimitAttribute.VERY_SAVE));
+	public boolean waitForPageToLoadElement(Selenium browser, String locator) throws SeleniumException{
+		return(waitForPageToLoadElement(browser, locator, WaitLimitAttribute.VERY_SAVE, true));
 	}
 	
 	/**
+	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
+	 * specified by locator.
+	 * 
+	 * @param browser
+	 * @param locator
+	 * @param throwException
+	 * @return true on success otherwise false
+	 * @throws SeleniumException
+	 */
+	public boolean waitForPageToLoadElement(Selenium browser, String locator, boolean throwException) throws SeleniumException{
+		return(waitForPageToLoadElement(browser, locator, WaitLimitAttribute.VERY_SAVE, throwException));
+	}
+	
+	/** 
+	 * Waits at most (waitLimit + wait) amount of time for element to load
+	 * specified by locator.
+	 *
 	 * @param browser
 	 * @param locator
 	 * @param wait
+	 * @param throwException
 	 * @return true on success otherwise false
-	 * 
-	 * Waits at most (waitLimit + wait) amount of time for element to load
-	 * specified by locator.
+	 * @throws SeleniumException
 	 */
-	public boolean waitForPageToLoadElement(Selenium browser, String locator, WaitLimitAttribute wait){
+	public boolean waitForPageToLoadElement(Selenium browser, String locator, WaitLimitAttribute wait, boolean throwException) throws SeleniumException {
 		long startTime = Calendar.getInstance().getTimeInMillis();
 		long currentTime = startTime;
 		long waitLimit = Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend());
@@ -307,36 +335,52 @@ public class FunctionalUtil {
 		
 		log.warn("giving up after " + waitLimit + "ms");
 		
+		if(throwException){
+			throw new SeleniumException("timed out after " + waitLimit + "ms");
+		}
+		
 		return(false);
 	}
 	
-	
 	/**
+	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
+	 * specified by locator.
+	 * 
 	 * @param browser
 	 * @param locator
 	 * @return true on success otherwise false
-	 * 
-	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
-	 * specified by locator.
+	 * @throws SeleniumException
 	 */
-	public boolean waitForPageToUnloadElement(Selenium browser, String locator){
-		return(waitForPageToUnloadElement(browser, locator, WaitLimitAttribute.VERY_SAVE));
-	}
-	
-	public String currentBusinessPath(Selenium browser){
-		return(browser.getEval("window.o_info.businessPath"));
+	public boolean waitForPageToUnloadElement(Selenium browser, String locator) throws SeleniumException {
+		return(waitForPageToUnloadElement(browser, locator, WaitLimitAttribute.VERY_SAVE, true));
 	}
 	
 	/**
+	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
+	 * specified by locator.
+	 * 
+	 * @param browser
+	 * @param locator
+	 * @param throwException
+	 * @return true on success otherwise false
+	 * @throws SeleniumException
+	 */
+	public boolean waitForPageToUnloadElement(Selenium browser, String locator, boolean throwException) throws SeleniumException {
+		return(waitForPageToUnloadElement(browser, locator, WaitLimitAttribute.VERY_SAVE, throwException));
+	}
+	
+	/**
+	 * Waits at most (waitLimit + wait) amount of time for element to load
+	 * specified by locator.
+	 * 
 	 * @param browser
 	 * @param locator
 	 * @param wait
+	 * @param throwException
 	 * @return true on success otherwise false
-	 * 
-	 * Waits at most (waitLimit + wait) amount of time for element to load
-	 * specified by locator.
+	 * @throws SeleniumException
 	 */
-	public boolean waitForPageToUnloadElement(Selenium browser, String locator, WaitLimitAttribute wait){
+	public boolean waitForPageToUnloadElement(Selenium browser, String locator, WaitLimitAttribute wait, boolean throwException) throws SeleniumException {
 		long startTime = Calendar.getInstance().getTimeInMillis();
 		long currentTime = startTime;
 		long waitLimit = Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend());
@@ -362,14 +406,28 @@ public class FunctionalUtil {
 		
 		log.warn("giving up after " + waitLimit + "ms");
 		
+		if(throwException){
+			throw new SeleniumException("timed out after " + waitLimit + "ms");
+		}
+		
 		return(false);
 	}
 	
 	/**
+	 * Retrieves the business path.
+	 * 
+	 * @param browser
+	 * @return
+	 */
+	public String currentBusinessPath(Selenium browser){
+		return(browser.getEval("window.o_info.businessPath"));
+	}
+	
+	/**
+	 * Find CSS mapping for specific olat site.
+	 * 
 	 * @param site
 	 * @return the matching CSS class
-	 * 
-	 * Find CSS mapping for specific olat site.
 	 */
 	public String findCssClassOfSite(OlatSite site){
 		String selectedCss;
@@ -413,17 +471,18 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Check if the correct olat site is open.
+	 * 
 	 * @param browser
 	 * @param site
 	 * @return true if match otherwise false
-	 * 
-	 * Check if the correct olat site is open.
 	 */
 	public boolean checkCurrentSite(Selenium browser, OlatSite site){
 		return(checkCurrentSite(browser, site, -1));
 	}
 	
 	/**
+	 * 
 	 * @param browser
 	 * @param site
 	 * @param timeout
@@ -469,13 +528,13 @@ public class FunctionalUtil {
 	}
 	
 	/**
-	 * @param browser
-	 * @param site
-	 * @return true on success
-	 * 
 	 * Clicks the appropriate action on a site that it would be
 	 * on it's initial state i.e. it looks like the user wouldn't
 	 * have visited site before.
+	 * 
+	 * @param browser
+	 * @param site
+	 * @return true on success
 	 */
 	private boolean resetSite(Selenium browser, OlatSite site){
 		boolean retval = false;
@@ -517,11 +576,11 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Open a specific olat site.
+	 * 
 	 * @param browser
 	 * @param site
 	 * @return true on success otherwise false
-	 * 
-	 * Open a specific olat site.
 	 */
 	public boolean openSite(Selenium browser, OlatSite site){
 		String selectedCss = findCssClassOfSite(site);
@@ -551,7 +610,7 @@ public class FunctionalUtil {
 		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		waitForPageToLoad(browser);
-		waitForPageToLoadElement(browser, selectorBuffer.toString(), WaitLimitAttribute.NORMAL);
+		waitForPageToLoadElement(browser, selectorBuffer.toString(), WaitLimitAttribute.NORMAL, false);
 		
 		/* set it to it's initial state */
 		resetSite(browser, site);
@@ -560,26 +619,41 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * 
 	 * @param browser
 	 */
-	public void clickAwayNotification(Selenium browser){
+	public void clickAwayInfoMessages(Selenium browser){
 		//TODO:JK: the impatients and fearless may want to implement this method but be aware there may be more than one notification at the same time
 	}
 	
 	/**
+	 * Login to olat using selenium.
+	 * 
 	 * @param browser
 	 * @return true on success otherwise false
-	 * 
-	 * Login to olat using selenium.
 	 */
 	public boolean login(Selenium browser){
 		return login(browser, true);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param closeDialogs
+	 * @return
+	 */
 	public boolean login(Selenium browser, boolean closeDialogs){
 		return(login(browser, getUsername(), getPassword(), closeDialogs));
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param username
+	 * @param password
+	 * @param closeDialogs
+	 * @return
+	 */
 	public boolean login(Selenium browser, String username, String password, boolean closeDialogs){
 		loadPage(browser, getLoginPage());
 		
@@ -615,31 +689,31 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Logout from olat LMS.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Logout from olat LMS.
 	 */
 	public boolean logout(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("css=#")
-		.append(getOlatTopNavigationLogoutCss())
-		.append(" a");
+		.append(getOlatTopNavigationLogoutCss());
 		
 		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
-		waitForPageToLoad(browser);
+		
+		waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}
 	
 	/**
+	 * Opens a tab at the specific tabIndex.
+	 * 
 	 * @param browser
 	 * @param tabIndex
 	 * @return true on success otherwise false
-	 * 
-	 * Opens a tab at the specific tabIndex.
 	 */
 	public boolean openContentTab(Selenium browser, int tabIndex){
 		StringBuffer activeTabSelectorBuffer = new StringBuffer();
@@ -670,11 +744,11 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Save the form at the position formIndex within content element.
+	 * 
 	 * @param browser
 	 * @param formIndex
 	 * @return true on success
-	 * 
-	 * Save the form at the position formIndex within content element.
 	 */
 	public boolean saveForm(Selenium browser, int formIndex){
 		saveForm(browser, formIndex, getWaitLimit());
@@ -682,6 +756,13 @@ public class FunctionalUtil {
 		return(true);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param formIndex
+	 * @param waitLimit
+	 * @return
+	 */
 	public boolean saveForm(Selenium browser, int formIndex, String waitLimit){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -697,12 +778,12 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Clicks the radio button with specific value attribute in groupCss container.
+	 * 
 	 * @param browser
 	 * @param groupCss
 	 * @param value
 	 * @return true on success
-	 * 
-	 * Clicks the radio button with specific value attribute in groupCss container.
 	 */
 	public boolean clickCheckbox(Selenium browser, String groupCss, String value){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -713,19 +794,20 @@ public class FunctionalUtil {
 		.append(value)
 		.append("']");
 		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		return(true);
 	}
 	
 	/**
+	 * Clicks the radio button at position radioIndex from the selection at position radioGroupIndex.
+	 * 
 	 * @param browser
 	 * @param formIndex
 	 * @param radioGroupIndex
 	 * @param radioIndex
 	 * @return true on success
-	 * 
-	 * Clicks the radio button at position radioIndex from the selection at position radioGroupIndex.
 	 */
 	@Deprecated
 	public boolean clickRadio(Selenium browser, int formIndex, int radioGroupIndex, int radioIndex){
@@ -749,12 +831,12 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Clicks the radio button with specific value attribute in groupCss container.
+	 * 
 	 * @param browser
 	 * @param groupCss
 	 * @param value
 	 * @return true on success
-	 * 
-	 * Clicks the radio button with specific value attribute in groupCss container.
 	 */
 	public boolean clickRadio(Selenium browser, String groupCss, String value){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -773,13 +855,13 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Type text in the specified text entry at textIndex position within form at formIndex.
+	 * 
 	 * @param browser
 	 * @param formIndex
 	 * @param textIndex
 	 * @param text
 	 * @return true on success
-	 * 
-	 * Type text in the specified text entry at textIndex position within form at formIndex.
 	 */
 	@Deprecated
 	public boolean typeText(Selenium browser, int formIndex, int textIndex, String text){
@@ -798,12 +880,12 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Types text to the with CSS class specified entry.
+	 * 
 	 * @param browser
 	 * @param entryCss
 	 * @param text
 	 * @return true on success
-	 * 
-	 * Types text to the with CSS class specified entry.
 	 */
 	public boolean typeText(Selenium browser, String entryCss, String text){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -819,6 +901,12 @@ public class FunctionalUtil {
 		return(true);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param content
+	 * @return
+	 */
 	public boolean typeMCE(Selenium browser, String content){
 		if(content == null)
 			return(true);
@@ -836,6 +924,13 @@ public class FunctionalUtil {
 		return(true);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param cssClass
+	 * @param content
+	 * @return
+	 */
 	public boolean typeMCE(Selenium browser, String cssClass, String content){
 		if(content == null)
 			return(true);
@@ -856,12 +951,12 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Types text to the with CSS class specified password entry.
+	 * 
 	 * @param browser
 	 * @param entryCss
 	 * @param text
 	 * @return true on success
-	 * 
-	 * Types text to the with CSS class specified password entry.
 	 */
 	public boolean typePassword(Selenium browser, String entryCss, String text){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -878,12 +973,12 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Select an item of an option box.
+	 * 
 	 * @param browser
 	 * @param id
 	 * @param value
 	 * @return
-	 * 
-	 * Select an item of an option box.
 	 */
 	public boolean selectOption(Selenium browser, String id, String value){
 		StringBuffer selectLocatorBuffer = new StringBuffer();
@@ -905,10 +1000,10 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Clicks the next button of a wizard.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Clicks the next button of a wizard.
 	 */
 	public boolean clickWizardNext(Selenium browser){
 		StringBuffer locatorBuffer = new StringBuffer();
@@ -924,10 +1019,10 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Clicks the finish button of a wizard.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Clicks the finish button of a wizard.
 	 */
 	public boolean clickWizardFinish(Selenium browser){
 		StringBuffer locatorBuffer = new StringBuffer();

@@ -410,12 +410,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the nth course element within the specified course.
+	 * 
 	 * @param browser
 	 * @param courseId
 	 * @param nth
 	 * @return true on success otherwise false
-	 * 
-	 * Opens the nth course element within the specified course.
 	 */
 	public boolean open(Selenium browser, long courseId, int nth){
 		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
@@ -425,11 +425,11 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the nth course element in the current course.
+	 * 
 	 * @param browser
 	 * @param nth
 	 * @return true on success
-	 * 
-	 * Opens the nth course element in the current course.
 	 */
 	public boolean open(Selenium browser, int nth){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -438,18 +438,19 @@ public class FunctionalCourseUtil {
 		.append(nth + 1)
 		.append("]//a");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		return(true);
 	}
 	
 	/**
+	 * Opens the nth course element of course node type specified by alias in the current course.
+	 * 
 	 * @param browser
 	 * @param alias
 	 * @param nth
 	 * @return true on success
-	 * 
-	 * Opens the nth course element of course node type specified by alias in the current course.
 	 */
 	public boolean open(Selenium browser, CourseNodeAlias alias, int nth){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -468,13 +469,13 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the nth course element within the specified course
+	 * without using business paths.
+	 * 
 	 * @param browser
 	 * @param courseId
 	 * @param nth
 	 * @return true on success otherwise false
-	 * 
-	 * Opens the nth course element within the specified course
-	 * without using business paths.
 	 */
 	public boolean openWithoutBusinessPath(Selenium browser, long courseId, int nth){
 		if(!functionalRepositorySiteUtil.openCourseWithoutBusinessPath(browser, courseId))
@@ -492,6 +493,7 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * 
 	 * @param browser
 	 * @param title
 	 * @return
@@ -514,10 +516,10 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Closes the active tab.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Closes the active tab.
 	 */
 	public boolean closeActiveTab(Selenium browser){
 		StringBuffer stringBuffer = new StringBuffer();
@@ -537,10 +539,10 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the course editor but the course must be opened.
+	 * 
 	 * @param browser
 	 * @return true on success
-	 * 
-	 * Opens the course editor but the course must be opened.
 	 */
 	public boolean openCourseEditor(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -558,10 +560,10 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Reads the external link of the currently open course node within the editor.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Reads the external link of the currently open course node within the editor.
 	 */
 	public String readExternalLink(Selenium browser){
 		if(!functionalUtil.openContentTab(browser, 0)){
@@ -578,10 +580,10 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Reads the internal link of the currently open course node within the editor.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Reads the internal link of the currently open course node within the editor.
 	 */
 	public String readInternalLink(Selenium browser){
 		if(!functionalUtil.openContentTab(browser, 0)){
@@ -598,12 +600,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Disables the specified access option, the course editor should be open.
+	 * 
 	 * @param browser
 	 * @param option
 	 * @param nthForm
 	 * @return true on success
-	 * 
-	 * Disables the specified access option, the course editor should be open.
 	 */
 	public boolean disableAccessOption(Selenium browser, AccessOption option, int nthForm){
 		//TODO:JK: implement me
@@ -612,12 +614,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Enables the specified access option, the course editor should be open.
+	 * 
 	 * @param browser
 	 * @param option
 	 * @param nthForm
 	 * @return true on success
-	 * 
-	 * Enables the specified access option, the course editor should be open.
 	 */
 	public boolean enableAccessOption(Selenium browser, AccessOption option, int nthForm){
 		//TODO:JK: implement me
@@ -626,12 +628,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Uploads an individual overview page of course, the course editor should be open.
+	 * 
 	 * @param browser
 	 * @param file
 	 * @return true on success
 	 * @throws MalformedURLException 
-	 * 
-	 * Uploads an individual overview page of course, the course editor should be open.
 	 */
 	public boolean uploadOverviewPage(Selenium browser, URI file) throws MalformedURLException{
 		if(!openCourseEditorCourseTab(browser, CourseEditorCourseTab.OVERVIEW)){
@@ -681,10 +683,10 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Creates xpath selectors to select catalog within the tree.
+	 * 
 	 * @param path
 	 * @return
-	 * 
-	 * Creates xpath selectors to select catalog within the tree.
 	 */
 	public String[] createCatalogSelectors(String path){
 		if(path == null ||
@@ -719,12 +721,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Publishes the entire course.
+	 * 
 	 * @param browser
 	 * @param access
 	 * @param catalog
 	 * @return true on success
-	 * 
-	 * Publishes the entire course.
 	 */
 	public boolean publishEntireCourse(Selenium browser, AccessSettings access, String catalog){
 		/* click publish */
@@ -812,14 +814,14 @@ public class FunctionalCourseUtil {
 	}
 
 	/**
+	 * Creates the specified course node in a opened course editor.
+	 * 
 	 * @param browser
 	 * @param node
 	 * @param title
 	 * @param description
 	 * @param position
 	 * @return true on success otherwise false
-	 * 
-	 * Creates the specified course node in a opened course editor.
 	 */
 	public boolean createCourseNode(Selenium browser, CourseNodeAlias node, String shortTitle, String longTitle, String description, int position){
 		/* click on the appropriate link to create node */
@@ -884,11 +886,11 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
-	 * @param browser
-	 * @return true on success
-	 * 
 	 * Adds an artefact to eportfolio by clicking the appropriate
 	 * button.
+	 * 
+	 * @param browser
+	 * @return true on success
 	 */
 	public boolean addToEportfolio(Selenium browser, String binder, String page, String structure,
 			String title, String description, String[] tags,
@@ -901,6 +903,7 @@ public class FunctionalCourseUtil {
 		.append(getEportfolioAddCss())
 		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
@@ -936,13 +939,13 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the course with courseId and nth forum within the specified
+	 * course.
+	 * 
 	 * @param browser
 	 * @param courseId
 	 * @param nth forum in the course
 	 * @return true on success, otherwise false
-	 * 
-	 * Opens the course with courseId and nth forum within the specified
-	 * course.
 	 */
 	public boolean openForum(Selenium browser, long courseId, int nth){
 		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
@@ -966,14 +969,14 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the specified forum in the course and posts a new topic.
+	 * 
 	 * @param browser
 	 * @param courseId
 	 * @param nthForum
 	 * @param title
 	 * @param message
 	 * @return true on success, otherwise false
-	 * 
-	 * Opens the specified forum in the course and posts a new topic.
 	 */
 	public boolean postForumMessage(Selenium browser, long courseId, int nthForum, String title, String message){
 		if(!openForum(browser, courseId, nthForum))
@@ -1020,11 +1023,11 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the wiki specified by id.
+	 * 
 	 * @param browser
 	 * @param id
 	 * @return
-	 * 
-	 * Opens the wiki specified by id.
 	 */
 	public boolean openWiki(Selenium browser, long id){
 		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + id);
@@ -1034,13 +1037,13 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Creates a new wiki article.
+	 * 
 	 * @param browser
 	 * @param wikiId
 	 * @param pagename
 	 * @param content
 	 * @return true on success, otherwise false
-	 * 
-	 * Creates a new wiki article.
 	 */
 	public boolean createWikiArticle(Selenium browser, long wikiId, String pagename, String content){
 		if(!openWiki(browser, wikiId))
@@ -1104,11 +1107,11 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the blog specified by id
+	 * 
 	 * @param browser
 	 * @param id
 	 * @return true on success, otherwise false
-	 * 
-	 * Opens the blog specified by id.
 	 */
 	public boolean openBlog(Selenium browser, long id){
 		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + id);
@@ -1118,13 +1121,13 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens the course with courseId and nth blog within the specified
+	 * course.
+	 * 
 	 * @param browser
 	 * @param courseId
 	 * @param nth
 	 * @return
-	 * 
-	 * Opens the course with courseId and nth blog within the specified
-	 * course.
 	 */
 	public boolean openBlogWithoutBusinessPath(Selenium browser, long courseId, int nth){
 		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
@@ -1147,11 +1150,11 @@ public class FunctionalCourseUtil {
 	}
 
 	/**
+	 * Imports an existing feed into blog.
+	 * 
 	 * @param browser
 	 * @param url
 	 * @return true on success
-	 * 
-	 * Imports an existing feed into blog.
 	 */
 	public boolean importBlogFeed(Selenium browser, String url){
 		/* open popup to enter url */
@@ -1183,14 +1186,14 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Create a new blog entry.
+	 * 
 	 * @param browser
 	 * @param blogId
 	 * @param title
 	 * @param description
 	 * @param content
 	 * @return true on success, otherwise false
-	 * 
-	 * Create a new blog entry.
 	 */
 	public boolean createBlogEntry(Selenium browser, long courseId, int nth,
 			String title, String description, String content){
@@ -1236,11 +1239,11 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Imports an existing feed into podcast.
+	 * 
 	 * @param browser
 	 * @param url
 	 * @return true on success
-	 * 
-	 * Imports an existing feed into podcast.
 	 */
 	public boolean importPodcastFeed(Selenium browser, String url){
 		/* open popup to enter url */
@@ -1271,83 +1274,90 @@ public class FunctionalCourseUtil {
 		return(true);
 	}
 	
-	/**
+	/** 
+	 * Opens the course configurations appropriate tab.
+	 *
 	 * @param browser
 	 * @param tab
 	 * @return true on success
-	 * 
-	 * Opens the course configurations appropriate tab.
 	 */
 	public boolean openCourseEditorCourseTab(Selenium browser, CourseEditorCourseTab tab){
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
 	/**
+	 * Opens the test configurations appropriate tab.
+	 * 
 	 * @param browser
 	 * @param tab
 	 * @return true on success
-	 * 
-	 * Opens the test configurations appropriate tab.
 	 */
 	public boolean openCourseEditorIQTestTab(Selenium browser, CourseEditorIQTestTab tab){
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
 	/**
+	 * Opens the content package configurations appropriate tab
+	 * 
 	 * @param browser
 	 * @param tab
 	 * @return true on success
-	 * 
-	 * Opens the content package configurations appropriate tab.
 	 */
 	public boolean openCourseEditorCpTab(Selenium browser, CourseEditorCpTab tab){
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
 	/**
+	 * Opens the wiki configurations appropriate tab.
+	 * 
 	 * @param browser
 	 * @param tab
 	 * @return true on success
-	 * 
-	 * Opens the wiki configurations appropriate tab.
 	 */
 	public boolean openCourseEditorWikiTab(Selenium browser, CourseEditorWikiTab tab){
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
 	/**
+	 * Opens the blog configurations appropriate tab.
+	 * 
 	 * @param browser
 	 * @param tab
 	 * @return true on success
-	 * 
-	 * Opens the blog configurations appropriate tab.
 	 */
 	public boolean openCourseEditorBlogTab(Selenium browser, CourseEditorBlogTab tab){
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
 	/**
+	 * Opens the podcast configurations appropriate tab.
+	 * 
 	 * @param browser
 	 * @param tab
 	 * @return true on success
-	 * 
-	 * Opens the podcast configurations appropriate tab.
 	 */
 	public boolean openCourseEditorPodcastTab(Selenium browser, CourseEditorPodcastTab tab){
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
 	/**
+	 * Opens the portfolio task configurations appropriate tab.
+	 * 
 	 * @param browser
 	 * @param tab
 	 * @return true on success
-	 * 
-	 * Opens the portfolio task configurations appropriate tab.
 	 */
 	public boolean openCourseEditorPortfolioTaskTab(Selenium browser, CourseEditorPortfolioTaskTab tab){
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param chooseRepositoryCss
+	 * @param key
+	 * @return
+	 */
 	private boolean chooseRepositoryResource(Selenium browser, String chooseRepositoryCss, long key){
 		/* click on "choose, create or import file" button */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -1414,13 +1424,13 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Opens and fills in the "create resource" popup.
+	 * 
 	 * @param browser
 	 * @param chooseRepositoryCss
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Opens and fills in the "create resource" popup.
 	 */
 	private boolean createRepositoryResource(Selenium browser, String chooseRepositoryCss, String title, String description){
 		/* click on "choose, create or import file" button */
@@ -1452,12 +1462,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Creates a new test.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates a new test.
 	 */
 	public boolean createQTITest(Selenium browser, String title, String description){
 		if(!openCourseEditorIQTestTab(browser, CourseEditorIQTestTab.TEST_CONFIGURATION))
@@ -1471,12 +1481,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Creates a new CP learning content.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates a new CP learning content.
 	 */
 	public boolean createCPLearningContent(Selenium browser, String title, String description){
 		if(!openCourseEditorCpTab(browser, CourseEditorCpTab.LEARNING_CONTENT))
@@ -1490,12 +1500,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Creates a new wiki.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates a new wiki.
 	 */
 	public boolean createWiki(Selenium browser, String title, String description){
 		if(!openCourseEditorWikiTab(browser, CourseEditorWikiTab.LEARNING_CONTENT))
@@ -1509,11 +1519,11 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Choose an existing wiki.
+	 * 
 	 * @param browser
 	 * @param wikiId
 	 * @return
-	 * 
-	 * Choose an existing wiki.
 	 */
 	public boolean chooseWiki(Selenium browser, long wikiId){
 		if(!openCourseEditorWikiTab(browser, CourseEditorWikiTab.LEARNING_CONTENT))
@@ -1526,12 +1536,12 @@ public class FunctionalCourseUtil {
 		return(true);
 	}
 	/**
+	 * Creates a new blog.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates a new blog.
 	 */
 	public boolean createBlog(Selenium browser, String title, String description){
 		if(!openCourseEditorBlogTab(browser, CourseEditorBlogTab.LEARNING_CONTENT))
@@ -1545,12 +1555,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Creates a new podcast.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates a new podcast.
 	 */
 	public boolean createPodcast(Selenium browser, String title, String description){
 		if(!openCourseEditorPodcastTab(browser, CourseEditorPodcastTab.LEARNING_CONTENT))
@@ -1564,12 +1574,12 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
+	 * Creates a new podcast.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates a new podcast.
 	 */
 	public boolean createPortfolioTask(Selenium browser, String title, String description){
 		if(!openCourseEditorPortfolioTaskTab(browser, CourseEditorPortfolioTaskTab.LEARNING_CONTENT))
@@ -1583,11 +1593,11 @@ public class FunctionalCourseUtil {
 	}
 	
 	/**
-	 * @param browser
-	 * @return true on success
-	 * 
 	 * Opens the portfolio template editor in conjunction with this method the appropriate node and
 	 * the appopriate tab should already be opened.
+	 * 
+	 * @param browser
+	 * @return true on success
 	 */
 	public boolean openPortfolioTemplateEditor(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();

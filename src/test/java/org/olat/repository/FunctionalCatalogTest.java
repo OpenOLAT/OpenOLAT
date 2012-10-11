@@ -202,7 +202,7 @@ public class FunctionalCatalogTest {
 			boolean found = false;
 			
 			for(int j = 0; j < browser.getXpathCount(selectorBuffer.toString().substring(6)).intValue(); j++){
-				functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+				functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString() + "[" + (j + 1) + "]");
 			
 				browser.click(selectorBuffer.toString() + "[" + (j + 1) + "]");
 			

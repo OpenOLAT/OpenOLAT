@@ -30,11 +30,11 @@ public class FunctionalHtmlUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalHtmlUtil.class);
 	
 	/**
+	 * Strips all markup of specified string.
+	 * 
 	 * @param html
 	 * @param insertNewlines
 	 * @return
-	 * 
-	 * Strips all markup of specified string.
 	 */
 	public String stripTags(String html, boolean insertNewlines){
 		StringBuffer textBuffer = new StringBuffer();

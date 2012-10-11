@@ -46,11 +46,11 @@ public class FunctionalUserManagementSiteUtil {
 	}
 	
 	/**
+	 * Browse the learning resources site's navigation.
+	 * 
 	 * @param browser
 	 * @param action
 	 * @return true on success otherwise false
-	 * 
-	 * Browse the learning resources site's navigation.
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){
 		//TODO:JK: implement me

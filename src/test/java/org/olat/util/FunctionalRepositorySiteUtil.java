@@ -404,10 +404,10 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * creates a single selector.
+	 * 
 	 * @param name
 	 * @return
-	 * 
-	 * creates a single selector.
 	 */
 	private String createCatalogSelector(String name){
 		StringBuffer selector = new StringBuffer();
@@ -424,10 +424,10 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Creates xpath selectors to select catalog within the tree.
+	 * 
 	 * @param path
 	 * @return
-	 * 
-	 * Creates xpath selectors to select catalog within the tree.
 	 */
 	public String[] createCatalogSelectors(String path){
 		if(path == null ||
@@ -446,13 +446,13 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Adds a subcategory to catalog on the specified path.
+	 * 
 	 * @param browser
 	 * @param path
 	 * @param name
 	 * @param description
 	 * @return
-	 * 
-	 * Adds a subcategory to catalog on the specified path.
 	 */
 	public boolean createCatalogSubcategory(Selenium browser, String path, String name, String description){
 		if(!functionalUtil.openSite(browser, FunctionalUtil.OlatSite.LEARNING_RESOURCES)){
@@ -538,11 +538,11 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Select displayed columns of repository table.
+	 * 
 	 * @param browser
 	 * @param column
 	 * @return
-	 * 
-	 * Select displayed columns of repository table.
 	 */
 	public boolean displayColumns(Selenium browser, List<Column> column){
 		//TODO:JK: implement me
@@ -551,10 +551,10 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Find the corresponding CSS class for page.
+	 * 
 	 * @param action
 	 * @return the matching CSS class
-	 * 
-	 * Find the corresponding CSS class for page.
 	 */
 	public String findCssClassOfAction(Object action){
 		if(action == null)
@@ -649,11 +649,11 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Check if the correct page is open.
+	 * 
 	 * @param browser
 	 * @param action
 	 * @return true if match otherwise false
-	 * 
-	 * Check if the correct page is open.
 	 */
 	public boolean checkCurrentPage(Selenium browser, Object action){
 		String selectedCss = findCssClassOfAction(action);
@@ -677,11 +677,11 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Browse the learning resources site's navigation.
+	 * 
 	 * @param browser
 	 * @param action
 	 * @return true on success otherwise false
-	 * 
-	 * Browse the learning resources site's navigation.
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){ //activateMenuTreeAction(browser, action)
 		String selectedCss = findCssClassOfAction(action);
@@ -704,10 +704,10 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Waits until course has been loaded.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Waits until course has been loaded.
 	 */
 	private boolean waitForPageToLoadCourse(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -725,11 +725,11 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Opens a course by using business path.
+	 * 
 	 * @param browser
 	 * @param key
 	 * @return true on success otherwise false
-	 * 
-	 * Opens a course by using business path.
 	 */
 	public boolean openCourse(Selenium browser, long key){
 		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + key);
@@ -740,11 +740,11 @@ public class FunctionalRepositorySiteUtil {
 	}
 
 	/**
+	 * Opens a course matching key by using the search form.
+	 * 
 	 * @param browser
 	 * @param key
 	 * @return true on success otherwise false
-	 * 
-	 * Opens a course matching key by using the search form.
 	 */
 	public boolean openCourseWithoutBusinessPath(Selenium browser, Long key){
 		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
@@ -787,11 +787,11 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Opens the appropriate detailed view.
+	 * 
 	 * @param browser
 	 * @param key
 	 * @return
-	 * 
-	 * Opens the appropriate detailed view.
 	 */
 	public boolean openDetailedView(Selenium browser, Long key){
 		//TODO:JK: implement me
@@ -800,6 +800,7 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * 
 	 * @param browser
 	 * @param settings
 	 * @return
@@ -810,12 +811,25 @@ public class FunctionalRepositorySiteUtil {
 		return(false);
 	}
 	
+	/**
+	 * 
+	 * @param descriptor
+	 * @return
+	 */
 	public String findCssClassOfCourseAlias(String descriptor){
 		//TODO:JK: implement me
 		
 		return(null);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param alias
+	 * @param title
+	 * @param description
+	 * @return
+	 */
 	public boolean createCourseNode(Selenium browser, String alias, String title, String description){
 		//TODO:JK: implement me
 		
@@ -823,11 +837,11 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Clicks create course node of given CSS class.
+	 * 
 	 * @param browser
 	 * @param nodeCss
 	 * @return
-	 * 
-	 * Clicks create course node of given CSS class.
 	 */
 	private boolean clickCreate(Selenium browser, String nodeCss){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -845,12 +859,12 @@ public class FunctionalRepositorySiteUtil {
 	
 	
 	/**
+	 * Opens the detail view of a specified learning resource.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param nth
 	 * @return true on success
-	 * 
-	 * Opens the detail view of a specified learning resource.
 	 */
 	public boolean openDetailView(Selenium browser, String title, int nth){
 		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
@@ -891,6 +905,7 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * 
 	 * @param browser
 	 * @return the id
 	 */
@@ -904,7 +919,9 @@ public class FunctionalRepositorySiteUtil {
 		
 		return(id);
 	}
+	
 	/**
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
@@ -930,13 +947,13 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Creates a new blog in the repository.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return the learning resource's id
 	 * @throws IOException
-	 * 
-	 * Creates a new blog in the repository.
 	 */
 	public long createBlog(Selenium browser, String title, String description) throws IOException{
 		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
@@ -971,12 +988,11 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return
-	 * 
-	 * 
 	 */
 	public boolean fillInRepositoryEntryPopup(Selenium browser, String title, String description){
 		/* fill in title */
@@ -1022,12 +1038,12 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Creates an empty course afterwards the course editor is opened.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates an empty course afterwards the course editor is opened.
 	 */
 	public boolean createCourseUsingEditor(Selenium browser, String title, String description){
 		if(!clickCreate(browser, getCreateCourseCss())){
@@ -1058,6 +1074,9 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Creates a course using the wizard whereas the specified settings
+	 * will applied.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
@@ -1066,9 +1085,6 @@ public class FunctionalRepositorySiteUtil {
 	 * @param publish
 	 * @param access
 	 * @return true on success
-	 * 
-	 * Creates a course using the wizard whereas the specified settings
-	 * will applied.
 	 */
 	public boolean createCourseUsingWizard(Selenium browser, String title, String description,
 			CourseWizardElement[] element, String catalog, boolean  publish, CourseWizardAccess access){
@@ -1138,6 +1154,8 @@ public class FunctionalRepositorySiteUtil {
 		}
 		
 		functionalUtil.clickWizardFinish(browser);
+		
+		//TODO:JK: catch error message in case of wrong configured mail
 		
 		return(true);
 	}

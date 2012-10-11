@@ -160,12 +160,12 @@ public class FunctionalEPortfolioUtil {
 	}
 
 	/**
+	 * Opens the artefact details popup.
+	 * 
 	 * @param browser
 	 * @param key
 	 * @param artefactTitle
 	 * @return
-	 * 
-	 * Opens the artefact details popup.
 	 */
 	public boolean openArtefactDetails(Selenium browser, Long key, String artefactTitle){
 		String epArtefactsBusinessPath = functionalUtil.getDeploymentUrl().toString() + "/url/HomeSite/" + key + "/" + EP_ARTEFACTS_BUSINESS_PATH;
@@ -180,10 +180,10 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Clicks within the artefact details popup the link to it's content.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Clicks within the artefact details popup the link to it's content.
 	 */
 	public boolean clickArtefactContent(Selenium browser){
 		//TODO:JK: implement me
@@ -192,12 +192,12 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Opens the specified binder.
+	 * 
 	 * @param browser
 	 * @param key
 	 * @param binderTitle
 	 * @return
-	 * 
-	 * Opens the specified binder.
 	 */
 	public boolean openBinder(Selenium browser, Long key, String binderTitle){
 		String epMapsBusinessPath = functionalUtil.getDeploymentUrl().toString() + "/url/HomeSite/" + key + "/" + EP_MAPS_BUSINESS_PATH;
@@ -208,12 +208,12 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Creates an xpath selector of specified binder, page and structure.
+	 * 
 	 * @param binder
 	 * @param page
 	 * @param structure
 	 * @return
-	 * 
-	 * Creates an xpath selector of specified binder, page and structure.
 	 */
 	public String createSelector(String binder, String page, String structure){
 		if(binder == null || binder.isEmpty() || page == null || page.isEmpty())
@@ -240,13 +240,13 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Creates the specified elements (binder, page, structure) 
+	 * 
 	 * @param browser
 	 * @param binder
 	 * @param page
 	 * @param structure
 	 * @return true on success
-	 * 
-	 * Creates the specified elements (binder, page, structure) 
 	 */
 	public boolean createElements(Selenium browser, String binder, String page, String structure){
 		if(!binderExists(browser, binder)){
@@ -271,11 +271,11 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Checks if binder containing title exists.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @return true if binder containing title exists else false.
-	 * 
-	 * Checks if binder containing title exists.
 	 */
 	public boolean binderExists(Selenium browser, String title){
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
@@ -300,11 +300,11 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Opens a specified binder.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @return true on success
-	 * 
-	 * Opens a specified binder.
 	 */
 	public boolean openBinder(Selenium browser, String title){
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
@@ -330,10 +330,10 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Opens the editor of open binder.
+	 * 
 	 * @param browser
 	 * @return true on success
-	 * 
-	 * Opens the editor of open binder.
 	 */
 	public boolean openEditor(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -351,12 +351,12 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Creates a binder.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates a binder.
 	 */
 	public boolean createDefaultBinder(Selenium browser, String title, String description){
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
@@ -414,12 +414,12 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Checks if the specified page exists.
+	 * 
 	 * @param browser
 	 * @param binder
 	 * @param title
 	 * @return
-	 * 
-	 * Checks if the specified page exists.
 	 */
 	public boolean pageExists(Selenium browser, String binder, String title){
 		if(!openBinder(browser, binder))
@@ -443,12 +443,12 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Opens the specified page.
+	 * 
 	 * @param browser
 	 * @param binder
 	 * @param title
 	 * @return
-	 * 
-	 * Opens the specified page.
 	 */
 	public boolean openPage(Selenium browser, String binder, String title){
 		if(!openBinder(browser, binder))
@@ -474,19 +474,30 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Create a page in the specified binder.
+	 * 
 	 * @param browser
 	 * @param binder
 	 * @param title
 	 * @param display
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Create a page in the specified binder.
 	 */
 	public boolean createPage(Selenium browser, String binder, String title, ArtefactDisplay display, String description){
 		return(createPage(browser, binder, title, display, description, true));
 	}
 	
+	/**
+	 * Create a page in the specified binder.
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param title
+	 * @param display
+	 * @param description
+	 * @param reopenBinder
+	 * @return
+	 */
 	public boolean createPage(Selenium browser, String binder, String title, ArtefactDisplay display, String description, boolean reopenBinder){
 		if(reopenBinder){
 			if(!openBinder(browser, binder))
@@ -545,6 +556,14 @@ public class FunctionalEPortfolioUtil {
 		return(true);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param oldName
+	 * @param newName
+	 * @return
+	 */
 	public boolean renamePage(Selenium browser, String binder, String oldName, String newName){
 		String selector = createSelector(binder, oldName, null);
 		
@@ -575,13 +594,13 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Checks if structural element exists.
+	 * 
 	 * @param browser
 	 * @param binder
 	 * @param page
 	 * @param title
 	 * @return true if structural element exists otherwise false
-	 * 
-	 * Checks if structural element exists.
 	 */
 	public boolean structureExists(Selenium browser, String binder, String page, String title){
 		if(!openBinder(browser, binder))
@@ -642,14 +661,14 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Creates the specified structural element
+	 * 
 	 * @param browser
 	 * @param binder
 	 * @param page
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Creates the specified structural element.
 	 */
 	public boolean createStructure(Selenium browser, String binder, String page,
 			String title, String description){
@@ -715,6 +734,15 @@ public class FunctionalEPortfolioUtil {
 		return(true);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
+	 * @param artefact
+	 * @return
+	 */
 	public boolean artefactExists(Selenium browser, String binder, String page, String structure, String artefact){
 		if(!openPage(browser, binder, page)){
 			return(false);
@@ -747,6 +775,15 @@ public class FunctionalEPortfolioUtil {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
+	 * @param artefact
+	 * @return
+	 */
 	public boolean openArtefact(Selenium browser, String binder, String page, String structure, String artefact){
 		if(!openPage(browser, binder, page))
 			return(false);
@@ -779,7 +816,12 @@ public class FunctionalEPortfolioUtil {
 		
 		return(true);
 	}
-	
+
+	/**
+	 * 
+	 * @param browser
+	 * @return
+	 */
 	public boolean closeArtefact(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -792,10 +834,10 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Clicks the edit link.
+	 * 
 	 * @param browser
 	 * @return
-	 * 
-	 * Clicks the edit link.
 	 */
 	private boolean openEditLink(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -812,12 +854,12 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Fills in the open wizard's title and description fields. 
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
 	 * @return true on success
-	 * 
-	 * Fills in the open wizard's title and description fields. 
 	 */
 	protected boolean fillInTitleAndDescription(Selenium browser, String title, String description){
 		StringBuffer locatorBuffer = new StringBuffer();
@@ -840,11 +882,11 @@ public class FunctionalEPortfolioUtil {
 	}
 	
 	/**
+	 * Fills in the open wizard's tags.
+	 * 
 	 * @param browser
 	 * @param tags
 	 * @return
-	 * 
-	 * Fills in the open wizard's tags.
 	 */
 	protected boolean fillInTags(Selenium browser, String[] tags){
 		int i = 1;
@@ -886,14 +928,14 @@ public class FunctionalEPortfolioUtil {
 	}
 
 	/**
+	 * Add a text artefact to a e-portfolio.
+	 * 
 	 * @param browser
 	 * @param content
 	 * @param title
 	 * @param description
 	 * @param tags
 	 * @return
-	 * 
-	 * Add a text artefact to a e-portfolio.
 	 */
 	public boolean addTextArtefact(Selenium browser, String binder, String page, String structure,
 			String content, String title, String description, String[] tags){
@@ -910,7 +952,7 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open wizard */
 		openEditLink(browser);
-		functionalUtil.waitForPageToLoad(browser);
+		//functionalUtil.waitForPageToLoad(browser);
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -918,7 +960,9 @@ public class FunctionalEPortfolioUtil {
 		.append(getAddTextArtefactCss())
 		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		browser.click(locatorBuffer.toString());
+		
 		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in wizard - content */
@@ -952,12 +996,14 @@ public class FunctionalEPortfolioUtil {
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
 
-		functionalUtil.waitForPageToLoad(browser);
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
 		
 		return(true);
 	}
 	
 	/**
+	 * Upload a file artefact to a e-portfolio.
+	 * 
 	 * @param browser
 	 * @param file
 	 * @param title
@@ -966,8 +1012,6 @@ public class FunctionalEPortfolioUtil {
 	 * @param binderPath
 	 * @return
 	 * @throws MalformedURLException
-	 * 
-	 * Upload a file artefact to a e-portfolio.
 	 */
 	public boolean uploadFileArtefact(Selenium browser, String binder, String page, String structure,
 			URI file, String title, String description, String[] tags) throws MalformedURLException{
@@ -1037,13 +1081,15 @@ public class FunctionalEPortfolioUtil {
 		
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
-		
-		functionalUtil.waitForPageToLoad(browser);
+
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
 		
 		return(true);
 	}
 	
 	/**
+	 * Create a learnig journal for a e-portfolio.
+	 * 
 	 * @param browser
 	 * @param title
 	 * @param description
@@ -1051,8 +1097,6 @@ public class FunctionalEPortfolioUtil {
 	 * @param binderPath
 	 * @param create
 	 * @return
-	 * 
-	 * Create a learnig journal for a e-portfolio.
 	 */
 	public boolean createLearningJournal(Selenium browser, String binder, String page, String structure,
 			String title, String description, String[] tags){
@@ -1103,7 +1147,7 @@ public class FunctionalEPortfolioUtil {
 		/* click finish */
 		functionalUtil.clickWizardFinish(browser);
 
-		functionalUtil.waitForPageToLoad(browser);
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
 		
 		return(true);
 	}

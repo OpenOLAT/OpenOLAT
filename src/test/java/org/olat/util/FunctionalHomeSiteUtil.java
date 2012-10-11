@@ -393,10 +393,10 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Find the corresponding CSS class for page.
+	 * 
 	 * @param page
 	 * @return the matching CSS class
-	 * 
-	 * Find the corresponding CSS class for page.
 	 */
 	public String findCssClassOfAction(Object page){
 		if(page == null)
@@ -474,16 +474,23 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Check if the correct page is open.
+	 * 
 	 * @param browser
 	 * @param action
 	 * @return true if match otherwise false
-	 * 
-	 * Check if the correct page is open.
 	 */
 	public boolean checkCurrentAction(Selenium browser, Object action){
 		return(checkCurrentAction(browser, action, -1));
 	}
 
+	/**
+	 * 
+	 * @param browser
+	 * @param action
+	 * @param timeout
+	 * @return
+	 */
 	public boolean checkCurrentAction(Selenium browser, Object action, long timeout){
 		String selectedCss = findCssClassOfAction(action);
 
@@ -522,23 +529,23 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Browse the home site's menu tree.
+	 * 
 	 * @param browser
 	 * @param action
 	 * @return true on success otherwise false
-	 * 
-	 * Browse the home site's menu tree.
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){
 		return(openActionByMenuTree(browser, action, true));
 	}
 	
 	/**
+	 * Browse the home site's menu tree.
+	 * 
 	 * @param browser
 	 * @param action
 	 * @param checkCurrentAction
 	 * @return true on success otherwise false
-	 * 
-	 * Browse the home site's menu tree.
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action, boolean checkCurrentAction){
 		String selectedCss = findCssClassOfAction(action);
@@ -575,9 +582,9 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
-	 * @param browser
-	 * 
 	 * Open portal in configuration mode.
+	 * 
+	 * @param browser
 	 */
 	public void beginEditingPortal(Selenium browser){
 		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
@@ -599,9 +606,9 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
-	 * @param browser
-	 * 
 	 * Close portal configuration mode.
+	 * 
+	 * @param browser
 	 */
 	public void endEditingPortal(Selenium browser){
 		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
@@ -623,11 +630,11 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Check the state of a portlet.
+	 * 
 	 * @param browser
 	 * @param portletCss
 	 * @return true if portlet active otherwise false
-	 * 
-	 * Check the state of a portlet.
 	 */
 	public boolean checkPortletActive(Selenium browser, String portletCss){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -669,13 +676,13 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Find the position of the portlet within the portal.
+	 * 
 	 * @param browser
 	 * @param portletCss
 	 * @param columnCount the count of columns to scan for
 	 * @return the x and y position of the portlet, the result may be null if
 	 * the portlet is inactive or doesn't exists.
-	 * 
-	 * Find the position of the portlet within the portal.
 	 */
 	public int[] findPortletPosition(Selenium browser, String portletCss, int columnCount){
 		for(int i = 0; i < columnCount; i++){
@@ -758,12 +765,12 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Add specified portlet by its CSS class.
+	 * 
 	 * @param browser
 	 * @param portletCss
 	 * @return true if portlet was inactive and successfully activated
 	 * otherwise false.
-	 * 
-	 * Add specified portlet by its CSS class.
 	 */
 	public boolean activatePortlet(Selenium browser, String portletCss){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -788,12 +795,12 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Remove a portlet from portal.
+	 * 
 	 * @param browser
 	 * @param portletCss
 	 * @return true if portlet was active and successfully deactivated
 	 * otherwise false.
-	 * 
-	 * Remove a portlet from portal.
 	 */
 	public boolean deactivatePortlet(Selenium browser, String portletCss){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -817,12 +824,12 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Move a portlet to the given direction.
+	 * 
 	 * @param browser
 	 * @param portletCss
 	 * @param direction
 	 * @return true if portlet was moved otherwise false
-	 * 
-	 * Move a portlet to the given direction.
 	 */
 	public boolean movePortlet(Selenium browser, String portletCss, Direction direction){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -874,10 +881,10 @@ public class FunctionalHomeSiteUtil {
 
 
 	/**
+	 * Selects the specified language.
+	 * 
 	 * @param browser
 	 * @param language permitted values are: en, es, fr, de, it
-	 * 
-	 * Selects the specified language.
 	 */
 	public void selectLanguage(Selenium browser, String language){
 		functionalUtil.openSite(browser, OlatSite.HOME);
@@ -904,9 +911,9 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
-	 * @param browser
-	 * 
 	 * Enables resume in olat but you must be logged in.
+	 * 
+	 * @param browser
 	 */
 	public void enableResume(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
@@ -936,9 +943,9 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
-	 * @param browser
-	 * 
 	 * Enables resume on request in olat but you must be logged in.
+	 * 
+	 * @param browser
 	 */
 	public void enableResumeOnRequest(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
@@ -968,9 +975,9 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
-	 * @param browser
-	 * 
 	 * Disable resume in olat but you must be logged in.
+	 * 
+	 * @param browser
 	 */
 	public boolean disableResume(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
@@ -1001,6 +1008,11 @@ public class FunctionalHomeSiteUtil {
 		return(true);
 	}
 
+	/**
+	 * 
+	 * @param browser
+	 * @return
+	 */
 	public boolean enableBack(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
@@ -1030,6 +1042,11 @@ public class FunctionalHomeSiteUtil {
 		return(true);
 	}
 
+	/**
+	 * 
+	 * @param browser
+	 * @return
+	 */
 	public boolean disableBack(Selenium browser){
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
@@ -1060,10 +1077,10 @@ public class FunctionalHomeSiteUtil {
 	}
 
 	/**
+	 * Resets portal settings to default.
+	 * 
 	 * @param browser
 	 * @return true on success
-	 * 
-	 * Resets portal settings to default.
 	 */
 	public boolean resetSettings(Selenium browser){
 		log.info("open portal");
