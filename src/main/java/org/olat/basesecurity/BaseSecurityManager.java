@@ -1378,9 +1378,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 							sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
 						} else {
 							sb.append(" lower(user.properties['").append(key).append("']) like :").append(key).append("_value ");
-							if(dbVendor.equals("oracle")) {
-					 	 		sb.append(" escape '\\'");
-					 	 	}
 						}
 						if(dbVendor.equals("oracle")) {
 							sb.append(" escape '\\'");
@@ -1399,9 +1396,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 						sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
 					} else {
 						sb.append(" lower(user.properties['").append(key).append("']) like :").append(key).append("_value ");
-						if(dbVendor.equals("oracle")) {
-				 	 		sb.append(" escape '\\'");
-				 	 	}
 					}
 					if(dbVendor.equals("oracle")) {
 						sb.append(" escape '\\'");
