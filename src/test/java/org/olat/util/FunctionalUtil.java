@@ -43,13 +43,15 @@ public class FunctionalUtil {
 	
 	public final static String DEPLOYMENT_URL = "http://localhost:8080/openolat";
 	public final static String DEPLOYMENT_PATH = "/openolat";
-	public final static String WAIT_LIMIT = "5000";
 	
 	public final static String LOGIN_PAGE = "dmz";
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
 	
 	public final static String INFO_DIALOG = "o_interceptionPopup";
 
+	public final static long TIMEOUT = 60000;
+	public final static long POLL_INTERVAL = 100;
+	
 	public enum WaitLimitAttribute {
 		NORMAL("0"),
 		EXTENDED("3000"),
@@ -57,9 +59,11 @@ public class FunctionalUtil {
 		VERY_SAVE("12000");
 		
 		private String extend;
+		private long extendAsLong;
 		
 		WaitLimitAttribute(String extend){
 			setExtend(extend);
+			setExtendAsLong(Long.parseLong(extend));
 		}
 
 		public String getExtend() {
@@ -69,7 +73,18 @@ public class FunctionalUtil {
 		public void setExtend(String extend) {
 			this.extend = extend;
 		}
+
+		public long getExtendAsLong() {
+			return extendAsLong;
+		}
+
+		public void setExtendAsLong(long extendAsLong) {
+			this.extendAsLong = extendAsLong;
+		}
 	}
+	
+	public final static WaitLimitAttribute DEFAULT_WAIT_LIMIT = WaitLimitAttribute.VERY_SAVE;
+	public final static String DEFAULT_IDLE = "-1";
 	
 	public enum OlatSite {
 		HOME,
@@ -80,7 +95,7 @@ public class FunctionalUtil {
 		ADMINISTRATION,
 	}
 
-	public final static String OLAT_TOP_NAVIGATION_LOGOUT_CSS = "o_topnav_logout";
+	public final static String OLAT_TOP_NAVIGATION_LOGOUT_CSS = "b_logout";
 	
 	public final static String OLAT_NAVIGATION_SITE_CSS = "b_nav_site";
 	public final static String OLAT_ACTIVE_NAVIGATION_SITE_CSS = "b_nav_active";
@@ -97,8 +112,6 @@ public class FunctionalUtil {
 	public final static String CONTENT_TAB_CSS = "b_item_";
 	public final static String ACTIVE_CONTENT_TAB_CSS = "b_active";
 	
-	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
-	
 	public final static String WIZARD_CSS = "b_wizard";
 	public final static String WIZARD_NEXT_CSS = "b_wizard_button_next";
 	public final static String WIZARD_FINISH_CSS = "b_wizard_button_finish";
@@ -112,7 +125,9 @@ public class FunctionalUtil {
 	public final static String TREE_NODE_ANCHOR_CSS = "x-tree-node-anchor";
 	public final static String TREE_NODE_CSS = "x-tree-node";
 	
-	public final static String NOTIFICATION_BOX_CSS = "o_sel_info_message";
+	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
+	
+	public final static String INFO_MESSAGE_BOX_CSS = "o_sel_info_message";
 	
 	private String username;
 	private String password;
@@ -184,7 +199,7 @@ public class FunctionalUtil {
 		
 		deploymentUrl = DEPLOYMENT_URL;
 		deploymentPath = DEPLOYMENT_PATH;
-		waitLimit = WAIT_LIMIT;
+		waitLimit = DEFAULT_IDLE;
 		
 		loginPage = LOGIN_PAGE;
 		acknowledgeCheckbox = ACKNOWLEDGE_CHECKBOX;
@@ -252,13 +267,35 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Is idle as long as link is busy. 
+	 * 
+	 * @param browser
+	 */
+	public void idle(Selenium browser){
+		long startTime = Calendar.getInstance().getTimeInMillis();
+		long currentTime = startTime;
+		long waitLimit = TIMEOUT;
+		
+		while(linkBusy(browser) && waitLimit >  currentTime - startTime){
+			try {
+				Thread.sleep(POLL_INTERVAL);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			currentTime = Calendar.getInstance().getTimeInMillis();
+		}
+	}
+	
+	/**
 	 * 
 	 * @param browser
 	 */
 	public void waitForPageToLoad(Selenium browser){
-		waitForPageToLoad(browser, WaitLimitAttribute.VERY_SAVE);
+		waitForPageToLoad(browser, DEFAULT_WAIT_LIMIT);
 	}
-	
+
 	/**
 	 * 
 	 * @param browser
@@ -268,8 +305,11 @@ public class FunctionalUtil {
 		String waitLimit = Long.toString(Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend()));
 		
 		browser.waitForPageToLoad(waitLimit);
+		
+		idle(browser);
 	}
 
+	
 	/**
 	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
 	 * specified by locator.
@@ -281,7 +321,7 @@ public class FunctionalUtil {
 	 * @throws SeleniumException
 	 */
 	public boolean waitForPageToLoadElement(Selenium browser, String locator) throws SeleniumException{
-		return(waitForPageToLoadElement(browser, locator, WaitLimitAttribute.VERY_SAVE, true));
+		return(waitForPageToLoadElement(browser, locator, DEFAULT_WAIT_LIMIT, true));
 	}
 	
 	/**
@@ -295,7 +335,7 @@ public class FunctionalUtil {
 	 * @throws SeleniumException
 	 */
 	public boolean waitForPageToLoadElement(Selenium browser, String locator, boolean throwException) throws SeleniumException{
-		return(waitForPageToLoadElement(browser, locator, WaitLimitAttribute.VERY_SAVE, throwException));
+		return(waitForPageToLoadElement(browser, locator, DEFAULT_WAIT_LIMIT, throwException));
 	}
 	
 	/** 
@@ -310,6 +350,8 @@ public class FunctionalUtil {
 	 * @throws SeleniumException
 	 */
 	public boolean waitForPageToLoadElement(Selenium browser, String locator, WaitLimitAttribute wait, boolean throwException) throws SeleniumException {
+		idle(browser);
+		
 		long startTime = Calendar.getInstance().getTimeInMillis();
 		long currentTime = startTime;
 		long waitLimit = Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend());
@@ -324,7 +366,7 @@ public class FunctionalUtil {
 			}
 			
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(POLL_INTERVAL);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -352,7 +394,7 @@ public class FunctionalUtil {
 	 * @throws SeleniumException
 	 */
 	public boolean waitForPageToUnloadElement(Selenium browser, String locator) throws SeleniumException {
-		return(waitForPageToUnloadElement(browser, locator, WaitLimitAttribute.VERY_SAVE, true));
+		return(waitForPageToUnloadElement(browser, locator, DEFAULT_WAIT_LIMIT, true));
 	}
 	
 	/**
@@ -366,7 +408,7 @@ public class FunctionalUtil {
 	 * @throws SeleniumException
 	 */
 	public boolean waitForPageToUnloadElement(Selenium browser, String locator, boolean throwException) throws SeleniumException {
-		return(waitForPageToUnloadElement(browser, locator, WaitLimitAttribute.VERY_SAVE, throwException));
+		return(waitForPageToUnloadElement(browser, locator, DEFAULT_WAIT_LIMIT, throwException));
 	}
 	
 	/**
@@ -381,6 +423,8 @@ public class FunctionalUtil {
 	 * @throws SeleniumException
 	 */
 	public boolean waitForPageToUnloadElement(Selenium browser, String locator, WaitLimitAttribute wait, boolean throwException) throws SeleniumException {
+		idle(browser);
+		
 		long startTime = Calendar.getInstance().getTimeInMillis();
 		long currentTime = startTime;
 		long waitLimit = Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend());
@@ -389,13 +433,13 @@ public class FunctionalUtil {
 		
 		do{
 			if(!browser.isElementPresent(locator)){
-				log.info("found element after " + (currentTime - startTime) + "ms");
+				log.info("didn't find element after " + (currentTime - startTime) + "ms");
 				
 				return(true);
 			}
 			
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(POLL_INTERVAL);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -421,6 +465,30 @@ public class FunctionalUtil {
 	 */
 	public String currentBusinessPath(Selenium browser){
 		return(browser.getEval("window.o_info.businessPath"));
+	}
+	
+	/**
+	 * Retrieves the linkbusy JavaScript variable.
+	 * 
+	 * @param browser
+	 * @return
+	 */
+	public boolean linkBusy(Selenium browser){
+		String val = null;
+		
+		try{
+			val = browser.getEval("window.o_info.linkbusy");
+		}catch(Exception e){
+			log.warn("caught exception while retrieving o_info.linkbusy: assuming not busy", e);
+			
+			return(false);
+		}
+			
+		if(val == null || val.isEmpty()){
+			return(false);
+		}else{
+			return(Boolean.parseBoolean(val));
+		}
 	}
 	
 	/**
@@ -489,6 +557,8 @@ public class FunctionalUtil {
 	 * @return
 	 */
 	public boolean checkCurrentSite(Selenium browser, OlatSite site, long timeout){
+		idle(browser);
+		
 		String selectedCss = findCssClassOfSite(site);
 		
 		if(selectedCss == null){
@@ -514,7 +584,7 @@ public class FunctionalUtil {
 			
 			if(timeout != -1){
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(POLL_INTERVAL);
 				} catch (InterruptedException e) {
 					//TODO:JK: Auto-generated catch block
 					e.printStackTrace();
@@ -589,7 +659,7 @@ public class FunctionalUtil {
 			return(false);
 		}
 		
-		//FIXME:JK: this is a known bottleneck, but can't be set to -1 until notifications will be clicked away!
+		//FIXME:JK: this is a known bottleneck, but can't be set to -1 until info messages will be clicked away!
 		if(checkCurrentSite(browser, site, Long.parseLong(getWaitLimit()))){
 			if(resetSite(browser, site)){
 				return(true);
@@ -661,7 +731,7 @@ public class FunctionalUtil {
 		browser.type("id=o_fiooolat_login_name", username);
 		browser.type("id=o_fiooolat_login_pass", password);
 	    browser.click("id=o_fiooolat_login_button");
-	    waitForPageToLoad(browser);
+	    waitForPageToLoad(browser, DEFAULT_WAIT_LIMIT);
 	    
 	    if(closeDialogs){
 	    	/* check if it's our first login */
@@ -702,8 +772,6 @@ public class FunctionalUtil {
 		
 		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
-		
-		waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		return(true);
 	}
@@ -771,8 +839,9 @@ public class FunctionalUtil {
 		.append("]")
 		.append(getFormSaveXPath());
 		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(waitLimit);
+		waitForPageToLoad(browser);
 		
 		return(true);
 	}

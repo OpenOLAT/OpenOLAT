@@ -372,6 +372,7 @@ public class FunctionalEPortfolioUtil {
 		.append(getCreateBinderCss())
 		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
@@ -510,7 +511,8 @@ public class FunctionalEPortfolioUtil {
 		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getAddLinkCss())
 		.append("')]");
-		
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
@@ -827,6 +829,7 @@ public class FunctionalEPortfolioUtil {
 		
 		selectorBuffer.append("xpath=//div[contains(@class, 'x-tool-close')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
@@ -845,6 +848,8 @@ public class FunctionalEPortfolioUtil {
 		selectorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getHomePortalEditLinkCss())
 		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		browser.click(selectorBuffer.toString());
 		
@@ -952,7 +957,6 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open wizard */
 		openEditLink(browser);
-		//functionalUtil.waitForPageToLoad(browser);
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -987,7 +991,7 @@ public class FunctionalEPortfolioUtil {
 		
 		locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-selected')]//a//span[contains(text(), '")
+		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
 		.append((structure != null) ? structure: page)
 		.append("')]");
 		
@@ -1026,14 +1030,14 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open wizard */
 		openEditLink(browser);
-		functionalUtil.waitForPageToLoad(browser);
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//a[contains(@class, '")
 		.append(getUploadFileArtefactCss())
 		.append("')]");
-		
+
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		browser.click(locatorBuffer.toString());
 		functionalUtil.waitForPageToLoad(browser);
 		
@@ -1111,7 +1115,6 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open wizard */
 		openEditLink(browser);
-		functionalUtil.waitForPageToLoad(browser);
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -1119,6 +1122,7 @@ public class FunctionalEPortfolioUtil {
 		.append(getCreateLearningJournalCss())
 		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		browser.click(locatorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);

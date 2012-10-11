@@ -497,6 +497,8 @@ public class FunctionalHomeSiteUtil {
 		if(selectedCss == null)
 			return(false);
 
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("css=ul li.")
@@ -515,7 +517,7 @@ public class FunctionalHomeSiteUtil {
 
 			if(timeout != -1){
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(FunctionalUtil.POLL_INTERVAL);
 				} catch (InterruptedException e) {
 					//TODO:JK: Auto-generated catch block
 					e.printStackTrace();
@@ -554,7 +556,7 @@ public class FunctionalHomeSiteUtil {
 			return(false);
 		}
 
-		//FIXME:JK: this is a known bottleneck, but can't be set to -1 until notifications will be clicked away!
+		//FIXME:JK: this is a known bottleneck, but can't be set to -1 until info messages will be clicked away!
 		if(!checkCurrentAction || !checkCurrentAction(browser, action, Long.parseLong(functionalUtil.getWaitLimit()))){
 			StringBuffer selectorBuffer = new StringBuffer();
 

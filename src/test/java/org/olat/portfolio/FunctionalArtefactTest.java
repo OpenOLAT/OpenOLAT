@@ -614,6 +614,9 @@ public class FunctionalArtefactTest {
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 
+		/* create binder, page or structure if necessary */
+		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, TEXT_ARTEFACT_BINDER, TEXT_ARTEFACT_PAGE, TEXT_ARTEFACT_STRUCTURE));
+		
 		/* add text artefact */
 		Assert.assertTrue(functionalEportfolioUtil.addTextArtefact(browser, TEXT_ARTEFACT_BINDER, TEXT_ARTEFACT_PAGE, TEXT_ARTEFACT_STRUCTURE,
 				TEXT_ARTEFACT_CONTENT,
@@ -658,7 +661,10 @@ public class FunctionalArtefactTest {
 		 */
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
-
+		
+		/* create binder, page or structure if necessary */
+		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, FILE_ARTEFACT_BINDER, FILE_ARTEFACT_PAGE, FILE_ARTEFACT_STRUCTURE));
+		
 		/* upload file artefact */
 		Assert.assertTrue(functionalEportfolioUtil.uploadFileArtefact(browser, FILE_ARTEFACT_BINDER, FILE_ARTEFACT_PAGE, FILE_ARTEFACT_STRUCTURE,
 				FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_PATH).toURI(),
@@ -704,6 +710,9 @@ public class FunctionalArtefactTest {
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
 
+		/* create binder, page or structure if necessary */
+		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, LEARNING_JOURNAL_BINDER, LEARNING_JOURNAL_PAGE, LEARNING_JOURNAL_STRUCTURE));
+		
 		/* create learning journal */
 		Assert.assertTrue(functionalEportfolioUtil.createLearningJournal(browser, LEARNING_JOURNAL_BINDER, LEARNING_JOURNAL_PAGE, LEARNING_JOURNAL_STRUCTURE,
 				LEARNING_JOURNAL_TITLE, LEARNING_JOURNAL_DESCRIPTION,
