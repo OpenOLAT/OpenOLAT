@@ -95,6 +95,31 @@
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />
 	</bean>
+	
+	<bean id="oracle_local_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+		<constructor-arg>
+			<props>
+				<prop key="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</prop>
+				<prop key="hibernate.connection.url">jdbc:oracle:thin:@${db.host}:${db.host.port}:${db.name}</prop>
+				<prop key="hibernate.connection.username">${db.user}</prop>
+				<prop key="hibernate.connection.password">${db.pass}</prop>
+				<prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>
+				<prop key="hibernate.default_schema">${db.default.schema}</prop>
+	        </props>            
+		</constructor-arg>
+		<property name="addMoreProperties" ref="c3p0HibernateProperties" />
+	</bean>
+	
+	<bean id="oracle_jndi_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+		<constructor-arg>
+			<props>
+		     	<!-- Using datasource of hibernate -->
+				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>
+        	</props>            
+		</constructor-arg>
+		<property name="addMoreProperties" ref="hibernateProps" />
+	</bean>
 
 	<bean id="hibernateProps" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
@@ -226,4 +251,17 @@
 	<bean id="postgresql_jndi_DataSource" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
 		<property name="jndiName" value="${db.jndi}"/>
 	</bean>
+
+	<bean id="oracle_local_DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" lazy-init="true">
+		<property name="driverClassName"><value>oracle.jdbc.driver.OracleDriver</value></property>
+		<property name="url"><value>jdbc:oracle:thin:@${db.host}:${db.host.port}:${db.name}</value></property>
+		<property name="username" value="${db.user}" />
+		<property name="password" value="${db.pass}" />
+	</bean>
+	
+	<bean id="oracle_jndi_DataSource" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="${db.jndi}"/>
+	</bean>
+
+	
 </beans>
