@@ -36,6 +36,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -89,7 +90,11 @@ public class UserSearchForm extends FormBasicController {
 	}
 	
 	@Override
-	public boolean validateFormLogic (UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
+		return true;
+	}
+	
+	private boolean validateForm(UserRequest ureq) {
 		// override for admins
 		if (isAdmin) return true;
 		
@@ -179,7 +184,6 @@ public class UserSearchForm extends FormBasicController {
 		// Don't use submit button, form should not be marked as dirty since this is
 		// not a configuration form but only a search form (OLAT-5626)
 		searchButton = uifactory.addFormLink("submit.search", buttonGroupLayout, Link.BUTTON);
-		searchButton.addActionListener(this, FormEvent.ONCLICK);
 		if (cancelButton) {
 			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		}
@@ -193,13 +197,15 @@ public class UserSearchForm extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {
-			source.getRootForm().submit(ureq);			
+			if(validateForm(ureq)) {
+				fireEvent (ureq, Event.DONE_EVENT);
+			}		
 		}
 	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
 	@Override

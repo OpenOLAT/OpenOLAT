@@ -1654,26 +1654,27 @@ public class RepositoryManager extends BasicManager {
 	 * @param identity
 	 * @return list of RepositoryEntries
 	 */
-	 //fxdiff VCRP-1,2: access control of resources
+	public int countLearningResourcesAsTeacher(Identity identity) {
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join v.olatResource as res ");
+		whereClauseLearningResourcesAsTeacher(sb);
+		
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.getSingleResult();
+		return count.intValue();
+	}
+	
 	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join fetch v.olatResource as res ")
 			.append(" left join fetch v.ownerGroup as ownerGroup")
 			.append(" left join fetch v.participantGroup as participantGroup")
-			.append(" left join fetch v.tutorGroup as tutorGroup")
-			.append(" where v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictTutor.class.getName()).append(" vmember")
-			.append("   where (vmember.repoOwnerKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.groupOwnerKey=:identityKey)")   
-			.append(" )")
-			.append(" or ")
-		  .append(" res in (select groupRelation.resource from ").append(BGResourceRelation.class.getName()).append(" as groupRelation, ")
-		  .append("   ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
-		  .append("   ").append(PolicyImpl.class.getName()).append(" as poi,")
-			.append("   ").append(OLATResourceImpl.class.getName()).append(" as ori")
-			.append("   where sgmsi.identity.key=:identityKey and sgmsi.securityGroup = poi.securityGroup")
-			.append("   and poi.permission = 'bgr.editor' and poi.olatResource = ori")
-			.append("   and groupRelation.resource=ori")
-		  .append(" )");
+			.append(" left join fetch v.tutorGroup as tutorGroup");
+		whereClauseLearningResourcesAsTeacher(sb);
 		appendOrderBy(sb, "v", orderby);
 		
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
@@ -1685,6 +1686,25 @@ public class RepositoryManager extends BasicManager {
 		}
 		List<RepositoryEntry> entries = query.getResultList();
 		return entries;
+	}
+	
+	/**
+	 * Write the where clause for countLearningResourcesAsTeacher and getLearningResourcesAsTeacher
+	 * @param sb
+	 */
+	private final void whereClauseLearningResourcesAsTeacher(StringBuilder sb) {
+		sb.append(" where v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictTutor.class.getName()).append(" vmember")
+			.append("   where (vmember.repoOwnerKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.groupOwnerKey=:identityKey)")   
+			.append(" )")
+			.append(" or ")
+		  .append(" res in (select groupRelation.resource from ").append(BGResourceRelation.class.getName()).append(" as groupRelation, ")
+		  .append("   ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
+		  .append("   ").append(PolicyImpl.class.getName()).append(" as poi,")
+			.append("   ").append(OLATResourceImpl.class.getName()).append(" as ori")
+			.append("   where sgmsi.identity.key=:identityKey and sgmsi.securityGroup = poi.securityGroup")
+			.append("   and poi.permission = 'bgr.editor' and poi.olatResource = ori")
+			.append("   and groupRelation.resource=ori")
+		  .append(" )");
 	}
 	
 	/**

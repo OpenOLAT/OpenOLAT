@@ -292,8 +292,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			node.setCssClass("o_sel_repo_my_student");
 			rootNode.addChild(node);
 			// for authors or users with group rights also show the teacher portlet
-			SearchBusinessGroupParams rightParams = new SearchBusinessGroupParams(getIdentity(), true, false);
-			if (bIsAuthor || businessGroupService.countBusinessGroups(rightParams, null) > 0) {
+			if(bIsAuthor || RepositoryManager.getInstance().countLearningResourcesAsTeacher(getIdentity()) > 0) {
 				node = new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher");
 				node.setCssClass("o_sel_repo_my_teacher");
 				rootNode.addChild(node);

@@ -137,6 +137,7 @@ public class UserSearchFlexiController extends FormBasicController {
 			listenTo(searchform);
 			
 			searchPanel.setContent(searchform.getInitialComponent());
+			layoutCont.add(searchform.getInitialFormItem());
 			layoutCont.contextPut("noList","false");			
 			layoutCont.contextPut("showButton","false");
 
@@ -276,6 +277,8 @@ public class UserSearchFlexiController extends FormBasicController {
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
+			} else {
+				fireEvent(ureq, event);
 			}
 		}
 		

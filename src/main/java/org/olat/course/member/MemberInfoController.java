@@ -96,6 +96,9 @@ public class MemberInfoController extends FormBasicController {
 			String propName = userPropertyHandler.getName();
 			String value = userPropertyHandler.getUserProperty(identity.getUser(), getLocale());
 			String key = userPropertyHandler.i18nFormElementLabelKey();
+			if(value == null) {
+				value = "";
+			}
 			uifactory.addStaticTextElement("up_" + propName, key, value, userPropertiesContainer);
 		}
 
@@ -105,7 +108,7 @@ public class MemberInfoController extends FormBasicController {
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		
-		String lastVisit = null;
+		String lastVisit = "";
 		String numOfVisits = "0";
 		if(courseInfos != null) {
 			if(courseInfos.getRecentLaunch() != null) {
