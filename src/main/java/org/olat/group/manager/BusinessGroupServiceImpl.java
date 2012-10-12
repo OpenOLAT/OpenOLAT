@@ -354,6 +354,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public BusinessGroup copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, String targetName, String targetDescription,
 			Integer targetMin, Integer targetMax,  boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
 			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations) {
@@ -439,8 +440,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		}
 		return newGroup;
 	}
-	
-	
 
 	@Override
 	public BusinessGroup mergeBusinessGroups(final Identity merger, BusinessGroup targetGroup, final List<BusinessGroup> groupsToMerge) {
@@ -559,6 +558,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public void updateMemberships(final Identity ureqIdentity, final List<BusinessGroupMembershipChange> changes) {
 		Map<Long,BusinessGroupMembershipsChanges> changesMap = new HashMap<Long,BusinessGroupMembershipsChanges>();
 		for(BusinessGroupMembershipChange change:changes) {

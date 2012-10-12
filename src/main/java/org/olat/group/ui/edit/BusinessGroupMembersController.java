@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.edit;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.admin.securitygroup.gui.GroupController;
@@ -47,9 +48,11 @@ import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.ui.BGMailHelper;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -93,7 +96,9 @@ public class BusinessGroupMembersController extends BasicController {
 		mainVC.put("displayMembers", dmsForm.getInitialComponent());
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean enableTablePreferences = roles.isOLATAdmin() || roles.isGroupManager();
-		boolean requiresOwner = true;
+
+		List<RepositoryEntryShort> courses = businessGroupService.findShortRepositoryEntries(Collections.<BusinessGroupShort>singletonList(businessGroup), 0, 1);
+		boolean requiresOwner = courses.isEmpty();
 		// groupcontroller which allows to remove all members depending on
 		// configuration.
 		ownerGrpCntrllr = new GroupController(ureq, getWindowControl(), true, requiresOwner, enableTablePreferences, businessGroup.getOwnerGroup());

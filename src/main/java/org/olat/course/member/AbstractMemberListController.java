@@ -240,18 +240,28 @@ public abstract class AbstractMemberListController extends BasicController imple
 	}
 	
 	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
+		int numOfOwners = securityManager.countIdentitiesOfSecurityGroup(repoEntry.getOwnerGroup());
+		
+		int numOfRemovedOwner = 0;
 		List<Long> identityKeys = new ArrayList<Long>();
 		for(MemberView member:members) {
 			identityKeys.add(member.getIdentityKey());
+			if(member.getMembership().isOwner()) {
+				numOfRemovedOwner++;
+			}
 		}
-		List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
-		StringBuilder sb = new StringBuilder();
-		for(Identity id:ids) {
-			if(sb.length() > 0) sb.append(", ");
-			sb.append(userManager.getUserDisplayName(id.getUser()));
+		if(numOfOwners - numOfRemovedOwner > 0) {
+			List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
+			StringBuilder sb = new StringBuilder();
+			for(Identity id:ids) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(userManager.getUserDisplayName(id.getUser()));
+			}
+			leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", sb.toString()), leaveDialogBox);
+			leaveDialogBox.setUserObject(ids);
+		} else {
+			showWarning("error.atleastone");
 		}
-		leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", sb.toString()), leaveDialogBox);
-		leaveDialogBox.setUserObject(ids);
 	}
 	
 	protected void openEdit(UserRequest ureq, MemberView member) {

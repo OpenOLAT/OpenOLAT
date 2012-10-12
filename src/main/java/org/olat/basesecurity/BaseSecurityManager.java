@@ -341,7 +341,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		query.setString("permission", permission);		
 		query.setLong("resid", oresid);
 		query.setString("resname", oresName);
-		//query.setCacheable(true);
+		query.setCacheable(true);
 		List res = query.list();
 		Long cntL = (Long) res.get(0);
 		return (cntL.longValue() > 0); // can be > 1 if identity is in more the one group having

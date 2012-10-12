@@ -22,6 +22,7 @@ package org.olat.course.member;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -264,6 +265,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	}
 	
 	private void switchToAllMembers(UserRequest ureq) {
+		DBFactory.getInstance().commit();//make sure all is on the DB before reloading
 		if(selectedCtrl != null && selectedCtrl == allMemberListCtrl) {
 			allMemberListCtrl.reloadModel();
 		} else {
