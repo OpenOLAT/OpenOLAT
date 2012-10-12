@@ -176,6 +176,8 @@ public class FunctionalCatalogTest {
 			.append(functionalRepositorySiteUtil.getCatalogNavigationCss())
 			.append("')]//a");
 			
+			functionalUtil.idle(browser);
+			
 			if(browser.isElementPresent(selectorBuffer.toString())){
 				browser.click(selectorBuffer.toString());
 			}

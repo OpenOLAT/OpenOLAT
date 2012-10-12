@@ -470,6 +470,8 @@ public class FunctionalRepositorySiteUtil {
 		.append(getCatalogNavigationCss())
 		.append("')]//a");
 		
+		functionalUtil.idle(browser);
+		
 		if(browser.isElementPresent(selectorBuffer.toString())){
 			browser.click(selectorBuffer.toString());
 		}
@@ -488,6 +490,8 @@ public class FunctionalRepositorySiteUtil {
 		
 		/* check if catalog already exists */
 		String selector = createCatalogSelector(name);
+		
+		functionalUtil.idle(browser);
 		
 		if(browser.isElementPresent(selector)){
 			return(true);

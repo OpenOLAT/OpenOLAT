@@ -945,8 +945,8 @@ public class FunctionalEPortfolioUtil {
 	public boolean addTextArtefact(Selenium browser, String binder, String page, String structure,
 			String content, String title, String description, String[] tags){
 		/* create binder, page or structure if necessary */
-		if(!createElements(browser, binder, page, structure))
-			return(false);
+//		if(!createElements(browser, binder, page, structure))
+//			return(false);
 		
 		/* navigate to the right place */
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
@@ -1019,8 +1019,8 @@ public class FunctionalEPortfolioUtil {
 	 */
 	public boolean uploadFileArtefact(Selenium browser, String binder, String page, String structure,
 			URI file, String title, String description, String[] tags) throws MalformedURLException{
-		if(!createElements(browser, binder, page, structure))
-			return(false);
+//		if(!createElements(browser, binder, page, structure))
+//			return(false);
 		
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
@@ -1104,8 +1104,8 @@ public class FunctionalEPortfolioUtil {
 	 */
 	public boolean createLearningJournal(Selenium browser, String binder, String page, String structure,
 			String title, String description, String[] tags){
-		if(!createElements(browser, binder, page, structure))
-			return(false);
+//		if(!createElements(browser, binder, page, structure))
+//			return(false);
 		
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
@@ -1142,7 +1142,7 @@ public class FunctionalEPortfolioUtil {
 		
 		locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-selected')]//a//span[contains(text(), '")
+		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
 		.append((structure != null) ? structure: page)
 		.append("')]");
 		

@@ -924,7 +924,7 @@ public class FunctionalCourseUtil {
 			
 			selectorBuffer = new StringBuffer();
 			
-			selectorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-selected')]//a//span[contains(text(), '")
+			selectorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
 			.append((structure != null) ? structure: page)
 			.append("')]");
 			
