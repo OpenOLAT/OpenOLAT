@@ -22,7 +22,6 @@ package org.olat.user;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +34,8 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
 
 /**
@@ -47,7 +48,7 @@ public class EmailCheckPerformanceTest extends OlatTestCase {
 
 	private static final String USERNAME_CONSTANT = "email-test";
 
-	private static Logger log = Logger.getLogger(EmailCheckPerformanceTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(EmailCheckPerformanceTest.class);
 
 	private static long createUserTime;
 	private static long testExistEmailAddressTime;

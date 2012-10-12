@@ -27,6 +27,7 @@ package org.olat.user;
 
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.id.User;
@@ -120,7 +121,11 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 */
 	protected String getInternalValue(User user) {
 		if (user != null) {
-			return ((UserImpl)user).getProperties().get(name);
+			String value = ((UserImpl)user).getProperties().get(name);
+			if("_".equals(value) && "oracle".equals(DBFactory.getInstance().getDbVendor())) {
+				value = null;
+			}
+			return value;
 		}
 		return null;
 	}
@@ -134,8 +139,11 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 			// sparse data storage
 			if (value == null || value.length() == 0) {
 				//fxdiff: store each value
-				((UserImpl)user).getProperties().put(name, "");
-				//((UserImpl)user).getProperties().remove(name);
+				if("oracle".equals(DBFactory.getInstance().getDbVendor())) {
+					((UserImpl)user).getProperties().put(name, "_");
+				} else {
+					((UserImpl)user).getProperties().put(name, "");
+				}
 			} else {
 				((UserImpl)user).getProperties().put(name, value);
 			}

@@ -20,6 +20,7 @@
 package org.olat.basesecurity;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,7 +36,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.Encoder;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -54,6 +58,80 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	
+	
+	@Test
+	public void testCreateIdentity() {
+		String name = "createid-" + UUID.randomUUID().toString();
+		User user = userManager.createUser("first" + name, "last" + name, name + "@frentix.com");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, Encoder.encrypt("secret"));
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(identity);
+		Assert.assertNotNull(identity.getKey());
+		Assert.assertEquals(name, identity.getName());
+		Assert.assertNotNull(identity.getUser());
+		Assert.assertEquals(user, identity.getUser());
+		Assert.assertEquals("first" + name, identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		Assert.assertEquals("last" + name, identity.getUser().getProperty(UserConstants.LASTNAME, null));
+		Assert.assertEquals(name + "@frentix.com", identity.getUser().getProperty(UserConstants.EMAIL, null));
+	}
+	
+	/**
+	 * This test is primarily made against Oracle
+	 */
+	@Test
+	public void testCreateUpdateIdentity() {
+		String name = "update-id-" + UUID.randomUUID().toString();
+		User user = userManager.createUser("first" + name, "last" + name, name + "@frentix.com");
+		user.setProperty(UserConstants.COUNTRY, "");
+		user.setProperty(UserConstants.CITY, "Basel");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, Encoder.encrypt("secret"));
+		dbInstance.commitAndCloseSession();
+		
+		//reload and update
+		Identity identityPrime = securityManager.loadIdentityByKey(identity.getKey());
+		identityPrime.getUser().setProperty(UserConstants.FIRSTNAME, "firstname");
+		identityPrime.getUser().setProperty(UserConstants.COUNTRY, "CH");
+		identityPrime.getUser().setProperty(UserConstants.CITY, "Lausanne");
+		userManager.updateUserFromIdentity(identityPrime);
+		dbInstance.commitAndCloseSession();
+		
+		//reload and check
+		Identity identitySecond = securityManager.loadIdentityByKey(identity.getKey());
+		Assert.assertEquals("firstname", identitySecond.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		Assert.assertEquals("last" + name, identitySecond.getUser().getProperty(UserConstants.LASTNAME, null));
+		Assert.assertEquals(name + "@frentix.com", identitySecond.getUser().getProperty(UserConstants.EMAIL, null));
+		Assert.assertEquals("CH", identitySecond.getUser().getProperty(UserConstants.COUNTRY, null));
+		Assert.assertEquals("Lausanne", identitySecond.getUser().getProperty(UserConstants.CITY, null));
+	}
+	
+	
+	@Test
+	public void testEquals() {
+		String identityTest1Name = "eq-1-" + UUID.randomUUID().toString();
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser(identityTest1Name);
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("eq-2-" + UUID.randomUUID().toString());
+		
+		assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(new Integer(1)));
+		assertFalse("Wrong equals implementation, different users are recognized as equals ",ident1.equals(ident2));
+		assertFalse("Wrong equals implementation, null value is recognized as equals ",ident1.equals(null));
+		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1));
+		Identity ident1_2 = securityManager.findIdentityByName(identityTest1Name);
+		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1_2));
+	}
+	
+	@Test
+	public void testHashCode() {
+		String identityTest1Name = "hash-1-" + UUID.randomUUID().toString();
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser(identityTest1Name);
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("hash-2-" + UUID.randomUUID().toString());
+		
+		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",ident1.hashCode() == ident1.hashCode());
+		assertFalse("Wrong hashCode implementation, different users have same hash-code",ident1.hashCode() == ident2.hashCode());
+		Identity ident1_2 = securityManager.findIdentityByName(identityTest1Name);
+		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",ident1.hashCode() == ident1_2.hashCode());
+	}
 
 	@Test
 	public void testFindIdentityByUser() {

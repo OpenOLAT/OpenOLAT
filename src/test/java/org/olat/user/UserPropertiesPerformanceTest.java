@@ -85,7 +85,8 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	@Test public void testCreateAndSearchUserTime() throws Exception {
+	@Test
+	public void testCreateAndSearchUserTime() throws Exception {
 		
 		//only run it on sundays as it takes quite some time
 		if (new Date().getDay() == 0) {
@@ -149,7 +150,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				attributes.put(UserConstants.TELMOBILE, "123456");
 				String[] providers = new String[]{BaseSecurityModule.getDefaultAuthProviderIdentifier()};
 				long querystart = System.currentTimeMillis();
-				List result = sm.getIdentitiesByPowerSearch(null, attributes, true, null, null, providers, null, null, null, null, null);
+				List<Identity> result = sm.getIdentitiesByPowerSearch(null, attributes, true, null, null, providers, null, null, null, null, null);
 				long querytime = System.currentTimeMillis() - querystart;
 				assertEquals(i/2, result.size());
 				DBFactory.getInstance().closeSession();

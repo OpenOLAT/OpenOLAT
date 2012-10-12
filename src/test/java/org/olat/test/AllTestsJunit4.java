@@ -111,7 +111,6 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.persistence.DBTest.class,
 	org.olat.modules.ims.cp.CPManagerTest.class,
 	org.olat.modules.webFeed.FeedManagerImplTest.class,
-	org.olat.basesecurity.IdentityTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
 	org.olat.core.commons.service.mark.MarksTest.class,
 //	org.olat.test.OlatJerseyTestCase.class, // NO TEST METHODS 

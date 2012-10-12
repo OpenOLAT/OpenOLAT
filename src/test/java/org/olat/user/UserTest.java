@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +50,8 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.test.OlatTestCase;
 
@@ -61,7 +64,7 @@ import org.olat.test.OlatTestCase;
  */
 public class UserTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(UserTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(UserTest.class);
 	// variables for test fixture
 	private User u1, u2, u3;
 	private Identity i1, i2, i3;
@@ -204,16 +207,11 @@ public class UserTest extends OlatTestCase {
 	 * if usermanager finds users by institutional user identifier
 	 * @throws Exception
 	 */
-	@Test public void testUmFindUserByInstitutionalUserIdentifier() throws Exception {
-		// u1 to u3 defined with
-		// u3.setInstitutionalUserIdentifier("id.uzh.ch");
-		// u2.setInstitutionalUserIdentifier("id.uzh.ch");
-		// u1.setInstitutionalUserIdentifier("id.uzh.ch");
-		UserManager um = UserManager.getInstance();
-		//
+	@Test
+	public void testUmFindUserByInstitutionalUserIdentifier() throws Exception {
 		Map<String, String> searchValue = new HashMap<String, String>();
 		searchValue.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-		List result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		List<Identity> result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertTrue("must have elements", result != null);
 		assertTrue("exactly three elements", result.size() == 3);
 		String instEmailU1 = ((Identity)result.get(0)).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
@@ -274,6 +272,7 @@ public class UserTest extends OlatTestCase {
 	@Test public void testUmFindCharsetPropertyByIdentity() throws Exception{
 	   UserManager um = UserManager.getInstance();
 	   User testuser = um.loadUserByKey(u1.getKey());
+	   Assert.assertNotNull(testuser);
 	   
 	   BaseSecurity sm = BaseSecurityManager.getInstance();
 	   Identity identity = sm.findIdentityByName(u1.getProperty(UserConstants.LASTNAME, null));
@@ -293,7 +292,7 @@ public class UserTest extends OlatTestCase {
 		Map<String, String> searchValue = new HashMap<String, String>();
 		searchValue.put(UserConstants.INSTITUTIONALEMAIL, "instsalat@id.salat.uzh.ch");
 		// find identity 1
-		List result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		List<Identity> result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// setting null should remove this property but first reload user
 		u3 = um.loadUserByKey(u3.getKey());
@@ -349,7 +348,7 @@ public class UserTest extends OlatTestCase {
 		
 		UserManager um = UserManager.getInstance();
 		// user still exists
-		List result = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null);
+		List<Identity> result = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null);
 		assertEquals(1, result.size());
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
