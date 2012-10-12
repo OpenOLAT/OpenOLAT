@@ -142,7 +142,6 @@ public class MapperServiceImpl implements MapperService {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR_OF_DAY, -6);
 		mapperDao.deleteMapperByDate(cal.getTime());
-		System.out.println("Slay mapper zombie: " + cal.getTime());
 	}
 
 	@Override

@@ -193,7 +193,7 @@ public class EPAddArtefactController extends BasicController {
 		Step start = new EPCreateTextArtefactStep00(ureq, artefact1, vfsTemp);
 		StepRunnerCallback finish = new EPArtefactWizzardStepCallback(vfsTemp);
 		collectStepsCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("create.text.artefact.wizzard.title"));
+				translate("create.text.artefact.wizzard.title"), "o_sel_artefact_add_wizard o_sel_artefact_add_text_wizard");
 		listenTo(collectStepsCtrl);
 		getWindowControl().pushAsModalDialog(collectStepsCtrl.getInitialComponent());
 	}
@@ -216,7 +216,7 @@ public class EPAddArtefactController extends BasicController {
 		Step start = new EPCreateFileArtefactStep00(ureq, artefact1, vfsTemp);
 		StepRunnerCallback finish = new EPArtefactWizzardStepCallback(vfsTemp);
 		collectStepsCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("create.file.artefact.wizzard.title"));
+				translate("create.file.artefact.wizzard.title"), "o_sel_artefact_add_wizard o_sel_artefact_add_file_wizard");
 		listenTo(collectStepsCtrl);
 		getWindowControl().pushAsModalDialog(collectStepsCtrl.getInitialComponent());
 	}
@@ -231,7 +231,7 @@ public class EPAddArtefactController extends BasicController {
 		Step start = new EPCreateLiveBlogArtefactStep00(ureq, artefact1);
 		StepRunnerCallback finish = new EPArtefactWizzardStepCallback(); // no vfsTemp!, blog doesn't need a directory
 		collectStepsCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("create.blog.artefact.wizzard.title"));
+				translate("create.blog.artefact.wizzard.title"), "o_sel_artefact_add_wizard o_sel_artefact_add_blog_wizard");
 		listenTo(collectStepsCtrl);
 		getWindowControl().pushAsModalDialog(collectStepsCtrl.getInitialComponent());
 	}

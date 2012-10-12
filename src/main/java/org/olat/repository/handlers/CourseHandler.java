@@ -204,7 +204,7 @@ public class CourseHandler implements RepositoryHandler {
 			}
 		};
 		Step start  = new CcStep00(ureq, courseConfig, repoEntry);
-		StepsMainRunController ccSMRC = new StepsMainRunController(ureq, wControl, start, finishCallback, null, cceTranslator.translate("coursecreation.title"));
+		StepsMainRunController ccSMRC = new StepsMainRunController(ureq, wControl, start, finishCallback, null, cceTranslator.translate("coursecreation.title"), "o_sel_course_create_wizard");
 		return ccSMRC;
 	}
 

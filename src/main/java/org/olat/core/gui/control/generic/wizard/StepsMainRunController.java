@@ -119,9 +119,8 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	private Stack<Step> steps;
 	private Event lastEvent;
 	private boolean doAfterDispatch;
-	Step nextStep;
+	private Step nextStep;
 	private ControllerCreator nextChildCreator;
-	private int maxSteps;
 	private StepRunnerCallback cancel;
 	private StepRunnerCallback finish;
 	private boolean finishCycle = false;
@@ -131,12 +130,13 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	 * @param control
 	 */
 	public StepsMainRunController(UserRequest ureq, WindowControl control, Step startStep, StepRunnerCallback finish,
-			StepRunnerCallback cancel, String wizardTitle) {
+			StepRunnerCallback cancel, String wizardTitle, String elementCssClass) {
 		super(ureq, control, "stepslayout");
 
 		this.finish = finish;
 		this.cancel = cancel;
 		flc.contextPut("wizardTitle", wizardTitle);
+		flc.contextPut("elementCssClass", elementCssClass);
 
 		this.startStep = startStep;
 		steps = new Stack<Step>();
@@ -173,8 +173,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	/*
@@ -279,12 +278,10 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		formLayout.add(closeLink);
 		// add all step titles, but disabled.
 		Step tmp = startStep;
-		maxSteps = 0;
 		do {
 			FormItem title = tmp.getStepTitle();
 			title.setEnabled(false);
 			stepTitleLinks.add(title);
-			maxSteps++;
 			tmp = tmp.nextStep();
 		} while (tmp != Step.NOSTEP);
 		// init buttons and the like

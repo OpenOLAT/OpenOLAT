@@ -491,7 +491,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 					};
 
 					removeAsListenerAndDispose(userBulkChangeStepsController);
-					userBulkChangeStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("bulkChange.title"));
+					userBulkChangeStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+							translate("bulkChange.title"), "o_sel_user_bulk_change_wizard");
 					listenTo(userBulkChangeStepsController);
 					
 					getWindowControl().pushAsModalDialog(userBulkChangeStepsController.getInitialComponent());

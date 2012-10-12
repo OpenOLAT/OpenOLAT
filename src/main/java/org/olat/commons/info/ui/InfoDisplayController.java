@@ -329,7 +329,7 @@ public class InfoDisplayController extends FormBasicController {
 		if(source == newInfoLink) {
 			start = new CreateInfoStep(ureq, sendMailOptions);
 			newInfoWizard = new StepsMainRunController(ureq, getWindowControl(), start, new FinishedCallback(),
-					new CancelCallback(), translate("create_message"));
+					new CancelCallback(), translate("create_message"), "o_sel_info_messages_create_wizard");
 			listenTo(newInfoWizard);
 			getWindowControl().pushAsModalDialog(newInfoWizard.getInitialComponent());
 		} else if(deleteLinks.contains(source)) {

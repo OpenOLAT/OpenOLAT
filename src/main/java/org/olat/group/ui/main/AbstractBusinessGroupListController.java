@@ -479,7 +479,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			}
 		};
 		
-		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("copy.group"));
+		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("copy.group"), "o_sel_group_copy_wizard");
 		listenTo(businessGroupWizard);
 		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
 	}
@@ -544,7 +544,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			}
 		};
 		
-		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("config.group"));
+		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("config.group"), "o_sel_groups_config_wizard");
 		listenTo(businessGroupWizard);
 		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
 	}
@@ -569,7 +569,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			}
 		};
 		
-		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("email.group"));
+		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("email.group"), "o_sel_groups_email_wizard");
 		listenTo(businessGroupWizard);
 		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
 	}
@@ -659,7 +659,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			}
 		};
 		
-		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("merge.group"));
+		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("merge.group"), "o_sel_groups_merge_wizard");
 		listenTo(businessGroupWizard);
 		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
 		

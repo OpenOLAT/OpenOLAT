@@ -204,7 +204,8 @@ public class UserImportController extends BasicController {
 
 		};
 
-		importStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("title"));
+		importStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("title"), "o_sel_user_import_wizard");
 		listenTo(importStepsController);
 			getWindowControl().pushAsModalDialog(importStepsController.getInitialComponent());
 		}

@@ -210,7 +210,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 
 					};
 					deleteStepController = new StepsMainRunController(ureq, getWindowControl(), start, finishCallback, null,
-							translate("admin.deleteUser.title"));
+							translate("admin.deleteUser.title"), "o_sel_ldap_delete_user_wizard");
 					listenTo(deleteStepController);
 					getWindowControl().pushAsModalDialog(deleteStepController.getInitialComponent());
 				}

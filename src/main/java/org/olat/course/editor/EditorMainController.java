@@ -639,7 +639,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					}
 				};
 
-				publishStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("publish.wizard.title") );
+				publishStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("publish.wizard.title"), "o_sel_course_publish_wizard");
 				listenTo(publishStepsController);
 				getWindowControl().pushAsModalDialog(publishStepsController.getInitialComponent());
 					

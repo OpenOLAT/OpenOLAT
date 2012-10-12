@@ -178,7 +178,8 @@ public class ArtefactWizzardStepsController extends BasicController {
 		if (artefact == null && ores != null) prepareNewArtefact();
 		Step start = new EPCollectStep00(ureq, artefact);
 		StepRunnerCallback finish = new EPArtefactWizzardStepCallback(tmpFolder);
-		collectStepsCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("collect.wizzard.title"));
+		collectStepsCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("collect.wizzard.title"), "o_sel_artefact_add_wizard");
 		listenTo(collectStepsCtrl);
 		getWindowControl().pushAsModalDialog(collectStepsCtrl.getInitialComponent());
 	}
