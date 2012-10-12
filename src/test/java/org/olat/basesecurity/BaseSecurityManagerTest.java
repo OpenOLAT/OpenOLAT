@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
@@ -256,6 +256,87 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, identities.size());
 		Assert.assertTrue(identities.contains(id1));
 		Assert.assertTrue(identities.contains(id2));
+	}
+	
+	/**
+	 * Update roles
+	 */
+	@Test
+	public void testUpdateRoles_giveAllRights() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
+		Roles roles = securityManager.getRoles(id1);
+		Assert.assertNotNull(roles);
+		dbInstance.commitAndCloseSession();
+
+		//update roles
+		Roles modifiedRoles = new Roles(true, true, true, true, false, true, false);
+		securityManager.updateRoles(id1, modifiedRoles);
+		dbInstance.commitAndCloseSession();
+		
+		//check roles
+		Roles reloadRoles = securityManager.getRoles(id1);
+		Assert.assertNotNull(reloadRoles);
+		Assert.assertTrue(reloadRoles.isAuthor());
+		Assert.assertTrue(reloadRoles.isGroupManager());
+		Assert.assertFalse(reloadRoles.isGuestOnly());
+		Assert.assertTrue(reloadRoles.isInstitutionalResourceManager());
+		Assert.assertFalse(reloadRoles.isInvitee());
+		Assert.assertTrue(reloadRoles.isOLATAdmin());
+		Assert.assertTrue(reloadRoles.isUserManager());
+	}
+	
+	/**
+	 * Update roles
+	 */
+	@Test
+	public void testUpdateRoles_someRights() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
+		Roles roles = securityManager.getRoles(id1);
+		Assert.assertNotNull(roles);
+		dbInstance.commitAndCloseSession();
+
+		//update roles
+		Roles modifiedRoles = new Roles(false, true, false, true, false, false, false);
+		securityManager.updateRoles(id1, modifiedRoles);
+		dbInstance.commitAndCloseSession();
+		
+		//check roles
+		Roles reloadRoles = securityManager.getRoles(id1);
+		Assert.assertNotNull(reloadRoles);
+		Assert.assertTrue(reloadRoles.isAuthor());
+		Assert.assertFalse(reloadRoles.isGroupManager());
+		Assert.assertFalse(reloadRoles.isGuestOnly());
+		Assert.assertFalse(reloadRoles.isInstitutionalResourceManager());
+		Assert.assertFalse(reloadRoles.isInvitee());
+		Assert.assertFalse(reloadRoles.isOLATAdmin());
+		Assert.assertTrue(reloadRoles.isUserManager());
+	}
+	
+	/**
+	 * Update roles, check that invitee don't become rights
+	 */
+	@Test
+	public void testUpdateRoles_guest() {
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsUser("invitee-" + UUID.randomUUID().toString());
+		Roles roles = securityManager.getRoles(invitee);
+		Assert.assertNotNull(roles);
+		dbInstance.commitAndCloseSession();
+
+		//update roles
+		Roles modifiedRoles = new Roles(true, true, true, true, true, true, false);
+		securityManager.updateRoles(invitee, modifiedRoles);
+		dbInstance.commitAndCloseSession();
+
+		//check roles
+		Roles reloadRoles = securityManager.getRoles(invitee);
+		Assert.assertNotNull(reloadRoles);
+		Assert.assertFalse(reloadRoles.isAuthor());
+		Assert.assertFalse(reloadRoles.isGroupManager());
+		Assert.assertTrue(reloadRoles.isGuestOnly());
+		Assert.assertFalse(reloadRoles.isInstitutionalResourceManager());
+		Assert.assertFalse(reloadRoles.isInvitee());
+		Assert.assertFalse(reloadRoles.isOLATAdmin());
+		Assert.assertFalse(reloadRoles.isUserManager());
 	}
 	
 	/**

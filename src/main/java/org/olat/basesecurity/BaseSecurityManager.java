@@ -341,7 +341,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		query.setString("permission", permission);		
 		query.setLong("resid", oresid);
 		query.setString("resname", oresName);
-		query.setCacheable(true);
+		//query.setCacheable(true);
 		List res = query.list();
 		Long cntL = (Long) res.get(0);
 		return (cntL.longValue() > 0); // can be > 1 if identity is in more the one group having
@@ -362,6 +362,61 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		boolean isInvitee = isIdentityInvited(identity);
 		Roles roles = new Roles(isAdmin, isUserManager, isGroupManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, isInvitee);
 		return roles;
+	}
+
+	@Override
+	public void updateRoles(Identity identity, Roles roles) {
+		SecurityGroup anonymousGroup = findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
+		boolean hasBeenAnonymous = isIdentityInSecurityGroup(identity, anonymousGroup);
+		updateRolesInSecurityGroup(identity, anonymousGroup, hasBeenAnonymous, roles.isGuestOnly());
+		
+		// system users - opposite of anonymous users
+		SecurityGroup usersGroup = findSecurityGroupByName(Constants.GROUP_OLATUSERS);
+		boolean hasBeenUser = isIdentityInSecurityGroup(identity, usersGroup);
+		updateRolesInSecurityGroup(identity,  usersGroup, hasBeenUser, !roles.isGuestOnly());
+
+		SecurityGroup groupManagerGroup = findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
+		boolean hasBeenGroupManager = isIdentityInSecurityGroup(identity, groupManagerGroup);
+		boolean groupManager = roles.isGroupManager()
+				&& !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(identity, groupManagerGroup, hasBeenGroupManager, groupManager);
+
+	// author
+		SecurityGroup authorGroup = findSecurityGroupByName(Constants.GROUP_AUTHORS);
+		boolean hasBeenAuthor = isIdentityInSecurityGroup(identity, authorGroup);
+		boolean isAuthor = (roles.isAuthor() || roles.isInstitutionalResourceManager())
+				&& !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(identity, authorGroup, hasBeenAuthor, isAuthor);
+
+		// user manager, only allowed by admin
+		SecurityGroup userManagerGroup = findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
+		boolean hasBeenUserManager = isIdentityInSecurityGroup(identity, userManagerGroup);
+		boolean userManager = roles.isUserManager()
+				&& !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(identity,  userManagerGroup, hasBeenUserManager, userManager);
+
+ 		// institutional resource manager
+		SecurityGroup institutionalResourceManagerGroup = findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
+		boolean hasBeenInstitutionalResourceManager = isIdentityInSecurityGroup(identity, institutionalResourceManagerGroup);
+		boolean institutionalResourceManager = roles.isInstitutionalResourceManager()
+				&& !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(identity, institutionalResourceManagerGroup, hasBeenInstitutionalResourceManager, institutionalResourceManager);
+
+		// system administrator
+		SecurityGroup adminGroup = findSecurityGroupByName(Constants.GROUP_ADMIN);
+		boolean hasBeenAdmin = isIdentityInSecurityGroup(identity, adminGroup);
+		boolean isOLATAdmin = roles.isOLATAdmin() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(identity, adminGroup, hasBeenAdmin, isOLATAdmin);		
+	}
+	
+	private void updateRolesInSecurityGroup(Identity identity, SecurityGroup securityGroup, boolean hasBeenInGroup, boolean isNowInGroup) {
+		if (!hasBeenInGroup && isNowInGroup) {
+			// user not yet in security group, add him
+			addIdentityToSecurityGroup(identity, securityGroup);
+		} else if (hasBeenInGroup && !isNowInGroup) {
+			// user not anymore in security group, remove him
+			removeIdentityFromSecurityGroup(identity, securityGroup);
+		}
 	}
 
 	/**

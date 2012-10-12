@@ -47,6 +47,8 @@ import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import junit.framework.Assert;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -68,9 +70,10 @@ import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
@@ -104,6 +107,7 @@ import org.olat.restapi.support.vo.GroupVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -130,7 +134,11 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	private RestConnection conn;
 	
 	@Autowired
+	DB dbInstance;
+	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BaseSecurityManager securityManager;
 	
 	@Before
 	@Override
@@ -142,14 +150,14 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		//create identities
 		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-zero");
 		assertNotNull(owner1);
-		id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-one-" + UUID.randomUUID().toString().replace("-", ""));
+		id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-one-" + UUID.randomUUID().toString());
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-two");
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		id2.getUser().setProperty("telMobile", "39847592");
 		id2.getUser().setProperty("gender", "female");
 		id2.getUser().setProperty("birthDay", "20091212");
-		DBFactory.getInstance().updateObject(id2.getUser());
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.updateObject(id2.getUser());
+		dbInstance.intermediateCommit();
 		
 		id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-three");
 		OlatRootFolderImpl id3HomeFolder = new OlatRootFolderImpl(FolderConfig.getUserHome(id3.getName()), null);
@@ -168,8 +176,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		// create course and persist as OLATResourceImpl
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
 		OLATResource course =  rm.createOLATResourceInstance(resourceable);
-		DBFactory.getInstance().saveObject(course);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.saveObject(course);
+		dbInstance.intermediateCommit();
 		
 		//create learn group
     BaseSecurity secm = BaseSecurityManager.getInstance();
@@ -194,7 +202,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     // members
     secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
     secm.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 		
 		//add some collaboration tools
 		CollaborationTools g1CTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
@@ -205,7 +213,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		m1.setBody("Body of Thread-1");
 		ForumManager.getInstance().addTopMessage(id1, g1Forum, m1);
 		
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 		
 		//add some folder tool
 		CollaborationTools g2CTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
@@ -219,7 +227,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 			FileUtils.copyFileToDirectory(ioPortrait, g2Folder.getBasefile(), false);
 		}
 		
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 		
 		//prepare some courses
 		RepositoryEntry entry = JunitTestHelper.deployDemoCourse();
@@ -262,7 +270,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		}, demoCourse.getRunStructure().getRootNode(), false);
 		visitor.visitAll();
 
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 		setuped = true;
 	}
 	
@@ -272,7 +280,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 			if(conn != null) {
 				conn.shutdown();
 			}
-      DBFactory.getInstance().closeSession();
+      dbInstance.closeSession();
 		} catch (Exception e) {
       e.printStackTrace();
       throw e;
@@ -553,6 +561,62 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		Identity deletedIdent = BaseSecurityManager.getInstance().loadIdentityByKey(id2.getKey());
 		assertNotNull(deletedIdent);//Identity aren't deleted anymore
 		assertEquals(Identity.STATUS_DELETED, deletedIdent.getStatus());
+	}
+	
+	@Test
+	public void testGetRoles() throws IOException, URISyntaxException {
+		//create an author
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + author.getKey() + "/roles").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		RolesVO roles = conn.parse(response, RolesVO.class);
+		Assert.assertNotNull(roles);
+		Assert.assertTrue(roles.isAuthor());
+		Assert.assertFalse(roles.isGroupManager());
+		Assert.assertFalse(roles.isGuestOnly());
+		Assert.assertFalse(roles.isInstitutionalResourceManager());
+		Assert.assertFalse(roles.isInvitee());
+		Assert.assertFalse(roles.isOlatAdmin());
+		Assert.assertFalse(roles.isUserManager());
+	}
+	
+	@Test
+	public void testUpdateRoles() throws IOException, URISyntaxException {
+		//create an author
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		RolesVO roles = new RolesVO();
+		roles.setAuthor(true);
+		roles.setUserManager(true);
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + author.getKey() + "/roles").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, roles);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		RolesVO modRoles = conn.parse(response, RolesVO.class);
+		Assert.assertNotNull(modRoles);
+		
+		//check the roles
+		Roles reloadRoles = securityManager.getRoles(author);
+		Assert.assertTrue(reloadRoles.isAuthor());
+		Assert.assertFalse(reloadRoles.isGroupManager());
+		Assert.assertFalse(reloadRoles.isGuestOnly());
+		Assert.assertFalse(reloadRoles.isInstitutionalResourceManager());
+		Assert.assertFalse(reloadRoles.isInvitee());
+		Assert.assertFalse(reloadRoles.isOLATAdmin());
+		Assert.assertTrue(reloadRoles.isUserManager());
 	}
 	
 	@Test

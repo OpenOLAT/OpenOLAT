@@ -69,6 +69,7 @@ import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -244,29 +245,60 @@ public class UserWebService {
 	}
 	
 	/**
-	 * Fallback method for browser
-	 * @response.representation.qname {http://www.example.com}userVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The user to persist
-   * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
+	 * Retrieves the roles of a user given its unique key identifier
 	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The persisted user
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
+	 * @response.representation.200.doc The user
+   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
    * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.406.mediaType application/xml, application/json
-	 * @response.representation.406.doc The list of errors
-   * @response.representation.406.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ERRORVOes}
-	 * @param user The user to persist
-	 * @param request The HTTP request
-	 * @return the new persisted <code>User</code>
+   * @response.representation.404.doc The identity not found
+	 * @param identityKey The user key identifier of the user being searched
+	 * @param httpRequest The HTTP request
+	 * @return an xml or json representation of a the roles being search.
 	 */
-	@POST
-	@Path("new")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response createPost(UserVO user, @Context HttpServletRequest request) {
-		return create(user, request);
+	@GET
+	@Path("{identityKey}/roles")
+	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response getRoles(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		try {
+			boolean isUserManager = isUserManager(request);
+			if(!isUserManager) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
+			}
+			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			if(identity == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
+			return Response.ok(new RolesVO(roles)).build();
+		} catch (Throwable e) {
+			throw new WebApplicationException(e);
+		}
 	}
+	
+	
+	@POST
+	@Path("{identityKey}/roles")
+	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response updateRoles(@PathParam("identityKey") Long identityKey, RolesVO roles, @Context HttpServletRequest request) {
+		try {
+			boolean isUserManager = isUserManager(request);
+			if(!isUserManager) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
+			}
+			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			if(identity == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			Roles modRoles = roles.toRoles();
+			BaseSecurityManager.getInstance().updateRoles(identity, modRoles);
+			return Response.ok(new RolesVO(modRoles)).build();
+		} catch (Throwable e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
 
 	/**
 	 * Retrieves an user given its unique key identifier

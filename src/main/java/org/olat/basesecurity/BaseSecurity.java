@@ -68,6 +68,12 @@ public interface BaseSecurity {
 	 * @return The roles of the identity
 	 */
 	public Roles getRoles(Identity identity);
+	
+	/**
+	 * Update the roles
+	 * @param identity
+	 */
+	public void updateRoles(Identity identity, Roles roles);
 
 	/**
 	 * @param identity
