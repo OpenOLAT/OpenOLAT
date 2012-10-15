@@ -488,13 +488,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		}
 		
 		for(Identity newOwner:newOwners) {
-			addOwner(merger, newOwner, targetGroup, syncIM);
+			addOwner(newOwner, targetGroup, syncIM);
 		}
 		for(Identity newParticipant:newParticipants) {
-			addParticipant(merger, newParticipant, targetGroup, syncIM);
+			addParticipant(newParticipant, targetGroup, syncIM);
 		}
 		for(Identity newWaiter:newWaiters) {
-			addToWaitingList(merger, newWaiter, targetGroup);
+			addToWaitingList(newWaiter, targetGroup);
 		}
 			
 		syncIM(syncIM, targetGroup);
@@ -522,17 +522,17 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 		for(Identity owner:membersMod.getAddOwners()) {
 			if(!currentOwners.contains(owner)) {
-				addOwner(identity, owner, group, syncIM);
+				addOwner(owner, group, syncIM);
 			}
 		}
 		for(Identity participant:membersMod.getAddParticipants()) {
 			if(!currentParticipants.contains(participant)) {
-				addParticipant(identity, participant, group, syncIM);
+				addParticipant(participant, group, syncIM);
 			}
 		}
 		for(Identity waitingIdentity:membersMod.getAddToWaitingList()) {
 			if(!currentWaitingList.contains(waitingIdentity)) {
-				addToWaitingList(identity, waitingIdentity, group);
+				addToWaitingList(waitingIdentity, group);
 			}
 		}
 		
@@ -546,7 +546,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				removeParticipant(identity, removed, group, syncIM);
 			}
 			if(currentWaitingList.contains(removed)) {
-				removeFromWaitingList(identity, removed, group);
+				removeFromWaitingList(removed, group);
 			}
 		}
 		removeOwners(identity, ownerToRemove, group);
@@ -603,19 +603,19 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			group = businessGroupDAO.loadForUpdate(group.getKey());
 					
 			for(Identity id:changesWrapper.addToWaitingList) {
-				addToWaitingList(ureqIdentity, id, group);
+				addToWaitingList(id, group);
 			}
 			for(Identity id:changesWrapper.removeFromWaitingList) {
-				removeFromWaitingList(ureqIdentity, id, group);
+				removeFromWaitingList(id, group);
 			}
 			for(Identity id:changesWrapper.addTutors) {
-				addOwner(ureqIdentity, id, group, syncIM);
+				addOwner(id, group, syncIM);
 			}
 			for(Identity id:changesWrapper.removeTutors) {
 				removeOwner(ureqIdentity, id, group, syncIM);
 			}
 			for(Identity id:changesWrapper.addParticipants) {
-				addParticipant(ureqIdentity, id, group, syncIM);
+				addParticipant(id, group, syncIM);
 			}
 			for(Identity id:changesWrapper.removeParticipants) {
 				removeParticipant(ureqIdentity, id, group, syncIM);
@@ -843,7 +843,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			group = loadBusinessGroup(group); // reload business group
 			if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
 				response.getIdentitiesWithoutPermission().add(identity);
-			} else if(addOwner(ureqIdentity, identity, group, syncIM)) {
+			} else if(addOwner(identity, group, syncIM)) {
 				response.getAddedIdentities().add(identity);
 				log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + group.getOwnerGroup().getKey());
 			} else {
@@ -854,7 +854,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return response;
 	}
 	
-	private boolean addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, SyncUserListTask syncIM) {
+	private boolean addOwner(Identity identity, BusinessGroup group, SyncUserListTask syncIM) {
 		if (!securityManager.isIdentityInSecurityGroup(identity, group.getOwnerGroup())) {
 			securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
 			// add user to buddies rosters
@@ -870,7 +870,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return false;
 	}
 	
-	private boolean addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group, SyncUserListTask syncIM) {
+	private boolean addParticipant(Identity identityToAdd, BusinessGroup group, SyncUserListTask syncIM) {
 		if(!securityManager.isIdentityInSecurityGroup(identityToAdd, group.getPartipiciantGroup())) {
 			securityManager.addIdentityToSecurityGroup(identityToAdd, group.getPartipiciantGroup());
 			// add user to buddies rosters
@@ -898,7 +898,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		for (final Identity identity : addIdentities) {
 			if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
 				response.getIdentitiesWithoutPermission().add(identity);
-			} else if(addParticipant(ureqIdentity, identity, currBusinessGroup, syncIM)) {
+			} else if(addParticipant(identity, currBusinessGroup, syncIM)) {
 				response.getAddedIdentities().add(identity);
 				log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey());
 			} else {
@@ -1009,7 +1009,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					removeParticipant(ureqIdentity, id, currentGroup, syncIM);
 				}
 				if(membership.getWaitingGroupKey() != null) {
-					removeFromWaitingList(ureqIdentity, id, currentGroup);
+					removeFromWaitingList(id, currentGroup);
 				}
 			} else {
 				return membership;
@@ -1019,7 +1019,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return null;
 	}
 
-	private void addToWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group) {
+	private void addToWaitingList(Identity identity, BusinessGroup group) {
 		securityManager.addIdentityToSecurityGroup(identity, group.getWaitingGroup());
 
 		// notify currently active users of this business group
@@ -1046,7 +1046,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				response.getIdentitiesAlreadyInGroup().add(identity);
 			} else {
 				// identity has permission and is not already in group => add it
-				addToWaitingList(ureqIdentity, identity, currBusinessGroup);
+				addToWaitingList(identity, currBusinessGroup);
 				response.getAddedIdentities().add(identity);
 				log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey());
 			}
@@ -1054,7 +1054,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return response;
 	}
 
-	private final void removeFromWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group) {
+	private final void removeFromWaitingList(Identity identity, BusinessGroup group) {
 		securityManager.removeIdentityFromSecurityGroup(identity, group.getWaitingGroup());
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group, identity);
@@ -1068,7 +1068,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		currBusinessGroup = businessGroupDAO.loadForUpdate(currBusinessGroup.getKey());
 		
 		for (Identity identity : identities) {
-		  removeFromWaitingList(ureqIdentity, identity, currBusinessGroup);
+		  removeFromWaitingList(identity, currBusinessGroup);
 		  log.audit("removed identiy '" + identity.getName() + "' from securitygroup with key " + currBusinessGroup.getOwnerGroup().getKey());
 		}
 	}
@@ -1099,8 +1099,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			// check if idenity is allready in participant
 			if (!securityManager.isIdentityInSecurityGroup(identity,currBusinessGroup.getPartipiciantGroup()) ) {
 				// Idenity is not in participant-list => move idenity from waiting-list to participant-list
-				addParticipant(ureqIdentity, identity, currBusinessGroup, syncIM);
-				removeFromWaitingList(ureqIdentity, identity, currBusinessGroup);
+				addParticipant(identity, currBusinessGroup, syncIM);
+				removeFromWaitingList(identity, currBusinessGroup);
 				response.getAddedIdentities().add(identity);
 				// notification mail is handled in controller
 			} else {
@@ -1156,7 +1156,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		
 		//reservation has the highest priority over max participant or other settings
 		if(reservation != null) {
-			addParticipant(null, identity, reloadedGroup, syncIM);
+			addParticipant(identity, reloadedGroup, syncIM);
 			enrollStatus.setEnrolled(BGMembership.participant);
 			log.info("doEnroll (reservation) - setIsEnrolled ", identity.getName());
 			if(reservation != null) {
@@ -1170,7 +1170,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			if (reservation == null && (participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
 				// already full, show error and updated choose page again
 				if (reloadedGroup.getWaitingListEnabled().booleanValue()) {
-					addToWaitingList(null, identity, reloadedGroup);
+					addToWaitingList(identity, reloadedGroup);
 					enrollStatus.setEnrolled(BGMembership.waiting);
 				} else {
 					// No Waiting List => List is full
@@ -1179,13 +1179,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 			} else {
 				//enough place
-				addParticipant(null, identity, reloadedGroup, syncIM);
+				addParticipant(identity, reloadedGroup, syncIM);
 				enrollStatus.setEnrolled(BGMembership.participant);
 				log.info("doEnroll - setIsEnrolled ", identity.getName());
 			}
 		} else {
 			if (log.isDebug()) log.debug("doEnroll as participant beginTransaction");
-			addParticipant(null, identity, reloadedGroup, syncIM);
+			addParticipant(identity, reloadedGroup, syncIM);
 			enrollStatus.setEnrolled(BGMembership.participant);						
 			if (log.isDebug()) log.debug("doEnroll as participant committed");
 		}
@@ -1227,8 +1227,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 							//            that get triggered in the next two methods to be of ActionType admin
 							//            This is needed to make sure the targetIdentity ends up in the o_loggingtable
 							ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-							addParticipant(ureqIdentity, firstWaitingListIdentity, group, syncIM);
-							removeFromWaitingList(ureqIdentity, firstWaitingListIdentity, group);
+							addParticipant(firstWaitingListIdentity, group, syncIM);
+							removeFromWaitingList(firstWaitingListIdentity, group);
 						} finally {
 							ThreadLocalUserActivityLogger.setStickyActionType(formerStickyActionType);
 						}
@@ -1377,6 +1377,21 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		//remove permission
 		securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, re.getOlatResource());
 		securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
+	}
+	
+	@Override
+	@Transactional
+	public void removeResource(OLATResource resource) {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		List<BusinessGroup> groups = findBusinessGroups(params, resource, 0, -1);
+		for(BusinessGroup group:groups) {
+			businessGroupRelationDAO.deleteRelation(group, resource);
+			//remove author permission
+			//securityManager.deletePolicy(re.getOwnerGroup(), Constants.PERMISSION_ACCESS, group.getResource());
+			//remove permission
+			securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, resource);
+			securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
+		}
 	}
 
 	@Override

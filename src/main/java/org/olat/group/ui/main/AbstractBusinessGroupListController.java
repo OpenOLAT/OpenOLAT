@@ -614,7 +614,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	private void finishUserManagement(MembershipModification mod, List<BusinessGroup> groups, MailTemplate template, boolean sendMail) {
 		businessGroupService.updateMembership(getIdentity(), mod, groups);
 		
-		if (template != null && !mod.isEmpty()) {
+		if (template != null && !mod.isEmpty() && sendMail) {
 			List<Identity> movedIdentities = mod.getAllIdentities();
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());

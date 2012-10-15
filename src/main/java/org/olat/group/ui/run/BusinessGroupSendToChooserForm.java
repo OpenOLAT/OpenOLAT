@@ -130,7 +130,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 
 			// Owner MultiSelection
 			SecurityGroup owners = businessGroup.getOwnerGroup();			
-			keysOwner = getMemberKeys(ureq, owners);
+			keysOwner = getMemberKeys(owners);
 			valuesOwner = getMemberValues(ureq, owners); 
 			ArrayHelper.sort(keysOwner, valuesOwner, false, true, false);
 		} else {
@@ -176,7 +176,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 				
 				// Participant MultiSelection
 				SecurityGroup participants = businessGroup.getPartipiciantGroup();
-				keysPartips = getMemberKeys(ureq, participants);
+				keysPartips = getMemberKeys(participants);
 				valuesPartips = getMemberValues(ureq, participants); 
 				ArrayHelper.sort(keysPartips, valuesPartips, false, true, false);
 			}
@@ -215,8 +215,8 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		if (showWaitingList) {
 		  // Waitings MultiSelection
 			SecurityGroup waitingList = businessGroup.getWaitingGroup();
-			keysWaitings = this.getMemberKeys(ureq, waitingList);
-			valuesWaitings = this.getMemberValues(ureq, waitingList);			
+			keysWaitings = getMemberKeys(waitingList);
+			valuesWaitings = getMemberValues(ureq, waitingList);			
 			ArrayHelper.sort(keysWaitings, valuesWaitings, false, true, false);
 		} else {
 			keysWaitings = new String[]{};
@@ -258,7 +258,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	 * @param securityGroup
 	 * @return
 	 */
-	private String[] getMemberKeys(UserRequest ureq, SecurityGroup securityGroup) {
+	private String[] getMemberKeys(SecurityGroup securityGroup) {
 		String[] keys = new String[0];		
 		List<Identity> membersList = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(securityGroup);		
 		keys = new String[membersList.size()];

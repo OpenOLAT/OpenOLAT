@@ -202,7 +202,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
 				@SuppressWarnings("unchecked")
 				List<Identity> members = (List<Identity>)leaveDialogBox.getUserObject();
-				doLeave(ureq, members);
+				doLeave(members);
 				reloadModel();
 			}
 		} else if(source == editMemberCtrl) {
@@ -347,7 +347,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		}
 	}
 	
-	protected void doLeave(UserRequest ureq, List<Identity> members) {
+	protected void doLeave(List<Identity> members) {
 		repositoryManager.removeMembers(members, repoEntry);
 		businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource());
 		reloadModel();

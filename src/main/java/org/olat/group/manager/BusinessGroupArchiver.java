@@ -334,7 +334,7 @@ public class BusinessGroupArchiver {
 					organisationalEntityList, orgEntityTitle, userLocale, charset);
 		} else if (FILE_PER_GROUP_OR_AREA.equals(archiveType)) {
 			outFile = archiveFilePerGroup(resource, owners, participants, waitings, columnList, organisationalEntityList,
-					orgEntityTitle, userLocale, charset);
+					userLocale, charset);
 		}
 		} catch (IOException e) {
 			throw new OLATRuntimeException(BusinessGroupArchiver.class, "could not create temp file", e);
@@ -482,7 +482,7 @@ public class BusinessGroupArchiver {
 	 * @return the output zip file located into the temp dir.
 	 */
 	private File archiveFilePerGroup(OLATResource resource, List<Member> owners, List<Member> participants,
-			List<Member> waitings, List<String> columnList, List<OrganisationalEntity> groupList, String orgEntityTitle, Locale userLocale,
+			List<Member> waitings, List<String> columnList, List<OrganisationalEntity> groupList, Locale userLocale,
 			String charset) {
 		Set<String> outFiles = new HashSet<String>();
 		File root = null;
@@ -496,7 +496,7 @@ public class BusinessGroupArchiver {
 				List<Member> groupParticipants = getFilteredList(participants, group, PARTICIPANT);
 				List<Member> groupWaiting = getFilteredList(waitings, group, WAITING);
 
-				File filePerGroup = archiveFileSingleGroup(resource, groupOwners, groupParticipants, groupWaiting, columnList, groupList, orgEntityTitle,
+				File filePerGroup = archiveFileSingleGroup(resource, groupOwners, groupParticipants, groupWaiting, columnList,
 						userLocale, group.getName(), tempDir, charset);
 				if (root == null && filePerGroup != null) {
 					root = filePerGroup.getParentFile();
@@ -535,7 +535,7 @@ public class BusinessGroupArchiver {
 	 * @throws IOException
 	 */
 	private File archiveFileSingleGroup(OLATResource resource, List<Member> groupOwners, List<Member> groupParticipants, List<Member> groupWaiting,
-			List<String> columnList, List<OrganisationalEntity> organisationalEntityList, String orgEntityTitle, Locale userLocale, String fileNamePrefix,
+			List<String> columnList, Locale userLocale, String fileNamePrefix,
 			File tempDir, String charset) throws IOException {
 		File outFile = null;
 		StringBuffer stringBuffer = new StringBuffer();

@@ -257,8 +257,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#deleteCourseGroupmanagement()
 	 */
 	public void deleteCourseGroupmanagement() {
-		//TODO gm
-		//delete something???
+		//delete permission group to course
+		businessGroupService.removeResource(courseResource);
 		logAudit("Deleting course groupmanagement for " + courseResource.toString());
 	}
 

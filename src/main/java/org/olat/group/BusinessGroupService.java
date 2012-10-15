@@ -282,6 +282,8 @@ public interface BusinessGroupService {
 	
 	public void removeResourceFrom(BusinessGroup group, RepositoryEntry re);
 	
+	public void removeResource(OLATResource resource);
+	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
 	
 	/**
