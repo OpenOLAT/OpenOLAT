@@ -560,6 +560,16 @@ public class VelocityRenderDecorator {
 		Component source = renderer.findComponent(componentName);
 		return (source != null);
 	}
+	
+	/**
+	 * @param componentName
+	 * @return true if the component with name componentName is a child of the current container and if this
+	 * component is visible
+	 */
+	public boolean visible(String componentName) {
+		Component source = renderer.findComponent(componentName);
+		return (source != null && source.isVisible());
+	}
 
 	/**
 	 * returns an object from the context of velocity

@@ -18,7 +18,7 @@
 		//todo:gs:c On some sco's the first attempt to call the RTE fails, sending a dummy call is a workaroud for this
 		passApiCall("initcall","empty","empty");
 	</script>
-	
+
 	#if($showNavButtons)
 	<div class="o_scorm_navigation" >
 		$r.render("previousScoTop")
@@ -28,7 +28,7 @@
 	<div class="o_scorm_content">
 		$r.render("contentpackage")
 	</div>
-	#if($showNavButtons)
+	#if($showNavButtons && $r.visible("contentpackage"))
 	<div class="o_scorm_navigation" >
 		$r.render("previousScoBottom")
 		$r.render("nextScoBottom")

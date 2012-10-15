@@ -96,7 +96,9 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 	}
 	
 	public void addAPIListener(ScormAPICallback apiCallback) {
-		apiCallbacks.add(apiCallback);
+		if(apiCallback != null) {
+			apiCallbacks.add(apiCallback);
+		}
 	}
 
 	/**

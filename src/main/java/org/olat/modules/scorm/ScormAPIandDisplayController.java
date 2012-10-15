@@ -319,6 +319,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 
 		if (te.getCommand().equals(MenuTree.COMMAND_TREENODE_EXPANDED)) {
 			iframectr.getInitialComponent().setVisible(false);
+			myContent.setDirty(true);//update the view
 		} else {
 			iframectr.getInitialComponent().setVisible(true);
 			String scormId = String.valueOf(treeModel.lookupScormNodeId(tn));
