@@ -509,7 +509,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			//fxdiff VCRP-10: repository search with type filter
 			if(event instanceof TableEvent) {
 				TableEvent te = (TableEvent)event;
-				selectedEntry =  repoTableModel.getObject(te.getRowId());
+				selectedEntry =  (RepositoryEntry)tableCtr.getTableDataModel().getObject(te.getRowId());
 				selectedEntries = null;
 				if (te.getActionId().equals(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY)) {
 					fireEvent(urequest, new Event(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY));
