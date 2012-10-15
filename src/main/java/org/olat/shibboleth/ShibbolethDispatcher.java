@@ -134,8 +134,9 @@ public class ShibbolethDispatcher implements Dispatcher{
 		if (loginStatus != AuthHelper.LOGIN_OK) {
 			if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 				DispatcherAction.redirectToServiceNotAvailable(resp);
+			} else {
+				DispatcherAction.redirectToDefaultDispatcher(resp); // error, redirect to login screen
 			}
-			DispatcherAction.redirectToDefaultDispatcher(resp); // error, redirect to login screen
 			return;
 		}
 		
