@@ -85,7 +85,7 @@ public class FunctionalCourseTest {
 		if(!initialized){
 			functionalUtil = new FunctionalUtil();
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-			functionalHtmlUtil = new FunctionalHtmlUtil();
+			functionalHtmlUtil = functionalUtil.getFunctionalHtmlUtil();
 
 			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 			functionalCourseUtil = functionalRepositorySiteUtil.getFunctionalCourseUtil();
@@ -173,6 +173,7 @@ public class FunctionalCourseTest {
 
 		String originalText = functionalHtmlUtil.stripTags(IOUtils.toString(FunctionalCourseTest.class.getResourceAsStream(EDITOR_COURSE_OVERVIEW_FILE)), true);
 
+		//TODO:JK: probably you want to replace the following code with functionalUtil.waitForPageToLoadContent
 		String spIFrameSelector = "dom=document.getElementsByClassName('b_module_singlepage_wrapper')[0].getElementsByTagName('iframe')[0]";
 		functionalUtil.waitForPageToLoadElement(browser, spIFrameSelector);
 		browser.selectFrame(spIFrameSelector);

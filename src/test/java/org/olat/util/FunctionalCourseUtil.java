@@ -461,6 +461,7 @@ public class FunctionalCourseUtil {
 		.append(nth + 1)
 		.append("]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
@@ -487,6 +488,7 @@ public class FunctionalCourseUtil {
 		.append(nth + 1)
 		.append("]//a");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		return(true);
@@ -924,17 +926,16 @@ public class FunctionalCourseUtil {
 			
 			selectorBuffer = new StringBuffer();
 			
-			selectorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
+			selectorBuffer.append("xpath=//li[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
 			.append((structure != null) ? structure: page)
 			.append("')]");
 			
 			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-			
-			/* click finish */
-			functionalUtil.clickWizardFinish(browser);
-			functionalUtil.waitForPageToUnloadElement(browser, selector);
 		}
 
+		/* click finish */
+		functionalUtil.clickWizardFinish(browser, functionalEPortfolioUtil.getArtefactWizardCss());
+		
 		return(true);
 	}
 	
@@ -1030,8 +1031,7 @@ public class FunctionalCourseUtil {
 	 * @return
 	 */
 	public boolean openWiki(Selenium browser, long id){
-		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + id);
-		functionalUtil.waitForPageToLoad(browser);
+		functionalUtil.openBusinessPath(browser, functionalUtil.getDeploymentUrl() + "/url/RepositoryEntry/" + id);
 		
 		return(true);
 	}
@@ -1114,8 +1114,7 @@ public class FunctionalCourseUtil {
 	 * @return true on success, otherwise false
 	 */
 	public boolean openBlog(Selenium browser, long id){
-		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + id);
-		functionalUtil.waitForPageToLoad(browser);
+		functionalUtil.openBusinessPath(browser, functionalUtil.getDeploymentUrl() + "/url/RepositoryEntry/" + id);
 		
 		return(true);
 	}
@@ -1220,18 +1219,21 @@ public class FunctionalCourseUtil {
 		browser.type(selectorBuffer.toString(), title);
 		
 		/* fill in form - description */
-		functionalUtil.typeMCE(browser, getBlogFormCss(), description);
+		functionalUtil.typeMCE(browser, getBlogFormCss(), 0, description);
 		
 		/* fill in form - content */
-		functionalUtil.typeMCE(browser, getBlogFormCss(), content);
+		functionalUtil.typeMCE(browser, getBlogFormCss(), 1, content);
 		
 		/* save form */
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form//div[contains(@class, '")
 		.append(getBlogFormCss())
-		.append("')]//button[last()]");
+		.append("')]//button[last() and contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		functionalUtil.waitForPageToLoad(browser);
 		

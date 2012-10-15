@@ -50,6 +50,7 @@ import com.thoughtworks.selenium.DefaultSelenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
+@Ignore("no tests to run within this class, yet.")
 @RunWith(Arquillian.class)
 public class FunctionalBackTest {
 	@Deployment(testable = false)

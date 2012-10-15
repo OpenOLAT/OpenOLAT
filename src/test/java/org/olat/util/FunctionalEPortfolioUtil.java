@@ -50,6 +50,7 @@ public class FunctionalEPortfolioUtil {
 	public final static String EPORTFOLIO_MAP_CSS = "b_eportfolio_map";
 	public final static String EPORTFOLIO_PAGE_CSS = "b_eportfolio_page";
 	public final static String EPORTFOLIO_STRUCTURE_CSS = "b_eportfolio_structure";
+	public final static String EPORTFOLIO_LINK_CSS = "b_eportfolio_link";
 	public final static String EPORTFOLIO_ARTEFACT_CSS = "b_artefact";
 	public final static String EPORTFOLIO_ARTEFACT_DETAILS_CSS = "o_sel_artefact_details";
 	
@@ -73,12 +74,43 @@ public class FunctionalEPortfolioUtil {
 	public final static String ADD_LINK_CSS = "b_eportfolio_add_link";
 	public final static String PAGE_TABS_CSS = "b_pagination";
 	
-	public final static String PAGE_ICON_CSS = "b_eportfolio_link";
+	public final static String PAGE_ICON_CSS = "b_ep_page_icon";
 	public final static String STRUCT_ICON_CSS = "b_ep_struct_icon";
 	
 	public final static String ARTEFACT_CSS = "b_artefact";
 	public final static String TAG_ICON_CSS = "b_tag_icon";
 
+	public final static String ARTEFACT_WIZARD_CSS = "o_sel_artefact_add_wizard";
+	
+	public enum ArtefactAlias {
+		TEXT("txt", ADD_TEXT_ARTEFACT_CSS),
+		FILE("file", UPLOAD_FILE_ARTEFACT_CSS),
+		LEARNING_JOURNAL("liveblog", CREATE_LEARNING_JOURNAL_CSS);
+		
+		private String alias;
+		private String addLinkCss;
+		
+		ArtefactAlias(String alias, String addLinkCss){
+			setAlias(alias);
+			setAddLinkCss(addLinkCss);
+		}
+
+		public String getAlias() {
+			return alias;
+		}
+
+		public void setAlias(String alias) {
+			this.alias = alias;
+		}
+
+		public String getAddLinkCss() {
+			return addLinkCss;
+		}
+
+		public void setAddLinkCss(String addLinkCss) {
+			this.addLinkCss = addLinkCss;
+		}
+	}
 	
 	public enum ArtefactDisplay {
 		TABLE,
@@ -89,6 +121,7 @@ public class FunctionalEPortfolioUtil {
 	private String eportfolioMapCss;
 	private String eportfolioPageCss;
 	private String eportfolioStructureCss;
+	private String eportfolioLinkCss;
 	private String eportfolioArtefactCss;
 	private String eportfolioArtefactDetailsCss;
 	
@@ -118,6 +151,8 @@ public class FunctionalEPortfolioUtil {
 	private String artefactCss;
 	private String tagIconCss;
 	
+	private String artefactWizardCss;
+	
 	private FunctionalUtil functionalUtil;
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	
@@ -129,6 +164,7 @@ public class FunctionalEPortfolioUtil {
 		setEPortfolioMapCss(EPORTFOLIO_MAP_CSS);
 		setEPortfolioPageCss(EPORTFOLIO_PAGE_CSS);
 		setEPortfolioStructureCss(EPORTFOLIO_STRUCTURE_CSS);
+		setEPortfolioLinkCss(EPORTFOLIO_LINK_CSS);
 		setEPortfolioArtefactCss(EPORTFOLIO_ARTEFACT_CSS);
 		setEPortfolioArtefactDetailsCss(EPORTFOLIO_ARTEFACT_DETAILS_CSS);
 		
@@ -157,6 +193,8 @@ public class FunctionalEPortfolioUtil {
 		
 		setArtefactCss(ARTEFACT_CSS);
 		setTagIconCss(TAG_ICON_CSS);
+		
+		setArtefactWizardCss(ARTEFACT_WIZARD_CSS);
 	}
 
 	/**
@@ -222,9 +260,15 @@ public class FunctionalEPortfolioUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=");
-		selectorBuffer.append("//ul//li//a//span[text()='")
+		selectorBuffer.append("//ul//li//div[contains(@class, 'x-tree-node-expanded')]//a//span[text()='")
 		.append(binder)
-		.append("']/../../..//ul//li//a//span[text()='")
+		.append("']/../../..//ul//li");
+		
+		if(structure != null && !structure.isEmpty()){
+			selectorBuffer.append("//div[contains(@class, 'x-tree-node-expanded')]");
+		}
+		
+		selectorBuffer.append("//a//span[text()='")
 		.append(page)
 		.append("']");
 		
@@ -252,16 +296,22 @@ public class FunctionalEPortfolioUtil {
 		if(!binderExists(browser, binder)){
 			createDefaultBinder(browser, binder, null);
 			
-			createPage(browser, binder, page, ArtefactDisplay.THUMBNAILS, null);
+			if(page != null){
+				createPage(browser, binder, page, ArtefactDisplay.THUMBNAILS, null);
 			
-			createStructure(browser, binder, page, structure, null);
+				if(structure != null){
+					createStructure(browser, binder, page, structure, null);
+				}
+			}
 		}else{
 			if(!pageExists(browser, binder, page)){
 				createPage(browser, binder, page, ArtefactDisplay.THUMBNAILS, null);
 				
-				createStructure(browser, binder, page, structure, null);
+				if(structure != null){
+					createStructure(browser, binder, page, structure, null);
+				}
 			}else{
-				if(!structureExists(browser, binder, page, structure) && structure != null){
+				if(structure != null && !structureExists(browser, binder, page, structure)){
 					createStructure(browser, binder, page, structure, null);
 				}
 			}
@@ -325,6 +375,8 @@ public class FunctionalEPortfolioUtil {
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
+		
+		//FIXME:JK: visit pages
 		
 		return(true);
 	}
@@ -525,6 +577,7 @@ public class FunctionalEPortfolioUtil {
 			.append(getEPortfolioMapCss())
 			.append("')]//form//input[@type='text']");
 
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 			browser.type(selectorBuffer.toString(), title);
 		}
 		
@@ -538,6 +591,7 @@ public class FunctionalEPortfolioUtil {
 			.append(display.ordinal() + 1)
 			.append("]");
 
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 			browser.click(selectorBuffer.toString());
 		}
 		
@@ -549,8 +603,11 @@ public class FunctionalEPortfolioUtil {
 
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getEPortfolioMapCss())
-		.append("')]//form//button[last()]");
+		.append("')]//form//button[last() and contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
@@ -579,6 +636,7 @@ public class FunctionalEPortfolioUtil {
 		.append(getEPortfolioMapCss())
 		.append("')]//form//input[@type='text']");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), newName);
 		
 		/* save */
@@ -586,8 +644,11 @@ public class FunctionalEPortfolioUtil {
 
 		selectorBuffer.append("xpath=(//div[contains(@class, '")
 		.append(getEPortfolioMapCss())
-		.append("')]//form//button)[last()]");
+		.append("')]//form//button)[last() and contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
 		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
@@ -693,7 +754,14 @@ public class FunctionalEPortfolioUtil {
 		
 		browser.click(selectorBuffer.toString());
 		
-		functionalUtil.waitForPageToLoad(browser);
+		selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//div[contains(@class, 'x-tree-selected')]//a[contains(@class, '")
+		.append("x-tree-node-anchor")
+		.append("')]/span[text()='")
+		.append(page)
+		.append("']");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		selectorBuffer = new StringBuffer();
 		
@@ -708,7 +776,7 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
-		/* fill in wizard - title */
+		/* title */
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -718,15 +786,17 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), title);
 				
-		/* fill in wizard - description */
-		functionalUtil.typeMCE(browser, description);
+		/* description */
+		functionalUtil.typeMCE(browser, getEPortfolioMapCss(), 0, description);
 		
-		/* fill in wizard - save */
+		/* save */
 		selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getEPortfolioMapCss())
-		.append("')]//form//button[last()]");
+		.append("')]//form//button[last() and contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
@@ -870,16 +940,16 @@ public class FunctionalEPortfolioUtil {
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//form//div[contains(@class, '")
-		.append(functionalUtil.getWizardCss())
+		.append(getArtefactWizardCss())
 		.append("')]//input[@type='text']");
 		
 		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		
 		browser.type(locatorBuffer.toString(), title);
 		
-		functionalUtil.typeMCE(browser, description);
+		functionalUtil.typeMCE(browser, functionalUtil.getWizardCss(), description);
 		
-		functionalUtil.clickWizardNext(browser);
+		functionalUtil.clickWizardNext(browser, getArtefactWizardCss());
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
@@ -894,13 +964,43 @@ public class FunctionalEPortfolioUtil {
 	 * @return
 	 */
 	protected boolean fillInTags(Selenium browser, String[] tags){
+		return(fillInTags(browser, tags, true));
+	}
+	
+	protected boolean selectTree(Selenium browser, String binder, String page, String structure){
+		String selector = createSelector(binder, page, structure);
+
+		functionalUtil.waitForPageToLoadElement(browser, selector);
+
+		browser.click(selector);
+
+		StringBuffer locatorBuffer = new StringBuffer();
+
+		locatorBuffer.append("xpath=//li[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
+		.append((structure != null) ? structure: page)
+		.append("')]");
+
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * Fills in the open wizard's tags.
+	 * 
+	 * @param browser
+	 * @param tags
+	 * @return
+	 */
+	//TODO:JK: implement type in tags switch
+	protected boolean fillInTags(Selenium browser, String[] tags, boolean typeTags){
 		int i = 1;
 		
 		for(String tag: tags){
 			StringBuffer locatorBuffer = new StringBuffer();
 			
-			locatorBuffer.append("xpath=(//form//div[contains(@class, '")
-			.append(functionalUtil.getWizardCss())
+			locatorBuffer.append("xpath=(//div[contains(@class, '")
+			.append(getArtefactWizardCss())
 			.append("')]//input[@type='text'])[" + i + "]");
 			
 			functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
@@ -922,20 +1022,62 @@ public class FunctionalEPortfolioUtil {
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=(//form//div[contains(@class, '")
-		.append(functionalUtil.getWizardCss())
+		locatorBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getArtefactWizardCss())
 		.append("')]//input[@type='text'])[" + i + "]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
-		functionalUtil.clickWizardNext(browser);
+		functionalUtil.clickWizardNext(browser, getArtefactWizardCss());
 		
 		return(true);
 	}
-
+	
+	/**
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
+	 * @param content
+	 * @param title
+	 * @param description
+	 * @param tags
+	 * @param typeTags
+	 * @return
+	 */
+	private boolean addTextArtefactFillInWizard(Selenium browser, String binder, String page, String structure,
+			String content, String title, String description, String[] tags, boolean typeTags, boolean treeSelect){
+		/* fill in wizard - content */
+		functionalUtil.typeMCE(browser, getArtefactWizardCss(), content);
+		
+		functionalUtil.clickWizardNext(browser, getArtefactWizardCss());
+		
+		functionalUtil.waitForPageToLoad(browser);
+		
+		/* fill in wizard - title & description */
+		fillInTitleAndDescription(browser, title, description);
+		
+		/* fill in wizard - tags */
+		fillInTags(browser, tags, typeTags);
+		
+		/* fill in wizard - select destination */
+		if(binder != null && treeSelect){
+			selectTree(browser, binder, page, structure);
+		}
+		
+		/* click finish */
+		functionalUtil.clickWizardFinish(browser, getArtefactWizardCss());
+		
+		return(true);
+	}
+	
 	/**
 	 * Add a text artefact to a e-portfolio.
 	 * 
 	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
 	 * @param content
 	 * @param title
 	 * @param description
@@ -944,10 +1086,6 @@ public class FunctionalEPortfolioUtil {
 	 */
 	public boolean addTextArtefact(Selenium browser, String binder, String page, String structure,
 			String content, String title, String description, String[] tags){
-		/* create binder, page or structure if necessary */
-//		if(!createElements(browser, binder, page, structure))
-//			return(false);
-		
 		/* navigate to the right place */
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
@@ -969,10 +1107,45 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
-		/* fill in wizard - content */
-		functionalUtil.typeMCE(browser, content);
+		/* wizard */
+		return(addTextArtefactFillInWizard(browser, binder, page, structure,
+					content, title, description, tags, true, true));
+	}
+
+	/**
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
+	 * @param file
+	 * @param title
+	 * @param description
+	 * @param tags
+	 * @param typeTags
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	private boolean uploadFileArtefactFillInWizard(Selenium browser, String binder, String page, String structure,
+			URI file, String title, String description, String[] tags, boolean typeTags, boolean treeSelect) throws MalformedURLException{
+		/* fill in wizard - file */
+		StringBuffer selectorBuffer = new StringBuffer();
 		
-		functionalUtil.clickWizardNext(browser);
+		selectorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(getArtefactWizardCss())
+		.append("')]//input[@type='file']");
+		
+		browser.focus(selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), file.toURL().getPath());
+		//browser.attachFile(locatorBuffer.toString(), file.toURL().toString());
+		
+		//TODO:JK: find a solution for IE
+		/* IE may don't like the following script */
+		//browser.runScript("$(\"form ." + functionalUtil.getWizardCss() + " input[type='file']\").trigger(\"change\")");
+
+//		functionalUtil.waitForPageToLoad(browser);
+		
+		functionalUtil.clickWizardNext(browser, getArtefactWizardCss());
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
@@ -980,27 +1153,16 @@ public class FunctionalEPortfolioUtil {
 		fillInTitleAndDescription(browser, title, description);
 		
 		/* fill in wizard - tags */
-		fillInTags(browser, tags);
+		fillInTags(browser, tags, typeTags);
 		
-		/* fill in wizard - select destination */
-		String selector = createSelector(binder, page, structure);
-		
-		functionalUtil.waitForPageToLoadElement(browser, selector);
-		
-		browser.click(selector);
-		
-		locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
-		.append((structure != null) ? structure: page)
-		.append("')]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+		/* fill in wizard - select binder path */
+		if(binder != null && treeSelect){
+			selectTree(browser, binder, page, structure);
+		}
 		
 		/* click finish */
-		functionalUtil.clickWizardFinish(browser);
-
-		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		functionalUtil.clickWizardFinish(browser, getArtefactWizardCss());
+		
 		
 		return(true);
 	}
@@ -1009,19 +1171,18 @@ public class FunctionalEPortfolioUtil {
 	 * Upload a file artefact to a e-portfolio.
 	 * 
 	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
 	 * @param file
 	 * @param title
 	 * @param description
 	 * @param tags
-	 * @param binderPath
 	 * @return
 	 * @throws MalformedURLException
 	 */
 	public boolean uploadFileArtefact(Selenium browser, String binder, String page, String structure,
 			URI file, String title, String description, String[] tags) throws MalformedURLException{
-//		if(!createElements(browser, binder, page, structure))
-//			return(false);
-		
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
 		
@@ -1041,52 +1202,39 @@ public class FunctionalEPortfolioUtil {
 		browser.click(locatorBuffer.toString());
 		functionalUtil.waitForPageToLoad(browser);
 		
-		/* fill in wizard - file */
-		locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//form//div[contains(@class, '")
-		.append(functionalUtil.getWizardCss())
-		.append("')]//input[@type='file']");
-		
-		browser.focus(locatorBuffer.toString());
-		browser.type(locatorBuffer.toString(), file.toURL().getPath());
-		//browser.attachFile(locatorBuffer.toString(), file.toURL().toString());
-		
-		//TODO:JK: find a solution for IE
-		/* IE may don't like the following script */
-		//browser.runScript("$(\"form ." + functionalUtil.getWizardCss() + " input[type='file']\").trigger(\"change\")");
-
-//		functionalUtil.waitForPageToLoad(browser);
-		
-		functionalUtil.clickWizardNext(browser);
-		
-		functionalUtil.waitForPageToLoad(browser);
+		/* wizard */
+		return(uploadFileArtefactFillInWizard(browser, binder, page, structure,
+				file, title, description, tags, true, true));
+	}
+	
+	/**
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
+	 * @param title
+	 * @param description
+	 * @param tags
+	 * @param typeTags
+	 * @return
+	 */
+	private boolean createLearningJournalFillInWizard(Selenium browser, String binder, String page, String structure,
+			String title, String description, String[] tags, boolean typeTags, boolean treeSelect){
 		
 		/* fill in wizard - title & description */
 		fillInTitleAndDescription(browser, title, description);
 		
 		/* fill in wizard - tags */
-		fillInTags(browser, tags);
+		fillInTags(browser, tags, typeTags);
 		
 		/* fill in wizard - select binder path */
-		String selector = createSelector(binder, page, structure);
-		
-		functionalUtil.waitForPageToLoadElement(browser, selector);
-		
-		browser.click(selector);
-		
-		locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-selected')]//a//span[contains(text(), '")
-		.append((structure != null) ? structure: page)
-		.append("')]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+		if(binder != null && treeSelect){
+			selectTree(browser, binder, page, structure);
+		}
 		
 		/* click finish */
-		functionalUtil.clickWizardFinish(browser);
-
-		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		functionalUtil.clickWizardFinish(browser, getArtefactWizardCss());
 		
 		return(true);
 	}
@@ -1095,18 +1243,16 @@ public class FunctionalEPortfolioUtil {
 	 * Create a learnig journal for a e-portfolio.
 	 * 
 	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
 	 * @param title
 	 * @param description
 	 * @param tags
-	 * @param binderPath
-	 * @param create
 	 * @return
 	 */
 	public boolean createLearningJournal(Selenium browser, String binder, String page, String structure,
 			String title, String description, String[] tags){
-//		if(!createElements(browser, binder, page, structure))
-//			return(false);
-		
 		if(!functionalUtil.openSite(browser, OlatSite.HOME))
 			return(false);
 		
@@ -1127,35 +1273,108 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
-		/* fill in wizard - title & description */
-		fillInTitleAndDescription(browser, title, description);
+		return(createLearningJournalFillInWizard(browser, binder, page, structure,
+				title, description, tags, true, true));
+	}
+
+	/**
+	 * Creates a new artefact using link wizard within binder.
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
+	 * @param alias
+	 * @param content
+	 * @param title
+	 * @param description
+	 * @param tags
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	public boolean createArtefact(Selenium browser, String binder, String page, String structure,
+			ArtefactAlias alias, Object content,
+			String title, String description, String[] tags) throws MalformedURLException{
+		if(!openBinder(browser, binder))
+			return(false);
 		
-		/* fill in wizard - tags */
-		fillInTags(browser, tags);
+		openEditor(browser);
 		
-		/* fill in wizard - select binder path */
-		String selector = createSelector(binder, page, structure);
+		/* select page or structure */
+		StringBuffer selectorBuffer = new StringBuffer();
 		
-		functionalUtil.waitForPageToLoadElement(browser, selector);
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append("x-tree-node")
+		.append("')]/span[text()='")
+		.append((structure == null) ? page: structure)
+		.append("']/..");
 		
-		browser.click(selector);
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
 		
-		locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//li//div[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
-		.append((structure != null) ? structure: page)
+		/* open wizard by clicking link link */
+		selectorBuffer = new StringBuffer();
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getAddLinkCss())
 		.append("')]");
 		
-		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
 		
-		/* click finish */
-		functionalUtil.clickWizardFinish(browser);
-
-		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		functionalUtil.waitForPageToLoad(browser);
+		
+		/* click add artefact */
+		openEditLink(browser);
+		
+		/* click appropriate artefact type */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(alias.getAddLinkCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		functionalUtil.waitForPageToLoad(browser);
+		
+		/* fill in wizard */
+		switch(alias){
+		case TEXT:
+		{
+			addTextArtefactFillInWizard(browser, binder, page, structure,
+					(String) content, title, description, tags, false, false);
+		}
+		break;
+		case FILE:
+		{
+			uploadFileArtefactFillInWizard(browser, binder, page, structure,
+					(URI) content, title, description, tags, false, false);
+		}
+		break;
+		case LEARNING_JOURNAL:
+		{
+			createLearningJournalFillInWizard(browser, binder, page, structure,
+					title, description, tags, false, false);
+		}
+		break;
+		}
+		
+		functionalUtil.idle(browser);
+		
+		/* close dialog */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, 'b_window_header')]//a[contains(@class, '")
+		.append(functionalUtil.getWindowCloseLinkCss())
+		.append("')]");
+		
+		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
-
+	
 	public FunctionalUtil getFunctionalUtil() {
 		return functionalUtil;
 	}
@@ -1203,6 +1422,14 @@ public class FunctionalEPortfolioUtil {
 
 	public void setEPortfolioStructureCss(String eportfolioStructureCss) {
 		this.eportfolioStructureCss = eportfolioStructureCss;
+	}
+
+	public String getEPortfolioLinkCss() {
+		return eportfolioLinkCss;
+	}
+
+	public void setEPortfolioLinkCss(String eportfolioLinkCss) {
+		this.eportfolioLinkCss = eportfolioLinkCss;
 	}
 
 	public String getEPortfolioArtefactCss() {
@@ -1377,5 +1604,13 @@ public class FunctionalEPortfolioUtil {
 
 	public void setTagIconCss(String tagIconCss) {
 		this.tagIconCss = tagIconCss;
+	}
+
+	public String getArtefactWizardCss() {
+		return artefactWizardCss;
+	}
+
+	public void setArtefactWizardCss(String artefactWizardCss) {
+		this.artefactWizardCss = artefactWizardCss;
 	}
 }

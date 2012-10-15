@@ -736,9 +736,7 @@ public class FunctionalRepositorySiteUtil {
 	 * @return true on success otherwise false
 	 */
 	public boolean openCourse(Selenium browser, long key){
-		browser.open(functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + key);
-		
-		waitForPageToLoadCourse(browser);
+		functionalUtil.openBusinessPath(browser, functionalUtil.getDeploymentUrl() + "/url/RepositoryEntry/" + key);
 		
 		return(true);
 	}

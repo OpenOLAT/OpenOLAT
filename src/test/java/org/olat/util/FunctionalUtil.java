@@ -42,7 +42,6 @@ public class FunctionalUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalUtil.class);
 	
 	public final static String DEPLOYMENT_URL = "http://localhost:8080/openolat";
-	public final static String DEPLOYMENT_PATH = "/openolat";
 	
 	public final static String LOGIN_PAGE = "dmz";
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
@@ -54,9 +53,9 @@ public class FunctionalUtil {
 	
 	public enum WaitLimitAttribute {
 		NORMAL("0"),
-		EXTENDED("3000"),
-		SAVE("7000"),
-		VERY_SAVE("12000");
+		EXTENDED("5000"),
+		SAVE("10000"),
+		VERY_SAVE("20000");
 		
 		private String extend;
 		private long extendAsLong;
@@ -124,6 +123,7 @@ public class FunctionalUtil {
 	public final static String TABLE_LAST_CHILD_CSS = "b_last_child";
 	public final static String TREE_NODE_ANCHOR_CSS = "x-tree-node-anchor";
 	public final static String TREE_NODE_CSS = "x-tree-node";
+	public final static String WINDOW_CLOSE_LINK_CSS = "b_link_close";
 	
 	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
 	
@@ -133,7 +133,6 @@ public class FunctionalUtil {
 	private String password;
 	
 	private String deploymentUrl;
-	private String deploymentPath;
 	private String waitLimit;
 	
 	private String loginPage;
@@ -166,6 +165,7 @@ public class FunctionalUtil {
 	
 	private String mceContentBodyCss;
 	
+	private String windowCloseLinkCss;
 	private String buttonCss;
 	private String buttonDirtyCss;
 	private String tableFirstChildCss;
@@ -178,6 +178,8 @@ public class FunctionalUtil {
 	private FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	private FunctionalUserManagementSiteUtil functionalUserManagementSiteUtil;
 	private FunctionalAdministrationSiteUtil functionalAdministrationSiteUtil;
+	
+	private FunctionalHtmlUtil functionalHtmlUtil;
 	
 	public FunctionalUtil(){
 		Properties properties = new Properties();
@@ -198,7 +200,6 @@ public class FunctionalUtil {
 		}
 		
 		deploymentUrl = DEPLOYMENT_URL;
-		deploymentPath = DEPLOYMENT_PATH;
 		waitLimit = DEFAULT_IDLE;
 		
 		loginPage = LOGIN_PAGE;
@@ -231,6 +232,7 @@ public class FunctionalUtil {
 		
 		mceContentBodyCss = MCE_CONTENT_BODY_CSS;
 		
+		windowCloseLinkCss = WINDOW_CLOSE_LINK_CSS; 
 		buttonCss = BUTTON_CSS;
 		buttonDirtyCss = BUTTON_DIRTY_CSS;
 		tableFirstChildCss = TABLE_FIRST_CHILD_CSS;
@@ -243,6 +245,8 @@ public class FunctionalUtil {
 		functionalRepositorySiteUtil = new FunctionalRepositorySiteUtil(this);
 		functionalUserManagementSiteUtil = new FunctionalUserManagementSiteUtil(this);
 		functionalAdministrationSiteUtil = new FunctionalAdministrationSiteUtil(this);
+		
+		functionalHtmlUtil = new FunctionalHtmlUtil();
 	}
 	
 	/**
@@ -385,6 +389,61 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * 
+	 * @param browser
+	 * @param iframeSelectors
+	 * @param content
+	 * @param wait
+	 * @param throwException
+	 * @return
+	 */
+	public boolean waitForPageToLoadContent(Selenium browser, String[] iframeSelectors, String content, WaitLimitAttribute wait, boolean throwException){
+		idle(browser);
+		
+		long startTime = Calendar.getInstance().getTimeInMillis();
+		long currentTime = startTime;
+		long waitLimit = Long.parseLong(getWaitLimit()) + Long.parseLong(wait.getExtend());
+
+		log.info("waiting for page to load content element");
+		
+		/* traverse iframes */
+		if(iframeSelectors != null){
+			for(int i=0; i < iframeSelectors.length;i++) browser.selectFrame(iframeSelectors[i]);
+		}
+		
+		do{
+			if(content.equals(functionalHtmlUtil.stripTags(browser.getHtmlSource(), true))){
+				log.info("found content after " + (currentTime - startTime) + "ms");
+				
+				/* go back to toplevel */
+				browser.selectFrame("relative=top");
+				
+				return(true);
+			}
+			
+			try {
+				Thread.sleep(POLL_INTERVAL);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			
+			currentTime = Calendar.getInstance().getTimeInMillis();
+		}while(waitLimit >  currentTime - startTime);
+		
+		log.warn("giving up after " + waitLimit + "ms");
+		
+		/* go back to toplevel */
+		browser.selectFrame("relative=top");
+		
+		if(throwException){
+			throw new SeleniumException("timed out after " + waitLimit + "ms");
+		}
+		
+		return(false);
+	}
+	
+	/**
 	 * Waits at most (waitLimit + WaitLimitAttribute.VERY_SAVE) amount of time for element to load
 	 * specified by locator.
 	 * 
@@ -466,6 +525,38 @@ public class FunctionalUtil {
 	public String currentBusinessPath(Selenium browser){
 		return(browser.getEval("window.o_info.businessPath"));
 	}
+	
+	/**
+	 * Retrieves the business path.
+	 * 
+	 * @param browser
+	 * @return
+	 */
+	public String openBusinessPath(Selenium browser, String businessPath){
+		idle(browser);
+		
+		try {
+			//FIXME:JK: work-around
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		/* cut off http:// or domain */
+		if(businessPath.startsWith("http://")){
+			//businessPath = businessPath.substring(businessPath.indexOf('/', 7));
+		}else if(businessPath.startsWith(getDeploymentUrl().substring(7))){
+			//TODO:JK: implement me
+		}
+		
+		browser.open(businessPath);
+
+		idle(browser);
+		
+		return(null);
+	}
+	
 	
 	/**
 	 * Retrieves the linkbusy JavaScript variable.
@@ -970,6 +1061,8 @@ public class FunctionalUtil {
 		return(true);
 	}
 	
+	
+	
 	/**
 	 * 
 	 * @param browser
@@ -990,7 +1083,15 @@ public class FunctionalUtil {
 		
 		browser.type(selectorBuffer.toString(), content);
 		
+		waitForPageToLoadContent(browser,
+				new String[]{"dom=document.getElementsByClassName('mceIframeContainer')[0].getElementsByTagName('iframe')[0]"},
+				functionalHtmlUtil.stripTags(content, true), DEFAULT_WAIT_LIMIT, true);
+		
 		return(true);
+	}
+	
+	public boolean typeMCE(Selenium browser, String cssClass, String content){
+		return(typeMCE(browser, cssClass, 0, content));
 	}
 	
 	/**
@@ -1000,21 +1101,31 @@ public class FunctionalUtil {
 	 * @param content
 	 * @return
 	 */
-	public boolean typeMCE(Selenium browser, String cssClass, String content){
+	public boolean typeMCE(Selenium browser, String cssClass, int nth, String content){
 		if(content == null)
 			return(true);
 		
-		StringBuffer selectorBuffer = new StringBuffer();
+		StringBuffer iframeSelectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("dom=document.getElementsByClassName('")
+		iframeSelectorBuffer.append("dom=document.getElementsByClassName('")
 		.append(cssClass)
 		.append("')[0].getElementsByClassName('")
 		.append("mceIframeContainer")
-		.append("')[0].getElementsByTagName('iframe')[0].contentDocument.body");
+		.append("')[")
+		.append(nth)
+		.append("].getElementsByTagName('iframe')[0]");
+		
+		StringBuffer selectorBuffer = new StringBuffer(iframeSelectorBuffer);
+		
+		selectorBuffer.append(".contentDocument.body");
 		
 		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		browser.type(selectorBuffer.toString(), content);
+		
+		waitForPageToLoadContent(browser,
+				new String[]{iframeSelectorBuffer.toString()},
+				functionalHtmlUtil.stripTags(content, true), DEFAULT_WAIT_LIMIT, true);
 		
 		return(true);
 	}
@@ -1087,6 +1198,21 @@ public class FunctionalUtil {
 		return(true);
 	}
 	
+	public boolean clickWizardNext(Selenium browser, String cssClass){
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//div[contains(@class, '")
+		.append(cssClass)
+		.append("')]//a[contains(@class, '")
+		.append(getWizardNextCss())
+		.append("')]");
+		
+		waitForPageToLoadElement(browser, locatorBuffer.toString());
+		browser.click(locatorBuffer.toString());
+		
+		return(true);
+	}
+	
 	/**
 	 * Clicks the finish button of a wizard.
 	 * 
@@ -1105,6 +1231,26 @@ public class FunctionalUtil {
 		browser.focus(locatorBuffer.toString());
 		browser.click(locatorBuffer.toString());
 		waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		
+		return(true);
+	}
+	
+	public boolean clickWizardFinish(Selenium browser, String cssClass){
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//div[contains(@class, '")
+		.append(cssClass)
+		.append("')]//a[contains(@class, '")
+		.append(getWizardFinishCss())
+		.append("')]");
+		
+		waitForPageToLoadElement(browser, locatorBuffer.toString());
+		
+		browser.focus(locatorBuffer.toString());
+		browser.click(locatorBuffer.toString());
+		waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		
+		idle(browser);
 		
 		return(true);
 	}
@@ -1130,15 +1276,11 @@ public class FunctionalUtil {
 	}
 
 	public void setDeploymentUrl(String deploymentUrl) {
-		this.deploymentUrl = deploymentUrl;
-	}
-
-	public String getDeploymentPath() {
-		return deploymentPath;
-	}
-
-	public void setDeploymentPath(String deploymentPath) {
-		this.deploymentPath = deploymentPath;
+		if(!deploymentUrl.endsWith("/")){
+			this.deploymentUrl = deploymentUrl;
+		}else{
+			this.deploymentUrl = deploymentUrl.substring(0, deploymentUrl.length() - 1);
+		}
 	}
 
 	public String getWaitLimit() {
@@ -1356,6 +1498,22 @@ public class FunctionalUtil {
 	public void setFunctionalAdministrationSiteUtil(
 			FunctionalAdministrationSiteUtil functionalAdministrationSiteUtil) {
 		this.functionalAdministrationSiteUtil = functionalAdministrationSiteUtil;
+	}
+
+	public FunctionalHtmlUtil getFunctionalHtmlUtil() {
+		return functionalHtmlUtil;
+	}
+
+	public void setFunctionalHtmlUtil(FunctionalHtmlUtil functionalHtmlUtil) {
+		this.functionalHtmlUtil = functionalHtmlUtil;
+	}
+
+	public String getWindowCloseLinkCss() {
+		return windowCloseLinkCss;
+	}
+
+	public void setWindowCloseLinkCss(String windowCloseLinkCss) {
+		this.windowCloseLinkCss = windowCloseLinkCss;
 	}
 
 	public String getButtonCss() {

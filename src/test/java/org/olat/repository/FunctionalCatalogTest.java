@@ -200,7 +200,7 @@ public class FunctionalCatalogTest {
 			.append("')])");
 			
 			/* create business path and try to find it */
-			String businessPath0 = functionalUtil.getDeploymentPath() + "/url/RepositoryEntry/" + courseVO[i].getRepoEntryKey();
+			String businessPath0 = functionalUtil.getDeploymentUrl() + "/url/RepositoryEntry/" + courseVO[i].getRepoEntryKey();
 			boolean found = false;
 			
 			for(int j = 0; j < browser.getXpathCount(selectorBuffer.toString().substring(6)).intValue(); j++){

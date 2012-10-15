@@ -37,21 +37,33 @@ public class FunctionalHtmlUtil {
 	 * @return
 	 */
 	public String stripTags(String html, boolean insertNewlines){
+		if(html.indexOf("<body") != -1){
+			html = html.substring(html.indexOf('>', html.indexOf("<body")) + 1, html.indexOf("</body"));
+		}
+		
 		StringBuffer textBuffer = new StringBuffer();
 		int offset = 0;
 		int nextOffset = 0;
-		
-		html = html.substring(html.indexOf('>', html.indexOf("<body")) + 1, html.indexOf("</body"));
+		char prevLineLastChar = '\n';
 		
 		while((nextOffset = html.indexOf('<', offset)) != -1){
 			String currentText = html.substring(offset, nextOffset);
 			
 			if(!currentText.matches("^[\\s]+$")){
-				textBuffer.append(currentText.trim());
+				currentText = currentText.trim();
+				textBuffer.append(currentText);
 				
-				if(insertNewlines && !currentText.endsWith("\n")){
-					textBuffer.append('\n');
+				if(insertNewlines){
+					if(prevLineLastChar != '\n'){
+						textBuffer.append('\n');
+					}
+				}else{
+					if(prevLineLastChar != '\n' && prevLineLastChar != ' '){
+						textBuffer.append(' ');
+					}
 				}
+				
+				prevLineLastChar = currentText.charAt(currentText.length() - 1);
 			}
 			
 			offset = html.indexOf('>', nextOffset) + 1;
@@ -61,10 +73,11 @@ public class FunctionalHtmlUtil {
 		
 		if(!currentText.matches("^[\\s]+$")){
 			textBuffer.append(currentText);
-			
-			if(insertNewlines && !currentText.endsWith("\n")){
-				textBuffer.append('\n');
-			}
+			prevLineLastChar = currentText.charAt(currentText.length() - 1);
+		}
+		
+		if(prevLineLastChar != '\n'){
+			textBuffer.append('\n');
 		}
 		
 		return(textBuffer.toString());
