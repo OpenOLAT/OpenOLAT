@@ -37,7 +37,7 @@
 		<list>
 			<bean class="org.olat.course.DeployableCourseExport">
 			
-				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots/org/openolat/examples/Demo-Course/7.1-SNAPSHOT/Demo-Kurs-7.1-SNAPSHOT.zip" />
+				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots/org/openolat/course/Demo-Kurs/7.1-SNAPSHOT/Demo-Kurs-7.1-SNAPSHOT.zip" />
 				<property name="identifier" value="Demo Kurs" />
 				<property name="version" value="7.1" />
 			</bean>
