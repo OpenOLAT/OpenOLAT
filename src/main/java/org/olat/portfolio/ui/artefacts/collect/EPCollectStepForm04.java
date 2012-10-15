@@ -60,7 +60,7 @@ import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 public class EPCollectStepForm04 extends StepFormBasicController {
 
 	private static final String NO_MAP_CHOOSEN = "noMapChoosen";
-	private static final String ROOT_NODE_IDENTIFIER = "root";
+	private static final String ROOT_NODE_IDENTIFIER = "rootMaps";
 	private TreeController mapsTreeController;
 	EPFrontendManager ePFMgr;
 	private PortfolioStructure selectedPortfolioStructure;

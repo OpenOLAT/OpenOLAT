@@ -68,7 +68,7 @@ public class EPTOCController extends BasicController {
 	protected static final String ARTEFACT_NODE_CLICKED = "artefactNodeClicked";
 	private static final String DELETE_LINK_CMD = "delete";
 	private static final String ARTEFACT_NODE_IDENTIFIER = "art";
-	private static final String ROOT_NODE_IDENTIFIER = "root";
+	private static final String ROOT_NODE_IDENTIFIER = "rootStruct";
 	protected final EPFrontendManager ePFMgr;
 	protected final EPStructureManager eSTMgr;
 	protected PortfolioStructure rootNode;
