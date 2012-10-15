@@ -123,6 +123,7 @@ public class FunctionalUtil {
 	public final static String TABLE_LAST_CHILD_CSS = "b_last_child";
 	public final static String TREE_NODE_ANCHOR_CSS = "x-tree-node-anchor";
 	public final static String TREE_NODE_CSS = "x-tree-node";
+	public final static String TREE_NODE_LOADING_CSS = "x-tree-node-loading";
 	public final static String WINDOW_CLOSE_LINK_CSS = "b_link_close";
 	
 	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
@@ -172,6 +173,7 @@ public class FunctionalUtil {
 	private String tableLastChildCss;
 	private String treeNodeAnchorCss;
 	private String treeNodeCss;
+	private String treeNodeLoadingCss;
 	
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	private FunctionalGroupsSiteUtil functionalGroupsSiteUtil;
@@ -239,6 +241,7 @@ public class FunctionalUtil {
 		tableLastChildCss = TABLE_LAST_CHILD_CSS;
 		treeNodeAnchorCss = TREE_NODE_ANCHOR_CSS;
 		treeNodeCss = TREE_NODE_CSS;
+		treeNodeLoadingCss = TREE_NODE_LOADING_CSS;
 		
 		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(this);
 		functionalGroupsSiteUtil = new FunctionalGroupsSiteUtil(this);
@@ -534,14 +537,6 @@ public class FunctionalUtil {
 	 */
 	public String openBusinessPath(Selenium browser, String businessPath){
 		idle(browser);
-		
-		try {
-			//FIXME:JK: work-around
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
 		/* cut off http:// or domain */
 		if(businessPath.startsWith("http://")){
@@ -1562,5 +1557,13 @@ public class FunctionalUtil {
 
 	public void setTreeNodeCss(String treeNodeCss) {
 		this.treeNodeCss = treeNodeCss;
+	}
+
+	public String getTreeNodeLoadingCss() {
+		return treeNodeLoadingCss;
+	}
+
+	public void setTreeNodeLoadingCss(String treeNodeLoadingCss) {
+		this.treeNodeLoadingCss = treeNodeLoadingCss;
 	}
 }

@@ -363,6 +363,15 @@ public class FunctionalEPortfolioUtil {
 		if(!functionalHomeSiteUtil.openActionByMenuTree(browser, EPortfolioAction.MY_BINDERS, false))
 			return(false);
 		
+		/* wait until tree has loaded */
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li[contains(@class, '")
+		.append(functionalUtil.getTreeNodeLoadingCss())
+		.append("')]");
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		
+		/* select binder */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//h4[text()='")
@@ -557,6 +566,14 @@ public class FunctionalEPortfolioUtil {
 				return(false);
 		}
 		
+		/* wait until tree has loaded */
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li[contains(@class, '")
+		.append(functionalUtil.getTreeNodeLoadingCss())
+		.append("')]");
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		
 		/* click add */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -740,6 +757,14 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open editor */
 		openEditor(browser);
+		
+		/* wait until tree has loaded */
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li[contains(@class, '")
+		.append(functionalUtil.getTreeNodeLoadingCss())
+		.append("')]");
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
 		
 		/* select page and click create structure */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -970,11 +995,20 @@ public class FunctionalEPortfolioUtil {
 	protected boolean selectTree(Selenium browser, String binder, String page, String structure){
 		String selector = createSelector(binder, page, structure);
 
+		/* wait until tree has loaded */
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li[contains(@class, '")
+		.append(functionalUtil.getTreeNodeLoadingCss())
+		.append("')]");
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		
+		/* click selector */
 		functionalUtil.waitForPageToLoadElement(browser, selector);
 
 		browser.click(selector);
 
-		StringBuffer locatorBuffer = new StringBuffer();
+		locatorBuffer = new StringBuffer();
 
 		locatorBuffer.append("xpath=//li[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
 		.append((structure != null) ? structure: page)
