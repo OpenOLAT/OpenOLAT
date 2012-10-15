@@ -311,7 +311,6 @@ public class UserWebService {
 	 * @param withPortrait If true return the portrait as Base64 (default false)
 	 * @param uriInfo The URI infos
 	 * @param httpRequest The HTTP request
-	 * @param request The REST request
 	 * @return an xml or json representation of a the user being search. The xml
 	 *         correspond to a <code>UserVO</code>. <code>UserVO</code> is a
 	 *         simplified representation of the <code>User</code> and <code>Identity</code>
@@ -320,7 +319,7 @@ public class UserWebService {
 	@Path("{identityKey}")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("identityKey") Long identityKey, @QueryParam("withPortrait") @DefaultValue("false") Boolean withPortrait,
-			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @Context Request request) {
+			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
 		try {
 			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null) {

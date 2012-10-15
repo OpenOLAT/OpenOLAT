@@ -157,6 +157,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.UserMgmtTest.class,
 	org.olat.restapi.ContactsTest.class,
 	org.olat.restapi.SystemTest.class,
+	org.olat.restapi.RegistrationTest.class,
 	de.bps.olat.portal.institution.InstitutionPortletTest.class,
 	org.olat.group.manager.BusinessGroupImportExportXStreamTest.class,
 	org.olat.group.test.BusinessGroupImportExportTest.class,

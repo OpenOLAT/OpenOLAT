@@ -17,7 +17,7 @@
  * 2011 by frentix GmbH, http://www.frentix.com
  * <p>
 **/
-package org.olat.restapi.user;
+package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
@@ -39,7 +39,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -168,13 +167,12 @@ public class UserFoldersWebService {
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param identityKey The key of the user (IdentityImpl)
 	 * @param httpRequest The HTTP request
-	 * @param request The REST request
 	 * @return The folders
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getFolders(@PathParam("identityKey") Long identityKey,
-			@Context HttpServletRequest httpRequest, @Context Request request) {
+			@Context HttpServletRequest httpRequest) {
 		
 		Roles roles;
 		Identity retrievedUser = getIdentity(httpRequest);

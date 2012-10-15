@@ -33,6 +33,8 @@ public class Examples {
 	
 	public static final UserVO SAMPLE_USERVO = new UserVO();
 	public static final UserVOes SAMPLE_USERVOes = new UserVOes();
+
+	public static final RolesVO SAMPLE_ROLESVO = new RolesVO();
   
   static {
   	SAMPLE_USERVO.setKey(345l);
@@ -44,5 +46,7 @@ public class Examples {
   	SAMPLE_USERVO.putProperty("telPrivate", "238456782");
   	SAMPLE_USERVO.putProperty("telMobile", "238456782");
   	SAMPLE_USERVOes.setUsers(new UserVO[]{SAMPLE_USERVO});
+
+  	SAMPLE_ROLESVO.setAuthor(true);
   }
 }
