@@ -692,11 +692,11 @@ public class FunctionalEPortfolioUtil {
 		.append(getEPortfolioTableOfContentsCss())
 		.append("')]//ul//li");
 
-		page = page.replaceAll("\\\\", "&92;");
-		page = page.replaceAll("/", "&47;");
+		//page = page.replaceAll("\\\\", "&92;");
+		page = page.replaceAll("/", "\\/");
 
-		title = title.replaceAll("\\\\", "&92;");
-		title = title.replaceAll("/", "&47;");
+		//title = title.replaceAll("\\\\", "&92;");
+		title = title.replaceAll("/", "\\/");
 				
 		VelocityContext context = new VelocityContext();
 
@@ -859,13 +859,26 @@ public class FunctionalEPortfolioUtil {
 			.append("']/..");
 		}
 		
-		selectorBuffer.append("//div[contains(@class, '")
+		/* create selector of typical artefact */
+		StringBuffer artefactBuffer = new StringBuffer(selectorBuffer);
+		
+		artefactBuffer.append("//div[contains(@class, '")
 		.append(getEPortfolioArtefactCss())
 		.append("')]//h4[text()='")
 		.append(artefact)
 		.append("']");
 		
-		if(browser.isElementPresent(selectorBuffer.toString())){
+		/* create selector of liveblog artefact */
+		StringBuffer liveblogBuffer = new StringBuffer(selectorBuffer);
+		
+		liveblogBuffer.append("//div[contains(@class, '")
+		.append(getEPortfolioArtefactCss())
+		.append("')]//h3[text()='")
+		.append(artefact)
+		.append("']");
+		
+		/* check */
+		if(browser.isElementPresent(artefactBuffer.toString()) || browser.isElementPresent(liveblogBuffer.toString())){
 			return(true);
 		}else{
 			return(false);
@@ -885,6 +898,7 @@ public class FunctionalEPortfolioUtil {
 		if(!openPage(browser, binder, page))
 			return(false);
 		
+		/*  */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")

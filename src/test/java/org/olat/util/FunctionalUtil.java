@@ -538,13 +538,6 @@ public class FunctionalUtil {
 	public String openBusinessPath(Selenium browser, String businessPath){
 		idle(browser);
 		
-		/* cut off http:// or domain */
-		if(businessPath.startsWith("http://")){
-			//businessPath = businessPath.substring(businessPath.indexOf('/', 7));
-		}else if(businessPath.startsWith(getDeploymentUrl().substring(7))){
-			//TODO:JK: implement me
-		}
-		
 		browser.open(businessPath);
 
 		idle(browser);

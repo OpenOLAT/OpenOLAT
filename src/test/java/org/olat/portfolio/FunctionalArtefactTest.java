@@ -780,7 +780,7 @@ public class FunctionalArtefactTest {
 		/* verify */
 		Assert.assertTrue(checkArtefact(artefact));
 		//FIXME:JK: analyse why it always fails
-		//Assert.assertTrue(checkMap(binder));
+		Assert.assertTrue(checkMap(binder));
 
 		functionalUtil.logout(browser);
 	}
@@ -818,7 +818,7 @@ public class FunctionalArtefactTest {
 				TEXT_ARTEFACT_CREATED_WITHIN_BINDER_BINDER, TEXT_ARTEFACT_CREATED_WITHIN_BINDER_PAGE, TEXT_ARTEFACT_CREATED_WITHIN_BINDER_STRUCTURE,
 				ArtefactAlias.TEXT, TEXT_ARTEFACT_CREATED_WITHIN_BINDER_CONTENT,
 				TEXT_ARTEFACT_CREATED_WITHIN_BINDER_TITLE, TEXT_ARTEFACT_CREATED_WITHIN_BINDER_DESCRIPTION,
-				TEXT_ARTEFACT_TAGS));
+				TEXT_ARTEFACT_CREATED_WITHIN_BINDER_TAGS));
 		
 		/*
 		 * Test for content and make assumptions if the changes were applied.
@@ -870,7 +870,7 @@ public class FunctionalArtefactTest {
 		/* upload file artefact */
 		Assert.assertTrue(functionalEportfolioUtil.createArtefact(browser,
 				FILE_ARTEFACT_CREATED_WITHIN_BINDER_BINDER, FILE_ARTEFACT_CREATED_WITHIN_BINDER_PAGE, FILE_ARTEFACT_CREATED_WITHIN_BINDER_STRUCTURE,
-				ArtefactAlias.LEARNING_JOURNAL, FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_CREATED_WITHIN_BINDER_PATH).toURI(),
+				ArtefactAlias.FILE, FunctionalArtefactTest.class.getResource(FILE_ARTEFACT_CREATED_WITHIN_BINDER_PATH).toURI(),
 				FILE_ARTEFACT_CREATED_WITHIN_BINDER_TITLE, FILE_ARTEFACT_CREATED_WITHIN_BINDER_DESCRIPTION,
 				FILE_ARTEFACT_CREATED_WITHIN_BINDER_TAGS));
 		
@@ -940,7 +940,7 @@ public class FunctionalArtefactTest {
 		/* verify */
 		Assert.assertTrue(checkArtefact(artefact));
 		//FIXME:JK: analyse why it always fails
-		//Assert.assertTrue(checkMap(binder));
+		Assert.assertTrue(checkMap(binder));
 		
 		functionalUtil.logout(browser);
 	}
