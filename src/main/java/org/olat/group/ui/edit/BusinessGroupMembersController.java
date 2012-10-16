@@ -101,7 +101,7 @@ public class BusinessGroupMembersController extends BasicController {
 		boolean requiresOwner = courses.isEmpty();
 		// groupcontroller which allows to remove all members depending on
 		// configuration.
-		ownerGrpCntrllr = new GroupController(ureq, getWindowControl(), true, requiresOwner, enableTablePreferences, businessGroup.getOwnerGroup());
+		ownerGrpCntrllr = new GroupController(ureq, getWindowControl(), true, requiresOwner, enableTablePreferences, false, true, businessGroup.getOwnerGroup());
 		listenTo(ownerGrpCntrllr);
 		// add mail templates used when adding and removing users
 		MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(businessGroup, ureq.getIdentity());
@@ -114,7 +114,7 @@ public class BusinessGroupMembersController extends BasicController {
 
 		// groupcontroller which allows to remove all members
 		removeAsListenerAndDispose(partipGrpCntrllr);
-		partipGrpCntrllr = new GroupController(ureq, getWindowControl(), true, false, enableTablePreferences, businessGroup.getPartipiciantGroup());
+		partipGrpCntrllr = new GroupController(ureq, getWindowControl(), true, false, enableTablePreferences, false, true, businessGroup.getPartipiciantGroup());
 		listenTo(partipGrpCntrllr);
 		
 		// add mail templates used when adding and removing users
@@ -128,7 +128,7 @@ public class BusinessGroupMembersController extends BasicController {
 		// Show waiting list only if enabled 
 	   // waitinglist-groupcontroller which allows to remove all members
 		SecurityGroup waitingList = businessGroup.getWaitingGroup();
-		waitingGruppeController = new WaitingGroupController(ureq, getWindowControl(), true, false, enableTablePreferences, waitingList );
+		waitingGruppeController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, enableTablePreferences, waitingList );
 		listenTo(waitingGruppeController);
 
 		// add mail templates used when adding and removing users

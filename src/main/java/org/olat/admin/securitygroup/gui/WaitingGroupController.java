@@ -30,7 +30,6 @@ import java.util.List;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableMultiSelectEvent;
@@ -74,8 +73,9 @@ public class WaitingGroupController extends GroupController {
 	 * @param enableTablePreferences
 	 * @param aSecurityGroup
 	 */
-	public WaitingGroupController(UserRequest ureq, WindowControl wControl, boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, SecurityGroup waitingListGroup) {
-		super(ureq, wControl, mayModifyMembers, keepAtLeastOne, enableTablePreferences, waitingListGroup);
+	public WaitingGroupController(UserRequest ureq, WindowControl wControl, boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences,
+			boolean allowDownload, SecurityGroup waitingListGroup) {
+		super(ureq, wControl, mayModifyMembers, keepAtLeastOne, enableTablePreferences, false, allowDownload, waitingListGroup);
 	}
 
 	/**

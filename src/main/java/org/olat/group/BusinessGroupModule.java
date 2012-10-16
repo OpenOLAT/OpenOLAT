@@ -43,6 +43,7 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	private static final String USER_ALLOW_CREATE_BG = "user.allowed.create";
 	private static final String AUTHOR_ALLOW_CREATE_BG = "author.allowed.create";
 	private static final String CONTACT_BUSINESS_CARD = "contact.business.card";
+	private static final String USER_LIST_DOWNLOAD = "userlist.download.default.allowed";
 	
 	public static final String CONTACT_BUSINESS_CARD_NEVER = "never";
 	public static final String CONTACT_BUSINESS_CARD_ALWAYS = "always";
@@ -51,6 +52,7 @@ public class BusinessGroupModule extends AbstractOLATModule {
 
 	private boolean userAllowedCreate;
 	private boolean authorAllowedCreate;
+	private boolean userListDownloadDefaultAllowed;
 	private String contactBusinessCard;
 	
 	
@@ -88,6 +90,11 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		if(StringHelper.containsNonWhitespace(contactAllowed)) {
 			contactBusinessCard = contactAllowed;
 		}
+		
+		String downloadAllowed = getStringPropertyValue(USER_LIST_DOWNLOAD, true);
+		if(StringHelper.containsNonWhitespace(downloadAllowed)) {
+			userListDownloadDefaultAllowed = "true".equals(downloadAllowed);
+		}
 	}
 
 	/**
@@ -98,6 +105,7 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		userAllowedCreate = getBooleanConfigParameter(USER_ALLOW_CREATE_BG, true);
 		authorAllowedCreate = getBooleanConfigParameter(AUTHOR_ALLOW_CREATE_BG, true);
 		contactBusinessCard = getStringConfigParameter(CONTACT_BUSINESS_CARD, CONTACT_BUSINESS_CARD_NEVER, true);
+		userListDownloadDefaultAllowed = getBooleanConfigParameter(USER_LIST_DOWNLOAD, true);
 	}
 
 	@Override
@@ -133,6 +141,16 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	public void setContactBusinessCard(String contactBusinessCard) {
 		setStringProperty(CONTACT_BUSINESS_CARD, contactBusinessCard, true);
 	}
+
+	public boolean isUserListDownloadDefaultAllowed() {
+		return userListDownloadDefaultAllowed;
+	}
+
+	public void setUserListDownloadDefaultAllowed(boolean userListDownload) {
+		setStringProperty(USER_LIST_DOWNLOAD, Boolean.toString(userListDownload), true);
+	}
+	
+	
 	
 	
 }

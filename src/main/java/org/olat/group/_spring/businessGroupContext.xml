@@ -37,6 +37,7 @@
 				<!-- Show the contact form in the business group card.
 				     Values are: never,always,groupconfig -->
 				contact.business.card=${group.card.contact}
+				userlist.download.default.allowed=${group.userlist.download.default.allowed}
 			</value>
 		</property>
 	</bean>

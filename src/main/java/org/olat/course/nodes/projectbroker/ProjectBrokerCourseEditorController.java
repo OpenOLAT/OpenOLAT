@@ -189,7 +189,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
     String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
     accountManagerGroup = ProjectBrokerManagerFactory.getProjectGroupManager().getAccountManagerGroupFor(cpm, node, course, groupName, groupDescription, ureq.getIdentity());
     if (accountManagerGroup != null) {
-	    accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, accountManagerGroup.getPartipiciantGroup());
+	    accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, accountManagerGroup.getPartipiciantGroup());
 			listenTo(accountManagerGroupController);
 			// add mail templates used when adding and removing users
 			MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(accountManagerGroup, ureq.getIdentity());

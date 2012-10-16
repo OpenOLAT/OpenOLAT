@@ -127,20 +127,6 @@ public class GroupController extends BasicController {
 	protected static final String usageIdentifyer = IdentitiesOfGroupTableDataModel.class.getCanonicalName();
 	protected boolean isAdministrativeUser;
 
-	
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param mayModifyMembers
-	 * @param keepAtLeastOne
-	 * @param enableTablePreferences
-	 * @param aSecurityGroup
-	 */
-	public GroupController(UserRequest ureq, WindowControl wControl, boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, SecurityGroup aSecurityGroup) {
-		super(ureq, wControl);
-		init(ureq, mayModifyMembers, keepAtLeastOne, enableTablePreferences, false, aSecurityGroup);
-	}
-
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -152,14 +138,14 @@ public class GroupController extends BasicController {
 	 */	 
 	public GroupController(UserRequest ureq, WindowControl wControl, 
 			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
-			SecurityGroup aSecurityGroup) {
+			boolean allowDownload, SecurityGroup aSecurityGroup) {
 		super(ureq, wControl);
-		init(ureq, mayModifyMembers, keepAtLeastOne, enableTablePreferences, enableUserSelection, aSecurityGroup);
+		init(ureq, mayModifyMembers, keepAtLeastOne, enableTablePreferences, enableUserSelection, allowDownload, aSecurityGroup);
 	}
 
 	protected void init(UserRequest ureq,
 			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
-			SecurityGroup aSecurityGroup) {
+			boolean allowDownload, SecurityGroup aSecurityGroup) {
 		this.securityGroup = aSecurityGroup;
 		this.mayModifyMembers = mayModifyMembers;
 		this.keepAtLeastOne = keepAtLeastOne;
@@ -181,6 +167,7 @@ public class GroupController extends BasicController {
 		}
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
+		tableConfig.setDownloadOffered(allowDownload);
 		if (enableTablePreferences) {
 			// save table preferences for each group seperatly
 			if (mayModifyMembers) {

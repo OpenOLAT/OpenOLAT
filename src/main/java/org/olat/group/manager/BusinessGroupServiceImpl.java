@@ -283,6 +283,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		displayMembers.setOwnersPublic(businessGroupPropertyManager.isOwnersPublic(props));
 		displayMembers.setParticipantsPublic(businessGroupPropertyManager.isPartipsPublic(props));
 		displayMembers.setWaitingListPublic(businessGroupPropertyManager.isWaitingListPublic(props));
+		displayMembers.setDownloadLists(businessGroupPropertyManager.isDownloadLists(props));
 		return displayMembers;
 	}
 
@@ -294,7 +295,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		boolean ownersPublic = displayMembers.isOwnersPublic();
 		boolean partipsPublic = displayMembers.isParticipantsPublic();
 		boolean waitingListPublic = displayMembers.isWaitingListPublic();
-		businessGroupPropertyManager.updateDisplayMembers(group, showOwners, showPartips, showWaitingList, ownersPublic, partipsPublic, waitingListPublic);
+		boolean downloadLists = displayMembers.isDownloadLists();
+		businessGroupPropertyManager.updateDisplayMembers(group, showOwners, showPartips, showWaitingList,
+				ownersPublic, partipsPublic, waitingListPublic, downloadLists);
 	}
 
 	@Override

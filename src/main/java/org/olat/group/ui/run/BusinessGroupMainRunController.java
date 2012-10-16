@@ -706,9 +706,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		VelocityContainer membersVc = createVelocityContainer("ownersandmembers");
 		// 1. show owners if configured with Owners
 		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
+		boolean downloadAllowed = displayMembers.isDownloadLists();
 		if (displayMembers.isShowOwners()) {
 			removeAsListenerAndDispose(gownersC);
-			gownersC = new GroupController(ureq, getWindowControl(), false, true, false, businessGroup.getOwnerGroup());
+			gownersC = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, businessGroup.getOwnerGroup());
 			listenTo(gownersC);
 			membersVc.put("owners", gownersC.getInitialComponent());
 			membersVc.contextPut("showOwnerGroups", Boolean.TRUE);
@@ -718,7 +719,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		// 2. show participants if configured with Participants
 		if (displayMembers.isShowParticipants()) {
 			removeAsListenerAndDispose(gparticipantsC);
-			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, false, businessGroup.getPartipiciantGroup());
+			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, businessGroup.getPartipiciantGroup());
 			listenTo(gparticipantsC);
 			
 			membersVc.put("participants", gparticipantsC.getInitialComponent());
@@ -730,7 +731,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		membersVc.contextPut("hasWaitingList", new Boolean(businessGroup.getWaitingListEnabled()) );
 		if (displayMembers.isShowWaitingList()) {
 			removeAsListenerAndDispose(waitingListController);
-			waitingListController = new GroupController(ureq, getWindowControl(), false, true, false, businessGroup.getWaitingGroup());
+			waitingListController = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, businessGroup.getWaitingGroup());
 			listenTo(waitingListController);
 			membersVc.put("waitingList", waitingListController.getInitialComponent());
 			membersVc.contextPut("showWaitingList", Boolean.TRUE);

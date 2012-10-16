@@ -39,6 +39,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
@@ -70,6 +71,8 @@ public class BusinessGroupImportExport {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
+	@Autowired
+	private BusinessGroupModule groupModule;
 	
 	
 	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, BusinessGroupEnvironment env, boolean backwardsCompatible) {
@@ -315,7 +318,8 @@ public class BusinessGroupImportExport {
 				if (group.showWaitingList != null) {
 					showWaitingList = group.showWaitingList;
 				}
-				businessGroupPropertyManager.updateDisplayMembers(newGroup, showOwners, showParticipants, showWaitingList, false, false, false);
+				boolean download = groupModule.isUserListDownloadDefaultAllowed();
+				businessGroupPropertyManager.updateDisplayMembers(newGroup, showOwners, showParticipants, showWaitingList, false, false, false, download);
 			
 				if(dbCount++ % 3 == 0) {
 					dbInstance.commitAndCloseSession();

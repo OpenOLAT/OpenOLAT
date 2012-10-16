@@ -33,6 +33,8 @@ public class DisplayMembers {
 	private boolean participantsPublic;
 	private boolean waitingListPublic;
 	
+	private boolean downloadLists;
+	
 	public DisplayMembers() {
 		//
 	}
@@ -89,5 +91,13 @@ public class DisplayMembers {
 
 	public void setWaitingListPublic(boolean waitingListPublic) {
 		this.waitingListPublic = waitingListPublic;
+	}
+
+	public boolean isDownloadLists() {
+		return downloadLists;
+	}
+
+	public void setDownloadLists(boolean downloadLists) {
+		this.downloadLists = downloadLists;
 	}
 }

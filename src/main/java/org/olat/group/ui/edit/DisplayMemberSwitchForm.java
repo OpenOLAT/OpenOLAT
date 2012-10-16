@@ -52,6 +52,7 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 
 	private SelectionElement showOwners, showPartips, showWaitingList;
 	private SelectionElement openOwners, openPartips, openWaitingList;
+	private SelectionElement downloadList;
 	private boolean hasOwners, hasPartips, hasWaitingList;
 
 	/**
@@ -77,6 +78,7 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		displayMembers.setOwnersPublic(openOwners.isSelected(0));
 		displayMembers.setParticipantsPublic(openPartips.isSelected(0));
 		displayMembers.setWaitingListPublic(openWaitingList.isVisible() && openWaitingList.isEnabled() && openWaitingList.isSelected(0));
+		displayMembers.setDownloadLists(downloadList.isSelected(0));
 		return displayMembers;
 	}
 	
@@ -87,6 +89,7 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		openOwners.select("xx", displayMembers.isOwnersPublic());
 		openPartips.select("xx", displayMembers.isParticipantsPublic());
 		openWaitingList.select("xx", displayMembers.isWaitingListPublic());
+		downloadList.select("xx", displayMembers.isDownloadLists());
 	}
 	
 	public void setWaitingListReadOnly(boolean b) {
@@ -126,12 +129,15 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		openWaitingList = uifactory.addCheckboxesVertical("OpenWaitingList", "chkBox.open.waitingList", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
 		openWaitingList.setVisible(hasWaitingList);
 
+		downloadList = uifactory.addCheckboxesVertical("DownloadList", "chkBox.open.downloadList", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+
 		showOwners.addActionListener(this, FormEvent.ONCLICK);
 		showPartips.addActionListener(this, FormEvent.ONCLICK);
 		showWaitingList.addActionListener(this, FormEvent.ONCLICK);
 		openOwners.addActionListener(this, FormEvent.ONCLICK);
 		openPartips.addActionListener(this, FormEvent.ONCLICK);
 		openWaitingList.addActionListener(this, FormEvent.ONCLICK);
+		downloadList.addActionListener(this, FormEvent.ONCLICK);
 	}
 
 	@Override

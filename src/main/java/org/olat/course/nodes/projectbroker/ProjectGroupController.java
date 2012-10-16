@@ -87,12 +87,12 @@ public class ProjectGroupController extends BasicController {
 		VelocityContainer myContent = createVelocityContainer("projectgroup_management");
 
 		// Project Leader Management
-		projectLeaderController = new GroupController(ureq, getWindowControl(), true, true, true, project.getProjectLeaderGroup());
+		projectLeaderController = new GroupController(ureq, getWindowControl(), true, true, true, false, true, project.getProjectLeaderGroup());
 		listenTo(projectLeaderController);
 		myContent.put("projectLeaderController", projectLeaderController.getInitialComponent());
 
 		// Project Member Management
-		projectMemberController = new GroupController(ureq, getWindowControl(), true, false, true, project.getProjectParticipantGroup());
+		projectMemberController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, project.getProjectParticipantGroup());
 		listenTo(projectMemberController);
 		myContent.put("projectMemberController", projectMemberController.getInitialComponent());
 		// add mail templates used when adding and removing users
@@ -103,7 +103,7 @@ public class ProjectGroupController extends BasicController {
 
 		// Project Candidates Management
 		if (projectBrokerModuleConfiguration.isAcceptSelectionManually()) {
-			projectCandidatesController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, project.getCandidateGroup());
+			projectCandidatesController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, project.getCandidateGroup());
 			listenTo(projectCandidatesController);
 			myContent.contextPut("isProjectCandidatesListEmpty", ProjectBrokerManagerFactory.getProjectGroupManager().isCandidateListEmpty(project.getCandidateGroup()) );
 			myContent.put("projectCandidatesController", projectCandidatesController.getInitialComponent());

@@ -27,6 +27,7 @@ package org.olat.group.manager;
 
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyConstants;
 import org.olat.properties.PropertyManager;
@@ -54,6 +55,8 @@ public class BusinessGroupPropertyDAO {
 
 	@Autowired
 	private PropertyManager propertyManager;
+	@Autowired
+	private BusinessGroupModule groupModule;
 
 	/**
 	 * Creates and persists a new Property for the Display Members configuration
@@ -82,7 +85,7 @@ public class BusinessGroupPropertyDAO {
 	 * @param showPartips
 	 */
 	public void updateDisplayMembers(BusinessGroup group, boolean showOwners, boolean showPartips, boolean showWaitingList,
-			boolean ownrsPublic, boolean partipsPublic, boolean waitingListPublic) {
+			boolean ownrsPublic, boolean partipsPublic, boolean waitingListPublic, boolean downloadLists) {
 		long showXXX = 0;
 		if (showOwners) showXXX += showOwnersVal;
 		if (showPartips) showXXX += showPartipsVal;
@@ -93,9 +96,12 @@ public class BusinessGroupPropertyDAO {
 		if (partipsPublic) publicXXX += showPartipsVal;
 		if (waitingListPublic) publicXXX += showWaitingListVal;
 		
+		float download = downloadLists ? 1.0f : 0.0f;
+		
 		Property property = findProperty(group);
 		property.setLongValue(new Long(showXXX));
 		property.setStringValue(Long.toString(publicXXX));
+		property.setFloatValue(new Float(download));
 		propertyManager.updateProperty(property);
 	}
 
@@ -151,6 +157,14 @@ public class BusinessGroupPropertyDAO {
 	public boolean isWaitingListPublic(Property prop) {
 		return ((getPublicMembersValue(prop) & showWaitingListVal) == showWaitingListVal);
 	}
+	
+	public boolean isDownloadLists(Property prop) {
+		Float val = prop.getFloatValue();
+		if(val == null) {
+			return groupModule.isUserListDownloadDefaultAllowed();//default
+		}
+		return 0.5f < val.floatValue();	
+	}
 
 	private int getDisplayMembersValue(Property prop) {
 		int showXXX = prop.getLongValue().intValue();
@@ -192,9 +206,12 @@ public class BusinessGroupPropertyDAO {
 		boolean showOwners = showOwners(sourceGPM);
 		boolean showPartips = showPartips(sourceGPM);
 		boolean showWaitingList = showWaitingList(sourceGPM);
-		boolean ownersPublic = this.isOwnersPublic(sourceGPM);
-		boolean partipsPublic = this.isPartipsPublic(sourceGPM);
-		boolean waitingListPublic = this.isWaitingListPublic(sourceGPM);
-		updateDisplayMembers(targetGroup, showOwners, showPartips, showWaitingList, ownersPublic, partipsPublic, waitingListPublic);
+		boolean ownersPublic = isOwnersPublic(sourceGPM);
+		boolean partipsPublic = isPartipsPublic(sourceGPM);
+		boolean waitingListPublic = isWaitingListPublic(sourceGPM);
+		boolean downloadLists = isDownloadLists(sourceGPM);
+		updateDisplayMembers(targetGroup, showOwners, showPartips, showWaitingList,
+				ownersPublic, partipsPublic, waitingListPublic,
+				downloadLists);
 	}
 }

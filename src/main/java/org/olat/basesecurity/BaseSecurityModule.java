@@ -93,7 +93,6 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public static Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
 	private static String defaultAuthProviderIdentifier;
 
-
 	private String userSearchAdminPropsForUsers;
 	private String userSearchAdminPropsForAuthors;
 	private String userSearchAdminPropsForUsermanagers;
