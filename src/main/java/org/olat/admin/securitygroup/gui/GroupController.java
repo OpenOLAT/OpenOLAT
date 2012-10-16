@@ -198,7 +198,7 @@ public class GroupController extends BasicController {
 		initGroupTable(tableCtr, ureq, enableTablePreferences, enableUserSelection);
 
 		// set data model
-		List combo = securityManager.getIdentitiesAndDateOfSecurityGroup(this.securityGroup);			
+		List<Object[]> combo = securityManager.getIdentitiesAndDateOfSecurityGroup(this.securityGroup);			
 		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		identitiesTableModel = new IdentitiesOfGroupTableDataModel(combo, ureq.getLocale(), userPropertyHandlers);
 		tableCtr.setTableDataModel(identitiesTableModel);
@@ -235,7 +235,7 @@ public class GroupController extends BasicController {
 			if (!mayModifyMembers) throw new AssertException("not allowed to add a member!");
 			
 			removeAsListenerAndDispose(usc);
-			usc = new UserSearchController(ureq, getWindowControl(), true, true, false);			
+			usc = new UserSearchController(ureq, getWindowControl(), true, true);			
 			listenTo(usc);
 			
 			Component usersearchview = usc.getInitialComponent();
@@ -602,7 +602,7 @@ public class GroupController extends BasicController {
 
 	public void reloadData() {
 		// refresh view		
-		List combo = securityManager.getIdentitiesAndDateOfSecurityGroup(this.securityGroup); 
+		List<Object[]> combo = securityManager.getIdentitiesAndDateOfSecurityGroup(this.securityGroup); 
 		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		identitiesTableModel = new IdentitiesOfGroupTableDataModel(combo, myTrans.getLocale(), userPropertyHandlers);
 		tableCtr.setTableDataModel(identitiesTableModel);

@@ -194,7 +194,7 @@ public class BGUserManagementController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addCtrl);
 		
-		addCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);	
+		addCtrl = new UserSearchController(ureq, getWindowControl(), true, true);	
 		addCtrl.setUserObject(type);
 		listenTo(addCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addCtrl.getInitialComponent(), true, translate("users.addowner"));

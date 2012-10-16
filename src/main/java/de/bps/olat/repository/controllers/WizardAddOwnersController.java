@@ -129,7 +129,7 @@ public class WizardAddOwnersController extends WizardController {
 		step2Vc.contextPut("subtitle", translate("wizard.step2." + CMD_SEARCH_OWNERS));
 		
 		removeAsListenerAndDispose(userSearchCtr);
-		userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, false, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
+		userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
 		listenTo(userSearchCtr);
 		
 		// back button

@@ -44,7 +44,7 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 	public ImportMemberBySearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
 
-		searchController = new UserSearchFlexiController(ureq, wControl, false, false, null, rootForm);
+		searchController = new UserSearchFlexiController(ureq, wControl, false, rootForm);
 		listenTo(searchController);
 		
 		initForm (ureq);

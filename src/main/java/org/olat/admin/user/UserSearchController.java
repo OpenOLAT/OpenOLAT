@@ -127,7 +127,7 @@ public class UserSearchController extends BasicController {
 	 * @param wControl
 	 */
 	public UserSearchController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false, false, false);
+		this(ureq, wControl, false, false);
 	}
 	
 	
@@ -137,7 +137,7 @@ public class UserSearchController extends BasicController {
 	 * @param cancelbutton
 	 */
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton) {
-		this(ureq, wControl, cancelbutton, false, false);
+		this(ureq, wControl, cancelbutton, false);
 	}
 
 	/**
@@ -148,8 +148,8 @@ public class UserSearchController extends BasicController {
 	 * @param statusEnabled
 	 * @param actionKeyChooseFinish
 	 */
-	public UserSearchController(UserRequest ureq, WindowControl windowControl, boolean cancelbutton, boolean userMultiSelect, boolean statusEnabled, String actionKeyChooseFinish) {
-		this(ureq, windowControl, cancelbutton, userMultiSelect, statusEnabled);
+	public UserSearchController(UserRequest ureq, WindowControl windowControl, boolean cancelbutton, boolean userMultiSelect, String actionKeyChooseFinish) {
+		this(ureq, windowControl, cancelbutton, userMultiSelect);
 		this.actionKeyChoose = actionKeyChooseFinish;
 	}
 
@@ -160,7 +160,7 @@ public class UserSearchController extends BasicController {
 	 * @param userMultiSelect
 	 * @param statusEnabled
 	 */
-	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect, boolean statusEnabled) {
+	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect) {
 		super(ureq, wControl);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
@@ -179,17 +179,16 @@ public class UserSearchController extends BasicController {
 		} else if (ureq.getUserSession().getRoles()==null) {
 			logError("UserSearchController<init>: roles is null!", null);
 		}
-		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin(); 
 		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdmin = securityModule.isUserAllowedAdminProps(roles);
 		searchform = new UserSearchForm(ureq, wControl, isAdmin, cancelbutton);
 		listenTo(searchform);
-		
 		searchPanel.setContent(searchform.getInitialComponent());
 	
 		myContent.contextPut("noList","false");			
 		myContent.contextPut("showButton","false");
 		
-		Roles roles = ureq.getUserSession().getRoles();
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 		boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
 		if (ajax && autoCompleteAllowed) {

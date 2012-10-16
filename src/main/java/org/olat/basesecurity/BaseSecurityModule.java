@@ -57,7 +57,13 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private static final String CONFIG_USERMANAGER_CAN_MANAGE_GUESTS = "sysGroupUsermanager.canManageGuests";
 	private static final String CONFIG_USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = "sysGroupUsermanager.canBypassEmailverification";
 	private static final String CONFIG_USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = "sysGroupUsermanager.canEditAllProfileFields";
-	
+
+	private static final String USERSEARCH_ADMINPROPS_USERS = "userSearchAdminPropsForUsers";
+	private static final String USERSEARCH_ADMINPROPS_AUTHORS = "userSearchAdminPropsForAuthors";
+	private static final String USERSEARCH_ADMINPROPS_USERMANAGERS = "userSearchAdminPropsForUsermanagers";
+	private static final String USERSEARCH_ADMINPROPS_GROUPMANAGERS = "userSearchAdminPropsForUsermanagers";
+	private static final String USERSEARCH_ADMINPROPS_ADMINISTRATORS = "userSearchAdminPropsForAdministrators";
+
 	private static final String USERSEARCHAUTOCOMPLETE_USERS = "userSearchAutocompleteForUsers";
 	private static final String USERSEARCHAUTOCOMPLETE_AUTHORS = "userSearchAutocompleteForAuthors";
 	private static final String USERSEARCHAUTOCOMPLETE_USERMANAGERS = "userSearchAutocompleteForUsermanagers";
@@ -87,6 +93,13 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public static Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
 	private static String defaultAuthProviderIdentifier;
 
+
+	private String userSearchAdminPropsForUsers;
+	private String userSearchAdminPropsForAuthors;
+	private String userSearchAdminPropsForUsermanagers;
+	private String userSearchAdminPropsForGroupmanagers;
+	private String userSearchAdminPropsForAdministrators;
+	
 	private String userSearchMaxResults;
 	private String userSearchAutocompleteForUsers;
 	private String userSearchAutocompleteForAuthors;
@@ -136,12 +149,18 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		
 		USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_BYPASS_EMAILVERIFICATION, USERMANAGER_CAN_BYPASS_EMAILVERIFICATION);
 		USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS, USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS);
-		
-		userSearchAutocompleteForUsers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERS, "enable", true);
-		userSearchAutocompleteForAuthors = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_AUTHORS, "enable", true);
-		userSearchAutocompleteForUsermanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERMANAGERS, "enable", true);
-		userSearchAutocompleteForGroupmanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, "enable", true);
-		userSearchAutocompleteForAdministrators = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, "enable", true);
+
+		userSearchAdminPropsForUsers = getStringConfigParameter(USERSEARCH_ADMINPROPS_USERS, "disabled", true);
+		userSearchAdminPropsForAuthors = getStringConfigParameter(USERSEARCH_ADMINPROPS_AUTHORS, "enabled", true);
+		userSearchAdminPropsForUsermanagers = getStringConfigParameter(USERSEARCH_ADMINPROPS_USERMANAGERS, "enabled", true);
+		userSearchAdminPropsForGroupmanagers = getStringConfigParameter(USERSEARCH_ADMINPROPS_GROUPMANAGERS, "enabled", true);
+		userSearchAdminPropsForAdministrators = getStringConfigParameter(USERSEARCH_ADMINPROPS_ADMINISTRATORS, "enabled", true);
+
+		userSearchAutocompleteForUsers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERS, "enabled", true);
+		userSearchAutocompleteForAuthors = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_AUTHORS, "enabled", true);
+		userSearchAutocompleteForUsermanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERMANAGERS, "enabled", true);
+		userSearchAutocompleteForGroupmanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, "enabled", true);
+		userSearchAutocompleteForAdministrators = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, "enabled", true);
 		userSearchMaxResults = getStringConfigParameter(USERSEARCH_MAXRESULTS, "-1", true);
 	}
 
@@ -151,7 +170,28 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	}
 	
 	private void updateProperties() {
-		String enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERS, true);
+		String enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_USERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAdminPropsForUsers = enabled;
+		}
+		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_AUTHORS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAdminPropsForAuthors = enabled;
+		}
+		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_USERMANAGERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAdminPropsForUsermanagers = enabled;
+		}
+		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_GROUPMANAGERS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAdminPropsForGroupmanagers = enabled;
+		}
+		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_ADMINISTRATORS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			userSearchAdminPropsForAdministrators = enabled;
+		}
+
+		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERS, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			userSearchAutocompleteForUsers = enabled;
 		}
@@ -183,6 +223,66 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		this.moduleConfigProperties = persistedProperties;
 	}
 	
+	public boolean isUserAllowedAdminProps(Roles roles) {
+		if(roles == null) return false;
+		if(roles.isOLATAdmin()) {
+			return "enabled".equals(userSearchAdminPropsForAdministrators);
+		}
+		if(roles.isGroupManager()) {
+			return "enabled".equals(userSearchAdminPropsForGroupmanagers);
+		}
+		if(roles.isUserManager()) {
+			return "enabled".equals(userSearchAdminPropsForUsermanagers);
+		}
+		if(roles.isAuthor()) {
+			return "enabled".equals(userSearchAdminPropsForAuthors);
+		}
+		if(roles.isInvitee()) {
+			return false;
+		}
+		return "enabled".equals(userSearchAdminPropsForUsers);
+	}
+
+	public String getUserSearchAdminPropsForUsers() {
+		return userSearchAdminPropsForUsers;
+	}
+
+	public void setUserSearchAdminPropsForUsers(String enable) {
+		setStringProperty(USERSEARCH_ADMINPROPS_USERS, enable, true);
+	}
+
+	public String getUserSearchAdminPropsForAuthors() {
+		return userSearchAdminPropsForAuthors;
+	}
+
+	public void setUserSearchAdminPropsForAuthors(String enable) {
+		setStringProperty(USERSEARCH_ADMINPROPS_AUTHORS, enable, true);
+	}
+
+	public String getUserSearchAdminPropsForUsermanagers() {
+		return userSearchAdminPropsForUsermanagers;
+	}
+
+	public void setUserSearchAdminPropsForUsermanagers(String enable) {
+		setStringProperty(USERSEARCH_ADMINPROPS_USERMANAGERS, enable, true);
+	}
+
+	public String getUserSearchAdminPropsForGroupmanagers() {
+		return userSearchAdminPropsForGroupmanagers;
+	}
+
+	public void setUserSearchAdminPropsForGroupmanagers(String enable) {
+		setStringProperty(USERSEARCH_ADMINPROPS_GROUPMANAGERS, enable, true);
+	}
+
+	public String getUserSearchAdminPropsForAdministrators() {
+		return userSearchAdminPropsForAdministrators;
+	}
+
+	public void setUserSearchAdminPropsForAdministrators(String enable) {
+		setStringProperty(USERSEARCH_ADMINPROPS_ADMINISTRATORS, enable, true);
+	}
+
 	public boolean isUserAllowedAutoComplete(Roles roles) {
 		if(roles == null) return false;
 		if(roles.isOLATAdmin()) {

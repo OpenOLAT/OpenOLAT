@@ -35,6 +35,12 @@ depends-on="database, i18nModule, triggerI18nModuleInit">
         <property name="arguments">
         			<!-- Important: Set tomcats policy to allow read/write access to Root and TmpDir  -->
                     <value>
+						userSearchAdminPropsForUsers=${usersearch.adminProps.users}
+						userSearchAdminPropsForAuthors=${usersearch.adminProps.authors}
+						userSearchAdminPropsForUsermanagers=${usersearch.adminProps.usermanagers}
+						userSearchAdminPropsForGroupmanagers=${usersearch.adminProps.groupmanagers}
+						userSearchAdminPropsForAdministrators=${usersearch.adminProps.administrators}
+						
 						userSearchAutocompleteForUsers=${usersearch.autocomplete.users}
 						userSearchAutocompleteForAuthors=${usersearch.autocomplete.authors}
 						userSearchAutocompleteForUsermanagers=${usersearch.autocomplete.usermanagers}
