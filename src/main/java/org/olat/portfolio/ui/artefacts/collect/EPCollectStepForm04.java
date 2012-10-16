@@ -26,7 +26,6 @@ import org.json.JSONException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -66,12 +65,13 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	private PortfolioStructure selectedPortfolioStructure;
 	private AbstractArtefact artefact;
 	private PortfolioStructure oldStructure;
+	private PortfolioStructure preSelectedStructure;
 
-	public EPCollectStepForm04(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout,
-			String customLayoutPageName, AbstractArtefact artefact) {
+	public EPCollectStepForm04(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout) {
 		super(ureq, wControl, rootForm, runContext, layout, "step04selectmap");
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		initForm(this.flc, this, ureq);
+		preSelectedStructure = (PortfolioStructure)runContext.get("preSelectedStructure");
+		initForm(flc, this, ureq);
 	}
 
 	public EPCollectStepForm04(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, PortfolioStructure oldStructure) {
@@ -97,7 +97,12 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 			listenTo(mapsTreeController);
 
 			// find last used structure and preselect
-			PortfolioStructure lastStruct = ePFMgr.getUsersLastUsedPortfolioStructure(getIdentity());
+			PortfolioStructure lastStruct;
+			if(preSelectedStructure == null) {
+				lastStruct = ePFMgr.getUsersLastUsedPortfolioStructure(getIdentity());
+			} else {
+				lastStruct = preSelectedStructure;
+			}
 			if (lastStruct != null) {
 				mapsTreeController.selectPath("/" + ROOT_NODE_IDENTIFIER + getPath(lastStruct));
 				selectedPortfolioStructure = lastStruct;

@@ -44,6 +44,7 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.artefacts.EPTextArtefact;
 import org.olat.portfolio.model.artefacts.FileArtefact;
+import org.olat.portfolio.model.structel.PortfolioStructure;
 
 /**
  * Description:<br>
@@ -70,6 +71,8 @@ public class EPAddArtefactController extends BasicController {
 	private VFSContainer vfsTemp;
 	private VelocityContainer addLinkVC;
 	private CloseableCalloutWindowController calloutCtr;
+	
+	private PortfolioStructure preSelectedStruct;
 
 	public EPAddArtefactController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -113,6 +116,14 @@ public class EPAddArtefactController extends BasicController {
 		calloutCtr.activate();
 	}
 	
+	public PortfolioStructure getPreSelectedStruct() {
+		return preSelectedStruct;
+	}
+
+	public void setPreSelectedStruct(PortfolioStructure preSelectedStruct) {
+		this.preSelectedStruct = preSelectedStruct;
+	}
+
 	private void closeAddLinkPopup(){
 		if (calloutCtr != null) {
 			calloutCtr.deactivate();
@@ -190,7 +201,7 @@ public class EPAddArtefactController extends BasicController {
 		artefact1.setSignature(-20);
 
 		vfsTemp = ePFMgr.getArtefactsTempContainer(getIdentity());
-		Step start = new EPCreateTextArtefactStep00(ureq, artefact1, vfsTemp);
+		Step start = new EPCreateTextArtefactStep00(ureq, artefact1, preSelectedStruct, vfsTemp);
 		StepRunnerCallback finish = new EPArtefactWizzardStepCallback(vfsTemp);
 		collectStepsCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("create.text.artefact.wizzard.title"), "o_sel_artefact_add_wizard o_sel_artefact_add_text_wizard");
@@ -213,7 +224,7 @@ public class EPAddArtefactController extends BasicController {
 		artefact1.setSignature(-30);
 
 		vfsTemp = ePFMgr.getArtefactsTempContainer(getIdentity());
-		Step start = new EPCreateFileArtefactStep00(ureq, artefact1, vfsTemp);
+		Step start = new EPCreateFileArtefactStep00(ureq, artefact1, preSelectedStruct, vfsTemp);
 		StepRunnerCallback finish = new EPArtefactWizzardStepCallback(vfsTemp);
 		collectStepsCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("create.file.artefact.wizzard.title"), "o_sel_artefact_add_wizard o_sel_artefact_add_file_wizard");
@@ -228,7 +239,7 @@ public class EPAddArtefactController extends BasicController {
 		artefact1.setCollectionDate(new Date());
 		artefact1.setSignature(60); // preset as signed by 60%
 
-		Step start = new EPCreateLiveBlogArtefactStep00(ureq, artefact1);
+		Step start = new EPCreateLiveBlogArtefactStep00(ureq, preSelectedStruct, artefact1);
 		StepRunnerCallback finish = new EPArtefactWizzardStepCallback(); // no vfsTemp!, blog doesn't need a directory
 		collectStepsCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("create.blog.artefact.wizzard.title"), "o_sel_artefact_add_wizard o_sel_artefact_add_blog_wizard");

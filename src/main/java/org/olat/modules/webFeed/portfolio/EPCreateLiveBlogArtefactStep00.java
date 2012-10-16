@@ -26,6 +26,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.artefacts.collect.EPCollectStep00;
 
 /**
@@ -40,10 +41,12 @@ import org.olat.portfolio.ui.artefacts.collect.EPCollectStep00;
 public class EPCreateLiveBlogArtefactStep00 extends EPCollectStep00 {
 
 	private AbstractArtefact artefact;
+	private final PortfolioStructure preSelectedStruct;
 
-	public EPCreateLiveBlogArtefactStep00(UserRequest ureq, AbstractArtefact artefact) {
+	public EPCreateLiveBlogArtefactStep00(UserRequest ureq, PortfolioStructure preSelectedStruct, AbstractArtefact artefact) {
 		super(ureq, artefact);
 		this.artefact = artefact;
+		this.preSelectedStruct = preSelectedStruct;
 	}
 
 	/**
@@ -51,6 +54,10 @@ public class EPCreateLiveBlogArtefactStep00 extends EPCollectStep00 {
 	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
+		if(preSelectedStruct != null) {
+			stepsRunContext.put("preSelectedStructure", preSelectedStruct);
+		}
+		
 		StepFormController stepI = new EPCreateLiveBlogArtefactStepForm00(ureq, windowControl, form, stepsRunContext,
 				FormBasicController.LAYOUT_DEFAULT, null, artefact);
 		return stepI;

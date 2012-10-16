@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.PortfolioStructure;
 
 /**
  * Description:<br>
@@ -42,11 +43,14 @@ public class EPCreateFileArtefactStep00 extends BasicStep {
 
 	private VFSContainer vfsTemp;
 	private AbstractArtefact artefact;
+	private final PortfolioStructure preSelectedStruct;
 
-	public EPCreateFileArtefactStep00(UserRequest ureq, AbstractArtefact artefact, VFSContainer vfsTemp) {
+	public EPCreateFileArtefactStep00(UserRequest ureq, AbstractArtefact artefact, PortfolioStructure preSelectedStruct, 
+			VFSContainer vfsTemp) {
 		super(ureq);
 		this.vfsTemp = vfsTemp;
 		this.artefact = artefact;
+		this.preSelectedStruct = preSelectedStruct;
 		setI18nTitleAndDescr("step0.file.description", "step0.file.short.descr");
 		setNextStep(new EPCollectStep00(ureq, artefact));
 	}
@@ -64,6 +68,10 @@ public class EPCreateFileArtefactStep00 extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
+		if(preSelectedStruct != null) {
+			stepsRunContext.put("preSelectedStructure", preSelectedStruct);
+		}
+		
 		StepFormController stepI = new EPCreateFileArtefactStepForm00(ureq, windowControl, form, stepsRunContext,
 				FormBasicController.LAYOUT_DEFAULT, null, artefact, vfsTemp);
 		return stepI;

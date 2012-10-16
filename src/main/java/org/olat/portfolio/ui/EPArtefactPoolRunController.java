@@ -44,6 +44,7 @@ import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.EPFilterSettings;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.artefacts.collect.EPAddArtefactController;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactChoosenEvent;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactDeletedEvent;
@@ -69,7 +70,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 	private VelocityContainer vC;
 	private EPFrontendManager ePFMgr;
 	private EPFilterSettings filterSettings = new EPFilterSettings();
-	private Controller addArtefactCtrl;
+	private EPAddArtefactController addArtefactCtrl;
 	private boolean artefactChooseMode;
 	private SegmentViewComponent segmentView;
 	private Link artefactsLink;
@@ -81,6 +82,8 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 	private EPMultiArtefactsController artCtrl;
 	private String previousViewMode;
 	private List<AbstractArtefact> previousArtefactsList;
+	
+	private PortfolioStructure preSelectedStruct;
 
 	public EPArtefactPoolRunController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, false);
@@ -211,6 +214,17 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 		viewModeCtrl = new EPViewModeController(ureq, getWindowControl(), EPViewModeController.VIEWMODE_CONTEXT_ARTEFACTPOOL);
 		listenTo(viewModeCtrl);
 		vC.put("viewMode", viewModeCtrl.getInitialComponent());
+	}
+
+	public PortfolioStructure getPreSelectedStruct() {
+		return preSelectedStruct;
+	}
+
+	public void setPreSelectedStruct(PortfolioStructure preSelectedStruct) {
+		this.preSelectedStruct = preSelectedStruct;
+		if(addArtefactCtrl != null) {
+			addArtefactCtrl.setPreSelectedStruct(preSelectedStruct);
+		}
 	}
 
 	@Override

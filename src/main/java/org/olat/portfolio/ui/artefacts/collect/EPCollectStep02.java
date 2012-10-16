@@ -51,7 +51,7 @@ public class EPCollectStep02 extends BasicStep {
 		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		if (!portfolioModule.isCopyrightStepEnabled() && !portfolioModule.isReflexionStepEnabled()){
 			// skip copyright AND reflexion step
-			setNextStep(new EPCollectStep04(ureq, artefact));
+			setNextStep(new EPCollectStep04(ureq));
 		} else {		
 			setNextStep(new EPCollectStep03(ureq, artefact));
 		}

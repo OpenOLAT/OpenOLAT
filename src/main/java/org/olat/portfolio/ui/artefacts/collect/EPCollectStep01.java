@@ -57,7 +57,7 @@ public class EPCollectStep01 extends BasicStep {
 		//signature > 0 means, collection wizard can be sure its from OLAT, < 0 means get an approval by user (the target value is the negative one)
 		if (!portfolioModule.isCopyrightStepEnabled() && !portfolioModule.isReflexionStepEnabled()){
 			// skip copyright AND reflexion step
-			setNextStep(new EPCollectStep04(ureq, artefact));
+			setNextStep(new EPCollectStep04(ureq));
 		} else if (artefact.getSignature() > 0 || !portfolioModule.isCopyrightStepEnabled()){
 			setNextStep(new EPCollectStep03(ureq, artefact));
 		} else if (portfolioModule.isCopyrightStepEnabled() ){

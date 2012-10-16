@@ -55,7 +55,7 @@ public class EPCollectStep03 extends BasicStep {
 		List<PortfolioStructure> structs = ePFMgr.getStructureElementsForUser(getIdentity());
 		this.hasNextStep = false;
 		if (structs != null && structs.size() != 0) { 
-			setNextStep(new EPCollectStep04(ureq, artefact));
+			setNextStep(new EPCollectStep04(ureq));
 			hasNextStep = true;
 		} else {
 			setNextStep(NOSTEP);

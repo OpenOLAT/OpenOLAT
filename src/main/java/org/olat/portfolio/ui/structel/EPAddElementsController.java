@@ -78,7 +78,7 @@ public class EPAddElementsController extends BasicController {
 	};
 	private final Map<String, Boolean> typeMap = new HashMap<String, Boolean>();
 	private CloseableModalController artefactBox;
-	private Controller artefactPoolCtrl;
+	private EPArtefactPoolRunController artefactPoolCtrl;
 	private Link linkArtefactLink;
 	private String activeType;
 
@@ -188,7 +188,8 @@ public class EPAddElementsController extends BasicController {
 			listenTo(artefactPoolCtrl);
 		}
 		artefactBox = new CloseableModalController(getWindowControl(),"close",artefactPoolCtrl.getInitialComponent(),true, translate("choose.artefact.title"));
-		
+		artefactPoolCtrl.setPreSelectedStruct(portfolioStructure);
+
 		listenTo(artefactBox);
 		artefactBox.activate();
 	}

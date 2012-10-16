@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.PortfolioStructure;
 
 /**
  * Description:<br>
@@ -41,13 +42,16 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class EPCreateTextArtefactStep00 extends BasicStep {
 
-	private AbstractArtefact artefact;
-	private VFSContainer vfsTemp;
+	private final AbstractArtefact artefact;
+	private final VFSContainer vfsTemp;
+	private final PortfolioStructure preSelectedStruct;
 
-	public EPCreateTextArtefactStep00(UserRequest ureq, AbstractArtefact artefact, VFSContainer vfsTemp) {
+	public EPCreateTextArtefactStep00(UserRequest ureq, AbstractArtefact artefact, PortfolioStructure preSelectedStruct,
+			VFSContainer vfsTemp) {
 		super(ureq);
 		this.vfsTemp = vfsTemp;
 		this.artefact = artefact;
+		this.preSelectedStruct = preSelectedStruct;
 		setI18nTitleAndDescr("step0.text.description", "step0.text.short.descr");
 		setNextStep(new EPCollectStep00(ureq, artefact));
 	}
@@ -59,6 +63,10 @@ public class EPCreateTextArtefactStep00 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
+		if(preSelectedStruct != null) {
+			stepsRunContext.put("preSelectedStructure", preSelectedStruct);
+		}
+		
 		StepFormController stepI = new EPCreateTextArtefactStepForm00(ureq, windowControl, form, stepsRunContext,
 				FormBasicController.LAYOUT_DEFAULT, null, artefact, vfsTemp);
 		return stepI;

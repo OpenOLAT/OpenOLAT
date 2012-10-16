@@ -32,7 +32,6 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
  * Description:<br>
@@ -44,11 +43,8 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class EPCollectStep04 extends BasicStep {
 
-	private AbstractArtefact artefact;
-
-	public EPCollectStep04(UserRequest ureq, AbstractArtefact artefact) {
+	public EPCollectStep04(UserRequest ureq) {
 		super(ureq);
-		this.artefact = artefact;
 		setNextStep(NOSTEP);
 		setI18nTitleAndDescr("step4.description", "step4.short.descr");
 	}
@@ -66,7 +62,7 @@ public class EPCollectStep04 extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new EPCollectStepForm04(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_CUSTOM, null, artefact);
+		StepFormController stepI = new EPCollectStepForm04(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_CUSTOM);
 		return stepI;
 	}
 
