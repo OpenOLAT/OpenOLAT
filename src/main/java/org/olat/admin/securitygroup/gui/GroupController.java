@@ -32,9 +32,11 @@ import org.olat.admin.securitygroup.gui.multi.UsersToGroupWizardController;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -151,7 +153,8 @@ public class GroupController extends BasicController {
 		this.keepAtLeastOne = keepAtLeastOne;
 		this.securityManager = BaseSecurityManager.getInstance();
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 
 		// default group controller has no mail functionality
 		this.addUserMailDefaultTempl = null;
