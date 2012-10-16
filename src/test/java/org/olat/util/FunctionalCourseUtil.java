@@ -432,6 +432,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean open(Selenium browser, int nth){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l1')]//li)[")
@@ -453,6 +455,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean open(Selenium browser, CourseNodeAlias alias, int nth){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l1')]//li]//a[contains(@class, '")
@@ -481,6 +485,8 @@ public class FunctionalCourseUtil {
 	public boolean openWithoutBusinessPath(Selenium browser, long courseId, int nth){
 		if(!functionalRepositorySiteUtil.openCourseWithoutBusinessPath(browser, courseId))
 			return(false);
+
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 
@@ -501,6 +507,8 @@ public class FunctionalCourseUtil {
 	 * @return
 	 */
 	public boolean closeTab(Selenium browser, String title){
+		functionalUtil.idle(browser);
+		
 		StringBuffer stringBuffer = new StringBuffer();
 		
 		stringBuffer.append("xpath=//li//div//a[@title='")
@@ -524,6 +532,8 @@ public class FunctionalCourseUtil {
 	 * @return
 	 */
 	public boolean closeActiveTab(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		StringBuffer stringBuffer = new StringBuffer();
 		
 		stringBuffer.append("xpath=//li[contains(@class, '")
@@ -547,6 +557,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openCourseEditor(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
@@ -571,6 +583,8 @@ public class FunctionalCourseUtil {
 		if(!functionalUtil.openContentTab(browser, 0)){
 			return(null);
 		}
+
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -591,6 +605,8 @@ public class FunctionalCourseUtil {
 		if(!functionalUtil.openContentTab(browser, 0)){
 			return(null);
 		}
+
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -646,6 +662,8 @@ public class FunctionalCourseUtil {
 		if(!functionalUtil.clickRadio(browser, getCourseEditorOverviewRadioGroupCss(), CourseOverview.SINGLEPAGE.getValue())){
 			return(false);
 		}
+		
+		functionalUtil.idle(browser);
 		
 		/* click "select or create page" */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -731,6 +749,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean publishEntireCourse(Selenium browser, AccessSettings access, String catalog){
+		functionalUtil.idle(browser);
+		
 		/* click publish */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -826,6 +846,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success otherwise false
 	 */
 	public boolean createCourseNode(Selenium browser, CourseNodeAlias node, String shortTitle, String longTitle, String description, int position){
+		functionalUtil.idle(browser);
+		
 		/* click on the appropriate link to create node */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -842,6 +864,8 @@ public class FunctionalCourseUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		/* choose insertion point */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window')]//form[@name='seltree']//div[contains(@class, '")
@@ -861,6 +885,8 @@ public class FunctionalCourseUtil {
 		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		/* fill in short title */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[1]");
@@ -897,6 +923,8 @@ public class FunctionalCourseUtil {
 	public boolean addToEportfolio(Selenium browser, String binder, String page, String structure,
 			String title, String description, String[] tags,
 			FunctionalEPortfolioUtil functionalEPortfolioUtil){
+
+		functionalUtil.idle(browser);
 		
 		/* open wizard */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -939,6 +967,8 @@ public class FunctionalCourseUtil {
 	public boolean openForum(Selenium browser, long courseId, int nth){
 		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
 			return(false);
+
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 
@@ -970,6 +1000,8 @@ public class FunctionalCourseUtil {
 	public boolean postForumMessage(Selenium browser, long courseId, int nthForum, String title, String message){
 		if(!openForum(browser, courseId, nthForum))
 			return(false);
+
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -984,6 +1016,8 @@ public class FunctionalCourseUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		/* fill in form - title */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -1036,6 +1070,8 @@ public class FunctionalCourseUtil {
 	public boolean createWikiArticle(Selenium browser, long wikiId, String pagename, String content){
 		if(!openWiki(browser, wikiId))
 			return(false);
+
+		functionalUtil.idle(browser);
 		
 		/* type pagename */
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -1060,6 +1096,8 @@ public class FunctionalCourseUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		/* edit content */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -1119,6 +1157,8 @@ public class FunctionalCourseUtil {
 	public boolean openBlogWithoutBusinessPath(Selenium browser, long courseId, int nth){
 		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
 			return(false);
+
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 
@@ -1144,6 +1184,9 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean importBlogFeed(Selenium browser, String url){
+
+		functionalUtil.idle(browser);
+		
 		/* open popup to enter url */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -1155,6 +1198,8 @@ public class FunctionalCourseUtil {
 		browser.click(selectorBuffer.toString());
 		
 		/* enter url */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window_content')]//form//input[@type='text'])[2]");
@@ -1186,7 +1231,10 @@ public class FunctionalCourseUtil {
 			String title, String description, String content){
 		if(!openBlogWithoutBusinessPath(browser, courseId, nth))
 			return(false);
+
+		functionalUtil.idle(browser);
 		
+		/* click create */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
@@ -1196,6 +1244,8 @@ public class FunctionalCourseUtil {
 		browser.click(selectorBuffer.toString());
 		
 		/* fill in form - title */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//form//div[contains(@class, '")
@@ -1236,6 +1286,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean importPodcastFeed(Selenium browser, String url){
+		functionalUtil.idle(browser);
+		
 		/* open popup to enter url */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -1247,6 +1299,8 @@ public class FunctionalCourseUtil {
 		browser.click(selectorBuffer.toString());
 		
 		/* enter url */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, 'b_window_content')]//form//input[@type='text'])[2]");
@@ -1272,6 +1326,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openCourseEditorCourseTab(Selenium browser, CourseEditorCourseTab tab){
+		functionalUtil.idle(browser);
+		
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
@@ -1283,6 +1339,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openCourseEditorIQTestTab(Selenium browser, CourseEditorIQTestTab tab){
+		functionalUtil.idle(browser);
+		
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
@@ -1294,6 +1352,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openCourseEditorCpTab(Selenium browser, CourseEditorCpTab tab){
+		functionalUtil.idle(browser);
+		
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
@@ -1305,6 +1365,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openCourseEditorWikiTab(Selenium browser, CourseEditorWikiTab tab){
+		functionalUtil.idle(browser);
+		
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
@@ -1316,6 +1378,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openCourseEditorBlogTab(Selenium browser, CourseEditorBlogTab tab){
+		functionalUtil.idle(browser);
+		
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
@@ -1327,6 +1391,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openCourseEditorPodcastTab(Selenium browser, CourseEditorPodcastTab tab){
+		functionalUtil.idle(browser);
+		
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
@@ -1338,6 +1404,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openCourseEditorPortfolioTaskTab(Selenium browser, CourseEditorPortfolioTaskTab tab){
+		functionalUtil.idle(browser);
+		
 		return(functionalUtil.openContentTab(browser, tab.ordinal()));
 	}
 	
@@ -1349,6 +1417,8 @@ public class FunctionalCourseUtil {
 	 * @return
 	 */
 	private boolean chooseRepositoryResource(Selenium browser, String chooseRepositoryCss, long key){
+		functionalUtil.idle(browser);
+		
 		/* click on "choose, create or import file" button */
 		StringBuffer selectorBuffer = new StringBuffer();
 
@@ -1362,6 +1432,8 @@ public class FunctionalCourseUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		/* click search link */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
@@ -1372,6 +1444,8 @@ public class FunctionalCourseUtil {
 		browser.click(selectorBuffer.toString());
 		
 		/* type key and search */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -1393,6 +1467,8 @@ public class FunctionalCourseUtil {
 		browser.click(selectorBuffer.toString());
 		
 		/* choose resource */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -1423,6 +1499,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	private boolean createRepositoryResource(Selenium browser, String chooseRepositoryCss, String title, String description){
+		functionalUtil.idle(browser);
+		
 		/* click on "choose, create or import file" button */
 		StringBuffer selectorBuffer = new StringBuffer();
 
@@ -1436,6 +1514,8 @@ public class FunctionalCourseUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		/* click create button */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
@@ -1446,7 +1526,8 @@ public class FunctionalCourseUtil {
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
-		
+
+		functionalUtil.idle(browser);
 		/* */
 		return(functionalRepositorySiteUtil.fillInRepositoryEntryPopup(browser, title, description));
 	}
@@ -1462,7 +1543,7 @@ public class FunctionalCourseUtil {
 	public boolean createQTITest(Selenium browser, String title, String description){
 		if(!openCourseEditorIQTestTab(browser, CourseEditorIQTestTab.TEST_CONFIGURATION))
 			return(false);
-		
+
 		if(!createRepositoryResource(browser, getTestChooseRepositoryFileCss(), title, description)){
 			return(false);
 		}
@@ -1590,6 +1671,8 @@ public class FunctionalCourseUtil {
 	 * @return true on success
 	 */
 	public boolean openPortfolioTemplateEditor(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")

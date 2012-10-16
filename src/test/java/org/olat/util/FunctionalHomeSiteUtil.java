@@ -505,7 +505,7 @@ public class FunctionalHomeSiteUtil {
 		.append(selectedCss)
 		.append('.')
 		.append(getHomeActionNavigationSelectedCss())
-		.append(" * a");
+		.append(" a");
 
 		long timeElapsed = 0;
 		long startTime = Calendar.getInstance().getTimeInMillis();
@@ -556,7 +556,6 @@ public class FunctionalHomeSiteUtil {
 			return(false);
 		}
 
-		//FIXME:JK: this is a known bottleneck, but can't be set to -1 until info messages will be clicked away!
 		if(!checkCurrentAction || !checkCurrentAction(browser, action, Long.parseLong(functionalUtil.getWaitLimit()))){
 			StringBuffer selectorBuffer = new StringBuffer();
 
@@ -594,15 +593,18 @@ public class FunctionalHomeSiteUtil {
 		}
 
 		/* goto home site */
+		//TODO:JK: ugly
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.PORTAL));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.PORTAL));
 
+		functionalUtil.idle(browser);
+		
 		/* begin editing */
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("css=.")
 		.append(PORTAL_EDIT_LINK_CSS)
-		.append(" * a");
+		.append(" a");
 
 		browser.click(selectorBuffer.toString());
 	}
@@ -618,15 +620,18 @@ public class FunctionalHomeSiteUtil {
 		}
 
 		/* goto home site */
+		//TODO:JK: ugly
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.PORTAL));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.PORTAL));
 
 		/* end editing */
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("css=.")
 		.append(PORTAL_EDIT_LINK_CSS)
-		.append(" * a");
+		.append(" a");
 
 		browser.click(selectorBuffer.toString());
 	}
@@ -639,17 +644,19 @@ public class FunctionalHomeSiteUtil {
 	 * @return true if portlet active otherwise false
 	 */
 	public boolean checkPortletActive(Selenium browser, String portletCss){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//div[@class='")
+		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getPortalCss())
-		.append(' ')
+		.append("') and contains(@class, '")
 		.append(getPortalSubcolumnsCss())
-		.append("']//div[@class='")
+		.append("')]//div[contains(@class, '")
 		.append(getPortletCss())
-		.append(' ')
+		.append("') and contains(@class, '")
 		.append(portletCss)
-		.append("']");
+		.append("')]");
 
 		if(browser.isElementPresent(selectorBuffer.toString())){
 			return(true);
@@ -657,17 +664,17 @@ public class FunctionalHomeSiteUtil {
 			/* selector of editing portlets */
 			selectorBuffer = new StringBuffer();
 
-			selectorBuffer.append("xpath=//div[@class='")
+			selectorBuffer.append("xpath=//div[contains(@class, '")
 			.append(getPortalCss())
-			.append(' ')
+			.append("') and contains(@class, '")
 			.append(getPortalSubcolumnsCss())
-			.append("']//div[@class='")
+			.append("')]//div[contains(@class, '")
 			.append(getPortletCss())
-			.append(' ')
+			.append("') contains(@class, '")
 			.append(getPortletEditCss())
-			.append(' ')
+			.append("') and contains(@class, '")
 			.append(portletCss)
-			.append("']");
+			.append("')]");
 
 			if(browser.isElementPresent(selectorBuffer.toString())){
 				return(true);
@@ -687,6 +694,8 @@ public class FunctionalHomeSiteUtil {
 	 * the portlet is inactive or doesn't exists.
 	 */
 	public int[] findPortletPosition(Selenium browser, String portletCss, int columnCount){
+		functionalUtil.idle(browser);
+		
 		for(int i = 0; i < columnCount; i++){
 			StringBuffer selectorBuffer = new StringBuffer();
 
@@ -775,20 +784,28 @@ public class FunctionalHomeSiteUtil {
 	 * otherwise false.
 	 */
 	public boolean activatePortlet(Selenium browser, String portletCss){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("css=.")
 		.append(getPortletCss())
 		.append('.')
+		.append(portletCss);
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		/*  */
+		StringBuffer activateBuffer = new StringBuffer(selectorBuffer);
+		
+		activateBuffer.append('.')
 		.append(getPortletInactiveCss())
-		.append('.')
-		.append(portletCss)
 		.append(" .")
 		.append(getPortletActivateCss())
-		.append(" * a");
+		.append(" a");
 
-		if(browser.isElementPresent(selectorBuffer.toString())){
-			browser.click(selectorBuffer.toString());
+		if(browser.isElementPresent(activateBuffer.toString())){
+			browser.click(activateBuffer.toString());
 
 			return(true);
 		}else{
@@ -805,19 +822,28 @@ public class FunctionalHomeSiteUtil {
 	 * otherwise false.
 	 */
 	public boolean deactivatePortlet(Selenium browser, String portletCss){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("css=.")
 		.append(getPortletCss())
 		.append('.')
+		.append(portletCss);
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		/*  */
+		StringBuffer inactivateBuffer = new StringBuffer(selectorBuffer);
+		
+		inactivateBuffer.append('.')
 		.append(getPortletEditCss())
-		.append('.')
-		.append(portletCss)
-		.append(" * .")
-		.append(getPortletInactivateCss());
+		.append(" .")
+		.append(getPortletInactivateCss())
+		.append(" a");
 
-		if(browser.isElementPresent(selectorBuffer.toString())){
-			browser.click(selectorBuffer.toString());
+		if(browser.isElementPresent(inactivateBuffer.toString())){
+			browser.click(inactivateBuffer.toString());
 
 			return(true);
 		}else{
@@ -834,7 +860,20 @@ public class FunctionalHomeSiteUtil {
 	 * @return true if portlet was moved otherwise false
 	 */
 	public boolean movePortlet(Selenium browser, String portletCss, Direction direction){
+		functionalUtil.idle(browser);
+		
+		/* wait till portlet gets loaded */
 		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("css=.")
+		.append(getPortletCss())
+		.append('.')
+		.append(portletCss);
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		/*  */
+		selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("css=.")
 		.append(getPortletCss())
@@ -842,7 +881,7 @@ public class FunctionalHomeSiteUtil {
 		.append(getPortletEditCss())
 		.append('.')
 		.append(portletCss)
-		.append(" * .");
+		.append(" .");
 
 		switch(direction){
 		case LEFT:
@@ -892,14 +931,18 @@ public class FunctionalHomeSiteUtil {
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
 		/* goto home site */
+		//TODO:JK: ugly
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 
 		/* open System tab */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 
 		/* select language */
 		functionalUtil.selectOption(browser, LANGUAGE_OPTIONS_ID, language);
 
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//form//div[contains(@class, '");
@@ -921,17 +964,22 @@ public class FunctionalHomeSiteUtil {
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
 		/* goto home site */
+		//TODO:JK: ugly
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
 
 		/* open System tab */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 
 		/* enable resume */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.YES_AUTOMATICALLY.getValueAttribute()));
 
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//form//div[contains(@class, '");
@@ -953,17 +1001,22 @@ public class FunctionalHomeSiteUtil {
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
 		/* goto home site */
+		//TODO:JK: ugly
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
 
 		/* open system tab */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 
 		/* enable resume */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.YES_ON_REQUEST.getValueAttribute()));
 
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//form//div[contains(@class, '");
@@ -985,17 +1038,22 @@ public class FunctionalHomeSiteUtil {
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
 		/* goto home site */
+		//TODO:JK: ugly
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		//Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
 
 		/* open system tab */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 		
 		/* disable resume */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.NO.getValueAttribute()));
 
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//form//div[contains(@class, '");
@@ -1019,17 +1077,22 @@ public class FunctionalHomeSiteUtil {
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
 		/* goto home site */
+		//TODO:JK: ugly
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
 
 		/* open system tab */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 
 		/* enable resume */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SUPPORT_FOR_BROWSER_BACK.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SupportForBrowserBack.ON.getValueAttribute()));
 
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//form//div[contains(@class, '");
@@ -1050,20 +1113,26 @@ public class FunctionalHomeSiteUtil {
 	 * @return
 	 */
 	public boolean disableBack(Selenium browser){
+		//TODO:JK: ugly
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
 		/* goto home site */
+		//TODO:JK: ugly
 		Assert.assertTrue(openActionByMenuTree(browser, HomeSiteAction.SETTINGS));
 		Assert.assertTrue(checkCurrentAction(browser, HomeSiteAction.SETTINGS));
 
 		/* open system tab */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 
 		/* enable resume */
+		//TODO:JK: ugly
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SUPPORT_FOR_BROWSER_BACK.getGroupCss(),
 				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SupportForBrowserBack.OFF.getValueAttribute()));
 
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//form//div[contains(@class, '");
@@ -1086,6 +1155,7 @@ public class FunctionalHomeSiteUtil {
 	 */
 	public boolean resetSettings(Selenium browser){
 		log.info("open portal");
+		//TODO:JK: ugly
 		functionalUtil.openSite(browser, OlatSite.HOME);
 
 		/* open settings page */
@@ -1108,6 +1178,8 @@ public class FunctionalHomeSiteUtil {
 		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, RESUME_VALUE);
 
 		/* click Reset */
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//form//div[contains(@class, '");

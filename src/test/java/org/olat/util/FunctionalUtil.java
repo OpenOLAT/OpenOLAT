@@ -748,6 +748,8 @@ public class FunctionalUtil {
 		}
 		
 		/* open the appropriate site */
+		idle(browser);
+		
 		StringBuilder selectorBuffer = new StringBuilder();
 		
 		selectorBuffer.append("css=.")
@@ -844,6 +846,8 @@ public class FunctionalUtil {
 	 * @return
 	 */
 	public boolean logout(Selenium browser){
+		idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("css=#")
@@ -863,6 +867,8 @@ public class FunctionalUtil {
 	 * @return true on success otherwise false
 	 */
 	public boolean openContentTab(Selenium browser, int tabIndex){
+		idle(browser);
+		
 		StringBuffer activeTabSelectorBuffer = new StringBuffer();
 		
 		activeTabSelectorBuffer.append("css=#")
@@ -911,6 +917,8 @@ public class FunctionalUtil {
 	 * @return
 	 */
 	public boolean saveForm(Selenium browser, int formIndex, String waitLimit){
+		idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form[")
@@ -934,6 +942,8 @@ public class FunctionalUtil {
 	 * @return true on success
 	 */
 	public boolean clickCheckbox(Selenium browser, String groupCss, String value){
+		idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form")
@@ -959,6 +969,8 @@ public class FunctionalUtil {
 	 */
 	@Deprecated
 	public boolean clickRadio(Selenium browser, int formIndex, int radioGroupIndex, int radioIndex){
+		idle(browser);
+	
 		StringBuffer selectorBuffer = new StringBuffer();
 	
 		selectorBuffer.append("xpath=//form[")
@@ -987,6 +999,8 @@ public class FunctionalUtil {
 	 * @return true on success
 	 */
 	public boolean clickRadio(Selenium browser, String groupCss, String value){
+		idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("//form")
@@ -1013,6 +1027,8 @@ public class FunctionalUtil {
 	 */
 	@Deprecated
 	public boolean typeText(Selenium browser, int formIndex, int textIndex, String text){
+		idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form[")
@@ -1036,6 +1052,8 @@ public class FunctionalUtil {
 	 * @return true on success
 	 */
 	public boolean typeText(Selenium browser, String entryCss, String text){
+		idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form")
@@ -1060,6 +1078,8 @@ public class FunctionalUtil {
 	public boolean typeMCE(Selenium browser, String content){
 		if(content == null)
 			return(true);
+		
+		idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -1092,6 +1112,8 @@ public class FunctionalUtil {
 	public boolean typeMCE(Selenium browser, String cssClass, int nth, String content){
 		if(content == null)
 			return(true);
+		
+		idle(browser);
 		
 		StringBuffer iframeSelectorBuffer = new StringBuffer();
 		
@@ -1127,6 +1149,8 @@ public class FunctionalUtil {
 	 * @return true on success
 	 */
 	public boolean typePassword(Selenium browser, String entryCss, String text){
+		idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form")
@@ -1149,6 +1173,8 @@ public class FunctionalUtil {
 	 * @return
 	 */
 	public boolean selectOption(Selenium browser, String id, String value){
+		idle(browser);
+		
 		StringBuffer selectLocatorBuffer = new StringBuffer();
 		
 		selectLocatorBuffer.append("xpath=//form")
@@ -1174,6 +1200,8 @@ public class FunctionalUtil {
 	 * @return
 	 */
 	public boolean clickWizardNext(Selenium browser){
+		idle(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//form//a[contains(@class, '")
@@ -1187,6 +1215,8 @@ public class FunctionalUtil {
 	}
 	
 	public boolean clickWizardNext(Selenium browser, String cssClass){
+		idle(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//div[contains(@class, '")
@@ -1208,6 +1238,8 @@ public class FunctionalUtil {
 	 * @return
 	 */
 	public boolean clickWizardFinish(Selenium browser){
+		idle(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//form//a[contains(@class, '")
@@ -1224,6 +1256,8 @@ public class FunctionalUtil {
 	}
 	
 	public boolean clickWizardFinish(Selenium browser, String cssClass){
+		idle(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//div[contains(@class, '")

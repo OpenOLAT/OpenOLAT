@@ -464,13 +464,13 @@ public class FunctionalRepositorySiteUtil {
 		}
 		
 		/* click on catalog root */
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(getCatalogNavigationCss())
 		.append("')]//a");
-		
-		functionalUtil.idle(browser);
 		
 		if(browser.isElementPresent(selectorBuffer.toString())){
 			browser.click(selectorBuffer.toString());
@@ -489,9 +489,9 @@ public class FunctionalRepositorySiteUtil {
 		}
 		
 		/* check if catalog already exists */
-		String selector = createCatalogSelector(name);
-		
 		functionalUtil.idle(browser);
+		
+		String selector = createCatalogSelector(name);
 		
 		if(browser.isElementPresent(selector)){
 			return(true);
@@ -507,6 +507,8 @@ public class FunctionalRepositorySiteUtil {
 		browser.click(selectorBuffer.toString());
 		
 		/* fill in name */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form//div[contains(@class, '")
@@ -660,6 +662,8 @@ public class FunctionalRepositorySiteUtil {
 	 * @return true if match otherwise false
 	 */
 	public boolean checkCurrentPage(Selenium browser, Object action){
+		functionalUtil.idle(browser);
+		
 		String selectedCss = findCssClassOfAction(action);
 		
 		if(selectedCss == null)
@@ -688,6 +692,8 @@ public class FunctionalRepositorySiteUtil {
 	 * @return true on success otherwise false
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){ //activateMenuTreeAction(browser, action)
+		functionalUtil.idle(browser);
+		
 		String selectedCss = findCssClassOfAction(action);
 		
 		if(selectedCss == null){
@@ -755,6 +761,8 @@ public class FunctionalRepositorySiteUtil {
 		if(!openActionByMenuTree(browser, RepositorySiteAction.SEARCH_FORM))
 			return(false);
 
+		functionalUtil.idle(browser);
+		
 		//FIXME:JK: use CSS classes instead of ordinal
 		int searchFormIndex = 0;
 
@@ -774,6 +782,8 @@ public class FunctionalRepositorySiteUtil {
 		functionalUtil.waitForPageToLoad(browser);
 
 		/* click course */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("//form")
@@ -846,6 +856,8 @@ public class FunctionalRepositorySiteUtil {
 	 * @return
 	 */
 	private boolean clickCreate(Selenium browser, String nodeCss){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -871,6 +883,8 @@ public class FunctionalRepositorySiteUtil {
 	public boolean openDetailView(Selenium browser, String title, int nth){
 		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
 			return(false);
+
+		functionalUtil.idle(browser);
 		
 		//FIXME:JK: use CSS classes instead of ordinal
 		int searchFormIndex = 0;
@@ -891,6 +905,8 @@ public class FunctionalRepositorySiteUtil {
 		functionalUtil.waitForPageToLoad(browser);
 
 		/* click course */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("//form")
@@ -930,6 +946,8 @@ public class FunctionalRepositorySiteUtil {
 	 * @return true on success
 	 */
 	private boolean fillInTitleAndDescription(Selenium browser, String title, String description){
+		functionalUtil.idle(browser);
+		
 		/* fill in wizard - title */
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -997,6 +1015,8 @@ public class FunctionalRepositorySiteUtil {
 	 * @return
 	 */
 	public boolean fillInRepositoryEntryPopup(Selenium browser, String title, String description){
+		functionalUtil.idle(browser);
+		
 		/* fill in title */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -1024,6 +1044,8 @@ public class FunctionalRepositorySiteUtil {
 		browser.click(selectorBuffer.toString());
 		
 		/* click next */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, 'b_window')]//a[contains(@class, '")
@@ -1060,6 +1082,8 @@ public class FunctionalRepositorySiteUtil {
 		functionalUtil.clickRadio(browser, null, NextSteps.COURSE_EDITOR.getValue());
 		
 		/* click next */
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, '")
@@ -1102,6 +1126,8 @@ public class FunctionalRepositorySiteUtil {
 		functionalUtil.clickRadio(browser, null, NextSteps.WIZARD.getValue());
 		
 		/* click next */
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=(//div[contains(@class, '")
@@ -1118,6 +1144,8 @@ public class FunctionalRepositorySiteUtil {
 		for(CourseWizardElement current: element){
 			functionalUtil.clickCheckbox(browser, null, current.getValue());
 		}
+
+		functionalUtil.idle(browser);
 		
 		functionalUtil.clickWizardNext(browser);
 		functionalUtil.waitForPageToUnloadElement(browser, "//div[contains(@class, 'b_wizard')]//input[@type='checkbox']");
@@ -1127,6 +1155,8 @@ public class FunctionalRepositorySiteUtil {
 			String[] catalogSelectors = functionalCourseUtil.createCatalogSelectors(catalog);
 			
 			for(String catalogSelector: catalogSelectors){
+				functionalUtil.idle(browser);
+				
 				functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
 
 				if(browser.isElementPresent(catalogSelector + "/../img[contains(@class, 'x-tree-elbow-end-plus')]")){
@@ -1142,6 +1172,8 @@ public class FunctionalRepositorySiteUtil {
 		
 		/* publish */
 		if(!publish){
+			functionalUtil.idle(browser);
+			
 			selectorBuffer = new StringBuffer();
 			
 			selectorBuffer.append("xpath=//div[contains(@class, 'b_wizard')]//input[@type='checkbox' and @name='")

@@ -334,6 +334,8 @@ public class FunctionalEPortfolioUtil {
 		if(!functionalHomeSiteUtil.openActionByMenuTree(browser, EPortfolioAction.MY_BINDERS))
 			return(false);
 		
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//h4[text()='")
@@ -362,6 +364,8 @@ public class FunctionalEPortfolioUtil {
 		
 		if(!functionalHomeSiteUtil.openActionByMenuTree(browser, EPortfolioAction.MY_BINDERS, false))
 			return(false);
+		
+		functionalUtil.idle(browser);
 		
 		/* wait until tree has loaded */
 		StringBuffer locatorBuffer = new StringBuffer();
@@ -397,6 +401,8 @@ public class FunctionalEPortfolioUtil {
 	 * @return true on success
 	 */
 	public boolean openEditor(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -426,6 +432,8 @@ public class FunctionalEPortfolioUtil {
 		if(!functionalHomeSiteUtil.openActionByMenuTree(browser, EPortfolioAction.MY_BINDERS))
 			return(false);
 		
+		functionalUtil.idle(browser);
+		
 		/* open add binder dialog */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -449,6 +457,8 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoad(browser);
 	
 		/* fill in dialog - title */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[@id='")
@@ -486,7 +496,9 @@ public class FunctionalEPortfolioUtil {
 	public boolean pageExists(Selenium browser, String binder, String title){
 		if(!openBinder(browser, binder))
 			return(false);
-			
+		
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -515,6 +527,8 @@ public class FunctionalEPortfolioUtil {
 	public boolean openPage(Selenium browser, String binder, String title){
 		if(!openBinder(browser, binder))
 			return(false);
+		
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -565,6 +579,8 @@ public class FunctionalEPortfolioUtil {
 			if(!openBinder(browser, binder))
 				return(false);
 		}
+		
+		functionalUtil.idle(browser);
 		
 		/* wait until tree has loaded */
 		StringBuffer locatorBuffer = new StringBuffer();
@@ -653,6 +669,8 @@ public class FunctionalEPortfolioUtil {
 	 * @return
 	 */
 	public boolean renamePage(Selenium browser, String binder, String oldName, String newName){
+		functionalUtil.idle(browser);
+		
 		/* wait until tree has loaded */
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -706,6 +724,8 @@ public class FunctionalEPortfolioUtil {
 	public boolean structureExists(Selenium browser, String binder, String page, String title){
 		if(!openBinder(browser, binder))
 			return(false);
+		
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 
@@ -780,6 +800,8 @@ public class FunctionalEPortfolioUtil {
 		openEditor(browser);
 		
 		/* wait until tree has loaded */
+		functionalUtil.idle(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//li[contains(@class, '")
@@ -823,6 +845,8 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		/* title */
+		functionalUtil.idle(browser);
+		
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, '")
@@ -866,6 +890,8 @@ public class FunctionalEPortfolioUtil {
 		if(!openPage(browser, binder, page)){
 			return(false);
 		}
+		
+		functionalUtil.idle(browser);
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -920,6 +946,8 @@ public class FunctionalEPortfolioUtil {
 		if(!openPage(browser, binder, page))
 			return(false);
 		
+		functionalUtil.idle(browser);
+		
 		/*  */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -956,6 +984,8 @@ public class FunctionalEPortfolioUtil {
 	 * @return
 	 */
 	public boolean closeArtefact(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[contains(@class, 'x-tool-close')]");
@@ -974,6 +1004,8 @@ public class FunctionalEPortfolioUtil {
 	 * @return
 	 */
 	private boolean openEditLink(Selenium browser){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
@@ -998,6 +1030,8 @@ public class FunctionalEPortfolioUtil {
 	 * @return true on success
 	 */
 	protected boolean fillInTitleAndDescription(Selenium browser, String title, String description){
+		functionalUtil.idle(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//form//div[contains(@class, '")
@@ -1037,6 +1071,8 @@ public class FunctionalEPortfolioUtil {
 	 */
 	//TODO:JK: implement type in tags switch
 	protected boolean fillInTags(Selenium browser, String[] tags, boolean typeTags){
+		functionalUtil.idle(browser);
+		
 		int i = 1;
 		
 		for(String tag: tags){
@@ -1085,6 +1121,8 @@ public class FunctionalEPortfolioUtil {
 	 * @return
 	 */
 	protected boolean selectTree(Selenium browser, String binder, String page, String structure){
+		functionalUtil.idle(browser);
+		
 		String selector = createSelector(binder, page, structure);
 
 		/* wait until tree has loaded */
@@ -1172,6 +1210,8 @@ public class FunctionalEPortfolioUtil {
 		if(!functionalHomeSiteUtil.openActionByMenuTree(browser, EPortfolioAction.MY_ARTIFACTS))
 			return(false);
 		
+		functionalUtil.idle(browser);
+		
 		/* open wizard */
 		openEditLink(browser);
 		
@@ -1207,6 +1247,8 @@ public class FunctionalEPortfolioUtil {
 	 */
 	private boolean uploadFileArtefactFillInWizard(Selenium browser, String binder, String page, String structure,
 			URI file, String title, String description, String[] tags, boolean typeTags, boolean treeSelect) throws MalformedURLException{
+		functionalUtil.idle(browser);
+		
 		/* fill in wizard - file */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -1270,6 +1312,8 @@ public class FunctionalEPortfolioUtil {
 		
 		/* open wizard */
 		openEditLink(browser);
+		
+		functionalUtil.idle(browser);
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
@@ -1341,6 +1385,8 @@ public class FunctionalEPortfolioUtil {
 		/* open wizard */
 		openEditLink(browser);
 		
+		functionalUtil.idle(browser);
+		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
 		locatorBuffer.append("xpath=//a[contains(@class, '")
@@ -1379,6 +1425,8 @@ public class FunctionalEPortfolioUtil {
 		
 		openEditor(browser);
 		
+		functionalUtil.idle(browser);
+		
 		/* select page or structure */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -1404,6 +1452,8 @@ public class FunctionalEPortfolioUtil {
 		
 		/* click add artefact */
 		openEditLink(browser);
+		
+		functionalUtil.idle(browser);
 		
 		/* click appropriate artefact type */
 		selectorBuffer = new StringBuffer();
