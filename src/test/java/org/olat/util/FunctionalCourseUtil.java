@@ -918,19 +918,7 @@ public class FunctionalCourseUtil {
 			functionalEPortfolioUtil.fillInTags(browser, tags);
 			
 			/* fill in wizard - destination */
-			String selector = functionalEPortfolioUtil.createSelector(binder, page, structure);
-			
-			functionalUtil.waitForPageToLoadElement(browser, selector);
-			
-			browser.click(selector);
-			
-			selectorBuffer = new StringBuffer();
-			
-			selectorBuffer.append("xpath=//li[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
-			.append((structure != null) ? structure: page)
-			.append("')]");
-			
-			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			functionalEPortfolioUtil.selectTree(browser, binder, page, structure);
 		}
 
 		/* click finish */

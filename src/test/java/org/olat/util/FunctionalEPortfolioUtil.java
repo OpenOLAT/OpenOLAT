@@ -586,6 +586,8 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.waitForPageToLoad(browser);
 		
+		boolean modified = false;
+		
 		/* fill in wizard - title */
 		if(title != null){
 			selectorBuffer = new StringBuffer();
@@ -596,6 +598,8 @@ public class FunctionalEPortfolioUtil {
 
 			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 			browser.type(selectorBuffer.toString(), title);
+			
+			modified = true;
 		}
 		
 		/* fill in wizard - display */
@@ -610,24 +614,32 @@ public class FunctionalEPortfolioUtil {
 
 			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 			browser.click(selectorBuffer.toString());
+			
+			modified = true;
 		}
 		
 		/* fill in wizard - description */
-		functionalUtil.typeMCE(browser, description);
+		if(description != null){
+			functionalUtil.typeMCE(browser, description);
+			
+			modified = true;
+		}
 		
 		/* fill in wizard - save */
-		selectorBuffer = new StringBuffer();
+		if(modified){
+			selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=//div[contains(@class, '")
-		.append(getEPortfolioMapCss())
-		.append("')]//form//button[last() and contains(@class, '")
-		.append(functionalUtil.getButtonDirtyCss())
-		.append("')]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		browser.click(selectorBuffer.toString());
-		
-		functionalUtil.waitForPageToLoad(browser);
+			selectorBuffer.append("xpath=//div[contains(@class, '")
+			.append(getEPortfolioMapCss())
+			.append("')]//form//button[last() and contains(@class, '")
+			.append(functionalUtil.getButtonDirtyCss())
+			.append("')]");
+
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.click(selectorBuffer.toString());
+			
+			functionalUtil.waitForPageToLoad(browser);
+		}
 		
 		return(true);
 	}
@@ -641,6 +653,15 @@ public class FunctionalEPortfolioUtil {
 	 * @return
 	 */
 	public boolean renamePage(Selenium browser, String binder, String oldName, String newName){
+		/* wait until tree has loaded */
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li[contains(@class, '")
+		.append(functionalUtil.getTreeNodeLoadingCss())
+		.append("')]");
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		
+		/* select page */
 		String selector = createSelector(binder, oldName, null);
 		
 		functionalUtil.waitForPageToLoadElement(browser, selector);
@@ -826,6 +847,7 @@ public class FunctionalEPortfolioUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
+		/*  */
 		functionalUtil.waitForPageToLoadElement(browser, createSelector(binder, page, title));
 		
 		return(true);
@@ -1006,33 +1028,6 @@ public class FunctionalEPortfolioUtil {
 		return(fillInTags(browser, tags, true));
 	}
 	
-	protected boolean selectTree(Selenium browser, String binder, String page, String structure){
-		String selector = createSelector(binder, page, structure);
-
-		/* wait until tree has loaded */
-		StringBuffer locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//li[contains(@class, '")
-		.append(functionalUtil.getTreeNodeLoadingCss())
-		.append("')]");
-		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
-		
-		/* click selector */
-		functionalUtil.waitForPageToLoadElement(browser, selector);
-
-		browser.click(selector);
-
-		locatorBuffer = new StringBuffer();
-
-		locatorBuffer.append("xpath=//li[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
-		.append((structure != null) ? structure: page)
-		.append("')]");
-
-		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
-		
-		return(true);
-	}
-	
 	/**
 	 * Fills in the open wizard's tags.
 	 * 
@@ -1076,6 +1071,42 @@ public class FunctionalEPortfolioUtil {
 		
 		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		functionalUtil.clickWizardNext(browser, getArtefactWizardCss());
+		
+		return(true);
+	}
+	
+	/**
+	 * Selects a tree node.
+	 * 
+	 * @param browser
+	 * @param binder
+	 * @param page
+	 * @param structure
+	 * @return
+	 */
+	protected boolean selectTree(Selenium browser, String binder, String page, String structure){
+		String selector = createSelector(binder, page, structure);
+
+		/* wait until tree has loaded */
+		StringBuffer locatorBuffer = new StringBuffer();
+		
+		locatorBuffer.append("xpath=//li[contains(@class, '")
+		.append(functionalUtil.getTreeNodeLoadingCss())
+		.append("')]");
+		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
+		
+		/* click selector */
+		functionalUtil.waitForPageToLoadElement(browser, selector);
+
+		browser.click(selector);
+
+		locatorBuffer = new StringBuffer();
+
+		locatorBuffer.append("xpath=//li[contains(@class, 'x-tree-node')]//a//span[contains(text(), '")
+		.append((structure != null) ? structure: page)
+		.append("')]");
+
+		functionalUtil.waitForPageToLoadElement(browser, locatorBuffer.toString());
 		
 		return(true);
 	}
