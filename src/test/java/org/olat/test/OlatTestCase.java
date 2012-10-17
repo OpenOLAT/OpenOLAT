@@ -89,7 +89,8 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
 	private static boolean postgresqlConfigured = false;
-	private static boolean started = false;;
+	private static boolean oracleConfigured = false;
+	private static boolean started = false;
 	
 	/**
 	 * If you like to disable a test method for some time just add the
@@ -112,7 +113,8 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		FrameworkStartupEventChannel.fireEvent();
 		
 		String dbVendor = DBFactory.getInstance().getDbVendor();
-		postgresqlConfigured = dbVendor != null && dbVendor.startsWith("postgres"); 
+		postgresqlConfigured = dbVendor != null && dbVendor.startsWith("postgres");
+		oracleConfigured = dbVendor != null && dbVendor.startsWith("oracle");
 		
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		printOlatLocalProperties();
@@ -158,10 +160,16 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	}
 
 	/**
-	 * 
-	 * @return
+	 * @return True if the test run on PostreSQL
 	 */
 	protected boolean isPostgresqlConfigured() {
 		return postgresqlConfigured;
+	}
+
+	/**
+	 * @return True if the test run on Oracle
+	 */
+	protected boolean isOracleConfigured() {
+		return oracleConfigured;
 	}
 }

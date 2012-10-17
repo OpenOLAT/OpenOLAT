@@ -409,6 +409,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		EntityUtils.consume(response.getEntity());
 		
     BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
     assertNotNull(bg);

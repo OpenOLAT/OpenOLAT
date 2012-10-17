@@ -170,7 +170,7 @@ public class PLockTest extends OlatTestCase {
 
 	@Test public void testLockWaitTimout() {
 		//Ignore Test if DB is PostgreSQL. PostgreSQL has not lock timeout
-		assumeTrue(!isPostgresqlConfigured());
+		assumeTrue(!isPostgresqlConfigured() && !isOracleConfigured());
 		
 		final String asset = "testLockWaitTimout";
 		

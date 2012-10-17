@@ -409,12 +409,12 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	 */
 	protected void doDispose() {
 		// cleanup all portlet containers
-		Iterator<PortletContainer> iter = portletContainers.values().iterator();
-		while (iter.hasNext()) {
-			PortletContainer element = iter.next();
-			element.dispose();
+		if(portletContainers != null) {
+			for (PortletContainer element:portletContainers.values()) {
+				element.dispose();
+			}
+			portletContainers = null;
 		}
-		portletContainers = null;
 	}
 
 	/**
