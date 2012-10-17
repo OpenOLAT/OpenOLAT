@@ -119,7 +119,10 @@ public class HomePortalControllerCreator extends AutoCreator  {
 		
 		@Override
 		protected void doDispose() {
-			//
+			if (myPortal != null) {
+				myPortal.dispose();
+				myPortal = null;
+			}
 		}
 
 		@Override

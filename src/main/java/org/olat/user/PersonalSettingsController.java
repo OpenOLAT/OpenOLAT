@@ -107,6 +107,7 @@ public class PersonalSettingsController extends BasicController implements Activ
 			if(WebDAVManager.getInstance().isEnabled()) {
 				pwdav = new WebDAVPasswordController(ureq, getWindowControl());
 				userConfig.addTab(translate("tab.pwdav"), pwdav.getInitialComponent());
+				listenTo(pwdav);
 			}
 			
 			if(InstantMessagingModule.isEnabled()){

@@ -77,7 +77,7 @@ public class ManageCalendarsController extends BasicController {
 			
 		// Import calendar functionalities
 		importedCalendarConfig = new ImportedCalendarConfigurationController(importedCalendarWrappers, ureq, getWindowControl(), true);
-		importedCalendarConfig.addControllerListener(this);
+		listenTo(importedCalendarConfig);
 		manageVC.put("importedCalendarConfig", importedCalendarConfig.getInitialComponent());
 		manageVC.contextPut("importedCalendarWrappers", importedCalendarWrappers);
 		

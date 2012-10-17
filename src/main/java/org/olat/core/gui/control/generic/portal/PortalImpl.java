@@ -202,6 +202,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 				// discard invalid portlet names
 			}
 		}
+		dispose();
 		return new PortalImpl(this.name, ureq, wContr, cleanedUserColumns);
 	}
 	
@@ -408,9 +409,9 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	 */
 	protected void doDispose() {
 		// cleanup all portlet containers
-		Iterator iter = portletContainers.values().iterator();
+		Iterator<PortletContainer> iter = portletContainers.values().iterator();
 		while (iter.hasNext()) {
-			PortletContainer element = (PortletContainer) iter.next();
+			PortletContainer element = iter.next();
 			element.dispose();
 		}
 		portletContainers = null;

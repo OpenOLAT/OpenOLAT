@@ -182,6 +182,9 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		if (singleUserEventCenter != null) {
 			singleUserEventCenter.deregisterFor(this, ass);
 		}
+		if(searchC != null) {
+			searchC.dispose();
+		}
 	}
 
 	@Override

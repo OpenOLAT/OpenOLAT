@@ -162,6 +162,8 @@ public class ContextHelpTopNavController extends FormBasicController {
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
 	 */
 	protected void doDispose() {
-		// nothing to dispose
+		if(searchController != null) {
+			searchController.dispose();
+		}
 	}
 }

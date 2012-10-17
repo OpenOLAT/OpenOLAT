@@ -78,7 +78,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	/**
 	 * Base URI of contentMapper
 	 */
-	private String baseURI;
+	private final String baseURI;
 	/**
 	 * Relative uri of currently loaded page in iframe
 	 */
@@ -166,8 +166,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 				null /*g_encoding*/, null /*jsEncoding*/, null /*contentEncoding*/,
 				frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/,
 				staticFilesPath, mapPathGlossar);
-		
-		String baseURI;
+
 		String mapperID = VFSManager.getRealPath(rootDir);
 		if (mapperID == null) {
 			// can't cache mapper, no cacheable context available

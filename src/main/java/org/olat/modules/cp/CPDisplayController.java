@@ -119,6 +119,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		  SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 		  searchCtrl = searchServiceUIFactory.createInputController(ureq, wControl, DisplayOption.BUTTON, null);
 		  myContent.put("search_input", searchCtrl.getInitialComponent());
+		  listenTo(searchCtrl);
 		}
 		
 		//TODO:gs:a

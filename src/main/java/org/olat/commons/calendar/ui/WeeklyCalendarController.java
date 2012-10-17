@@ -247,7 +247,7 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		
 		vcMain.put("calendarConfig", calendarConfig.getInitialComponent());
 		importedCalendarConfig = new ImportedCalendarConfigurationController(importedCalendarWrappers, ureq, getWindowControl(), false);
-		importedCalendarConfig.addControllerListener(this);
+		listenTo(importedCalendarConfig);
 		vcMain.put("importedCalendarConfig", importedCalendarConfig.getInitialComponent());
 
 		// calendar subscription

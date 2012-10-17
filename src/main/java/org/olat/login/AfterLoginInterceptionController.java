@@ -126,6 +126,7 @@ public class AfterLoginInterceptionController extends BasicController {
 					if(loginInterceptor.isInterceptionRequired(ureq)) {
 						mapInfos.put(CONTROLLER, ctrl);
 					} else {
+						ctrl.dispose();
 						mapInfosIt.remove();
 					}
 				} else if (ctrl != null ){
@@ -148,6 +149,7 @@ public class AfterLoginInterceptionController extends BasicController {
 		wiz = new WizardInfoController(ureq, aftctrls.size());
 		vC.put("wizard", wiz.getInitialComponent());
 		vC.contextPut("ctrlCount", aftctrls.size());
+		listenTo(wiz);
 
 		// get first Ctrl into Wizard
 		putControllerToPanel(ureq, wControl, 0);

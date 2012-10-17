@@ -83,12 +83,6 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 
 	private PopupBrowserWindowControllerCreator pbwcc;
 	
-	
-	
-	// global urls for mapped path e.g. for css, js and so on; for all users!
-	private static Map<String,String> mappedPaths = new HashMap<String, String>();
-	
-	
 	public WindowManagerImpl() {
 		
 		this.pbwcc = (PopupBrowserWindowControllerCreator) 
