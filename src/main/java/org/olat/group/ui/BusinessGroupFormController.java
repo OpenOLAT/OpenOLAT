@@ -156,10 +156,16 @@ public class BusinessGroupFormController extends FormBasicController {
 				"create.form.title.description", "", 10, -1, false, formLayout, ureq.getUserSession(), getWindowControl());
 
 		if(businessGroup != null && !bulkMode) {
+			// link to group direct jump in business path
 			BusinessControlFactory bcf = BusinessControlFactory.getInstance();
 			List<ContextEntry> entries = bcf.createCEListFromString("[BusinessGroup:" + businessGroup.getKey() + "]");
 			String url = bcf.getAsURIString(entries, true);
 			uifactory.addStaticTextElement("create.form.businesspath", url, formLayout);
+			// link to group visiting card
+			bcf = BusinessControlFactory.getInstance();
+			entries = bcf.createCEListFromString("[GroupCard:" + businessGroup.getKey() + "]");
+			url = bcf.getAsURIString(entries, true);
+			uifactory.addStaticTextElement("create.form.groupcard", url, formLayout);
 		}
 		
 		uifactory.addSpacerElement("myspacer", formLayout, true);
