@@ -68,7 +68,9 @@ public class WikiPageDocument extends OlatDocument {
   	long userId = wikiPage.getInitalAuthor();
   	if (userId != 0) {
   		Identity  identity = identityManager.loadIdentityByKey(Long.valueOf(userId));
-			wikiPageDocument.setAuthor(identity.getName());
+  		if(identity != null) {
+  			wikiPageDocument.setAuthor(identity.getName());
+  		}
   	}
 		wikiPageDocument.setTitle(wikiPage.getPageName());
 		wikiPageDocument.setContent(getContent(wikiPage));

@@ -108,7 +108,6 @@ public class RepositoryEntryDocument extends OlatDocument {
 			icon = "o_ep_icon";
 		else {
 			icon = "o_sp_icon";
-			System.out.println("*********** Unkown doc type: " + docType);
 		}
 		return icon;
 	}
