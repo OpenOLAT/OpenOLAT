@@ -169,14 +169,14 @@ public class FunctionalCatalogTest {
 		/* verify resources */
 		for(int i = 0; i < courses; i++){
 			
+			functionalUtil.idle(browser);
+			
 			/* click on catalog root */
 			StringBuffer selectorBuffer = new StringBuffer();
 			
 			selectorBuffer.append("xpath=//div[contains(@class, '")
 			.append(functionalRepositorySiteUtil.getCatalogNavigationCss())
 			.append("')]//a");
-			
-			functionalUtil.idle(browser);
 			
 			if(browser.isElementPresent(selectorBuffer.toString())){
 				browser.click(selectorBuffer.toString());
@@ -186,11 +186,13 @@ public class FunctionalCatalogTest {
 			String[] selectors = functionalRepositorySiteUtil.createCatalogSelectors(SUBCATEGORY_PATHS_INCLUDING_RESOURCE[i]);
 			
 			for(String currentSelector: selectors){
+				functionalUtil.idle(browser);
+				
 				functionalUtil.waitForPageToLoadElement(browser, currentSelector.toString());
 				browser.click(currentSelector);
 			}
-			
-			functionalUtil.waitForPageToLoad(browser);
+
+			functionalUtil.idle(browser);
 			
 			/* click first course and retrieve business path */
 			selectorBuffer = new StringBuffer();
@@ -203,12 +205,16 @@ public class FunctionalCatalogTest {
 			String businessPath0 = functionalUtil.getDeploymentUrl() + "/url/RepositoryEntry/" + courseVO[i].getRepoEntryKey();
 			boolean found = false;
 			
+			/* click show all */
+			//FIXME:JK: implement me
+			
 			for(int j = 0; j < browser.getXpathCount(selectorBuffer.toString().substring(6)).intValue(); j++){
+				functionalUtil.idle(browser);
 				functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString() + "[" + (j + 1) + "]");
 			
 				browser.click(selectorBuffer.toString() + "[" + (j + 1) + "]");
-			
-				functionalUtil.waitForPageToLoad(browser);
+
+				functionalUtil.idle(browser);
 			
 				String businessPath1 = functionalUtil.currentBusinessPath(browser);
 				functionalCourseUtil.closeActiveTab(browser);
