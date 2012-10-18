@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.CacheRetrieveMode;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
@@ -654,10 +653,10 @@ public class RepositoryManager extends BasicManager {
 
 		StringBuilder query = new StringBuilder();
 		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-				 .append(" left join fetch v.olatResource as ores")
-			   .append(" left join fetch v.ownerGroup as ownerGroup")
-			   .append(" left join fetch v.participantGroup as participantGroup")
-			   .append(" left join fetch v.tutorGroup as tutorGroup")
+				 /*.append(" inner join fetch v.olatResource as ores")
+			   .append(" inner join fetch v.ownerGroup as ownerGroup")
+			   .append(" inner join fetch v.participantGroup as participantGroup")
+			   .append(" inner join fetch v.tutorGroup as tutorGroup")*/
 		     .append(" where v.key=:repoKey");
 		
 		RepositoryEntry entry = DBFactory.getInstance().getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
