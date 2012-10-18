@@ -70,6 +70,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	private String noAccessExplanation;
 	private Condition preConditionVisibility;
 	private Condition preConditionAccess;
+	private List<Condition> additionalConditions;
 	protected transient StatusDescription[] oneClickStatusCache = null;
 
 	/**
@@ -329,6 +330,18 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		}
 		preConditionAccess.setConditionId("accessability");
 		return preConditionAccess;
+	}
+	
+	/**
+	 * Only a placeholder to accept courses from others OLAT vendors
+	 * @return
+	 */
+	public List<Condition> getAdditionalConditions() {
+		return additionalConditions;
+	}
+
+	public void setAdditionalConditions(List<Condition> additionalConditions) {
+		this.additionalConditions = additionalConditions;
 	}
 
 	/**
