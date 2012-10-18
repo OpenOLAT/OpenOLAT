@@ -45,15 +45,17 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	private List<UserPropertyHandler> userPropertyHandlers;
+	private boolean isAdministrativeUser;
 
    
 	/**
 	 * @param combo a List of Object[] with the array[0] = Identity, array[1] = addedToGroupTimestamp
 	 */
-	public IdentitiesOfGroupTableDataModel(List combo, Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
+	public IdentitiesOfGroupTableDataModel(List<Object[]> combo, Locale locale, List<UserPropertyHandler> userPropertyHandlers, boolean isAdministrativeUser) {
 		super(combo);
 		setLocale(locale);		
 		this.userPropertyHandlers = userPropertyHandlers;
+		this.isAdministrativeUser = isAdministrativeUser;
 	}
 
 	/**
@@ -62,19 +64,22 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	public final Object getValueAt(int row, int col) {
 		Object[] co = (Object[])getObject(row);
 		Identity identity = (Identity) co[0];
-		Date addedTo = (Date) co[1];
-		User user = identity.getUser();
-		
-		if (col == 0) {
-			return identity.getName();			
 
-		} else if (col > 0 && col < userPropertyHandlers.size()+1 ) {
+		// special case: user name only for administrative users
+		if (col == 0 && isAdministrativeUser) {
+			return identity.getName();						
+		}
+
+		User user = identity.getUser();
+		if (col - (isAdministrativeUser ? 1 : 0) < userPropertyHandlers.size()) {
 			// get user property for this column
-			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col-1);
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - (isAdministrativeUser ? 1 : 0));
 			String value = userPropertyHandler.getUserProperty(user, getLocale());
 			return (value == null ? "n/a" : value);
 			
-		} else if (col == userPropertyHandlers.size() +1) {
+		} else if (col == userPropertyHandlers.size() + (isAdministrativeUser ? 1 : 0)) {
+			// one item more than available handlers is the added date
+			Date addedTo = (Date) co[1];
 			return addedTo;
 
 		} else {
@@ -86,7 +91,8 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
 	 */
 	public int getColumnCount() {
-		return userPropertyHandlers.size() + 2;
+		// + loginname + adddate or just + loginname
+		return userPropertyHandlers.size() + (isAdministrativeUser ? 2 : 1);
 	}
 	
 	/**
@@ -124,12 +130,12 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	}
 	
 	/**
-	 * Remove an idenity from table-model.
+	 * Remove an identity from table-model.
 	 * @param ident
 	 */
 	private void remove(Identity ident) {
-		for (Iterator it_obj = getObjects().iterator(); it_obj.hasNext();) {
-			Object[] obj = (Object[]) it_obj.next();
+		for (Iterator<Object[]> it_obj = getObjects().iterator(); it_obj.hasNext();) {
+			Object[] obj = it_obj.next();
 			Identity aIdent = (Identity) obj[0];
 			if (aIdent == ident) {
 				it_obj.remove();
@@ -139,8 +145,8 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	}
 
 	/**
-	 * Add idenities to table-model.
-	 * @param addedIdentities  Add thsi list of identities.
+	 * Add identities to table-model.
+	 * @param addedIdentities  Add this list of identities.
 	 */
 	public void add(List<Identity> addedIdentities) {
 		for (Identity identity : addedIdentities) {
@@ -149,7 +155,7 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	}
 
 	/**
-	 * Add an idenity to table-model.
+	 * Add an identity to table-model.
 	 * @param ident
 	 */
 	private void add(Identity identity) {

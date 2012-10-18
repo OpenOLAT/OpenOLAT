@@ -43,6 +43,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -190,7 +191,7 @@ public class GroupController extends BasicController {
 		// set data model
 		List<Object[]> combo = securityManager.getIdentitiesAndDateOfSecurityGroup(this.securityGroup);			
 		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		identitiesTableModel = new IdentitiesOfGroupTableDataModel(combo, ureq.getLocale(), userPropertyHandlers);
+		identitiesTableModel = new IdentitiesOfGroupTableDataModel(combo, ureq.getLocale(), userPropertyHandlers, isAdministrativeUser);
 		tableCtr.setTableDataModel(identitiesTableModel);
 		groupmemberview.put("subjecttable", tableCtr.getInitialComponent());
 
@@ -556,18 +557,25 @@ public class GroupController extends BasicController {
 	 */
 	protected void initGroupTable(TableController tableCtr, UserRequest ureq, boolean enableTablePreferences, boolean enableUserSelection) {			
 		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		// first the login name
-		DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.user.login", 0, COMMAND_VCARD, ureq.getLocale());
-		cd0
-				.setIsPopUpWindowAction(true,
-						"height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-		tableCtr.addColumnDescriptor(cd0);
+		if (isAdministrativeUser) {
+			// first the login name, but only if administrative user
+			DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.user.login", 0, COMMAND_VCARD, ureq.getLocale());
+			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
+			tableCtr.addColumnDescriptor(cd0);
+		}
 		int visibleColId = 0;
 		// followed by the users fields
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
-			tableCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i+1, null, ureq.getLocale()));
+			ColumnDescriptor cd = userPropertyHandler.getColumnDescriptor(i + (isAdministrativeUser ? 1 : 0), COMMAND_VCARD, ureq.getLocale());
+			// make all user attributes clickable to open visiting card
+			if (cd instanceof DefaultColumnDescriptor) {
+				DefaultColumnDescriptor dcd = (DefaultColumnDescriptor) cd;
+				dcd.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
+				
+			}
+			tableCtr.addColumnDescriptor(visible, cd);
 			if (visible) {
 				visibleColId++;
 			}
@@ -575,7 +583,7 @@ public class GroupController extends BasicController {
 		
 		// in the end
 		if (enableTablePreferences) {
-			tableCtr.addColumnDescriptor(true, new DefaultColumnDescriptor("table.subject.addeddate", userPropertyHandlers.size() + 1, null, ureq.getLocale()));
+			tableCtr.addColumnDescriptor(true, new DefaultColumnDescriptor("table.subject.addeddate", userPropertyHandlers.size() + (isAdministrativeUser ? 1 : 0), COMMAND_VCARD, ureq.getLocale()));
 			tableCtr.setSortColumn(++visibleColId,true);	
 		}
 		if (enableUserSelection) {
@@ -594,7 +602,7 @@ public class GroupController extends BasicController {
 		// refresh view		
 		List<Object[]> combo = securityManager.getIdentitiesAndDateOfSecurityGroup(this.securityGroup); 
 		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		identitiesTableModel = new IdentitiesOfGroupTableDataModel(combo, myTrans.getLocale(), userPropertyHandlers);
+		identitiesTableModel = new IdentitiesOfGroupTableDataModel(combo, myTrans.getLocale(), userPropertyHandlers, isAdministrativeUser);
 		tableCtr.setTableDataModel(identitiesTableModel);
 	}
 }

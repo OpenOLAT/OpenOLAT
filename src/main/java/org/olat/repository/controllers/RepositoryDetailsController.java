@@ -1105,7 +1105,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		groupTutorEditController = null;
 		groupParticipantEditController = null;
 
-		GroupController controller = new GroupController(ureq, getWindowControl(), true, keepAtLeastOne, false, false, true, secGroup);
+		GroupController controller = new GroupController(ureq, getWindowControl(), true, keepAtLeastOne, true, false, true, secGroup);
 		listenTo(controller);
 		
 		VelocityContainer groupContainer = createVelocityContainer(template);  
