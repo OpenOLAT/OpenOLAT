@@ -64,7 +64,7 @@ public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryShort
 		
 		public REShort(RepositoryEntry entry) {
 			key = entry.getKey();
-			displayname = entry.getDisplayname().intern();
+			displayname = entry.getDisplayname();
 			type = entry.getOlatResource().getResourceableTypeName();
 			statusCode = entry.getStatusCode();
 		}

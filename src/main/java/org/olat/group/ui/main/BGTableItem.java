@@ -206,7 +206,7 @@ public class BGTableItem {
 		
 		public BGShort(BusinessGroup group) {
 			key = group.getKey();
-			name = group.getName() == null ? null : group.getName().intern();
+			name = group.getName();
 			maxParticipants = group.getMaxParticipants();
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
@@ -214,7 +214,7 @@ public class BGTableItem {
 		
 		public BGShort(BusinessGroupView group) {
 			key = group.getKey();
-			name = group.getName() == null ? null : group.getName().intern();
+			name = group.getName();
 			maxParticipants = group.getMaxParticipants();
 			numWaiting = group.getNumWaiting();
 			numOfOwners = group.getNumOfOwners();
