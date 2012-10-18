@@ -42,7 +42,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Util;
 import org.olat.repository.DetailsReadOnlyForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -59,10 +58,7 @@ import org.olat.resource.OLATResourceManager;
  */
 public class RepositoryCopyController extends BasicController {
 	
-	OLog log = Tracing.createLoggerFor(this.getClass());
-	
-	private static final String PACKAGE = Util.getPackageName(RepositoryManager.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(RepositoryManager.class);
+	private static final OLog log = Tracing.createLoggerFor(RepositoryCopyController.class);
 	
 	private VelocityContainer mainContainer;
 	private Link cancelButton;
@@ -142,9 +138,10 @@ public class RepositoryCopyController extends BasicController {
 				fireEvent(ureq, new EntryChangedEvent(sourceEntry, EntryChangedEvent.DELETED));
 				return;
 			}
-			newEntry = descriptionController.getRepositoryEntry();
+			String displayname = descriptionController.getRepositoryEntry().getDisplayname();
+			String description = descriptionController.getRepositoryEntry().getDescription();
 			//update needed to save changed name and desc.
-			RepositoryManager.getInstance().updateRepositoryEntry(newEntry);
+			newEntry = RepositoryManager.getInstance().setDescriptionAndName(newEntry, displayname, description);
 			RepositoryHandler typeToCopy = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);			
 			IAddController addController = typeToCopy.createAddController(null, null, ureq, getWindowControl());
 			addController.repositoryEntryCreated(newEntry);

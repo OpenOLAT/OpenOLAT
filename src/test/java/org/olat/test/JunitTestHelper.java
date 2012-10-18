@@ -163,8 +163,8 @@ public class JunitTestHelper {
 		re.setResourcename("Lernen mit OLAT");
 		re.setDisplayname(r.getResourceableTypeName());
 		repositoryManager.createOwnerSecurityGroup(re);
-		repositoryManager.createTutorSecurityGroup(re);
-		repositoryManager.createParticipantSecurityGroup(re);
+		repositoryManager.createTutorSecurityGroup(re, false);
+		repositoryManager.createParticipantSecurityGroup(re, false);
 		repositoryManager.saveRepositoryEntry(re);
 		return re;
 	}

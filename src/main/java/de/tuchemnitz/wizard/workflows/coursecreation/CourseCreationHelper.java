@@ -45,6 +45,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -85,6 +86,8 @@ import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfigu
  * @author Sebastian Fritzsche (seb.fritzsche@googlemail.com)
  */
 public class CourseCreationHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(CourseCreationHelper.class);
 
 	private CourseCreationConfiguration courseConfig;
 	private final Translator translator;
@@ -270,16 +273,18 @@ public class CourseCreationHelper {
 		// 3.1. setup rights
 		// --------------------------
 		if (courseConfig.getPublish()) {
+			
+			int access = RepositoryEntry.ACC_OWNERS;
 			if (courseConfig.getAclType().equals(CourseCreationConfiguration.ACL_GUEST)) {
 				// set "BARG" as rule
-				addedEntry.setAccess(RepositoryEntry.ACC_USERS_GUESTS);
+				access = RepositoryEntry.ACC_USERS_GUESTS;
 			} else if (courseConfig.getAclType().equals(CourseCreationConfiguration.ACL_OLAT)) {
 				// set "BAR" as rule
-				addedEntry.setAccess(RepositoryEntry.ACC_USERS);
+				access = RepositoryEntry.ACC_USERS;
 			} else if (courseConfig.getAclType().equals(CourseCreationConfiguration.ACL_UNI)) {
 				// set "BAR" rule + expert rule on university
 				// hasAttribute("institution","[Hochschule]")
-				addedEntry.setAccess(RepositoryEntry.ACC_USERS);
+				access = RepositoryEntry.ACC_USERS;
 				final CourseNode cnRoot = course.getEditorTreeModel().getCourseEditorNodeById(course.getEditorTreeModel().getRootNode().getIdent())
 				.getCourseNode();
 				String shibInstitution = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, ureq.getLocale());
@@ -292,9 +297,9 @@ public class CourseCreationHelper {
 							+ "\")"));
 				}
 			} else {
-				Tracing.createLoggerFor(this.getClass()).error("No valid ACL Rule: " + courseConfig.getAclType());
+				log.error("No valid ACL Rule: " + courseConfig.getAclType());
 			}
-			RepositoryManager.getInstance().updateRepositoryEntry(addedEntry);
+			addedEntry = RepositoryManager.getInstance().setAccess(addedEntry, access, false);
 		}
 
 		CourseFactory.openCourseEditSession(course.getResourceableId());
@@ -325,7 +330,7 @@ public class CourseCreationHelper {
 		boolean isValid = sds.length == 0;
 		if (!isValid) {
 			// no error and no warnings -> return immediate
-			Tracing.createLoggerFor(this.getClass()).error("Course Publishing failed", new AssertionError());
+			log.error("Course Publishing failed", new AssertionError());
 		}
 		pp.applyPublishSet(ureq.getIdentity(), ureq.getLocale());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);

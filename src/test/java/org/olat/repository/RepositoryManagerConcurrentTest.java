@@ -32,9 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -42,13 +40,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.commons.coordinate.cluster.ClusterSyncer;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -56,19 +52,11 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.Syncer;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.testutils.codepoints.client.BreakpointStateException;
-import org.olat.testutils.codepoints.client.CodepointClient;
-import org.olat.testutils.codepoints.client.CodepointClientFactory;
-import org.olat.testutils.codepoints.client.CodepointRef;
-import org.olat.testutils.codepoints.client.CommunicationException;
-import org.olat.testutils.codepoints.client.TemporaryPausedThread;
 
 /**
  * Initial Date:  Mar 26, 2004
@@ -191,9 +179,8 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 	/**
 	 * 
 	 */
-	@Test public void testIncrementLaunchCounter() {
-		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
-		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
+	@Test
+	public void testIncrementLaunchCounter() {
 		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
 		final Long keyRepo = repositoryEntry.getKey();
 		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
@@ -212,20 +199,14 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 			}
 			long endTime = System.currentTimeMillis();
 			System.out.println("testIncrementLaunchCounter time=" + (endTime - startTime) + " for " + loop + " incrementLaunchCounter calls");
-			sleep(2000);
 		}
-		sleep(20000);
 		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 		assertEquals("Wrong value of incrementLaunch counter",mainLoop * loop,repositoryEntry2.getLaunchCounter());
 		System.out.println("testIncrementLaunchCounter finished");
 	}
-	
-	/**
-	 * 
-	 */
-	@Test public void testIncrementDownloadCounter() {
-		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
-		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
+
+	@Test
+	public void testIncrementDownloadCounter() {
 		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
 		final Long keyRepo = repositoryEntry.getKey();
 		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
@@ -244,95 +225,52 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 			}
 			long endTime = System.currentTimeMillis();
 			System.out.println("testIncrementDownloadCounter time=" + (endTime - startTime) + " for " + loop + " incrementDownloadCounter calls");
-			sleep(2000);
 		}
-		sleep(20000);
 		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 		assertEquals("Wrong value of incrementLaunch counter",mainLoop * loop,repositoryEntry2.getDownloadCounter());
 		System.out.println("testIncrementDownloadCounter finished");
 	}
-
-
-	/**
-	 * Test synchronization between same RepositoryEntry and setLastUsageNowFor, incrementLaunchCounter and incrementDownloadCounter.
-	 * This test starts 4 threads : 
-	 *   2 to call setLastUsageNowFor, 
-	 *   1 to call incrementLaunchCounter 
-	 *   1 to call incrementDownloadCounter 
-	 * Breakpoint is set for 'setLastUsageNowFor', all other calls must wait.
-	 */
-	@Test @Ignore //this test doesn't test anything, and result is fully random
-	public void testSetLastUsageNowFor() {
-		Date lastSetLastUsageDate = null;
-		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
-		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
-		
-		final int loop = 500;
-		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
-		final Long keyRepo = repositoryEntry.getKey();
-		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
-		assertNotNull(resourceable);
-		DBFactory.getInstance().closeSession();
-		long startTime = System.currentTimeMillis();
-		for (int i = 0; i < loop; i++) {
-			// 1. load RepositoryEntry
-			RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-			RepositoryManager.setLastUsageNowFor(repositoryEntryT1);
-			lastSetLastUsageDate = Calendar.getInstance().getTime();
-			DBFactory.getInstance().closeSession();
-		}
-		long endTime = System.currentTimeMillis();
-		sleep(20000);
-		
-		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertTrue("Wrong date-value of lastUsage, could not be before ",repositoryEntry2.getLastUsage().after(lastSetLastUsageDate) );
-		System.out.println("testSetLastUsageNowFor time=" + (endTime - startTime) + " for " + loop + " testSetLastUsageNowFor calls");
-		System.out.println("testSetLastUsageNowFor finished");
-	}
 	
-	@Test public void testConcurrentIncrementLaunchCounter() {
+	@Test
+	public void testConcurrentIncrementLaunchCounter() {
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 
-		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
-		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
 		final int loop = 100;
 		final int numberOfThreads = 3;
-		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
+		final RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
 		final Long keyRepo = repositoryEntry.getKey();
-		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
-		assertNotNull(resourceable);
-		DBFactory.getInstance().closeSession();
+		assertNotNull(repositoryEntry.getOlatResource());
+		DBFactory.getInstance().commitAndCloseSession();
 		assertEquals("Launch counter was not 0", 0, repositoryEntry.getLaunchCounter() );
 		long startTime = System.currentTimeMillis();
+
+		final CountDownLatch doneSignal = new CountDownLatch(3);
+		
 		// start thread 1 : incrementLaunchCounter / setAccess
-		new Thread(new Runnable() {
+		Thread thread1 = new Thread(){
 			public void run() {
 				try {
+					sleep(10);
 					for (int i = 1; i <= loop; i++) {
 						// 1. load RepositoryEntry
-						RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-						RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntryT1);
+						RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
+						re = RepositoryManager.getInstance().incrementLaunchCounter(re);
 						if (i % 20 == 0 ) {
 							int ACCESS_VALUE = 4;
-							System.out.println("RepositoryManagerTest: call setAccess i=" + i);
 							//fxdiff VCRP-1,2: access control of resources
-							RepositoryManager.getInstance().setAccess(repositoryEntryT1, ACCESS_VALUE, false);
-							DBFactory.getInstance().closeSession();
+							re = RepositoryManager.getInstance().setAccess(re, ACCESS_VALUE, false);
 							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong access value",ACCESS_VALUE,repositoryEntryT1Reloaded.getAccess());
+							assertEquals("Wrong access value", ACCESS_VALUE, repositoryEntryT1Reloaded.getAccess());
 						} else if (i % 10 == 0 ) {
 							int ACCESS_VALUE = 1;
-							System.out.println("RepositoryManagerTest: call setAccess i=" + i);
 							//fxdiff VCRP-1,2: access control of resources
-							RepositoryManager.getInstance().setAccess(repositoryEntryT1, ACCESS_VALUE, false);
-							DBFactory.getInstance().closeSession();
+							re = RepositoryManager.getInstance().setAccess(re, ACCESS_VALUE, false);
 							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 							assertEquals("Wrong access value",ACCESS_VALUE,repositoryEntryT1Reloaded.getAccess());
 						}
-						DBFactory.getInstance().closeSession();
+						DBFactory.getInstance().commitAndCloseSession();
 					}
-					System.out.println("Thread-1: finished");
 					statusList.add(Boolean.TRUE);
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -342,29 +280,30 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 					} catch (Exception e) {
 						// ignore
 					}
+					doneSignal.countDown();
 				}	
-			}}).start();
+			}
+		};
+		
 		// start thread 2 : incrementLaunchCounter / setDescriptionAndName
-		new Thread(new Runnable() {
+		Thread thread2 = new Thread() {
 			public void run() {
 				try {
+					sleep(10);
 					for (int i = 1; i <= loop; i++) {
 						// 1. load RepositoryEntry
-						RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-						RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntryT1);
+						RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
+						re = RepositoryManager.getInstance().incrementLaunchCounter(re);
 						if (i % 25 == 0 ) {
 							String displayName = "DisplayName" + i;
 							String description = "Description" + i;
-							System.out.println("RepositoryManagerTest: call setDescriptionAndName");
-							RepositoryManager.getInstance().setDescriptionAndName(repositoryEntryT1, displayName,description);
-							DBFactory.getInstance().closeSession();
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong displayName value",displayName,repositoryEntryT1Reloaded.getDisplayname());
-							assertEquals("Wrong description value",description,repositoryEntryT1Reloaded.getDescription());
+							re = RepositoryManager.getInstance().setDescriptionAndName(re, displayName,description);
+							RepositoryEntry reReloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
+							assertEquals("Wrong displayName value", displayName, reReloaded.getDisplayname());
+							assertEquals("Wrong description value", description, reReloaded.getDescription());
 						}
-						DBFactory.getInstance().closeSession();
+						DBFactory.getInstance().commitAndCloseSession();
 					}
-					System.out.println("Thread-1: finished");
 					statusList.add(Boolean.TRUE);
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -374,38 +313,37 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 					} catch (Exception e) {
 						// ignore
 					}
+					doneSignal.countDown();
 				}	
-			}}).start();
+			}
+		};
+		
 		// start thread 3
-		new Thread(new Runnable() {
+		Thread thread3 = new Thread() {
 			public void run() {
 				try {
+					sleep(10);
 					for (int i = 1; i <= loop; i++) {
 						// 1. load RepositoryEntry
-						RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-						RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntryT1);
+						RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
+						re = RepositoryManager.getInstance().incrementLaunchCounter(re);
 						if (i % 30 == 0 ) {
-							System.out.println("RepositoryManagerTest: call setProperties i=" + i);
-							RepositoryManager.getInstance().setProperties(repositoryEntryT1, true, false, true, false);	
-							DBFactory.getInstance().closeSession();
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong canCopy value",true,repositoryEntryT1Reloaded.getCanCopy());
-							assertEquals("Wrong getCanReference value",false,repositoryEntryT1Reloaded.getCanReference());
-							assertEquals("Wrong getCanLaunch value",true,repositoryEntryT1Reloaded.getCanLaunch());
-							assertEquals("Wrong getCanDownload value",false,repositoryEntryT1Reloaded.getCanDownload());
+							re = RepositoryManager.getInstance().setProperties(re, true, false, true, false);	
+							RepositoryEntry reT3Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
+							assertEquals("Wrong canCopy value", true, reT3Reloaded.getCanCopy());
+							assertEquals("Wrong getCanReference value",false, reT3Reloaded.getCanReference());
+							assertEquals("Wrong getCanLaunch value", true, reT3Reloaded.getCanLaunch());
+							assertEquals("Wrong getCanDownload value", false, reT3Reloaded.getCanDownload());
 						} else 	if (i % 15 == 0 ) {
-							System.out.println("RepositoryManagerTest: call setProperties i=" + i);
-							RepositoryManager.getInstance().setProperties(repositoryEntryT1, false, true, false, true);	
-							DBFactory.getInstance().closeSession();
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong canCopy value",false,repositoryEntryT1Reloaded.getCanCopy());
-							assertEquals("Wrong getCanReference value",true,repositoryEntryT1Reloaded.getCanReference());
-							assertEquals("Wrong getCanLaunch value",false,repositoryEntryT1Reloaded.getCanLaunch() );
-							assertEquals("Wrong getCanDownload value",true,repositoryEntryT1Reloaded.getCanDownload());
+							re = RepositoryManager.getInstance().setProperties(re, false, true, false, true);	
+							RepositoryEntry reT3Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
+							assertEquals("Wrong canCopy value", false, reT3Reloaded.getCanCopy());
+							assertEquals("Wrong getCanReference value", true, reT3Reloaded.getCanReference());
+							assertEquals("Wrong getCanLaunch value", false, reT3Reloaded.getCanLaunch() );
+							assertEquals("Wrong getCanDownload value", true, reT3Reloaded.getCanDownload());
 						}
-						DBFactory.getInstance().closeSession();
+						DBFactory.getInstance().commitAndCloseSession();
 					}
-					System.out.println("Thread-1: finished");
 					statusList.add(Boolean.TRUE);
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -415,21 +353,41 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 					} catch (Exception e) {
 						// ignore
 					}
+					doneSignal.countDown();
 				}	
-			}}).start();
+			}
+		};
 		
-		long endTime = System.currentTimeMillis();
-		sleep(20000);
-		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertEquals("Worng value of incrementLaunch counter",loop * numberOfThreads,repositoryEntry2.getLaunchCounter());
-		System.out.println("testConcurrentIncrementLaunchCounter time=" + (endTime - startTime) + " for " + loop + " incrementLaunchCounter calls");
+		//go! go! go!
+		thread1.start();
+		thread2.start();
+		thread3.start();
+
+		try {
+			boolean interrupt = doneSignal.await(30, TimeUnit.SECONDS);
+			assertTrue("Test takes too long (more than 10s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
+		}
+
+		for(Exception e:exceptionHolder) {
+			e.printStackTrace();
+		}
+		assertEquals("Exceptions", 0, exceptionHolder.size());
+
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
+		assertEquals("Worng value of incrementLaunch counter", loop * numberOfThreads, re.getLaunchCounter());
+		assertEquals("DisplayName" + loop, re.getDisplayname());//check if the displayname is correct
+		assertEquals("Description" + loop, re.getDescription());
+		System.out.println("testConcurrentIncrementLaunchCounter time=" + (System.currentTimeMillis() - startTime) + " for " + loop + " incrementLaunchCounter calls");
 		System.out.println("testConcurrentIncrementLaunchCounter finished");
 	}
 
 	/**
 	 * Compare async increment-call with sync 'setDscription' call.
 	 */
-	@Test public void testIncrementLaunchCounterSetDescription() {
+	@Test
+	public void testIncrementLaunchCounterSetDescription() {
 		System.out.println("testIncrementLaunchCounterSetDescription: START...");
 		RepositoryEntry repositoryEntry = createRepositoryCG("testIncrementLaunchCounterSetDescription");
 		DBFactory.getInstance().closeSession();
@@ -462,8 +420,8 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 	 * Thread 3 : update access-value on repository-entry directly after 200ms
 	 * Codepoint-breakpoint at IncrementDownloadCounterBackgroundTask in executeTask before update
 	 */
-	@Ignore //the test works random
-	@Test public void testConcurrentIncrementLaunchCounterWithCodePoints() {
+	@Test
+	public void testConcurrentIncrementLaunchCounter_v2() {
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 
 		RepositoryEntry repositoryEntry = createRepositoryCG("IncCodePoint");		
@@ -474,19 +432,6 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 		DBFactory.getInstance().closeSession();
 		assertEquals("Launch counter was not 0", 0, repositoryEntry.getLaunchCounter() );
 
-		// enable breakpoint
-		CodepointClient codepointClient = null;
-		CodepointRef codepointRef = null;
-		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://localhost?broker.persistent=false", CODEPOINT_SERVER_ID);
-			codepointRef = codepointClient.getCodepoint("org.olat.repository.async.IncrementDownloadCounterBackgroundTask.executeTask-before-update");
-			codepointRef.enableBreakpoint();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Could not initialzed CodepointClient");
-		}
-		
-
 		final CountDownLatch doneSignal = new CountDownLatch(3);
 		
 		// thread 1
@@ -495,13 +440,13 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 				try {
 					Thread.sleep(100);
 					RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-					RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT1);
+					repositoryEntryT1 = RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT1);
 					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread1 incremented download-counter");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
-					doneSignal.countDown();
 					DBFactory.getInstance().commitAndCloseSession();
+					doneSignal.countDown();
 				}
 			}};
 		
@@ -511,13 +456,13 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 				try {
 					Thread.sleep(300);
 					RepositoryEntry repositoryEntryT2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-					RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT2);
+					repositoryEntryT2 = RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT2);
 					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread2 incremented download-counter");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
-					doneSignal.countDown();
 					DBFactory.getInstance().commitAndCloseSession();
+					doneSignal.countDown();
 				}
 			}};
 
@@ -527,16 +472,14 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 				try {
 					Thread.sleep(200);
 					RepositoryEntry repositoryEntryT3 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-					// change repository directly and not via RepositoryManager.setAccess(...) for testing
-					repositoryEntryT3.setAccess(access);
-					RepositoryManager.getInstance().updateRepositoryEntry(repositoryEntryT3);
+					repositoryEntryT3 = RepositoryManager.getInstance().setAccess(repositoryEntryT3, access, false);
 					DBFactory.getInstance().closeSession();
 					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread3 setAccess DONE");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
-					doneSignal.countDown();
 					DBFactory.getInstance().commitAndCloseSession();
+					doneSignal.countDown();
 				}
 			}};
 			
@@ -551,29 +494,9 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 			fail("" + e.getMessage());
 		}
 
-		try {
-			// to see all registered code-points: comment-in next 2 lines
-			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
-			// System.out.println("codepointList=" + codepointList);
-			System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints start waiting for breakpoint reached");
-			TemporaryPausedThread[] threads = codepointRef.waitForBreakpointReached(1000);
-			assertTrue("Did not reach breakpoint", threads.length > 0);
-			System.out.println("threads[0].getCodepointRef()=" + threads[0].getCodepointRef());
-			codepointRef.disableBreakpoint(true);
-			System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints breakpoint reached => continue");
-		} catch (BreakpointStateException e) {
-			e.printStackTrace();
-			fail("Codepoints: BreakpointStateException=" + e.getMessage());
-		} catch (CommunicationException e) {
-			e.printStackTrace();
-			fail("Codepoints: CommunicationException=" + e.getMessage());
-		}
-		sleep(100);
 		RepositoryEntry repositoryEntry2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 		assertEquals("Wrong value of incrementLaunch counter",2,repositoryEntry2.getDownloadCounter());
 		assertEquals("Wrong access value",access,repositoryEntry2.getAccess());
-
-		codepointClient.close();
 		System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints finish successful");		
 	}
 
@@ -592,17 +515,4 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 		DBFactory.getInstance().saveObject(d);
 		return d;
 	}
-
-	/**
-	 * 
-	 * @param milis the duration in miliseconds to sleep
-	 */
-	private void sleep(int milis) {
-		try {
-			Thread.sleep(milis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
 }

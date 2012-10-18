@@ -336,8 +336,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		re.setOlatResource(r);
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
 
-		repositoryManager.createParticipantSecurityGroup(re);
-		repositoryManager.createTutorSecurityGroup(re);
+		repositoryManager.createParticipantSecurityGroup(re, false);
+		repositoryManager.createTutorSecurityGroup(re, false);
 		repositoryManager.createOwnerSecurityGroup(re);
 		repositoryManager.saveRepositoryEntry(re);
 		dbInstance.commitAndCloseSession();

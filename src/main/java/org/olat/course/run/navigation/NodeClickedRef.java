@@ -146,7 +146,9 @@ public class NodeClickedRef {
 	 */
 	public Controller getRunController() {
 		if(calledCourseNode == null || nodeConstructionResult == null) return null;
-		RepositoryManager.setLastUsageNowFor(calledCourseNode.getReferencedRepositoryEntry());
+		if(calledCourseNode.needsReferenceToARepositoryEntry()) {
+			RepositoryManager.getInstance().setLastUsageNowFor(calledCourseNode.getReferencedRepositoryEntry());
+		}
 		return nodeConstructionResult.getRunController();
 	}
 

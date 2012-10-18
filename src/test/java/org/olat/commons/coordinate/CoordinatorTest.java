@@ -31,7 +31,6 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -49,8 +48,6 @@ import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.test.OlatTestCase;
 
 /**
@@ -347,7 +344,7 @@ public class CoordinatorTest extends OlatTestCase {
 		SecurityGroup ownerGroup = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
 		re.setOwnerGroup(ownerGroup);
 		RepositoryManager.getInstance().saveRepositoryEntry(re);
-		DBFactory.getInstance().closeSession();
+		DBFactory.getInstance().commitAndCloseSession();
 		
 		// 1. Do job without doInSync
 		System.out.println("testDoInSyncPerformance: start test with doInSync");
@@ -392,12 +389,9 @@ public class CoordinatorTest extends OlatTestCase {
 	}
 
 	private Boolean doTestPerformanceJob(RepositoryEntry re) {
-		RepositoryEntry reloadedRe = (RepositoryEntry) DBFactory.getInstance().loadObject(re, true);
-		reloadedRe.incrementLaunchCounter();
-		reloadedRe.setLastUsage(new Date());
-		RepositoryManager.getInstance().updateRepositoryEntry(reloadedRe);
-        return true;
-    }
+		RepositoryManager.getInstance().incrementLaunchCounter(re);
+		return true;
+	}
 
 
 

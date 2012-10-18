@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CacheRetrieveMode;
+import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.hibernate.type.StandardBasicTypes;
@@ -44,6 +46,8 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.catalog.CatalogManager;
+import org.olat.commons.lifecycle.LifeCycleManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -55,6 +59,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -72,13 +77,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGResourceRelation;
-import org.olat.repository.async.BackgroundTaskQueueManager;
-import org.olat.repository.async.IncrementDownloadCounterBackgroundTask;
-import org.olat.repository.async.IncrementLaunchCounterBackgroundTask;
-import org.olat.repository.async.SetAccessBackgroundTask;
-import org.olat.repository.async.SetDescriptionNameBackgroundTask;
-import org.olat.repository.async.SetLastUsageBackgroundTask;
-import org.olat.repository.async.SetPropertiesBackgroundTask;
+import org.olat.repository.delete.service.RepositoryDeletionManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryMember;
@@ -91,6 +90,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Initial Date:  Mar 31, 2004
@@ -102,24 +102,24 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class RepositoryManager extends BasicManager {
 	
+	private static final OLog log = Tracing.createLoggerFor(RepositoryManager.class);
+	
 	private final int PICTUREWIDTH = 570;
 
-	private static RepositoryManager INSTANCE;
 	private BaseSecurity securityManager;
 	private ImageHelper imageHelper;
-	private static BackgroundTaskQueueManager taskQueueManager;
 	private UserCourseInformationsManager userCourseInformationsManager;
 	private DB dbInstance;
 
-	/**
-	 * [used by spring]
-	 */
-	private RepositoryManager(BaseSecurity securityManager, BackgroundTaskQueueManager taskQueueManager) {
-		this.securityManager = securityManager;
-		RepositoryManager.taskQueueManager = taskQueueManager;
-		INSTANCE = this;
-	}
 	
+	/**
+	 * [used by Spring]
+	 * @param securityManager
+	 */
+	public void setSecurityManager(BaseSecurity securityManager) {
+		this.securityManager = securityManager;
+	}
+
 	/**
 	 * [used by Spring]
 	 * @param userCourseInformationsManager
@@ -147,7 +147,9 @@ public class RepositoryManager extends BasicManager {
 	/**
 	 * @return Singleton.
 	 */
-	public static RepositoryManager getInstance() { return INSTANCE; }
+	public static RepositoryManager getInstance() { 
+		return CoreSpringFactory.getImpl(RepositoryManager.class);
+	}
 
 	/**
 	 * @param initialAuthor
@@ -195,10 +197,10 @@ public class RepositoryManager extends BasicManager {
 	 * Update repo entry.
 	 * @param re
 	 */
-	public void updateRepositoryEntry(RepositoryEntry re) {
+	/*public void updateRepositoryEntry(RepositoryEntry re) {
 		re.setLastModified(new Date());
 		DBFactory.getInstance().updateObject(re);
-	}
+	}*/
 	
 	/**
 	 * Delete repo entry.
@@ -212,8 +214,16 @@ public class RepositoryManager extends BasicManager {
 		deleteImage(re);
 	}
 	
-	public void createTutorSecurityGroup(RepositoryEntry re) {
-		if(re.getTutorGroup() != null) return;
+	/**
+	 * 
+	 * @param re
+	 * @param update If true, update the repository immediately
+	 * @return
+	 */
+	public RepositoryEntry createTutorSecurityGroup(RepositoryEntry re, boolean update) {
+		if(re.getTutorGroup() != null) {
+			return re;
+		}
 		
 		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
 		// member of this group may modify member's membership
@@ -222,10 +232,21 @@ public class RepositoryManager extends BasicManager {
 		// members of this group are always tutors also
 		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
 		re.setTutorGroup(tutorGroup);
+		if(update) {
+			re = DBFactory.getInstance().getCurrentEntityManager().merge(re);
+		}
+		return re;
 	}
 	
-	public void createParticipantSecurityGroup(RepositoryEntry re) {
-		if(re.getParticipantGroup() != null) return;
+	/**
+	 * 
+	 * @param re
+	 * @param update If true, update the repository immediately
+	 */
+	public RepositoryEntry createParticipantSecurityGroup(RepositoryEntry re, boolean update) {
+		if(re.getParticipantGroup() != null) {
+			return re;
+		}
 		
 		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
 		// member of this group may modify member's membership
@@ -234,6 +255,10 @@ public class RepositoryManager extends BasicManager {
 		// members of this group are always participants also
 		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
 		re.setParticipantGroup(participantGroup);
+		if(update) {
+			re = DBFactory.getInstance().getCurrentEntityManager().merge(re);
+		}
+		return re;
 	}
 	
 	public void createOwnerSecurityGroup(RepositoryEntry re) {
@@ -393,6 +418,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param the repository entry key (not the olatresourceable key)
 	 * @return Repo entry represented by key or null if no such entry or key is null.
 	 */
+	@Transactional(readOnly=true)
 	public RepositoryEntry lookupRepositoryEntry(Long key) {
 		if (key == null) return null;
 		return lookupRepositoryEntry(key, false) ;
@@ -403,6 +429,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param the repository entry key (not the olatresourceable key)
 	 * @return Repo entry represented by key or null if no such entry or key is null.
 	 */
+	@Transactional(readOnly=true)
 	public RepositoryEntry lookupRepositoryEntry(Long key, boolean strict) {
 		if (key == null) return null;
 		if(strict) {
@@ -423,7 +450,8 @@ public class RepositoryManager extends BasicManager {
 		}
 		return entries.get(0);
 	}
-	
+
+	@Transactional(readOnly=true)
 	public List<RepositoryEntry> lookupRepositoryEntries(Collection<Long> keys) {
 		if (keys == null || keys.isEmpty()) {
 			return Collections.emptyList();
@@ -451,6 +479,7 @@ public class RepositoryManager extends BasicManager {
 	 * @return the RepositorEntry or null if strict=false
 	 * @throws AssertException if the softkey could not be found (strict=true)
 	 */
+	@Transactional(readOnly=true)
 	public RepositoryEntry lookupRepositoryEntry(OLATResourceable resourceable, boolean strict) {
 		OLATResource ores = (resourceable instanceof OLATResource) ? (OLATResource)resourceable
 				: OLATResourceManager.getInstance().findResourceable(resourceable);
@@ -619,48 +648,124 @@ public class RepositoryManager extends BasicManager {
 		return false;
 	}
 
+	private RepositoryEntry loadForUpdate(RepositoryEntry re) {
+		//first remove it from caches
+		DBFactory.getInstance().getCurrentEntityManager().detach(re);
+
+		StringBuilder query = new StringBuilder();
+		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+				 .append(" left join fetch v.olatResource as ores")
+			   .append(" left join fetch v.ownerGroup as ownerGroup")
+			   .append(" left join fetch v.participantGroup as participantGroup")
+			   .append(" left join fetch v.tutorGroup as tutorGroup")
+		     .append(" where v.key=:repoKey");
+		
+		RepositoryEntry entry = DBFactory.getInstance().getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", re.getKey())
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+				.getSingleResult();
+		return entry;
+	}
+	
+	private void updateLifeCycle(RepositoryEntry reloadedRe) {
+		LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(reloadedRe);
+		if (lcManager.lookupLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION) != null) {
+			log.audit("Repository-Deletion: Remove from delete-list repositoryEntry=" + reloadedRe);
+			lcManager.deleteTimestampFor(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION);
+		}
+	}
+
 	/**
 	 * Increment the launch counter.
 	 * @param re
 	 */
-	public void incrementLaunchCounter(RepositoryEntry re) {
-		taskQueueManager.addTask(new IncrementLaunchCounterBackgroundTask(re));
+	@Transactional
+	public RepositoryEntry incrementLaunchCounter(RepositoryEntry re) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(reloadedRe == null) return null;//deleted
+
+		reloadedRe.setLaunchCounter(reloadedRe.getLaunchCounter() + 1);
+		reloadedRe.setLastUsage(new Date());
+		updateLifeCycle(reloadedRe);
+		
+		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commitAndCloseSession();
+		return updatedRe;
 	}
-	
+
 	/**
 	 * Increment the download counter.
 	 * @param re
 	 */
-	public void incrementDownloadCounter(final RepositoryEntry re) {
-		taskQueueManager.addTask(new IncrementDownloadCounterBackgroundTask(re));
+	@Transactional
+	public RepositoryEntry incrementDownloadCounter( final RepositoryEntry re) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(reloadedRe == null) return null;//deleted
+
+		reloadedRe.incrementDownloadCounter();
+		reloadedRe.setLastUsage(new Date());
+		updateLifeCycle(reloadedRe);
+		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commitAndCloseSession();
+		return updatedRe;
 	}
 
 	/**
 	 * Set last-usage date to to now for certain repository-entry.
 	 * @param 
 	 */
-	public static void setLastUsageNowFor(final RepositoryEntry re) {
-		if (re != null) {
-			taskQueueManager.addTask(new SetLastUsageBackgroundTask(re));
+	@Transactional
+	public RepositoryEntry setLastUsageNowFor(final RepositoryEntry re) {
+		if (re == null) return null;
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		reloadedRe.setLastUsage(new Date());
+		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commitAndCloseSession();
+		return updatedRe;
+	}
+
+	@Transactional
+	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly ) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		reloadedRe.setAccess(access);
+		reloadedRe.setMembersOnly(membersOnly);//fxdiff VCRP-1,2: access control of resources
+		
+		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commitAndCloseSession();
+		return updatedRe;
+	}
+
+	/**
+	 * 
+	 * @param re
+	 * @param displayName If null, nothing happen
+	 * @param description If null, nothing happen
+	 * @return
+	 */
+	@Transactional
+	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description ) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(StringHelper.containsNonWhitespace(displayName)) {
+			reloadedRe.setDisplayname(displayName);
 		}
+		if(StringHelper.containsNonWhitespace(description)) {
+			reloadedRe.setDescription(description);
+		}
+		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commitAndCloseSession();
+		return updatedRe;
 	}
 
-	public void setAccess(final RepositoryEntry re, int access, boolean membersOnly ) {
-		SetAccessBackgroundTask task = new SetAccessBackgroundTask(re, access, membersOnly);
-		taskQueueManager.addTask(task);
-		task.waitForDone();
-	}
-
-	public void setDescriptionAndName(final RepositoryEntry re, String displayName, String description ) {
-		SetDescriptionNameBackgroundTask task = new SetDescriptionNameBackgroundTask(re, displayName, description);
-		taskQueueManager.addTask(task);
-		task.waitForDone();
-	}
-
-	public void setProperties(final RepositoryEntry re, boolean canCopy, boolean canReference, boolean canLaunch, boolean canDownload ) {
-		SetPropertiesBackgroundTask task = new SetPropertiesBackgroundTask(re, canCopy, canReference, canLaunch, canDownload);
-		taskQueueManager.addTask(task);
-		task.waitForDone();
+	@Transactional
+	public RepositoryEntry setProperties(final RepositoryEntry re, boolean canCopy, boolean canReference, boolean canLaunch, boolean canDownload ) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		reloadedRe.setCanCopy(canCopy);
+		reloadedRe.setCanReference(canReference);
+		reloadedRe.setCanLaunch(canLaunch);
+		reloadedRe.setCanDownload(canDownload);
+		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commitAndCloseSession();
+		return updatedRe;
 	}
 	
 	

@@ -261,9 +261,9 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 	}
 
 	private void markSendEmailEvent(RepositoryEntry repositoryEntry) {
-		repositoryEntry = (RepositoryEntry)DBFactory.getInstance().loadObject(repositoryEntry);
+		//repositoryEntry = (RepositoryEntry)DBFactory.getInstance().loadObject(repositoryEntry);
 		LifeCycleManager.createInstanceFor(repositoryEntry).markTimestampFor(SEND_DELETE_EMAIL_ACTION);
-		DBFactory.getInstance().updateObject(repositoryEntry);
+		//DBFactory.getInstance().updateObject(repositoryEntry);
 	}
 
 

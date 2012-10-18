@@ -522,7 +522,7 @@ public class CoursesWebService {
 				courseConfig.setSharedFolderSoftkey(courseConfigVO.getSharedFolderSoftKey());
 			}
 		}
-		RepositoryManager.getInstance().updateRepositoryEntry(addedEntry);
+		//RepositoryManager.getInstance().updateRepositoryEntry(addedEntry);
 
 		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);

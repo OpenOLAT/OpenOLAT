@@ -116,7 +116,6 @@ public class RepositoryAddController extends BasicController {
 	private boolean workflowSuccessful = false;
 	private Link cancelButton;
 	private Link forwardButton;
-	private Panel panel;
 	private String actionAddCommand, actionProcess;
 	
 	/**
@@ -284,8 +283,7 @@ public class RepositoryAddController extends BasicController {
 		repositoryadd.contextPut("typeIntro", typeIntro);
 		forwardButton.setEnabled(false);
 		forwardButton.setTextReasonForDisabling(translate("disabledforwardreason"));
-		panel = putInitialPanel(repositoryadd);
-		return;
+		putInitialPanel(repositoryadd);
 	}
 
 	/**
@@ -312,19 +310,14 @@ public class RepositoryAddController extends BasicController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == forwardButton){
-			
-			//FIXME: this code belongs to the repo manager and not here!
 			// finish transaction and add repository entry
 			if (!addController.transactionFinishBeforeCreate()) return;
 			//save current name and description from create from
 			String displayName = addedEntry.getDisplayname();
 			String description = addedEntry.getDescription();
 			// Do set access for owner at the end, because unfinished course should be invisible
-			addedEntry = (RepositoryEntry) DBFactory.getInstance().loadObject(addedEntry); // need a reload from hibernate because create a new cp load a repository-entry (OLAT-5631) TODO: 7.1 Refactor in method getRepositoryEntry()
-			addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-			addedEntry.setDisplayname(displayName);
-			addedEntry.setDescription(description);
-			RepositoryManager.getInstance().updateRepositoryEntry(addedEntry);
+			addedEntry = RepositoryManager.getInstance().setDescriptionAndName(addedEntry, displayName, description);
+			addedEntry = RepositoryManager.getInstance().setAccess(addedEntry, RepositoryEntry.ACC_OWNERS, false);
 			addController.repositoryEntryCreated(addedEntry);
 			
 			workflowSuccessful = true;

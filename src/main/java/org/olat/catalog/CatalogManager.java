@@ -584,13 +584,10 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 
 	/**
 	 * 
-	 * @param repositoryEntry
+	 * @param re
 	 */
-	public void updateReferencedRepositoryEntry(RepositoryEntry repositoryEntry) {
-		RepositoryEntry reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey());
-		reloaded.setDisplayname(repositoryEntry.getDisplayname());
-		reloaded.setDescription(repositoryEntry.getDescription());
-		RepositoryManager.getInstance().updateRepositoryEntry(reloaded);
+	public void updateReferencedRepositoryEntry(RepositoryEntry re) {
+		RepositoryEntry reloaded = RepositoryManager.getInstance().setDescriptionAndName(re, re.getDisplayname(), re.getDescription());
 		// inform anybody interested about this change
     MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, EntryChangedEvent.MODIFIED_DESCRIPTION);
     CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, reloaded);

@@ -958,16 +958,14 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			}  else if (cmd.equals(ACTION_GROUPS_TUTOR)) { // edit tutor group
 				if (!isOwner) throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + ureq.getIdentity());
 				if(repositoryEntry.getTutorGroup() == null){
-					RepositoryManager.getInstance().createTutorSecurityGroup(repositoryEntry);
-					RepositoryManager.getInstance().updateRepositoryEntry(repositoryEntry);
+					repositoryEntry = RepositoryManager.getInstance().createTutorSecurityGroup(repositoryEntry, true);
 				}
 				groupTutorEditController = doManageSecurityGroup(ureq, false, repositoryEntry.getTutorGroup(), "groups_tutor");
 				return;
 			} else if (cmd.equals(ACTION_GROUPS_PARTICIPANT)) { // edit tutor group
 				if (!isOwner) throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + ureq.getIdentity());
 				if(repositoryEntry.getParticipantGroup() == null){
-					RepositoryManager.getInstance().createParticipantSecurityGroup(repositoryEntry);
-					RepositoryManager.getInstance().updateRepositoryEntry(repositoryEntry);
+					repositoryEntry = RepositoryManager.getInstance().createParticipantSecurityGroup(repositoryEntry, true);
 				}
 				groupParticipantEditController = doManageSecurityGroup(ureq, false, repositoryEntry.getParticipantGroup(), "groups_participant");
 				return;
@@ -1021,10 +1019,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			if (event == Event.CHANGED_EVENT) {
 				// RepositoryEntry changed
 				// setEntry(repositoryEditDescriptionController.getRepositoryEntry(), ureq);
-				this.repositoryEntry = (RepositoryEntry) DBFactory.getInstance().loadObject(repositoryEditDescriptionController.getRepositoryEntry()); // need a reload from hibernate because create a new cp load a repository-entry (OLAT-5631) TODO: 7.1 Refactor in method getRepositoryEntry()
-				this.repositoryEntry.setDisplayname(repositoryEditDescriptionController.getRepositoryEntry().getDisplayname());
-				this.repositoryEntry.setDescription(repositoryEditDescriptionController.getRepositoryEntry().getDescription());
-				RepositoryManager.getInstance().updateRepositoryEntry(this.repositoryEntry);
+				String displayname = repositoryEditDescriptionController.getRepositoryEntry().getDisplayname();
+				String description = repositoryEditDescriptionController.getRepositoryEntry().getDescription();
+				repositoryEntry = RepositoryManager.getInstance().setDescriptionAndName(repositoryEntry, displayname, description);
 				// do not close upon save/upload image closeableModalController.deactivate();
 				updateView(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {

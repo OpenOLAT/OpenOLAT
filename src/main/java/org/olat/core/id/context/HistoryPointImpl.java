@@ -21,6 +21,7 @@
 package org.olat.core.id.context;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,12 +36,15 @@ public class HistoryPointImpl implements HistoryPoint {
 
 	private final String uuid;
 	private final String businessPath;
-	private final List<ContextEntry> entries = new ArrayList<ContextEntry>();
+	private final List<ContextEntry> entries;
 	
 	public HistoryPointImpl(String uuid, String businessPath, List<ContextEntry> entries) {
 		this.uuid = uuid;
 		this.businessPath = businessPath;
-		if(entries != null) {
+		if(entries == null) {
+			this.entries = Collections.emptyList();
+		} else {
+			this.entries = new ArrayList<ContextEntry>(entries.size());
 			for(ContextEntry entry:entries) {
 				this.entries.add(entry.clone());
 			}

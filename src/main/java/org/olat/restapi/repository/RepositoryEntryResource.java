@@ -223,14 +223,7 @@ public class RepositoryEntryResource {
       Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
       RepositoryEntry replacedRe;
       if(file == null) {
-      	replacedRe = re;
-      	if(StringHelper.containsNonWhitespace(displayname)) {
-      		replacedRe.setDisplayname(displayname);
-      	}
-      	if(StringHelper.containsNonWhitespace(description)) {
-      		replacedRe.setDescription(description);
-      	}
-      	RepositoryManager.getInstance().updateRepositoryEntry(replacedRe);
+      	replacedRe = RepositoryManager.getInstance().setDescriptionAndName(re, displayname, description);
       } else {
 	      String tmpName = StringHelper.containsNonWhitespace(filename) ? filename : "import.zip";
 	      tmpFile = getTmpFile(tmpName);
@@ -245,8 +238,7 @@ public class RepositoryEntryResource {
 	      if(replacedRe == null) {
 	        return Response.serverError().status(Status.NOT_FOUND).build();
 	      } else if (StringHelper.containsNonWhitespace(displayname)) {
-	        replacedRe.setDisplayname(displayname);
-	        RepositoryManager.getInstance().updateRepositoryEntry(replacedRe);
+	      	replacedRe = RepositoryManager.getInstance().setDescriptionAndName(replacedRe, displayname, null);
 	      }
       }
       RepositoryEntryVO vo = ObjectFactory.get(replacedRe);

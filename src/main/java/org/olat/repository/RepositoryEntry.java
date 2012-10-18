@@ -376,12 +376,16 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	/**
 	 * Increment launch counter.
 	 */
-	public void incrementLaunchCounter() { launchCounter++; }
+	public void incrementLaunchCounter() {
+		launchCounter++;
+	}
 	
 	/**
 	 * Increment download counter.
 	 */
-	public void incrementDownloadCounter() { downloadCounter++; }
+	public void incrementDownloadCounter() { 
+		downloadCounter++;
+	}
 	
 	/**
 	 * @return Returns the displayname.
