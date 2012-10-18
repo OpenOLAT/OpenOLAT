@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Properties;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalAdministrationSiteUtil.AdministrationSiteAction;
@@ -82,6 +83,11 @@ public class FunctionalUtil {
 		}
 	}
 	
+	public enum WaitForContentFlag {
+		EQUALS,
+		STRIP_TAGS;
+	}
+	
 	public final static WaitLimitAttribute DEFAULT_WAIT_LIMIT = WaitLimitAttribute.VERY_SAVE;
 	public final static String DEFAULT_IDLE = "-1";
 	
@@ -119,6 +125,7 @@ public class FunctionalUtil {
 	
 	public final static String BUTTON_CSS = "b_button";
 	public final static String BUTTON_DIRTY_CSS = "b_button_dirty";
+	public final static String BACK_BUTTON_CSS = "b_link_back";
 	public final static String TABLE_FIRST_CHILD_CSS = "b_first_child";
 	public final static String TABLE_LAST_CHILD_CSS = "b_last_child";
 	public final static String TREE_NODE_ANCHOR_CSS = "x-tree-node-anchor";
@@ -169,6 +176,7 @@ public class FunctionalUtil {
 	private String windowCloseLinkCss;
 	private String buttonCss;
 	private String buttonDirtyCss;
+	private String backButtonCss;
 	private String tableFirstChildCss;
 	private String tableLastChildCss;
 	private String treeNodeAnchorCss;
@@ -237,6 +245,7 @@ public class FunctionalUtil {
 		windowCloseLinkCss = WINDOW_CLOSE_LINK_CSS; 
 		buttonCss = BUTTON_CSS;
 		buttonDirtyCss = BUTTON_DIRTY_CSS;
+		backButtonCss = BACK_BUTTON_CSS;
 		tableFirstChildCss = TABLE_FIRST_CHILD_CSS;
 		tableLastChildCss = TABLE_LAST_CHILD_CSS;
 		treeNodeAnchorCss = TREE_NODE_ANCHOR_CSS;
@@ -401,6 +410,10 @@ public class FunctionalUtil {
 	 * @return
 	 */
 	public boolean waitForPageToLoadContent(Selenium browser, String[] iframeSelectors, String content, WaitLimitAttribute wait, boolean throwException){
+		return(waitForPageToLoadContent(browser, iframeSelectors, content, wait, new WaitForContentFlag[]{WaitForContentFlag.EQUALS, WaitForContentFlag.STRIP_TAGS}, throwException));
+	}
+	
+	public boolean waitForPageToLoadContent(Selenium browser, String[] iframeSelectors, String content, WaitLimitAttribute wait, WaitForContentFlag[] flags, boolean throwException){
 		idle(browser);
 		
 		long startTime = Calendar.getInstance().getTimeInMillis();
@@ -415,7 +428,15 @@ public class FunctionalUtil {
 		}
 		
 		do{
-			if(content.equals(functionalHtmlUtil.stripTags(browser.getHtmlSource(), true))){
+			String source = browser.getHtmlSource();
+			
+			if(flags != null && ArrayUtils.contains(flags, WaitForContentFlag.STRIP_TAGS)){
+				source = functionalHtmlUtil.stripTags(source, true);
+			}
+			
+			if((content == null && source == null) || 
+					(flags != null && source != null && !ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && source.contains(content)) ||
+					content.equals(source)){
 				log.info("found content after " + (currentTime - startTime) + "ms");
 				
 				/* go back to toplevel */
@@ -716,7 +737,7 @@ public class FunctionalUtil {
 		break;
 		case ADMINISTRATION:
 		{
-			retval = functionalAdministrationSiteUtil.openActionByMenuTree(browser, AdministrationSiteAction.SYSTEM_ADMINISTRATION);
+			retval = functionalAdministrationSiteUtil.openActionByMenuTree(browser, AdministrationSiteAction.INFORMATION);
 		}
 		break;
 		}
@@ -1552,6 +1573,14 @@ public class FunctionalUtil {
 
 	public void setButtonDirtyCss(String buttonDirtyCss) {
 		this.buttonDirtyCss = buttonDirtyCss;
+	}
+
+	public String getBackButtonCss() {
+		return backButtonCss;
+	}
+
+	public void setBackButtonCss(String backButtonCss) {
+		this.backButtonCss = backButtonCss;
 	}
 
 	public String getTableFirstChildCss() {

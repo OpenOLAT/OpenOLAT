@@ -19,11 +19,19 @@
  */
 package org.olat.course;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -35,16 +43,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.test.ArquillianDeployments;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalCourseUtil.CourseEditorCourseTab;
+import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
 import org.olat.util.FunctionalHtmlUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil.CourseWizardAccess;
 import org.olat.util.FunctionalRepositorySiteUtil.CourseWizardElement;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalUtil.OlatSite;
+import org.olat.util.FunctionalVOUtil;
 
+import com.google.common.io.Files;
 import com.thoughtworks.selenium.DefaultSelenium;
 
 /**
@@ -53,6 +66,8 @@ import com.thoughtworks.selenium.DefaultSelenium;
  */
 @RunWith(Arquillian.class)
 public class FunctionalCourseTest {
+
+	private final static OLog log = Tracing.createLoggerFor(FunctionalCourseTest.class);
 	
 	public final static String WIZARD_COURSE_TITLE = "wizard-course";
 	public final static String WIZARD_COURSE_DESCRIPTION = "course created by wizard";
@@ -61,6 +76,14 @@ public class FunctionalCourseTest {
 	public final static String EDITOR_COURSE_CHANGED_TITLE = "editor-course-renamed";
 	public final static String EDITOR_COURSE_DESCRIPTION = "course create within editor";
 	public final static String EDITOR_COURSE_OVERVIEW_FILE = "/org/olat/course/overview_comprehensive_guide_to_c_programming.html";
+
+	public final static int LARGE_COURSE_FILE_COUNT = 20;
+	public final static long LARGE_COURSE_FILE_SIZE = 50000;
+	public final static int LARGE_COURSE_TEST_COUNT = 20;
+	public final static String LARGE_COURSE_IQ_TEST_SHORT_TITLE = "QTI";
+	public final static String LARGE_COURSE_IQ_TEST_LONG_TITLE = "generated test No. ";
+	public final static String LARGE_COURSE_IQ_TEST_DESCRIPTION_0 = "generated within a loop: test#";
+	public final static String LARGE_COURSE_IQ_TEST_DESCRIPTION_1 = " of totally " + LARGE_COURSE_TEST_COUNT;
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -76,6 +99,9 @@ public class FunctionalCourseTest {
 	static FunctionalUtil functionalUtil;
 	static FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	static FunctionalCourseUtil functionalCourseUtil;
+	
+	static FunctionalVOUtil functionalVOUtil;
+	
 	static FunctionalHtmlUtil functionalHtmlUtil;
 	
 	static boolean initialized = false;
@@ -84,16 +110,18 @@ public class FunctionalCourseTest {
 	public void setup() throws IOException, URISyntaxException{
 		if(!initialized){
 			functionalUtil = new FunctionalUtil();
-			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
-			functionalHtmlUtil = functionalUtil.getFunctionalHtmlUtil();
-
+			functionalUtil.setDeploymentUrl(deploymentUrl.toString());			
 			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 			functionalCourseUtil = functionalRepositorySiteUtil.getFunctionalCourseUtil();
+
+			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
+			
+			functionalHtmlUtil = functionalUtil.getFunctionalHtmlUtil();
 
 			initialized = true;
 		}
 	}
-	
+
 	@Test
 	@RunAsClient
 	public void checkCreateUsingWizard(){
@@ -119,7 +147,7 @@ public class FunctionalCourseTest {
 			functionalCourseUtil.open(browser, i);
 		}
 	}
-	
+
 	@Test
 	@RunAsClient
 	public void checkCreateUsingEditor() throws FileNotFoundException, IOException, URISyntaxException{
@@ -194,5 +222,74 @@ public class FunctionalCourseTest {
 		.append("')]");
 		
 		Assert.assertTrue(browser.isElementPresent(selectorBuffer.toString()));
+	}
+	
+	@Test
+	@RunAsClient
+	public void checkCreateLargeCourse() throws URISyntaxException, IOException, NoSuchAlgorithmException, NoSuchProviderException{
+		File[] largeFile = new File[LARGE_COURSE_FILE_COUNT];
+		
+		for(int i = 0; i < largeFile.length; i++){
+			File currentFile =
+					largeFile[i] = new File(Files.createTempDir(), "largeText" + i + ".txt");
+
+			if(currentFile.exists()){
+				currentFile.delete();
+			}
+
+			currentFile.createNewFile();
+			OutputStream out = new FileOutputStream(currentFile);
+
+			log.info("creating large file: " + LARGE_COURSE_FILE_SIZE + "bytes");
+
+			for(int j = 0; currentFile.length() < LARGE_COURSE_FILE_SIZE; j++){
+				ByteArrayOutputStream dataOut = new ByteArrayOutputStream();
+				
+				dataOut.write(new String("Line number #" + j + ": ").getBytes());
+				dataOut.write(Base64.encodeBase64(SecureRandom.getInstance("SHA1PRNG", "SUN").generateSeed(512), false));
+				dataOut.write("\n".getBytes());
+				IOUtils.write(dataOut.toByteArray(), out);
+				out.flush();
+			}
+
+			out.close();
+		}
+		
+		/* login */
+		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
+		
+		/* open repository site */
+		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
+		
+		/* create course using wizard */
+		CourseWizardElement[] elementArray = new CourseWizardElement[]{
+				CourseWizardElement.INFO_PAGE,
+				CourseWizardElement.DOWNLOAD_FOLDER};
+		
+		Assert.assertTrue(functionalRepositorySiteUtil.createCourseUsingWizard(browser, WIZARD_COURSE_TITLE, WIZARD_COURSE_DESCRIPTION,
+				elementArray, null, true, CourseWizardAccess.USERS));
+		
+		Assert.assertTrue(functionalCourseUtil.open(browser, 1));
+		
+		for(File currentFile: largeFile){
+			Assert.assertTrue(functionalCourseUtil.uploadFileToCourseFolder(browser, currentFile.toURI()));
+		}
+		
+		/* click course node and open editor */
+		functionalCourseUtil.open(browser, -1);
+		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
+		
+		/* create tests */
+		for(int i = 0; i < LARGE_COURSE_TEST_COUNT; i++){
+			String title = LARGE_COURSE_IQ_TEST_SHORT_TITLE + i;
+			String description = LARGE_COURSE_IQ_TEST_DESCRIPTION_0 + i + LARGE_COURSE_IQ_TEST_DESCRIPTION_1;
+			
+			/* create course node and assign qti test to it */
+			Assert.assertTrue(functionalCourseUtil.createCourseNode(browser,
+					CourseNodeAlias.IQ_TEST,
+					title, LARGE_COURSE_IQ_TEST_LONG_TITLE, description,
+					2 * i + 4));
+			Assert.assertTrue(functionalCourseUtil.createQTITest(browser, title, description));
+		}
 	}
 }

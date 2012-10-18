@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
@@ -80,7 +81,13 @@ public class FunctionalCourseUtil {
 	public final static String WIKI_EDIT_FORM_WRAPPER_CSS = "o_wikimod_editform_wrapper";
 	
 	public final static String BLOG_CREATE_ENTRY_CSS = "o_sel_feed_item_new";
+	public final static String BLOG_EDIT_ENTRY_CSS = "o_sel_feed_item_edit";
+	public final static String BLOG_DELETE_ENTRY_CSS = "o_sel_feed_item_delete";
+	public final static String BLOG_READ_ENTRY_CSS = "o_post-readmorelinks";
 	public final static String BLOG_FORM_CSS = "o_sel_blog_form";
+	public final static String BLOG_POST_CSS = "o_blog_post";
+	public final static String BLOG_YEAR_CSS = "b_year";
+	public final static String BLOG_MONTH_CSS = "b_month";
 	
 	public final static String TEST_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_test_choose_repofile";
 	public final static String CP_CHOOSE_REPOSITORY_FILE_CSS = "o_sel_cp_choose_repofile";
@@ -281,6 +288,12 @@ public class FunctionalCourseUtil {
 		ASSESSMENT;
 	}
 	
+	public enum BlogEdit {
+		TITLE,
+		DESCRIPTION,
+		CONTENT;
+	}
+	
 	private String courseRunCss;
 	private String courseOpenEditorCss;
 	
@@ -319,7 +332,13 @@ public class FunctionalCourseUtil {
 	private String wikiEditFormWrapperCss;
 	
 	private String blogCreateEntryCss;
+	private String blogEditEntryCss;
+	private String blogDeleteEntryCss;
+	private String blogReadEntryCss;
 	private String blogFormCss;
+	private String blogPostCss;
+	private String blogYearCss;
+	private String blogMonthCss;
 	
 	private String testChooseRepositoryFileCss;
 	private String cpChooseRepositoryFileCss;
@@ -386,7 +405,13 @@ public class FunctionalCourseUtil {
 		setWikiEditFormWrapperCss(WIKI_EDIT_FORM_WRAPPER_CSS);
 		
 		setBlogCreateEntryCss(BLOG_CREATE_ENTRY_CSS);
+		setBlogEditEntryCss(BLOG_EDIT_ENTRY_CSS);
+		setBlogDeleteEntryCss(BLOG_DELETE_ENTRY_CSS);
+		setBlogReadEntryCss(BLOG_READ_ENTRY_CSS);
 		setBlogFormCss(BLOG_FORM_CSS);
+		setBlogPostCss(BLOG_POST_CSS);
+		setBlogYearCss(BLOG_YEAR_CSS);
+		setBlogMonthCss(BLOG_MONTH_CSS);
 		
 		setTestChooseRepositoryFileCss(TEST_CHOOSE_REPOSITORY_FILE_CSS);
 		setCpChooseRepositoryFileCss(CP_CHOOSE_REPOSITORY_FILE_CSS);
@@ -433,13 +458,17 @@ public class FunctionalCourseUtil {
 	 */
 	public boolean open(Selenium browser, int nth){
 		functionalUtil.idle(browser);
-		
+
 		StringBuffer selectorBuffer = new StringBuffer();
 
-		selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l1')]//li)[")
-		.append(nth + 1)
-		.append("]//a");
-		
+		if(nth == -1){
+			selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l0')]//li)//a");
+		}else{
+			selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l1')]//li)[")
+			.append(nth + 1)
+			.append("]//a");
+		}
+
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
@@ -1216,9 +1245,74 @@ public class FunctionalCourseUtil {
 		
 		return(true);
 	}
+
+	/**
+	 * 
+	 * @param browser
+	 * @param nth
+	 * @return
+	 */
+	public boolean openBlogEntry(Selenium browser, int nth){
+		functionalUtil.idle(browser);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//ul[contains(@class, '")
+		.append(getBlogReadEntryCss())
+		.append("')]//a)[")
+		.append(nth + 1)
+		.append("]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
+	}
+	
+	/**
+	 * Clicks back button within open blog entry.
+	 * 
+	 * @param browser
+	 * @return
+	 */
+	public boolean backBlogEntry(Selenium browser){
+		functionalUtil.idle(browser);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getBlogPostCss())
+		.append("')]//a[contains(@class, '")
+		.append(functionalUtil.getBackButtonCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToLoad(browser);
+		
+		return(true);
+	}
 	
 	/**
 	 * Create a new blog entry.
+	 * 
+	 * @param browser
+	 * @param courseId
+	 * @param nth
+	 * @param title
+	 * @param description
+	 * @param content
+	 * @return
+	 */
+	public boolean createBlogEntry(Selenium browser, long courseId, int nth,
+			String title, String description, String content){
+		return(editBlogEntry(browser, courseId, nth, title, description, content, -1, null));
+	}
+	
+	
+	/**
+	 * Edit a blog entry.
 	 * 
 	 * @param browser
 	 * @param blogId
@@ -1227,53 +1321,87 @@ public class FunctionalCourseUtil {
 	 * @param content
 	 * @return true on success, otherwise false
 	 */
-	public boolean createBlogEntry(Selenium browser, long courseId, int nth,
-			String title, String description, String content){
+	public boolean editBlogEntry(Selenium browser, long courseId, int nth,
+			String title, String description, String content, int entry, BlogEdit[] edit){
 		if(!openBlogWithoutBusinessPath(browser, courseId, nth))
 			return(false);
 
-		functionalUtil.idle(browser);
-		
-		/* click create */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append(getBlogCreateEntryCss())
-		.append("')]");
-		
-		browser.click(selectorBuffer.toString());
+		if(edit == null){
+			functionalUtil.idle(browser);
+			
+			/* open popup to enter url */
+			selectorBuffer.append("xpath=(//div[contains(@class, '")
+			.append(getBlogNoPostsCss())
+			.append("')]//a[contains(@class, 'b_button')])");
+
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				browser.click(selectorBuffer.toString());
+			}else{
+				/* click create */
+				selectorBuffer = new StringBuffer();
+
+				selectorBuffer.append("xpath=//a[contains(@class, '")
+				.append(getBlogCreateEntryCss())
+				.append("')]");
+
+				browser.click(selectorBuffer.toString());
+			}
+		}else{
+			if(edit.length > 0){
+				selectorBuffer = new StringBuffer();
+				
+				selectorBuffer.append("xpath=(//a[contains(@class, '")
+				.append(getBlogEditEntryCss())
+				.append("')])[")
+				.append(entry + 1)
+				.append("]");
+				
+				functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+				browser.click(selectorBuffer.toString());
+			}
+		}
 		
 		/* fill in form - title */
-		functionalUtil.idle(browser);
-		
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//form//div[contains(@class, '")
-		.append(getBlogFormCss())
-		.append("')]//input[@type='text'])[1]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		
-		browser.type(selectorBuffer.toString(), title);
+		if(edit == null || ArrayUtils.contains(edit, BlogEdit.TITLE)){
+			functionalUtil.idle(browser);
+
+			selectorBuffer = new StringBuffer();
+
+			selectorBuffer.append("xpath=(//form//div[contains(@class, '")
+			.append(getBlogFormCss())
+			.append("')]//input[@type='text'])[1]");
+
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+
+			browser.type(selectorBuffer.toString(), title);
+		}
 		
 		/* fill in form - description */
-		functionalUtil.typeMCE(browser, getBlogFormCss(), 0, description);
+		if(edit == null || ArrayUtils.contains(edit, BlogEdit.DESCRIPTION)){
+			functionalUtil.typeMCE(browser, getBlogFormCss(), 0, description);
+		}
 		
 		/* fill in form - content */
-		functionalUtil.typeMCE(browser, getBlogFormCss(), 1, content);
+		if(edit == null || ArrayUtils.contains(edit, BlogEdit.CONTENT)){
+			functionalUtil.typeMCE(browser, getBlogFormCss(), 1, content);
+		}
 		
 		/* save form */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//form//div[contains(@class, '")
-		.append(getBlogFormCss())
-		.append("')]//button[last() and contains(@class, '")
-		.append(functionalUtil.getButtonDirtyCss())
-		.append("')]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		browser.click(selectorBuffer.toString());
-		functionalUtil.waitForPageToLoad(browser);
+		if(edit == null || edit.length > 0){
+			selectorBuffer = new StringBuffer();
+
+			selectorBuffer.append("xpath=//form//div[contains(@class, '")
+			.append(getBlogFormCss())
+			.append("')]//button[last() and contains(@class, '")
+			.append(functionalUtil.getButtonDirtyCss())
+			.append("')]");
+
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.click(selectorBuffer.toString());
+			functionalUtil.waitForPageToLoad(browser);
+		}
 		
 		return(true);
 	}
@@ -1685,6 +1813,45 @@ public class FunctionalCourseUtil {
 		return(true);
 	}
 	
+	/**
+	 * 
+	 * @param browser
+	 * @param file
+	 * @return
+	 */
+	public boolean uploadFileToCourseFolder(Selenium browser, URI file){
+		/* open upload dialog */
+		functionalUtil.idle(browser);
+
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//a[contains(@class, 'b_briefcase_upload')]");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+
+		/* attach file */
+		functionalUtil.idle(browser);
+
+		selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//form//input[@type='file']");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.attachFile(selectorBuffer.toString(), file.toString());
+
+		/* upload file */
+		selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//form//button[last() and contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		return(true);
+	}
+	
 	public FunctionalUtil getFunctionalUtil() {
 		return functionalUtil;
 	}
@@ -1941,12 +2108,60 @@ public class FunctionalCourseUtil {
 		this.blogCreateEntryCss = blogCreateEntryCss;
 	}
 
+	public String getBlogEditEntryCss() {
+		return blogEditEntryCss;
+	}
+
+	public void setBlogEditEntryCss(String blogEditEntryCss) {
+		this.blogEditEntryCss = blogEditEntryCss;
+	}
+
+	public String getBlogDeleteEntryCss() {
+		return blogDeleteEntryCss;
+	}
+
+	public void setBlogDeleteEntryCss(String blogDeleteEntryCss) {
+		this.blogDeleteEntryCss = blogDeleteEntryCss;
+	}
+
+	public String getBlogReadEntryCss() {
+		return blogReadEntryCss;
+	}
+
+	public void setBlogReadEntryCss(String blogReadEntryCss) {
+		this.blogReadEntryCss = blogReadEntryCss;
+	}
+
 	public String getBlogFormCss() {
 		return blogFormCss;
 	}
 
 	public void setBlogFormCss(String blogFormCss) {
 		this.blogFormCss = blogFormCss;
+	}
+
+	public String getBlogPostCss() {
+		return blogPostCss;
+	}
+
+	public void setBlogPostCss(String blogPostCss) {
+		this.blogPostCss = blogPostCss;
+	}
+
+	public String getBlogYearCss() {
+		return blogYearCss;
+	}
+
+	public void setBlogYearCss(String blogYearCss) {
+		this.blogYearCss = blogYearCss;
+	}
+
+	public String getBlogMonthCss() {
+		return blogMonthCss;
+	}
+
+	public void setBlogMonthCss(String blogMonthCss) {
+		this.blogMonthCss = blogMonthCss;
 	}
 
 	public String getTestChooseRepositoryFileCss() {

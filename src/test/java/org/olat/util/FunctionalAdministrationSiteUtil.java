@@ -32,9 +32,96 @@ public class FunctionalAdministrationSiteUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalAdministrationSiteUtil.class);
 	
 	public enum AdministrationSiteAction {
-		SYSTEM_ADMINISTRATION,
-		ADVANCED_PROPERTIES,
-		BOOKINGS
+		INFORMATION("o_sel_sysinfo"),
+		CONFIGURATION("o_sel_sysconfig"),
+		MAINTENANCE("o_sel_sysadmin"),
+		CUSTOMIZATION("o_sel_customizing"),
+		ADVANCED_PROPERTIES("o_sel_advancedproperties"),
+		BOOKINGS("o_sel_booking");
+		
+		private String actionCss;
+		
+		AdministrationSiteAction(String actionCss){
+			setActionCss(actionCss);
+		}
+
+		public String getActionCss() {
+			return actionCss;
+		}
+
+		public void setActionCss(String actionCss) {
+			this.actionCss = actionCss;
+		}
+	}
+	
+	public enum SystemConfigurationAction {
+		LAYOUT("o_sel_layout"),
+		LANGUAGES("o_sel_i18n"),
+		QUOTA("o_sel_quota"),
+		VERSIONIG("o_sel_versioning"),
+		PORTFOLIO("o_sel_portfolio"),
+		RESAPI("o_sel_restapi"),
+		EXTENSIONS("o_sel_extensions"),
+		EMAIL("o_sel_mail"),
+		VITERO("o_sel_vitero"),
+		SETUP("o_sel_properties"),
+		SELF_REGISTRATION("o_sel_selfregistration"),
+		PAYPAL("o_sel_paypal"),
+		GROUP("o_sel_group");
+		
+		private String actionCss;
+		
+		SystemConfigurationAction(String actionCss){
+			setActionCss(actionCss);
+		}
+
+		public String getActionCss() {
+			return actionCss;
+		}
+
+		public void setActionCss(String actionCss) {
+			this.actionCss = actionCss;
+		}
+	}
+	
+	public enum SystemMaintenanceAction {
+		STATISTICS("o_sel_statistics"),
+		SEARCH("o_sel_search"),
+		NOTIFICATIONS("o_sel_notifications"),
+		PASSWORDS("o_sel_userbulkchangepw");
+		
+		private String actionCss;
+		
+		SystemMaintenanceAction(String actionCss){
+			setActionCss(actionCss);
+		}
+
+		public String getActionCss() {
+			return actionCss;
+		}
+
+		public void setActionCss(String actionCss) {
+			this.actionCss = actionCss;
+		}
+	}
+	
+	public enum CustomizingAction {
+		TRANSLATION("o_sel_translation"),
+		REGISTRATION("o_sel_registration");
+		
+		private String actionCss;
+		
+		CustomizingAction(String actionCss){
+			setActionCss(actionCss);
+		}
+
+		public String getActionCss() {
+			return actionCss;
+		}
+
+		public void setActionCss(String actionCss) {
+			this.actionCss = actionCss;
+		}
 	}
 	
 	private FunctionalUtil functionalUtil;
