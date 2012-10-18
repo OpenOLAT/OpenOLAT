@@ -115,10 +115,9 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		ICourse course = CourseFactory.loadCourse(courseResId);
 		RepositoryEntry courseRepositoryEntry = rm.lookupRepositoryEntry(course, true);
 		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(courseRepositoryEntry.getOwnerGroup());
-		List<Identity> coaches = cgm.getCoachesFromBusinessGroups();
-		//fxdiff VCRP-1,2: access control of resources
+		List<Identity> coaches = new ArrayList<Identity>(cgm.getCoachesFromBusinessGroups());
 		coaches.addAll(cgm.getCoaches());
-		List<Identity> participants = cgm.getParticipantsFromBusinessGroups();
+		List<Identity> participants = new ArrayList<Identity>(cgm.getParticipantsFromBusinessGroups());
 		participants.addAll(cgm.getParticipants());
 		Comparator<Identity> idComparator = new IdentityComparator();
 		Collections.sort(owners, idComparator);
