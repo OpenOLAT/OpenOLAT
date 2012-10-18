@@ -74,7 +74,7 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 		listenTo(accessibilityCondContr);
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
-		editForm = new ViteroBookingsEditController(ureq, wControl, null, ores, course.getCourseTitle());
+		editForm = new ViteroBookingsEditController(ureq, wControl, null, ores, courseNode.getIdent(), course.getCourseTitle());
 		listenTo(editForm);
 		
 		editVc = createVelocityContainer("edit");

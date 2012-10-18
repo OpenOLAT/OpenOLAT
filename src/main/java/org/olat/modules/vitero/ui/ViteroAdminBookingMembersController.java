@@ -122,7 +122,7 @@ public class ViteroAdminBookingMembersController extends BasicController {
 				int row = e.getRowId();
 				ViteroUser identity = (ViteroUser)tableCtr.getTableDataModel().getObject(row);
 				if("signout".equals(e.getActionId())) {
-					signOut(ureq, Collections.singletonList(identity));
+					signOut(Collections.singletonList(identity));
 				}
 			} else if(event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent e = (TableMultiSelectEvent)event;
@@ -132,7 +132,7 @@ public class ViteroAdminBookingMembersController extends BasicController {
 					identities.add(identity);
 				}
 				if("signout".equals(e.getAction())) {
-					signOut(ureq, identities);
+					signOut(identities);
 				}
 			}
 			
@@ -140,7 +140,7 @@ public class ViteroAdminBookingMembersController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private void signOut(UserRequest ureq, List<ViteroUser> members) {
+	private void signOut(List<ViteroUser> members) {
 		try {
 			for(ViteroUser member:members) {
 				if(viteroManager.removeFromRoom(booking, member.getUserId())) {
@@ -197,6 +197,7 @@ public class ViteroAdminBookingMembersController extends BasicController {
 				case firstName: return identity.getFirstName();
 				case lastName: return identity.getLastName();
 				case email: return identity.getEmail();
+				default: {/* do nothing */}
 			}
 			return null;
 		}

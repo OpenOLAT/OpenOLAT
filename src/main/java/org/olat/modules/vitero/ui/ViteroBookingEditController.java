@@ -71,14 +71,17 @@ public class ViteroBookingEditController extends FormBasicController {
 	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
+	private final String subIdentifier;
 	private final ViteroBooking booking;
 	private final ViteroManager viteroManager;
 	
-	public ViteroBookingEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores, ViteroBooking booking) {
+	public ViteroBookingEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
+			String subIdentifier, ViteroBooking booking) {
 		super(ureq, wControl);
 		
 		this.group = group;
 		this.ores = ores;
+		this.subIdentifier = subIdentifier; 
 		this.booking = booking;
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		
@@ -157,7 +160,7 @@ public class ViteroBookingEditController extends FormBasicController {
 	}
 	
 	private boolean isRoomSizeAvailable(int roomSize) {
-		String roomSizeStr = Integer.toString(booking.getRoomSize());
+		String roomSizeStr = Integer.toString(roomSize);
 		for(int i=roomSizes.length; i-->0; ) {
 			if(roomSizes[i].equals(roomSizeStr)) {
 				return true;
@@ -261,7 +264,7 @@ public class ViteroBookingEditController extends FormBasicController {
 		
 		try {
 			if(booking.getBookingId() >= 0) {
-				ViteroBooking updatedBooking = viteroManager.updateBooking(group, ores, booking);
+				ViteroBooking updatedBooking = viteroManager.updateBooking(group, ores, subIdentifier, booking);
 				if(updatedBooking != null) {
 					showInfo("booking.ok");
 					fireEvent(ureq, Event.DONE_EVENT);
@@ -269,7 +272,7 @@ public class ViteroBookingEditController extends FormBasicController {
 					showError("error.unkown");
 				}
 			} else {
-				ViteroStatus status = viteroManager.createBooking(group, ores, booking);
+				ViteroStatus status = viteroManager.createBooking(group, ores, subIdentifier, booking);
 				if(status.isOk()) {
 					showInfo("booking.ok");
 					fireEvent(ureq, Event.DONE_EVENT);

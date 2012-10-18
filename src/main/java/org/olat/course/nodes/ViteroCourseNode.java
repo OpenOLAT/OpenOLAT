@@ -42,7 +42,6 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.vitero.ViteroEditController;
 import org.olat.course.nodes.vitero.ViteroPeekViewController;
-import org.olat.course.nodes.vitero.ViteroRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -99,7 +98,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 		Controller runCtr;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(ViteroRunController.class, ureq.getLocale());
+			Translator trans = Util.createPackageTranslator(ViteroPeekViewController.class, ureq.getLocale());
 			String title = trans.translate("guestnoaccess.title");
 			String message = trans.translate("guestnoaccess.message");
 			runCtr = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
@@ -124,7 +123,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 			Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
 			String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
-			runCtr = new ViteroBookingsRunController(ureq, wControl, null, ores, courseTitle, moderator);
+			runCtr = new ViteroBookingsRunController(ureq, wControl, null, ores, getIdent(), courseTitle, moderator);
 		}
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vitero_icon");
 		return new NodeRunConstructionResult(controller);
@@ -132,7 +131,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new ViteroPeekViewController(ureq, wControl, userCourseEnv);
+		return new ViteroPeekViewController(ureq, wControl, userCourseEnv, getIdent());
 	}
 
 	@Override
@@ -165,6 +164,6 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 		ViteroManager provider = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		// remove meeting
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
-		provider.deleteAll(null, ores);
+		provider.deleteAll(null, ores, getIdent());
 	}
 }

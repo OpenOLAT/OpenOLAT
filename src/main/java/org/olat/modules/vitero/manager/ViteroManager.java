@@ -962,7 +962,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		return booking;
 	}
 
-	public ViteroStatus createBooking(BusinessGroup group, OLATResourceable ores, ViteroBooking vBooking)
+	public ViteroStatus createBooking(BusinessGroup group, OLATResourceable ores, String subIdentifier, ViteroBooking vBooking)
 	throws VmsNotAvailableException {
 		Bookingtype booking = getBookingById(vBooking.getBookingId());
 		if(booking != null) {
@@ -1022,7 +1022,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 				return new ViteroStatus(ErrorCode.moduleCollision);
 			}
 			vBooking.setBookingId(bookingId);
-			getOrCreateProperty(group, ores, vBooking);
+			getOrCreateProperty(group, ores, subIdentifier, vBooking);
 			return new ViteroStatus();
 		} catch(AxisFault f) {
 			ErrorCode code = handleAxisFault(f);
@@ -1049,7 +1049,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	 * @return
 	 * @throws VmsNotAvailableException
 	 */
-	public ViteroBooking updateBooking(BusinessGroup group, OLATResourceable ores, ViteroBooking vBooking)
+	public ViteroBooking updateBooking(BusinessGroup group, OLATResourceable ores, String subIdentifier, ViteroBooking vBooking)
 	throws VmsNotAvailableException {
 		Bookingtype bookingType = getBookingById(vBooking.getBookingId());
 		if(bookingType == null) {
@@ -1061,7 +1061,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		//set the vms values
 		update(vBooking, booking);
 		//update the property
-		updateProperty(group, ores, vBooking);
+		updateProperty(group, ores, subIdentifier, vBooking);
 		return vBooking;
 	}
 	
@@ -1097,7 +1097,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		}
 	}
 	
-	public void deleteAll(BusinessGroup group, OLATResourceable ores) {
+	public void deleteAll(BusinessGroup group, OLATResourceable ores, String subIdentifier) {
 		try {
 			List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
 			for(Property property:properties) {
@@ -1107,15 +1107,19 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			}
 		} catch (VmsNotAvailableException e) {
 			logError("", e);
-			markAsZombie(group, ores);
+			markAsZombie(group, ores, subIdentifier);
 		}
 	}
 	
-	private final void markAsZombie(BusinessGroup group, OLATResourceable ores) {
+	private final void markAsZombie(BusinessGroup group, OLATResourceable ores, String subIdentifier) {
 		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
 		for(Property property:properties) {
-			property.setName(VMS_CATEGORY_ZOMBIE);
-			propertyManager.updateProperty(property);
+			String propIdentifier = property.getStringValue();
+			if((subIdentifier == null && propIdentifier == null)
+					|| (subIdentifier != null && subIdentifier.equals(propIdentifier))) {
+				property.setName(VMS_CATEGORY_ZOMBIE);
+				propertyManager.updateProperty(property);
+			}
 		}
 	}
 	
@@ -1152,19 +1156,25 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	 * @param ores The OLAT resourceable (of the course) (optional)
 	 * @return
 	 */
-	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores)
+	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores, String subIdentifier)
 	throws VmsNotAvailableException {
 		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
 		List<ViteroBooking> bookings = new ArrayList<ViteroBooking>();
 		for(Property property:properties) {
-			String bookingStr = property.getTextValue();
-			ViteroBooking booking = deserializeViteroBooking(bookingStr);
-			Bookingtype bookingType = getBookingById(booking.getBookingId());
-			if(bookingType != null) {
-				Booking vmsBooking = bookingType.getBooking();
-				booking.setProperty(property);
-				update(booking, vmsBooking);
-				bookings.add(booking);
+			String propIdentifier = property.getStringValue();
+			if((propIdentifier == null || subIdentifier == null)
+					|| (subIdentifier != null
+						&& (propIdentifier == null || subIdentifier.equals(propIdentifier))
+					)) {
+				String bookingStr = property.getTextValue();
+				ViteroBooking booking = deserializeViteroBooking(bookingStr);
+				Bookingtype bookingType = getBookingById(booking.getBookingId());
+				if(bookingType != null) {
+					Booking vmsBooking = bookingType.getBooking();
+					booking.setProperty(property);
+					update(booking, vmsBooking);
+					bookings.add(booking);
+				}
 			}
 		}
 		return bookings;
@@ -1298,7 +1308,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			SecurityHeader.addAdminSecurityHeader(login, password, licenceWs);
 			
 			LicenceServiceStub.GetModulesForCustomerRequest licenceRequest = new LicenceServiceStub.GetModulesForCustomerRequest();
-			licenceRequest.setCustomerid(viteroModule.getCustomerId());
+			licenceRequest.setCustomerid(customerId);
 			
 			LicenceServiceStub.GetModulesForCustomerResponse response = licenceWs.getModulesForCustomer(licenceRequest);
 			LicenceServiceStub.Modulestype modules = response.getGetModulesForCustomerResponse();
@@ -1409,24 +1419,24 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	}
 	
 	//Properties
-	private final Property getProperty(final BusinessGroup group, final OLATResourceable courseResource, final ViteroBooking booking) {
+	private final Property getProperty(BusinessGroup group, OLATResourceable courseResource, ViteroBooking booking) {
 		String propertyName = Integer.toString(booking.getBookingId());
 		return propertyManager.findProperty(null, group, courseResource, VMS_CATEGORY, propertyName);
 	}
 	
-	private final Property getOrCreateProperty(final BusinessGroup group, final OLATResourceable courseResource, final ViteroBooking booking) {
+	private final Property getOrCreateProperty(BusinessGroup group, OLATResourceable courseResource, String subIdentifier, ViteroBooking booking) {
 		Property property = getProperty(group, courseResource, booking);
 		if(property == null) {
-			property = createProperty(group, courseResource, booking);
+			property = createProperty(group, courseResource, subIdentifier, booking);
 			propertyManager.saveProperty(property);
 		}
 		return property;
 	}
 	
-	private final Property updateProperty(final BusinessGroup group, final OLATResourceable courseResource, ViteroBooking booking) {
+	private final Property updateProperty(BusinessGroup group, OLATResourceable courseResource, String subIdentifier, ViteroBooking booking) {
 		Property property = getProperty(group, courseResource, booking);
 		if(property == null) {
-			property = createProperty(group, courseResource, booking);
+			property = createProperty(group, courseResource, subIdentifier, booking);
 			propertyManager.saveProperty(property);
 		} else {
 			String serialized = serializeViteroBooking(booking);
@@ -1436,11 +1446,11 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		return property;
 	}
 	
-	private final Property createProperty(final BusinessGroup group, final OLATResourceable courseResource, ViteroBooking booking) {
+	private final Property createProperty(final BusinessGroup group, final OLATResourceable courseResource, String subIdentifier, ViteroBooking booking) {
 		String serialized = serializeViteroBooking(booking);
 		String bookingId = Integer.toString(booking.getBookingId());
 		Long groupId = new Long(booking.getGroupId());
-		return propertyManager.createPropertyInstance(null, group, courseResource, VMS_CATEGORY, bookingId, null, groupId, null, serialized);
+		return propertyManager.createPropertyInstance(null, group, courseResource, VMS_CATEGORY, bookingId, null, groupId, subIdentifier, serialized);
 	}
 	
 	private final void deleteProperty(ViteroBooking vBooking) {

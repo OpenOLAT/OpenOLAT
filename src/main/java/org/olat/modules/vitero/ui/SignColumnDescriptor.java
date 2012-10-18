@@ -68,6 +68,7 @@ public class SignColumnDescriptor extends DefaultColumnDescriptor {
 			switch(sign) {
 				case signin: sb.append(translator.translate("signin")); break;
 				case signout: sb.append(translator.translate("signout")); break;
+				default:{ /*do nothing */}
 			}
 		}
 	}

@@ -54,14 +54,16 @@ public class ViteroBookingsRunController extends BasicController {
 	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
+	private final String subIdentifier;
 	private final String resourceName;
 	
 	public ViteroBookingsRunController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
-			String resourceName, boolean admin) {
+			String subIdentifier, String resourceName, boolean admin) {
 		super(ureq, wControl);
 		
 		this.group = group;
 		this.ores = ores;
+		this.subIdentifier = subIdentifier;
 		this.resourceName = resourceName;
 		
 		if(ureq.getUserSession().getRoles().isGuestOnly()) {
@@ -80,7 +82,7 @@ public class ViteroBookingsRunController extends BasicController {
 			
 			putInitialPanel(mainVC);
 		} else {
-			bookingsController = new ViteroBookingsController(ureq, wControl,group, ores);
+			bookingsController = new ViteroBookingsController(ureq, wControl,group, ores, subIdentifier);
 			listenTo(bookingsController);
 			putInitialPanel(bookingsController.getInitialComponent());
 		}
@@ -109,7 +111,7 @@ public class ViteroBookingsRunController extends BasicController {
 	
 	private void doOpenBookings(UserRequest ureq) {
 		if(bookingsController == null) {
-			bookingsController = new ViteroBookingsController(ureq, getWindowControl(), group, ores);
+			bookingsController = new ViteroBookingsController(ureq, getWindowControl(), group, ores, subIdentifier);
 			listenTo(bookingsController);
 		} 
 		mainVC.put("segmentCmp", bookingsController.getInitialComponent());
@@ -117,7 +119,7 @@ public class ViteroBookingsRunController extends BasicController {
 	
 	private void doOpenAdmin(UserRequest ureq) {
 		if(adminController == null) {
-			adminController = new ViteroBookingsEditController(ureq, getWindowControl(), group, ores, resourceName);
+			adminController = new ViteroBookingsEditController(ureq, getWindowControl(), group, ores, subIdentifier, resourceName);
 			listenTo(adminController);
 		} 
 		mainVC.put("segmentCmp", adminController.getInitialComponent());

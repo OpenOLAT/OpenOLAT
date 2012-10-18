@@ -62,14 +62,16 @@ public class ViteroBookingsController extends BasicController {
 	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
+	private final String subIdentifier;
 	private final ViteroManager viteroManager;
 
 	public ViteroBookingsController(UserRequest ureq, WindowControl wControl,
-			BusinessGroup group, OLATResourceable ores) {
+			BusinessGroup group, OLATResourceable ores, String subIdentifier) {
 		super(ureq, wControl);
 
 		this.ores = ores;
 		this.group = group;
+		this.subIdentifier = subIdentifier;
 		viteroManager = (ViteroManager) CoreSpringFactory.getBean("viteroManager");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -136,7 +138,7 @@ public class ViteroBookingsController extends BasicController {
 	
 	protected void loadModel() {
 		try {
-			List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
+			List<ViteroBooking> bookings = viteroManager.getBookings(group, ores, subIdentifier);
 			List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
 			FilterBookings.filterMyFutureBookings(bookings, myBookings);
 			Collections.sort(bookings, new StartBookingComparator());

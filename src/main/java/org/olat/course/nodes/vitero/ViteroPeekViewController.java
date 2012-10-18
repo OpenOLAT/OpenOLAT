@@ -54,7 +54,8 @@ import org.olat.modules.vitero.ui.ViteroBookingDataModel;
 public class ViteroPeekViewController extends BasicController {
 
 
-	public ViteroPeekViewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
+	public ViteroPeekViewController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, String subIdentifier) {
 		super(ureq, wControl);
 
 		ViteroManager viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
@@ -63,7 +64,7 @@ public class ViteroPeekViewController extends BasicController {
 		
 		List<ViteroBooking> bookings;
 		try {
-			bookings = viteroManager.getBookings(null, ores);
+			bookings = viteroManager.getBookings(null, ores, subIdentifier);
 			List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
 			FilterBookings.filterMyFutureBookings(bookings, myBookings);
 			Collections.sort(bookings, new StartBookingComparator());

@@ -74,13 +74,16 @@ public class ViteroBookingsEditController extends FormBasicController {
 	private final String resourceName;
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
+	private final String subIdentifier;
 	private final ViteroManager viteroManager;
 
-	public ViteroBookingsEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores, String resourceName) {
+	public ViteroBookingsEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
+			String subIdentifier, String resourceName) {
 		super(ureq, wControl, "edit");
 		
 		this.group = group;
 		this.ores = ores;
+		this.subIdentifier = subIdentifier;
 		this.resourceName = resourceName;
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 
@@ -105,7 +108,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 	protected void reloadModel() {
 		try {
 			bookingDisplays.clear(); 
-			List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
+			List<ViteroBooking> bookings = viteroManager.getBookings(group, ores, subIdentifier);
 			int i=0;
 			for(ViteroBooking booking:bookings) {
 				BookingDisplay display = new BookingDisplay(booking);
@@ -172,7 +175,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 		} else if(source == dialogCtr) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				ViteroBooking booking = (ViteroBooking)dialogCtr.getUserObject();
-				deleteBooking(ureq, booking);
+				deleteBooking(booking);
 			}
 		} else if (source == warningGroupCtr) {
 			removeAsListenerAndDispose(warningGroupCtr);
@@ -221,7 +224,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 		}
 	}
 	
-	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
+	protected void deleteBooking(ViteroBooking booking) {
 		try {
 			if(viteroManager.deleteBooking(booking)) {
 				showInfo("delete.ok");
@@ -253,7 +256,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 	protected void editBooking(UserRequest ureq, ViteroBooking viteroBooking) {
 		removeAsListenerAndDispose(bookingController);
 
-		bookingController = new ViteroBookingEditController(ureq, getWindowControl(), group, ores, viteroBooking);			
+		bookingController = new ViteroBookingEditController(ureq, getWindowControl(), group, ores, subIdentifier, viteroBooking);			
 		listenTo(bookingController);
 		
 		removeAsListenerAndDispose(cmc);

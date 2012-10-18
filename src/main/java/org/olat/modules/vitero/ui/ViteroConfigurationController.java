@@ -243,7 +243,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			viteroModule.setEnabled(enabled);
 		} else if(source == checkLink) {
 			if(validateURL()) {
-				checkConnection(ureq);
+				checkConnection();
 			}
 		} else if(source == checkUserLink) {
 			if(validateURL()) {
@@ -271,7 +271,7 @@ public class ViteroConfigurationController extends FormBasicController {
 		}
 	}
 	
-	protected boolean checkConnection(UserRequest ureq) {
+	protected boolean checkConnection() {
 		String url = urlEl.getValue();
 		String login = loginEl.getValue();
 		String password = passwordEl.getValue();

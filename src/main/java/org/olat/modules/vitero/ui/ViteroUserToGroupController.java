@@ -149,9 +149,9 @@ public class ViteroUserToGroupController extends BasicController {
 				int row = e.getRowId();
 				Identity identity = (Identity)tableCtr.getTableDataModel().getObject(row);
 				if("signin".equals(e.getActionId())) {
-					signIn(ureq, Collections.singletonList(identity));
+					signIn(Collections.singletonList(identity));
 				} else if("signout".equals(e.getActionId())) {
-					signOut(ureq, Collections.singletonList(identity));
+					signOut(Collections.singletonList(identity));
 				}
 			} else if(event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent e = (TableMultiSelectEvent)event;
@@ -161,9 +161,9 @@ public class ViteroUserToGroupController extends BasicController {
 					identities.add(identity);
 				}
 				if("signin".equals(e.getAction())) {
-					signIn(ureq, identities);
+					signIn(identities);
 				} else if("signout".equals(e.getAction())) {
-					signOut(ureq, identities);
+					signOut(identities);
 				} else if("reload".equals(e.getAction())) {
 					loadModel();
 				}
@@ -173,7 +173,7 @@ public class ViteroUserToGroupController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private void signIn(UserRequest ureq, List<Identity> identities) {
+	private void signIn(List<Identity> identities) {
 		try {
 			ResourceMembers members = ((UserToGroupDataModel)tableCtr.getTableDataModel()).getMembers();
 			
@@ -194,7 +194,7 @@ public class ViteroUserToGroupController extends BasicController {
 		}
 	}
 	
-	private void signOut(UserRequest ureq, List<Identity> identities) {
+	private void signOut(List<Identity> identities) {
 		try {
 			for(Identity identity:identities) {
 				if(viteroManager.removeFromRoom(booking, identity)) {

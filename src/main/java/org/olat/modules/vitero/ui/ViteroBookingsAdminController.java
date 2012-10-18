@@ -128,7 +128,7 @@ public class ViteroBookingsAdminController extends BasicController {
 		} else if(source == dialogCtr) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				ViteroBooking booking = (ViteroBooking)dialogCtr.getUserObject();
-				deleteBooking(ureq, booking);
+				deleteBooking(booking);
 			}
 		} else if (source == cmc ) {
 			removeAsListenerAndDispose(infoController);
@@ -180,7 +180,7 @@ public class ViteroBookingsAdminController extends BasicController {
 		}
 	}
 	
-	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
+	protected void deleteBooking(ViteroBooking booking) {
 		try {
 			if( viteroManager.deleteBooking(booking)) {
 				showInfo("delete.ok");
@@ -202,7 +202,7 @@ public class ViteroBookingsAdminController extends BasicController {
 	
 	protected void reloadModel() {
 		try {
-			List<ViteroBooking> bookings = viteroManager.getBookings(null, null);
+			List<ViteroBooking> bookings = viteroManager.getBookings(null, null, null);
 			ViteroBookingDataModel tableModel = new ViteroBookingDataModel(bookings);
 			tableCtr.setTableDataModel(tableModel);
 		} catch (VmsNotAvailableException e) {
