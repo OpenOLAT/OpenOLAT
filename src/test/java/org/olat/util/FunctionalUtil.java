@@ -126,11 +126,19 @@ public class FunctionalUtil {
 	public final static String BUTTON_CSS = "b_button";
 	public final static String BUTTON_DIRTY_CSS = "b_button_dirty";
 	public final static String BACK_BUTTON_CSS = "b_link_back";
+	
 	public final static String TABLE_FIRST_CHILD_CSS = "b_first_child";
 	public final static String TABLE_LAST_CHILD_CSS = "b_last_child";
+	public final static String TABLE_ALL_CSS = "b_table_page_all";
+	
 	public final static String TREE_NODE_ANCHOR_CSS = "x-tree-node-anchor";
 	public final static String TREE_NODE_CSS = "x-tree-node";
 	public final static String TREE_NODE_LOADING_CSS = "x-tree-node-loading";
+	public final static String TREE_LEVEL1_CSS = "b_tree_l1";
+	public final static String TREE_LEVEL2_CSS = "b_tree_l2";
+	public final static String TREE_LEVEL_OPEN_CSS = "b_tree_level_open";
+	public final static String TREE_LEVEL_CLOSE_CSS = "b_tree_level_close";
+	
 	public final static String WINDOW_CLOSE_LINK_CSS = "b_link_close";
 	
 	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
@@ -174,14 +182,22 @@ public class FunctionalUtil {
 	private String mceContentBodyCss;
 	
 	private String windowCloseLinkCss;
+	
 	private String buttonCss;
 	private String buttonDirtyCss;
 	private String backButtonCss;
+	
 	private String tableFirstChildCss;
 	private String tableLastChildCss;
+	private String tableAllCss;
+	
 	private String treeNodeAnchorCss;
 	private String treeNodeCss;
 	private String treeNodeLoadingCss;
+	private String treeLevel1Css;
+	private String treeLevel2Css;
+	private String treeLevelOpenCss;
+	private String treeLevelCloseCss;
 	
 	private FunctionalHomeSiteUtil functionalHomeSiteUtil;
 	private FunctionalGroupsSiteUtil functionalGroupsSiteUtil;
@@ -242,15 +258,23 @@ public class FunctionalUtil {
 		
 		mceContentBodyCss = MCE_CONTENT_BODY_CSS;
 		
-		windowCloseLinkCss = WINDOW_CLOSE_LINK_CSS; 
+		windowCloseLinkCss = WINDOW_CLOSE_LINK_CSS;
+		
 		buttonCss = BUTTON_CSS;
 		buttonDirtyCss = BUTTON_DIRTY_CSS;
 		backButtonCss = BACK_BUTTON_CSS;
+		
 		tableFirstChildCss = TABLE_FIRST_CHILD_CSS;
 		tableLastChildCss = TABLE_LAST_CHILD_CSS;
+		tableAllCss = TABLE_ALL_CSS;
+		
 		treeNodeAnchorCss = TREE_NODE_ANCHOR_CSS;
 		treeNodeCss = TREE_NODE_CSS;
 		treeNodeLoadingCss = TREE_NODE_LOADING_CSS;
+		treeLevel1Css = TREE_LEVEL1_CSS;
+		treeLevel2Css = TREE_LEVEL2_CSS;
+		treeLevelOpenCss = TREE_LEVEL_OPEN_CSS;
+		treeLevelCloseCss = TREE_LEVEL_CLOSE_CSS;
 		
 		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(this);
 		functionalGroupsSiteUtil = new FunctionalGroupsSiteUtil(this);
@@ -435,12 +459,14 @@ public class FunctionalUtil {
 			}
 			
 			if((content == null && source == null) || 
-					(flags != null && source != null && !ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && source.contains(content)) ||
-					content.equals(source)){
+					(flags != null && source != null && !ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && content.equals(source)) ||
+					source.contains(content)){
 				log.info("found content after " + (currentTime - startTime) + "ms");
 				
 				/* go back to toplevel */
-				browser.selectFrame("relative=top");
+				if(iframeSelectors != null){
+					browser.selectFrame("relative=top");
+				}
 				
 				return(true);
 			}
@@ -1599,6 +1625,14 @@ public class FunctionalUtil {
 		this.tableLastChildCss = tableLastChildCss;
 	}
 
+	public String getTableAllCss() {
+		return tableAllCss;
+	}
+
+	public void setTableAllCss(String tableAllCss) {
+		this.tableAllCss = tableAllCss;
+	}
+
 	public String getTreeNodeAnchorCss() {
 		return treeNodeAnchorCss;
 	}
@@ -1621,5 +1655,37 @@ public class FunctionalUtil {
 
 	public void setTreeNodeLoadingCss(String treeNodeLoadingCss) {
 		this.treeNodeLoadingCss = treeNodeLoadingCss;
+	}
+
+	public String getTreeLevel1Css() {
+		return treeLevel1Css;
+	}
+
+	public void setTreeLevel1Css(String treeLevel1Css) {
+		this.treeLevel1Css = treeLevel1Css;
+	}
+
+	public String getTreeLevel2Css() {
+		return treeLevel2Css;
+	}
+
+	public void setTreeLevel2Css(String treeLevel2Css) {
+		this.treeLevel2Css = treeLevel2Css;
+	}
+
+	public String getTreeLevelOpenCss() {
+		return treeLevelOpenCss;
+	}
+
+	public void setTreeLevelOpenCss(String treeLevelOpenCss) {
+		this.treeLevelOpenCss = treeLevelOpenCss;
+	}
+
+	public String getTreeLevelCloseCss() {
+		return treeLevelCloseCss;
+	}
+
+	public void setTreeLevelCloseCss(String treeLevelCloseCss) {
+		this.treeLevelCloseCss = treeLevelCloseCss;
 	}
 }

@@ -19,8 +19,10 @@
  */
 package org.olat.util;
 
+import org.junit.Assert;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.util.FunctionalUtil.OlatSite;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -124,6 +126,21 @@ public class FunctionalAdministrationSiteUtil {
 		}
 	}
 	
+	public enum SystemInformationTabs {
+		SESSIONS,
+		INFOMSG,
+		ERRORS,
+		LOGLEVELS,
+		SYSINFO,
+		SNOOP,
+		REQUESTLOGLEVEL,
+		USERSESSIONS,
+		LOCKS,
+		HIBERNATE,
+		CACHES,
+		BUILDINFO;
+	}
+	
 	private FunctionalUtil functionalUtil;
 	
 	public FunctionalAdministrationSiteUtil(FunctionalUtil functionalUtil){
@@ -138,9 +155,149 @@ public class FunctionalAdministrationSiteUtil {
 	 * @return true on success otherwise false
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){
-		//TODO:JK: implement me
+		functionalUtil.idle(browser);
 		
-		return(false);
+		StringBuffer selectorBuffer;
+		
+		if(action instanceof AdministrationSiteAction){
+			 selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=//li[contains(@class, '")
+			.append(((AdministrationSiteAction) action).getActionCss())
+			.append("')]//a[contains(@class, '")
+			.append(functionalUtil.getTreeLevel1Css())
+			.append("')]");
+		}else if(action instanceof SystemConfigurationAction){
+			/* check if collapsed */
+			 selectorBuffer = new StringBuffer();
+			
+			 selectorBuffer.append("xpath=//li[contains(@class, '")
+			 .append(AdministrationSiteAction.CONFIGURATION.getActionCss())
+			 .append("')]//a[contains(@class, '")
+			 .append(functionalUtil.getTreeLevelOpenCss())
+			 .append("')]");
+			 
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				browser.click(selectorBuffer.toString());
+				functionalUtil.idle(browser);
+			}
+
+			/* click */
+			selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=//li[contains(@class, '")
+			.append(((SystemConfigurationAction) action).getActionCss())
+			.append("')]//a[contains(@class, '")
+			.append(functionalUtil.getTreeLevel2Css())
+			.append("')]");
+		}else if(action instanceof SystemMaintenanceAction){
+			/* check if collapsed */
+			 selectorBuffer = new StringBuffer();
+			
+			 selectorBuffer.append("xpath=//li[contains(@class, '")
+			 .append(AdministrationSiteAction.MAINTENANCE.getActionCss())
+			 .append("')]//a[contains(@class, '")
+			 .append(functionalUtil.getTreeLevelOpenCss())
+			 .append("')]");
+			 
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				browser.click(selectorBuffer.toString());
+				functionalUtil.idle(browser);
+			}
+
+			/* click */
+			selectorBuffer.append("xpath=//li[contains(@class, '")
+			.append(((SystemMaintenanceAction) action).getActionCss())
+			.append("')]//a[contains(@class, '")
+			.append(functionalUtil.getTreeLevel2Css())
+			.append("')]");
+		}else if(action instanceof CustomizingAction){
+			/* check if collapsed */
+			 selectorBuffer = new StringBuffer();
+			
+			 selectorBuffer.append("xpath=//li[contains(@class, '")
+			 .append(AdministrationSiteAction.CUSTOMIZATION.getActionCss())
+			 .append("')]//a[contains(@class, '")
+			 .append(functionalUtil.getTreeLevelOpenCss())
+			 .append("')]");
+			 
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				browser.click(selectorBuffer.toString());
+				functionalUtil.idle(browser);
+			}
+
+			/* click */
+			selectorBuffer.append("xpath=//li[contains(@class, '")
+			.append(((CustomizingAction) action).getActionCss())
+			.append("')]//a[contains(@class, '")
+			.append(functionalUtil.getTreeLevel2Css())
+			.append("')]");
+		}else{
+			return(false);
+		}
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * Clears the specified cache which matches to keys. 
+	 * 
+	 * @param browser
+	 * @param keys
+	 * @return
+	 */
+	public boolean clearCache(Selenium browser, String[] keys){
+		if(!functionalUtil.openSite(browser, OlatSite.ADMINISTRATION)){
+			return(false);
+		}
+		
+		if(!openActionByMenuTree(browser, AdministrationSiteAction.INFORMATION)){
+			return(false);
+		}
+		
+		if(!functionalUtil.openContentTab(browser, SystemInformationTabs.CACHES.ordinal())){
+			return(false);
+		}
+		
+		functionalUtil.idle(browser);
+		
+		/* click show all*/
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(functionalUtil.getTableAllCss())
+		.append("')]");
+		
+		if(browser.isElementPresent(selectorBuffer.toString())){
+			browser.click(selectorBuffer.toString());
+		}
+		
+		boolean success = true;
+		
+		/* clear appropriate cache */
+		for(String currentKey: keys){
+			functionalUtil.idle(browser);
+			
+			selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=//table//tr//td[contains(@text, '")
+			.append(currentKey)
+			.append("\\n")
+			.append("')]");
+			
+			if(browser.isElementPresent(selectorBuffer.toString())){
+				selectorBuffer.append("/../td[last()]//a");
+				
+				browser.click(selectorBuffer.toString());
+			}else{
+				success = false;
+			}
+		}
+		
+		return(success);
 	}
 
 	public FunctionalUtil getFunctionalUtil() {

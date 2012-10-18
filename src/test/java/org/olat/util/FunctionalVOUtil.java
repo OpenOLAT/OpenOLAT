@@ -19,6 +19,7 @@
  */
 package org.olat.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -37,6 +38,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -49,6 +51,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
+import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.UserVO;
 
 public class FunctionalVOUtil {
@@ -90,13 +93,13 @@ public class FunctionalVOUtil {
 	}
 	
 	/**
+	 * Creates the selenium test users with random passwords and
+	 * writes it to credentials.properties.
+	 * 
 	 * @param deploymentUrl
 	 * @param count
 	 * @throws IOException
 	 * @throws URISyntaxException
-	 * 
-	 * Creates the selenium test users with random passwords and
-	 * writes it to credentials.properties.
 	 */
 	public List<UserVO> createTestUsers(URL deploymentUrl, int count) throws IOException, URISyntaxException{
 		RestConnection restConnection = new RestConnection(deploymentUrl);
@@ -140,11 +143,40 @@ public class FunctionalVOUtil {
 		return(user);
 	}
 	
-	public void addUserToSysGroup(UserVO user, SysGroups group){
-		//TODO:JK: implement me
+	public List<UserVO> createTestAuthors(URL deploymentUrl, int count) throws IOException, URISyntaxException{
+		/* create ordinary users */
+		List<UserVO> user = createTestUsers(deploymentUrl, count);
+
+		/* make a tutor */
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+
+		restConnection.login(getUsername(), getPassword());
+		
+		for(UserVO currentUser: user){
+			/* retrieve roles */
+			URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("/users/" + currentUser.getKey() + "/roles").build();
+			HttpGet getMethod = restConnection.createGet(request, MediaType.APPLICATION_JSON, true);
+			HttpResponse response = restConnection.execute(getMethod);
+			assertEquals(200, response.getStatusLine().getStatusCode());
+			RolesVO roles = restConnection.parse(response, RolesVO.class);
+			
+			/* send appropriate role */
+			roles.setAuthor(true);
+			roles.setUserManager(true);
+			
+			request = UriBuilder.fromUri(deploymentUrl.toURI()).path("/users/" + currentUser.getKey() + "/roles").build();
+			HttpPost postMethod = restConnection.createPost(request, MediaType.APPLICATION_JSON, true);
+			restConnection.addJsonEntity(postMethod, roles);
+			response = restConnection.execute(postMethod);
+			assertEquals(200, response.getStatusLine().getStatusCode());
+		}
+		
+		return(user);
 	}
 	
 	/**
+	 * Imports the specified course via REST.
+	 * 
 	 * @param deploymentUrl
 	 * @param path
 	 * @param filename
@@ -153,8 +185,6 @@ public class FunctionalVOUtil {
 	 * @return CourseVO
 	 * @throws URISyntaxException
 	 * @throws IOException
-	 * 
-	 * Imports the specified course via REST.
 	 */
 	public CourseVO importCourse(URL deploymentUrl, String path, String filename, String resourcename, String displayname) throws URISyntaxException, IOException{
 		//TODO:JK: may be replace this code because the course will just be deployed and not imported 
@@ -188,53 +218,60 @@ public class FunctionalVOUtil {
 		return(vo);
 	}
 	
+	/**
+	 * 
+	 * @param deploymentUrl
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 */
 	public CourseVO importEmptyCourse(URL deploymentUrl) throws URISyntaxException, IOException{
 		return(importCourse(deploymentUrl, "/org/olat/course/Empty_Course.zip", "Empty_Course.zip", "Empty Course", "Empty Course"));
 	}
 	
 	/**
+	 * Imports the "All Elements Course" via REST.
+	 * 
 	 * @param deploymentUrl
 	 * @return
 	 * @throws URISyntaxException
 	 * @throws IOException
-	 * 
-	 * Imports the "All Elements Course" via REST.
 	 */
 	public CourseVO importAllElementsCourse(URL deploymentUrl) throws URISyntaxException, IOException{
 		return(importCourse(deploymentUrl, "/org/olat/course/All_Elements_Course_Without_External_Content.zip", "All_Elements_Course_Without_External_Content.zip", "All Elements Course Without External Content", "All Elements Course Without External Content"));
 	}
 
 	/**
+	 * Imports the "Course including Forum" via REST.
+	 * 
 	 * @param deploymentUrl
 	 * @return
 	 * @throws URISyntaxException
 	 * @throws IOException
-	 * 
-	 * Imports the "Course including Forum" via REST.
 	 */
 	public CourseVO importCourseIncludingForum(URL deploymentUrl) throws URISyntaxException, IOException{
 		return(importCourse(deploymentUrl, "/org/olat/portfolio/Course_including_Forum.zip", "Course_including_Forum.zip", "Course including Forum", "Course including Forum"));
 	}
 	
 	/**
+	 * Imports the "Course including Blog" via REST.
+	 * 
 	 * @param deploymentUrl
 	 * @return
 	 * @throws URISyntaxException
 	 * @throws IOException
-	 * 
-	 * Imports the "Course including Blog" via REST.
 	 */
 	public CourseVO importCourseIncludingBlog(URL deploymentUrl) throws URISyntaxException, IOException{
 		return(importCourse(deploymentUrl, "/org/olat/portfolio/Course_including_Blog.zip", "Course_including_Blog.zip", "Course including Blog", "Course including Blog"));
 	}
 	
 	/**
+	 * imports a wiki via REST.
+	 * 
 	 * @param deploymentUrl
 	 * @return
 	 * @throws URISyntaxException
 	 * @throws IOException
-	 * 
-	 * imports a wiki via REST.
 	 */
 	public RepositoryEntryVO importWiki(URL deploymentUrl) throws URISyntaxException, IOException{
 		URL wikiUrl = FunctionalVOUtil.class.getResource("/org/olat/portfolio/wiki.zip");
@@ -268,17 +305,17 @@ public class FunctionalVOUtil {
 	}
 	
 	/**
+	 * Imports a blog via REST.
+	 * 
 	 * @param deploymentUrl
 	 * @param login
 	 * @param password
 	 * @return
 	 * @throws URISyntaxException
 	 * @throws IOException
-	 * 
-	 * Imports a blog via REST.
 	 */
-	public RepositoryEntryVO importBlog(URL deploymentUrl) throws URISyntaxException, IOException{
-		URL blogUrl = FunctionalVOUtil.class.getResource("/org/olat/portfolio/blog.zip");
+	public RepositoryEntryVO importBlog(URL deploymentUrl, String path, String filename, String resourcename, String displayname) throws URISyntaxException, IOException{
+		URL blogUrl = FunctionalVOUtil.class.getResource(path);
 		Assert.assertNotNull(blogUrl);
 		
 		File blog = new File(blogUrl.toURI());
@@ -291,9 +328,9 @@ public class FunctionalVOUtil {
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("file", new FileBody(blog));
-		entity.addPart("filename", new StringBody("blog.zip"));
-		entity.addPart("resourcename", new StringBody("Blog"));
-		entity.addPart("displayname", new StringBody("Blog"));
+		entity.addPart("filename", new StringBody(filename));
+		entity.addPart("resourcename", new StringBody(resourcename));
+		entity.addPart("displayname", new StringBody(displayname));
 		entity.addPart("access", new StringBody("3"));
 		method.setEntity(entity);
 		

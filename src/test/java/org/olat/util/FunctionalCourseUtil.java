@@ -1326,6 +1326,11 @@ public class FunctionalCourseUtil {
 		if(!openBlogWithoutBusinessPath(browser, courseId, nth))
 			return(false);
 
+		return(editBlogEntry(browser, title, description, content, entry, edit));
+	}
+	
+	public boolean editBlogEntry(Selenium browser,
+			String title, String description, String content, int entry, BlogEdit[] edit){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		if(edit == null){

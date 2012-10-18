@@ -25,6 +25,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -39,12 +41,15 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
+import org.olat.util.FunctionalAdministrationSiteUtil;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalCourseUtil.BlogEdit;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
+import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.FunctionalUtil.WaitLimitAttribute;
 import org.olat.util.FunctionalVOUtil;
 import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
@@ -52,6 +57,7 @@ import org.olat.util.browser.Browser1;
 import org.olat.util.browser.Browser2;
 import org.olat.util.browser.Student1;
 import org.olat.util.browser.Student2;
+import org.olat.util.browser.Tutor1;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 import com.thoughtworks.selenium.Selenium;
@@ -73,6 +79,17 @@ public class FunctionalBlogTest {
 	public final static String DELETE_BLOG_DESCRIPTION = "The first blog entry will be deleted";
 	public final static String DELETE_BLOG_CONTENT = "You should be able to choose to create or feed from existing blog.";
 	
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG = "/org/olat/course/nodes/feed/blog.zip";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_FILE_NAME = "blog.zip";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_RESOURCE_NAME = "Blog";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_DISPLAY_NAME = "Parallel Computing Blog";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST1_TITLE = "Conditional locks with Java";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST1_DESCRIPTION = "Advanced thread safety in Java.";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST1_CONTENT = "Please take a look at ReentrantLock class in JavaSE package java.util.concurrent.locks for further information.";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE = "Creating conditions";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_DESCRIPTION = "Wait until condition is fulfilled.";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_CONTENT = "With the ReentrantLock class you may create new conditions like following:<br><code>final Lock lock = new ReentrantLock();<br>final Condition cond  = lock.newCondition()<br></code>";
+	
 	public final static String CONCURRENT_RW_BLOG_SHORT_TITLE = "blog";
 	public final static String CONCURRENT_RW_BLOG_LONG_TITLE = "blog cleared cache";
 	public final static String CONCURRENT_RW_BLOG_DESCRIPTION = "During open blog cache will be cleared";
@@ -93,6 +110,7 @@ public class FunctionalBlogTest {
 	static FunctionalUtil functionalUtil;
 	static FunctionalRepositorySiteUtil functionalRepositorySiteUtil;
 	static FunctionalCourseUtil functionalCourseUtil;
+	static FunctionalAdministrationSiteUtil functionalAdministrationSiteUtil;
 	static FunctionalVOUtil functionalVOUtil;
 
 	static boolean initialized = false;
@@ -105,7 +123,9 @@ public class FunctionalBlogTest {
 
 			functionalRepositorySiteUtil = functionalUtil.getFunctionalRepositorySiteUtil();
 			functionalCourseUtil = functionalRepositorySiteUtil.getFunctionalCourseUtil();
-
+			
+			functionalAdministrationSiteUtil = functionalUtil.getFunctionalAdministrationSiteUtil();
+			
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 
 			initialized = true;
@@ -141,8 +161,139 @@ public class FunctionalBlogTest {
 	@Ignore
 	@Test
 	@RunAsClient
-	public void checkConcurrentClearCache(){
+	public void checkDelete(){
+		//TODO:JK: implement me
+	}
+	
+	@Ignore
+	@Test
+	@RunAsClient
+	public void checkConcurrentClearCache(@Drone @Tutor1 DefaultSelenium tutor0, @Drone @Student1 DefaultSelenium student0) throws IOException, URISyntaxException{
+		/*
+		 * Setup
+		 */
+		/* create author */
+		int tutorCount = 1;
+			
+		final UserVO[] tutors = new UserVO[tutorCount];
+		functionalVOUtil.createTestUsers(deploymentUrl, tutorCount).toArray(tutors);
 		
+		/* create user */
+		int userCount = 1;
+			
+		final UserVO[] students = new UserVO[userCount];
+		functionalVOUtil.createTestUsers(deploymentUrl, userCount).toArray(students);
+		
+		/* create blog and set rights for tutor	 */
+		RepositoryEntryVO repoEntry = functionalVOUtil.importBlog(deploymentUrl,
+				CONCURRENT_CLEAR_CACHE_BLOG,
+				CONCURRENT_CLEAR_CACHE_BLOG_FILE_NAME, CONCURRENT_CLEAR_CACHE_BLOG_RESOURCE_NAME, CONCURRENT_CLEAR_CACHE_BLOG_DISPLAY_NAME);
+		//FIXME:JK: set rights
+		
+		/*
+		 * Create content and visit it.
+		 */
+		/* tutor creates a new post */
+		Assert.assertTrue(functionalUtil.login(tutor0, tutors[0].getLogin(), tutors[0].getPassword(), true));
+		Assert.assertTrue(functionalCourseUtil.openBlog(tutor0, repoEntry.getKey()));
+		Assert.assertTrue(functionalCourseUtil.editBlogEntry(tutor0,
+				CONCURRENT_CLEAR_CACHE_BLOG_POST1_TITLE, CONCURRENT_CLEAR_CACHE_BLOG_POST1_DESCRIPTION, CONCURRENT_CLEAR_CACHE_BLOG_POST1_CONTENT,
+				-1, null));
+		
+		/* student visits content */
+		Assert.assertTrue(functionalUtil.login(student0, students[0].getLogin(), students[0].getPassword(), true));
+		Assert.assertTrue(functionalCourseUtil.openBlog(student0, repoEntry.getKey()));
+
+		
+		/*
+		 * Clear cache and verify content.
+		 */
+		/* admin clears cache */
+		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
+		Assert.assertTrue(functionalAdministrationSiteUtil.clearCache(browser,
+				new String[]{
+				"org.olat.core.util.cache.n.impl.svm.SingleVMCacher@org.olat.modules.webFeed.dispatching.Path_feed__0",
+				"org.olat.core.util.cache.n.impl.svm.SingleVMCacher@org.olat.modules.webFeed.managers.FeedManagerImpl_feed__0"
+				}
+		));
+
+		Assert.assertTrue(functionalUtil.logout(browser));
+		
+		/* tutor adds a new post */
+		//Assert.assertTrue(functionalCourseUtil.backBlogEntry(tutor0));
+		Assert.assertTrue(functionalCourseUtil.editBlogEntry(tutor0,
+				CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE, CONCURRENT_CLEAR_CACHE_BLOG_POST2_DESCRIPTION, CONCURRENT_CLEAR_CACHE_BLOG_POST2_CONTENT,
+				-1, null));
+		
+		/* student verifies title - month */
+		functionalUtil.idle(student0);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//ul[contains(@class, '")
+		.append(functionalCourseUtil.getBlogMonthCss())
+		.append("')]//li//a)");
+		
+		int iStop = student0.getXpathCount(selectorBuffer.toString()).intValue();
+		boolean foundTitleInMonth = false;
+		
+		for(int i = 0; i < iStop; i++){
+			functionalUtil.idle(student0);
+			
+			StringBuffer currentBuffer = new StringBuffer(selectorBuffer);
+			
+			currentBuffer.append('[')
+			.append(i + 1)
+			.append(']');
+			
+			student0.click(currentBuffer.toString());
+			
+			functionalUtil.idle(student0);
+			
+			if(student0.isTextPresent(CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE)){
+				foundTitleInMonth = true;
+				break;
+			}
+		}
+		
+		Assert.assertTrue(foundTitleInMonth);
+		
+		/* student verifies title - year */
+		functionalUtil.idle(student0);
+		
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//div//a[contains(@class, '")
+		.append(functionalCourseUtil.getBlogYearCss())
+		.append("')])");
+		
+		iStop = student0.getXpathCount(selectorBuffer.toString()).intValue();
+		boolean foundTitleInYear = false;
+		
+		for(int i = 0; i < iStop; i++){
+			functionalUtil.idle(student0);
+			
+			StringBuffer currentBuffer = new StringBuffer(selectorBuffer);
+			
+			currentBuffer.append('[')
+			.append(i + 1)
+			.append(']');
+			
+			student0.click(currentBuffer.toString());
+			
+			functionalUtil.idle(student0);
+			
+			if(student0.isTextPresent(CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE)){
+				foundTitleInYear = true;
+				break;
+			}
+		}
+		
+		Assert.assertTrue(foundTitleInYear);
+		
+		/* logout */
+		Assert.assertTrue(functionalUtil.logout(tutor0));
+		Assert.assertTrue(functionalUtil.logout(student0));
 	}
 	
 	@Test
@@ -183,10 +334,19 @@ public class FunctionalBlogTest {
 		student[1] = (Selenium) student1;
 		
 		final boolean[] success = new boolean[userCount];
-		Arrays.fill(success, false);
+		Arrays.fill(success, true);
 		
-		List<Thread> threads = new ArrayList<Thread>();
+		/* for syncing threads */
+		final ReentrantLock lock = new ReentrantLock();
+		final ReentrantLock subroutineLock = new ReentrantLock();
+		final Condition cond = lock.newCondition();
+		final boolean[] doSignal = new boolean[1];
+		doSignal[0] = false;
 		
+		final boolean[] finished = new boolean[userCount];
+		Arrays.fill(finished, false);
+		
+		/* students log in an visit blog */
 		for(int i = 0; i < userCount; i++){
 			final int index = i;
 			
@@ -203,19 +363,33 @@ public class FunctionalBlogTest {
 						functionalCourseUtil.openBlogWithoutBusinessPath(student[i], course.getRepoEntryKey(), 0);
 						functionalCourseUtil.openBlogEntry(student[i], 0);
 					}catch(Exception e){
-						// success[i] = false;
+						success[i] = false;
+					}finally{
+						finished[i] = true;
+						
+						lock.lock();
+						if(doSignal[0]){
+							cond.signal();
+						}
+						lock.unlock();
 					}
 				}
 				
 			});
 			
 			thread.start();
-			threads.add(thread);
 		}
 		
 		/* wait for browsers to be ready */
-		for(Thread currentThread: threads){
-			currentThread.join(60000);
+		lock.lock();
+		doSignal[0] = true;
+		
+		try{
+			while(ArrayUtils.contains(finished, false)){
+				cond.await();
+			}
+		}finally{
+			lock.unlock();
 		}
 		
 		/* edit blog as author */
@@ -223,7 +397,8 @@ public class FunctionalBlogTest {
 				null, null, CONCURRENT_RW_BLOG_NEW_CONTENT, 0, new BlogEdit[]{BlogEdit.CONTENT}));
 		
 		/* open entry by users */
-		threads = new ArrayList<Thread>();
+		Arrays.fill(finished, false);
+		doSignal[0] = false;
 		
 		for(int i = 0; i < userCount; i++){
 			final int index = i;
@@ -238,24 +413,39 @@ public class FunctionalBlogTest {
 				public void run() {
 					try{
 						functionalCourseUtil.backBlogEntry(student[i]);
-						functionalUtil.waitForPageToLoadContent(student[i], null, CONCURRENT_RW_BLOG_NEW_CONTENT, WaitLimitAttribute.VERY_SAVE, null, false);
+						functionalCourseUtil.openBlogEntry(student[i], 0);
+						functionalUtil.waitForPageToLoadContent(student[i], null, CONCURRENT_RW_BLOG_NEW_CONTENT, WaitLimitAttribute.VERY_SAVE, null, true);
 						functionalUtil.logout(student[i]);
-						success[i] = true;
 					}catch(Exception e){
-						// empty
+						success[i] = false;
+					}finally{
+						finished[i] = true;
+
+						lock.lock();
+						if(doSignal[0]){
+							cond.signal();
+						}
+						lock.unlock();
 					}
 				}
 				
 			});
 			
 			thread.start();
-			threads.add(thread);
 		}
 		
 		/* wait for browsers to be logged out */
-		for(Thread currentThread: threads){
-			currentThread.join(60000);
+		lock.lock();
+		doSignal[0] = true;
+		
+		try{
+			while(ArrayUtils.contains(finished, false)){
+				cond.await();
+			}
+		}finally{
+			lock.unlock();
 		}
+		
 		
 		Assert.assertFalse(ArrayUtils.contains(success, false));
 
