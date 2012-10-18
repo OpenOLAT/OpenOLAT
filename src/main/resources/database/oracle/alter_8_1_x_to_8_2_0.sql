@@ -248,7 +248,7 @@ create table o_mapper (
    creationdate date,
    mapper_uuid varchar(64 char),
    orig_session_id varchar(32 char),
-   xml_config varchar(4000 char),
+   xml_config CLOB,
    primary key (id)
 );
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);

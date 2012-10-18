@@ -249,7 +249,7 @@ create table o_mapper (
    creationdate timestamp,
    mapper_uuid varchar(64),
    orig_session_id varchar(32),
-   xml_config varchar(4000),
+   xml_config TEXT,
    primary key (id)
 );
 alter table o_mapper ENGINE = InnoDB;
