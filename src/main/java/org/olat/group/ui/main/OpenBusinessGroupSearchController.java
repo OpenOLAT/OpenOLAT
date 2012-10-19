@@ -85,6 +85,7 @@ public class OpenBusinessGroupSearchController extends FormBasicController imple
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
+		buttonLayout.setElementCssClass("o_sel_group_search_groups_buttons");
 		searchButton = uifactory.addFormSubmitButton("search", "search", buttonLayout);
 	}
 

@@ -62,8 +62,10 @@ public class OpenBusinessGroupsController extends BasicController implements Act
 		//segment view
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		allOpenLink = LinkFactory.createLink("opengroups.all", mainVC, this);
+		allOpenLink.setElementCssClass("o_sel_group_all_open_groups_seg");
 		segmentView.addSegment(allOpenLink, true);
 		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
+		searchOpenLink.setElementCssClass("o_sel_group_search_open_groups_seg");
 		segmentView.addSegment(searchOpenLink, false);
 		
 		getOpenGroups(ureq);

@@ -73,12 +73,16 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		//segmented view
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		markedGroupsLink = LinkFactory.createLink("marked.groups", mainVC, this);
+		markedGroupsLink.setElementCssClass("o_sel_group_bookmarked_groups_seg");
 		segmentView.addSegment(markedGroupsLink, marked);
 		allGroupsLink = LinkFactory.createLink("opengroups.all", mainVC, this);
+		allGroupsLink.setElementCssClass("o_sel_group_all_groups_seg");
 		segmentView.addSegment(allGroupsLink, !marked);
 		ownedGroupsLink = LinkFactory.createLink("owned.groups", mainVC, this);
+		ownedGroupsLink.setElementCssClass("o_sel_group_owned_groups_seg");
 		segmentView.addSegment(ownedGroupsLink, false);
 		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
+		searchOpenLink.setElementCssClass("o_sel_group_search_groups_seg");
 		segmentView.addSegment(searchOpenLink, false);
 		
 		putInitialPanel(mainVC);

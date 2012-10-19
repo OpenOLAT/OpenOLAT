@@ -150,6 +150,8 @@ public class BusinessGroupFormController extends FormBasicController {
 			businessGroupName.setRegexMatchCheck(BusinessGroup.VALID_GROUPNAME_REGEXP, "create.form.error.illegalName");
 		}
 		businessGroupName.setMandatory(true);
+		
+		formLayout.setElementCssClass("o_sel_group_edit_group_form");
 
 		// Create the business group description input rich text element
 		businessGroupDescription = uifactory.addRichTextElementForStringDataMinimalistic("create.form.title.description",
