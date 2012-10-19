@@ -36,10 +36,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 import junit.framework.Assert;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.user.delete.service.UserDeletionManager;
@@ -54,6 +54,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Desciption: jUnit testsuite to test the OLAT user module.
@@ -69,10 +70,12 @@ public class UserTest extends OlatTestCase {
 	private User u1, u2, u3;
 	private Identity i1, i2, i3;
 	
-	public UserTest() {
-		System.out.println("user test started...: "+this.hashCode());
-	}
-
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private DB dbInstance;
 
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -117,14 +120,6 @@ public class UserTest extends OlatTestCase {
 			i3 = sm.findIdentityByName("salat");
 			u3 = i3.getUser();
 		}
-	}
-
-	/**
-	 * TearDown is called after each test
-	 */
-	@After public void tearDown() {
-		System.out.println("running after...: "+this.hashCode());
-		//do not clean up created users as they are used for all tests
 	}
 
 	/**
@@ -182,9 +177,11 @@ public class UserTest extends OlatTestCase {
 		UserManager um = UserManager.getInstance();
 		// find via users email
 		Identity found = um.findIdentityByEmail("judihui@id.uzh.ch");
+		Assert.assertNotNull(found);
 		assertTrue(i1.getKey().equals(found.getKey()));
 		// find via users institutional email
 		found = um.findIdentityByEmail("instjudihui@id.uzh.ch");
+		Assert.assertNotNull(found);
 		assertTrue(i1.getKey().equals(found.getKey()));
 		// find must be equals
 		found = um.findIdentityByEmail("instjudihui@id.uzh.ch.ch");
@@ -213,7 +210,8 @@ public class UserTest extends OlatTestCase {
 		searchValue.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
 		List<Identity> result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertTrue("must have elements", result != null);
-		assertTrue("exactly three elements", result.size() == 3);
+		assertEquals("at least three elements", 3, result.size());
+
 		String instEmailU1 = ((Identity)result.get(0)).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
 		String instEmailU2 = ((Identity)result.get(1)).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
 		String instEmailU3 = ((Identity)result.get(2)).getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
@@ -283,121 +281,133 @@ public class UserTest extends OlatTestCase {
 	   String charset = um.getUserCharset(identity);
 	   assertTrue(charset.matches(WebappHelper.getDefaultCharset()));
 	}
-
 	
-	@Test public void testDeleteUserProperty() {
-		
+	@Test
+	public void testUpdateUserProperties() {
+		//create a user
+		String login = UUID.randomUUID().toString().replace("-", "");
+		Identity identity = createIdentityWithProperties(login, "id.salat.uzh.ch");
+		String institutionalEmail = "inst" + login + "@id.salat.uzh.ch";
+		dbInstance.commitAndCloseSession();
+
+		//1. begin the tests: update the institutional email
 		UserManager um = UserManager.getInstance();
 		// search with power search (to compare result later on with same search)
 		Map<String, String> searchValue = new HashMap<String, String>();
-		searchValue.put(UserConstants.INSTITUTIONALEMAIL, "instsalat@id.salat.uzh.ch");
+		searchValue.put(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 		// find identity 1
 		List<Identity> result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// setting null should remove this property but first reload user
-		u3 = um.loadUserByKey(u3.getKey());
-		u3.setProperty(UserConstants.INSTITUTIONALEMAIL, "bla@bla.ch");		
-		um.updateUser(u3);
+		User user = um.loadUserByKey(identity.getUser().getKey());
+		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "bla@bla.ch");		
+		um.updateUser(user);
+		dbInstance.commitAndCloseSession();
 		
 		// try to find it via deleted property
 		searchValue = new HashMap<String, String>();
-		searchValue.put(UserConstants.INSTITUTIONALEMAIL, "instsalat@id.salat.uzh.ch");
+		searchValue.put(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 		// find identity 1
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
-		
 		assertEquals(0, result.size());
 
+		//2. begin the tests: update the first name
 		// search via first name
 		searchValue = new HashMap<String, String>();
-		searchValue.put(UserConstants.FIRSTNAME, "salat");
+		searchValue.put(UserConstants.FIRSTNAME, login);
 		// find identity 1
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
-		// update user
-		u3.setProperty(UserConstants.FIRSTNAME, "rotwein");
-		um.updateUser(u3);
+		
+		//update user first name
+		user = um.loadUserByKey(identity.getUser().getKey());
+		user.setProperty(UserConstants.FIRSTNAME, "rotwein");
+		um.updateUser(user);
+		dbInstance.commitAndCloseSession();
+
 		// try to find it via old property
 		searchValue = new HashMap<String, String>();
-		searchValue.put(UserConstants.FIRSTNAME, "salat");
+		searchValue.put(UserConstants.FIRSTNAME, login);
 		// find identity 1
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertEquals(0, result.size());
 		// try to find it via updated property
-		searchValue = new HashMap<String, String>();
-		searchValue.put(UserConstants.FIRSTNAME, "rotwein");
+		Map<String,String> searchRotweinValue = new HashMap<String, String>();
+		searchRotweinValue.put(UserConstants.FIRSTNAME, "rotwein");
 		// find identity 1
-		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
-		assertEquals(1, result.size());
-		
-		// reset firstname to initial value
-		u3.setProperty(UserConstants.FIRSTNAME, "salat");
-		u3.setProperty(UserConstants.INSTITUTIONALEMAIL, "instsalat@id.salat.uzh.ch");		
-		um.updateUser(u3);
-
+		List<Identity> rotweinList = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchRotweinValue, true, null, null, null, null, null, null, null, null);
+		assertFalse(rotweinList.isEmpty());
+		for(Identity id:result) {
+			Assert.assertEquals("rotwein", id.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		}
 	}
-
-	
 
 	/**
 	 * Test the user delete methods
-	 * <p>
-	 * NOTE THAT THIS TEST MUST BE THE LAST TEST IN THIS TESTCLASS SINCE IT
-	 * DELETES USERS USED IN PREVIOUS TEST CASES!
 	 */
-	@Test public void testDeleteUser() {
+	@Test
+	public void testDeleteUser() {
+		//create a user
+		String login = UUID.randomUUID().toString().replace("-", "");
+		String institutionName = "id." + login.toLowerCase() + ".ch";
+		Identity identity = createIdentityWithProperties(login, institutionName);
+		String institutionalEmail = "inst" + login + "@" + institutionName;
+		String email = login + "@" + institutionName;
+		dbInstance.commitAndCloseSession();
+		
+		//test user deletion
 		
 		UserManager um = UserManager.getInstance();
 		// user still exists
-		List<Identity> result = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null);
+		List<Identity> result = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(login, null, true, null, null, null, null, null);
 		assertEquals(1, result.size());
-		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null, null, null, null);
+		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// search with power search (to compare result later on with same search)
 		Map<String, String> searchValue = new HashMap<String, String>();
-		searchValue.put(UserConstants.FIRSTNAME, "judihui");
-		searchValue.put(UserConstants.LASTNAME, "judihui");
-		searchValue.put(UserConstants.FIRSTNAME, "judihui");
-		searchValue.put(UserConstants.INSTITUTIONALEMAIL, "instjudihui@id.uzh.ch");
-		searchValue.put(UserConstants.INSTITUTIONALNAME, "id.uzh.ch");
-		searchValue.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-		// find identity 1
+		searchValue.put(UserConstants.FIRSTNAME, login);
+		searchValue.put(UserConstants.LASTNAME, login);
+		searchValue.put(UserConstants.FIRSTNAME, login);
+		searchValue.put(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
+		searchValue.put(UserConstants.INSTITUTIONALNAME, institutionName);
+		searchValue.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, institutionName);
+		// find identity
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
-		// find identity 1-3 via institutional id
+		// find identity via institutional id
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null, null);
-		assertEquals(3, result.size());
+		assertEquals(1, result.size());
 		// delete user now
 		UserDeletionManager udm = UserDeletionManager.getInstance();
-		udm.deleteIdentity(i1);
+		udm.deleteIdentity(identity);
 		// check if deleted successfully
-		result = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null);
+		result = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(login, null, true, null, null, null, null, null);
 		assertEquals(0, result.size());
 		// not visible, but still there when using power search
-		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null, null, null, null);
+		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null, null);
 		assertEquals("Check first your olat.properties. This test runs only with following olat.properties : keepUserEmailAfterDeletion=true, keepUserLoginAfterDeletion=true",1, result.size());
-		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null, null, null, Identity.STATUS_DELETED);
+		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null, Identity.STATUS_DELETED);
 		assertEquals(1, result.size());
-		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch("judihui", null, true, null, null, null, null, null, null, null, Identity.STATUS_ACTIV);
+		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null, Identity.STATUS_ACTIV);
 		assertEquals(0, result.size());
 		// test if user attributes have been deleted successfully
 		// find identity 1 not anymore
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertEquals(0, result.size());
-		// find identity 2-3 via first, last and instuser id (non-deletable fields)
+		// find identity via first, last and instuser id (non-deletable fields)
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null, null);
 		//fxdiff
-		assertEquals(3, result.size());
+		assertEquals(1, result.size());
 		
 		// check using other methods
-		Identity identity = um.findIdentityByEmail("instjudihui@id.uzh.ch");
-		assertNull("Deleted identity with email 'instjudihui@id.uzh.ch' should not be found with 'UserManager.findIdentityByEmail'", identity);
+		Identity loadByInstitutionalEmail = um.findIdentityByEmail(institutionalEmail);
+		assertNull("Deleted identity with email '" + institutionalEmail + "' should not be found with 'UserManager.findIdentityByEmail'", loadByInstitutionalEmail);
 		// this method must find also the deleted identities
-		identity = BaseSecurityManager.getInstance().findIdentityByName("judihui");
-		assertNotNull("Deleted identity with username 'judihui' must be found with 'UserManager.findIdentityByName'", identity);
+		Identity loadByName = BaseSecurityManager.getInstance().findIdentityByName(login);
+		assertNotNull("Deleted identity with username '" + login + "' must be found with 'UserManager.findIdentityByName'", loadByName);
 		// Because 'keepUserEmailAfterDeletion=true, keepUserLoginAfterDeletion=true', deleted user must be found 
-		identity = um.findIdentityByEmail("judihui@id.uzh.ch");
-		assertNotNull("Deleted identity with email 'judihui@id.uzh.ch' must be found with 'UserManager.findIdentityByEmail'", identity);
-		
+		Identity loadByEmail = um.findIdentityByEmail(email);
+		assertNotNull("Deleted identity with email '" + email + "' must be found with 'UserManager.findIdentityByEmail'", loadByEmail);
 	}
 
 
@@ -455,6 +465,15 @@ public class UserTest extends OlatTestCase {
 		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",user1.hashCode() == user1.hashCode());
 		assertFalse("Wrong hashCode implementation, different users have same hash-code",user1.hashCode() == user2.hashCode());
 		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",user1.hashCode() == user1_2.hashCode());
+	}
+	
+	private Identity createIdentityWithProperties(String login, String institution) {
+		User user = userManager.createUser(login, login, login + "@" + institution);
+		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "inst" + login + "@" + institution);
+		user.setProperty(UserConstants.INSTITUTIONALNAME, institution);
+		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, institution);
+		Identity identity = securityManager.createAndPersistIdentityAndUser(login, user, "OLAT", login,"secret");
+		return identity;
 	}
 
 }
