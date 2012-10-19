@@ -990,7 +990,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
          + " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi "
          + " where sgmsi.securityGroup = ? and sgmsi.identity = ii");
 	   if (sortedByAddDate) {
-	  	 queryString.append(" order by sgmsi.lastModified");
+	  	 queryString.append(" order by sgmsi.lastModified, sgmsi.key");
 	   } 
 		 List identAndDate = DBFactory.getInstance().find(queryString.toString(),
          new Object[] { secGroup.getKey() },

@@ -337,6 +337,7 @@ public class CalendarWebService {
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
 		repoParams.setOnlyExplicitMember(true);
+		repoParams.setIdentity(retrievedUser);
 		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(repoParams, 0, -1, true);
 		for(RepositoryEntry entry:entries) {
 			AccessResult result = acManager.isAccessible(entry, retrievedUser, false);

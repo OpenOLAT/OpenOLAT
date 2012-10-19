@@ -583,23 +583,6 @@ public class LearningGroupWebService {
 	}
 	
 	/**
-	 * Fallback method for browser.
-	 * @response.representation.200.doc The user is added as owner of the group
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group or the user cannot be found
-	 * @param groupKey The key of the group
-	 * @param identityKey The user's id
-	 * @param request The HTTP request
-	 * @return
-	 */
-	@POST
-	@Path("{groupKey}/owners/{identityKey}/new")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response addTutorPost(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		return addTutor(groupKey, identityKey, request);
-	}
-	
-	/**
 	 * Removes the owner from the group.
 	 * @response.representation.200.doc The user is removed as owner from the group
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
@@ -631,22 +614,6 @@ public class LearningGroupWebService {
 			log.error("Trying to remove an owner to a group", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
-	}
-	
-	/**
-	 * Fallback method for browser.
-	 * @response.representation.200.doc The user is removed as owner from the group
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group or the user cannot be found
-	 * @param groupKey The key of the group
-	 * @param identityKey The user's id
-	 * @param request The HTTP request
-	 * @return
-	 */
-	@POST
-	@Path("{groupKey}/owners/{identityKey}/delete")
-	public Response removeTutorPost(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		return removeTutor(groupKey, identityKey, request);
 	}
 	
 	/**
@@ -689,22 +656,6 @@ public class LearningGroupWebService {
 	}
 	
 	/**
-	 * Fallback method for browser.
-	 * @response.representation.200.doc The user is added as participant of the group
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group or the user cannot be found
-	 * @param groupKey The id of the group
-	 * @param identityKey The user's id
-	 * @param request The HTTP request
-	 * @return
-	 */
-	@POST
-	@Path("{groupKey}/participants/{identityKey}/new")
-	public Response addParticipantPost(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		return addParticipant(groupKey, identityKey, request);
-	}
-	
-	/**
 	 * Removes a participant from the group.
 	 * @response.representation.200.doc The user is remove from the group as participant
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
@@ -736,22 +687,6 @@ public class LearningGroupWebService {
 			log.error("Trying to remove a participant to a group", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
-	}
-	
-	/**
-	 * Fallback method for browser.
-	 * @response.representation.200.doc The user is remove from the group as participant
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group or the user cannot be found
-	 * @param groupKey The key of the group
-	 * @param identityKey The id of the user
-	 * @param request The HTTP request
-	 * @return
-	 */
-	@POST
-	@Path("{groupKey}/participants/{identityKey}/delete")
-	public Response removeParticipantPost(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		return removeParticipant(groupKey, identityKey, request);
 	}
 	
 	/**

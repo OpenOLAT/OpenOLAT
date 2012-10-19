@@ -388,6 +388,8 @@ public class RepositoryEntriesResource {
 	
 	@Path("{repoEntryKey}")
 	public RepositoryEntryResource getRepositoryEntryResource() {
-		return new RepositoryEntryResource();
+		RepositoryManager rm = RepositoryManager.getInstance();
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		return new RepositoryEntryResource(rm, securityManager);
 	}
 }

@@ -144,7 +144,8 @@ public class JunitTestHelper {
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry(boolean membersOnly) {
 		OLATResourceManager resourceManager = OLATResourceManager.getInstance();
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), CodeHelper.getForeverUniqueID());
+		String resourceName = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resourceName, CodeHelper.getForeverUniqueID());
 		OLATResource r =  resourceManager.createOLATResourceInstance(ores);
 		resourceManager.saveOLATResource(r);
 		return createAndPersistRepositoryEntry(r, membersOnly);

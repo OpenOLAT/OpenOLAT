@@ -31,7 +31,9 @@ import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -39,6 +41,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -50,6 +53,9 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
@@ -73,6 +79,8 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
+import org.olat.user.restapi.UserVO;
+import org.olat.user.restapi.UserVOFactory;
 
 /**
  * Description:<br>
@@ -90,6 +98,14 @@ public class RepositoryEntryResource {
 
   static {
     cc.setMaxAge(-1);
+  }
+  
+  private RepositoryManager repositoryManager;
+  private BaseSecurity securityManager;
+  
+  public RepositoryEntryResource(RepositoryManager repositoryManager, BaseSecurity securityManager) {
+  	this.repositoryManager = repositoryManager;
+  	this.securityManager = securityManager;
   }
 
   /**
@@ -131,6 +147,299 @@ public class RepositoryEntryResource {
     }
     return response.build();
   }
+  
+  
+  //get put/post delete add owner
+  
+	/**
+	 * Returns the list of owners of the repository entry specified by the groupKey.
+	 * @response.representation.200.qname {http://www.example.com}userVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc Owners of the repository entry
+   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.404.doc The repository entry cannot be found
+	 * @param repoEntryKey The key of the repository entry
+	 * @param request The HTTP Request
+	 * @return
+	 */
+	@GET
+	@Path("owners")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getOwners(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
+		RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+		if(repoEntry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if(!isAuthorEditor(repoEntry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		return getIdentityInSecurityGroup(repoEntry.getOwnerGroup());
+	}
+	
+	/**
+	 * Adds an owner to the repository entry.
+	 * @response.representation.200.doc The user is added as owner of the repository entry
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The repository entry or the user cannot be found
+	 * @param repoEntryKey The key of the repository entry 
+	 * @param identityKey The user's id
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@PUT
+	@Path("owners/{identityKey}")
+	public Response addOwner(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if(!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+			
+			Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
+			if(identityToAdd == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry);
+			return Response.ok().build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("Trying to add an owner to a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	/**
+	 * Removes the owner from the repository entry.
+	 * @response.representation.200.doc The user is removed as owner from the repository entry
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The repository entry or the user cannot be found
+	 * @param repoEntryKey The key of the repository entry
+	 * @param identityKey The user's id
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@DELETE
+	@Path("owners/{identityKey}")
+	public Response removeOwner(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if (!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+
+			Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
+			if(identityToRemove == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			repositoryManager.removeOwners(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry);
+			return Response.ok().build();
+		} catch (Exception e) {
+			log.error("Trying to remove an owner to a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	/**
+	 * Returns the list of coaches of the repository entry.
+	 * @response.representation.200.qname {http://www.example.com}userVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc Coaches of the repository entry
+   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.404.doc The repository entry cannot be found
+	 * @param repoEntryKey The key of the repository entry
+	 * @param request The HTTP Request
+	 * @return
+	 */
+	@GET
+	@Path("coaches")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getCoaches(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
+		RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+		if(repoEntry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if(!isAuthorEditor(repoEntry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		return getIdentityInSecurityGroup(repoEntry.getTutorGroup());
+	}
+	
+	/**
+	 * Adds a coach to the repository entry.
+	 * @response.representation.200.doc The user is added as coach of the repository entry
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The repository entry or the user cannot be found
+	 * @param repoEntryKey The key of the repository entry 
+	 * @param identityKey The user's id
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@PUT
+	@Path("coaches/{identityKey}")
+	public Response addCoach(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if(!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+			
+			Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
+			if(identityToAdd == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+			repositoryManager.addTutors(ureq.getIdentity(), iae, repoEntry);
+			return Response.ok().build();
+		} catch (Exception e) {
+			log.error("Trying to add a coach to a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	/**
+	 * Removes the coach from the repository entry.
+	 * @response.representation.200.doc The user is removed as coach from the repository entry
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The repository entry or the user cannot be found
+	 * @param repoEntryKey The key of the repository entry
+	 * @param identityKey The user's id
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@DELETE
+	@Path("coaches/{identityKey}")
+	public Response removeCoach(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if (!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+
+			Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
+			if(identityToRemove == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			repositoryManager.removeTutors(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry);
+			return Response.ok().build();
+		} catch (Exception e) {
+			log.error("Trying to remove a coach from a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	/**
+	 * Returns the list of participants of the repository entry.
+	 * @response.representation.200.qname {http://www.example.com}userVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc Coaches of the repository entry
+   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.404.doc The repository entry cannot be found
+	 * @param repoEntryKey The key of the repository entry
+	 * @param request The HTTP Request
+	 * @return
+	 */
+	@GET
+	@Path("participants")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getParticipants(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
+		RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+		if(repoEntry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if(!isAuthorEditor(repoEntry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		return getIdentityInSecurityGroup(repoEntry.getParticipantGroup());
+	}
+	
+	/**
+	 * Adds a participant to the repository entry.
+	 * @response.representation.200.doc The user is added as participant of the repository entry
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The repository entry or the user cannot be found
+	 * @param repoEntryKey The key of the repository entry 
+	 * @param identityKey The user's id
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@PUT
+	@Path("participants/{identityKey}")
+	public Response addParticipant(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if(!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+			
+			Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
+			if(identityToAdd == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+			repositoryManager.addParticipants(ureq.getIdentity(), iae, repoEntry);
+			return Response.ok().build();
+		} catch (Exception e) {
+			log.error("Trying to add a participant to a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	/**
+	 * Removes the participant from the repository entry.
+	 * @response.representation.200.doc The user is removed as participant from the repository entry
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The repository entry or the user cannot be found
+	 * @param repoEntryKey The key of the repository entry
+	 * @param identityKey The user's id
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@DELETE
+	@Path("participants/{identityKey}")
+	public Response removeParticipant(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if (!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+
+			Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
+			if(identityToRemove == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			repositoryManager.removeParticipants(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry);
+			return Response.ok().build();
+		} catch (Exception e) {
+			log.error("Trying to remove a participant from a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
 
   /**
    * Download the export zip file of a repository entry.
@@ -162,7 +471,7 @@ public class RepositoryEntryResource {
 
     Identity identity = getIdentity(request);
     boolean isAuthor = RestSecurityHelper.isAuthor(request);
-    boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re);
+    boolean isOwner = repositoryManager.isOwnerOfRepositoryEntry(identity, re);
     if(!(isAuthor | isOwner)) return Response.serverError().status(Status.UNAUTHORIZED).build();
     boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload(re);
     if(!canDownload) return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
@@ -174,7 +483,7 @@ public class RepositoryEntryResource {
       if(lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
         MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
         if(mr != null) {
-          RepositoryManager.getInstance().incrementDownloadCounter(re);
+        	repositoryManager.incrementDownloadCounter(re);
           return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
         } else return Response.serverError().status(Status.NO_CONTENT).build();
       } else return Response.serverError().status(Status.CONFLICT).build();
@@ -223,7 +532,7 @@ public class RepositoryEntryResource {
       Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
       RepositoryEntry replacedRe;
       if(file == null) {
-      	replacedRe = RepositoryManager.getInstance().setDescriptionAndName(re, displayname, description);
+      	replacedRe = repositoryManager.setDescriptionAndName(re, displayname, description);
       } else {
 	      String tmpName = StringHelper.containsNonWhitespace(filename) ? filename : "import.zip";
 	      tmpFile = getTmpFile(tmpName);
@@ -238,7 +547,7 @@ public class RepositoryEntryResource {
 	      if(replacedRe == null) {
 	        return Response.serverError().status(Status.NOT_FOUND).build();
 	      } else if (StringHelper.containsNonWhitespace(displayname)) {
-	      	replacedRe = RepositoryManager.getInstance().setDescriptionAndName(replacedRe, displayname, null);
+	      	replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, null);
 	      }
       }
       RepositoryEntryVO vo = ObjectFactory.get(replacedRe);
@@ -293,9 +602,9 @@ public class RepositoryEntryResource {
   
   /**
 	 * Delete a course by id
- * @response.representation.200.doc The metadatas of the created course
+	 * @response.representation.200.doc The metadatas of the created course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
- * @response.representation.404.doc The course not found
+	 * @response.representation.404.doc The course not found
 	 * @param courseId The course resourceable's id
 	 * @param request The HTTP request
 	 * @return It returns the XML representation of the <code>Structure</code>
@@ -315,23 +624,30 @@ public class RepositoryEntryResource {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		UserRequest ureq = getUserRequest(request);
-		
-		//fxdiff
 		ErrorWindowControl error = new ErrorWindowControl();
-		RepositoryManager rm = RepositoryManager.getInstance();
-		rm.deleteRepositoryEntryWithAllData(ureq, error, re);
-		
+		repositoryManager.deleteRepositoryEntryWithAllData(ureq, error, re);
 		return Response.ok().build();
+	}
+	
+	private Response getIdentityInSecurityGroup(SecurityGroup sg) {
+		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(sg);
+		
+		int count = 0;
+		UserVO[] ownerVOs = new UserVO[identities.size()];
+		for(Identity identity:identities) {
+			ownerVOs[count++] = UserVOFactory.get(identity);
+		}
+		return Response.ok(ownerVOs).build();
 	}
 
   private RepositoryEntry lookupRepositoryEntry(String key) {
     Long repoEntryKey = longId(key);
     RepositoryEntry re = null;
     if(repoEntryKey != null) {//looks like a primary key
-      re = RepositoryManager.getInstance().lookupRepositoryEntry(repoEntryKey);
+      re = repositoryManager.lookupRepositoryEntry(repoEntryKey);
     }
     if(re == null) {// perhaps a soft key
-      re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(key, false);
+      re = repositoryManager.lookupRepositoryEntryBySoftkey(key, false);
     }
     return re;
   }
