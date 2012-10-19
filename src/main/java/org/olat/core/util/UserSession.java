@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -87,11 +88,11 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	public static final String STORE_KEY_KILLED_EXISTING_SESSION = "killedExistingSession";
 
   //clusterNOK cache ??
-	private static Set<UserSession> authUserSessions = new HashSet<UserSession>(101);
-	private static Set<String> userNameToIdentity = new HashSet<String>(101);
+	private static final Set<UserSession> authUserSessions = new HashSet<UserSession>(101);
+	private static final Set<String> userNameToIdentity = new HashSet<String>(101);
 	private static int sessionTimeoutInSec = 300;
 	private static int sessionTimeoutAuthInSec = 7200;
-	private static Set<String> authUsersNamesOtherNodes = new HashSet<String>(101);
+	private static final Set<String> authUsersNamesOtherNodes = new HashSet<String>(101);
 
 	// things to put into that should not be clear when signing on (e.g. remember
 	// url for a direct jump)
@@ -107,7 +108,11 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private EventBus singleUserSystemBus;
 	//fxdiff BAKS-7 Resume function
 	private Stack<HistoryPoint> history = new Stack<HistoryPoint>();
-	
+
+	// counters to count numbers of sessions
+	private static final AtomicInteger sessionCountWeb = new AtomicInteger();
+	private static final AtomicInteger sessionCountRest = new AtomicInteger();
+	private static final AtomicInteger sessionCountDav = new AtomicInteger();
 	
 	private UserSession() {
 		init();
@@ -483,6 +488,17 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 				}			
 			}
 		}
+		// update logged in users counters
+		if (sessionInfo != null) {
+			if (sessionInfo.isREST()) {
+				sessionCountRest.decrementAndGet();
+			} else if (sessionInfo.isWebDAV()) {
+				sessionCountDav.decrementAndGet();
+			} else {
+				sessionCountWeb.decrementAndGet();
+			}
+		}
+		
 		Tracing.logDebug("signOffAndClearWithout() END", getClass());
 	}
 	
@@ -590,6 +606,15 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			if(invalidatedSession != null) invalidatedSession.signOffAndClear();
 		}
 		
+		// update logged in users counters
+		if (sessionInfo.isREST()) {
+			sessionCountRest.incrementAndGet();
+		} else if (sessionInfo.isWebDAV()) {
+			sessionCountDav.incrementAndGet();
+		} else {
+			sessionCountWeb.incrementAndGet();
+		}
+		
 		Tracing.logDebug("signOn() END", getClass());
 	}
 
@@ -667,12 +692,46 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	}
 
 	/**
-	 * @return Returns the userSessionsCnt.
+	 * @return Returns the userSessionsCnt (Web, WebDAV, REST) from this VM
 	 */
 	public static int getUserSessionsCnt() {
 	  //clusterNOK ?? return only number of locale sessions ?
 		return authUserSessions.size();
 	}
+
+	/**
+	 * @return The number of users currently logged in using the web interface
+	 *         (guests and authenticated users). Note that currently this only
+	 *         returns the users from this VM as the synchronization of user
+	 *         between cluster node is not correctly. In the long run we return
+	 *         all users here.
+	 */
+	public static int getUserSessionWebCounter() {
+		// clusterNOK ?? return only number of locale sessions ?
+		return sessionCountWeb.get();
+	}
+
+	/**
+	 * @return The number of users currently logged in using a WebDAV client.
+	 *         Note that currently this only returns the users from this VM as
+	 *         the synchronization of user between cluster node is not
+	 *         correctly. In the long run we return all users here.
+	 */
+	public static int getUserSessionDavCounter() {
+		// clusterNOK ?? return only number of locale sessions ?
+		return sessionCountDav.get();
+	}
+
+	/**
+	 * @return The number of users currently logged in using the REST API. Note
+	 *         that currently this only returns the users from this VM as the
+	 *         synchronization of user between cluster node is not correctly. In
+	 *         the long run we return all users here.
+	 */
+	public static int getUserSessionRestCounter() {
+		// clusterNOK ?? return only number of locale sessions ?
+		return sessionCountRest.get();
+	}	
 
 	/**
 	 * @return Returns the guiPreferences.

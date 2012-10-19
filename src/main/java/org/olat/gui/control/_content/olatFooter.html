@@ -1,8 +1,8 @@
 <div id="b_footer_user">
-    $username  &nbsp;&nbsp;&nbsp;
-    #if($instantMessagingEnabled)
-    		($connectedUsers.countConnectedUsers()&nbsp;$r.render("other.users.online"))
-    #end
+	#if ($loggedIn)
+    	<span id="b_username">$r.translate("footer.logged.in.as", ["$username"])</span>
+    #end 
+   <span id="b_counter">($r.render("userCounter") $r.render("other.users.online"))</span>
 </div>
 <div id="b_footer_version">
 	<a href="http://www.openolat.org"  title="Homepage of the Open Source LMS OpenOLAT" target="_blank">$olatversion</a>

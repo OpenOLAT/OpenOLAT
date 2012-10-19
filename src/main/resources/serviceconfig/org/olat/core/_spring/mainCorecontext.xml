@@ -62,12 +62,12 @@
 	-->
 	<!-- DMZ -->
   <bean  id="fullWebApp.DMZFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatGuestFooterController"/>
+		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
 	</bean>
 	
 	<!-- Guest -->
   <bean  id="fullWebApp.GuestFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatGuestFooterController"/>
+		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
 	</bean>
 	
 	<!-- Authenticated -->

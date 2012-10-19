@@ -33,8 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.gui.control.OlatDmzTopNavController;
-import org.olat.gui.control.OlatGuestFooterController;
+import org.olat.gui.control.OlatFooterController;
 
 /**
  * Description:<br>
@@ -59,7 +58,7 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 			ControllerCreator footerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.DMZFooterControllerCreator");
 			footerCtr = footerCreator.createController(ureq, wControl);
 		} else {
-			footerCtr = new OlatGuestFooterController(ureq,wControl);
+			footerCtr = new OlatFooterController(ureq,wControl);
 		}
 		return footerCtr;
 	}

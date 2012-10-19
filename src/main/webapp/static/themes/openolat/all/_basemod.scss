@@ -263,12 +263,10 @@ but had to include here, don't want to change all layout.scss **/
 		top: 1em;
 		left: 1em;
 		line-height: 16px;
-	 	a.b_ajax {
-	 		background: url(../openolat/images/ajax.png) no-repeat; 
-	 		width: 20px; 
-	 		height: 16px; 
-	 		display: block; 
-	 		float: left; 
+	 	#b_counter {
+	 	}
+	 	#b_username { 
+	 		margin-right: 1.5em;	 		 	
 	 	}
 	}
 	#b_footer_version { 

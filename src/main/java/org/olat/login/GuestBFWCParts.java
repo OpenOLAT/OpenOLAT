@@ -41,8 +41,7 @@ import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.gui.control.OlatGuestFooterController;
-import org.olat.gui.control.OlatGuestTopNavController;
+import org.olat.gui.control.OlatFooterController;
 
 /**
  * Description:<br>
@@ -66,7 +65,7 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 			ControllerCreator footerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.GuestFooterControllerCreator");
 			footerCtr = footerCreator.createController(ureq, wControl);
 		} else {
-			footerCtr = new OlatGuestFooterController(ureq,wControl);
+			footerCtr = new OlatFooterController(ureq,wControl);
 		}
 		return footerCtr;
 	}
