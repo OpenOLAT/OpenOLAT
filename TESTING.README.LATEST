@@ -49,7 +49,18 @@ junit and integration tests in OpenOLAT 8
   - MySQL
 	  mvn clean test -Dwith-mysql
   - PostgreSQL
-	  mvn clean test -Dwith-postgresql
+	  mvn clean test -Dwith-postgresql 
+  - Oracle
+    The support of Oracle is still EXPERIMENTAL
+    - you need a clean database as the maven process doesn't create a new one (every time)
+    - You need more cursors (if you don't know what it is, don't run this tests :-): 
+      ALTER SYSTEM SET open_cursors = 400 SCOPE=BOTH;
+    - configure the olat.local.properties in src/test/profile/oracle
+    - you need to install the JDBC driver locally (one time) as there isn't any maven repo for them (licensing issue)
+      mvn install:install-file -Dfile=ojdbc6.jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.0 -Dpackaging=jar -DcreateChecksum=true
+	then you can run the test suite
+	  mvn clean test -Dwith-oracle
+	  
 
 - The junit testresults can be found at target/surefire-reports/*
   Double click the xml files in Eclipse to display the results in the standards jUnit console

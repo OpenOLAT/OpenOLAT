@@ -511,6 +511,88 @@
         </plugins>
       </build>
     </profile>
+    
+	<profile>
+		<id>oracleunittests</id>
+		<activation>
+			<property>
+				<name>with-oracle</name>
+			</property>
+		</activation>
+		<properties>
+			<skipTests>false</skipTests>
+			<skipITs>true</skipITs>
+			<testFailureIgnore>false</testFailureIgnore>
+			<test.env.db.hibernate.ddl.auto>
+			</test.env.db.hibernate.ddl.auto>
+			<test.env>oracle</test.env>
+		</properties>
+		<build>
+			<plugins>
+				<plugin>
+					<!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.8.1</version>
+					<configuration>
+						<argLine>-XX:MaxPermSize=128m -Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
+						<systemPropertyVariables>
+							<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
+						</systemPropertyVariables>
+						<testNGArtifactName>none:none</testNGArtifactName>
+						<includes>
+							<include>org/olat/test/AllTestsJunit4.java</include>
+						</includes>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.4.3</version>
+					<executions>
+						<execution>
+							<id>copy-resources-4-postgresqlunittests</id>
+							<!-- hook in to copy maven.build.properties to allow test and integration-test 
+								phase run properly -->
+							<phase>generate-test-resources</phase>
+							<goals>
+								<goal>copy-resources</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>${basedir}/target/test-classes</outputDirectory>
+								<resources>
+									<resource>
+										<!-- place resources you like to get filtered an copied -->
+										<directory>src/test/profile/${test.env}</directory>
+										<includes>
+											<include>olat.local.properties</include>
+										</includes>
+										<filtering>true</filtering>
+									</resource>
+									<resource>
+										<!-- place resources you like to get filtered an copied -->
+										<directory>src/main/resources/database/oracle</directory>
+										<includes>
+											<include>setupDatabase.sql</include>
+										</includes>
+										<filtering>true</filtering>
+									</resource>
+								</resources>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</build>
+		<dependencies>
+			<dependency>
+				<groupId>com.oracle</groupId>
+				<artifactId>ojdbc6</artifactId>
+				<version>11.0</version>
+				<optional>true</optional>
+			</dependency>
+		</dependencies>
+	</profile>
+    
 
 		<!-- Retain the dependency for cluster -->
 		<profile>
