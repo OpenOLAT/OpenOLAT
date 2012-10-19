@@ -95,7 +95,6 @@ public class FunctionalUtil {
 		HOME,
 		GROUPS,
 		LEARNING_RESOURCES,
-		GROUP_ADMINISTRATION,
 		USER_MANAGEMENT,
 		ADMINISTRATION,
 	}
@@ -116,6 +115,10 @@ public class FunctionalUtil {
 	public final static String CONTENT_CSS = "b_main";
 	public final static String CONTENT_TAB_CSS = "b_item_";
 	public final static String ACTIVE_CONTENT_TAB_CSS = "b_active";
+	public final static String CONTENT_SEGMENT_CONTAINER_CSS = "b_segments_container";
+	public final static String CONTENT_SEGMENT_CSS = "b_segment";
+	
+	public final static String WINDOW_CSS = "b_window";
 	
 	public final static String WIZARD_CSS = "b_wizard";
 	public final static String WIZARD_NEXT_CSS = "b_wizard_button_next";
@@ -172,8 +175,12 @@ public class FunctionalUtil {
 	private String contentCss;
 	private String contentTabCss;
 	private String activeContentTabCss;
+	private String contentSegmentContainerCss;
+	private String contentSegmentCss;
 	
 	private String formSaveXPath;
+	
+	private String windowCss;
 	
 	private String wizardCss;
 	private String wizardNextCss;
@@ -249,8 +256,12 @@ public class FunctionalUtil {
 		contentCss = CONTENT_CSS;
 		contentTabCss = CONTENT_TAB_CSS;
 		activeContentTabCss = ACTIVE_CONTENT_TAB_CSS;
+		contentSegmentContainerCss = CONTENT_SEGMENT_CONTAINER_CSS;
+		contentSegmentCss = CONTENT_SEGMENT_CSS;
 		
 		formSaveXPath = FORM_SAVE_XPATH;
+		
+		windowCss = WINDOW_CSS;
 		
 		wizardCss = WIZARD_CSS;
 		wizardNextCss = WIZARD_NEXT_CSS;
@@ -644,11 +655,6 @@ public class FunctionalUtil {
 			selectedCss = getOlatSiteLearningResourcesCss();
 			break;
 		}
-		case GROUP_ADMINISTRATION:
-		{
-			selectedCss = getOlatSiteAdministrationCss();
-			break;
-		}
 		case USER_MANAGEMENT:
 		{
 			selectedCss = getOlatSiteUserManagementCss();
@@ -754,11 +760,6 @@ public class FunctionalUtil {
 		case USER_MANAGEMENT:
 		{
 			retval = functionalUserManagementSiteUtil.openActionByMenuTree(browser, UserManagementSiteAction.USER_SEARCH);
-		}
-		break;
-		case GROUP_ADMINISTRATION:
-		{
-			//FIXME:JK: need to be implemented
 		}
 		break;
 		case ADMINISTRATION:
@@ -939,6 +940,32 @@ public class FunctionalUtil {
 			browser.click(selectorBuffer.toString());
 			waitForPageToLoad(browser);
 		}
+		
+		return(true);
+	}
+	
+	/**
+	 * Opens a segment at the specified segmentIndex.
+	 * 
+	 * @param browser
+	 * @param segmentIndex
+	 * @return
+	 */
+	public boolean openContentSegment(Selenium browser, int segmentIndex){
+		idle(browser);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getContentSegmentContainerCss())
+		.append("')]//ul//(li[contains(@class, '")
+		.append(getContentSegmentCss())
+		.append("')])[")
+		.append(segmentIndex)
+		.append("]");
+		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
 		
 		return(true);
 	}
@@ -1484,12 +1511,36 @@ public class FunctionalUtil {
 		this.activeContentTabCss = activeContentTabCss;
 	}
 
+	public String getContentSegmentContainerCss() {
+		return contentSegmentContainerCss;
+	}
+
+	public void setContentSegmentContainerCss(String contentSegmentContainerCss) {
+		this.contentSegmentContainerCss = contentSegmentContainerCss;
+	}
+
+	public String getContentSegmentCss() {
+		return contentSegmentCss;
+	}
+
+	public void setContentSegmentCss(String contentSegmentCss) {
+		this.contentSegmentCss = contentSegmentCss;
+	}
+
 	public String getFormSaveXPath() {
 		return formSaveXPath;
 	}
 
 	public void setFormSaveXPath(String formSaveXPath) {
 		this.formSaveXPath = formSaveXPath;
+	}
+
+	public String getWindowCss() {
+		return windowCss;
+	}
+
+	public void setWindowCss(String windowCss) {
+		this.windowCss = windowCss;
 	}
 
 	public String getWizardCss() {

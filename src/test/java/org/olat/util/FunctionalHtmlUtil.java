@@ -21,6 +21,7 @@ package org.olat.util;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.filter.FilterFactory;
 
 /**
  * 
@@ -31,11 +32,14 @@ public class FunctionalHtmlUtil {
 	
 	/**
 	 * Strips all markup of specified string.
+	 * This method is depracted and shouldn't be used in newly written code.
+	 * Use removeMarkup instead.
 	 * 
 	 * @param html
 	 * @param insertNewlines
 	 * @return
 	 */
+	@Deprecated
 	public String stripTags(String html, boolean insertNewlines){
 		if(html.indexOf("<body") != -1){
 			html = html.substring(html.indexOf('>', html.indexOf("<body")) + 1, html.indexOf("</body"));
@@ -63,17 +67,26 @@ public class FunctionalHtmlUtil {
 					}
 				}
 				
-				prevLineLastChar = currentText.charAt(currentText.length() - 1);
+				if(!currentText.isEmpty()){
+					prevLineLastChar = currentText.charAt(currentText.length() - 1);
+				}
 			}
 			
-			offset = html.indexOf('>', nextOffset) + 1;
+			offset = html.indexOf('>', nextOffset);
+			
+			if(offset != -1){
+				offset += 1;
+			}
 		}
 		 
 		String currentText = html.substring(offset);
 		
 		if(!currentText.matches("^[\\s]+$")){
 			textBuffer.append(currentText);
-			prevLineLastChar = currentText.charAt(currentText.length() - 1);
+			
+			if(!currentText.isEmpty()){
+				prevLineLastChar = currentText.charAt(currentText.length() - 1);
+			}
 		}
 		
 		if(prevLineLastChar != '\n'){
@@ -81,5 +94,9 @@ public class FunctionalHtmlUtil {
 		}
 		
 		return(textBuffer.toString());
+	}
+	
+	public String removeMarkup(String html){
+		 return(FilterFactory.getHtmlTagsFilter().filter(html));
 	}
 }

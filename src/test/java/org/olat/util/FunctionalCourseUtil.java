@@ -1659,8 +1659,7 @@ public class FunctionalCourseUtil {
 		browser.click(selectorBuffer.toString());
 		
 		functionalUtil.waitForPageToLoad(browser);
-
-		functionalUtil.idle(browser);
+		
 		/* */
 		return(functionalRepositorySiteUtil.fillInRepositoryEntryPopup(browser, title, description));
 	}

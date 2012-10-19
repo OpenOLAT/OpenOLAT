@@ -45,6 +45,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -135,7 +136,9 @@ public class FunctionalVOUtil {
 			UserVO current = restConnection.parse(body, UserVO.class);
 			Assert.assertNotNull(current);
 			
-			user.add(vo);
+			current.setPassword(vo.getPassword());
+			
+			user.add(current);
 		}
 
 		restConnection.shutdown();
@@ -150,26 +153,31 @@ public class FunctionalVOUtil {
 		/* make a tutor */
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 
-		restConnection.login(getUsername(), getPassword());
+		Assert.assertTrue(restConnection.login(getUsername(), getPassword()));
 		
 		for(UserVO currentUser: user){
 			/* retrieve roles */
-			URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("/users/" + currentUser.getKey() + "/roles").build();
-			HttpGet getMethod = restConnection.createGet(request, MediaType.APPLICATION_JSON, true);
-			HttpResponse response = restConnection.execute(getMethod);
+			URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("users/" + currentUser.getKey() + "/roles").build();
+			HttpGet method = restConnection.createGet(request, MediaType.APPLICATION_JSON, true);
+			HttpResponse response = restConnection.execute(method);
 			assertEquals(200, response.getStatusLine().getStatusCode());
-			RolesVO roles = restConnection.parse(response, RolesVO.class);
+			InputStream body = response.getEntity().getContent();
+			RolesVO roles = restConnection.parse(body, RolesVO.class);
 			
 			/* send appropriate role */
 			roles.setAuthor(true);
 			roles.setUserManager(true);
 			
-			request = UriBuilder.fromUri(deploymentUrl.toURI()).path("/users/" + currentUser.getKey() + "/roles").build();
+			request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("users/" + currentUser.getKey() + "/roles").build();
 			HttpPost postMethod = restConnection.createPost(request, MediaType.APPLICATION_JSON, true);
 			restConnection.addJsonEntity(postMethod, roles);
 			response = restConnection.execute(postMethod);
 			assertEquals(200, response.getStatusLine().getStatusCode());
+			
+			EntityUtils.consume(response.getEntity());
 		}
+		
+		restConnection.shutdown();
 		
 		return(user);
 	}
@@ -187,7 +195,6 @@ public class FunctionalVOUtil {
 	 * @throws IOException
 	 */
 	public CourseVO importCourse(URL deploymentUrl, String path, String filename, String resourcename, String displayname) throws URISyntaxException, IOException{
-		//TODO:JK: may be replace this code because the course will just be deployed and not imported 
 		URL cpUrl = FunctionalVOUtil.class.getResource(path);
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
@@ -343,6 +350,34 @@ public class FunctionalVOUtil {
 		assertNotNull(vo);
 		
 		return(vo);
+	}
+	
+	/**
+	 * Adds owner as owner to repoEntry.
+	 * 
+	 * @param deploymentUrl
+	 * @param repoEntry
+	 * @param owner
+	 * @throws URISyntaxException
+	 * @throws IOException 
+	 */
+	public void addOwnerToRepositoryEntry(URL deploymentUrl, RepositoryEntryVO repoEntry, UserVO owner) throws IOException, URISyntaxException{
+		//add an owner
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(getUsername(), getPassword()));
+
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI())
+				.path("restapi")
+				.path("repo/entries").path(repoEntry.getKey().toString())
+				.path("owners").path(owner.getKey().toString())
+				.build();
+
+		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = restConnection.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		restConnection.shutdown();
 	}
 	
 	public String getUsername() {

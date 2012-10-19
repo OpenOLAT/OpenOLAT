@@ -19,7 +19,6 @@
  */
 package org.olat.util;
 
-import org.junit.Assert;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.util.FunctionalUtil.OlatSite;
@@ -168,7 +167,7 @@ public class FunctionalAdministrationSiteUtil {
 			.append(functionalUtil.getTreeLevel1Css())
 			.append("')]");
 		}else if(action instanceof SystemConfigurationAction){
-			/* check if collapsed */
+			/* check if not collapsed */
 			 selectorBuffer = new StringBuffer();
 			
 			 selectorBuffer.append("xpath=//li[contains(@class, '")
@@ -191,7 +190,7 @@ public class FunctionalAdministrationSiteUtil {
 			.append(functionalUtil.getTreeLevel2Css())
 			.append("')]");
 		}else if(action instanceof SystemMaintenanceAction){
-			/* check if collapsed */
+			/* check if not collapsed */
 			 selectorBuffer = new StringBuffer();
 			
 			 selectorBuffer.append("xpath=//li[contains(@class, '")
@@ -212,7 +211,7 @@ public class FunctionalAdministrationSiteUtil {
 			.append(functionalUtil.getTreeLevel2Css())
 			.append("')]");
 		}else if(action instanceof CustomizingAction){
-			/* check if collapsed */
+			/* check if not collapsed */
 			 selectorBuffer = new StringBuffer();
 			
 			 selectorBuffer.append("xpath=//li[contains(@class, '")
@@ -267,37 +266,44 @@ public class FunctionalAdministrationSiteUtil {
 		/* click show all*/
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//a[contains(@class, '")
+		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append(functionalUtil.getTableAllCss())
-		.append("')]");
+		.append("')]//a");
 		
 		if(browser.isElementPresent(selectorBuffer.toString())){
 			browser.click(selectorBuffer.toString());
 		}
 		
-		boolean success = true;
-		
 		/* clear appropriate cache */
 		for(String currentKey: keys){
 			functionalUtil.idle(browser);
 			
+			/* click clear */
 			selectorBuffer = new StringBuffer();
 			
-			selectorBuffer.append("xpath=//table//tr//td[contains(@text, '")
+			selectorBuffer.append("//table//tr//td[text()='")
 			.append(currentKey)
-			.append("\\n")
-			.append("')]");
+			.append("']");
 			
-			if(browser.isElementPresent(selectorBuffer.toString())){
-				selectorBuffer.append("/../td[last()]//a");
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			selectorBuffer.append("/../td[last()]//a");
 				
-				browser.click(selectorBuffer.toString());
-			}else{
-				success = false;
-			}
+			browser.click(selectorBuffer.toString());
+			
+			/* confirm */
+			selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("xpath=(//div[contains(@class, '")
+			.append(functionalUtil.getWindowCss())
+			.append("')]//a[contains(@class, '")
+			.append(functionalUtil.getButtonCss())
+			.append("')])[last()]");
+			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.click(selectorBuffer.toString());
 		}
 		
-		return(success);
+		return(true);
 	}
 
 	public FunctionalUtil getFunctionalUtil() {

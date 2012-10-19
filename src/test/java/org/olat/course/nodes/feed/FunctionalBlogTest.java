@@ -79,7 +79,7 @@ public class FunctionalBlogTest {
 	public final static String DELETE_BLOG_DESCRIPTION = "The first blog entry will be deleted";
 	public final static String DELETE_BLOG_CONTENT = "You should be able to choose to create or feed from existing blog.";
 	
-	public final static String CONCURRENT_CLEAR_CACHE_BLOG = "/org/olat/course/nodes/feed/blog.zip";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_PATH = "/org/olat/course/nodes/feed/blog.zip";
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_FILE_NAME = "blog.zip";
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_RESOURCE_NAME = "Blog";
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_DISPLAY_NAME = "Parallel Computing Blog";
@@ -88,7 +88,7 @@ public class FunctionalBlogTest {
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST1_CONTENT = "Please take a look at ReentrantLock class in JavaSE package java.util.concurrent.locks for further information.";
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE = "Creating conditions";
 	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_DESCRIPTION = "Wait until condition is fulfilled.";
-	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_CONTENT = "With the ReentrantLock class you may create new conditions like following:<br><code>final Lock lock = new ReentrantLock();<br>final Condition cond  = lock.newCondition()<br></code>";
+	public final static String CONCURRENT_CLEAR_CACHE_BLOG_POST2_CONTENT = "With the ReentrantLock class you may create new conditions like following:<br>\n<code>\nfinal Lock lock = new ReentrantLock();<br>\nfinal Condition cond  = lock.newCondition()<br>\n</code>\n";
 	
 	public final static String CONCURRENT_RW_BLOG_SHORT_TITLE = "blog";
 	public final static String CONCURRENT_RW_BLOG_LONG_TITLE = "blog cleared cache";
@@ -140,18 +140,21 @@ public class FunctionalBlogTest {
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
 		
-		/*  */
+		/* create a empty blog */
 		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
 		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
 		
 		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.BLOG, BLOG_SHORT_TITLE, BLOG_LONG_TITLE, BLOG_DESCRIPTION, 0));
 		Assert.assertTrue(functionalCourseUtil.createBlog(browser, BLOG_SHORT_TITLE, BLOG_DESCRIPTION));
 		
+		/* publish */
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
 		
+		/* import empty feed */
 		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 		Assert.assertTrue(functionalCourseUtil.importBlogFeed(browser, BLOG_FEED));
 		
+		/* blog should be accessible */
 		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 		
 
@@ -165,7 +168,6 @@ public class FunctionalBlogTest {
 		//TODO:JK: implement me
 	}
 	
-	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConcurrentClearCache(@Drone @Tutor1 DefaultSelenium tutor0, @Drone @Student1 DefaultSelenium student0) throws IOException, URISyntaxException{
@@ -176,7 +178,7 @@ public class FunctionalBlogTest {
 		int tutorCount = 1;
 			
 		final UserVO[] tutors = new UserVO[tutorCount];
-		functionalVOUtil.createTestUsers(deploymentUrl, tutorCount).toArray(tutors);
+		functionalVOUtil.createTestAuthors(deploymentUrl, tutorCount).toArray(tutors);
 		
 		/* create user */
 		int userCount = 1;
@@ -184,11 +186,12 @@ public class FunctionalBlogTest {
 		final UserVO[] students = new UserVO[userCount];
 		functionalVOUtil.createTestUsers(deploymentUrl, userCount).toArray(students);
 		
-		/* create blog and set rights for tutor	 */
+		/* create blog and set tutor as owner */
 		RepositoryEntryVO repoEntry = functionalVOUtil.importBlog(deploymentUrl,
-				CONCURRENT_CLEAR_CACHE_BLOG,
+				CONCURRENT_CLEAR_CACHE_BLOG_PATH,
 				CONCURRENT_CLEAR_CACHE_BLOG_FILE_NAME, CONCURRENT_CLEAR_CACHE_BLOG_RESOURCE_NAME, CONCURRENT_CLEAR_CACHE_BLOG_DISPLAY_NAME);
-		//FIXME:JK: set rights
+		
+		functionalVOUtil.addOwnerToRepositoryEntry(deploymentUrl, repoEntry, tutors[0]);
 		
 		/*
 		 * Create content and visit it.
@@ -228,68 +231,99 @@ public class FunctionalBlogTest {
 		/* student verifies title - month */
 		functionalUtil.idle(student0);
 		
+		String[] titles = {
+				CONCURRENT_CLEAR_CACHE_BLOG_POST1_TITLE,
+				CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE
+		};
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//ul[contains(@class, '")
+		selectorBuffer.append("//ul[contains(@class, '")
 		.append(functionalCourseUtil.getBlogMonthCss())
-		.append("')]//li//a)");
+		.append("')]//li//a");
 		
 		int iStop = student0.getXpathCount(selectorBuffer.toString()).intValue();
-		boolean foundTitleInMonth = false;
+		
+		boolean[] foundTitlesInMonth = new boolean[titles.length];
+		Arrays.fill(foundTitlesInMonth, false);
+		
 		
 		for(int i = 0; i < iStop; i++){
 			functionalUtil.idle(student0);
 			
-			StringBuffer currentBuffer = new StringBuffer(selectorBuffer);
+			/* click month */
+			StringBuffer currentBuffer = new StringBuffer();
 			
-			currentBuffer.append('[')
+			currentBuffer.append("xpath=(")
+			.append(selectorBuffer)
+			.append(")[")
 			.append(i + 1)
 			.append(']');
 			
+			functionalUtil.waitForPageToLoadElement(student0, currentBuffer.toString());
 			student0.click(currentBuffer.toString());
 			
 			functionalUtil.idle(student0);
 			
-			if(student0.isTextPresent(CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE)){
-				foundTitleInMonth = true;
-				break;
+			/* it should be visible somewhere */
+			int j = 0;
+			
+			for(String currentTitle: titles){
+				if(student0.isTextPresent(currentTitle)){
+					foundTitlesInMonth[j] = true;
+					break;
+				}
+				
+				j++;
 			}
 		}
 		
-		Assert.assertTrue(foundTitleInMonth);
+		Assert.assertFalse(ArrayUtils.contains(foundTitlesInMonth, false));
 		
 		/* student verifies title - year */
 		functionalUtil.idle(student0);
 		
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//div//a[contains(@class, '")
+		selectorBuffer.append("//div//a[contains(@class, '")
 		.append(functionalCourseUtil.getBlogYearCss())
-		.append("')])");
+		.append("')]");
 		
 		iStop = student0.getXpathCount(selectorBuffer.toString()).intValue();
-		boolean foundTitleInYear = false;
+		
+		boolean[] foundTitlesInYear = new boolean[titles.length];
+		Arrays.fill(foundTitlesInYear, false);
 		
 		for(int i = 0; i < iStop; i++){
 			functionalUtil.idle(student0);
 			
-			StringBuffer currentBuffer = new StringBuffer(selectorBuffer);
+			/* click year */
+			StringBuffer currentBuffer = new StringBuffer();
 			
-			currentBuffer.append('[')
+			currentBuffer.append("xpath=(")
+			.append(selectorBuffer)
+			.append(")[")
 			.append(i + 1)
 			.append(']');
 			
 			student0.click(currentBuffer.toString());
 			
 			functionalUtil.idle(student0);
+
+			/* it should be visible somewhere */
+			int j = 0;
 			
-			if(student0.isTextPresent(CONCURRENT_CLEAR_CACHE_BLOG_POST2_TITLE)){
-				foundTitleInYear = true;
-				break;
+			for(String currentTitle: titles){
+				if(student0.isTextPresent(currentTitle)){
+					foundTitlesInMonth[j] = true;
+					break;
+				}
+				
+				j++;
 			}
 		}
 		
-		Assert.assertTrue(foundTitleInYear);
+		Assert.assertFalse(ArrayUtils.contains(foundTitlesInYear, false));
 		
 		/* logout */
 		Assert.assertTrue(functionalUtil.logout(tutor0));
@@ -338,7 +372,6 @@ public class FunctionalBlogTest {
 		
 		/* for syncing threads */
 		final ReentrantLock lock = new ReentrantLock();
-		final ReentrantLock subroutineLock = new ReentrantLock();
 		final Condition cond = lock.newCondition();
 		final boolean[] doSignal = new boolean[1];
 		doSignal[0] = false;
