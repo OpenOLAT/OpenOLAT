@@ -63,6 +63,7 @@ public class CourseAreasController extends MainLayoutBasicController {
 	private final Link createAreaLink;
 	private final VelocityContainer mainVC;
 	private final TableController tableCtrl;
+	private VelocityContainer createVC;
 	private DialogBoxController deleteDialogCtr;
 	private BGAreaEditController editController;
 	private NewAreaController newAreaController;
@@ -119,7 +120,10 @@ public class CourseAreasController extends MainLayoutBasicController {
 			removeAsListenerAndDispose(newAreaController);
 			newAreaController = new NewAreaController(ureq, getWindowControl(), resource, false, null);
 			listenTo(newAreaController);
-			mainPanel.pushContent(newAreaController.getInitialComponent());
+			// wrap in velocity container to add help, title 
+			createVC = createVelocityContainer("area_create");
+			createVC.put("areaForm", newAreaController.getInitialComponent());
+			mainPanel.pushContent(createVC);
 		}
 	}
 
@@ -155,6 +159,7 @@ public class CourseAreasController extends MainLayoutBasicController {
 				
 				removeAsListenerAndDispose(newAreaController);
 				newAreaController = null;
+				createVC = null;
 			}
 		} else if (source == editController) {
 			if(event == Event.BACK_EVENT) {
