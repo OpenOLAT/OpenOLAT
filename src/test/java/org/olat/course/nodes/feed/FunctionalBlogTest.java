@@ -271,7 +271,6 @@ public class FunctionalBlogTest {
 			for(String currentTitle: titles){
 				if(student0.isTextPresent(currentTitle)){
 					foundTitlesInMonth[j] = true;
-					break;
 				}
 				
 				j++;
@@ -315,8 +314,7 @@ public class FunctionalBlogTest {
 			
 			for(String currentTitle: titles){
 				if(student0.isTextPresent(currentTitle)){
-					foundTitlesInMonth[j] = true;
-					break;
+					foundTitlesInYear[j] = true;
 				}
 				
 				j++;
