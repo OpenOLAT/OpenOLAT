@@ -55,6 +55,7 @@ public class HomeSite implements SiteInstance {
 			origNavElem = new DefaultNavElement(trans.translate("topnav.home"), trans.translate("topnav.home.alt"), "o_site_home");
 		}
 		curNavElem = new DefaultNavElement(origNavElem);
+		origNavElem.setAccessKey("h".charAt(0));
 	}
 
 	/**

@@ -59,6 +59,7 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 		backLink.setCustomEnabledLinkCSS("b_breadcumb_back");
 		backLink.setCustomDisplayText("\u25C4"); // unicode back arrow (black left pointer symbol)
 		backLink.setTitle(trans.translate("back"));
+		backLink.setAccessKey("b"); // allow navigation using keyboard
 		
 		setInitialComponent(mainVC);
 	}
