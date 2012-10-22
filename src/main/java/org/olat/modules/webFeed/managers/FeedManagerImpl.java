@@ -257,6 +257,19 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	/**
+	 * @see org.olat.modules.webFeed.managers.FeedManager#getItem(org.olat.modules.webFeed.models.Feed, java.lang.String)
+	 */
+	public Item getItem(Feed feed, String GUID) {
+		for (Item item : feed.getItems()) {
+			if (item.getGuid().equals(GUID)) {
+				return item;
+			}
+		}
+		return null;
+	}
+
+	
+	/**
 	 * Puts the feed to the feedCache in a synchronized manner.
 	 * 
 	 * @param ores

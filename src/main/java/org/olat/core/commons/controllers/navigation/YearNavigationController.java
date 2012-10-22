@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,6 +55,7 @@ public class YearNavigationController extends BasicController {
 	private YearNavigationModel model;
 	private Link next, previous, yearLink;
 	private VelocityContainer mainVC;
+	private Panel mainPanel;
 	private List<Link> monthLinks;
 	private List<? extends Dated> allObjects;
 	private boolean showAll = true;
@@ -68,22 +70,7 @@ public class YearNavigationController extends BasicController {
 	 */
 	public YearNavigationController(UserRequest ureq, WindowControl control, Translator fallBackTranslator, List<? extends Dated> datedObjects) {
 		super(ureq, control, fallBackTranslator);
-		// Create the model
-		model = new YearNavigationModel(datedObjects, ureq.getLocale());
-		allObjects = datedObjects;
-		showAll = true;
-		//
-		mainVC = createVelocityContainer("yearnavigation");
-		next = LinkFactory.createCustomLink("navi.forward", "navi.forward", null, Link.NONTRANSLATED, mainVC, this);
-		next.setCustomEnabledLinkCSS("b_small_icon b_forward_icon b_float_right");
-		next.setCustomDisabledLinkCSS("b_small_icon b_forward_icon b_float_right"); // b_disabled added by link component
-		next.setTooltip(translate("navi.forward"), false);
-		previous = LinkFactory.createCustomLink("navi.backward", "navi.backward", null, Link.NONTRANSLATED, mainVC, this);
-		previous.setCustomEnabledLinkCSS("b_small_icon b_backward_icon b_float_left");
-		previous.setCustomDisabledLinkCSS("b_small_icon b_backward_icon b_float_left");
-		previous.setTooltip(translate("navi.backward"), false);
-		createLinks();
-		this.putInitialPanel(mainVC);
+		setDatedObjects(datedObjects);
 	}
 
 	/**
@@ -176,8 +163,40 @@ public class YearNavigationController extends BasicController {
 		}
 	}
 
+	/**
+	 * Method to re-initialize the year navigation with other dated objects. The
+	 * model, links etc are all discarded.
+	 * 
+	 * @param datedObjects the new objects for the navigation
+	 */
 	public void setDatedObjects(List<? extends Dated> datedObjects) {
-		model.setDatedObjects(datedObjects);
+		// Create new main view, next and previous navigation even when it
+		// exists. This method is called from the constructor but also when the
+		// datamodel changes. It is bet to redo everything to not have stale
+		// links in the velcity page.
+		mainVC = createVelocityContainer("yearnavigation");
+		next = LinkFactory.createCustomLink("navi.forward", "navi.forward", null, Link.NONTRANSLATED, mainVC, this);
+		next.setCustomEnabledLinkCSS("b_small_icon b_forward_icon b_float_right");
+		next.setCustomDisabledLinkCSS("b_small_icon b_forward_icon b_float_right"); // b_disabled added by link component
+		next.setTooltip(translate("navi.forward"), false);
+		//
+		previous = LinkFactory.createCustomLink("navi.backward", "navi.backward", null, Link.NONTRANSLATED, mainVC, this);
+		previous.setCustomEnabledLinkCSS("b_small_icon b_backward_icon b_float_left");
+		previous.setCustomDisabledLinkCSS("b_small_icon b_backward_icon b_float_left");
+		previous.setTooltip(translate("navi.backward"), false);
+		//
+		if (mainPanel == null) {
+			// first time
+			mainPanel = this.putInitialPanel(mainVC);
+		} else {
+			// updating existing view
+			mainPanel.setContent(mainVC);
+		}
+		// Create new model model
+		model = new YearNavigationModel(datedObjects, getLocale());
+		allObjects = datedObjects;
+		showAll = true;
+		//
 		createLinks();
 	}
 

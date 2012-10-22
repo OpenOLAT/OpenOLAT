@@ -12,6 +12,20 @@
 		div.o_newer_items { float: right; display: inline;}
 	}
 	
+	.b_year_navigation {
+		text-align: center;
+		.b_year { }
+		.b_months {
+			border-top: 1px solid #eee;
+			padding-top: 1em;
+			margin-top: 0.5em;
+			clear: both;
+			list-style: none;
+		}
+		span.b_disabled {
+			background-image: none;
+		}
+	}
 }
 
 div.o_feed_peekview { 

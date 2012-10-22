@@ -153,6 +153,16 @@ public abstract class FeedManager extends BasicManager {
 	public abstract List<Item> loadItems(final Feed feed);
 
 	/**
+	 * Get the item from the feed with the given GUID or NULL if no such item
+	 * exists. Make sure you did load the feed before executing this!
+	 * 
+	 * @param feed
+	 * @param GUID
+	 * @return the Item or NULL
+	 */
+	public abstract Item getItem(Feed feed, String GUID);
+	
+	/**
 	 * Returns the feed with the provided id or null if not found.
 	 * 
 	 * @param feed The feed to be re-read

@@ -410,7 +410,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 			if (feed.getItems().contains(currentItem)) {
 				lock = feedManager.acquireLock(feed, currentItem, getIdentity());
 				if (lock.isSuccess()) {
-					
+					// reload to prevent stale object, then launch editor
+					currentItem = feedManager.getItem(feed, currentItem.getGuid());					
 					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
 					activateModalDialog(itemFormCtr);
 				} else {
@@ -597,7 +598,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				if (event.equals(Event.CHANGED_EVENT)) {
 					FileElement mediaFile = currentItem.getMediaFile();
 					if (feedManager.getItemContainer(currentItem, feed) == null) {
-						// ups, deleted in the meantime by someone else
+						// Ups, deleted in the meantime by someone else
 						// remove the item from the naviCtr
 						naviCtr.remove(currentItem);
 						// remove the item also from the helper (cached selection)
