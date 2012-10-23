@@ -26,6 +26,7 @@
 package org.olat.user;
 
 import org.olat.core.id.Preferences;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.notifications.NotificationsManager;
 
@@ -38,7 +39,10 @@ import org.olat.core.util.notifications.NotificationsManager;
  *
  * @author guido
  */
-public class PreferencesImpl implements Preferences{
+public class PreferencesImpl implements Preferences {
+
+	private static final long serialVersionUID = -8013230820111033911L;
+	
 	private String language;
 	private String fontsize;
 	private String notificationInterval;
@@ -107,8 +111,12 @@ public class PreferencesImpl implements Preferences{
 	public String getNotificationInterval() {
 		// Always return a valid notification interval
 		NotificationsManager notiMgr = NotificationsManager.getInstance();
-		if (notificationInterval == null || notificationInterval.isEmpty()
-				|| notiMgr == null || !notiMgr.getEnabledNotificationIntervals().contains(notificationInterval)) {
+		if (!StringHelper.containsNonWhitespace(notificationInterval)) {
+			if(notiMgr != null) {
+				notificationInterval = notiMgr.getDefaultNotificationInterval();
+			}
+		} else if(notiMgr != null && notiMgr.getEnabledNotificationIntervals() != null
+			&& !notiMgr.getEnabledNotificationIntervals().contains(notificationInterval)) {
 			notificationInterval = notiMgr.getDefaultNotificationInterval();
 		}
 		return notificationInterval;
@@ -157,7 +165,5 @@ public class PreferencesImpl implements Preferences{
 	 */
 	public void setPresenceMessagesPublic(boolean b) {
 		this.presenceMessagesPublic = b;
-		
 	}
-
 }
