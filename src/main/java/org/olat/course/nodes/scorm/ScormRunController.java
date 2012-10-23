@@ -26,7 +26,6 @@
 package org.olat.course.nodes.scorm;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.olat.core.gui.UserRequest;
@@ -308,29 +307,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	 * java.util.Properties)
 	 */
 	public void lmsCommit(String olatSahsId, Properties scoScores) {
-		// only write score info when node is configured to do so
-		if (isAssessable) {
-			// do a sum-of-scores over all sco scores
-			float score = 0f;
-			for (Iterator<Object> it_score = scoScores.values().iterator(); it_score.hasNext();) {
-				String aScore = (String) it_score.next();
-				float ascore = Float.parseFloat(aScore);
-				score += ascore;
-			}
-			float cutval = scormNode.getCutValueConfiguration().floatValue();
-			boolean passed = (score >= cutval);
-			ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-			boolean incrementAttempts = false;
-			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttempts);
-			userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
-
-			if (isLogDebugEnabled()) {
-				String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
-						+ olatSahsId + " occured, total sum = " + score + ", cutvalue =" + cutval + ", passed: " + passed
-						+ ", all scores now = " + scoScores.toString();
-				logDebug(msg, null);
-			}
-		}
+		//
 	}
 
 	// <BPS-620>
@@ -339,59 +316,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	 *      java.util.Properties)
 	 */
 	public void lmsFinish(String olatSahsId, Properties scoProperties) {
-		if (isAssessable) {
-			// do a sum-of-scores over all sco scores
-			// <OLATEE-27>
-			float score = -1f;
-			// </OLATEE-27>
-			for (Iterator<Object> it_score = scoProperties.values().iterator(); it_score.hasNext();) {
-				// <OLATEE-27>
-				if (score == -1f) {
-					score = 0f;
-				}
-				// </OLATEE-27>
-				String aScore = (String) it_score.next();
-				float ascore = Float.parseFloat(aScore);
-				score += ascore;
-			}
-
-			float cutval = scormNode.getCutValueConfiguration().floatValue();
-			ScoreEvaluation sceval;
-			boolean passed = (score >= cutval);
-			// if advanceScore option is set update the score only if it is
-			// higher
-			// <OLATEE-27>
-			if (config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)) {
-				if (score > (scormNode.getUserScoreEvaluation(userCourseEnv).getScore() != null ? scormNode.getUserScoreEvaluation(
-						userCourseEnv).getScore() : -1)) {
-					// </OLATEE-27>
-					sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
-					userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
-				} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
-					sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
-					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
-					userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
-				}
-			} else {
-				// <OLATEE-27>
-				if (score == -1f) {
-					score = 0f;
-				}
-				// </OLATEE-27>
-				sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
-				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
-			}
-
-			if (isLogDebugEnabled()) {
-				String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
-						+ olatSahsId + " occured, total sum = " + score + ", cutvalue =" + cutval + ", passed: " + passed
-						+ ", all scores now = " + scoProperties.toString();
-				logDebug(msg, null);
-			}
-		}
-
 		if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
 			doStartPage();
 			scormDispC.close();

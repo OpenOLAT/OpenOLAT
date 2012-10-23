@@ -77,6 +77,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 	private String lesson_mode;
 	private String credit_mode;
 	private boolean isAssessable;
+	private boolean incrementsAttempt;
 	private File cpRoot;
 	
 	public ScormAPIMapper() {
@@ -93,6 +94,8 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		this.cpRoot = cpRoot;
 		this.lesson_mode = scormAdapter.getLessonMode();
 		this.credit_mode = scormAdapter.getCreditMode();
+		this.incrementsAttempt = true;
+		this.scormAdapter.addAPIListener(this);
 	}
 	
 	private final void check() {
@@ -104,6 +107,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			scormAdapter = new OLATApiAdapter();
 			String fullname = UserManager.getInstance().getUserDisplayName(identity.getUser());
 			scormAdapter.init(cpRoot, resourceId, courseIdNodeId, FolderConfig.getCanonicalRoot(), identity.getName(), fullname, lesson_mode, credit_mode, hashCode());
+			scormAdapter.addAPIListener(this);
 		}
 	}
 	
@@ -174,6 +178,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			float cutval = scormNode.getCutValueConfiguration().floatValue();
 			ScoreEvaluation sceval;
 			boolean passed = (score >= cutval);
+			boolean incrementAttemptsOnFinish = incrementsAttempt;
 			// if advanceScore option is set update the score only if it is
 			// higher
 			// <OLATEE-27>
@@ -183,12 +188,14 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 						userCourseEnv).getScore() : -1)) {
 					// </OLATEE-27>
 					sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
+					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttemptsOnFinish);
 					userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+					incrementsAttempt = false;//increment only once
 				} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 					sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
-					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
+					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttemptsOnFinish);
 					userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+					incrementsAttempt = false;//increment only once
 				}
 			} else {
 				// <OLATEE-27>
@@ -197,8 +204,9 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				}
 				// </OLATEE-27>
 				sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttemptsOnFinish);
 				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+				incrementsAttempt = false;//increment only once
 			}
 
 			if (log.isDebug()) {
