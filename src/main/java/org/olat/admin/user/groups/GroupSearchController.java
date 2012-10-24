@@ -112,10 +112,7 @@ public class GroupSearchController extends StepFormBasicController {
 		
 		errorComp = uifactory.createSimpleErrorText("error", "");
 		formLayout.add(errorComp);
-		if (!isUsedInStepWizzard()) {
-			uifactory.addFormSubmitButton("save", formLayout);
-		}
-		
+
 		tableCont = FormLayoutContainer.createCustomFormLayout("", getTranslator(), velocity_root + "/resulttable.html");
 		tableCont.setRootForm(mainForm);
 		formLayout.add(tableCont);
@@ -132,6 +129,10 @@ public class GroupSearchController extends StepFormBasicController {
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
 		FlexiTableElment table = uifactory.addTableElement("groupList", tableDataModel, tableCont);
 		tableCont.add("groupList", table);
+		
+		if (!isUsedInStepWizzard()) {
+			uifactory.addFormSubmitButton("save", formLayout);
+		}
 	}
 	
 	@Override

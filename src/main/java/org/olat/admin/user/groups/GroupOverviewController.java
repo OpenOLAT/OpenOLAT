@@ -183,8 +183,7 @@ public class GroupOverviewController extends BasicController {
 			groupsCtrl = new GroupSearchController(ureq, getWindowControl());
 			listenTo(groupsCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent());
-//			calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, groupsCtrl.getInitialComponent(), addGroups, translate("add.groups"), false, null);
+			cmc = new CloseableModalController(getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent(), true, translate("add.groups"), true);
 			listenTo(cmc);
 			cmc.activate();
 		}

@@ -37,7 +37,7 @@ public class ImportMember_1b_ChooseMemberStep extends BasicStep {
 	public ImportMember_1b_ChooseMemberStep(UserRequest ureq, RepositoryEntry repoEntry) {
 		super(ureq);
 		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry));
-		setI18nTitleAndDescr("import.import.title", "import.import.title");
+		setI18nTitleAndDescr("import.choose.title", "import.choose.title");
 	}
 
 	@Override

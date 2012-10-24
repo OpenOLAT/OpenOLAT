@@ -254,7 +254,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 			List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
 			StringBuilder sb = new StringBuilder();
 			for(Identity id:ids) {
-				if(sb.length() > 0) sb.append(", ");
+				if(sb.length() > 0) sb.append(" / ");
 				sb.append(userManager.getUserDisplayName(id.getUser()));
 			}
 			leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", sb.toString()), leaveDialogBox);

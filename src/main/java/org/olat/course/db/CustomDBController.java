@@ -41,7 +41,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.User;
@@ -70,10 +72,14 @@ import org.olat.user.UserManager;
  */
 public class CustomDBController extends FormBasicController {
 
+	private FormLink addDatabase;
 	private List<FormLink> resetDbs = new ArrayList<FormLink>();
 	private List<FormLink> deleteDbs = new ArrayList<FormLink>();
 	private List<FormLink> exportDbs = new ArrayList<FormLink>();
 	private FormLayoutContainer dbListLayout;
+	
+	private CustomDBAddController addController;
+	private CloseableModalController cmc;
 	
 	private final Long courseKey;
 	
@@ -86,10 +92,12 @@ public class CustomDBController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("customDb.custom_db");
-		
+
 		dbListLayout = FormLayoutContainer.createDefaultFormLayout("dbListLayout", getTranslator());
 		formLayout.add(dbListLayout);
 		updateDBList(dbListLayout);
+		
+		addDatabase = uifactory.addFormLink("command.new_db", formLayout, Link.BUTTON);
 	}
 	
 	public void updateUI() {
@@ -155,7 +163,55 @@ public class CustomDBController extends FormBasicController {
 			deleteDb((String)source.getUserObject());
 		} else if (exportDbs.contains(source)) {
 			exportDb(ureq, (String)source.getUserObject());
+		} else if (source == addDatabase) {
+			removeAsListenerAndDispose(addController);
+			addController = new CustomDBAddController(ureq, getWindowControl());
+			listenTo(addController);
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
 		}
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if (source == addController) {
+			if(event == Event.DONE_EVENT) {
+				String category = addController.getCategory();
+				addCustomDb(category);
+				updateUI();
+			}
+			cmc.deactivate();
+			disposeAddController();
+		}
+	}
+	
+	private void addCustomDb(final String category) {
+		final ICourse course = CourseFactory.loadCourse(courseKey);
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(course, new SyncerExecutor() {
+			@Override
+			public void execute() {
+				CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+				CourseNode rootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode()).getCourseNode();
+				Property p = cpm.findCourseNodeProperty(rootNode, null, null, CustomDBMainController.CUSTOM_DB);
+				if(p == null) {
+					p = cpm.createCourseNodePropertyInstance(rootNode, null, null, CustomDBMainController.CUSTOM_DB, null, null, null, category);
+					cpm.saveProperty(p);
+				} else {
+					String currentDbs = p.getTextValue();
+					p.setTextValue(currentDbs + ":" + category);
+					cpm.updateProperty(p);
+				}
+			}
+		});
+	}
+	
+	private void disposeAddController() {
+		removeAsListenerAndDispose(addController);
+		removeAsListenerAndDispose(cmc);
+		addController = null;
+		cmc = null;
 	}
 	
 	private void resetDb(String category) {

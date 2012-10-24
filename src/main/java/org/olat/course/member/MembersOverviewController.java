@@ -183,7 +183,6 @@ public class MembersOverviewController extends BasicController implements Activa
 			}
 		} else if (source == addMemberLink) {
 			doChooseMembers(ureq);
-			
 		} else if (source == importMemberLink) {
 			doImportMembers(ureq);
 		}
@@ -219,7 +218,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("import.member"), "o_sel_course_member_import_1_wizard");
+				translate("add.member"), "o_sel_course_member_import_1_wizard");
 		listenTo(importMembersWizard);
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
