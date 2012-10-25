@@ -38,6 +38,18 @@
 				     Values are: never,always,groupconfig -->
 				contact.business.card=${group.card.contact}
 				userlist.download.default.allowed=${group.userlist.download.default.allowed}
+
+				mandatoryEnrolmentEmailForUsers=${group.mandatory.enrolment.email.users}
+				mandatoryEnrolmentEmailForAuthors=${group.mandatory.enrolment.email.authors}
+				mandatoryEnrolmentEmailForUsermanagers=${group.mandatory.enrolment.email.usermanagers}
+				mandatoryEnrolmentEmailForGroupmanagers=${group.mandatory.enrolment.email.groupmanagers}
+				mandatoryEnrolmentEmailForAdministrators=${group.mandatory.enrolment.email.administrators}
+
+				acceptMembershipForUsers=${group.accept.membership.users}
+				acceptMembershipForAuthors=${group.accept.membership.authors}
+				acceptMembershipForUsermanagers=${group.accept.membership.usermanagers}
+				acceptMembershipForGroupmanagers=${group.accept.membership.groupmanagers}
+				acceptMembershipForAdministrators=${group.accept.membership.administrators}
 			</value>
 		</property>
 	</bean>

@@ -604,7 +604,9 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		removeAsListenerAndDispose(userManagementSendMailController);
 		
 		MailTemplate template = new BGUserMailTemplate(groups, mod, "", "");
-		userManagementSendMailController = new MailNotificationEditController(getWindowControl(), ureq, template, false);
+		boolean mandatoryEmail = !mod.getAddParticipants().isEmpty() &&
+				groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		userManagementSendMailController = new MailNotificationEditController(getWindowControl(), ureq, template, false, mandatoryEmail);
 		Component cmp = userManagementSendMailController.getInitialComponent();
 		listenTo(userManagementSendMailController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), cmp, true, translate("users.group"));

@@ -150,7 +150,7 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 								+ ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, null)
 				}));
 		if(mailNotificationCtr != null) mailNotificationCtr.dispose();
-		mailNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false);
+		mailNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false);
 		mailNotificationCtr.addControllerListener(this);
 		sendNotificationVC = createVelocityContainer("sendnotification");
 		sendNotificationVC.put("notificationForm", mailNotificationCtr.getInitialComponent());

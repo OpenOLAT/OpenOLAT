@@ -19,7 +19,10 @@
  */
 package org.olat.course.member.wizard;
 
+import java.util.List;
+
 import org.apache.velocity.VelocityContext;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -31,6 +34,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailTemplateForm;
+import org.olat.course.member.MemberPermissionChangeEvent;
+import org.olat.group.BusinessGroupModule;
+import org.olat.group.model.BusinessGroupMembershipChange;
 
 /**
  * 
@@ -44,10 +50,33 @@ public class ImportMemberMailController extends StepFormBasicController {
 	public ImportMemberMailController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "mail_template");
 		
+		boolean mandatoryEmail = CoreSpringFactory.getImpl(BusinessGroupModule.class).isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		if(mandatoryEmail) {
+			MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)runContext.get("permissions");
+			boolean includeParticipantsRights = hasParticipantRightsChanges(e);
+			if(!includeParticipantsRights) {
+				mandatoryEmail = false;//only mandatory for participants
+			}
+		}
+		
 		mailTemplate = new TestMailTemplate();
-		mailTemplateForm = new MailTemplateForm(ureq, wControl, mailTemplate, rootForm);
+		mailTemplateForm = new MailTemplateForm(ureq, wControl, mailTemplate, mandatoryEmail, rootForm);
 		
 		initForm (ureq);
+	}
+	
+	private boolean hasParticipantRightsChanges(MemberPermissionChangeEvent e) {
+		if(e.getRepoParticipant() != null && e.getRepoParticipant().booleanValue()) {
+			return true;
+		}
+		
+		List<BusinessGroupMembershipChange> groupChanges = e.getGroupChanges();
+		for(BusinessGroupMembershipChange change:groupChanges) {
+			if(change.getParticipant() != null && change.getParticipant().booleanValue()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override

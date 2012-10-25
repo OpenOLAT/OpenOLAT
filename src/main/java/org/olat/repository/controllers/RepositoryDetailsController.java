@@ -407,7 +407,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		main.put(infopanelVC.getComponentName(), infopanelVC);
 
 		removeAsListenerAndDispose(groupController);
-		groupController = new GroupController(ureq, getWindowControl(), false, true, false, false, true, repositoryEntry.getOwnerGroup());
+		groupController = new GroupController(ureq, getWindowControl(), false, true, false, false, true, false, repositoryEntry.getOwnerGroup());
 		listenTo(groupController);
 		
 		main.put("ownertable", groupController.getInitialComponent());
@@ -1105,7 +1105,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		groupTutorEditController = null;
 		groupParticipantEditController = null;
 
-		GroupController controller = new GroupController(ureq, getWindowControl(), true, keepAtLeastOne, true, false, true, secGroup);
+		GroupController controller = new GroupController(ureq, getWindowControl(), true, keepAtLeastOne, true, false, true, false, secGroup);
 		listenTo(controller);
 		
 		VelocityContainer groupContainer = createVelocityContainer(template);  

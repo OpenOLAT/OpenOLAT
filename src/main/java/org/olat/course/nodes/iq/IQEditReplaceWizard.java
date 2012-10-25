@@ -220,7 +220,7 @@ public class IQEditReplaceWizard extends WizardController {
 		};
 		
 		removeAsListenerAndDispose(mailCtr);
-		mailCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false);
+		mailCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false);
 		listenTo(mailCtr);
 	
 		vcStep3 = createVelocityContainer("replacewizard_step3");

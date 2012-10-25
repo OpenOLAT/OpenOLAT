@@ -46,6 +46,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.GroupLoggingAction;
@@ -69,12 +70,14 @@ public class BusinessGroupMembersController extends BasicController {
 	
 	private BusinessGroup businessGroup;
 	private final BusinessGroupService businessGroupService;
+	private final BusinessGroupModule groupModule;
 	
 	public BusinessGroupMembersController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		
 		this.businessGroup = businessGroup;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		
 		mainVC = createVelocityContainer("tab_bgGrpMngmnt");
 		putInitialPanel(mainVC);
@@ -97,7 +100,7 @@ public class BusinessGroupMembersController extends BasicController {
 		boolean requiresOwner = courses.isEmpty();
 		// groupcontroller which allows to remove all members depending on
 		// configuration.
-		ownerGrpCntrllr = new GroupController(ureq, getWindowControl(), true, requiresOwner, true, false, true, businessGroup.getOwnerGroup());
+		ownerGrpCntrllr = new GroupController(ureq, getWindowControl(), true, requiresOwner, true, false, true, false, businessGroup.getOwnerGroup());
 		listenTo(ownerGrpCntrllr);
 		// add mail templates used when adding and removing users
 		MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(businessGroup, ureq.getIdentity());
@@ -110,7 +113,8 @@ public class BusinessGroupMembersController extends BasicController {
 
 		// groupcontroller which allows to remove all members
 		removeAsListenerAndDispose(partipGrpCntrllr);
-		partipGrpCntrllr = new GroupController(ureq, getWindowControl(), true, false, true, false, true, businessGroup.getPartipiciantGroup());
+		boolean mandatoryEmail = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		partipGrpCntrllr = new GroupController(ureq, getWindowControl(), true, false, true, false, true, mandatoryEmail, businessGroup.getPartipiciantGroup());
 		listenTo(partipGrpCntrllr);
 		
 		// add mail templates used when adding and removing users
@@ -124,7 +128,7 @@ public class BusinessGroupMembersController extends BasicController {
 		// Show waiting list only if enabled 
 	   // waitinglist-groupcontroller which allows to remove all members
 		SecurityGroup waitingList = businessGroup.getWaitingGroup();
-		waitingGruppeController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, waitingList );
+		waitingGruppeController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, false, waitingList);
 		listenTo(waitingGruppeController);
 
 		// add mail templates used when adding and removing users

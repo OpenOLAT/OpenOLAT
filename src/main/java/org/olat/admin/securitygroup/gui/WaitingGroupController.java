@@ -63,7 +63,6 @@ public class WaitingGroupController extends GroupController {
 	private MailNotificationEditController transferMailCtr;
 	private CloseableModalController cmc;
 	private List<Identity> toTransfer;
-	
 
 	/**
 	 * @param ureq
@@ -74,8 +73,8 @@ public class WaitingGroupController extends GroupController {
 	 * @param aSecurityGroup
 	 */
 	public WaitingGroupController(UserRequest ureq, WindowControl wControl, boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences,
-			boolean allowDownload, SecurityGroup waitingListGroup) {
-		super(ureq, wControl, mayModifyMembers, keepAtLeastOne, enableTablePreferences, false, allowDownload, waitingListGroup);
+			boolean allowDownload, boolean mandatoryEmail, SecurityGroup waitingListGroup) {
+		super(ureq, wControl, mayModifyMembers, keepAtLeastOne, enableTablePreferences, false, allowDownload, mandatoryEmail, waitingListGroup);
 	}
 
 	/**
@@ -94,7 +93,7 @@ public class WaitingGroupController extends GroupController {
 						toTransfer = objects;
 						
 						removeAsListenerAndDispose(transferMailCtr);
-						transferMailCtr = new MailNotificationEditController(getWindowControl(), ureq, transferUserMailTempl, true);
+						transferMailCtr = new MailNotificationEditController(getWindowControl(), ureq, transferUserMailTempl, true, mandatoryEmail);
 						listenTo(transferMailCtr);
 						
 						removeAsListenerAndDispose(cmc);
