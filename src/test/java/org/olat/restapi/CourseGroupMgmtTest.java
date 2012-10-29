@@ -182,6 +182,18 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testGetCourseGroups_unkownId() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+
+		Long courseId = 1l;
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(404, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+	}
+	
+	@Test
 	public void testGetCourseGroup() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		Long courseId = courseRepoEntry.getOlatResource().getResourceableId();

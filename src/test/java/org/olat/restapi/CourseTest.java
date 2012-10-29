@@ -43,6 +43,8 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import junit.framework.Assert;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -69,6 +71,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVO;
@@ -127,6 +130,34 @@ public class CourseTest extends OlatJerseyTestCase {
 		assertNotNull(course);
 		assertEquals(course1.getResourceableId(), course.getKey());
 		assertEquals(course1.getCourseTitle(), course.getTitle());
+	}
+	
+	@Test
+	public void testGetCourse_keyRoundTrip() throws IOException, URISyntaxException {
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(course1, false);
+		Assert.assertNotNull(courseRe);
+		assertTrue("Cannot login as administrator", conn.login("administrator", "openolat"));
+		
+		//get repository entry information
+		URI repoUri = conn.getContextURI().path("repo").path("entries").path(courseRe.getKey().toString()).build();
+		HttpGet repoMethod = conn.createGet(repoUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse repoResponse = conn.execute(repoMethod);
+		assertEquals(200, repoResponse.getStatusLine().getStatusCode());
+		RepositoryEntryVO repoEntry = conn.parse(repoResponse, RepositoryEntryVO.class);
+		assertNotNull(repoEntry);
+		assertEquals(courseRe.getKey(), repoEntry.getKey());
+		assertEquals(course1.getResourceableId(), repoEntry.getOlatResourceId());
+		
+		//get the course
+		URI courseUri = conn.getContextURI().path("repo").path("courses").path(repoEntry.getOlatResourceId().toString()).build();
+		HttpGet courseMethod = conn.createGet(courseUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse courseResponse = conn.execute(courseMethod);
+		assertEquals(200, courseResponse.getStatusLine().getStatusCode());
+		CourseVO course = conn.parse(courseResponse, CourseVO.class);
+		assertNotNull(course);
+		assertEquals(course1.getResourceableId(), course.getKey());
+		assertEquals(course1.getCourseTitle(), course.getTitle());
+		
 	}
 	
 	@Test

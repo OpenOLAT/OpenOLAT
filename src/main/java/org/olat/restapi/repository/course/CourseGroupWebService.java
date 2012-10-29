@@ -50,10 +50,9 @@ import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
-import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.repository.RepositoryEntry;
@@ -173,8 +172,9 @@ public class CourseGroupWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList(@Context HttpServletRequest request) {
-		CourseGroupManager groupManager = PersistingCourseGroupManager.getInstance(course);
-		List<BusinessGroup> groups = groupManager.getAllBusinessGroups();
+    BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		List<BusinessGroup> groups = bgs.findBusinessGroups(params, course, 0, -1);
 			
 		int count = 0;
 		GroupVO[] vos = new GroupVO[groups.size()];

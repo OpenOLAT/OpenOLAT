@@ -42,6 +42,9 @@ public class RepositoryEntryVO {
 	private Long resourceableId;
 	private String resourceableTypeName;
 	
+	private Long olatResourceId;
+	private String olatRresourceTypeName;
+	
 	public Long getKey() {
 		return key;
 	}
@@ -88,6 +91,22 @@ public class RepositoryEntryVO {
 
 	public void setResourceableTypeName(String resourceableTypeName) {
 		this.resourceableTypeName = resourceableTypeName;
+	}
+
+	public Long getOlatResourceId() {
+		return olatResourceId;
+	}
+
+	public void setOlatResourceId(Long olatResourceId) {
+		this.olatResourceId = olatResourceId;
+	}
+
+	public String getOlatRresourceTypeName() {
+		return olatRresourceTypeName;
+	}
+
+	public void setOlatRresourceTypeName(String olatRresourceTypeName) {
+		this.olatRresourceTypeName = olatRresourceTypeName;
 	}
 
 	@Override
