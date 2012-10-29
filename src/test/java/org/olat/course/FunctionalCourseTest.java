@@ -30,6 +30,7 @@ import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -41,10 +42,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.restapi.support.vo.GroupVO;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalCourseUtil.CourseEditorCourseTab;
@@ -79,7 +83,8 @@ public class FunctionalCourseTest {
 
 	public final static int LARGE_COURSE_FILE_COUNT = 20;
 	public final static long LARGE_COURSE_FILE_SIZE = 50000;
-	public final static int LARGE_COURSE_TEST_COUNT = 20;
+	public final static int LARGE_COURSE_TEST_COUNT = 200;
+	public final static int LARGE_COURSE_GROUP_COUNT = 150;
 	public final static String LARGE_COURSE_IQ_TEST_SHORT_TITLE = "QTI";
 	public final static String LARGE_COURSE_IQ_TEST_LONG_TITLE = "generated test No. ";
 	public final static String LARGE_COURSE_IQ_TEST_DESCRIPTION_0 = "generated within a loop: test#";
@@ -122,6 +127,7 @@ public class FunctionalCourseTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreateUsingWizard(){
@@ -146,8 +152,11 @@ public class FunctionalCourseTest {
 		for(int i = 0; i < elementArray.length; i++){
 			functionalCourseUtil.open(browser, i);
 		}
+		
+		functionalUtil.logout(browser);
 	}
 
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreateUsingEditor() throws FileNotFoundException, IOException, URISyntaxException{
@@ -222,6 +231,8 @@ public class FunctionalCourseTest {
 		.append("')]");
 		
 		Assert.assertTrue(browser.isElementPresent(selectorBuffer.toString()));
+		
+		functionalUtil.logout(browser);
 	}
 	
 	@Test
@@ -255,6 +266,9 @@ public class FunctionalCourseTest {
 			out.close();
 		}
 		
+		/* create groups via REST-API */
+		List<GroupVO> group = functionalVOUtil.createTestCourseGroups(deploymentUrl, LARGE_COURSE_GROUP_COUNT);
+		
 		/* login */
 		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
 		
@@ -278,6 +292,7 @@ public class FunctionalCourseTest {
 		/* click course node and open editor */
 		functionalCourseUtil.open(browser, -1);
 		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
+		String businessPath = functionalCourseUtil.readExternalLink(browser);
 		
 		/* create tests */
 		for(int i = 0; i < LARGE_COURSE_TEST_COUNT; i++){
@@ -291,5 +306,14 @@ public class FunctionalCourseTest {
 					2 * i + 4));
 			Assert.assertTrue(functionalCourseUtil.createQTITest(browser, title, description));
 		}
+		
+		functionalUtil.logout(browser);
+		
+		/* assign groups to course */
+		long repoKey = functionalCourseUtil.extractRepositoryEntryKey(businessPath);
+		RepositoryEntryVO repoEntryVO = functionalVOUtil.getRepositoryEntryByKey(deploymentUrl, repoKey);
+		long courseId = repoEntryVO.getOlatResourceId();
+		
+		functionalVOUtil.addGroupToCourse(deploymentUrl, courseId, group);
 	}
 }

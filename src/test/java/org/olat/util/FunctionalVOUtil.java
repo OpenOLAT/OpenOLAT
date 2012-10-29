@@ -51,10 +51,15 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.UserVO;
 
+/**
+ * 
+ * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
+ */
 public class FunctionalVOUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalVOUtil.class);
 	
@@ -91,6 +96,22 @@ public class FunctionalVOUtil {
 		
 		client = new HttpClient();
 		waitLimit = WAIT_LIMIT;
+	}
+	
+	public RepositoryEntryVO getRepositoryEntryByKey(URL deploymentUrl, long key) throws IOException, URISyntaxException{
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+
+		restConnection.login(getUsername(), getPassword());
+		
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/entries").path(Long.toString(key)).build();
+		HttpGet method = restConnection.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = restConnection.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryVO vo = restConnection.parse(response, RepositoryEntryVO.class);
+
+		restConnection.shutdown();
+		
+		return(vo);
 	}
 	
 	/**
@@ -182,6 +203,38 @@ public class FunctionalVOUtil {
 		return(user);
 	}
 	
+	public List<GroupVO> createTestCourseGroups(URL deploymentUrl, int count) throws IOException, URISyntaxException{
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+
+		restConnection.login(getUsername(), getPassword());
+		
+		List<GroupVO> group = new ArrayList<GroupVO>();
+		
+		for(int i = 0; i < count; i++){
+			GroupVO vo = new GroupVO();
+			String groupname = ("selgrp_" + i + "_" + UUID.randomUUID().toString()).substring(0, 24);
+			vo.setName(groupname);
+			vo.setDescription("group#" + i + " created for selenium test case.");
+			vo.setType("BuddyGroup");
+			vo.setMinParticipants(new Integer(-1));
+			vo.setMaxParticipants(new Integer(-1));
+			
+			URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("groups").build();
+			HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+			restConnection.addJsonEntity(method, vo);
+
+			HttpResponse response = restConnection.execute(method);
+			assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+			
+			vo = restConnection.parse(response, GroupVO.class);
+			group.add(vo);
+		}
+
+		restConnection.shutdown();
+		
+		return(group);
+	}
+	
 	/**
 	 * Imports the specified course via REST.
 	 * 
@@ -223,6 +276,38 @@ public class FunctionalVOUtil {
 		assertNotNull(vo.getKey());
 		
 		return(vo);
+	}
+	
+	/**
+	 * 
+	 * @param deploymentUrl
+	 * @param courseId
+	 * @param group
+	 * @return
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public List<GroupVO> addGroupToCourse(URL deploymentUrl, long courseId, List<GroupVO> group) throws IOException, URISyntaxException{
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		restConnection.login(getUsername(), getPassword());
+
+		List<GroupVO> newGroup = new ArrayList<GroupVO>();
+
+		for(GroupVO currentGroup: group){
+			URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo").path("courses").path(Long.toString(courseId)).path("groups").build();
+			HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+			restConnection.addJsonEntity(method, currentGroup);
+
+			HttpResponse response = restConnection.execute(method);
+			assertEquals(200, response.getStatusLine().getStatusCode());
+			
+			GroupVO vo = restConnection.parse(response, GroupVO.class);
+			newGroup.add(vo);
+		}
+
+		restConnection.shutdown();
+		
+		return(newGroup);
 	}
 	
 	/**
