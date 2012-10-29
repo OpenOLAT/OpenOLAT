@@ -534,7 +534,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 			//fxdiff VCRP-16: intern mail system
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, recipients, ccIdentities, null, mailTemplate, sender);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, recipients, ccIdentities, mailTemplate, sender);
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 		}
 	}

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
+package org.olat.group.ui.main;
 
 /**
  * 
@@ -31,6 +31,7 @@ public class CourseMembership {
 	private boolean groupTutor;
 	private boolean groupParticipant;
 	private boolean groupWaiting;
+	private boolean pending;
 	
 	public CourseMembership() {
 		//
@@ -50,6 +51,14 @@ public class CourseMembership {
 
 	public boolean isWaiting() {
 		return groupWaiting;
+	}
+
+	public boolean isPending() {
+		return pending;
+	}
+
+	public void setPending(boolean pending) {
+		this.pending = pending;
 	}
 
 	public boolean isRepoOwner() {

@@ -290,6 +290,26 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	public void setMandatoryEnrolmentEmailForAdministrators(String mandatory) {
 		setStringProperty(MANDATORY_ENROLMENT_EMAIL_ADMINISTRATORS, mandatory, true);
 	}
+	
+	public boolean isAcceptMembership(Roles roles) {
+		if(roles == null) return true;
+		if(roles.isOLATAdmin()) {
+			return "true".equals(getAcceptMembershipForAdministrators());
+		}
+		if(roles.isGroupManager()) {
+			return "true".equals(getAcceptMembershipForGroupmanagers());
+		}
+		if(roles.isUserManager()) {
+			return "true".equals(getAcceptMembershipForUsermanagers());
+		}
+		if(roles.isAuthor()) {
+			return "true".equals(getAcceptMembershipForAuthors());
+		}
+		if(roles.isInvitee()) {
+			return true;
+		}
+		return "true".equals(getAcceptMembershipForUsers());
+	}
 
 	public String getAcceptMembershipForUsers() {
 		return acceptMembershipForUsers;

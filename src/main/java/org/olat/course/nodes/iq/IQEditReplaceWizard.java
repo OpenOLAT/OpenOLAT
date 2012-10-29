@@ -147,7 +147,7 @@ public class IQEditReplaceWizard extends WizardController {
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, learners, recipientsCC, null, mailCtr.getMailTemplate(), ureq.getIdentity());
+				MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, learners, recipientsCC, mailCtr.getMailTemplate(), ureq.getIdentity());
 			}
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == searchCtr && event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {

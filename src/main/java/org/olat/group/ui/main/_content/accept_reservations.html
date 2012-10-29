@@ -1,0 +1,39 @@
+#foreach($reservation in $reservations)
+	#set($id = $reservation.key)
+	<div>
+		<div>
+			#if($acceptedReservations.contains($reservation)) OK #end
+			#if($rejectedReservations.contains($reservation)) X #end
+			
+			Reservation name: $reservation.key
+			
+			<a href="#" class="o_reservation_details_link" id="o_reservation_details_show_$id">show</a>
+			<a href="#" class="o_reservation_details_link" id="o_reservation_details_hide_$id" style="display:none">hide</a>
+			$r.render("accept_$id")
+			$r.render("reject_$id")
+		</div>
+		<div class="o_reservation_details" style="display: none" id="o_reservation_details_$id">
+			<p>Beaucoup de blabla et d'autre truc que vous voulez savoir</p>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+	/* <![CDATA[ */ 
+		Ext.onReady(function() {  
+			Ext.get('o_reservation_details_show_$id').on('click', function() { 
+				Effect.toggle('o_reservation_details_$id', 'slide', {duration: 0.3});
+				$('o_reservation_details_show_$id').hide();
+				$('o_reservation_details_hide_$id').show();
+			});
+			Ext.get('o_reservation_details_hide_$id').on('click', function() { 
+				Effect.toggle('o_reservation_details_$id', 'slide', {duration: 0.3});
+				$('o_reservation_details_hide_$id').hide();
+				$('o_reservation_details_show_$id').show();
+			});
+		});
+	/* ]]> */
+	</script>
+#end
+
+
+$r.render("button_layout")

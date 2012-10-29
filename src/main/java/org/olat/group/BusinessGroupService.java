@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -194,7 +195,7 @@ public interface BusinessGroupService {
 	 * @param groupsToMerge
 	 * @return
 	 */
-	public BusinessGroup mergeBusinessGroups(Identity merger, BusinessGroup targetGroup, List<BusinessGroup> groupsToMerge);
+	public BusinessGroup mergeBusinessGroups(Identity ureqIdentity, BusinessGroup targetGroup, List<BusinessGroup> groupsToMerge);
 	
 	/**
 	 * Update the members of a list of business groups
@@ -349,7 +350,7 @@ public interface BusinessGroupService {
 	 * @param identity
 	 * @return
 	 */
-	public EnrollState enroll(final BusinessGroup group,  final Identity identity);
+	public EnrollState enroll(Identity ureqIdentity, Roles ureqRoles, Identity identityToEnroll, BusinessGroup group);
 	
 	/**
 	 * Adds a list of users to a group as participant and does all the magic that needs to
@@ -367,9 +368,15 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup);
-
-
+	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, Roles ureqRoles, List<Identity> addIdentities, BusinessGroup currBusinessGroup);
+	
+	/**
+	 * 
+	 * @param identity
+	 * @param resource
+	 */
+	public void acceptPendingParticipation(Identity ureqIdentity, Identity identity, OLATResource resource);
+	
 	/**
 	 * Remove a list of users from a group as participant and does all the magic that needs
 	 * to be done:
@@ -389,7 +396,8 @@ public interface BusinessGroupService {
 	
 	/**
 	 * Remove the members (tutors and participants) from all business groups connected
-	 * to the resource.
+	 * to the resource (the resource can be a BusinessGroup) by cancelling their membership
+	 * or their reservations.
 	 * 
 	 * @param ureqIdentity
 	 * @param identities
@@ -437,7 +445,7 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(List<Identity> identities, Identity ureqIdentity, BusinessGroup currBusinessGroup);
+	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup);
 
 	
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);

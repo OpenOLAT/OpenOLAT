@@ -34,10 +34,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.UUID;
 
-import javax.mail.Address;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
@@ -45,8 +41,9 @@ import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.manager.MailManager;
@@ -62,6 +59,8 @@ import org.olat.core.util.mail.manager.MailManager;
  */
 public class MailerWithTemplate {
 	private VelocityEngine velocityEngine;
+	
+	private static final OLog log = Tracing.createLoggerFor(MailerWithTemplate.class);
 	private static MailerWithTemplate INSTANCE = new MailerWithTemplate();
 
 	/**
@@ -76,13 +75,6 @@ public class MailerWithTemplate {
 			p = new Properties();
 			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
 			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
-			// p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,
-			// "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-			// p.setProperty(RuntimeConstants.RUNTIME_LOG,
-			// OLATContext.getUserdataRoot() + "logs/velocity-email.log.txt");
-			// p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
-			// p.setProperty(RuntimeConstants.RUNTIME_LOG_ERROR_STACKTRACE, "false");
-			// p.setProperty(RuntimeConstants.RUNTIME_LOG_INFO_STACKTRACE, "false");
 			velocityEngine.init(p);
 		} catch (Exception e) {
 			throw new RuntimeException("config error " + p.toString());
@@ -94,45 +86,6 @@ public class MailerWithTemplate {
 	 */
 	public static MailerWithTemplate getInstance() {
 		return INSTANCE;
-	}
-
-	/**
-	 * Send email and use the given template-context.
-	 * @param recipientTO
-	 * @param recipientsCC
-	 * @param recipientsBCC
-	 * @param template
-	 * @param sender
-	 * @return
-	 */
-	public MailerResult sendMailUsingTemplateContext(Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC, MailTemplate template,
-			Identity sender) {
-		MailerResult result = new MailerResult();
-		//fxdiff VCRP-16: intern mail system
-		sendWithContext(template.getContext(), null, null, recipientTO, recipientsCC, recipientsBCC, template, sender, result);
-		return result;
-	}
-	
-	/**
-	 * creates the subject and body for a preview.
-	 * @param recipientTO
-	 * @param recipientsCC
-	 * @param recipientsBCC
-	 * @param template
-	 * @param sender
-	 * @return String[] with index 0 is subject, and index 1 is body
-	 */
-	public String[] previewSubjectAndBody(Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC, MailTemplate template,
-			Identity sender){
-		MailerResult result = new MailerResult();
-
-		VelocityContext context = new VelocityContext();		
-		template.putVariablesInMailContext(context, recipientTO);
-		//fxdiff VCRP-16: intern mail system
-		MessageContent msg = createWithContext(context, recipientTO, recipientsCC, recipientsBCC, template, sender, result);
-		String subject = msg.getSubject();
-		String body = msg.getBody();
-		return new String[]{subject, body};
 	}
 
 	/**
@@ -156,21 +109,13 @@ public class MailerWithTemplate {
 	public MailerResult sendRealMail(Identity recipientTO, MailTemplate template) {
 		MailerResult result = new MailerResult();
 		VelocityContext context = new VelocityContext();
-		MessageContent msg = createWithContext(context, recipientTO, null, null, template, null, result);
+		MessageContent msg = createWithContext(context, recipientTO, template, null, result);
 		if(result.getReturnCode() != MailerResult.OK) {
 			return result;
 		}
 
 		MailManager.getInstance().sendExternMessage(null, null, recipientTO, null, null, null, null, msg.getSubject(), msg.getBody(), null, result);
 		return result;
-	}
-	
-	//fxdiff VCRP-16: intern mail system
-	public MailerResult sendMail(MailContext mCtxt, Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC, MailTemplate template,
-			Identity sender) {
-		List<Identity> recipientsTO = new ArrayList<Identity>();
-		recipientsTO.add(recipientTO);
-		return sendMailAsSeparateMails(mCtxt, recipientsTO, recipientsCC, recipientsBCC, template, sender);
 	}
 
 	/**
@@ -184,6 +129,7 @@ public class MailerWithTemplate {
 	 * In this method the recipients will not know who else got the mail since the
 	 * mail is addressed personally.
 	 * 
+	 * @param mCtxt The mail contact (optional)
 	 * @param recipientsTO Identities List for TO. Must not be NULL and contain at
 	 *          least one identity.
 	 * @param recipientsCC Identities List for CC. Can be NULL.
@@ -194,17 +140,12 @@ public class MailerWithTemplate {
 	 * @return MailerResult with status and list of identites that could not be
 	 *         mailed to
 	 */
-	public MailerResult sendMailAsSeparateMails(List<Identity> recipientsTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
-			MailTemplate template, Identity sender) {
-		return sendMailAsSeparateMails(null, recipientsTO, recipientsCC, recipientsBCC, template, sender);
-	}
-	//fxdiff VCRP-16: intern mail system
-	public MailerResult sendMailAsSeparateMails(MailContext mCtxt, List<Identity> recipientsTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
+	public MailerResult sendMailAsSeparateMails(MailContext mCtxt, List<Identity> recipientsTO, List<Identity> recipientsCC,
 			MailTemplate template, Identity sender) {
 		
 		String metaId = UUID.randomUUID().toString().replace("-", "");
 		MailerResult result = new MailerResult();
-		if (MailHelper.getMailhost() == null) {
+		if (CoreSpringFactory.getImpl(MailModule.class).getMailhost() == null) {
 			result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);
 			return result;
 		}
@@ -214,7 +155,7 @@ public class MailerWithTemplate {
 				// populate velocity context with variables
 				VelocityContext context = new VelocityContext();
 				template.putVariablesInMailContext(context, recipient);
-				sendWithContext(context, mCtxt, metaId, recipient, null, null, template, sender, result);
+				sendWithContext(context, mCtxt, metaId, recipient, template, sender, result);
 				if (!result.getFailedIdentites().contains(recipient)) {
 					isMailSendToRecipient = true;
 				}
@@ -227,15 +168,7 @@ public class MailerWithTemplate {
 				// populate velocity context with variables
 				VelocityContext context = new VelocityContext();
 				template.putVariablesInMailContext(context, recipient);
-				sendWithContext(context, mCtxt, metaId, recipient, null, null, template, sender, result);
-			}
-		}
-		if (recipientsBCC != null) {
-			for (Identity recipient : recipientsBCC) {
-				// populate velocity context with variables
-				VelocityContext context = new VelocityContext();
-				template.putVariablesInMailContext(context, recipient);
-				sendWithContext(context, mCtxt, metaId, recipient, null, null, template, sender, result);
+				sendWithContext(context, mCtxt, metaId, recipient, template, sender, result);
 			}
 		}
 		if(!isMailSendToRecipient) {
@@ -260,12 +193,8 @@ public class MailerWithTemplate {
 	 * @return
 	 */
 	//fxdiff VCRP-16: intern mail system
-	private MessageContent createWithContext(VelocityContext context, Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
+	private MessageContent createWithContext(VelocityContext context, Identity recipientTO,
 			MailTemplate template, Identity sender, MailerResult result){
-		// prepare cc addresses - will stay the same for each mail
-		Address[] addressesCC = createAddressesFromIdentities(recipientsCC, result);
-		// prepare bcc addresses - will stay the same for each mail
-		Address[] addressesBCC = createAddressesFromIdentities(recipientsBCC, result);
 
 		// merge subject template with context variables
 		StringWriter subjectWriter = new StringWriter();
@@ -277,12 +206,8 @@ public class MailerWithTemplate {
 		if (result.getReturnCode() != MailerResult.OK) return null;
 	
 		Locale recLocale = Locale.getDefault();
-		if(recipientTO!=null){
+		if(recipientTO != null){
 			recLocale = I18nManager.getInstance().getLocaleOrDefault(recipientTO.getUser().getPreferences().getLanguage());
-		}else if(recipientsCC!=null && recipientsCC.size()>0){
-			recLocale = I18nManager.getInstance().getLocaleOrDefault(recipientsCC.get(0).getUser().getPreferences().getLanguage());
-		}else if(recipientsBCC!=null && recipientsBCC.size()>0){
-			recLocale = I18nManager.getInstance().getLocaleOrDefault(recipientsBCC.get(0).getUser().getPreferences().getLanguage());
 		}
 		String subject = subjectWriter.toString();
 		String body = bodyWriter.toString() + MailHelper.getMailFooter(recLocale, sender) + "\n";
@@ -321,10 +246,13 @@ public class MailerWithTemplate {
 	 * @param result
 	 */
 	//fxdiff VCRP-16: intern mail system
-	private void sendWithContext(VelocityContext context, MailContext mCtxt, String metaId, Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
-			MailTemplate template, Identity sender, MailerResult result) {		
+	private void sendWithContext(VelocityContext context, MailContext mCtxt, String metaId, Identity recipientTO,
+			MailTemplate template, Identity sender, MailerResult result) {	
+		
 		List<Identity> identityTO = new ArrayList<Identity>();
-		if(recipientTO != null) identityTO.add(recipientTO);
+		if(recipientTO != null) {
+			identityTO.add(recipientTO);
+		}
 		List<Identity> failedIdentitiesTO = new ArrayList<Identity>();
 		int sizeFailedIdentities = result.getFailedIdentites().size();
 		result = MailHelper.removeDisabledMailAddress(identityTO, result);
@@ -334,23 +262,8 @@ public class MailerWithTemplate {
 		} else {
 			recipientTO = null;
 		}
-		List<Identity> failedIdentitiesCC = null;
-		if (recipientsCC != null) {
-			result = MailHelper.removeDisabledMailAddress(recipientsCC, result);
-			failedIdentitiesCC = new ArrayList<Identity>();
-			failedIdentitiesCC.addAll(result.getFailedIdentites());
-			failedIdentitiesCC.removeAll(failedIdentitiesTO);
-			recipientsCC.removeAll(failedIdentitiesCC);
-		}
-		if (recipientsBCC != null) {
-			result = MailHelper.removeDisabledMailAddress(recipientsBCC, result);
-			List<Identity> failedIdentitiesBCC = new ArrayList<Identity>();
-			failedIdentitiesBCC.addAll(result.getFailedIdentites());
-			failedIdentitiesBCC.removeAll(failedIdentitiesTO);
-			failedIdentitiesBCC.removeAll(failedIdentitiesCC);
-			recipientsBCC.removeAll(failedIdentitiesBCC);
-		}
-		MessageContent msg = createWithContext(context, recipientTO, recipientsCC, recipientsBCC, template, sender, result);
+
+		MessageContent msg = createWithContext(context, recipientTO, template, sender, result);
 		if(msg != null && result.getReturnCode() == MailerResult.OK){
 			// send mail
 			List<File> attachmentList = new ArrayList<File>();
@@ -364,10 +277,8 @@ public class MailerWithTemplate {
 					}
 				}
 			}
-			
-			List<ContactList> ccList = createContactList(recipientsCC);
-			List<ContactList> bccList = createContactList(recipientsBCC);
-			MailerResult mgrResult = MailManager.getInstance().sendMessage(mCtxt, sender, null, recipientTO, null, null, ccList, bccList,
+
+			MailerResult mgrResult = MailManager.getInstance().sendMessage(mCtxt, sender, null, recipientTO, null, null, null, null,
 					metaId, msg.getSubject(), msg.getBody(), attachmentList);
 			
 			if(mgrResult.getReturnCode() != MailerResult.OK) {
@@ -381,18 +292,6 @@ public class MailerWithTemplate {
 			
 		}
 	}
-	//fxdiff VCRP-16: intern mail system
-	private List<ContactList> createContactList(List<Identity> recipients) {
-		if(recipients == null || recipients.isEmpty()) {
-			return null;
-		}
-		
-		ContactList contactList = new ContactList("");
-		contactList.addAllIdentites(recipients);
-		List<ContactList> list = new ArrayList<ContactList>(1);
-		list.add(contactList);
-		return list;
-	}
 
 	/**
 	 * Internal Helper: merges a velocity context with a template.
@@ -402,52 +301,27 @@ public class MailerWithTemplate {
 	 * @param writer writer that contains merged result
 	 * @param mailerResult
 	 */
-	void evaluate(Context context, String template, StringWriter writer, MailerResult mailerResult) {
+	protected final void evaluate(Context context, String template, StringWriter writer, MailerResult mailerResult) {
 		try {
 			boolean result = velocityEngine.evaluate(context, writer, "mailTemplate", template);
 			if (result) {
 				mailerResult.setReturnCode(MailerResult.OK);
 			} else {
-				Tracing.logWarn("can't send email from user template with no reason", MailerWithTemplate.class);
+				log.warn("can't send email from user template with no reason");
 				mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 			}
 		} catch (ParseErrorException e) {
-			Tracing.logWarn("can't send email from user template", e, MailerWithTemplate.class);
+			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_PARSE_ERROR);
 		} catch (MethodInvocationException e) {
-			Tracing.logWarn("can't send email from user template", e, MailerWithTemplate.class);
+			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 		} catch (ResourceNotFoundException e) {
-			Tracing.logWarn("can't send email from user template", e, MailerWithTemplate.class);
+			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 		} catch (IOException e) {
-			Tracing.logWarn("can't send email from user template", e, MailerWithTemplate.class);
+			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 		}
 	}
-
-	/**
-	 * Helper: creates an address array from a list of identities
-	 * 
-	 * @param recipients
-	 * @param result
-	 * @return Address array
-	 */
-	private Address[] createAddressesFromIdentities(List<Identity> recipients, MailerResult result) {
-		Address[] addresses = null;
-		if (recipients != null && recipients.size() > 0) {
-			List<Address> validRecipients = new ArrayList<Address>();
-			for (int i = 0; i < recipients.size(); i++) {
-				Identity identity = recipients.get(i);
-				try {
-					validRecipients.add(new InternetAddress(identity.getUser().getProperty(UserConstants.EMAIL, null)));
-				} catch (AddressException e) {
-					result.addFailedIdentites(identity);
-				}
-			}
-			addresses = validRecipients.toArray(new Address[validRecipients.size()]);
-		}
-		return addresses;
-	}
-
 }

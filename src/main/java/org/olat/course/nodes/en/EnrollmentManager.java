@@ -32,6 +32,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -78,8 +79,8 @@ public class EnrollmentManager extends BasicManager {
 	private BusinessGroupService businessGroupService;
 
 
-	public EnrollStatus doEnroll(final Identity identity, final BusinessGroup group, final ENCourseNode enNode, final CoursePropertyManager coursePropertyManager,
-			final WindowControl wControl, final Translator trans, List<Long> groupKeys, List<Long> areaKeys, CourseGroupManager cgm) {
+	public EnrollStatus doEnroll(Identity identity, Roles roles, BusinessGroup group, ENCourseNode enNode, CoursePropertyManager coursePropertyManager,
+			WindowControl wControl, Translator trans, List<Long> groupKeys, List<Long> areaKeys, CourseGroupManager cgm) {
 		
 		final EnrollStatus enrollStatus = new EnrollStatus();
 		if (isLogDebugEnabled()) logDebug("doEnroll");
@@ -92,7 +93,7 @@ public class EnrollmentManager extends BasicManager {
 			// and: why can't we just have a group here and a max participants count and an identity to enrol?
 			// the group was chosen, so why do we need the groupNames and areaNames here???
 
-			EnrollState state =businessGroupService.enroll(group, identity);
+			EnrollState state =businessGroupService.enroll(identity, roles, identity, group);
 			if(state.isFailed()) {
 				enrollStatus.setErrorMessage(trans.translate(state.getI18nErrorMessage()));
 			} else {
@@ -131,7 +132,7 @@ public class EnrollmentManager extends BasicManager {
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		MailerResult mailerResult = mailer.sendMail(context, identity, null, null, mailTemplate, null);
+		MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, mailTemplate, null);
 		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
 	}
 
@@ -152,7 +153,7 @@ public class EnrollmentManager extends BasicManager {
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		MailerResult mailerResult = mailer.sendMail(context, identity, null, null, mailTemplate, null);
+		MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, mailTemplate, null);
 		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
 	}
 
@@ -281,7 +282,7 @@ public class EnrollmentManager extends BasicManager {
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		MailerResult mailerResult = mailer.sendMail(context, identity, null, null, mailTemplate, null);
+		MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, mailTemplate, null);
 		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
 
 
@@ -317,7 +318,7 @@ public class EnrollmentManager extends BasicManager {
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		MailerResult mailerResult = mailer.sendMail(context, identity, null, null, mailTemplate, null);
+		MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, mailTemplate, null);
 		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
 
 		return true;

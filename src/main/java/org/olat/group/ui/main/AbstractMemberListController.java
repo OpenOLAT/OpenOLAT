@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
+package org.olat.group.ui.main;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,18 +64,22 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
-import org.olat.course.member.MemberListTableModel.Cols;
+import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.BGMailHelper;
+import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -90,6 +94,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	public static final String TABLE_ACTION_EDIT = "tbl_edit";
 	public static final String TABLE_ACTION_MAIL = "tbl_mail";
 	public static final String TABLE_ACTION_REMOVE = "tbl_remove";
+	public static final String TABLE_ACTION_GRADUATE = "tbl_graduate";
 	
 	protected final MemberListTableModel memberListModel;
 	protected final TableController memberListCtr;
@@ -101,20 +106,35 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private ContactFormController contactCtrl;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
-	private final UserManager userManager;
 	private final RepositoryEntry repoEntry;
+	private final BusinessGroup businessGroup;
+	
+	private final UserManager userManager;
+	
 	private final BaseSecurity securityManager;
 	private final RepositoryManager repositoryManager;
 	private final BusinessGroupService businessGroupService;
+	private final ACService acService;
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, String page) {
+		this(ureq, wControl, repoEntry, null, page);
+	}
+	
+	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, BusinessGroup group, String page) {
+		this(ureq, wControl, null, group, page);
+	}
+	
+	private AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, BusinessGroup group, String page) {
 		super(ureq, wControl, Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale()));
 		
+		this.businessGroup = group;
 		this.repoEntry = repoEntry;
+		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		
 		mainVC = createVelocityContainer(page);
 
@@ -158,8 +178,12 @@ public abstract class AbstractMemberListController extends BasicController imple
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
 		CustomCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
 		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
-		CustomCellRenderer groupRenderer = new GroupCellRenderer();
-		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
+		if(repoEntry != null) {
+			CustomCellRenderer groupRenderer = new GroupCellRenderer();
+			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
+		}
+		
+		memberListCtr.addColumnDescriptor(new GraduateColumnDescriptor("table.header.graduate", TABLE_ACTION_GRADUATE, getTranslator()));
 		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
 		memberListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_REMOVE, "table.header.remove", translate("table.header.remove")));
 	}
@@ -182,10 +206,12 @@ public abstract class AbstractMemberListController extends BasicController imple
 				String actionid = te.getActionId();
 
 				MemberView member = memberListModel.getObject(te.getRowId());
-				if(actionid.equals(TABLE_ACTION_EDIT)) {
+				if(TABLE_ACTION_EDIT.equals(actionid)) {
 					openEdit(ureq, member);
-				} else if(actionid.equals(TABLE_ACTION_REMOVE)) {
+				} else if(TABLE_ACTION_REMOVE.equals(actionid)) {
 					confirmDelete(ureq, Collections.singletonList(member));
+				} else if(TABLE_ACTION_GRADUATE.equals(actionid)) {
+					doGraduate(ureq, Collections.singletonList(member));
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
@@ -194,8 +220,10 @@ public abstract class AbstractMemberListController extends BasicController imple
 					confirmDelete(ureq, selectedItems);
 				} else if(TABLE_ACTION_EDIT.equals(te.getAction())) {
 					openEdit(ureq, selectedItems);
-				}if(TABLE_ACTION_MAIL.equals(te.getAction())) {
+				} else if(TABLE_ACTION_MAIL.equals(te.getAction())) {
 					doSendMail(ureq, selectedItems);
+				} else if(TABLE_ACTION_GRADUATE.equals(te.getAction())) {
+					doGraduate(ureq, selectedItems);
 				}
 			}
 		} else if (source == leaveDialogBox) {
@@ -209,9 +237,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 			if(event instanceof MemberPermissionChangeEvent) {
 				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
 				if(e.getMember() != null) {
-					doChangePermission(e);
+					doChangePermission(ureq, e);
 				} else {
-					doChangePermission(e, editMemberCtrl.getMembers());
+					doChangePermission(ureq, e, editMemberCtrl.getMembers());
 				}
 			}
 			
@@ -240,7 +268,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 	}
 	
 	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
-		int numOfOwners = securityManager.countIdentitiesOfSecurityGroup(repoEntry.getOwnerGroup());
+		int numOfOwners =
+				repoEntry == null ? securityManager.countIdentitiesOfSecurityGroup(businessGroup.getOwnerGroup())
+				: securityManager.countIdentitiesOfSecurityGroup(repoEntry.getOwnerGroup());
 		
 		int numOfRemovedOwner = 0;
 		List<Long> identityKeys = new ArrayList<Long>();
@@ -266,7 +296,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	protected void openEdit(UserRequest ureq, MemberView member) {
 		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identity, repoEntry);
+		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup);
 		listenTo(editMemberCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
 				true, translate("edit.member"));
@@ -277,7 +307,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected void openEdit(UserRequest ureq, List<MemberView> members) {
 		List<Long> identityKeys = getMemberKeys(members);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
-		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry);
+		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
 		listenTo(editMemberCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
 				true, translate("edit.member"));
@@ -285,9 +315,11 @@ public abstract class AbstractMemberListController extends BasicController imple
 		listenTo(cmc);
 	}
 	
-	protected void doChangePermission(MemberPermissionChangeEvent e) {
-		List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
-		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, changes);
+	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e) {
+		if(repoEntry != null) {
+			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
+			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes);
+		}
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges());
 		//make sure all is committed before loading the model again (I see issues without)
@@ -302,9 +334,11 @@ public abstract class AbstractMemberListController extends BasicController imple
 		reloadModel();
 	}
 	
-	protected void doChangePermission(MemberPermissionChangeEvent changes, List<Identity> members) {
-		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
-		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, repoChanges);
+	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members) {
+		if(repoEntry != null) {
+			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
+			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges);
+		}
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
@@ -342,14 +376,18 @@ public abstract class AbstractMemberListController extends BasicController imple
 		
 		if(template != null) {	
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailerResult mailerResult = mailer.sendMail(null, mod.getMember(), null, null, template, null);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(mod.getMember()), null, template, null);
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
 		}
 	}
 	
 	protected void doLeave(List<Identity> members) {
-		repositoryManager.removeMembers(members, repoEntry);
-		businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource());
+		if(repoEntry != null) {
+			repositoryManager.removeMembers(members, repoEntry);
+			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource());
+		} else {
+			businessGroupService.removeMembers(getIdentity(), members, businessGroup.getResource());
+		}
 		reloadModel();
 	}
 	
@@ -358,7 +396,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
 		
 		ContactMessage contactMessage = new ContactMessage(getIdentity());
-		ContactList contactList = new ContactList(repoEntry.getDisplayname());
+		String name = repoEntry != null ? repoEntry.getDisplayname() : businessGroup.getName();
+		ContactList contactList = new ContactList(name);
 		contactList.addAllIdentites(identities);
 		contactMessage.addEmailTo(contactList);
 		
@@ -370,6 +409,16 @@ public abstract class AbstractMemberListController extends BasicController imple
 		cmc.activate();
 		listenTo(cmc);
 		
+	}
+	
+	protected void doGraduate(UserRequest ureq, List<MemberView> members) {
+		if(businessGroup != null) {
+			List<Long> identityKeys = getMemberKeys(members);
+			List<Identity> identitiesToGraduate = securityManager.loadIdentityByKeys(identityKeys);
+			businessGroupService.moveIdentityFromWaitingListToParticipant(getIdentity(), identitiesToGraduate, businessGroup);
+		} else {
+			//TODO memail do something
+		}
 	}
 	
 	protected List<Long> getMemberKeys(List<MemberView> members) {
@@ -391,10 +440,14 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected List<MemberView> updateTableModel(SearchMembersParams params) {
 		//course membership
 		List<RepositoryEntryMembership> repoMemberships =
-				repositoryManager.getRepositoryEntryMembership(repoEntry);
+				repoEntry == null ? Collections.<RepositoryEntryMembership>emptyList()
+				: repositoryManager.getRepositoryEntryMembership(repoEntry);
 
 		//groups membership
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, repoEntry.getOlatResource(), 0, -1);
+		List<BusinessGroup> groups = 
+				repoEntry == null ? Collections.singletonList(businessGroup)
+				: businessGroupService.findBusinessGroups(null, repoEntry.getOlatResource(), 0, -1);
+				
 		List<Long> groupKeys = new ArrayList<Long>();
 		Map<Long,BusinessGroupShort> keyToGroupMap = new HashMap<Long,BusinessGroupShort>();
 		for(BusinessGroup group:groups) {
@@ -403,7 +456,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		}
 		List<BusinessGroupMembership> memberships = groups.isEmpty() ? Collections.<BusinessGroupMembership>emptyList() :
 				businessGroupService.getBusinessGroupMembership(groupKeys);
-		
+
 		//get identities
 		Set<Long> identityKeys = new HashSet<Long>();
 		for(RepositoryEntryMembership membership: repoMemberships) {
@@ -424,6 +477,26 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
 		List<MemberView> memberList = new ArrayList<MemberView>();
+
+		//reservations
+		if(params.isPending()) {
+			List<OLATResource> resourcesForReservations = new ArrayList<OLATResource>();
+			if(repoEntry != null) {
+				resourcesForReservations.add(repoEntry.getOlatResource());
+			}
+			for(BusinessGroup group:groups) {
+				resourcesForReservations.add(group.getResource());
+			}
+			List<ResourceReservation> reservations = acService.getReservations(resourcesForReservations);
+			for(ResourceReservation reservation:reservations) {
+				Identity identity = reservation.getIdentity();
+				MemberView member = new MemberView(identity);
+				member.getMembership().setPending(true);
+				memberList.add(member);
+				keyToMemberMap.put(identity.getKey(), member);
+			}
+		}
+		
 		for(Identity identity:identities) {
 			MemberView member = new MemberView(identity);
 			memberList.add(member);
@@ -551,6 +624,14 @@ public abstract class AbstractMemberListController extends BasicController imple
 		if(params.isGroupWaitingList()) {
 			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
 				if(it.next().getMembership().isGroupWaiting()) {
+					it.remove();
+				}
+			}
+		}
+		
+		if(params.isPending()) {
+			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
+				if(it.next().getMembership().isPending()) {
 					it.remove();
 				}
 			}

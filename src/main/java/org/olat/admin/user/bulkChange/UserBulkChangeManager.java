@@ -22,6 +22,7 @@ package org.olat.admin.user.bulkChange;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -245,7 +246,7 @@ public class UserBulkChangeManager extends BasicManager {
 					for(Identity selIdentity:selIdentities) {
 						MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, addingIdentity);
 						MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-						MailerResult mailerResult = mailer.sendMail(null, selIdentity, null, null, mailTemplate, null);
+						MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(selIdentity), null, mailTemplate, null);
 						if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
 							logDebug("Problems sending Group invitation mail for identity: " + selIdentity.getName() + " and group: " 
 									+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);

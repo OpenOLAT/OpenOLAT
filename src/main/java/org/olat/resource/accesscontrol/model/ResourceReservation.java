@@ -35,6 +35,10 @@ public interface ResourceReservation extends ModifiedInfo {
 	
 	public Date getCreationDate();
 	
+	public Date getExpirationDate();
+	
+	public String getType();
+	
 	public Identity getIdentity();
 	
 	public OLATResource getResource();

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
+package org.olat.group.ui.main;
 
 import java.util.Date;
 import java.util.List;
@@ -54,8 +54,8 @@ public class MemberInfoController extends FormBasicController {
 	private StaticTextElement membershipCreationEl;
 
 	private final Identity identity;
-	private final Long repoEntryKey;
-	private final UserCourseInformations courseInfos;
+	private Long repoEntryKey;
+	private UserCourseInformations courseInfos;
 	
 	private final UserManager userManager;
 	private final UserCourseInformationsManager efficiencyStatementManager;
@@ -67,10 +67,11 @@ public class MemberInfoController extends FormBasicController {
 		efficiencyStatementManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 	
 		this.identity = identity;
-		repoEntryKey = repoEntry.getKey();
 		
-		courseInfos = efficiencyStatementManager.getUserCourseInformations(repoEntry.getOlatResource().getResourceableId(), identity);
-		
+		if(repoEntry != null){
+			repoEntryKey = repoEntry.getKey();
+			courseInfos = efficiencyStatementManager.getUserCourseInformations(repoEntry.getOlatResource().getResourceableId(), identity);
+		}
 		initForm(ureq);
 	}
 	
@@ -125,10 +126,13 @@ public class MemberInfoController extends FormBasicController {
 		//links
 		homeLink = uifactory.addFormLink("home", formLayout, "b_link_left_icon b_link_to_home");
 		formLayout.add("home", homeLink);
-		contactLink = uifactory.addFormLink("contact",	formLayout, "b_link_left_icon b_link_mail");
+		contactLink = uifactory.addFormLink("contact", formLayout, "b_link_left_icon b_link_mail");
 		formLayout.add("contact", contactLink);
-		assessmentLink = uifactory.addFormLink("assessment",	formLayout, "b_link_left_icon b_link_assessment");
-		formLayout.add("assessment", assessmentLink);
+		
+		if(repoEntryKey != null) {
+			assessmentLink = uifactory.addFormLink("assessment", formLayout, "b_link_left_icon b_link_assessment");
+			formLayout.add("assessment", assessmentLink);
+		}
 	}
 	
 	public void setMembershipCreation(Date date) {

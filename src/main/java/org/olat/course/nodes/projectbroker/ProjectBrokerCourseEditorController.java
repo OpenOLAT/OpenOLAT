@@ -301,7 +301,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		} else if (source == accountManagerGroupController) {
 			if (event instanceof IdentitiesAddEvent) {
 				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), accountManagerGroup);
+				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), urequest.getUserSession().getRoles(), identitiesAddedEvent.getAddIdentities(), accountManagerGroup);
 				identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 				identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 				identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());

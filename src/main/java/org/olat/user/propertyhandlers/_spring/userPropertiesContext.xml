@@ -235,7 +235,7 @@
 					</bean>
 				</entry>
 				
-				<entry key="org.olat.course.member.MemberInfoController">
+				<entry key="org.olat.group.ui.main.MemberInfoController">
 					<!-- First name and last name are already shown -->
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">

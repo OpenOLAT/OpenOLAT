@@ -34,9 +34,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailTemplateForm;
-import org.olat.course.member.MemberPermissionChangeEvent;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
 
 /**
  * 

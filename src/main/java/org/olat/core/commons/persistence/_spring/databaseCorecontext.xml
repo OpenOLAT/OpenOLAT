@@ -124,8 +124,6 @@
 	<bean id="hibernateProps" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
 	        <props>  
-	            <!-- "validate, update, create, create-drop"  are valid entries for  hibernate.hbm2ddl.auto-->
-	            <prop key="hibernate.hbm2ddl.auto">${db.hibernate.ddl.auto}</prop>
 	            <prop key="hibernate.show_sql">${db.show_sql}</prop>
 				<prop key="hibernate.generate_statistics">true</prop>
 	            <!-- <entry key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</value></entry> -->

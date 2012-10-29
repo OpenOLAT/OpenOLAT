@@ -62,6 +62,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -495,9 +496,10 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	public void testGetParticipants() throws IOException, URISyntaxException {
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-1-" + UUID.randomUUID().toString());
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-2-" + UUID.randomUUID().toString());
+		Roles part1Roles = securityManager.getRoles(participant1);
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.addParticipants(participant1, new IdentitiesAddEvent(participant1), re);
-		repositoryManager.addParticipants(participant1, new IdentitiesAddEvent(participant2), re);
+		repositoryManager.addParticipants(participant1, part1Roles, new IdentitiesAddEvent(participant1), re);
+		repositoryManager.addParticipants(participant1, part1Roles, new IdentitiesAddEvent(participant2), re);
 		dbInstance.commitAndCloseSession();
 
 		//get the coaches
@@ -555,8 +557,9 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	@Test
 	public void testRemoveParticipant() throws IOException, URISyntaxException {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-4-" + UUID.randomUUID().toString());
+		Roles partRoles = securityManager.getRoles(participant);
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.addParticipants(participant, new IdentitiesAddEvent(participant), re);
+		repositoryManager.addParticipants(participant, partRoles, new IdentitiesAddEvent(participant), re);
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner

@@ -3,22 +3,19 @@
 	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-member.html","help.hover.bgGrpMngmnt")
   	$r.render("displayMembers")
 </fieldset>
-#if ($hasOwnerGrp)
 <fieldset>
 	<legend>$r.translate("fieldset.legend.groupowners")</legend>
+
+	<div class="o_buttons_box_right"><br/><br/>
+		#if($r.available("addMembers"))
+			$r.render("addMembers")
+		#end
+		#if($r.available("importMembers"))
+			$r.render("importMembers")
+		#end
+	</div>
+	
 	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-memberOwner.html","help.hover.bgGrpMngmntOwner")
-	$r.render("ownerGrpMngmnt")
+	$r.render("members")
 </fieldset>
-#end
-<fieldset>
-	<legend>$r.translate("fieldset.legend.grouppartips")</legend>
-	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-memberParticipants.html","help.hover.bgGrpMngmntParticipants")
-	$r.render("partipGrpMngmnt")
-</fieldset>
-#if ($hasWaitingGrp)
-<fieldset>
-	<legend>$r.translate("fieldset.legend.waitinggroup")</legend>
-	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-memberWaiting.html","help.hover.bgGrpMngmntWaiting")
-	$r.render("waitingGrpMngmnt")
-</fieldset>
-#end
+

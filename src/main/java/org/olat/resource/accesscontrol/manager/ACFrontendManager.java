@@ -25,26 +25,33 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
+import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
+import org.olat.resource.accesscontrol.model.ACResourceInfo;
+import org.olat.resource.accesscontrol.model.ACResourceInfoImpl;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.BusinessGroupAccess;
@@ -86,6 +93,8 @@ public class ACFrontendManager extends BasicManager implements ACService {
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private ACTransactionManager transactionManager;
+	@Autowired
+	private BusinessGroupDAO businessGroupDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -263,7 +272,8 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			methodManager.save(link);
 		}
 	}
-	
+
+	@Override
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument) {
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
 			logAudit("Access refused (no offer) to: " + link + " for " + identity);
@@ -292,6 +302,25 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		return new AccessResult(false);
 	}
 	
+	
+	
+	@Override
+	public void acceptReservationToResource(Identity identity, ResourceReservation reservation) {
+		OLATResource resource = reservation.getResource();
+		if("BusinessGroup".equals(resource.getResourceableTypeName())) {
+			//it's a reservation for a group
+			businessGroupService.acceptPendingParticipation(identity, identity, resource);
+		} else {
+			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
+			if(re != null) {
+				IdentitiesAddEvent iae = new IdentitiesAddEvent(identity);
+				//roles is not needed as I add myself as participant
+				repositoryManager.addParticipants(identity, null, iae, re);
+				removeReservation(reservation);
+			}
+		}
+	}
+
 	@Override
 	public void removeReservation(ResourceReservation reservation) {
 		reservationDao.deleteReservation(reservation);
@@ -300,6 +329,16 @@ public class ACFrontendManager extends BasicManager implements ACService {
 	@Override
 	public ResourceReservation getReservation(Identity identity, OLATResource resource) {
 		return reservationDao.loadReservation(identity, resource);
+	}
+	
+	@Override
+	public List<ResourceReservation> getReservations(List<OLATResource> resources) {
+		return reservationDao.loadReservations(resources);
+	}
+
+	@Override
+	public List<ResourceReservation> getReservations(Identity identity) {
+		return reservationDao.loadReservations(identity);
 	}
 
 	@Override
@@ -310,34 +349,29 @@ public class ACFrontendManager extends BasicManager implements ACService {
 	@Override
 	public boolean reserveAccessToResource(final Identity identity, final OfferAccess offer) {
 		final OLATResource resource = offer.getOffer().getResource();
-		
 		String resourceType = resource.getResourceableTypeName();
 		if("CourseModule".equals(resourceType)) {
 			return true;//don't need reservation
 		} else if("BusinessGroup".equals(resourceType)) {
-			final BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
+			boolean reserved = false;
+			final BusinessGroup group = businessGroupDao.loadForUpdate(resource.getResourceableId());
 			if(group.getMaxParticipants() == null && group.getMaxParticipants() <= 0) {
-				return true;//don't need reservation
+				reserved =  true;//don't need reservation
+			} else {
+				BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(resource);
+				ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
+				if(reservation != null) {
+					reserved = true;
+				}
+				
+				int currentCount = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
+				int reservations = reservationDao.countReservations(resource);
+				if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
+					reservationDao.createReservation(identity, offer.getMethod().getType(), null, resource);
+					reserved = true;
+				}
 			}
-
-			ResourceReservation reservation = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<ResourceReservation>() {
-				public ResourceReservation execute() {
-					BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(resource);
-					ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
-					if(reservation != null) {
-						return reservation;
-					}
-					
-					int currentCount = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
-					int reservations = reservationDao.countReservations(resource);
-					if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
-						return reservationDao.createReservation(identity, resource);
-					} else {
-						return null;
-					}
-				}});
-			
-			return reservation != null;
+			return reserved;
 		}
 		return false;
 	}
@@ -347,7 +381,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR_OF_DAY, -1);
 		Date oneHourTimeout = cal.getTime();
-		List<ResourceReservation> oldReservations = reservationDao.loadReservationOlderThan(oneHourTimeout);
+		List<ResourceReservation> oldReservations = reservationDao.loadExpiredReservation(oneHourTimeout);
 		for(ResourceReservation reservation:oldReservations) {
 			logAudit("Remove reservation:" + reservation);
 			reservationDao.deleteReservation(reservation);
@@ -378,7 +412,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		} else if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
-				EnrollState result = businessGroupService.enroll(group, identity);
+				EnrollState result = businessGroupService.enroll(identity, null, identity, group);
 				return result.isFailed() ? Boolean.FALSE : Boolean.TRUE;
 			}
 		}
@@ -432,6 +466,49 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			}
 		}
 		return null;
+	}
+	
+	public List<ACResourceInfo> getResourceInfos(List<OLATResource> resources) {
+		if(resources == null || resources.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<OLATResource> groupResources = new ArrayList<OLATResource>(resources.size());
+		List<OLATResource> repositoryResources = new ArrayList<OLATResource>(resources.size());
+		for(OLATResource resource:resources) {
+			String resourceType = resource.getResourceableTypeName();
+			if("BusinessGroup".equals(resourceType)) {
+				groupResources.add(resource);
+			} else {
+				repositoryResources.add(resource);
+			}
+		}
+
+		List<ACResourceInfo> resourceInfos = new ArrayList<ACResourceInfo>(resources.size());
+		if(!groupResources.isEmpty()) {
+			List<Long> groupKeys = new ArrayList<Long>(groupResources.size());
+			Map<Long, OLATResource> groupMapKeys = new HashMap<Long, OLATResource>(groupResources.size() * 2 + 1);
+			for(OLATResource groupResource:groupResources) {
+				groupKeys.add(groupResource.getResourceableId());
+			}
+			List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(groupKeys);
+			for(BusinessGroupShort group:groups) {
+				ACResourceInfoImpl info = new ACResourceInfoImpl();
+				info.setResource(groupMapKeys.get(group.getKey()));
+				info.setName(group.getName());
+				resourceInfos.add(info);
+			}
+		}
+		if(!repositoryResources.isEmpty()) {
+			List<RepositoryEntryShort> repoEntries = repositoryManager.loadRepositoryEntryShorts(repositoryResources);
+			for(RepositoryEntryShort repoEntry:repoEntries) {
+				ACResourceInfoImpl info = new ACResourceInfoImpl();
+				info.setName(repoEntry.getDisplayname());
+				info.setResource(((RepositoryEntryShortImpl)repoEntry).getOlatResource());
+				resourceInfos.add(info);
+			}
+		}
+		return resourceInfos;
 	}
 	
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable) {

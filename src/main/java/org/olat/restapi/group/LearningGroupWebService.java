@@ -642,7 +642,7 @@ public class LearningGroupWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			BusinessGroupAddResponse state = bgs.addParticipants(ureq.getIdentity(), Collections.singletonList(identity), group);
+			BusinessGroupAddResponse state = bgs.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), Collections.singletonList(identity), group);
 			if(state.getAddedIdentities().contains(identity)) {
 				return Response.ok().build();
 			} else if(state.getIdentitiesAlreadyInGroup().contains(identity)) {

@@ -277,7 +277,7 @@ public class GroupOverviewController extends BasicController {
 			for (BusinessGroup group : notifGroups) {
 				MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, getIdentity());
 				MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-				MailerResult mailerResult = mailer.sendMail(null, identity, null, null, mailTemplate, null);
+				MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), null, mailTemplate, null);
 				if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
 					logDebug("Problems sending Group invitation mail for identity: " + identity.getName() + " and group: " 
 							+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
@@ -331,7 +331,7 @@ public class GroupOverviewController extends BasicController {
 				if(doSendMail){
 					MailTemplate mailTemplate = BGMailHelper.createRemoveParticipantMailTemplate(group, getIdentity());
 					MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-					MailerResult mailerResult = mailer.sendMail(null, identity, null, null, mailTemplate, null);
+					MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), null, mailTemplate, null);
 					MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
 				}
 			}

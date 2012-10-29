@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
+package org.olat.group.ui.main;
 
 import java.util.Locale;
 
@@ -68,6 +68,10 @@ public class CourseRoleCellRenderer implements CustomCellRenderer {
 			if(membership.isWaiting()) {
 				and = and(sb, and);
 				sb.append(translator.translate("role.group.waiting"));
+			}
+			if(membership.isPending()) {
+				and = and(sb, and);
+				sb.append(translator.translate("role.pending"));
 			}
 		}
 	}

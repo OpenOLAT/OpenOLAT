@@ -19,23 +19,22 @@
  */
 package org.olat.group.ui.edit;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.olat.admin.securitygroup.gui.GroupController;
-import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
-import org.olat.admin.securitygroup.gui.IdentitiesMoveEvent;
-import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
-import org.olat.admin.securitygroup.gui.WaitingGroupController;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.MailContext;
@@ -44,16 +43,15 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
+import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupAddResponse;
-import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.BusinessGroupShort;
 import org.olat.group.GroupLoggingAction;
+import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.DisplayMembers;
-import org.olat.group.ui.BGMailHelper;
-import org.olat.repository.RepositoryEntryShort;
-import org.olat.util.logging.activity.LoggingResourceable;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.group.ui.main.SearchMembersParams;
 
 /**
  * 
@@ -64,20 +62,18 @@ public class BusinessGroupMembersController extends BasicController {
 	private final VelocityContainer mainVC;
 
 	private DisplayMemberSwitchForm dmsForm;
-	private GroupController ownerGrpCntrllr;
-	private GroupController partipGrpCntrllr;
-	private WaitingGroupController waitingGruppeController;
+	private MemberListController membersController;
+	private final Link importMemberLink, addMemberLink;
+	private StepsMainRunController importMembersWizard;
 	
 	private BusinessGroup businessGroup;
 	private final BusinessGroupService businessGroupService;
-	private final BusinessGroupModule groupModule;
-	
+
 	public BusinessGroupMembersController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		
 		this.businessGroup = businessGroup;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		
 		mainVC = createVelocityContainer("tab_bgGrpMngmnt");
 		putInitialPanel(mainVC);
@@ -86,7 +82,6 @@ public class BusinessGroupMembersController extends BasicController {
 
 		// Member Display Form, allows to enable/disable that others partips see
 		// partips and/or owners
-		//
 		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
 		// configure the form with checkboxes for owners and/or partips according
 		// the booleans
@@ -94,54 +89,20 @@ public class BusinessGroupMembersController extends BasicController {
 		listenTo(dmsForm);
 		// set if the checkboxes are checked or not.
 		dmsForm.setDisplayMembers(displayMembers);
-		
 		mainVC.put("displayMembers", dmsForm.getInitialComponent());
-		List<RepositoryEntryShort> courses = businessGroupService.findShortRepositoryEntries(Collections.<BusinessGroupShort>singletonList(businessGroup), 0, 1);
-		boolean requiresOwner = courses.isEmpty();
-		// groupcontroller which allows to remove all members depending on
-		// configuration.
-		ownerGrpCntrllr = new GroupController(ureq, getWindowControl(), true, requiresOwner, true, false, true, false, businessGroup.getOwnerGroup());
-		listenTo(ownerGrpCntrllr);
-		// add mail templates used when adding and removing users
-		MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(businessGroup, ureq.getIdentity());
-		ownerGrpCntrllr.setAddUserMailTempl(ownerAddUserMailTempl,true);
-		MailTemplate ownerAremoveUserMailTempl = BGMailHelper.createRemoveParticipantMailTemplate(businessGroup, ureq.getIdentity());
-		ownerGrpCntrllr.setRemoveUserMailTempl(ownerAremoveUserMailTempl,true);
-		// expose to velocity
-		mainVC.put("ownerGrpMngmnt", ownerGrpCntrllr.getInitialComponent());
-		mainVC.contextPut("hasOwnerGrp", Boolean.TRUE);
-
-		// groupcontroller which allows to remove all members
-		removeAsListenerAndDispose(partipGrpCntrllr);
-		boolean mandatoryEmail = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
-		partipGrpCntrllr = new GroupController(ureq, getWindowControl(), true, false, true, false, true, mandatoryEmail, businessGroup.getPartipiciantGroup());
-		listenTo(partipGrpCntrllr);
 		
-		// add mail templates used when adding and removing users
-		MailTemplate partAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(businessGroup, ureq.getIdentity());
-		partipGrpCntrllr.setAddUserMailTempl(partAddUserMailTempl,true);
-		MailTemplate partAremoveUserMailTempl = BGMailHelper.createRemoveParticipantMailTemplate(businessGroup, ureq.getIdentity());
-		partipGrpCntrllr.setRemoveUserMailTempl(partAremoveUserMailTempl,true);
-		// expose to velocity
-		mainVC.put("partipGrpMngmnt", partipGrpCntrllr.getInitialComponent());
+		SearchMembersParams searchParams = new SearchMembersParams(false, false, false, true, true, true, true);
+		membersController = new MemberListController(ureq, getWindowControl(), businessGroup, searchParams);
+		listenTo(membersController);
 		
-		// Show waiting list only if enabled 
-	   // waitinglist-groupcontroller which allows to remove all members
-		SecurityGroup waitingList = businessGroup.getWaitingGroup();
-		waitingGruppeController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, false, waitingList);
-		listenTo(waitingGruppeController);
+		membersController.reloadModel();
 
-		// add mail templates used when adding and removing users
-		MailTemplate waitAddUserMailTempl = BGMailHelper.createAddWaitinglistMailTemplate(businessGroup, ureq.getIdentity());
-		waitingGruppeController.setAddUserMailTempl(waitAddUserMailTempl,true);
-		MailTemplate waitRemoveUserMailTempl = BGMailHelper.createRemoveWaitinglistMailTemplate(businessGroup, ureq.getIdentity());
-		waitingGruppeController.setRemoveUserMailTempl(waitRemoveUserMailTempl,true);
-		MailTemplate waitTransferUserMailTempl = BGMailHelper.createWaitinglistTransferMailTemplate(businessGroup, ureq.getIdentity());
-		waitingGruppeController.setTransferUserMailTempl(waitTransferUserMailTempl);
-		// expose to velocity
-		mainVC.put("waitingGrpMngmnt", waitingGruppeController.getInitialComponent());
-
-		mainVC.contextPut("hasWaitingGrp", new Boolean(hasWaitingList));
+		mainVC.put("members", membersController.getInitialComponent());
+		
+		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
+		mainVC.put("addMembers", addMemberLink);
+		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
+		mainVC.put("importMembers", importMemberLink);
 	}
 	
 	@Override
@@ -151,7 +112,11 @@ public class BusinessGroupMembersController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		 if (source == addMemberLink) {
+			doChooseMembers(ureq);
+		} else if (source == importMemberLink) {
+			doImportMembers(ureq);
+		}
 	}
 	
 	protected void updateBusinessGroup(BusinessGroup businessGroup) {
@@ -175,57 +140,71 @@ public class BusinessGroupMembersController extends BasicController {
 				// do loggin
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
 			}
-		} else if(event instanceof IdentitiesAddEvent ) { 
-			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent) event;
-			BusinessGroupAddResponse response = null;
-			addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
-			if (source == ownerGrpCntrllr) {
-			  response = businessGroupService.addOwners(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), businessGroup);
-			} else if (source == partipGrpCntrllr) {
-				response = businessGroupService.addParticipants(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), businessGroup);					
-			} else if (source == waitingGruppeController) {
-				response = businessGroupService.addToWaitingList(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), businessGroup);									
-			}
-			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
-			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
-			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());			
-			fireEvent(ureq, Event.CHANGED_EVENT );
-	  }	else if (event instanceof IdentitiesRemoveEvent) {
-	  	List<Identity> identities = ((IdentitiesRemoveEvent) event).getRemovedIdentities();
-			if (source == ownerGrpCntrllr) {
-			  businessGroupService.removeOwners(ureq.getIdentity(), identities, businessGroup);
-			} else if (source == partipGrpCntrllr) {
-			  businessGroupService.removeParticipants(ureq.getIdentity(), identities, businessGroup);
-			  if (businessGroup.getWaitingListEnabled().booleanValue()) {
-	        // It is possible that a user is transfered from waiting-list to participants => reload data to see transfered user in right group.
-			  	partipGrpCntrllr.reloadData();
-			    waitingGruppeController.reloadData();
-			  }
-			} else if (source == waitingGruppeController) {
-			  businessGroupService.removeFromWaitingList(ureq.getIdentity(), identities, businessGroup);
-			}
-	  	fireEvent(ureq, Event.CHANGED_EVENT );
-		} else if (source == waitingGruppeController) {
-			if (event instanceof IdentitiesMoveEvent) {
-				IdentitiesMoveEvent identitiesMoveEvent = (IdentitiesMoveEvent) event;
-				BusinessGroupAddResponse response = businessGroupService.moveIdentityFromWaitingListToParticipant(identitiesMoveEvent.getChosenIdentities(), ureq.getIdentity(), businessGroup);
-				identitiesMoveEvent.setNotMovedIdentities(response.getIdentitiesAlreadyInGroup());
-				identitiesMoveEvent.setMovedIdentities(response.getAddedIdentities());
-				// Participant and waiting-list were changed => reload both
-		  	partipGrpCntrllr.reloadData();
-		    waitingGruppeController.reloadData();
-				// send mail for all of them
-				MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-				MailTemplate mailTemplate = identitiesMoveEvent.getMailTemplate();
-				if (mailTemplate != null) {
-					//fxdiff VCRP-16: intern mail system
-					MailContext context = new MailContextImpl(businessGroup, null, getWindowControl().getBusinessControl().getAsString());
-					MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesMoveEvent.getMovedIdentities(), null, null, mailTemplate, null);
-					MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
+		} else if(source == importMembersWizard) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(importMembersWizard);
+				importMembersWizard = null;
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					membersController.reloadModel();
 				}
-				fireEvent(ureq, Event.CHANGED_EVENT );		
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doChooseMembers(UserRequest ureq) {
+		removeAsListenerAndDispose(importMembersWizard);
+
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, businessGroup);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				addMembers(ureq, runContext);
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("add.member"), "o_sel_group_import_1_wizard");
+		listenTo(importMembersWizard);
+		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
+	}
+	
+	private void doImportMembers(UserRequest ureq) {
+		removeAsListenerAndDispose(importMembersWizard);
+
+		Step start = new ImportMember_1a_LoginListStep(ureq, null, businessGroup);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				addMembers(ureq, runContext);
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("import.member"), "o_sel_group_import_logins_wizard");
+		listenTo(importMembersWizard);
+		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
+	}
+	
+	protected void addMembers(UserRequest ureq, StepsRunContext runContext) {
+		@SuppressWarnings("unchecked")
+		List<Identity> members = (List<Identity>)runContext.get("members");
+		
+		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
+
+		//commit all changes to the group memberships
+		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
+		businessGroupService.updateMemberships(getIdentity(), allModifications);
+		
+		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
+		if (template != null && !members.isEmpty()) {
+			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, members, null, template, getIdentity());
+			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
+		}
 	}
 }

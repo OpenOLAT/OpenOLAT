@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
+package org.olat.group.ui.main;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,15 +44,19 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.member.PermissionHelper;
 import org.olat.course.member.PermissionHelper.BGPermission;
 import org.olat.course.member.PermissionHelper.RepoPermission;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -72,6 +76,7 @@ public class EditMembershipController extends FormBasicController {
 	private List<RepositoryEntryMembership> memberships;
 	private List<BusinessGroupMembership> groupMemberships;
 	
+	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
 	private final RepositoryManager repositoryManager;
 	private final BusinessGroupService businessGroupService;
@@ -80,11 +85,12 @@ public class EditMembershipController extends FormBasicController {
 	private static final String[] values = new String[] {""};
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
-			RepositoryEntry repoEntry) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup) {
 		super(ureq, wControl, "edit_member");
 		this.member = member;
 		this.members = null;
 		this.repoEntry = repoEntry;
+		this.businessGroup = businessGroup;
 		this.withButtons = true;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -117,12 +123,13 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
-			RepositoryEntry repoEntry) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup) {
 		super(ureq, wControl, "edit_member");
 		
 		this.member = null;
 		this.members = (members == null ? null : new ArrayList<Identity>(members));
 		this.repoEntry = repoEntry;
+		this.businessGroup = businessGroup;
 		this.withButtons = true;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -134,12 +141,13 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
-			RepositoryEntry repoEntry, Form rootForm) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
 		this.member = null;
 		this.members = (members == null ? null : new ArrayList<Identity>(members));
 		this.repoEntry = repoEntry;
+		this.businessGroup = businessGroup;
 		this.withButtons = false;
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -151,9 +159,16 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	private void loadModel(Identity member) {
-		List<BusinessGroupView> groups = businessGroupService.findBusinessGroupViews(null, repoEntry.getOlatResource(), 0, -1);
+		OLATResource resource = null;
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		if(repoEntry == null) {
+			params.setGroupKeys(Collections.singletonList(businessGroup.getKey()));
+		} else {
+			resource = repoEntry.getOlatResource();
+		}
+		List<BusinessGroupView> groups = businessGroupService.findBusinessGroupViews(params, resource, 0, -1);
+
 		List<Long> businessGroupKeys = PersistenceHelper.toKeys(groups);
-		
 		groupMemberships = member == null ?
 				Collections.<BusinessGroupMembership>emptyList() : businessGroupService.getBusinessGroupMembership(businessGroupKeys, member);
 		List<MemberOption> options = new ArrayList<MemberOption>();
@@ -188,21 +203,23 @@ public class EditMembershipController extends FormBasicController {
 			if(infoController != null) {
 				layoutCont.put("infos", infoController.getInitialComponent());
 			}
-
-			String title = translate("edit.member.title", new String[]{ repoEntry.getDisplayname() });
+			
+			String name = repoEntry == null ? businessGroup.getName() : repoEntry.getDisplayname();
+			String title = translate("edit.member.title", new String[]{ name });
 			layoutCont.contextPut("editTitle", title);
 		}
 		//repository entry rights
-		
-		String[] repoValues = new String[] {
-				translate("role.repo.owner"), translate("role.repo.tutor"), translate("role.repo.participant")
-		};
-		repoRightsEl = uifactory.addCheckboxesVertical("repoRights", formLayout, repoRightsKeys, repoValues, null, 1);
-		if(member != null) {
-			RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
-			repoRightsEl.select("owner", repoPermission.isOwner());
-			repoRightsEl.select("tutor", repoPermission.isTutor());
-			repoRightsEl.select("participant", repoPermission.isParticipant());
+		if(repoEntry != null) {
+			String[] repoValues = new String[] {
+					translate("role.repo.owner"), translate("role.repo.tutor"), translate("role.repo.participant")
+			};
+			repoRightsEl = uifactory.addCheckboxesVertical("repoRights", formLayout, repoRightsKeys, repoValues, null, 1);
+			if(member != null) {
+				RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
+				repoRightsEl.select("owner", repoPermission.isOwner());
+				repoRightsEl.select("tutor", repoPermission.isTutor());
+				repoRightsEl.select("participant", repoPermission.isParticipant());
+			}
 		}
 
 		//group rights
@@ -254,6 +271,8 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	public void collectRepoChanges(MemberPermissionChangeEvent e) {
+		if(repoEntry == null) return;
+		
 		RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
 
 		Set<String>	selectRepoRights = repoRightsEl.getSelectedKeys();
@@ -315,6 +334,10 @@ public class EditMembershipController extends FormBasicController {
 			return group.getNumOfParticipants();
 		}
 		
+		public long getNumOfPendings() {
+			return group.getNumOfPendings();
+		}
+		
 		public Integer getMaxParticipants() {
 			return group.getMaxParticipants();
 		}
@@ -373,11 +396,11 @@ public class EditMembershipController extends FormBasicController {
 			switch(Cols.values()[col]) {
 				case groupName: return option.getGroupName();
 				case tutorCount: return new Long(option.getTutorCount());
-				case participantCount: return new Long(option.getParticipantCount());
+				case participantCount: return new Long(option.getParticipantCount() + option.getNumOfPendings());
 				case freePlaces: {
 					Integer maxParticipants = option.getMaxParticipants();
 					if(maxParticipants != null && maxParticipants.intValue() > 0) {
-						long free = maxParticipants - option.getParticipantCount();
+						long free = maxParticipants - (option.getParticipantCount() + option.getNumOfPendings());
 						return Long.toString(free);
 					}
 					return "&infin;";

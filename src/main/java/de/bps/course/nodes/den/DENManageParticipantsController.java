@@ -250,7 +250,7 @@ public class DENManageParticipantsController extends BasicController {
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
+				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();
@@ -265,7 +265,7 @@ public class DENManageParticipantsController extends BasicController {
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
+				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();

@@ -172,7 +172,7 @@ public class ProjectGroupController extends BasicController {
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesMoveEvent.getMovedIdentities(), ccIdentities, null, mailTemplate, null);
+				MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesMoveEvent.getMovedIdentities(), ccIdentities, mailTemplate, null);
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), urequest.getLocale());
 			}
 			fireEvent(urequest, Event.CHANGED_EVENT );		
@@ -185,7 +185,7 @@ public class ProjectGroupController extends BasicController {
 	private void handleProjectMemberGroupEvent(UserRequest urequest, Event event) {
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-			BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup());
+			BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), urequest.getUserSession().getRoles(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup());
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());

@@ -397,7 +397,7 @@ public class RepositoryEntryResource {
 
 			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addParticipants(ureq.getIdentity(), iae, repoEntry);
+			repositoryManager.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry);
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to add a participant to a repository entry", e);

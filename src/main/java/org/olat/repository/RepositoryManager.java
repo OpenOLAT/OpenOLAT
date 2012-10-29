@@ -27,6 +27,7 @@ package org.olat.repository;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -82,13 +83,17 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryMember;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
+import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.repository.model.RepositoryEntryStrictMember;
 import org.olat.repository.model.RepositoryEntryStrictParticipant;
 import org.olat.repository.model.RepositoryEntryStrictTutor;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -105,12 +110,36 @@ public class RepositoryManager extends BasicManager {
 	
 	private final int PICTUREWIDTH = 570;
 
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
 	private ImageHelper imageHelper;
+	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
+	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
+	private ACReservationDAO reservationDao;
 
 	
+	/**
+	 * [used by Spring]
+	 * @param repositoryModule
+	 */
+	public void setRepositoryModule(RepositoryModule repositoryModule) {
+		this.repositoryModule = repositoryModule;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param reservationDao
+	 */
+	public void setReservationDao(ACReservationDAO reservationDao) {
+		this.reservationDao = reservationDao;
+	}
+
 	/**
 	 * [used by Spring]
 	 * @param securityManager
@@ -601,6 +630,25 @@ public class RepositoryManager extends BasicManager {
 		if (displaynames.size() > 1) throw new AssertException("Repository lookup returned zero or more than one result: " + displaynames.size());
 		else if (displaynames.isEmpty()) return null;
 		return displaynames.get(0);
+	}
+	
+	/**
+	 * Load a list of repository entry without all the security groups ...
+	 * @param resources
+	 * @return
+	 */
+	public List<RepositoryEntryShort> loadRepositoryEntryShorts(List<OLATResource> resources) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntryShortImpl.class.getName()).append(" v ")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" where ores.resId in (:resKeys)");
+		
+		List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
+		List<RepositoryEntryShort> shorties = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryShort.class)
+				.setParameter("resKeys", resourceKeys)
+				.getResultList();
+		return shorties;
 	}
 	
 	/**
@@ -1618,26 +1666,61 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param userActivityLogger
 	 */
-	public void addParticipants(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re) {
+	public void addParticipants(Identity ureqIdentity, Roles ureqRoles, IdentitiesAddEvent iae, RepositoryEntry re) {
 		List<Identity> addIdentities = iae.getAddIdentities();
 		List<Identity> reallyAddedId = new ArrayList<Identity>();
-		for (Identity identity : addIdentities) {
-			if (!securityManager.isIdentityInSecurityGroup(identity, re.getParticipantGroup())) {
-				securityManager.addIdentityToSecurityGroup(identity, re.getParticipantGroup());
-				reallyAddedId.add(identity);
-				ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-				ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-				try{
-					ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
-							LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-				} finally {
-					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		for (Identity identityToAdd : addIdentities) {
+			if (!securityManager.isIdentityInSecurityGroup(identityToAdd, re.getParticipantGroup())) {
+				
+				boolean mustAccept = true;
+				if(ureqIdentity != null && ureqIdentity.equals(identityToAdd)) {
+					mustAccept = false;//adding itself, we hope that he knows what he makes
+				} else if(ureqRoles == null || ureqIdentity == null) {
+					mustAccept = false;//administrative task
+				} else {
+					mustAccept = repositoryModule.isAcceptMembership(ureqRoles);
 				}
-				logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
-						+ "' to securitygroup with key " + re.getParticipantGroup().getKey());
-			}//else silently ignore already owner identities
+				
+				if(mustAccept) {
+					ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, re.getOlatResource());
+					if(olderReservation == null) {
+						Calendar cal = Calendar.getInstance();
+						cal.add(Calendar.MONTH, 6);
+						Date expiration = cal.getTime();
+						ResourceReservation reservation =
+								reservationDao.createReservation(identityToAdd, "repo_participant", expiration, re.getOlatResource());
+						if(reservation != null) {
+							//TODO memail send mail
+						}
+					}
+				} else {
+					addInternalParticipant(ureqIdentity, identityToAdd, re);
+					reallyAddedId.add(identityToAdd);
+				}
+			}
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);
+	}
+	
+	/**
+	 * This is for internal usage only. The method dosn't make any check.
+	 * @param ureqIdentity
+	 * @param identity
+	 * @param re
+	 */
+	private void addInternalParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
+		securityManager.addIdentityToSecurityGroup(identity, re.getParticipantGroup());
+		
+		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+		try{
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+		} finally {
+			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		}
+		logAudit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+				+ "' to securitygroup with key " + re.getParticipantGroup().getKey());
 	}
 	
 	/**
@@ -1849,7 +1932,7 @@ public class RepositoryManager extends BasicManager {
 		return entries;
 	}
 	
-	public void updateRepositoryEntryMembership(Identity ureqIdentity, RepositoryEntry re, List<RepositoryEntryPermissionChangeEvent> changes) {
+	public void updateRepositoryEntryMembership(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re, List<RepositoryEntryPermissionChangeEvent> changes) {
 		for(RepositoryEntryPermissionChangeEvent e:changes) {
 			if(e.getRepoOwner() != null) {
 				if(e.getRepoOwner().booleanValue()) {
@@ -1869,7 +1952,7 @@ public class RepositoryManager extends BasicManager {
 			
 			if(e.getRepoParticipant() != null) {
 				if(e.getRepoParticipant().booleanValue()) {
-					addParticipants(ureqIdentity, new IdentitiesAddEvent(e.getMember()), re);
+					addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re);
 				} else {
 					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re);
 				}

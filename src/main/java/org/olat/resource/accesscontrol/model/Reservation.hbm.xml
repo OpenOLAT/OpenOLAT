@@ -10,6 +10,9 @@
 		<version name="version" access="field" column="version" type="int"/>
 		<property name="creationDate" column="creationdate" type="timestamp" />
 		<property name="lastModified" column="lastmodified" type="timestamp" />
+		<property name="expirationDate" column="expirationdate" type="timestamp" />
+		
+		<property name="type" column="reservationtype" type="string" />
 		
 		<many-to-one name="identity"
                  column="fk_identity"

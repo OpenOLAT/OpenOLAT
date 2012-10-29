@@ -231,11 +231,11 @@ public class MailTest extends OlatcoreTestWithMocking {
 		// tests with / witthout CC and BCC
 
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, recipientsCC, null, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, recipientsCC, template, id6);
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, recipientsBCC, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 	}
 
@@ -276,11 +276,11 @@ public class MailTest extends OlatcoreTestWithMocking {
 		// tests with / witthout CC and BCC
 
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, recipientsCC, null, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, recipientsCC, template, id6);
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, recipientsBCC, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 	}
 
@@ -321,7 +321,7 @@ public class MailTest extends OlatcoreTestWithMocking {
 		recipients.add(id1);
 
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, id2);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id2);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 	}
 
@@ -350,7 +350,7 @@ public class MailTest extends OlatcoreTestWithMocking {
 		recipients.add(id1);
 
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, id2);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id2);
 		assertEquals(MailerResult.ATTACHMENT_INVALID, result.getReturnCode());
 	}
 
@@ -384,33 +384,33 @@ public class MailTest extends OlatcoreTestWithMocking {
 
 		// if only one recipient: error must be indicated
 		MailerResult result = new MailerResult();
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
 		// mail will bounce back since address does not exist, but sent to local MTA
 		// this test is not very good, depends on smtp settings!
 		//assertEquals(MailerResult.OK, result.getReturnCode());
 
 		recipients = new ArrayList<Identity>();
 		recipients.add(illegal2);
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
 		// mail will bounce back since address does not exist, but sent to local MTA
 		assertEquals(MailerResult.OK, result.getReturnCode());
 
 		recipients = new ArrayList<Identity>();
 		recipients.add(illegal3);
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
 		assertEquals(MailerResult.RECIPIENT_ADDRESS_ERROR, result.getReturnCode());
 
 		// now with one valid and the invalid recipient: should return ok but have
 		// one recipient in the failed list
 		recipients.add(id1);
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, id6);
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals(1, result.getFailedIdentites().size());
 
 		// valid recipient but invalid sender
 		recipients = new ArrayList<Identity>();
 		recipients.add(id1);
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, null, null, template, illegal3);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, null, template, illegal3);
 		assertEquals(MailerResult.SENDER_ADDRESS_ERROR, result.getReturnCode());
 
 		// invalid cc and bcc but valid to, mus count up the invalid accounts
@@ -419,7 +419,7 @@ public class MailTest extends OlatcoreTestWithMocking {
 		recipients.add(illegal3); // first
 		recipientsCC.add(illegal3); // second
 		recipientsBCC.add(illegal3); // third
-		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(recipients, recipientsCC, recipientsBCC, template, id6);
+		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, recipientsCC, template, id6);
 		// mail will bounce back since address does not exist, but sent to local MTA
 		assertEquals(MailerResult.OK, result.getReturnCode());
 		assertEquals(3, result.getFailedIdentites().size());

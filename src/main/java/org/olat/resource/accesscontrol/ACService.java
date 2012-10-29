@@ -112,9 +112,42 @@ public interface ACService {
 	
 	public void removeReservation(ResourceReservation reservation);
 	
+	/**
+	 * Get the reservation form an identity on a resource
+	 * @param identity
+	 * @param resource
+	 * @return
+	 */
 	public ResourceReservation getReservation(Identity identity, OLATResource resource);
 	
+	/**
+	 * Get the reservations pending a list of resources.
+	 * @param resources
+	 * @return
+	 */
+	public List<ResourceReservation> getReservations(List<OLATResource> resources);
+	
+	/**
+	 * The list of pending reservations
+	 * @param identity
+	 * @return
+	 */
+	public List<ResourceReservation> getReservations(Identity identity);
+	
+	/**
+	 * Reserve a resource
+	 * @param identity
+	 * @param offer
+	 * @return
+	 */
 	public boolean reserveAccessToResource(Identity identity, OfferAccess offer);
+	
+	/**
+	 * A user must sometimes explicitly accept a reservation.
+	 * @param identity
+	 * @param reservation
+	 */
+	public void acceptReservationToResource(Identity identity, ResourceReservation reservation);
 	
 	public int countReservations(OLATResource resource);
 	

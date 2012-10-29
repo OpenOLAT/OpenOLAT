@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +50,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistentObject;
@@ -666,9 +668,10 @@ public class MailManager extends BasicManager {
 					data.setMimetype(WebappHelper.getMimeType(attachment.getName()));
 					data.setMail(mail);
 					
+					InputStream fis = null;
 					try {
 						byte[] datas = new byte[(int)attachment.length()];
-						FileInputStream fis = new FileInputStream(attachment);
+						fis = new FileInputStream(attachment);
 						fis.read(datas);
 						data.setDatas(datas);
 						dbInstance.saveObject(data);
@@ -676,6 +679,8 @@ public class MailManager extends BasicManager {
 						logError("File attachment not found: " + attachment, e);
 					} catch (IOException e) {
 						logError("Error with file attachment: " + attachment, e);
+					} finally {
+						IOUtils.closeQuietly(fis);
 					}
 				}
 			}

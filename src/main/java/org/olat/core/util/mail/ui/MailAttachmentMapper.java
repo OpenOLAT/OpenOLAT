@@ -27,13 +27,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.manager.MailManager;
-import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailAttachmentData;
 
 /**
@@ -49,11 +47,9 @@ public class MailAttachmentMapper implements Mapper {
 	
 	public static final String ATTACHMENT_CONTEXT =  "/attachments/";
 	
-	private final DBMail mail;
 	private final MailManager mailManager;
 	
-	public MailAttachmentMapper(DBMail mail, MailManager mailManager) {
-		this.mail = mail;
+	public MailAttachmentMapper(MailManager mailManager) {
 		this.mailManager = mailManager;
 	}
 
@@ -66,23 +62,9 @@ public class MailAttachmentMapper implements Mapper {
 				String attachmentKey = relPath.substring(startIndex + ATTACHMENT_CONTEXT.length(), endIndex);
 				try {
 					Long key = new Long(attachmentKey);
-					
-					boolean rightMail = true;
-					/*for(DBMailAttachment attachment:mail.getAttachments()) {
-						if(key.equals(attachment.getKey())) {
-							rightMail = true;
-							break;
-						}
-					}*/
-					
-					if(rightMail) {
-						DBMailAttachmentData datas = mailManager.getAttachmentWithData(key);
-						BytesMediaResource resource = new BytesMediaResource(datas);
-						return resource;	
-					} else {
-						//only show the attachment of the selected e-mail
-						return  new ForbiddenMediaResource(relPath);
-					}
+					DBMailAttachmentData datas = mailManager.getAttachmentWithData(key);
+					BytesMediaResource resource = new BytesMediaResource(datas);
+					return resource;	
 				} catch(NumberFormatException e) {
 					return new NotFoundMediaResource(relPath);
 				}

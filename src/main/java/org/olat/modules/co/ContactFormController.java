@@ -27,7 +27,6 @@ package org.olat.modules.co;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.mail.Address;
@@ -129,7 +128,7 @@ public class ContactFormController extends BasicController {
 		cntctForm = new ContactForm(ureq, windowControl, emailFrom, isReadonly,isCanceable,hasRecipientsEditable);
 		listenTo(cntctForm);
 		
-		List recipList = cmsg.getEmailToContactLists();
+		List<ContactList> recipList = cmsg.getEmailToContactLists();
 		boolean hasAtLeastOneAddress = hasAtLeastOneAddress(recipList);
 		cntctForm.setBody(cmsg.getBodyText());
 		cntctForm.setSubject(cmsg.getSubject());
@@ -140,11 +139,10 @@ public class ContactFormController extends BasicController {
 		init(ureq, useDefaultTitle, hasAtLeastOneAddress, cmsg.getDisabledIdentities());
 	}
 	
-	private boolean hasAtLeastOneAddress(List recipList) {
+	private boolean hasAtLeastOneAddress(List<ContactList> recipList) {
 		boolean hasAtLeastOneAddress = false;
 		if (recipList != null && recipList.size() > 0 ) {
-			for (Iterator iter = recipList.iterator(); iter.hasNext();) {
-				ContactList cl = (ContactList) iter.next();
+			for (ContactList cl: recipList) {
 				if (!hasAtLeastOneAddress && cl != null && cl.getEmailsAsStrings().size() > 0) {
 					hasAtLeastOneAddress = true;
 				}

@@ -621,7 +621,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			List<Identity> movedIdentities = mod.getAllIdentities();
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, movedIdentities, null, null, template, getIdentity());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, movedIdentities, null, template, getIdentity());
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
 		}
 	}

@@ -489,7 +489,7 @@ public class GroupController extends BasicController {
 			}
 			//fxdiff VCRP-16: intern mail system
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, toBeRemoved, ccIdentities, null, mailTemplate, sender);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, toBeRemoved, ccIdentities, mailTemplate, sender);
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 		}
 	}
@@ -537,7 +537,7 @@ public class GroupController extends BasicController {
 			}
 			//fxdiff VCRP-16: intern mail system
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesAddedEvent.getAddedIdentities(), ccIdentities, null, mailTemplate, sender);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesAddedEvent.getAddedIdentities(), ccIdentities, mailTemplate, sender);
 			MailHelper.appendErrorsAndWarnings(mailerResult, errorMessage, infoMessage, ureq.getLocale());
 		}
 		// report any errors on screen

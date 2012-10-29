@@ -32,6 +32,7 @@ import java.util.Map;
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.commands.CmdSendMail;
@@ -235,7 +236,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			}
 		}
 
-		int mailQuota = MailHelper.getMaxSizeForAttachement();
+		int mailQuota = CoreSpringFactory.getImpl(MailModule.class).getMaxSizeForAttachement();
 		long fileSizeInMB = fileSize / (1024l * 1024l);
 		if (allowAttachments) {
 			if (fileSizeInMB > mailQuota) {
@@ -478,7 +479,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			}
 		};
 
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(tos, null, null, mailTemplate, ureq.getIdentity());
+		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, tos, null, mailTemplate, ureq.getIdentity());
 		MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 	}
 

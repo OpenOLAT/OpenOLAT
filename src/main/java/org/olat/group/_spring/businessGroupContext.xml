@@ -54,6 +54,34 @@
 		</property>
 	</bean>
 	
+	<!-- Login interceptor -->
+	<bean id="reservation.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="afterLoginInterceptionManager" />
+		<property name="targetMethod" value="addAfterLoginControllerConfig" />
+		<property name="arguments">
+			<ref bean="reservation.AfterLoginConfig"/>
+		</property>
+	</bean>
+
+	<bean id="reservation.AfterLoginConfig" class="org.olat.login.AfterLoginConfig">
+		<property name="afterLoginControllerList">
+			<list>
+				<map>
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="org.olat.group.ui.main.PendingEnrollmentController"/>
+						</bean>
+					</entry>
+					<entry key="forceUser"><value>false</value></entry>
+					<entry key="redoTimeout"><value>0</value></entry>
+					<entry key="i18nIntro"><value>org.olat.group.ui.main:pending.reservations</value></entry>	
+					<entry key="size"><value>800x400</value></entry>
+					<entry key="order"><value>1</value></entry>
+				</map>
+			</list>
+		</property>
+	</bean>
+	
 	<!-- Business group admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8205" />

@@ -17,4 +17,6 @@
 
 $r.render("home")
 $r.render("contact")
-$r.render("assessment")
+#if($r.available("assessment"))
+	$r.render("assessment")
+#end

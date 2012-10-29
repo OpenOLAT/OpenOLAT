@@ -22,6 +22,8 @@ package org.olat.course.member;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 
 /**

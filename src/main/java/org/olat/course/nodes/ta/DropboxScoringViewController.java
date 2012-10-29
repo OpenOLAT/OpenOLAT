@@ -26,6 +26,7 @@
 package org.olat.course.nodes.ta;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.velocity.VelocityContext;
@@ -295,7 +296,7 @@ public class DropboxScoringViewController extends BasicController {
 					};
 					//fxdiff VCRP-16: intern mail system
 					MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-					MailerResult result = MailerWithTemplate.getInstance().sendMail(context, student, null, null, mailTempl, null);
+					MailerResult result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, Collections.singletonList(student), null, mailTempl, null);
 					
 					if(result.getReturnCode() > 0) {
 						am.appendToUserNodeLog(node, coach, student, "MAIL SEND FAILED TO:" + toMail + "; MailReturnCode: " + result.getReturnCode());

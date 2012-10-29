@@ -113,4 +113,22 @@
 		</list>
 		
 	</class>
+	
+	<class name="org.olat.repository.model.RepositoryEntryShortImpl" table="o_repositoryentry" mutable="false">
+		<cache usage="read-write" />
+		<id name="key" column="repositoryentry_id" type="long" unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+
+		<property name="displayname" column="displayname" type="string"/>
+		<property name="statusCode" column="statuscode" type="int"/>
+
+		<many-to-one name="olatResource"
+                     column="fk_olatresource"
+                     class="org.olat.resource.OLATResourceImpl" 
+                     outer-join="true"   
+                     unique="true" 
+                     cascade="none"/>
+	</class>
+	
 </hibernate-mapping>

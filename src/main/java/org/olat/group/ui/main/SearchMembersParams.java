@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
+package org.olat.group.ui.main;
 
 import java.util.Map;
 
@@ -36,6 +36,7 @@ public class SearchMembersParams extends Event {
 	private boolean groupTutors;
 	private boolean groupParticipants;
 	private boolean groupWaitingList;
+	private boolean pending;
 	
 	private boolean repoOrigin = true;
 	private boolean groupOrigin = true;
@@ -48,7 +49,8 @@ public class SearchMembersParams extends Event {
 	}
 	
 	public SearchMembersParams(boolean repoOwners, boolean repoTutors, boolean repoParticipants,
-			boolean groupTutors, boolean groupParticipants, boolean groupWaitingList) {
+			boolean groupTutors, boolean groupParticipants, boolean groupWaitingList,
+			boolean pending) {
 		this();
 		this.repoOwners = repoOwners;
 		this.repoTutors = repoTutors;
@@ -56,6 +58,7 @@ public class SearchMembersParams extends Event {
 		this.groupTutors = groupTutors;
 		this.groupParticipants = groupParticipants;
 		this.groupWaitingList = groupWaitingList;
+		this.pending = pending;
 	}
 	
 	public boolean isRepoOwners() {
@@ -104,6 +107,14 @@ public class SearchMembersParams extends Event {
 	
 	public void setGroupWaitingList(boolean groupWaitingList) {
 		this.groupWaitingList = groupWaitingList;
+	}
+
+	public boolean isPending() {
+		return pending;
+	}
+
+	public void setPending(boolean pending) {
+		this.pending = pending;
 	}
 
 	public boolean isRepoOrigin() {
