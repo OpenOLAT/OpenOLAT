@@ -196,15 +196,15 @@ public class TextBoxListRenderer implements ComponentRenderer {
 			// but only in flexiform
 			String o_ffEvent = FormJSHelper.getJSFnCallFor(rootForm, dispatchId, 2);
 			output.append("onEmptyInput: function(input){").append(lineBreak);
-			output.append("console.log('onEmptyInput');").append(lineBreak);
+			//output.append("console.log('onEmptyInput');").append(lineBreak);
 			output.append(o_ffEvent).append("; } , ").append(lineBreak);
 			
 			output.append("onUserAdd: function(input){").append(lineBreak);
-			output.append("console.log('onUserAdd');").append(lineBreak);
+			//output.append("console.log('onUserAdd');").append(lineBreak);
 			output.append(o_ffEvent).append("; } , ").append(lineBreak);
 
 			output.append("onUserRemove: function(input){").append(lineBreak);
-			output.append("console.log('onUserRemove');").append(lineBreak);
+			//output.append("console.log('onUserRemove');").append(lineBreak);
 			output.append(o_ffEvent).append("; } , ").append(lineBreak);
 		}
 		output.append("regexSearch: false });").append(lineBreak);

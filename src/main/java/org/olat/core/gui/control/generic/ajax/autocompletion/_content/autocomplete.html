@@ -37,7 +37,7 @@ Ext.onReady(function(){
 		oldCombo = null;
 	}
 	
-	console.log('Hello');
+	##console.log('Hello');
 	
 	## Data store gets key value pairs from server
     var dataStore = new Ext.data.Store({
@@ -89,9 +89,9 @@ Ext.onReady(function(){
     ## by the form submit and the combo box result list is showed delayed. In this case
     ## don't expand
     comboBox.on('expand', function(combo) {
-    		console.log('Expand');
+    		##console.log('Expand');
 	    	var elem=document.getElementById('${r.getId("aj_ac_f")}'); 
-    		console.log('Expand', elem);
+    		##console.log('Expand', elem);
 	    	if (!elem) combo.collapse();
 	    	elem = null;
     	}
