@@ -315,7 +315,26 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		// if the olatResourceable is not persisted as OLATResource, then the answer
 		// is false,
 		// therefore we can use the query assuming there is an OLATResource
-
+		
+		
+		
+		TypedQuery<Number> query;
+		if(checkTypeRight) {
+			query = DBFactory.getInstance().getCurrentEntityManager().createNamedQuery("isIdentityPermittedOnResourceableCheckType", Number.class);
+		} else {
+			query = DBFactory.getInstance().getCurrentEntityManager().createNamedQuery("isIdentityPermittedOnResourceable", Number.class);
+		}
+		
+		Number count = query.setParameter("identitykey", iimpl.getKey())
+				.setParameter("permission", permission)
+				.setParameter("resid", oresid)
+				.setParameter("resname", oresName)
+				.getSingleResult();
+		return count.longValue() > 0;
+		
+		
+		
+/*
 		String queryString;
 		if (checkTypeRight) {
 			queryString = 
@@ -336,6 +355,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			+ " and poi.permission = :permission and poi.olatResource = ori"
 			+ " and (ori.resId = :resid) and ori.resName = :resname";
 		}
+		
 		DBQuery query = DBFactory.getInstance().createQuery(queryString);
 		query.setLong("identitykey", iimpl.getKey());
 		query.setString("permission", permission);		
@@ -346,6 +366,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		Long cntL = (Long) res.get(0);
 		return (cntL.longValue() > 0); // can be > 1 if identity is in more the one group having
 		// the permission on the olatresourceable
+		*/
 	}
 
 	/**

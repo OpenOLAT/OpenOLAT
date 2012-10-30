@@ -315,7 +315,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			if(re != null) {
 				IdentitiesAddEvent iae = new IdentitiesAddEvent(identity);
 				//roles is not needed as I add myself as participant
-				repositoryManager.addParticipants(identity, null, iae, re);
+				repositoryManager.addParticipants(identity, null, iae, re, null);
 				removeReservation(reservation);
 			}
 		}
@@ -412,7 +412,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		} else if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
-				EnrollState result = businessGroupService.enroll(identity, null, identity, group);
+				EnrollState result = businessGroupService.enroll(identity, null, identity, group, null);//TODO memail
 				return result.isFailed() ? Boolean.FALSE : Boolean.TRUE;
 			}
 		}

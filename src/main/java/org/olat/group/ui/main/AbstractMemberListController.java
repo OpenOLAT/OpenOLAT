@@ -61,6 +61,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
@@ -318,10 +319,10 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e) {
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
-			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes);
+			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes, null);
 		}
 
-		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges());
+		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), null);//TODO memail
 		//make sure all is committed before loading the model again (I see issues without)
 		DBFactory.getInstance().commitAndCloseSession();
 		
@@ -337,12 +338,12 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members) {
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
-			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges);
+			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, null);
 		}
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
-		businessGroupService.updateMemberships(getIdentity(), allModifications);
+		businessGroupService.updateMemberships(getIdentity(), allModifications, null);//TODO memail
 		DBFactory.getInstance().commitAndCloseSession();
 		
 		if(allModifications != null && !allModifications.isEmpty()) {
@@ -356,6 +357,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		reloadModel();
 	}
 	
+	//TODO memail
 	protected void sendMailAfterChangePermission(BusinessGroupMembershipChange mod) {
 		MailTemplate template = null;
 		if(mod.getParticipant() != null) {
@@ -382,11 +384,12 @@ public abstract class AbstractMemberListController extends BasicController imple
 	}
 	
 	protected void doLeave(List<Identity> members) {
+		MailPackage mailing = new MailPackage();
 		if(repoEntry != null) {
 			repositoryManager.removeMembers(members, repoEntry);
-			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource());
+			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource(), mailing);
 		} else {
-			businessGroupService.removeMembers(getIdentity(), members, businessGroup.getResource());
+			businessGroupService.removeMembers(getIdentity(), members, businessGroup.getResource(), mailing);
 		}
 		reloadModel();
 	}
@@ -415,10 +418,13 @@ public abstract class AbstractMemberListController extends BasicController imple
 		if(businessGroup != null) {
 			List<Long> identityKeys = getMemberKeys(members);
 			List<Identity> identitiesToGraduate = securityManager.loadIdentityByKeys(identityKeys);
-			businessGroupService.moveIdentityFromWaitingListToParticipant(getIdentity(), identitiesToGraduate, businessGroup);
+			businessGroupService.moveIdentityFromWaitingListToParticipant(getIdentity(), identitiesToGraduate,
+					businessGroup, null);//TODO memail
 		} else {
 			//TODO memail do something
 		}
+		
+		reloadModel();
 	}
 	
 	protected List<Long> getMemberKeys(List<MemberView> members) {

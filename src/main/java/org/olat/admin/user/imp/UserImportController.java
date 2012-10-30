@@ -249,7 +249,7 @@ public class UserImportController extends BasicController {
 				}
 			}
 		}
-		businessGroupService.updateMemberships(getIdentity(), changes);
+		businessGroupService.updateMemberships(getIdentity(), changes, null);//TODO memail
 		DBFactory.getInstance().commit();
 		
 		if(mailGroups != null && !mailGroups.isEmpty()) {

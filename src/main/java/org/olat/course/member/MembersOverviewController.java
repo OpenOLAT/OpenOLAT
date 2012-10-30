@@ -46,12 +46,10 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
@@ -249,21 +247,21 @@ public class MembersOverviewController extends BasicController implements Activa
 		List<Identity> members = (List<Identity>)runContext.get("members");
 		
 		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
+		
+		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
 		//commit changes to the repository entry
+		MailerResult result = new MailerResult();
+		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), template != null);
+		
 		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
-		repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges);
+		repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
-		businessGroupService.updateMemberships(getIdentity(), allModifications);
 		
-		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
-		if (template != null && !members.isEmpty()) {
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, members, null, template, getIdentity());
-			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
-		}
+		MailPackage mailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
+		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
 		
 		switchToAllMembers(ureq);
 	}

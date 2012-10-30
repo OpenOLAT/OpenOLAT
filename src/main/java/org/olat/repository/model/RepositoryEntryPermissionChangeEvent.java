@@ -74,4 +74,8 @@ public class RepositoryEntryPermissionChangeEvent extends Event {
 	public void setRepoParticipant(Boolean repoParticipant) {
 		this.repoParticipant = repoParticipant;
 	}
+	
+	public int size() {
+		return (repoOwner == null ? 0 : 1) + (repoTutor == null ? 0 : 1) + (repoParticipant == null ? 0 : 1);
+	}
 }

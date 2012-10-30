@@ -642,7 +642,7 @@ public class LearningGroupWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			BusinessGroupAddResponse state = bgs.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), Collections.singletonList(identity), group);
+			BusinessGroupAddResponse state = bgs.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), Collections.singletonList(identity), group, null);//TODO memail
 			if(state.getAddedIdentities().contains(identity)) {
 				return Response.ok().build();
 			} else if(state.getIdentitiesAlreadyInGroup().contains(identity)) {
@@ -680,7 +680,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			bgs.removeParticipants(ureq.getIdentity(), Collections.singletonList(identity), group);
+			bgs.removeParticipants(ureq.getIdentity(), Collections.singletonList(identity), group, null);
 
 			return Response.ok().build();
 		} catch (Exception e) {

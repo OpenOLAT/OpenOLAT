@@ -263,10 +263,10 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 					businessGroupService.removeOwners(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupOwner), bGroup);
 				}
 				if(secGroupPartipiciant != null) {
-					businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), bGroup);
+					businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), bGroup, null);
 				}
 				if(secGroupWaiting != null) {
-					businessGroupService.removeFromWaitingList(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), bGroup);
+					businessGroupService.removeFromWaitingList(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), bGroup, null);
 				}
 			}
 			

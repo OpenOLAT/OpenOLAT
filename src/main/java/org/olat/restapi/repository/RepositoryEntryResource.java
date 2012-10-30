@@ -397,7 +397,7 @@ public class RepositoryEntryResource {
 
 			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry);
+			repositoryManager.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to add a participant to a repository entry", e);
@@ -433,7 +433,7 @@ public class RepositoryEntryResource {
 			}
 
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			repositoryManager.removeParticipants(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry);
+			repositoryManager.removeParticipants(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry, null);
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to remove a participant from a repository entry", e);

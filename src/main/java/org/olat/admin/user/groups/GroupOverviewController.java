@@ -52,16 +52,13 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.main.BGRoleCellRenderer;
 import org.olat.group.ui.main.BGTableItem;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType;
@@ -269,10 +266,12 @@ public class GroupOverviewController extends BasicController {
 				changes.add(change);
 			}
 		}
-		businessGroupService.updateMemberships(getIdentity(), changes);
+		
+		MailPackage mailing = new MailPackage();//TODO memail
+		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
 		DBFactory.getInstance().commit();
 		
-		if(e.getMailForGroupsList() != null && !e.getMailForGroupsList().isEmpty()) {
+		/*if(e.getMailForGroupsList() != null && !e.getMailForGroupsList().isEmpty()) {
 			List<BusinessGroup> notifGroups = businessGroupService.loadBusinessGroups(e.getMailForGroupsList());
 			for (BusinessGroup group : notifGroups) {
 				MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, getIdentity());
@@ -283,7 +282,7 @@ public class GroupOverviewController extends BasicController {
 							+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
 				}
 			}
-		}
+		}*/
 	}
 	
 	private void doLeave(UserRequest ureq, List<BusinessGroup> groupsToLeave) {
@@ -324,16 +323,18 @@ public class GroupOverviewController extends BasicController {
 				if (securityManager.isIdentityInSecurityGroup(identity, group.getOwnerGroup())) {
 					businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
 				}
+				MailPackage mailing = new MailPackage(doSendMail);
 				// 2) remove as participant
-				businessGroupService.removeParticipants(getIdentity(), Collections.singletonList(identity), group);
+				businessGroupService.removeParticipants(getIdentity(), Collections.singletonList(identity), group, mailing);
+				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), getLocale());
 	
 				// 3) notify user about this action:
-				if(doSendMail){
+				/*if(doSendMail){
 					MailTemplate mailTemplate = BGMailHelper.createRemoveParticipantMailTemplate(group, getIdentity());
 					MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 					MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), null, mailTemplate, null);
-					MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
-				}
+					
+				}*/
 			}
 		}
 

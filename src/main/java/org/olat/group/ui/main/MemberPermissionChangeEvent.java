@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 
@@ -40,12 +41,30 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		super(member);
 	}
 	
+	public List<BusinessGroupShort> getGroups() {
+		List<BusinessGroupShort> groups = new ArrayList<BusinessGroupShort>();
+		if(groupChanges != null && !groupChanges.isEmpty()) {
+			for(BusinessGroupMembershipChange change:groupChanges) {
+				BusinessGroupShort group = change.getGroup();
+				if(!groups.contains(group)) {
+					groups.add(group);
+				}
+			}
+		}
+		return groups;
+	}
+	
 	public List<BusinessGroupMembershipChange> getGroupChanges() {
 		return groupChanges;
 	}
 
 	public void setGroupChanges(List<BusinessGroupMembershipChange> changes) {
 		this.groupChanges = changes;
+	}
+	
+	@Override
+	public int size() {
+		return (groupChanges == null ? 0 : groupChanges.size()) + super.size();
 	}
 	
 	public List<RepositoryEntryPermissionChangeEvent> generateRepositoryChanges(List<Identity> members) {

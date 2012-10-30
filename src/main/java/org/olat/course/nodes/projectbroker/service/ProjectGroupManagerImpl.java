@@ -248,7 +248,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		//TODO memail
-		BusinessGroupAddResponse state = bgs.addParticipants(actionIdentity, null, identities, reloadedProject.getProjectGroup());
+		BusinessGroupAddResponse state = bgs.addParticipants(actionIdentity, null, identities, reloadedProject.getProjectGroup(), null);//TODO memail
 		response.getAddedIdentities().addAll(state.getAddedIdentities());
 		response.getIdentitiesAlreadyInGroup().addAll(state.getAddedIdentities());
 		

@@ -47,6 +47,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.manager.MailManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -62,12 +63,28 @@ public class MailerWithTemplate {
 	
 	private static final OLog log = Tracing.createLoggerFor(MailerWithTemplate.class);
 	private static MailerWithTemplate INSTANCE = new MailerWithTemplate();
+	
+	@Autowired
+	private MailManager mailManager;
 
 	/**
 	 * Singleton constructor
 	 */
 	private MailerWithTemplate() {
-		super();
+		INSTANCE = this;
+	}
+	
+	/**
+	 * @return MailerWithTemplate returns the singleton instance
+	 */
+	public static MailerWithTemplate getInstance() {
+		return INSTANCE;
+	}
+	
+	/**
+	 * [used by Spring]
+	 */
+	public void init() {
 		// init velocity engine
 		Properties p = null;
 		try {
@@ -81,12 +98,7 @@ public class MailerWithTemplate {
 		}
 	}
 
-	/**
-	 * @return MailerWithTemplate returns the singleton instance
-	 */
-	public static MailerWithTemplate getInstance() {
-		return INSTANCE;
-	}
+
 
 	/**
 	 * Send a mail to the given identity and the other recipients (CC and BCC)
@@ -114,7 +126,7 @@ public class MailerWithTemplate {
 			return result;
 		}
 
-		MailManager.getInstance().sendExternMessage(null, null, recipientTO, null, null, null, null, msg.getSubject(), msg.getBody(), null, result);
+		mailManager.sendExternMessage(null, null, recipientTO, null, null, null, null, msg.getSubject(), msg.getBody(), null, result);
 		return result;
 	}
 
@@ -278,7 +290,7 @@ public class MailerWithTemplate {
 				}
 			}
 
-			MailerResult mgrResult = MailManager.getInstance().sendMessage(mCtxt, sender, null, recipientTO, null, null, null, null,
+			MailerResult mgrResult = mailManager.sendMessage(mCtxt, sender, null, recipientTO, null, null, null, null,
 					metaId, msg.getSubject(), msg.getBody(), attachmentList);
 			
 			if(mgrResult.getReturnCode() != MailerResult.OK) {

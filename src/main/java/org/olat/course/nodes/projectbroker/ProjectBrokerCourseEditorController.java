@@ -301,14 +301,15 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		} else if (source == accountManagerGroupController) {
 			if (event instanceof IdentitiesAddEvent) {
 				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), urequest.getUserSession().getRoles(), identitiesAddedEvent.getAddIdentities(), accountManagerGroup);
+				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), urequest.getUserSession().getRoles(),
+						identitiesAddedEvent.getAddIdentities(), accountManagerGroup, null);//TODO memail
 				identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 				identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 				identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 				getLogger().info("Add users as account-managers");
 				fireEvent(urequest, Event.CHANGED_EVENT );			
 			} else if (event instanceof IdentitiesRemoveEvent) {
-				businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), accountManagerGroup);
+				businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), accountManagerGroup, null);
 				getLogger().info("Remove users as account-managers");
 				fireEvent(urequest, Event.CHANGED_EVENT );
 			}

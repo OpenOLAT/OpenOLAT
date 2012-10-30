@@ -93,7 +93,7 @@ public class EnrollmentManager extends BasicManager {
 			// and: why can't we just have a group here and a max participants count and an identity to enrol?
 			// the group was chosen, so why do we need the groupNames and areaNames here???
 
-			EnrollState state =businessGroupService.enroll(identity, roles, identity, group);
+			EnrollState state =businessGroupService.enroll(identity, roles, identity, group, null);//TODO memail
 			if(state.isFailed()) {
 				enrollStatus.setErrorMessage(trans.translate(state.getI18nErrorMessage()));
 			} else {
@@ -116,7 +116,7 @@ public class EnrollmentManager extends BasicManager {
 		// 1. Remove group membership, fire events, do loggin etc.
 		// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
 		// and move the users accordingly
-		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup);
+		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, null);//TODO memail
 		logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
 
 		logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
@@ -139,7 +139,7 @@ public class EnrollmentManager extends BasicManager {
 	public void doCancelEnrollmentInWaitingList(final Identity identity, final BusinessGroup enrolledWaitingListGroup, final ENCourseNode enNode,
 			final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
 		// 1. Remove group membership, fire events, do loggin etc.
-		businessGroupService.removeFromWaitingList(identity, Collections.singletonList(identity), enrolledWaitingListGroup);
+		businessGroupService.removeFromWaitingList(identity, Collections.singletonList(identity), enrolledWaitingListGroup, null);
 		
 		// 2. Remove enrollmentdate property
 		// only remove last time date, not firsttime

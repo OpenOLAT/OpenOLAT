@@ -498,8 +498,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-2-" + UUID.randomUUID().toString());
 		Roles part1Roles = securityManager.getRoles(participant1);
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.addParticipants(participant1, part1Roles, new IdentitiesAddEvent(participant1), re);
-		repositoryManager.addParticipants(participant1, part1Roles, new IdentitiesAddEvent(participant2), re);
+		repositoryManager.addParticipants(participant1, part1Roles, new IdentitiesAddEvent(participant1), re, null);
+		repositoryManager.addParticipants(participant1, part1Roles, new IdentitiesAddEvent(participant2), re, null);
 		dbInstance.commitAndCloseSession();
 
 		//get the coaches
@@ -559,7 +559,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-4-" + UUID.randomUUID().toString());
 		Roles partRoles = securityManager.getRoles(participant);
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.addParticipants(participant, partRoles, new IdentitiesAddEvent(participant), re);
+		repositoryManager.addParticipants(participant, partRoles, new IdentitiesAddEvent(participant), re, null);
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner

@@ -69,6 +69,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.image.Size;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -122,6 +124,8 @@ public class RepositoryManager extends BasicManager {
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private MailerWithTemplate mailer;
 
 	
 	/**
@@ -1666,7 +1670,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param userActivityLogger
 	 */
-	public void addParticipants(Identity ureqIdentity, Roles ureqRoles, IdentitiesAddEvent iae, RepositoryEntry re) {
+	public void addParticipants(Identity ureqIdentity, Roles ureqRoles, IdentitiesAddEvent iae, RepositoryEntry re, MailPackage mailing) {
 		List<Identity> addIdentities = iae.getAddIdentities();
 		List<Identity> reallyAddedId = new ArrayList<Identity>();
 		for (Identity identityToAdd : addIdentities) {
@@ -1690,12 +1694,13 @@ public class RepositoryManager extends BasicManager {
 						ResourceReservation reservation =
 								reservationDao.createReservation(identityToAdd, "repo_participant", expiration, re.getOlatResource());
 						if(reservation != null) {
-							//TODO memail send mail
+							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing, mailer);
 						}
 					}
 				} else {
 					addInternalParticipant(ureqIdentity, identityToAdd, re);
 					reallyAddedId.add(identityToAdd);
+					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing, mailer);
 				}
 			}
 		}
@@ -1730,9 +1735,11 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param logger
 	 */
-	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
+	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing){
 		for (Identity identity : removeIdentities) {
     	securityManager.removeIdentityFromSecurityGroup(identity, re.getParticipantGroup());
+    	
+    	RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
 
 			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -1744,6 +1751,8 @@ public class RepositoryManager extends BasicManager {
 			}
 			logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
 					+ "' from securitygroup with key " + re.getParticipantGroup().getKey());
+			
+			
     }
 	}
 	
@@ -1932,7 +1941,8 @@ public class RepositoryManager extends BasicManager {
 		return entries;
 	}
 	
-	public void updateRepositoryEntryMembership(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re, List<RepositoryEntryPermissionChangeEvent> changes) {
+	public void updateRepositoryEntryMembership(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re,
+			List<RepositoryEntryPermissionChangeEvent> changes, MailPackage mailing) {
 		for(RepositoryEntryPermissionChangeEvent e:changes) {
 			if(e.getRepoOwner() != null) {
 				if(e.getRepoOwner().booleanValue()) {
@@ -1952,9 +1962,9 @@ public class RepositoryManager extends BasicManager {
 			
 			if(e.getRepoParticipant() != null) {
 				if(e.getRepoParticipant().booleanValue()) {
-					addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re);
+					addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re, mailing);
 				} else {
-					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re);
+					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re, mailing);
 				}
 			}
 		}
