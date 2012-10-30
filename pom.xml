@@ -1184,12 +1184,12 @@
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
 			<version>1.0.2</version>
-		</dependency>
+		</dependency><!-- 
 		<dependency>
 			<groupId>javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.8.0.GA</version>
-		</dependency>
+		</dependency> -->
 		<dependency><!-- Velocity dependency -->
 			<groupId>oro</groupId>
 			<artifactId>oro</artifactId>
@@ -1438,6 +1438,10 @@
 				<exclusion>
 					<groupId>xerces</groupId>
 					<artifactId>xmlParserAPIs</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.ant</groupId>
+					<artifactId>ant</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
