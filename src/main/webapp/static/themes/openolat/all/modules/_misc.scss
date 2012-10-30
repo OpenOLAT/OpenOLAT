@@ -30,6 +30,33 @@ div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31
 	min-height: 60em;
 }
 
+/* Resume reservations */
+div.o_reservation {
+	position:relative;
+	padding-bottom: 15px;
+	
+	span.o_reservation_name {
+		 padding-left: 20px;
+	}
+	span.o_reservation_accepted {
+		background: transparent url(../openolat/images/tick.png) top left no-repeat;
+	}
+	span.o_reservation_refused {
+		background: transparent url(../openolat/images/cross.png) top left no-repeat;
+	}
+	
+	div.o_reservation_details {
+		 padding: 5px 0 0 20px;
+	}
+	
+	ul {
+		list-style:none;
+		li {
+			background-repeat: no-repeat;
+		}
+	}
+}
+
 /* INFO MESSAGES */
 div.o_infomsgs { 
 		padding-top:5px; 

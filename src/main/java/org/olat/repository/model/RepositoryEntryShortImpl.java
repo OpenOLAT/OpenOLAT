@@ -32,6 +32,7 @@ public class RepositoryEntryShortImpl extends PersistentObject implements Reposi
 	private static final long serialVersionUID = 4599683374800325931L;
 	
 	private String displayName;
+	private String description;
 	private OLATResource resource;
 	private int statusCode;
 	
@@ -43,6 +44,14 @@ public class RepositoryEntryShortImpl extends PersistentObject implements Reposi
 	
 	public void setDisplayname(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override

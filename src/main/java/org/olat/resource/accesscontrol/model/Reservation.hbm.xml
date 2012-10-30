@@ -30,4 +30,9 @@
                  
 	</class>
 	
+	
+	<query name="loadReservationsByIdentity">
+		<![CDATA[select reservation from org.olat.resource.accesscontrol.model.ResourceReservationImpl as reservation where reservation.identity.key=:identityKey]]>
+	</query>
+	
 </hibernate-mapping>

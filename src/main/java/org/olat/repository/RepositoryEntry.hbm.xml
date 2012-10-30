@@ -121,6 +121,7 @@
 		</id>
 
 		<property name="displayname" column="displayname" type="string"/>
+		<property name="description" column="description" type="string"/>
 		<property name="statusCode" column="statuscode" type="int"/>
 
 		<many-to-one name="olatResource"

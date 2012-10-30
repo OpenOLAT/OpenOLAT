@@ -645,7 +645,7 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntryShortImpl.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" where ores.resId in (:resKeys)");
+		  .append(" where ores.key in (:resKeys)");
 		
 		List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
 		List<RepositoryEntryShort> shorties = dbInstance.getCurrentEntityManager()

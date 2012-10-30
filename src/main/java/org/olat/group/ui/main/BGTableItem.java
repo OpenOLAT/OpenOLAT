@@ -303,10 +303,12 @@ public class BGTableItem {
 			this.displayname = rel.getRepositoryEntryDisplayName();
 		}
 
+		@Override
 		public Long getKey() {
 			return key;
 		}
 
+		@Override
 		public String getDisplayname() {
 			return displayname;
 		}

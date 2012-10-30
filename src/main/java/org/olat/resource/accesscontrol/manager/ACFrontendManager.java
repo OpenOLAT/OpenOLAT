@@ -37,7 +37,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
@@ -468,6 +467,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		return null;
 	}
 	
+	@Override
 	public List<ACResourceInfo> getResourceInfos(List<OLATResource> resources) {
 		if(resources == null || resources.isEmpty()) {
 			return Collections.emptyList();
@@ -491,11 +491,13 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			for(OLATResource groupResource:groupResources) {
 				groupKeys.add(groupResource.getResourceableId());
 			}
-			List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(groupKeys);
-			for(BusinessGroupShort group:groups) {
+			List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
+			for(BusinessGroup group:groups) {
 				ACResourceInfoImpl info = new ACResourceInfoImpl();
 				info.setResource(groupMapKeys.get(group.getKey()));
 				info.setName(group.getName());
+				info.setDescription(group.getDescription());
+				info.setResource(group.getResource());
 				resourceInfos.add(info);
 			}
 		}
@@ -504,6 +506,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			for(RepositoryEntryShort repoEntry:repoEntries) {
 				ACResourceInfoImpl info = new ACResourceInfoImpl();
 				info.setName(repoEntry.getDisplayname());
+				info.setDescription(((RepositoryEntryShortImpl)repoEntry).getDescription());
 				info.setResource(((RepositoryEntryShortImpl)repoEntry).getOlatResource());
 				resourceInfos.add(info);
 			}

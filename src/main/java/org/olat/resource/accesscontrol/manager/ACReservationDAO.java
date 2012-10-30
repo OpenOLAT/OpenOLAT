@@ -82,11 +82,7 @@ public class ACReservationDAO {
 	}
 	
 	public List<ResourceReservation> loadReservations(Identity identity) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select reservation from ").append(ResourceReservationImpl.class.getName()).append(" as reservation ")
-		  .append(" where reservation.identity.key=:identityKey");
-		
-		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
+		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createNamedQuery("loadReservationsByIdentity", ResourceReservation.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		return reservations;

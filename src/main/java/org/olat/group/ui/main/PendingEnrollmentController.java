@@ -35,8 +35,12 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.login.SupportsAfterLoginInterceptor;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
 
 /**
@@ -53,18 +57,61 @@ import org.olat.resource.accesscontrol.model.ResourceReservation;
 public class PendingEnrollmentController extends FormBasicController implements SupportsAfterLoginInterceptor {
 
 	private final ACService acService;
-	private final List<ResourceReservation> reservations;
-	private final List<ResourceReservation> acceptedReservations = new ArrayList<ResourceReservation>();
-	private final List<ResourceReservation> rejectedReservations = new ArrayList<ResourceReservation>();
-	
-	
+	private final BusinessGroupService businessGroupService;
+	private final List<ReservationWrapper> reservations;
+
 	public PendingEnrollmentController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "accept_reservations");
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
-		reservations = acService.getReservations(getIdentity());
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
-		initForm(ureq);
+		List<ResourceReservation> resourceReservations = acService.getReservations(getIdentity());
+		reservations = new ArrayList<ReservationWrapper>(resourceReservations.size());
+		
+		if(!resourceReservations.isEmpty()) {
+			List<Long> groupKeys = new ArrayList<Long>();
+			List<OLATResource> resources = new ArrayList<OLATResource>();
+			for(ResourceReservation reservation: resourceReservations) {
+				OLATResource resource = reservation.getResource();
+				if("BusinessGroup".equals(resource.getResourceableTypeName())) {
+					groupKeys.add(resource.getResourceableId());
+				}
+				resources.add(resource);
+			}
+			
+			List<ACResourceInfo> resourceInfos = acService.getResourceInfos(resources);
+			List<BGRepositoryEntryRelation> relations = businessGroupService.findRelationToRepositoryEntries(groupKeys, 0, -1);
+			
+			for(ResourceReservation reservation: resourceReservations) {
+				OLATResource resource = reservation.getResource();
+				ReservationWrapper wrapper = new ReservationWrapper(reservation);
+				reservations.add(wrapper);
+				
+				
+				for(ACResourceInfo resourceInfo:resourceInfos) {
+					if(resource.equals(resourceInfo.getResource())) {
+						wrapper.setName(resourceInfo.getName());
+						wrapper.setDescription(resourceInfo.getDescription());
+					}
+				}
+	
+				if("BusinessGroup".equals(resource.getResourceableTypeName()) && !relations.isEmpty()) {
+					List<String> courseNames = new ArrayList<String>();
+					
+					for(BGRepositoryEntryRelation relation:relations) {
+						String courseName = relation.getRepositoryEntryDisplayName();
+						courseNames.add(courseName);
+					}
+					
+					if(!courseNames.isEmpty()) {
+						wrapper.setCourses(courseNames);
+					}
+				}
+			}
+			
+			initForm(ureq);
+		}
 	}
 
 	@Override
@@ -72,15 +119,13 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("reservations", reservations);
-			layoutCont.contextPut("acceptedReservations", acceptedReservations);
-			layoutCont.contextPut("acceptedReservations", acceptedReservations);
 		}
 		
-		for(ResourceReservation reservation:reservations) {
+		for(ReservationWrapper reservation:reservations) {
 			FormLink acceptLink = uifactory.addFormLink("accept_" + reservation.getKey(), "accept", null, formLayout, Link.BUTTON);
 			acceptLink.setUserObject(reservation);
 			FormLink rejectLink = uifactory.addFormLink("reject_" + reservation.getKey(), "reject", null, formLayout, Link.BUTTON);
-			acceptLink.setUserObject(reservation);
+			rejectLink.setUserObject(reservation);
 			formLayout.add(acceptLink.getName(), acceptLink);
 			formLayout.add(rejectLink.getName(), rejectLink);
 		}
@@ -104,14 +149,12 @@ public class PendingEnrollmentController extends FormBasicController implements 
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof ResourceReservation) {
-			ResourceReservation reservation = (ResourceReservation)((FormLink)source).getUserObject();
+		if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof ReservationWrapper) {
+			ReservationWrapper reservation = (ReservationWrapper)((FormLink)source).getUserObject();
 			if(source.getName().startsWith("accept_")) {
-				acceptedReservations.add(reservation);
-				rejectedReservations.remove(reservation);
+				reservation.setAccept(Boolean.TRUE);
 			} else if (source.getName().startsWith("reject_")) {
-				acceptedReservations.remove(reservation);
-				rejectedReservations.add(reservation);
+				reservation.setAccept(Boolean.FALSE);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -119,11 +162,13 @@ public class PendingEnrollmentController extends FormBasicController implements 
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		for(ResourceReservation reservation:reservations) {
-			if(acceptedReservations.contains(reservation)) {
-				acService.acceptReservationToResource(getIdentity(), reservation);
-			} else if(rejectedReservations.contains(reservation)) {
-				acService.removeReservation(reservation);
+		for(ReservationWrapper reservation:reservations) {
+			if(reservation.getAccept() != null) {
+				if(reservation.getAccept().booleanValue()) {
+					acService.acceptReservationToResource(getIdentity(), reservation.getReservation());
+				} else {
+					acService.removeReservation(reservation.getReservation());
+				}
 			}
 		}
 		fireEvent (ureq, Event.DONE_EVENT);
@@ -132,5 +177,73 @@ public class PendingEnrollmentController extends FormBasicController implements 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent (ureq, Event.CANCELLED_EVENT);
+	}
+	
+	public static final class ReservationWrapper {
+		private Boolean accept;
+		private final ResourceReservation reservation;
+		
+		private String name;
+		private String description;
+		private List<String> courses;
+		
+		public ReservationWrapper(ResourceReservation reservation) {
+			this.reservation = reservation;
+		}
+		
+		public Long getKey() {
+			return reservation.getKey();
+		}
+
+		public String getName() {
+			return name == null ? "" : name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getDescription() {
+			return description == null ? "" : description;
+		}
+
+		public void setDescription(String description) {
+			this.description = description;
+		}
+
+		public List<String> getCourses() {
+			if(courses == null) {
+				courses = new ArrayList<String>(1);
+			}
+			return courses;
+		}
+
+		public void setCourses(List<String> courses) {
+			this.courses = courses;
+		}
+
+		public ResourceReservation getReservation() {
+			return reservation;
+		}
+		
+		public boolean isAccepted() {
+			return accept != null && accept.booleanValue();
+		}
+		
+		public boolean isRefused() {
+			return accept != null && !accept.booleanValue();
+		}
+
+		public Boolean getAccept() {
+			return accept;
+		}
+
+		public void setAccept(Boolean accept) {
+			this.accept = accept;
+		}
+		
+		
+		
+		
 	}
 }

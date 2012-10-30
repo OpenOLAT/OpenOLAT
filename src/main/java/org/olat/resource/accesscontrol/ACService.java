@@ -29,6 +29,7 @@ import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.BusinessGroupAccess;
@@ -153,7 +154,13 @@ public interface ACService {
 	
 	public void cleanupReservations();
 	
-	
+	/**
+	 * 
+	 * @param resources
+	 * @return
+	 */
+	public List<ACResourceInfo> getResourceInfos(List<OLATResource> resources);
+
 	public String resolveDisplayName(OLATResource resource);
 	
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable);
