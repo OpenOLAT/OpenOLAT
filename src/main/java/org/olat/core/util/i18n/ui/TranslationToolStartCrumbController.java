@@ -179,7 +179,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		ArrayHelper.sort(referencelangKeys, referenceLangValues, false, true, false);
 		// Build css classes for reference languages
 		String[] referenceLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(referencelangKeys, "b_with_small_icon_left");
-		// fxdiff: FXOLAT-213 Use first reference locale as default
+		// Use first reference locale as default
 		referenceLocale = i18nMgr.getLocaleOrNull(referenceLangs.get(0));
 		// Override with user preset
 		Preferences guiPrefs = usess.getGuiPreferences();
@@ -201,15 +201,8 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			// Use all enabled languages in customizing mode
 			translatableKeys = I18nModule.getOverlayLanguageKeys();
 		} else {
-			// Since 6.2 the user can only translate the language he has set in his preferences
-			translatableKeys = new HashSet<String>();
-			if (I18nModule.getTranslatableLanguageKeys().contains(i18nMgr.getLocaleKey(getLocale()))){
-				translatableKeys.add(i18nMgr.getLocaleKey(getLocale()));
-			} else {
-				// ups, user language is not translatable, give user choice to
-				// select one of the translatable languages
-				translatableKeys = I18nModule.getTranslatableLanguageKeys();
-			}
+			// Allow translators to also translate other languages if they really desire. Show all languages.
+			translatableKeys = I18nModule.getTranslatableLanguageKeys();
 		}
 		String[] targetlangKeys = ArrayHelper.toArray(translatableKeys);
 		String[] targetLangValues = new String[targetlangKeys.length];

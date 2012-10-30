@@ -19,6 +19,7 @@
  */
 package org.olat.util;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -622,6 +623,23 @@ public class FunctionalCourseUtil {
 		.append("']//pre)[1]");
 		
 		return(browser.getText(selectorBuffer.toString()));
+	}
+	
+	/**
+	 * Extracts the repository entry key from business path.
+	 * 
+	 * @param businessPath
+	 * @return
+	 * @throws IOException
+	 */
+	public long extractRepositoryEntryKey(String businessPath) throws IOException{
+		Pattern keyPattern = Pattern.compile("/RepositoryEntry/([0-9]+)/");
+		Matcher keyMatcher = keyPattern.matcher(businessPath);
+		
+		if(!keyMatcher.find())
+			throw new IOException("there's no repository entry key");
+		
+		return(Long.parseLong(keyMatcher.group(1)));
 	}
 	
 	/**
