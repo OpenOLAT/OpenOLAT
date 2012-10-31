@@ -91,7 +91,9 @@ public class EditMembershipController extends FormBasicController {
 		
 		memberships = repositoryManager.getRepositoryEntryMembership(repoEntry, member);
 
-		infoController = new MemberInfoController(ureq, wControl, member, repoEntry);
+		infoController = new MemberInfoController(ureq, wControl, member, repoEntry, mainForm);
+		listenTo(infoController);
+		
 		initForm(ureq);
 		loadModel(member);
 		
@@ -186,7 +188,8 @@ public class EditMembershipController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			if(infoController != null) {
-				layoutCont.put("infos", infoController.getInitialComponent());
+				layoutCont.add("infos", infoController.getInitialFormItem());
+				layoutCont.add(infoController.getInitialFormItem());
 			}
 
 			String title = translate("edit.member.title", new String[]{ repoEntry.getDisplayname() });
