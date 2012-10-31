@@ -223,6 +223,8 @@ div.b_form {
 		&.b_form_spacer.b_form_spacer_noline { margin: 10px 0; border-bottom: 0; padding: 0;}
 	}
 	
+	
+	
 	/* form element wrapper: label and element */
 	div.b_form_element_wrapper { 
 		vertical-align: middle;
@@ -276,6 +278,16 @@ div.b_form {
 	}
 
 }// end div.b_form
+
+div.b_labels_minified div.b_form div.b_form_element_wrapper {
+		div.b_form_element_label {
+			width: 10%;
+		}
+		
+		div.b_form_element {
+			margin-left: 12%;
+		}
+	}
 
 // LOL :)  shift form to left if no labels (see linklist edit for example)
 div.form_shift_left { left: -25%; }

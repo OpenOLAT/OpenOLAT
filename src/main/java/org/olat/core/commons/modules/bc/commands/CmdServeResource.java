@@ -125,10 +125,14 @@ public class CmdServeResource implements FolderCommand {
 				// that loads the .js file
 				if (g_encoding != null) vmr.setEncoding(g_encoding);
 				mr = vmr;
+			} else if (path.endsWith(".txt")) {
+				//text files created in OpenOLAT are utf-8, prefer this encoding
+				VFSMediaResource vmr = new VFSMediaResource(vfsfile);
+				vmr.setEncoding("utf-8");
+				mr = vmr;
 			} else {
 				// binary data: not .html, not .htm, not .js -> treated as is
-				VFSMediaResource vmr = new VFSMediaResource(vfsfile);
-				mr = vmr;
+				mr = new VFSMediaResource(vfsfile);
 			}
 		}
 		

@@ -74,6 +74,7 @@ public class MemberSearchForm extends FormBasicController {
 		formLayout.add(leftContainer);
 		//user property
 		login = uifactory.addTextElement("login", "search.login", 128, "", leftContainer);
+		login.setDisplaySize(28);
 
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(getClass().getCanonicalName(), false);
 		propFormItems = new HashMap<String,FormItem>();
@@ -86,7 +87,12 @@ public class MemberSearchForm extends FormBasicController {
 			if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement) {
 				TextElement textElement = (TextElement)fi;
 				textElement.setItemValidatorProvider(null);
+				
 			}
+			if(fi instanceof TextElement) {
+				((TextElement)fi).setDisplaySize(28);
+			}
+			
 			propFormItems.put(userPropertyHandler.getName(), fi);
 		}
 
