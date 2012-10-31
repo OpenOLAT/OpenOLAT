@@ -134,7 +134,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	public void deactivate() {
 		getWindowControl().pop();
 		// fxdiff FXOLAT-116: SCORM improvements
-		if (fullScreen) {
+		if (fullScreen && thebaseChief != null) {
 			thebaseChief.removeBodyCssClass("b_full_screen");
 		}
 	}
