@@ -603,6 +603,22 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void toGroupKeys() {
+		//create a resource with 2 groups
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(group1, resource);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(group2, resource);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> groupKeys = businessGroupRelationDao.toGroupKeys("to-group-1", resource);
+		Assert.assertNotNull(groupKeys);
+		Assert.assertEquals(1, groupKeys.size());
+		Assert.assertTrue(groupKeys.contains(group1.getKey()));
+	}
+	
+	@Test
 	public void countResourcesOfBusinessGroups() {
 		//create 3 entries and 1 group
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
