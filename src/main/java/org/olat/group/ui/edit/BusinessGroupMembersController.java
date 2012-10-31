@@ -159,6 +159,10 @@ public class BusinessGroupMembersController extends BasicController {
 			mainVC.contextPut("hasWaitingGrp", new Boolean(hasWaitingList));
 			dmsForm.setWaitingListVisible(hasWaitingList);
 		}
+		
+		ownerGrpCntrllr.reloadData();
+		partipGrpCntrllr.reloadData();
+		waitingGruppeController.reloadData();
 	}
 
 	@Override

@@ -28,6 +28,8 @@ import org.olat.core.id.OLATResourceable;
 
 public class InfoMessageImpl extends PersistentObject implements InfoMessage {
 
+	private static final long serialVersionUID = 6373476657660866469L;
+
 	private Date modificationDate;
 	
 	private String title;
