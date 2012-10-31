@@ -91,11 +91,11 @@ public class AccessActionColumnDescriptor extends DefaultColumnDescriptor {
 						sb.append(translator.translate("table.header.group.full"));
 					}
 				} else if(item.isWaitingListEnabled()) {
-					if(item.isAutoCloseRanksEnabled()) {
-						sb.append(translator.translate("table.access"));
-					} else {
+					if(item.isFull()) {
 						sb.append(translator.translate("table.access.waitingList"));
-					}	
+					}	else {
+						sb.append(translator.translate("table.access"));
+					}
 				} else {
 					sb.append(translator.translate("table.access"));
 				}
