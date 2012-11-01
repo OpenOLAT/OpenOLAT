@@ -275,6 +275,8 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, isAssessable, doActivate,
 						fullWindow);
 			}
+			//increment user attempts only once!
+			scormNode.incrementUserAttempts(userCourseEnv);
 		}
 		// configure some display options
 		boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
