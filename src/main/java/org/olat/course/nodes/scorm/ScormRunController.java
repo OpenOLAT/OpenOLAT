@@ -256,27 +256,34 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			courseId = new Long(CodeHelper.getRAMUniqueID()).toString();
 			scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, false, doActivate,
-					fullWindow);
+					fullWindow, false);
 		} else {
+			boolean attemptsIncremented = false;
+			//increment user attempts only once!
+			if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
+					|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
+				scormNode.incrementUserAttempts(userCourseEnv);
+				attemptsIncremented = true;
+			}
+			
 			courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
 			if (isAssessable) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow);
+						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow, attemptsIncremented);
 				// <OLATCE-289>
 				// scormNode.incrementUserAttempts(userCourseEnv);
 				// </OLATCE-289>
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow);
+						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow, attemptsIncremented);
 			} else {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, isAssessable, doActivate,
-						fullWindow);
+						fullWindow, attemptsIncremented);
 			}
-			//increment user attempts only once!
-			scormNode.incrementUserAttempts(userCourseEnv);
+			
 		}
 		// configure some display options
 		boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);

@@ -100,9 +100,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 * @param lesson_mode add null for the default value or "normal", "browse" or
 	 *          "review"
 	 * @param credit_mode add null for the default value or "credit", "no-credit"
+	 * @param attemptsIncremented Is the attempts counter already incremented 
 	 */
-	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback, File cpRoot, String resourceId, String courseIdNodeId, String lesson_mode,
-			String credit_mode, boolean previewMode, boolean assessable, boolean activate, boolean fullWindow) {
+	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback,
+			File cpRoot, String resourceId, String courseIdNodeId, String lesson_mode, String credit_mode,
+			boolean previewMode, boolean assessable, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -215,7 +217,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		listenTo(columnLayoutCtr);
 		
 		//scrom API calls get handled by this mapper
-		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessable, cpRoot, scormAdapter);
+		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessable, cpRoot, scormAdapter, attemptsIncremented);
 		String scormCallbackUri = registerMapper(ureq, mapper);
 		myContent.contextPut("scormCallbackUri", scormCallbackUri+"/");
 	}
