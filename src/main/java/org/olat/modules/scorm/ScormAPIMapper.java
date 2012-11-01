@@ -126,30 +126,10 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 	}
 
 	@Override
-	public void lmsCommit(String olatSahsId, Properties scoScores) {
+	public void lmsCommit(String olatSahsId, Properties scoProperties) {
 		if (isAssessable) {
 			checkForLms();
-			
-			// do a sum-of-scores over all sco scores
-			float score = 0f;
-			for (Iterator<Object> it_score = scoScores.values().iterator(); it_score.hasNext();) {
-				String aScore = (String) it_score.next();
-				float ascore = Float.parseFloat(aScore);
-				score += ascore;
-			}
-			float cutval = scormNode.getCutValueConfiguration().floatValue();
-			boolean passed = (score >= cutval);
-			ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-			boolean incrementAttempts = false;
-			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttempts);
-			userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
-
-			if (log.isDebug()) {
-				String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
-						+ olatSahsId + " occured, total sum = " + score + ", cutvalue =" + cutval + ", passed: " + passed
-						+ ", all scores now = " + scoScores.toString();
-				log.debug(msg, null);
-			}
+			calculateScorePassed(olatSahsId, scoProperties);
 		}
 	}
 
@@ -157,59 +137,60 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 	public void lmsFinish(String olatSahsId, Properties scoProperties) {
 		if (isAssessable) {
 			checkForLms();
-			
-			// do a sum-of-scores over all sco scores
+			calculateScorePassed(olatSahsId, scoProperties);
+		}
+	}
+	
+	private void calculateScorePassed(String olatSahsId, Properties scoProperties) {
+		// do a sum-of-scores over all sco scores
+		// <OLATEE-27>
+		float score = -1f;
+		// </OLATEE-27>
+		for (Iterator<Object> it_score = scoProperties.values().iterator(); it_score.hasNext();) {
 			// <OLATEE-27>
-			float score = -1f;
-			// </OLATEE-27>
-			for (Iterator<Object> it_score = scoProperties.values().iterator(); it_score.hasNext();) {
-				// <OLATEE-27>
-				if (score == -1f) {
-					score = 0f;
-				}
-				// </OLATEE-27>
-				String aScore = (String) it_score.next();
-				float ascore = Float.parseFloat(aScore);
-				score += ascore;
+			if (score < 0f) {
+				score = 0f;
 			}
-
-			float cutval = scormNode.getCutValueConfiguration().floatValue();
-			ScoreEvaluation sceval;
-			boolean passed = (score >= cutval);
-			boolean incrementAttempts = false;//only do this while starting the content
-			// if advanceScore option is set update the score only if it is higher
-			// <OLATEE-27>
-			ModuleConfiguration config = scormNode.getModuleConfiguration();
-			if (config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)) {
-				if (score > (scormNode.getUserScoreEvaluation(userCourseEnv).getScore() != null ? scormNode.getUserScoreEvaluation(
-						userCourseEnv).getScore() : -1)) {
-					// </OLATEE-27>
-					sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttempts);
-					userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
-				} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
-					sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
-					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttempts);
-					userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
-
-				}
-			} else {
-				// <OLATEE-27>
-				if (score == -1f) {
-					score = 0f;
-				}
+			// </OLATEE-27>
+			String aScore = (String) it_score.next();
+			float ascore = Float.parseFloat(aScore);
+			score += ascore;
+		}
+		
+		float cutval = scormNode.getCutValueConfiguration().floatValue();
+		ScoreEvaluation sceval;
+		boolean passed = (score >= cutval);
+		// if advanceScore option is set update the score only if it is higher
+		// <OLATEE-27>
+		ModuleConfiguration config = scormNode.getModuleConfiguration();
+		if (config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)) {
+			Float currentScore = scormNode.getUserScoreEvaluation(userCourseEnv).getScore();
+			if (score > (currentScore != null ? currentScore : -1f)) {
 				// </OLATEE-27>
 				sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttempts);
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
+				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
+				sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
 				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
 			}
-
-			if (log.isDebug()) {
-				String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
-						+ olatSahsId + " occured, total sum = " + score + ", cutvalue =" + cutval + ", passed: " + passed
-						+ ", all scores now = " + scoProperties.toString();
-				log.debug(msg, null);
+		} else {
+			// <OLATEE-27>
+			if (score < 0f) {
+				score = 0f;
 			}
+			// </OLATEE-27>
+			sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
+			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
+			userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+		}
+
+		if (log.isDebug()) {
+			String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
+					+ olatSahsId + " occured, total sum = " + score + ", cutvalue =" + cutval + ", passed: " + passed
+					+ ", all scores now = " + scoProperties.toString();
+			log.debug(msg, null);
 		}
 	}
 
@@ -224,7 +205,6 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			log.debug("scorm api request by user:"+ identity.getName() +": " + apiCall + "('" + apiCallParamOne + "' , '" + apiCallParamTwo + "')");
 		}
 
-		String returnValue = "";
 		StringMediaResource smr = new StringMediaResource();
 		smr.setContentType("text/html");
 		smr.setEncoding("utf-8");
@@ -234,8 +214,8 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			smr.setData("<html><body></body></html>");
 			return smr;
 		}
-		
 
+		String returnValue = "";
 		if (apiCall != null) {
 			if (apiCall.equals(LMS_INITIALIZE)) {
 				returnValue = scormAdapter.LMSInitialize(apiCallParamOne);
@@ -257,10 +237,8 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			smr.setData("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><p>"
 					+ returnValue + "</p></body></html>");
 			return smr;
-			
 		}
 		smr.setData("");
 		return smr;
 	}
-
 }
