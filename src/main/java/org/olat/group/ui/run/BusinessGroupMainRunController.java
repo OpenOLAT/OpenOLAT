@@ -293,24 +293,28 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			this.showError("grouprun.disabled");				
 		}
 		
-		//check managed
-		//fxdiff VCRP-1,2: access control of resources
-		ACService acService = CoreSpringFactory.getImpl(ACService.class);
-		AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
-		if(acResult.isAccessible()) {
-			needActivation = false;
-		}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {
-			accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
-			listenTo(accessController);
-			mainPanel.setContent(accessController.getInitialComponent());
-			bgTree.setTreeModel(new GenericTreeModel());
-			needActivation = true;
-			return;
+		Object wildcard = ureq.getUserSession().getEntry("wild_card_" + businessGroup.getKey());
+		if(wildcard == null) {
+			//check managed
+			//fxdiff VCRP-1,2: access control of resources
+			ACService acService = CoreSpringFactory.getImpl(ACService.class);
+			AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
+			if(acResult.isAccessible()) {
+				needActivation = false;
+			}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {
+				accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
+				listenTo(accessController);
+				mainPanel.setContent(accessController.getInitialComponent());
+				bgTree.setTreeModel(new GenericTreeModel());
+				needActivation = true;
+			} else {
+				mainPanel.setContent(new Panel("empty"));
+				bgTree.setTreeModel(new GenericTreeModel());
+				needActivation = true;
+			}
 		} else {
-			mainPanel.setContent(new Panel("empty"));
-			bgTree.setTreeModel(new GenericTreeModel());
-			needActivation = true;
-			return;
+			ureq.getUserSession().removeEntryFromNonClearedStore("wild_card_" + businessGroup.getKey());
+			needActivation = false;
 		}
 	}
 	

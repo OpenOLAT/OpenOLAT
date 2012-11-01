@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
@@ -107,6 +108,11 @@ public class AdminBusinessGroupsController extends AbstractBusinessGroupListCont
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	protected void doLaunch(UserRequest ureq, BusinessGroup group) {
+		ureq.getUserSession().putEntryInNonClearedStore("wild_card_" + group.getKey(), Boolean.TRUE);
+		super.doLaunch(ureq, group);
 	}
 	
 	private void doSearch(UserRequest ureq, SearchEvent event) {
