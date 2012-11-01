@@ -116,6 +116,10 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 		else
 			getWindowControl().pushToMainArea(backVC);
 	}
+	
+	public boolean isFullScreen() {
+		return fullScreen;
+	}
 
 	// fxdiff FXOLAT-116: SCORM improvements
 	public void setAsFullscreen(UserRequest ureq) {

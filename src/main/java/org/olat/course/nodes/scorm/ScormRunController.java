@@ -34,12 +34,12 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.event.GenericEventListener;
@@ -66,7 +66,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Felix Jost
  */
-public class ScormRunController extends BasicController implements ScormAPICallback, GenericEventListener {
+public class ScormRunController extends BasicController implements ScormAPICallback, GenericEventListener, ConfigurationChangedListener {
 
 	private ModuleConfiguration config;
 	private File cpRoot;
@@ -83,8 +83,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	private UserCourseEnvironment userCourseEnv;
 	private ChooseScormRunModeForm chooseScormRunMode;
 	private boolean isPreview;
-
-	private Identity identity;
 	private boolean isAssessable;
 
 	/**
@@ -108,7 +106,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		this.userCourseEnv = userCourseEnv;
 		this.config = config;
 		this.scormNode = scormNode;
-		this.identity = ureq.getIdentity();
 
 		addLoggingResourceable(LoggingResourceable.wrap(scormNode));
 		init(ureq);
@@ -330,6 +327,11 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	 */
 	public boolean isExternalMenuConfigured() {
 		return (config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU).booleanValue());
+	}
+
+	@Override
+	public void configurationChanged() {
+		scormDispC.configurationChanged();
 	}
 
 	/**

@@ -52,6 +52,7 @@ import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -995,12 +996,20 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 
 		} else if (event instanceof CourseConfigEvent) {				
+			if(currentNodeController instanceof ConfigurationChangedListener) {
+				//give to opportunity to close popups ...
+				((ConfigurationChangedListener)currentNodeController).configurationChanged();
+			}
 			dispose();
 			
 		} else if (event instanceof EntryChangedEvent && ((EntryChangedEvent)event).getChange()!=EntryChangedEvent.MODIFIED_AT_PUBLISH) {
 			//courseRepositoryEntry changed (e.g. fired at course access rule change)
 			EntryChangedEvent repoEvent = (EntryChangedEvent) event;			
 			if (courseRepositoryEntry.getKey().equals(repoEvent.getChangedEntryKey()) && repoEvent.getChange() == EntryChangedEvent.MODIFIED) {				
+				if(currentNodeController instanceof ConfigurationChangedListener) {
+					//give to opportunity to close popups ...
+					((ConfigurationChangedListener)currentNodeController).configurationChanged();
+				}
 				dispose();				
 			}
 		}

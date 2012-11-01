@@ -157,6 +157,10 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		putInitialPanel(layoutMainVC);
 	}
 	
+	public boolean isFullScreen() {
+		return fullScreen;
+	}
+	
 	public void setAsFullscreen(UserRequest ureq) {
 		ChiefController cc = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
 		if (cc instanceof BaseChiefController) {
@@ -181,7 +185,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		if (fullScreen) {
 			if(thebaseChief != null) {
 				thebaseChief.removeBodyCssClass("b_full_screen");
-			} else {
+			} else if (ureq != null){
 				ChiefController cc = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
 				if (cc instanceof BaseChiefController) {
 					thebaseChief = (BaseChiefController) cc;
