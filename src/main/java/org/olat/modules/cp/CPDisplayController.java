@@ -25,6 +25,7 @@
 
 package org.olat.modules.cp;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -139,10 +140,17 @@ public class CPDisplayController extends BasicController implements Activateable
 		// even if we do not show the menu, we need to build parse the manifest and
 		// find the first node to display at startup
 		VFSItem mani = rootContainer.resolve("imsmanifest.xml");
-		if (mani == null || !(mani instanceof VFSLeaf)) { throw new OLATRuntimeException("error.manifest.missing", null, this.getClass()
-				.getPackage().getName(), "CP " + rootContainer + " has no imsmanifest", null); }
+		if (mani == null || !(mani instanceof VFSLeaf)) {
+			showError("error.manifest.missing");
+			return;
+		}
 		// initialize tree model in any case
-		ctm = new CPManifestTreeModel((VFSLeaf) mani);
+		try {
+			ctm = new CPManifestTreeModel((VFSLeaf) mani);
+		} catch (IOException e) {
+			showError("error.manifest.corrupted");
+			return;
+		}
 
 		if (showMenu) {
 			// the menu is only initialized when needed.
