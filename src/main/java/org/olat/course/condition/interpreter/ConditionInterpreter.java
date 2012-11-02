@@ -272,9 +272,7 @@ public class ConditionInterpreter {
 	 * @return True if evaluation successfull.
 	 */
 	public boolean evaluateCondition(Condition c) {
-		if(c.isExpertMode() && StringHelper.containsNonWhitespace(c.getConditionUpgraded())) {
-			return evaluateCondition(c.getConditionUpgraded());
-		} else if (!c.isExpertMode() && (c.getAttributeConditions() == null || c.getAttributeConditions().isEmpty())) {
+		if (!c.isExpertMode() && (c.getAttributeConditions() == null || c.getAttributeConditions().isEmpty())) {
 			//experimental optimized evaluation of the easy conditions
 			//return evaluateEasyCondition(c);
 		}

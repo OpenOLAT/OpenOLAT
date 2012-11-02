@@ -101,6 +101,11 @@ public class WikiCreateController extends DefaultController implements IAddContr
 	public void repositoryEntryCreated(RepositoryEntry re) {
 	//
 	}
+	
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		//
+	}
 
 	/**
 	 * @see org.olat.repository.controllers.IAddController#transactionAborted()

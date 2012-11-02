@@ -145,6 +145,7 @@ public class RepositoryCopyController extends BasicController {
 			RepositoryHandler typeToCopy = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);			
 			IAddController addController = typeToCopy.createAddController(null, null, ureq, getWindowControl());
 			addController.repositoryEntryCreated(newEntry);
+			addController.repositoryEntryCopied(sourceEntry, newEntry);
 			// dispose immediately (cleanup temp files), not really used 
 			// as a controller, should be in a business logic frontend manager instead!
 			addController.dispose();

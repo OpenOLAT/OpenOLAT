@@ -93,9 +93,14 @@ public class CreatePodcastController extends DefaultController implements IAddCo
 	/**
 	 * @see org.olat.repository.controllers.IAddController#repositoryEntryCreated(org.olat.repository.RepositoryEntry)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void repositoryEntryCreated(RepositoryEntry re) {
 	// Nothing to do here, but thanks for asking.
+	}
+	
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		//
 	}
 
 	/**

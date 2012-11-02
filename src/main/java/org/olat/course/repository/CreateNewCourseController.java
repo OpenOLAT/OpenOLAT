@@ -25,6 +25,9 @@
 
 package org.olat.course.repository;
 
+import java.io.File;
+import java.util.UUID;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -34,10 +37,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
@@ -144,7 +151,26 @@ public class CreateNewCourseController extends BasicController implements IAddCo
 		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 	}
-	
+
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		ICourse sourceCourse = CourseFactory.loadCourse(sourceEntry.getOlatResource().getResourceableId());
+		CourseGroupManager sourceCgm = sourceCourse.getCourseEnvironment().getCourseGroupManager();
+		CourseEnvironmentMapper env = PersistingCourseGroupManager.getInstance(sourceCourse).getBusinessGroupEnvironment();
+		
+		File fExportDir = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
+		fExportDir.mkdirs();
+		sourceCgm.exportCourseBusinessGroups(fExportDir, env, false);
+
+		course = CourseFactory.loadCourse(newEntry.getOlatResource().getResourceableId());
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		// import groups
+		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(fExportDir);
+		//upgrade to the current version of the course
+		course = CourseFactory.loadCourse(cgm.getCourseResource());
+		course.postImport(envMapper);
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */

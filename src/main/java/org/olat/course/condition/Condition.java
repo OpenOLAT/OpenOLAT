@@ -38,7 +38,6 @@ import org.olat.core.util.StringHelper;
 public class Condition implements Serializable, Cloneable {
 	transient private String conditionId = null;
 	private String condition = null;
-	private String conditionUpgraded = null;
 	private boolean expertMode = false;
 
 	private String easyModeBeginDate;
@@ -95,11 +94,11 @@ public class Condition implements Serializable, Cloneable {
 	}
 
 	public String getConditionUpgraded() {
-		return conditionUpgraded;
+		return null;
 	}
 
 	public void setConditionUpgraded(String conditionUpgraded) {
-		this.conditionUpgraded = conditionUpgraded;
+		//only for compatibility reason, don't delete these methods
 	}
 
 	/**
