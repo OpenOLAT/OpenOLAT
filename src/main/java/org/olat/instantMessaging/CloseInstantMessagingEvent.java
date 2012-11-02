@@ -19,37 +19,23 @@
  */
 package org.olat.instantMessaging;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.util.event.MultiUserEvent;
 
 /**
  * 
  * Description:<br>
- * Message to open a new message window. Only use this event with
+ * Message to close a new message window. Only use this event with
  * the Single VM message bus with the SingleUserEventCenter!!!
  * 
  * <P>
  * Initial Date:  2 mar. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OpenInstantMessageEvent extends MultiUserEvent {
+public class CloseInstantMessagingEvent extends MultiUserEvent {
 
-	private static final long serialVersionUID = -7767366726634855700L;
-	
-	private final String jabberId;
-	private final UserRequest ureq;
+	private static final long serialVersionUID = -2290953538061783875L;
 
-	public OpenInstantMessageEvent(String jabberId, UserRequest ureq) {
-		super("openim");
-		this.jabberId = jabberId;
-		this.ureq = ureq;
-	}
-
-	public String getJabberId() {
-		return jabberId;
-	}
-
-	public UserRequest getUreq() {
-		return ureq;
+	public CloseInstantMessagingEvent() {
+		super("closeim");
 	}
 }

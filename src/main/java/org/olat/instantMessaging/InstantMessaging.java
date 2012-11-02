@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
 import org.olat.instantMessaging.ui.ConnectedUsersListEntry;
 
@@ -47,6 +48,11 @@ import org.olat.instantMessaging.ui.ConnectedUsersListEntry;
  * framework outside the package <P>
  */
 public interface InstantMessaging {
+	/**
+	 * Category of events which trigger close/open chat from extern
+	 */
+	public static final OLATResourceable TOWER_EVENT_ORES = OresHelper.createOLATResourceableType("InstantMessagingTower");
+	
 	
 	/**
 	 * called when OLAT server is started and needs to sync the learinggroups with the IM server.

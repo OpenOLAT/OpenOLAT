@@ -24,6 +24,7 @@
 */
 package org.olat.instantMessaging.rosterandchat;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -97,6 +98,24 @@ public class ChatManagerController extends BasicController {
 	 */
 	@Override
 	protected void doDispose() {
+		chats.clear();
+	}
+	
+	/**
+	 * Close the chats windows
+	 */
+	protected void closeAllChats() {
+		List<String> jabberIds = new ArrayList<String>(chats.keySet());
+		for(String jabberId :jabberIds) {
+			Component p = container.getComponent(jabberId);
+			if(p != null) {
+				container.remove(p);
+			}
+			ChatController ctrl = chats.get(jabberId);
+			if(ctrl != null) {
+				ctrl.closeChat();
+			}
+		}
 		chats.clear();
 	}
 

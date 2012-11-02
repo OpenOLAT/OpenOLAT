@@ -57,7 +57,9 @@ import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.instantMessaging.ClientHelper;
 import org.olat.instantMessaging.ClientManager;
+import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.ConncectedUsersHelper;
+import org.olat.instantMessaging.InstantMessaging;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -77,7 +79,6 @@ public class InstantMessagingMainController extends BasicController implements G
 	public static final String ACTION_MSG = "cmd.msg";
 	private VelocityContainer main = createVelocityContainer("index");
 	private VelocityContainer chatContent = createVelocityContainer("chat");
-	private VelocityContainer chatMsgFieldContent = createVelocityContainer("chatMsgField");
 	private VelocityContainer statusChangerContent = createVelocityContainer("statusChangerContent");
 	private VelocityContainer statusChangerLink = createVelocityContainer("statusChangerLink");
 	private VelocityContainer newMsgIcon = createVelocityContainer("newMsgIcon");
@@ -98,7 +99,6 @@ public class InstantMessagingMainController extends BasicController implements G
 	private String username;
 	private FloatingResizableDialogController statusChangerPanelCtr;
 	private FloatingResizableDialogController rosterPanelCtr;
-	private FloatingResizableDialogController chatPanelCtr;
 	private JSAndCSSComponent jsc;
 	private ChatManagerController chatMgrCtrl;
 	private Map<String, NewMessageIconInfo> showNewMessageHolder = new HashMap<String, NewMessageIconInfo>(2);
@@ -221,6 +221,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		singleUserEventCenter.registerFor(this, getIdentity(), ass);
+		singleUserEventCenter.registerFor(this, getIdentity(), InstantMessaging.TOWER_EVENT_ORES);
 		
 		putInitialPanel(main);
 	}
@@ -233,6 +234,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		InstantMessagingModule.getAdapter().getClientManager().deregisterControllerListener(username, this);
 		InstantMessagingModule.getAdapter().getClientManager().destroyInstantMessagingClient(username);
 		singleUserEventCenter.deregisterFor(this, ass);
+		singleUserEventCenter.deregisterFor(this, InstantMessaging.TOWER_EVENT_ORES);
 	}
 
 	/**
@@ -375,12 +377,6 @@ public class InstantMessagingMainController extends BasicController implements G
 			onlineOfflineCount.setCustomDisplayText(clientHelper.buddyCountOnline());
 			removeAsListenerAndDispose(rosterPanelCtr);
 			rosterPanel.setContent(null);
-			
-		} else if (source == chatPanelCtr) {
-			//closing the floating panel event
-			notifieNewMsgPanel.setContent(newMsgIcon);
-			chatMsgFieldContent.contextPut("chatMessages", "");
-			jsc.setRefreshIntervall(InstantMessagingModule.getIDLE_POLLTIME());
 		} else if (source == chatMgrCtrl) {
 			//closing events from chat manager controller
 			notifieNewMsgPanel.setContent(newMsgIcon);
@@ -393,29 +389,51 @@ public class InstantMessagingMainController extends BasicController implements G
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
 	public void event(Event event) {
-		
-		if (event instanceof AssessmentEvent) {
-			if(((AssessmentEvent)event).getEventType().equals(AssessmentEvent.TYPE.STARTED)) {
-				main.contextPut("inAssessment", true);
-				return;
-			} 
-			if(((AssessmentEvent)event).getEventType().equals(AssessmentEvent.TYPE.STOPPED)) {
-				OLATResourceable a = OresHelper.createOLATResourceableType(AssessmentInstance.class);
-				if (singleUserEventCenter.getListeningIdentityCntFor(a)<1) {
-					main.contextPut("inAssessment", false);
-				}
-				return;
-			} 
+		if(event instanceof InstantMessagingEvent) {
+			processInstantMessageEvent((InstantMessagingEvent)event);
+		} else if (event instanceof AssessmentEvent) {
+			processAssessmentEvent((AssessmentEvent)event);
+		} else if (event instanceof OpenInstantMessageEvent) {
+			processOpenInstantMessageEvent((OpenInstantMessageEvent)event);
+		} else if(event instanceof CloseInstantMessagingEvent) {
+			processCloseInstantMessageEvent();
 		}
-		
-		if(event instanceof OpenInstantMessageEvent) {
-			String jabberId = ((OpenInstantMessageEvent)event).getJabberId();
-			UserRequest ureq = ((OpenInstantMessageEvent)event).getUreq();
-			chatMgrCtrl.createChat(ureq, getWindowControl(), jabberId);
-			return;
+	}
+	
+	private void processAssessmentEvent(AssessmentEvent event) {
+		if(event.getEventType().equals(AssessmentEvent.TYPE.STARTED)) {
+			main.contextPut("inAssessment", true);
+		} else if(event.getEventType().equals(AssessmentEvent.TYPE.STOPPED)) {
+			OLATResourceable a = OresHelper.createOLATResourceableType(AssessmentInstance.class);
+			if (singleUserEventCenter.getListeningIdentityCntFor(a)<1) {
+				main.contextPut("inAssessment", false);
+			}
+		} 
+	}
+
+	private void processOpenInstantMessageEvent(OpenInstantMessageEvent event) {
+		String jabberId = event.getJabberId();
+		UserRequest ureq = event.getUreq();
+		chatMgrCtrl.createChat(ureq, getWindowControl(), jabberId);
+	}
+	
+	private void processCloseInstantMessageEvent() {
+		if(statusChangerPanelCtr != null) {
+			statusChangerPanelCtr.executeCloseCommand();
+			removeAsListenerAndDispose(statusChangerPanelCtr);
+			statusPanel.setContent(null);
 		}
-		
-		InstantMessagingEvent imEvent = (InstantMessagingEvent)event;
+		if(rosterPanelCtr != null) {
+			rosterPanelCtr.executeCloseCommand();
+			removeAsListenerAndDispose(rosterPanelCtr);
+			rosterPanel.setContent(null);
+		}
+		if(chatMgrCtrl != null) {
+			chatMgrCtrl.closeAllChats();
+		}
+	}
+	
+	private void processInstantMessageEvent(InstantMessagingEvent imEvent) {
 		if (imEvent.getCommand().equals("presence")) {
 			Presence presence = (Presence) imEvent.getPacket();
 			logDebug("incoming presence for user: "+presence.getFrom() +" type: "+presence, null);
@@ -429,7 +447,6 @@ public class InstantMessagingMainController extends BasicController implements G
 					statusChanger.setCustomEnabledLinkCSS("b_small_icon o_instantmessaging_"+clientHelper.getStatus()+"_icon");
 					statusChanger.setDirty(true);					
 			}});
-			
 		} else if (imEvent.getCommand().equals("message")) {
 			//user receives messages from an other user
 			Message initialMessage = (Message)imEvent.getPacket();
@@ -449,7 +466,6 @@ public class InstantMessagingMainController extends BasicController implements G
 				}
 			}
 		}
-		
 	}
 	
 	/**
