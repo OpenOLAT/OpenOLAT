@@ -54,7 +54,7 @@ public class MemoryWebService implements Sampler {
 	
 	private static final OLog log = Tracing.createLoggerFor(MemoryWebService.class);
 	
-	private List<MemorySampleVO> memorySamples = new ArrayList<MemorySampleVO>(1000);
+	private List<MemorySampleVO> memorySamples = new ArrayList<MemorySampleVO>(100);
 	
 	public MemoryWebService() {
 		//start sampling

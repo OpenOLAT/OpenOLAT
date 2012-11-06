@@ -17,146 +17,128 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
 package org.olat.search.service.document.file;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.util.Iterator;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.lucene.document.Document;
-import org.apache.poi.POIXMLDocument;
-import org.apache.poi.POIXMLTextExtractor;
-import org.apache.poi.extractor.ExtractorFactory;
-import org.apache.poi.xwpf.model.XWPFCommentsDecorator;
-import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
-import org.apache.poi.xwpf.model.XWPFHyperlinkDecorator;
-import org.apache.poi.xwpf.model.XWPFParagraphDecorator;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.xmlbeans.XmlException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBookmark;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.olat.search.service.document.file.utils.ShieldInputStream;
+import org.olat.search.service.document.file.utils.SlicedDocument;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * 
  * Description:<br>
- * Parse the Word XML document (.docx) with Apache POI
+ * Parse the Word XML document (.docx) with a SAX parser
  * 
  * <P>
- * Initial Date:  14 dec. 2009 <br>
- * @author srosse, stephane.rosse@frentix.com
+ * Initial Date:  5 nov. 2012<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class WordOOXMLDocument extends FileDocument {
-	private static final long serialVersionUID = 3684533132759600322L;
+	private static final long serialVersionUID = 2322994231200065526L;
 	private static final OLog log = Tracing.createLoggerFor(WordOOXMLDocument.class);
 
-	public final static String FILE_TYPE = "type.file.word";
+	public final static String WORD_FILE_TYPE = "type.file.word";
+	private static final String HEADER = "word/header";
+	private static final String FOOTER = "word/footer";
 
-	public WordOOXMLDocument() {
-		//
-	}
-	
-	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
-		WordOOXMLDocument wordDocument = new WordOOXMLDocument();
-    wordDocument.init(leafResourceContext,leaf);
-    wordDocument.setFileType(FILE_TYPE);
-		wordDocument.setCssIcon("b_filetype_doc");
-		if (log.isDebug()) log.debug(wordDocument.toString());
-		return wordDocument.getLuceneDocument();
+	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
+	throws IOException, DocumentException, DocumentAccessException {
+		WordOOXMLDocument officeDocument = new WordOOXMLDocument();
+		officeDocument.init(leafResourceContext, leaf);
+		officeDocument.setFileType(WORD_FILE_TYPE);
+		officeDocument.setCssIcon("b_filetype_doc");
+
+		if (log.isDebug()) {
+			log.debug(officeDocument.toString());
+		}
+		return officeDocument.getLuceneDocument();
 	}
 
-	protected FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
-		BufferedInputStream bis = null;
-		StringBuilder buffy = new StringBuilder();
+	@Override
+	public FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
+		SlicedDocument doc = new SlicedDocument();
+		
+		InputStream stream = null;
+		ZipInputStream zip = null;
 		try {
-			bis = new BufferedInputStream(leaf.getInputStream());
-			POIXMLTextExtractor extractor = (POIXMLTextExtractor) ExtractorFactory.createExtractor(bis);
-			POIXMLDocument document = extractor.getDocument();
-			String title = getTitle(document);
-			
-			if (document instanceof XWPFDocument) {
-				XWPFDocument xDocument = (XWPFDocument) document;
-				XWPFHeaderFooterPolicy hfPolicy = xDocument.getHeaderFooterPolicy();
-				extractHeaders(buffy, hfPolicy);
-				extractContent(buffy, xDocument);
-				extractFooters(buffy, hfPolicy);
-			}
+			stream = leaf.getInputStream();
 
-			return new FileContent(title, buffy.toString());
+			zip = new ZipInputStream(stream);
+			ZipEntry entry = zip.getNextEntry();
+			while (entry != null) {
+				String name = entry.getName();
+				if(name.endsWith("word/document.xml")) {
+					OfficeDocumentHandler dh = new OfficeDocumentHandler();
+					parse(new ShieldInputStream(zip), dh);
+					doc.setContent(0, dh.getContent());
+				} else if(name.startsWith(HEADER) && name.endsWith(".xml")) {
+					String position = name.substring(HEADER.length(), name.indexOf(".xml"));
+					
+					OfficeDocumentHandler dh = new OfficeDocumentHandler();
+					parse(new ShieldInputStream(zip), dh);
+					doc.setHeader(Integer.parseInt(position), dh.getContent());
+				} else if(name.startsWith(FOOTER) && name.endsWith(".xml")) {
+					String position = name.substring(FOOTER.length(), name.indexOf(".xml"));
+					
+					OfficeDocumentHandler dh = new OfficeDocumentHandler();
+					parse(new ShieldInputStream(zip), dh);
+					doc.setFooter(Integer.parseInt(position), dh.getContent());
+				}
+				entry = zip.getNextEntry();
+			}
+		} catch (DocumentException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
 		} finally {
-			if (bis != null) {
-				bis.close();
+			FileUtils.closeSafely(zip);
+			FileUtils.closeSafely(stream);
+		}
+		return new FileContent(doc.toStringAndClear());
+	}
+	
+	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {
+		try {
+			XMLReader parser = XMLReaderFactory.createXMLReader();
+			parser.setContentHandler(handler);
+			parser.setEntityResolver(handler);
+			try {
+			parser.setFeature("http://xml.org/sax/features/validation", false);
+			} catch(Exception e) {
+				log.error("Cannot deactivate validation", e);
 			}
+			parser.parse(new InputSource(stream));
+		} catch (Exception e) {
+			throw new DocumentException("XML parser configuration error", e);
 		}
 	}
 	
-	private String getTitle(POIXMLDocument document) {
-		if(document.getProperties() != null && document.getProperties().getCoreProperties() != null) {
-			return document.getProperties().getCoreProperties().getTitle();
-		}
-		return null;
-	}
+	private class OfficeDocumentHandler extends DefaultHandler {
+		private final StringBuilder sb = new StringBuilder();
 
-	private void extractContent(StringBuilder buffy, XWPFDocument document)
-	throws IOException, XmlException {
-		// first all paragraphs
-		Iterator<XWPFParagraph> i = document.getParagraphsIterator();
-		while (i.hasNext()) {
-			XWPFParagraph paragraph = i.next();
-			CTSectPr ctSectPr = null;
-			if (paragraph.getCTP().getPPr() != null) {
-				ctSectPr = paragraph.getCTP().getPPr().getSectPr();
+		public StringBuilder getContent() {
+			return sb;
+		}
+
+		@Override
+		public void characters(char[] ch, int start, int length) {
+			if(sb .length() > 0 && sb.charAt(sb.length() - 1) != ' '){
+				sb.append(' ');
 			}
-
-			XWPFHeaderFooterPolicy headerFooterPolicy = null;
-			if (ctSectPr != null) {
-				headerFooterPolicy = new XWPFHeaderFooterPolicy(document, ctSectPr);
-				extractHeaders(buffy, headerFooterPolicy);
-			}
-
-			XWPFParagraphDecorator decorator = new XWPFCommentsDecorator(new XWPFHyperlinkDecorator(paragraph, null, true));
-
-			CTBookmark[] bookmarks = paragraph.getCTP().getBookmarkStartArray();
-			for (CTBookmark bookmark : bookmarks) {
-				buffy.append(bookmark.getName()).append(' ');
-			}
-
-			buffy.append(decorator.getText()).append(' ');
-
-			if (ctSectPr != null) {
-				extractFooters(buffy, headerFooterPolicy);
-			}
-		}
-	}
-
-	private void extractFooters(StringBuilder buffy, XWPFHeaderFooterPolicy hfPolicy) {
-		if (hfPolicy.getFirstPageFooter() != null) {
-			buffy.append(hfPolicy.getFirstPageFooter().getText()).append(' ');
-		}
-		if (hfPolicy.getEvenPageFooter() != null) {
-			buffy.append(hfPolicy.getEvenPageFooter().getText()).append(' ');
-		}
-		if (hfPolicy.getDefaultFooter() != null) {
-			buffy.append(hfPolicy.getDefaultFooter().getText()).append(' ');
-		}
-	}
-
-	private void extractHeaders(StringBuilder buffy, XWPFHeaderFooterPolicy hfPolicy) {
-		if (hfPolicy.getFirstPageHeader() != null) {
-			buffy.append(hfPolicy.getFirstPageHeader().getText()).append(' ');
-		}
-		if (hfPolicy.getEvenPageHeader() != null) {
-			buffy.append(hfPolicy.getEvenPageHeader().getText()).append(' ');
-		}
-		if (hfPolicy.getDefaultHeader() != null) {
-			buffy.append(hfPolicy.getDefaultHeader().getText()).append(' ');
+			sb.append(ch, start, length);
 		}
 	}
 }

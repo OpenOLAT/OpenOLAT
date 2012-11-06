@@ -31,6 +31,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.file.utils.ShieldInputStream;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -152,59 +153,6 @@ public class OpenDocument extends FileDocument {
 				sb.append(' ');
 			}
 			sb.append(ch, start, length);
-		}
-	}
-	
-	private class ShieldInputStream extends InputStream {
-		private final ZipInputStream delegate;
-		
-		public ShieldInputStream(ZipInputStream delegate) {
-			this.delegate = delegate;
-		}
-		
-		@Override
-		public int read() throws IOException {
-			return delegate.read();
-		}
-
-		@Override
-		public int available() throws IOException {
-			return delegate.available();
-		}
-
-		@Override
-		public void close() {
-			// do nothing
-		}
-
-		@Override
-		public synchronized void mark(int readlimit) {
-			delegate.mark(readlimit);
-		}
-
-		@Override
-		public boolean markSupported() {
-			return delegate.markSupported();
-		}
-
-		@Override
-		public int read(byte[] b, int off, int len) throws IOException {
-			return delegate.read(b, off, len);
-		}
-
-		@Override
-		public int read(byte[] b) throws IOException {
-			return delegate.read(b);
-		}
-
-		@Override
-		public synchronized void reset() throws IOException {
-			delegate.reset();
-		}
-
-		@Override
-		public long skip(long n) throws IOException {
-			return delegate.skip(n);
 		}
 	}
 }
