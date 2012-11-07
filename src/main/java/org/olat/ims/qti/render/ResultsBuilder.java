@@ -47,6 +47,8 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.Filter;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.container.AssessmentContext;
 import org.olat.ims.qti.container.DecimalVariable;
@@ -90,6 +92,7 @@ public class ResultsBuilder {
 		Element result = root.addElement("result");
 		Element extension_result = result.addElement("extension_result");
 
+		String baseUrl = ai.getResolver().getStaticsBaseURI() + "/";
 		// add items (not qti standard, but nice to display original questions ->
 		// put it into extensions)
 		//extension_result.
@@ -101,6 +104,7 @@ public class ResultsBuilder {
 				// because el_item had already a parent. 
 				// make a clone for adding to extension_result
 				Element el_item = (Element) sectionCtx.getItemContext(j).getEl_item().clone();
+				recurseMattextForMediaURLFiltering(baseUrl, el_item);
 				extension_result.add(el_item);
 			}
 		}
@@ -357,6 +361,28 @@ public class ResultsBuilder {
 			} // for response_xy
 		}
 		return res_doc;
+	}
+	
+	private void recurseMattextForMediaURLFiltering(String baseUrl, Element el) {
+		@SuppressWarnings("unchecked")
+		List<Element> children = el.elements();
+		for(int i=children.size(); i-->0; ) {
+			Element child = (Element)children.get(i);
+			recurseMattextForMediaURLFiltering(baseUrl, child);
+			
+			String name = child.getName();
+			if("mattext".equals(name)) {
+				Object cdata = child.getData();
+				if(cdata instanceof String) {
+					String content = (String)cdata;	
+					Filter urlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(baseUrl);
+					String withBaseUrl = urlFilter.filter(content);
+					if(!content.equals(withBaseUrl)) {
+						child.setText(withBaseUrl);
+					}
+				}
+			}
+		}
 	}
 
 	/**
