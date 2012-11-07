@@ -129,6 +129,11 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 		tmpPackage.cleanupTmpPackageDir();
 	}
 
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		//
+	}
+
 	/**
 	 * @see org.olat.repository.controllers.IAddController#transactionAborted()
 	 */

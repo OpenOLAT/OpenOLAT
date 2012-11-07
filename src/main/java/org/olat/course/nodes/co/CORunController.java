@@ -118,7 +118,7 @@ public class CORunController extends BasicController {
 		String grpNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
 		@SuppressWarnings("unchecked")
 		List<Long> groupKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
-		if(groupKeys != null && StringHelper.containsNonWhitespace(grpNames)) {
+		if(groupKeys == null && StringHelper.containsNonWhitespace(grpNames)) {
 			groupKeys = businessGroupService.toGroupKeys(grpNames, cgm.getCourseResource());
 		}
 		if (coachesConfigured != null && coachesConfigured.booleanValue()) {

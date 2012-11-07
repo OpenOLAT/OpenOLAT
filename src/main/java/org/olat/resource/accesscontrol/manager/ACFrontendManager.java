@@ -197,6 +197,9 @@ public class ACFrontendManager extends BasicManager implements ACService {
 	}
 	
 	public List<OLATResourceAccess> filterRepositoryEntriesWithAC(List<RepositoryEntry> repoEntries) {
+		if(repoEntries == null || repoEntries.isEmpty()) {
+			return Collections.emptyList();
+		}
 		List<Long> resourceKeys = new ArrayList<Long>();
 		for(RepositoryEntry entry:repoEntries) {
 			OLATResource ores = entry.getOlatResource();

@@ -26,18 +26,15 @@
 package org.olat.modules.scorm;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -48,6 +45,7 @@ import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -70,11 +68,8 @@ import org.olat.course.CourseModule;
  * the sco api calls to the scorm RTE backend. It provides also an navigation to
  * navigate in the tree with "pre" "next" buttons.
  */
-public class ScormAPIandDisplayController extends MainLayoutBasicController {
-	//private static final String PACKAGE = Util.getPackageName(ScormAPIandDisplayController.class);
+public class ScormAPIandDisplayController extends MainLayoutBasicController implements ConfigurationChangedListener {
 
-	// private static final String ACTIVITY_CONTENTPACKING_GET_FILE =
-	// "CONTENTPACKING_GET_FILE";
 	protected static final String LMS_INITIALIZE = "LMSInitialize";
 	protected static final String LMS_GETVALUE = "LMSGetValue";
 	protected static final String LMS_SETVALUE = "LMSSetValue";
@@ -105,9 +100,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 	 * @param lesson_mode add null for the default value or "normal", "browse" or
 	 *          "review"
 	 * @param credit_mode add null for the default value or "credit", "no-credit"
+	 * @param attemptsIncremented Is the attempts counter already incremented 
 	 */
-	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback, File cpRoot, String resourceId, String courseIdNodeId, String lesson_mode,
-			String credit_mode, boolean previewMode, boolean assessable, boolean activate, boolean fullWindow) {
+	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback,
+			File cpRoot, String resourceId, String courseIdNodeId, String lesson_mode, String credit_mode,
+			boolean previewMode, boolean assessable, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -220,7 +217,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		listenTo(columnLayoutCtr);
 		
 		//scrom API calls get handled by this mapper
-		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessable, cpRoot, scormAdapter);
+		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessable, cpRoot, scormAdapter, attemptsIncremented);
 		String scormCallbackUri = registerMapper(ureq, mapper);
 		myContent.contextPut("scormCallbackUri", scormCallbackUri+"/");
 	}
@@ -339,6 +336,17 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		
 		scormAdapter.launchItem(scormId);
 		iframectr.setCurrentURI(identifierRes);
+	}
+	
+	@Override
+	public void configurationChanged() {
+		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
+			LayoutMain3ColsBackController layoutCtr = (LayoutMain3ColsBackController)columnLayoutCtr;
+			layoutCtr.deactivate();
+		} else if(columnLayoutCtr instanceof LayoutMain3ColsController) {
+			LayoutMain3ColsController layoutCtr = (LayoutMain3ColsController)columnLayoutCtr;
+			layoutCtr.deactivate(null);
+		}
 	}
 
 	/**

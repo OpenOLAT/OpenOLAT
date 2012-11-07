@@ -127,7 +127,10 @@ public class CourseWebService {
 	@Path("groups")
 	public CourseGroupWebService getCourseGroupWebService(@PathParam("courseId") Long courseId) {
 		OLATResource ores = getCourseOLATResource(courseId);
-		return new CourseGroupWebService(ores);
+		if(ores != null) {
+			return new CourseGroupWebService(ores);
+		}
+		return null;
 	}
 
 	/**

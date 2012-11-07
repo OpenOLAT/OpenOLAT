@@ -89,6 +89,11 @@ public class CreateNewCPController extends BasicController implements IAddContro
 		secMgr.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());
 	}
 
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		//
+	}
+
 	public void transactionAborted() {
 		// Don't do nothing!
 	}

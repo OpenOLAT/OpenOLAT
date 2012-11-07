@@ -22,7 +22,6 @@ package org.olat.commons.info.notification;
 
 import java.util.List;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.notifications.PublisherData;

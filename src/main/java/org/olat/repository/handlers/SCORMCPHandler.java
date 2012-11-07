@@ -36,7 +36,6 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
@@ -117,7 +116,7 @@ public class SCORMCPHandler extends FileHandler implements RepositoryHandler {
 		}
 		//fxdiff FXOLAT-116: SCORM improvements
 		MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, wControl, true, null, cpRoot,
-				res.getResourceableId().toString(), null, "browse", "no-credit", false, false, false, false);
+				res.getResourceableId().toString(), null, "browse", "no-credit", false, false, false, false, false);
 		//fxdiff VCRP-1: access control of learn resources
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, realController);
 		return wrapper; 

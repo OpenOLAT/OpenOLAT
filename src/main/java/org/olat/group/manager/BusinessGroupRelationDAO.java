@@ -31,6 +31,7 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupShort;
@@ -320,6 +321,30 @@ public class BusinessGroupRelationDAO {
 		}
 		query.setParameter("groupKeys", groupKeys);
 		return query.getResultList();
+	}
+	
+	public List<Long> toGroupKeys(String groupNames, OLATResource resource) {
+		if(!StringHelper.containsNonWhitespace(groupNames)) return Collections.emptyList();
+		
+		String[] groupNameArr = groupNames.split(",");
+		List<String> names = new ArrayList<String>();
+		for(String name:groupNameArr) {
+			names.add(name.trim());
+		}
+		
+		if(names.isEmpty()) return Collections.emptyList();
+			
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel.group.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+		  .append(" inner join rel.group bgs")
+		  .append(" where rel.resource.key=:resourceKey and bgs.name in (:names)");
+
+		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("names", names)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return keys;
 	}
 	
 	private boolean and(StringBuilder sb, boolean and) {

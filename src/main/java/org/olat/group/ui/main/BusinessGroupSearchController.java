@@ -95,19 +95,24 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		if(showId) {
 			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", leftContainer);
 			id.setRegexMatchCheck("\\d*", "search.id.format");
+			id.setDisplaySize(28);
 		}
 
 		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", leftContainer);
 		displayName.setFocus(true);
+		displayName.setDisplaySize(28);
 		
 		owner = uifactory.addTextElement("cif_owner", "cif.owner", 255, "", leftContainer);
 		if (limitUsername != null) {
 			owner.setValue(limitUsername);
 			owner.setEnabled(false);
 		}
+		owner.setDisplaySize(28);
 		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", leftContainer);
+		description.setDisplaySize(28);
 		
 		courseTitle = uifactory.addTextElement("cif_coursetitle", "cif.coursetitle", 255, "", leftContainer);
+		courseTitle.setDisplaySize(28);
 
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
 		rightContainer.setRootForm(mainForm);

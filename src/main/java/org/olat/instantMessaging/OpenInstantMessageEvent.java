@@ -34,6 +34,8 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 public class OpenInstantMessageEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = -7767366726634855700L;
+	
 	private final String jabberId;
 	private final UserRequest ureq;
 

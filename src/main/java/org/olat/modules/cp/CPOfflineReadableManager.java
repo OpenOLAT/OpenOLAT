@@ -65,7 +65,7 @@ import org.olat.fileresource.FileResourceManager;
 public class CPOfflineReadableManager {
 	private static CPOfflineReadableManager instance = new CPOfflineReadableManager();
 
-	OLog logger = Tracing.createLoggerFor(CPOfflineReadableManager.class);
+	private static final OLog log = Tracing.createLoggerFor(CPOfflineReadableManager.class);
 	
 	private static final String DIRNAME_CPOFFLINEMENUMAT = "cp_offline_menu_mat";
 	private static final String FILENAME_START = "_START_.html";
@@ -115,9 +115,13 @@ public class CPOfflineReadableManager {
 	 *            the resulting zip-filename
 	 */
 	public void makeCPOfflineReadable(File unzippedDir, File targetZip) {
-		writeOfflineCPStartHTMLFile(unzippedDir);
-		File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + DIRNAME_CPOFFLINEMENUMAT);
-		zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
+		try {
+			writeOfflineCPStartHTMLFile(unzippedDir);
+			File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + DIRNAME_CPOFFLINEMENUMAT);
+			zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 
 	/**
@@ -132,17 +136,21 @@ public class CPOfflineReadableManager {
 	 *            the resulting zip-filename
 	 */
 	public void makeCPOfflineReadable(OLATResourceable ores, String zipName) {
-		String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
-		FileResourceManager fm = FileResourceManager.getInstance();
-		String relPath = fm.getUnzippedDirRel(ores);
-		String resId = ores.getResourceableId().toString();
+		try {
+			String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
+			FileResourceManager fm = FileResourceManager.getInstance();
+			String relPath = fm.getUnzippedDirRel(ores);
+			String resId = ores.getResourceableId().toString();
 
-		File unzippedDir = new File(repositoryHome + "/" + relPath);
-		File targetZip = new File(repositoryHome + "/" + resId + "/" + zipName);
-		File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + DIRNAME_CPOFFLINEMENUMAT);
+			File unzippedDir = new File(repositoryHome + "/" + relPath);
+			File targetZip = new File(repositoryHome + "/" + resId + "/" + zipName);
+			File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + DIRNAME_CPOFFLINEMENUMAT);
 
-		writeOfflineCPStartHTMLFile(unzippedDir);
-		zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
+			writeOfflineCPStartHTMLFile(unzippedDir);
+			zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 
 	/**
@@ -154,7 +162,7 @@ public class CPOfflineReadableManager {
 	 * @param unzippedDir
 	 *            the directory that contains the unzipped CP
 	 */
-	private void writeOfflineCPStartHTMLFile(File unzippedDir) {
+	private void writeOfflineCPStartHTMLFile(File unzippedDir) throws IOException {
 
 		/* first, we do the menu-tree */
 		File mani = new File(unzippedDir, FILENAME_IMSMANIFEST);
@@ -178,9 +186,9 @@ public class CPOfflineReadableManager {
 			String template = FileUtils.load(CPOfflineReadableManager.class.getResourceAsStream("_content/cpofflinereadable.html"), "utf-8");
 			boolean evalResult = velocityEngine.evaluate(ctx, sw, "cpexport", template);
 			if (!evalResult)
-				logger.error("Could not evaluate velocity template for CP Export");
+				log.error("Could not evaluate velocity template for CP Export");
 		} catch (IOException e) {
-			logger.error("Error while evaluating velovity template for CP Export",e);
+			log.error("Error while evaluating velovity template for CP Export",e);
 		}
 		
 		File f = new File(unzippedDir, FILENAME_START);
@@ -270,7 +278,7 @@ public class CPOfflineReadableManager {
 		boolean zipResult = ZipUtil.zip(allFilesInUnzippedDir, unzippedDir, targetZip, true);
 
 		if(!targetZip.exists()){
-			logger.warn("targetZip does not exists after zipping. zip-result is: "+ zipResult);
+			log.warn("targetZip does not exists after zipping. zip-result is: "+ zipResult);
 		}
 	}
 

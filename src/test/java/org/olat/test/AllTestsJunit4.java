@@ -102,6 +102,7 @@ import org.junit.runners.Suite;
 	org.olat.properties.PropertyTest.class,//ok
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
 	org.olat.search.service.document.file.PDFDocumentTest.class,
+	org.olat.search.service.document.file.OfficeDocumentTest.class,
 	org.olat.catalog.CatalogManagerTest.class,//ok
 	org.olat.bookmark.BookmarkManagerTest.class,//ok
 	org.olat.notifications.NotificationsManagerTest.class,//fail

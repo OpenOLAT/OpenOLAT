@@ -439,7 +439,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 				String processExpression = convertExpressionNameToKey(expression, envMapper);
 				processExpression = convertExpressionKeyToKey(expression, envMapper);
 				if(!expression.equals(processExpression)) {
-					condition.setConditionUpgraded(processExpression);
+					condition.setConditionExpression(processExpression);
 				}
 			}
 		}
@@ -483,7 +483,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		if(backwardsCompatible) {
 			condition.setEasyModeGroupAreaAccessIds(null);
 			condition.setEasyModeGroupAccessIds(null);
-			condition.setConditionUpgraded(null);
+			//condition.setConditionUpgraded(null);
 		}
 	}
 	

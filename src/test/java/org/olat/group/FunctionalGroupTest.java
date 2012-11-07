@@ -49,7 +49,6 @@ import com.thoughtworks.selenium.DefaultSelenium;
  * 
  * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
  */
-@Ignore
 @RunWith(Arquillian.class)
 public class FunctionalGroupTest {
 	
@@ -78,6 +77,8 @@ public class FunctionalGroupTest {
 		if(!initialized){
 			functionalUtil = new FunctionalUtil();
 			functionalUtil.setDeploymentUrl(deploymentUrl.toString());
+			
+			functionalGroupsSiteUtil = functionalUtil.getFunctionalGroupsSiteUtil();
 
 			functionalVOUtil = new FunctionalVOUtil(functionalUtil.getUsername(), functionalUtil.getPassword());
 
@@ -85,6 +86,7 @@ public class FunctionalGroupTest {
 		}
 	}
 	
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreate(@Drone @Tutor1 DefaultSelenium tutor0) throws IOException, URISyntaxException{
@@ -115,31 +117,36 @@ public class FunctionalGroupTest {
 		 * verify
 		 */
 	}
-	
+
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConfigureTools(){
 		
 	}
 	
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConfigureMembers(){
 		
 	}
-	
+
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConfigureAccessControl(){
 		
 	}
 	
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkBookGroup(){
 		
 	}
-	
+
+	@Ignore
 	@Test
 	@RunAsClient
 	public void checkAddUser(){

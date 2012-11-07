@@ -83,8 +83,13 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		for (String sItem:selection.getFiles()) {
 			VFSItem vfsItem = currentContainer.resolve(sItem);
 			if (vfsItem instanceof VFSLeaf) {
-				boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-				lockedFiles.addAll(checkLockedFiles((VFSLeaf)vfsItem, currentContainer, ureq.getIdentity(), isAdmin));
+				try {
+					boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+					lockedFiles.addAll(checkLockedFiles((VFSLeaf)vfsItem, currentContainer, ureq.getIdentity(), isAdmin));
+				} catch (Exception e) {
+					String name = vfsItem == null ? "NULL" : vfsItem.getName();
+					getWindowControl().setError(translator.translate("FileUnzipFailed", new String[]{name}));
+				}
 			}
 		}
 		

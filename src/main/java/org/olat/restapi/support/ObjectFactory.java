@@ -34,6 +34,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 import org.olat.restapi.support.vo.AuthenticationVO;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseNodeVO;
@@ -109,6 +110,11 @@ public class ObjectFactory {
 		vo.setDisplayname(entry.getDisplayname());
 		vo.setResourceableId(entry.getResourceableId());
 		vo.setResourceableTypeName(entry.getResourceableTypeName());
+		OLATResource resource = entry.getOlatResource();
+		if(resource != null) {
+			vo.setOlatResourceId(resource.getResourceableId());
+			vo.setOlatRresourceTypeName(resource.getResourceableTypeName());
+		}
 		return vo;
 	}
 	

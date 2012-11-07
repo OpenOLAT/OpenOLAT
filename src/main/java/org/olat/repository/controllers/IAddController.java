@@ -62,6 +62,13 @@ public interface IAddController extends Disposable {
 	public void repositoryEntryCreated(RepositoryEntry re);
 	
 	/**
+	 * Called only if the repository entry is copied
+	 * @param sourceEntry The source of the copy, the original
+	 * @param newEntry The new repository entry
+	 */
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry);
+	
+	/**
 	 * Called if the repository aborts the transaction. Do any cleanup work.
 	 */
 	public void transactionAborted();

@@ -44,6 +44,10 @@ public class VFSJavaIOFile implements VFSLeaf {
 	private final String name;
 	private final File file;
 	
+	public VFSJavaIOFile(File file) {
+		this(file.getName(), file);
+	}
+	
 	public VFSJavaIOFile(String name, File file) {
 		this.name = name;
 		this.file = file;

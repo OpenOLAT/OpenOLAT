@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.XPath;
@@ -42,7 +43,6 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.resources.IMSEntityResolver;
@@ -63,7 +63,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	 * Constructor of the content packaging tree model
 	 * @param manifest the imsmanifest.xml file
 	 */
-	CPManifestTreeModel(VFSLeaf manifest) {
+	CPManifestTreeModel(VFSLeaf manifest) throws IOException {
 		Document doc = loadDocument(manifest);
 		// get all organization elements. need to set namespace
 		rootElement = doc.getRootElement();
@@ -182,7 +182,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		return gtn;
 	}
 	
-	private Document loadDocument(VFSLeaf documentF) {
+	private Document loadDocument(VFSLeaf documentF) throws IOException {
 		InputStream in = null;
 		Document doc = null;
 		try {
@@ -190,20 +190,14 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			doc = xmlParser.parse(in, false);
 			in.close();
-		}
-		catch (IOException e) {
-			throw new OLATRuntimeException(CPManifestTreeModel.class, "could not read and parse from file " + documentF, e);
+		} catch (IOException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new IOException("could not read and parse from file " + documentF, e);
 		}
 		finally {
-			try {
-				if (in != null)
-					in.close();
-			}
-			catch (Exception e) {
-				// we did our best to close the inputStream
-			}
+			IOUtils.closeQuietly(in);
 		}
 		return doc;
 	}
-
 }
