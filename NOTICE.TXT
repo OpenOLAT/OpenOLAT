@@ -26,6 +26,9 @@ Contributors and copy right holders of openolat.org codebase since 2011:
   Armin Blawitzki, Stefan Köber, Sven Morgener
 - VCRP Virtueller Campus Rheinland-Pfalz [http://www.vcrp.de]
   Stephan Clemenz
+- Rain and Hail Agricultural Insurance [http://www.rainhail.com]
+  Brooke Hedrick
+  
 
 OpenOLAT logo and icons
 -----------------------------------------------------------------------
