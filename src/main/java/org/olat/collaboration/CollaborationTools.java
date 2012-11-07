@@ -89,6 +89,8 @@ import org.olat.modules.fo.ForumUIFactory;
 import org.olat.modules.fo.archiver.ForumArchiveManager;
 import org.olat.modules.fo.archiver.formatters.ForumFormatter;
 import org.olat.modules.fo.archiver.formatters.ForumRTFFormatter;
+import org.olat.modules.openmeetings.OpenMeetingsModule;
+import org.olat.modules.openmeetings.ui.OpenMeetingsRunController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
@@ -136,6 +138,7 @@ public class CollaborationTools implements Serializable {
 	private final static String FALSE = "false";
 	public final static String KEY_FORUM = "forumKey";
 	public final static String KEY_PORTFOLIO = "portfolioMapKey";
+	public final static String KEY_OPENMEETINGS = "openMeetingsKey";
 
 	/**
 	 * <code>PROP_CAT_BG_COLLABTOOLS</code> identifies properties concerning
@@ -175,6 +178,11 @@ public class CollaborationTools implements Serializable {
 	 * constant used to identify the portfolio for a BuddyGroup
 	 */
 	public final static String TOOL_PORTFOLIO = "hasPortfolio";
+	
+	/**
+	 * constant used to identify the open meetings for a group
+	 */
+	public final static String TOOL_OPENMEETINGS = "hasOpenMeetings";
 	
 	/**
 	 * public for group test only, do not use otherwise convenience, helps
@@ -240,6 +248,11 @@ public class CollaborationTools implements Serializable {
 		if (portfolioModule.isEnabled()) {
 			toolArr.add(TOOL_PORTFOLIO);
 		}	
+		OpenMeetingsModule openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
+		if(openMeetingsModule.isEnabled()) {
+			toolArr.add(TOOL_OPENMEETINGS);
+		}
+		
 		TOOLS = ArrayHelper.toArray(toolArr);
 	}
 
@@ -551,6 +564,11 @@ public class CollaborationTools implements Serializable {
 
 		EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
 		return EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
+	}
+	
+	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group) {
+		OpenMeetingsRunController runController = new OpenMeetingsRunController(ureq, wControl, group, null, null, null, true);
+		return runController;
 	}
 
 	/**

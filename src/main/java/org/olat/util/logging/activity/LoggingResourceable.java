@@ -255,6 +255,22 @@ public class LoggingResourceable implements ILoggingResourceable {
 	}
 	
 	/**
+	 * Wraps OpenMeetings into a LoggingResourceable
+	 * @param olatResourceable the meeting
+	 * @return a LoggingResourceable representing openmeetings
+	 */
+	public static LoggingResourceable wrapOpenMeetingsOres(OLATResourceable olatResourceable) {
+		if (olatResourceable==null) {
+			throw new IllegalArgumentException("olatResourceable must not be null");
+		}
+		if (olatResourceable.equals(BusinessGroupMainRunController.ORES_TOOLOPENMEETINGS)) {
+			return new LoggingResourceable(olatResourceable, OlatResourceableType.openmeetings, "openmeetings", "0", "", false);
+		} else {
+			return wrap(olatResourceable, OlatResourceableType.openmeetings);
+		}
+	}
+	
+	/**
 	 * General wrapper for an OlatResourceable - as it's not obvious of what type that 
 	 * OlatResourceable is (in terms of being able to later compare it against the businessPath etc)
 	 * an ILoggingResourceableType needs to be passed to this method as well.
