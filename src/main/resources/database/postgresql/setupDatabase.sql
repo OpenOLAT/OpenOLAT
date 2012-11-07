@@ -196,9 +196,9 @@ create table o_user (
    language varchar(30),
    fontsize varchar(10),
    notification_interval varchar(16),
-   receiverealmail varchar(16),
    presencemessagespublic bool,
    informsessiontimeout bool not null,
+   receiverealmail varchar(16),
    primary key (user_id)
 );
 create table o_userproperty (
