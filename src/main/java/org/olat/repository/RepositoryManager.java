@@ -75,6 +75,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.GroupLoggingAction;
+import org.olat.group.context.BGContext2Resource;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -193,15 +194,6 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
-	 * Update repo entry.
-	 * @param re
-	 */
-	/*public void updateRepositoryEntry(RepositoryEntry re) {
-		re.setLastModified(new Date());
-		DBFactory.getInstance().updateObject(re);
-	}*/
-	
-	/**
 	 * Delete repo entry.
 	 * @param re
 	 */
@@ -278,6 +270,8 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public void deleteRepositoryEntryAndBasesecurity(RepositoryEntry entry) {
 		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
+		//delete all policies
+		BaseSecurityManager.getInstance().deletePolicies(entry.getOlatResource());
 		DBFactory.getInstance().deleteObject(entry);
 		OLATResourceManager.getInstance().deleteOLATResourceable(entry);
 		SecurityGroup ownerGroup = entry.getOwnerGroup();
@@ -387,6 +381,9 @@ public class RepositoryManager extends BasicManager {
 		logDebug("deleteRepositoryEntry after load entry.getOwnerGroup()=" + entry.getOwnerGroup());
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
 		OLATResource ores = entry.getOlatResource();
+		//delete old context
+		deleteBGcontext(ores);
+		
 		if (!handler.readyToDelete(ores, ureq, wControl)) {
 			return false;
 		}
@@ -402,14 +399,31 @@ public class RepositoryManager extends BasicManager {
 		CatalogManager.getInstance().resourceableDeleted(entry);
 		// delete the entry
 		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
-		logDebug("deleteRepositoryEntry after reload entry=" + entry);
-		deleteRepositoryEntryAndBasesecurity(entry);
 		
 		// inform handler to do any cleanup work... handler must delete the
 		// referenced resourceable aswell.
 		handler.cleanupOnDelete(entry.getOlatResource());
+		
+		logDebug("deleteRepositoryEntry after reload entry=" + entry);
+		deleteRepositoryEntryAndBasesecurity(entry);
+
 		logDebug("deleteRepositoryEntry Done");
 		return true;
+	}
+	
+	private void deleteBGcontext(OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(BGContext2Resource.class.getName())
+		  .append(" as ctxt where ctxt.resource.key=:resourceKey");
+
+		int rowContextDeleted = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString())
+			.setParameter("resourceKey", resource.getKey())
+			.executeUpdate();
+
+		if(log.isDebug()) {
+			log.debug("Context deleted: " + rowContextDeleted);
+		}
 	}
 	
 	/**

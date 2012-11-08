@@ -673,7 +673,22 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			deletePolicy(p);
 		}
 	}
-	
+
+	@Override
+	public void deletePolicies(OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(PolicyImpl.class.getName()).append(" as poi ")
+		  .append(" where poi.olatResource.key=:resourceKey");
+
+		int rowDeleted = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("resourceKey", resource.getKey())
+				.executeUpdate();
+		if(isLogDebugEnabled()) {
+			logDebug(rowDeleted + " policies deleted");
+		}
+	}
+
 	/**
 	 * 
 	 * @see org.olat.basesecurity.BaseSecurity#createAndPersistInvitation()

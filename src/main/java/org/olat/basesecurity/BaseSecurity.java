@@ -430,6 +430,11 @@ public interface BaseSecurity {
 	 */
 	public void deletePolicy(SecurityGroup secGroup, String permission, OLATResource olatResourceable);
 	
+	/**
+	 * Delete all policies of a resource
+	 */
+	public void deletePolicies(OLATResource olatResourceable);
+	
 	public boolean deletePolicies(Collection<SecurityGroup> secGroups, Collection<OLATResource> resources);
 
 	// some queries mainly for the group/groupcontext management

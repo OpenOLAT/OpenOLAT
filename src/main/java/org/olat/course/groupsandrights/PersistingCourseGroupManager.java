@@ -259,6 +259,12 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public void deleteCourseGroupmanagement() {
 		//delete permission group to course
 		businessGroupService.removeResource(courseResource);
+		//delete areas
+		List<BGArea> areas = getAllAreas();
+		for(BGArea area:areas) {
+			areaManager.deleteBGArea(area);
+		}
+		
 		logAudit("Deleting course groupmanagement for " + courseResource.toString());
 	}
 
