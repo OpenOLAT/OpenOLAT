@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.RoomType;
@@ -87,7 +88,11 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		moderationModeValues = new String[]{ translate("room.moderation.yes"), translate("room.moderation.no") };
 		
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
-		room = openMeetingsManager.getRoom(group, ores, subIdentifier);
+		try {
+			room = openMeetingsManager.getRoom(group, ores, subIdentifier);
+		} catch (OpenMeetingsException e) {
+			showError(e.getType().i18nKey());
+		}
 		initForm(ureq);
 	}
 

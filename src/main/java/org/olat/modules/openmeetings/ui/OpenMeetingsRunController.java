@@ -21,16 +21,21 @@ package org.olat.modules.openmeetings.ui;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
-import org.olat.modules.openmeetings.manager.OpenMeetingsNotAvailableException;
+import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 
 /**
  * 
@@ -40,13 +45,17 @@ import org.olat.modules.openmeetings.manager.OpenMeetingsNotAvailableException;
  */
 public class OpenMeetingsRunController extends FormBasicController {
 
+	private FormLink openLink;
+	
 	private final Long roomId;
+	private final OpenMeetingsModule openMeetingsModule;
 	private final OpenMeetingsManager openMeetingsManager;
 
 	public OpenMeetingsRunController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
 			String subIdentifier, String resourceName, boolean admin) {
-		super(ureq, wControl);
-		
+		super(ureq, wControl, "room");
+
+		openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		roomId = openMeetingsManager.getRoomId(group, ores, subIdentifier);
 		
@@ -55,10 +64,23 @@ public class OpenMeetingsRunController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("open.room", "open.room", buttonsContainer);
-		
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			if(!openMeetingsModule.isEnabled()) {
+				layoutCont.contextPut("disabled", Boolean.TRUE);
+			} else if(roomId == null) {
+				layoutCont.contextPut("norroom", Boolean.TRUE);
+			} else {
+
+				FormLayoutContainer roomCont = FormLayoutContainer.createDefaultFormLayout("openroom", getTranslator());
+				layoutCont.add(roomCont);
+				
+				String name = "Hello";
+				uifactory.addStaticTextElement("room.name", "room.name", name, roomCont);
+				openLink = uifactory.addFormLink("open", "open.room", null, roomCont, Link.BUTTON);
+				((Link)openLink.getComponent()).setTarget("openmeetings");
+			}
+		}
 	}
 
 	@Override
@@ -72,15 +94,27 @@ public class OpenMeetingsRunController extends FormBasicController {
 			doOpenRoom(ureq);
 		}
 	}
-	
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == openLink) {
+			doOpenRoom(ureq);
+		} else {
+			super.formInnerEvent(ureq, source, event);
+		}
+	}
+
 	private void doOpenRoom(UserRequest ureq) {	
+		if(roomId == null && roomId.longValue() <= 0) {
+		
+		}
 		try {
-			String securedHash = openMeetingsManager.setUser(getIdentity(), roomId);
+			String securedHash = openMeetingsManager.setUserToRoom(getIdentity(), roomId, true);
 			String url = openMeetingsManager.getURL(getIdentity(), roomId.longValue(), securedHash, getLocale());
 			RedirectMediaResource redirect = new RedirectMediaResource(url);
 			ureq.getDispatchResult().setResultingMediaResource(redirect);
-		} catch (Exception e) {
-			showError(OpenMeetingsNotAvailableException.I18N_KEY);
+		} catch (OpenMeetingsException e) {
+			showError(e.getType().i18nKey());
 		} 
 	}
 }

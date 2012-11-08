@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openmeetings.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,46 +30,48 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.openmeetings.OpenMeetingsModule;
+import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 
 /**
  * 
- * Initial date: 06.11.2012<br>
+ * Initial date: 08.11.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OpenMeetingsAdminController extends BasicController  {
-
-	private final OpenMeetingsModule openMeetingsModule;
-
-	private final Link accountLink, roomsLink;
+public class OpenMeetingsAdminRoomInfosController extends BasicController {
+	
+	private final Link infosLink, membersLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
-	private OpenMeetingsConfigurationController configController;
-	private OpenMeetingsAdminRoomsController roomsController;
+	private OpenMeetingsAdminRoomRawInfosController infosController;
+	private OpenMeetingsAdminRoomMembersController membersController;
 	
-	public OpenMeetingsAdminController(UserRequest ureq, WindowControl wControl) {
+	private final OpenMeetingsRoom room;
+	
+	public OpenMeetingsAdminRoomInfosController(UserRequest ureq, WindowControl wControl, OpenMeetingsRoom room) {
 		super(ureq, wControl);
 		
-		openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
-		mainVC = createVelocityContainer("openmeetings_admin");
+		this.room = room;
+		
+		mainVC = createVelocityContainer("room_admin");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		accountLink = LinkFactory.createLink("openmeetings.account", mainVC, this);
-		segmentView.addSegment(accountLink, true);
+		infosLink = LinkFactory.createLink("room.infos", mainVC, this);
+		segmentView.addSegment(infosLink, true);
 		
-		roomsLink = LinkFactory.createLink("rooms.title", mainVC, this);
-		segmentView.addSegment(roomsLink, false);
+		membersLink = LinkFactory.createLink("users", mainVC, this);
+		segmentView.addSegment(membersLink, false);
 		
-		doOpenAccountSettings(ureq);
+		doOpenInfos(ureq);
 		
 		putInitialPanel(mainVC);
+		
 	}
 	
 	@Override
 	protected void doDispose() {
-		//auto-disposed
+		//
 	}
 
 	@Override
@@ -80,28 +81,28 @@ public class OpenMeetingsAdminController extends BasicController  {
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == accountLink) {
-					doOpenAccountSettings(ureq);
-				} else if (clickedLink == roomsLink){
-					doOpenRooms(ureq);
+				if (clickedLink == infosLink) {
+					doOpenInfos(ureq);
+				} else if (clickedLink == membersLink){
+					doOpenMembers(ureq);
 				}
 			}
 		}
 	}
 	
-	private void doOpenAccountSettings(UserRequest ureq) {
-		if(configController == null) {
-			configController = new OpenMeetingsConfigurationController(ureq, getWindowControl(), openMeetingsModule);
-			listenTo(configController);
+	private void doOpenInfos(UserRequest ureq) {
+		if(infosController == null) {
+			infosController = new OpenMeetingsAdminRoomRawInfosController(ureq, getWindowControl(), room);
+			listenTo(infosController);
 		} 
-		mainVC.put("segmentCmp", configController.getInitialComponent());
+		mainVC.put("segmentCmp", infosController.getInitialComponent());
 	}
-	
-	private void doOpenRooms(UserRequest ureq) {
-		if(roomsController == null) {
-			roomsController = new OpenMeetingsAdminRoomsController(ureq, getWindowControl());
-			listenTo(roomsController);
+
+	private void doOpenMembers(UserRequest ureq) {
+		if(membersController == null) {
+			membersController = new OpenMeetingsAdminRoomMembersController(ureq, getWindowControl(), room);
+			listenTo(membersController);
 		} 
-		mainVC.put("segmentCmp", roomsController.getInitialComponent());
+		mainVC.put("segmentCmp", membersController.getInitialComponent());
 	}
 }

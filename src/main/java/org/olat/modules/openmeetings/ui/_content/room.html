@@ -1,0 +1,7 @@
+#if($disabled)
+ <div class="b_warning">$r.translate("openmeetings.disabled.error")</div>
+#elseif($noroom)
+ <div class="b_warning">$r.translate("room.notfound.error")</div>
+#else
+	$r.render("openroom")
+#end

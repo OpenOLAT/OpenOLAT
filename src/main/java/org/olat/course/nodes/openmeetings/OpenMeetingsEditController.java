@@ -37,7 +37,7 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.OpenMeetingsCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
+import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 
 /**
  * 
@@ -54,9 +54,9 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 	private VelocityContainer editVc;
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
-	private OpenMeetingsRoomEditController editForm;
 
 	private final OpenMeetingsCourseNode courseNode;
+	
 
 	public OpenMeetingsEditController(UserRequest ureq, WindowControl wControl, OpenMeetingsCourseNode courseNode,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
@@ -69,13 +69,15 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 				accessCondition, "accessabilityConditionForm", AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),
 				userCourseEnv);
 		listenTo(accessibilityCondContr);
-
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
-		editForm = new OpenMeetingsRoomEditController(ureq, wControl, null, ores, courseNode.getIdent(), course.getCourseTitle(), true);
-		listenTo(editForm);
 		
 		editVc = createVelocityContainer("edit");
-		editVc.put("editRooms", editForm.getInitialComponent());
+		try {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
+			Controller editForm = new OpenMeetingsEditFormController(ureq, getWindowControl(), ores, courseNode, course.getCourseTitle());
+			editVc.put("editRooms", editForm.getInitialComponent());
+		} catch (OpenMeetingsException e) {
+			editVc.contextPut("error", e.getType().i18nKey());
+		}
 	}
 
 	@Override
@@ -90,10 +92,7 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 
 	@Override
 	protected void doDispose() {
-		if(editForm != null) {
-			removeAsListenerAndDispose(editForm);
-			editForm = null;
-		}
+		//
 	}
 
 	@Override
@@ -109,8 +108,6 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 				courseNode.setPreConditionAccess(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == editForm) {
-			//nothing to do
 		}
 	}
 
@@ -120,4 +117,5 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), editVc);
 	}
+
 }

@@ -19,12 +19,14 @@
  */
 package org.olat.modules.openmeetings.manager;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
+import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 
 /**
  * 
@@ -34,21 +36,46 @@ import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
  */
 public interface OpenMeetingsManager {
 	
+	public String getOpenOLATExternalType();
+	
 	
 	public String getURL(Identity identity, long roomId, String securedHash, Locale language);
 	
-	public String setUser(Identity identity, long roomId);
+	public String setUserToRoom(Identity identity, long roomId, boolean moderator)
+	throws OpenMeetingsException;
 	
 	public Long getRoomId(BusinessGroup group, OLATResourceable ores, String subIdentifier);
+	
+	public List<OpenMeetingsRoom> getOpenOLATRooms();
 
-	public OpenMeetingsRoom getRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier);
+	public OpenMeetingsRoom getRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier)
+	throws OpenMeetingsException;
 	
 	public OpenMeetingsRoom addRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room);
 	
 	public OpenMeetingsRoom updateRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room);
 	
+	public boolean deleteRoom(OpenMeetingsRoom room);
 	
-	public boolean checkConnection(String url, String login, String password) throws OpenMeetingsNotAvailableException;
+	
+	public List<OpenMeetingsUser> getUsersOf(OpenMeetingsRoom room);
+	
+	/**
+	 * Kick all users from a room
+	 * @param room
+	 * @return
+	 */
+	public boolean removeUsersFromRoom(OpenMeetingsRoom room);
+	
+	/**
+	 * Kick user of its meetings
+	 * @param publicSID
+	 * @return
+	 */
+	public boolean removeUser(String publicSID);
+	
+	
+	public boolean checkConnection(String url, String login, String password) throws OpenMeetingsException;
 	
 	public void deleteAll(BusinessGroup group, OLATResourceable ores, String subIdentifier);
 

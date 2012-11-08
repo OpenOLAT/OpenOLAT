@@ -1,2 +1,5 @@
-
-$r.render('editRooms')
+#if($error)
+	<div class="b_warning">$r.translate($error)</div>
+#elseif($r.available("editRooms"))
+	$r.render("editRooms")
+#end

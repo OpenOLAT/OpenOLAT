@@ -38,7 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
-import org.olat.modules.openmeetings.manager.OpenMeetingsNotAvailableException;
+import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 
 /**
  * 
@@ -97,6 +97,10 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 			loginEl = uifactory.addTextElement("openmeetings-login", "option.adminlogin", 32, login, moduleFlc);
 			String password = openMeetingsModule.getAdminPassword();
 			passwordEl = uifactory.addPasswordElement("openmeetings-password", "option.adminpassword", 32, password, moduleFlc);
+			
+			
+			String externalType = openMeetingsManager.getOpenOLATExternalType();
+			uifactory.addStaticTextElement("om.externaltype", "openolat.externaltype", externalType, moduleFlc);
 	
 			//buttons save - check
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
@@ -146,8 +150,8 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 					urlEl.setErrorKey("error.customerDoesntExist", null);
 					allOk = false;
 				}
-			} catch (OpenMeetingsNotAvailableException e) {
-				showError(OpenMeetingsNotAvailableException.I18N_KEY);
+			} catch (OpenMeetingsException e) {
+				showError(OpenMeetingsException.SERVER_NOT_I18N_KEY);
 			}
 		}
 		
@@ -218,8 +222,8 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 		} catch (NumberFormatException e) {
 			showError("error.customer.invalid");
 			return false;
-		} catch (OpenMeetingsNotAvailableException e) {
-			showError(OpenMeetingsNotAvailableException.I18N_KEY);
+		} catch (OpenMeetingsException e) {
+			showError(OpenMeetingsException.SERVER_NOT_I18N_KEY);
 			return false;
 		}
 	}

@@ -35,19 +35,22 @@ import java.util.Map;
  * @author gnaegi
  */
 public class ModuleConfiguration implements Serializable {
+
+	private static final long serialVersionUID = 5997068149344924126L;
+
 	/**
 	 * Configuration flag for the configuration version. The configuration version
 	 * is stored using an Integer in the module configuration. 
 	 */
 	private static final String CONFIG_VERSION = "configversion";
 
-	private Map config;
+	private Map<String,Object> config;
 	
 	/**
 	 * Default constructor.
 	 */
 	public ModuleConfiguration() {
-		config = new HashMap();
+		config = new HashMap<String,Object>();
 	}
 
 	/**

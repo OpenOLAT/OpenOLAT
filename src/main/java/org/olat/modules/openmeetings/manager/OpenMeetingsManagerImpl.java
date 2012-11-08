@@ -20,7 +20,13 @@
 package org.olat.modules.openmeetings.manager;
 
 import java.io.StringWriter;
+import java.net.ConnectException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -34,28 +40,44 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
+import org.olat.modules.openmeetings.model.OpenMeetingsUser;
+import org.olat.modules.openmeetings.model.RoomReturnInfo;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
+import org.openmeetings.app.conference.session.xsd.RoomClient;
 import org.openmeetings.app.persistence.beans.rooms.xsd.Rooms;
 import org.openmeetings.axis.services.AddRoomWithModerationAndExternalType;
 import org.openmeetings.axis.services.AddRoomWithModerationAndExternalTypeResponse;
+import org.openmeetings.axis.services.DeleteRoom;
+import org.openmeetings.axis.services.DeleteRoomResponse;
 import org.openmeetings.axis.services.GetRoomById;
 import org.openmeetings.axis.services.GetRoomByIdResponse;
+import org.openmeetings.axis.services.GetRoomWithClientObjectsById;
+import org.openmeetings.axis.services.GetRoomWithClientObjectsByIdResponse;
 import org.openmeetings.axis.services.GetRoomsPublic;
 import org.openmeetings.axis.services.GetRoomsPublicResponse;
+import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;
+import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndTypeResponse;
 import org.openmeetings.axis.services.GetSession;
 import org.openmeetings.axis.services.GetSessionResponse;
+import org.openmeetings.axis.services.KickUser;
+import org.openmeetings.axis.services.KickUserByPublicSID;
+import org.openmeetings.axis.services.KickUserByPublicSIDResponse;
+import org.openmeetings.axis.services.KickUserResponse;
 import org.openmeetings.axis.services.LoginUser;
 import org.openmeetings.axis.services.LoginUserResponse;
 import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURL;
 import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURLResponse;
 import org.openmeetings.axis.services.UpdateRoomWithModeration;
 import org.openmeetings.axis.services.UpdateRoomWithModerationResponse;
+import org.openmeetings.axis.services.xsd.RoomReturn;
+import org.openmeetings.axis.services.xsd.RoomUser;
 import org.openmeetings.stubs.RoomServiceStub;
 import org.openmeetings.stubs.UserServiceStub;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +112,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public void init() {
 		xStream = XStreamHelper.createXStreamInstance();
 		xStream.alias("room", OpenMeetingsRoom.class);
+		xStream.omitField(OpenMeetingsRoom.class, "property");
+		xStream.omitField(OpenMeetingsRoom.class, "numOfUsers");
 		
 		userDeletionManager.registerDeletableUserData(this);
 		
@@ -107,6 +131,92 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	@Override
+	public List<OpenMeetingsRoom> getOpenOLATRooms() {
+		try {
+			String adminSID = adminLogin();
+			RoomServiceStub roomWs = getRoomWebService();
+
+			GetRoomsWithCurrentUsersByListAndType getRooms = new GetRoomsWithCurrentUsersByListAndType();
+			getRooms.setAsc(true);
+			getRooms.setExternalRoomType(getOpenOLATExternalType());
+			getRooms.setOrderby("name");
+			getRooms.setStart(0);
+			getRooms.setMax(2000);
+			getRooms.setSID(adminSID);
+			
+			Map<Long,RoomReturnInfo> realRooms = new HashMap<Long,RoomReturnInfo>();
+			
+			//get rooms on openmeetings
+			GetRoomsWithCurrentUsersByListAndTypeResponse getRoomsResponse = roomWs.getRoomsWithCurrentUsersByListAndType(getRooms);
+			RoomReturn[] roomsRet = getRoomsResponse.get_return();
+			if(roomsRet != null) {
+				for(RoomReturn roomRet:roomsRet) {
+					RoomReturnInfo info = new RoomReturnInfo();
+					info.setName(roomRet.getName());
+					info.setRoomId(roomRet.getRoom_id());
+					int numOfUsers = 0;
+					if(roomRet.getRoomUser() != null) {
+						for(RoomUser user:roomRet.getRoomUser()) {
+							if(user != null) {
+								numOfUsers++;
+							}
+						}
+					}
+					info.setNumOfUsers(numOfUsers);
+					realRooms.put(new Long(roomRet.getRoom_id()), info);
+				}
+			}
+
+			//get properties saved
+			List<Property> props = getProperties();
+			Map<Long,String> roomIdToResources = getResourceNames(props);
+
+			
+			List<OpenMeetingsRoom> rooms = new ArrayList<OpenMeetingsRoom>();
+			for(Property prop:props) {
+				
+				Long roomId = new Long(prop.getLongValue());
+				RoomReturnInfo infos = realRooms.get(roomId);
+				if(infos != null) {
+					OpenMeetingsRoom room = deserializeRoom(prop.getTextValue());
+					room.setProperty(prop);
+					room.setName(infos.getName());
+					room.setNumOfUsers(infos.getNumOfUsers());
+					String resourceName = roomIdToResources.get(roomId);
+					if(resourceName != null) {
+						room.setResourceName(resourceName);
+					}
+					rooms.add(room);
+				}
+			}
+			return rooms;
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	private Map<Long,String> getResourceNames(List<Property> properties) {
+		Map<Long,String> roomIdToResourceName = new HashMap<Long,String>();
+		
+		List<ResourceRoom> resources = new ArrayList<ResourceRoom>();
+		for(Property prop:properties) {
+			Long roomId = prop.getLongValue();
+			if(prop.getGrp() != null) {
+				roomIdToResourceName.put(roomId, prop.getGrp().getName());
+			} else {
+				
+				ResourceRoom rroom = new ResourceRoom();
+				rroom.setRoomId(roomId);
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(prop.getResourceTypeName(), prop.getResourceTypeId());
+				rroom.setResource(ores);
+			}
+		}
+		return roomIdToResourceName;
+		
+	}
+
+	@Override
 	public String getURL(Identity identity, long roomId, String securedHash, Locale locale) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(openMeetingsModule.getOpenMeetingsURI().toString());
@@ -121,15 +231,15 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		return sb.toString();
 	}
 	
-	
 	@Override
-	public String setUser(Identity identity, long roomId) {
+	public String setUserToRoom(Identity identity, long roomId, boolean moderator)
+	throws OpenMeetingsException {
 		try {
 			UserServiceStub userWs = getUserWebService();
 			String adminSessionId = adminLogin();
 
 			SetUserObjectAndGenerateRoomHashByURL userObj = new SetUserObjectAndGenerateRoomHashByURL();
-			userObj.setBecomeModeratorAsInt(0);
+			userObj.setBecomeModeratorAsInt(moderator ? 1 : 0);
 			userObj.setEmail(identity.getUser().getProperty(UserConstants.EMAIL, null));
 			userObj.setExternalUserId(getOpenOLATUserExternalId(identity));
 			userObj.setExternalUserType(getOpenOLATExternalType());
@@ -146,12 +256,13 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			return hashedUrl;
 		} catch (Exception e) {
 			log.error("", e);
-			return null;
+			throw translateException(e, 0);
 		}
 	}
 
 	@Override
-	public OpenMeetingsRoom getRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier) {
+	public OpenMeetingsRoom getRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier) 
+	throws OpenMeetingsException{
 		Property prop = getProperty(group, ores, subIdentifier);
 		if(prop == null) {
 			return null;
@@ -164,33 +275,51 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 				OpenMeetingsRoom room = deserializeRoom(prop.getTextValue());
 				getRoomById(sessionId, room, roomId.longValue());
 				return room;
-			} catch (Exception e) {
-				log.error("", e);
+			} catch(OpenMeetingsException e) {
+				throw e;
 			}
 		}
-		
 		return null;
 	}
 	
-	private OpenMeetingsRoom getRoomById(String sid, OpenMeetingsRoom room, long roomId) throws Exception {
-		RoomServiceStub roomWs = getRoomWebService();
-		GetRoomById getRoomById = new GetRoomById();
-		getRoomById.setSID(sid);
-		getRoomById.setRooms_id(roomId);
-		GetRoomByIdResponse getRoomResponse = roomWs.getRoomById(getRoomById);
-		Rooms omRoom = getRoomResponse.get_return();
-		if(omRoom != null) {
-			room.setComment(omRoom.getComment());
-			room.setModerated(omRoom.getIsModeratedRoom());
-			room.setName(omRoom.getName());
-			room.setRoomId(omRoom.getRooms_id());
-			room.setSize(omRoom.getNumberOfPartizipants());
-			room.setType(omRoom.getRoomtype().getRoomtypes_id());
-			return room;
-		} else {
-			return null;
+	private OpenMeetingsRoom getRoomById(String sid, OpenMeetingsRoom room, long roomId)
+	throws OpenMeetingsException {
+		try {
+			RoomServiceStub roomWs = getRoomWebService();
+			GetRoomById getRoomById = new GetRoomById();
+			getRoomById.setSID(sid);
+			getRoomById.setRooms_id(roomId);
+			GetRoomByIdResponse getRoomResponse = roomWs.getRoomById(getRoomById);
+			Rooms omRoom = getRoomResponse.get_return();
+			if(omRoom != null) {
+				room.setComment(omRoom.getComment());
+				room.setModerated(omRoom.getIsModeratedRoom());
+				room.setName(omRoom.getName());
+				room.setRoomId(omRoom.getRooms_id());
+				room.setSize(omRoom.getNumberOfPartizipants());
+				room.setType(omRoom.getRoomtype().getRoomtypes_id());
+				return room;
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			throw translateException(e, 0);
 		}
 	}
+	
+	private OpenMeetingsException translateException(Exception e, long ret) {
+		OpenMeetingsException.Type type = OpenMeetingsException.Type.unkown;
+		if(e instanceof AxisFault) {
+			Throwable cause = e.getCause();
+			if(cause instanceof ConnectException
+					&& cause.getMessage() != null
+					&& cause.getMessage().contains("onnection refused")) {
+				type = OpenMeetingsException.Type.serverNotAvailable;
+			}
+		}
+		return new OpenMeetingsException(e, type);
+	}
+	
 
 	@Override
 	public OpenMeetingsRoom addRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room) {
@@ -235,7 +364,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		return identity.getName() + "@" + WebappHelper.getInstanceId();
 	}
 	
-	private String getOpenOLATExternalType() {
+	@Override
+	public String getOpenOLATExternalType() {
 		return "openolat_" + WebappHelper.getInstanceId();
 	}
 
@@ -271,6 +401,130 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		}
 	}
 	
+	@Override
+	public boolean deleteRoom(OpenMeetingsRoom room) {
+		try {
+			String adminSID = adminLogin();
+			RoomServiceStub roomWs = getRoomWebService();
+			DeleteRoom getRoomCl = new DeleteRoom();
+			getRoomCl.setRooms_id(room.getRoomId());
+			getRoomCl.setSID(adminSID);
+			DeleteRoomResponse deleteRoomResponse = roomWs.deleteRoom(getRoomCl);
+
+			long ret = deleteRoomResponse.get_return();
+			boolean ok = ret > 0;
+			if(ok && room.getProperty() != null) {
+				propertyManager.deleteProperty(room.getProperty());
+			}
+			return ok;
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+
+	@Override
+	public List<OpenMeetingsUser> getUsersOf(OpenMeetingsRoom room) {
+		try {
+			String adminSID = adminLogin();
+			RoomServiceStub roomWs = getRoomWebService();
+			GetRoomWithClientObjectsById getRoomCl = new GetRoomWithClientObjectsById();
+			getRoomCl.setRooms_id(room.getRoomId());
+			getRoomCl.setSID(adminSID);
+			GetRoomWithClientObjectsByIdResponse getRoomClResponse = roomWs.getRoomWithClientObjectsById(getRoomCl);
+
+			RoomReturn roomClRet = getRoomClResponse.get_return();
+			if(roomClRet != null) {
+				RoomUser[] userArr = roomClRet.getRoomUser();
+				return convert(userArr);
+			}
+			return Collections.emptyList();
+		} catch (Exception e) {
+			log.error("", e);
+			return Collections.emptyList();
+		}
+	}
+	
+	private List<OpenMeetingsUser> convert(RoomUser[] clients) {
+		List<OpenMeetingsUser> users = new ArrayList<OpenMeetingsUser>();
+		if(clients != null) {
+			for(RoomUser client:clients) {
+				OpenMeetingsUser user = convert(client);
+				if(user != null) {
+					users.add(user);
+				}
+			}
+		}
+		return users;
+	}
+	
+	private OpenMeetingsUser convert(RoomUser client) {
+		if(client == null) {
+			return null;
+		}
+		OpenMeetingsUser user = new OpenMeetingsUser();
+		user.setPublicSID(client.getPublicSID());
+		user.setFirstName(client.getFirstname());
+		user.setLastName(client.getLastname());
+		return user;
+	}
+	
+	private List<OpenMeetingsUser> convert(RoomClient[] clients) {
+		List<OpenMeetingsUser> users = new ArrayList<OpenMeetingsUser>();
+		for(RoomClient client:clients) {
+			OpenMeetingsUser user = convert(client);
+			if(user != null) {
+				users.add(user);
+			}
+		}
+		return users;
+	}
+	
+	private OpenMeetingsUser convert(RoomClient client) {
+		if(client == null) {
+			return null;
+		}
+		OpenMeetingsUser user = new OpenMeetingsUser();
+		user.setPublicSID(client.getPublicSID());
+		user.setFirstName(client.getFirstname());
+		user.setLastName(client.getLastname());
+		user.setExternalUserID(client.getExternalUserId());
+		user.setExternalUserType(client.getExternalUserType());
+		return user;
+	}
+
+	@Override
+	public boolean removeUser(String publicSID) {
+		try {
+			String adminSID = adminLogin();
+			UserServiceStub userWs = getUserWebService();
+			KickUserByPublicSID kickUser = new KickUserByPublicSID();
+			kickUser.setSID(adminSID);
+			kickUser.setPublicSID(publicSID);
+			KickUserByPublicSIDResponse kickResponse = userWs.kickUserByPublicSID(kickUser);
+			return kickResponse.get_return();
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean removeUsersFromRoom(OpenMeetingsRoom room) {	
+		try {
+			String adminSID = adminLogin();
+			RoomServiceStub roomWs = getRoomWebService();
+			KickUser kickUser = new KickUser();
+			kickUser.setRoom_id(room.getRoomId());
+			kickUser.setSID_Admin(adminSID);
+			KickUserResponse kickResponse = roomWs.kickUser(kickUser);
+			return kickResponse.get_return();
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+
 	private String getSessionID() {
 		try {
 			GetSession  getSession = new GetSession();
@@ -330,7 +584,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 
 	@Override
 	public boolean checkConnection(String url, String login, String password)
-	throws OpenMeetingsNotAvailableException {
+	throws OpenMeetingsException {
 		try {
 			String endPoint = cleanUrl(url) + "/services/UserService?wsdl";
 			UserServiceStub userWs = new UserServiceStub(endPoint);
@@ -340,9 +594,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			String sessionId = getSessionResponse.get_return().getSession_id();
 			return StringHelper.containsNonWhitespace(sessionId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw translateException(e, 0);
 		}
-		return false;
 	}
 	
 	@Override
@@ -351,6 +604,10 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 
 	//Properties
+	private final List<Property> getProperties() {
+		return propertyManager.listProperties(null, null, null, OM_CATEGORY, null);
+	}
+	
 	private final Property getProperty(BusinessGroup group, OLATResourceable courseResource, String subIdentifier) {
 		return propertyManager.findProperty(null, group, courseResource, OM_CATEGORY, subIdentifier);
 	}
@@ -405,5 +662,27 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	
 	private String cleanUrl(String url) {
 		return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+	}
+	
+	private static class ResourceRoom {
+		
+		private Long roomId;
+		private OLATResourceable resource;
+		
+		public Long getRoomId() {
+			return roomId;
+		}
+		
+		public void setRoomId(Long roomId) {
+			this.roomId = roomId;
+		}
+		
+		public OLATResourceable getResource() {
+			return resource;
+		}
+		
+		public void setResource(OLATResourceable resource) {
+			this.resource = resource;
+		}
 	}
 }

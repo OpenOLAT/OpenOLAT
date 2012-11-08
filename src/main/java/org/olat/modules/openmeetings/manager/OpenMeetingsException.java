@@ -28,26 +28,49 @@ package org.olat.modules.openmeetings.manager;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OpenMeetingsNotAvailableException extends Exception {
+public class OpenMeetingsException extends Exception {
 	
 	private static final long serialVersionUID = 3260533359384969602L;
 	
-	public static final String I18N_KEY = "error.notAvailable";
+	public static final String SERVER_NOT_I18N_KEY = "error.notAvailable";
 
-	public OpenMeetingsNotAvailableException() {
-		//
+	private final Type type;
+	
+	public OpenMeetingsException(Type type) {
+		this.type = type;
 	}
 	
-	public OpenMeetingsNotAvailableException(String message) {
+	public OpenMeetingsException(String message, Type type) {
 		super(message);
+		this.type = type;
 	}
 	
-	public OpenMeetingsNotAvailableException(String message, Exception cause) {
+	public OpenMeetingsException(String message, Exception cause, Type type) {
 		super(message, cause);
+		this.type = type;
 	}
 	
-	public OpenMeetingsNotAvailableException(Exception cause) {
+	public OpenMeetingsException(Exception cause, Type type) {
 		super(cause);
+		this.type = type;
+	}
+	
+	public Type getType() {
+		return type;
 	}
 
+	public enum Type {
+		unkown("error.unkown"),
+		serverNotAvailable("error.notAvailable");
+
+		private final String i18nKey;
+		
+		private Type(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		public String i18nKey() {
+			return i18nKey;
+		}
+	}
 }
