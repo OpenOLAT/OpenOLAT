@@ -92,6 +92,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private BusinessGroupMembersController membersController;
 	private BusinessGroupEditResourceController resourceController;
 	private BusinessGroupEditAccessController tabAccessCtrl;
+	
+	private int membersTab;
 
 	/**
 	 * Never call this constructor directly, use the BGControllerFactory instead!!
@@ -188,7 +190,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		tabbedPane.addTab(translate("group.edit.tab.collabtools"), collaborationToolsController.getInitialComponent());
 		
 		membersController.updateBusinessGroup(currBusinessGroup);
-		tabbedPane.addTab(translate("group.edit.tab.members"), membersController.getInitialComponent());
+		membersTab = tabbedPane.addTab(translate("group.edit.tab.members"), membersController.getInitialComponent());
 		//resources (optional)
 		resourceController = getResourceController(ureq);
 		if(resourceController != null) {
@@ -246,6 +248,9 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	public void event(UserRequest ureq, Component source, Event event) {
 		 if (source == tabbedPane && event instanceof TabbedPaneChangedEvent) {
 			tabbedPane.addToHistory(ureq, getWindowControl());
+			if(tabbedPane.getSelectedPane() == membersTab) {
+				membersController.updateBusinessGroup(currBusinessGroup);
+			}
 		}
 	}
 

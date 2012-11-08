@@ -25,13 +25,15 @@
 
 package org.olat.search.service.document.file;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 
@@ -44,6 +46,10 @@ public class TextDocument extends FileDocument {
 	private static final OLog log = Tracing.createLoggerFor(TextDocument.class);
 
 	public final static String FILE_TYPE = "type.file.text";
+	/**
+	 * Limit the maximal size of the content read to index.
+	 */
+	public static int MAX_SIZE = 200000;
 
 	public TextDocument() {
 		//
@@ -60,9 +66,28 @@ public class TextDocument extends FileDocument {
 	
 	@Override
 	protected FileContent readContent(VFSLeaf leaf) throws IOException {
-  	BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
-		String content = FileUtils.load(bis, "utf-8");
-		bis.close();
-  	return new FileContent(content);
+    StringWriter out = new StringWriter();
+    InputStreamReader in = new InputStreamReader(leaf.getInputStream());
+		try {
+			copy(in, out);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+  	return new FileContent(out.toString());
+	}
+	
+	private void copy(Reader input, Writer output)
+	throws IOException {
+		char[] buffer = new char[4096];
+		
+		int count = 0;
+    int n = 0;
+    while (-1 != (n = input.read(buffer))) {
+        output.write(buffer, 0, n);
+        count += n;
+        if(count >= MAX_SIZE) {
+        	break;
+        }
+    }
 	}
 }

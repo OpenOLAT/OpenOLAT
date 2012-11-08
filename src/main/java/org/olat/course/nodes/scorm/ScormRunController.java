@@ -34,12 +34,12 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.event.GenericEventListener;
@@ -50,6 +50,8 @@ import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.instantMessaging.CloseInstantMessagingEvent;
+import org.olat.instantMessaging.InstantMessaging;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.scorm.ScormAPICallback;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
@@ -66,7 +68,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Felix Jost
  */
-public class ScormRunController extends BasicController implements ScormAPICallback, GenericEventListener {
+public class ScormRunController extends BasicController implements ScormAPICallback, GenericEventListener, ConfigurationChangedListener {
 
 	private ModuleConfiguration config;
 	private File cpRoot;
@@ -83,8 +85,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	private UserCourseEnvironment userCourseEnv;
 	private ChooseScormRunModeForm chooseScormRunMode;
 	private boolean isPreview;
-
-	private Identity identity;
 	private boolean isAssessable;
 
 	/**
@@ -108,14 +108,12 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		this.userCourseEnv = userCourseEnv;
 		this.config = config;
 		this.scormNode = scormNode;
-		this.identity = ureq.getIdentity();
 
 		addLoggingResourceable(LoggingResourceable.wrap(scormNode));
 		init(ureq);
 	}
 
 	private void init(UserRequest ureq) {
-
 		startPage = createVelocityContainer("run");
 		// show browse mode option only if not assessable, hide it if in
 		// "real test mode"
@@ -231,6 +229,9 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	}
 
 	private void doLaunch(UserRequest ureq, boolean doActivate) {
+		ureq.getUserSession().getSingleUserEventCenter()
+			.fireEventToListenersOf(new CloseInstantMessagingEvent(), InstantMessaging.TOWER_EVENT_ORES);
+
 		if (cpRoot == null) {
 			// it is the first time we start the contentpackaging from this
 			// instance
@@ -259,25 +260,34 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			courseId = new Long(CodeHelper.getRAMUniqueID()).toString();
 			scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, false, doActivate,
-					fullWindow);
+					fullWindow, false);
 		} else {
+			boolean attemptsIncremented = false;
+			//increment user attempts only once!
+			if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
+					|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
+				scormNode.incrementUserAttempts(userCourseEnv);
+				attemptsIncremented = true;
+			}
+			
 			courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
 			if (isAssessable) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow);
+						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow, attemptsIncremented);
 				// <OLATCE-289>
 				// scormNode.incrementUserAttempts(userCourseEnv);
 				// </OLATCE-289>
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow);
+						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow, attemptsIncremented);
 			} else {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, isAssessable, doActivate,
-						fullWindow);
+						fullWindow, attemptsIncremented);
 			}
+			
 		}
 		// configure some display options
 		boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
@@ -330,6 +340,11 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	 */
 	public boolean isExternalMenuConfigured() {
 		return (config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU).booleanValue());
+	}
+
+	@Override
+	public void configurationChanged() {
+		scormDispC.configurationChanged();
 	}
 
 	/**

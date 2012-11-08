@@ -123,7 +123,7 @@
 
 	<bean id="hibernateProps" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
-	        <props>  
+	        <props>
 	            <prop key="hibernate.show_sql">${db.show_sql}</prop>
 				<prop key="hibernate.generate_statistics">true</prop>
 	            <!-- <entry key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</value></entry> -->

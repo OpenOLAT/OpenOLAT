@@ -21,6 +21,7 @@ package org.olat.modules.webFeed.search.document;
 
 import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.util.filter.Filter;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.search.service.SearchResourceContext;
 
@@ -33,13 +34,18 @@ import org.olat.search.service.SearchResourceContext;
  * @author gwassmann
  */
 public class FeedItemDocument extends OlatDocument {
+	private static Filter tagsFilter = FilterFactory.getHtmlTagsFilter();
 
-	public FeedItemDocument(Item item, SearchResourceContext searchResourceContext, Filter mediaUrlFilter) {
+	public FeedItemDocument(Item item, SearchResourceContext searchResourceContext) {
 		super();
 		setTitle(item.getTitle());
-		setAuthor(item.getAuthor());
-		setDescription(mediaUrlFilter.filter(item.getDescription()));
-		setContent(mediaUrlFilter.filter(item.getContent()));
+		setAuthor(item.getAuthor());		
+		// Remove HTML tags from description and content, not useful in index
+		String rawDescription = tagsFilter.filter(item.getDescription());
+		setDescription(rawDescription);
+		// Remove HTML tags from content and content, not useful in index
+		String rawContent = tagsFilter.filter(item.getContent());
+		setContent(rawContent);
 		setLastChange(item.getLastModified());
 		setResourceUrl(searchResourceContext.getResourceUrl());
 		setDocumentType(searchResourceContext.getDocumentType());

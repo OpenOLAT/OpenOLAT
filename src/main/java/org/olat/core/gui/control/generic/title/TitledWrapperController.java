@@ -31,6 +31,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,7 +54,7 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  21.06.2007 <br>
  * @author Lavinia Dumitrescu, Florian Gnägi
  */
-public class TitledWrapperController extends BasicController implements CloneableController, Activateable2 {
+public class TitledWrapperController extends BasicController implements CloneableController, Activateable2, ConfigurationChangedListener {
 	
 	private static final String COMPONENT_NAME = "child";
 	//Velocity variable
@@ -130,7 +131,14 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 		
 		putInitialPanel(theVelocityContainer);
 	}
-	
+
+	@Override
+	public void configurationChanged() {
+		if(contentController instanceof ConfigurationChangedListener) {
+			((ConfigurationChangedListener)contentController).configurationChanged();
+		}
+	}
+
 	protected void doDispose() {		
 		if (descriptionController != null) {
 			descriptionController.dispose();

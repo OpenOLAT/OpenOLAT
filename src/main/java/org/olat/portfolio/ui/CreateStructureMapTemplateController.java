@@ -85,7 +85,6 @@ public class CreateStructureMapTemplateController extends BasicController implem
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// Nothing to catch
 	}
@@ -110,6 +109,11 @@ public class CreateStructureMapTemplateController extends BasicController implem
 			EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 			ePFMgr.createAndPersistPortfolioPage(mapTemp, title, description);
 		}
+	}
+	
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		//
 	}
 
 	/**

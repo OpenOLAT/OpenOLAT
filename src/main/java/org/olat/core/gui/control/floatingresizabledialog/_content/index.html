@@ -64,7 +64,7 @@
 		        id: '${panelName}',
 	            title: '$title',
 	            closable:true,
-	            collapsible:false,
+	            collapsible:true,
 	            constrain: ${constrain},
 	            resizable: ${resizable},
 	            width: winWidth,
@@ -88,7 +88,8 @@
 				win.purgeListeners();
 				win.close();
 				win.destroy();
-				if (!o_info.linkbusy) { 
+				if (!o_info.linkbusy) {
+					window.suppressOlatOnUnloadOnce = true;
 					o_beforeserver();
 					$r.javaScriptBgCommand("close")
 				}		
@@ -97,6 +98,7 @@
 			${panelName}.on('resize', function(win, width, height){
 				#if ($ajaxFlags.isIframePostEnabled())
 				if (!o_info.linkbusy) {
+					window.suppressOlatOnUnloadOnce = true;
 					o_beforeserver();
 					$r.javaScriptBgCommand("geometry") + '?p='+ encodeURIComponent(win.getPosition()+':'+win.getSize().width+','+win.getSize().height);
 				}
@@ -112,7 +114,8 @@
 				
 			${panelName}.on('move', function(win, x, y){
 				#if ($ajaxFlags.isIframePostEnabled())
-				if (!o_info.linkbusy) {	
+				if (!o_info.linkbusy) {
+					window.suppressOlatOnUnloadOnce = true;
 					o_beforeserver();
 					$r.javaScriptBgCommand("geometry") + '?p='+ encodeURIComponent(win.getPosition()+':'+win.getSize().width+','+win.getSize().height);
 				}

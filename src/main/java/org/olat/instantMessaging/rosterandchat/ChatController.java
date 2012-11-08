@@ -87,7 +87,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private String jsTweakCmd = "";
 	private String jsFocusCmd = "";
 	
-	private List allChats;
+	private List<String> allChats;
 	private EventBus singleUserEventCenter;
 	
 	public ChatController(UserRequest ureq, WindowControl wControl, String chatPartnerJid, int offsetX, int offsetY, Message initialMessage) {
@@ -97,9 +97,9 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.username = getIdentity().getName();
 		
 		this.singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
-		allChats = (List) ureq.getUserSession().getEntry("chats");
+		allChats = (List<String>) ureq.getUserSession().getEntry("chats");
 		if (allChats == null) {
-			allChats = new ArrayList();
+			allChats = new ArrayList<String>();
 			ureq.getUserSession().putEntry("chats", allChats);
 		}
 		allChats.add(Integer.toString(hashCode()));
@@ -157,7 +157,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		refresh.setCustomEnabledLinkCSS("b_small_icoureq.getUserSession().getSingleUserEventCenter().n sendMessageFormo_instantmessaging_refresh_icon");
 		refresh.setTitle("im.refresh");
 
-		putInitialPanel(chatPanelCtr.getInitialComponent());	
+		putInitialPanel(chatPanelCtr.getInitialComponent());
 	}
 
 	@Override
@@ -203,7 +203,21 @@ public class ChatController extends BasicController implements GenericEventListe
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
 	public void event(Event event) {
-		InstantMessagingEvent imEvent = (InstantMessagingEvent)event;
+		if(event instanceof InstantMessagingEvent) {
+			processInstantMessageEvent((InstantMessagingEvent)event);
+		}
+	}
+	
+	/**
+	 * This method close the chat from extern
+	 */
+	protected void closeChat() {
+		allChats.remove(Integer.toString(hashCode()));
+		singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("ChatWindowClosed"), OresHelper.createOLATResourceableType(InstantMessaging.class));
+		chatPanelCtr.executeCloseCommand();
+	}
+
+	private void processInstantMessageEvent(InstantMessagingEvent imEvent) {
 		if (imEvent.getCommand().equals("chatmessage")) {
 			//chat mode. user started chat himself
 			Message msg = (Message)imEvent.getPacket();

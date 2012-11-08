@@ -97,7 +97,7 @@ public class MapperServiceImpl implements MapperService {
 		mapperIdToMapper.put(mapid, mapper);
 		mapperToMapperId.put(mapper, mapid);
 		if(session.getSessionInfo() == null) {
-			return mapid;
+			return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + mapid;
 		}
 		
 		String sessionId = session.getSessionInfo().getSession().getId();

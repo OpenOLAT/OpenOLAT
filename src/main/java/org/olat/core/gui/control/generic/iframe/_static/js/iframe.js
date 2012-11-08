@@ -123,7 +123,7 @@ function b_sizeIframe() {
 		// page loaded 
 		loaded=true;
 	} catch(e) {
-		console.log(e);
+		//console.log(e);			
 	}
 }
 
@@ -156,7 +156,7 @@ function b_hideExtMessageBox(){
 				}
 				counter++;
 			} catch (e) {
-				console.log(e);			
+				//console.log(e);			
 				clearInterval(activ);
 			}
 		} ,50);
@@ -313,7 +313,7 @@ function b_addOnclickEvent(myFnc) {
 			window.click = fnc;
 		}
 	} catch(e) {
-		console.log(e);
+		//console.log(e);
 	}
 }
 

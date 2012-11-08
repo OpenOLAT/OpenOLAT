@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.search.ResultDocument;
 import org.olat.core.commons.services.search.ui.ResultController;
@@ -36,9 +37,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -51,6 +50,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.document.ContextHelpDocument;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -133,16 +133,17 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 					return courseNode.getShortTitle();
 				}
 				if ("Identity".equals(tokenType)) {
-					Identity identity  = BaseSecurityManager.getInstance().loadIdentityByKey(Long.parseLong(tokenKey));
-					User user = identity.getUser();
-					return user.getProperty(UserConstants.LASTNAME, locale) + " " + user.getProperty(UserConstants.FIRSTNAME, locale) ;
+					IdentityShort identity  = BaseSecurityManager.getInstance().loadIdentityShortByKey(Long.parseLong(tokenKey));
+					return UserManager.getInstance().getUserDisplayName(identity);
 				}
 				if ("BusinessGroup".equals(tokenType)) {
 					BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(Long.parseLong(tokenKey));
 					return bg == null ? "" : bg.getName();
 				}
-				
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
+				if("userfolder".equals(tokenType)) {
+					return translator.translate("type.identity.publicfolder");
+				}
 				String translated = translator.translate(tokenType);
 				if (translated == null || translated.length() > 64) {
 					return token;//no translation, translator return an error

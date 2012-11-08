@@ -35,7 +35,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.commons.file.filechooser.FileChooserController;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -46,7 +45,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemFileTypeFilter;
@@ -160,6 +158,11 @@ public class ImportCourseController extends BasicController implements IAddContr
 		
 		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
+	}
+	
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		//
 	}
 
 	/**

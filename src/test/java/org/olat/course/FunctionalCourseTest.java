@@ -31,6 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -82,9 +83,9 @@ public class FunctionalCourseTest {
 	public final static String EDITOR_COURSE_OVERVIEW_FILE = "/org/olat/course/overview_comprehensive_guide_to_c_programming.html";
 
 	public final static int LARGE_COURSE_FILE_COUNT = 20;
-	public final static long LARGE_COURSE_FILE_SIZE = 50000;
-	public final static int LARGE_COURSE_TEST_COUNT = 200;
-	public final static int LARGE_COURSE_GROUP_COUNT = 150;
+	public final static long LARGE_COURSE_FILE_SIZE = 5000000;
+	public final static int LARGE_COURSE_TEST_COUNT = 20;
+	public final static int LARGE_COURSE_GROUP_COUNT = 15;
 	public final static String LARGE_COURSE_IQ_TEST_SHORT_TITLE = "QTI";
 	public final static String LARGE_COURSE_IQ_TEST_LONG_TITLE = "generated test No. ";
 	public final static String LARGE_COURSE_IQ_TEST_DESCRIPTION_0 = "generated within a loop: test#";
@@ -127,7 +128,6 @@ public class FunctionalCourseTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreateUsingWizard(){
@@ -156,7 +156,6 @@ public class FunctionalCourseTest {
 		functionalUtil.logout(browser);
 	}
 
-	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreateUsingEditor() throws FileNotFoundException, IOException, URISyntaxException{
@@ -239,6 +238,7 @@ public class FunctionalCourseTest {
 	@RunAsClient
 	public void checkCreateLargeCourse() throws URISyntaxException, IOException, NoSuchAlgorithmException, NoSuchProviderException{
 		File[] largeFile = new File[LARGE_COURSE_FILE_COUNT];
+		Random random = new Random();
 		
 		for(int i = 0; i < largeFile.length; i++){
 			File currentFile =
@@ -257,7 +257,9 @@ public class FunctionalCourseTest {
 				ByteArrayOutputStream dataOut = new ByteArrayOutputStream();
 				
 				dataOut.write(new String("Line number #" + j + ": ").getBytes());
-				dataOut.write(Base64.encodeBase64(SecureRandom.getInstance("SHA1PRNG", "SUN").generateSeed(512), false));
+				byte[] chunck = new byte[1024];
+				random.nextBytes(chunck);
+				dataOut.write(Base64.encodeBase64(chunck, false));
 				dataOut.write("\n".getBytes());
 				IOUtils.write(dataOut.toByteArray(), out);
 				out.flush();
@@ -302,7 +304,7 @@ public class FunctionalCourseTest {
 			/* create course node and assign qti test to it */
 			Assert.assertTrue(functionalCourseUtil.createCourseNode(browser,
 					CourseNodeAlias.IQ_TEST,
-					title, LARGE_COURSE_IQ_TEST_LONG_TITLE, description,
+					title, LARGE_COURSE_IQ_TEST_LONG_TITLE + i, description,
 					2 * i + 4));
 			Assert.assertTrue(functionalCourseUtil.createQTITest(browser, title, description));
 		}

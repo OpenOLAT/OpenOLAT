@@ -296,6 +296,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			
 			removeAsListenerAndDispose(folderRunController);
 			folderRunController = new FolderRunController(namedFolder, false, true, false, ureq, getWindowControl());
+			folderRunController.setResourceURL("[Identity:" + identity.getKey() + "][userfolder:0]");
 			listenTo(folderRunController);
 			myContent.put("userinfo", folderRunController.getInitialComponent());
 

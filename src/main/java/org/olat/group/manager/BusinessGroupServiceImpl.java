@@ -721,7 +721,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	@Transactional(readOnly=true)
 	public List<Long> toGroupKeys(String groupNames, OLATResource resource) {
-		return businessGroupDAO.toGroupKeys(groupNames, resource);
+		return businessGroupRelationDAO.toGroupKeys(groupNames, resource);
 	}
 
 	@Override

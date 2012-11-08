@@ -399,11 +399,12 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	 * @param ureq
 	 */
 	private void doLeave(UserRequest ureq, BusinessGroup group) {
+		List<Identity> identityToRemove = Collections.singletonList(getIdentity());
 		// 1) remove as owner
 		if (securityManager.isIdentityInSecurityGroup(getIdentity(), group.getOwnerGroup())) {
 			List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
 			if (ownerList.size() > 1) {
-				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(getIdentity()), group);
+				businessGroupService.removeOwners(getIdentity(), identityToRemove, group);
 			} else {
 				// he is the last owner, but there must be at least one oner
 				// give him a warning, as long as he tries to leave, he gets
@@ -415,8 +416,9 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		// if identity was also owner it must have successfully removed to end here.
 		// now remove the identity also as participant.
 		// 2) remove as participant
-		List<Identity> identities = Collections.singletonList(getIdentity());
-		businessGroupService.removeParticipants(ureq.getIdentity(), identities, group, null);//TODO memail
+		businessGroupService.removeParticipants(getIdentity(), identityToRemove, group, null);//TODO memail
+		// 3) remove from waiting list
+		businessGroupService.removeFromWaitingList(getIdentity(), identityToRemove, group, null);
 	}
 	
 	/**

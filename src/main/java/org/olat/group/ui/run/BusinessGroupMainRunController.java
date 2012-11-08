@@ -67,9 +67,9 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -196,7 +196,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private final BaseSecurity securityManager;
 	private final BusinessGroupService businessGroupService;
-	private UserSession userSession;
+	private EventBus singleUserEventBus;
 	private String adminNodeId; // reference to admin menu item
 
 	// not null indicates tool is enabled
@@ -221,6 +221,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 */
 	public BusinessGroupMainRunController(UserRequest ureq, WindowControl control, BusinessGroup bGroup) {
 		super(ureq, control);
+		
+		assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 
 		/*
 		 * lastUsage, update lastUsage if group is run if you can acquire the lock
@@ -238,25 +240,15 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			return;
 		}
-		
 
 		List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(Collections.singletonList(bGroup.getKey()), getIdentity());
 		if(isOnWaitinglist(memberships)) {
-			VelocityContainer vc = createVelocityContainer("waiting");
-			vc.contextPut("name", bGroup.getName());
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, vc, "grouprun");
-			listenTo(columnLayoutCtr); // cleanup on dispose
-			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			putInitialPanel(getOnWaitingListMessage(ureq, bGroup));
 			return;
 		}
-		
-		
 
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
-	
-		this.userSession = ureq.getUserSession();
-		this.assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 
 		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin()
 				|| ureq.getUserSession().getRoles().isGroupManager()
@@ -285,8 +277,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		//
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
-		// register for AssessmentEvents triggered by this user			
-		userSession.getSingleUserEventCenter().registerFor(this, userSession.getIdentity(), assessmentEventOres);
+		// register for AssessmentEvents triggered by this user
+		singleUserEventBus = ureq.getUserSession().getSingleUserEventCenter();
+		singleUserEventBus.registerFor(this, ureq.getIdentity(), assessmentEventOres);
 		
 		//disposed message controller
 		//must be created beforehand
@@ -305,25 +298,37 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			this.showError("grouprun.disabled");				
 		}
 		
-		//check managed
-		//fxdiff VCRP-1,2: access control of resources
-		ACService acService = CoreSpringFactory.getImpl(ACService.class);
-		AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
-		if(acResult.isAccessible()) {
-			needActivation = false;
-		}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {
-			accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
-			listenTo(accessController);
-			mainPanel.setContent(accessController.getInitialComponent());
-			bgTree.setTreeModel(new GenericTreeModel());
-			needActivation = true;
-			return;
+		Object wildcard = ureq.getUserSession().getEntry("wild_card_" + businessGroup.getKey());
+		if(wildcard == null) {
+			//check managed
+			//fxdiff VCRP-1,2: access control of resources
+			ACService acService = CoreSpringFactory.getImpl(ACService.class);
+			AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
+			if(acResult.isAccessible()) {
+				needActivation = false;
+			}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {
+				accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
+				listenTo(accessController);
+				mainPanel.setContent(accessController.getInitialComponent());
+				bgTree.setTreeModel(new GenericTreeModel());
+				needActivation = true;
+			} else {
+				mainPanel.setContent(new Panel("empty"));
+				bgTree.setTreeModel(new GenericTreeModel());
+				needActivation = true;
+			}
 		} else {
-			mainPanel.setContent(new Panel("empty"));
-			bgTree.setTreeModel(new GenericTreeModel());
-			needActivation = true;
-			return;
+			ureq.getUserSession().removeEntryFromNonClearedStore("wild_card_" + businessGroup.getKey());
+			needActivation = false;
 		}
+	}
+	
+	private Component getOnWaitingListMessage(UserRequest ureq, BusinessGroup group) {
+		VelocityContainer vc = createVelocityContainer("waiting");
+		vc.contextPut("name", group.getName());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, vc, "grouprun");
+		listenTo(columnLayoutCtr); // cleanup on dispose
+		return columnLayoutCtr.getInitialComponent();
 	}
 	
 	private boolean isOnWaitinglist(List<BusinessGroupMembership> memberships) {
@@ -422,11 +427,19 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		//fxdiff VCRP-1,2: access control of resources
 		} else if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
-				mainPanel.setContent(main);
-				bgTree.setTreeModel(buildTreeModel());
 				removeAsListenerAndDispose(accessController);
 				accessController = null;
-				needActivation = false;
+				
+				//check if on waiting list
+				List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(Collections.singletonList(businessGroup.getKey()), getIdentity());
+				if(isOnWaitinglist(memberships)) {
+					Component cmp = getOnWaitingListMessage(ureq, businessGroup);
+					mainPanel.setContent(cmp);
+				} else {
+					mainPanel.setContent(main);
+					bgTree.setTreeModel(buildTreeModel());
+					needActivation = false;
+				}
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {
 				String msg = ((AccessEvent)event).getMessage();
 				if(StringHelper.containsNonWhitespace(msg)) {
@@ -766,7 +779,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	protected void doDispose() {
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CLOSED, getClass());
 		
-		if (chatCtr != null) {
+		if (chatCtr instanceof InstantMessagingGroupChatController) {
 			InstantMessagingGroupChatController chat = (InstantMessagingGroupChatController) chatCtr;
 			if (chat.isChatWindowOpen()) {
 				chat.close();
@@ -776,8 +789,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, businessGroup);
-		
-		userSession.getSingleUserEventCenter().deregisterFor(this, assessmentEventOres);
+		if(singleUserEventBus != null) {
+			singleUserEventBus.deregisterFor(this, assessmentEventOres);
+		}
 	}
 
 	@Override

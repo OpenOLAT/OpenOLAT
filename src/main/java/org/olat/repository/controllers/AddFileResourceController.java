@@ -261,7 +261,12 @@ public class AddFileResourceController extends BasicController implements IAddCo
 		// nothing to do here.
 		return;
 	}
-	
+
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		// nothing to do here.
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */

@@ -390,29 +390,6 @@ public class BusinessGroupDAO {
 		return groups;
 	}
 	
-	public List<Long> toGroupKeys(String groupNames, OLATResource resource) {
-		if(!StringHelper.containsNonWhitespace(groupNames)) return Collections.emptyList();
-		
-		String[] groupNameArr = groupNames.split(",");
-		List<String> names = new ArrayList<String>();
-		for(String name:groupNameArr) {
-			names.add(name.trim());
-		}
-		
-		if(names.isEmpty()) return Collections.emptyList();
-			
-		StringBuilder sb = new StringBuilder();
-		sb.append("select bgs.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgs ")
-		  .append(" where bgs.resource.key =:resourceKey and bgs.name in (:names)");
-
-		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
-				.setParameter("resourceKey", resource.getKey())
-				.setParameter("names", names)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getResultList();
-		return keys;
-	}
-	
 	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource) {
 		TypedQuery<Number> query = createFindDBQuery(params, resource, Number.class)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE);

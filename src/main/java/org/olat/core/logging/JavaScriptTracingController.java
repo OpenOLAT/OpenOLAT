@@ -107,7 +107,7 @@ public class JavaScriptTracingController extends BasicController {
 				String jsFile = request.getParameter("jsFile");
 				// currently only debug level is supported but in the future...
 				String level = request.getParameter("level");
-				if (level.equals("debug")) {
+				if (level != null && level.equals("debug") && logMsg != null) {
 					// log to standard OLAT logging system
 					logDebug(logMsg, jsFile);
 				}

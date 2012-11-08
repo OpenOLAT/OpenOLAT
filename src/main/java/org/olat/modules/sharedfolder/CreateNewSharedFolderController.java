@@ -100,6 +100,11 @@ public class CreateNewSharedFolderController extends DefaultController implement
 		return;
 	} // nothing to do here.
 
+	@Override
+	public void repositoryEntryCopied(RepositoryEntry sourceEntry, RepositoryEntry newEntry) {
+		//
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
