@@ -926,14 +926,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// course to present him/her a nice view when
 				// he/she closes the editor to return to the run main (this controller)
 			} else {
-				dispose();
+				doDisposeAfterEvent();
 			}
 		} else if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
 			OLATResourceableJustBeforeDeletedEvent ojde = (OLATResourceableJustBeforeDeletedEvent) event;
 			// make sure it is our course (actually not needed till now, since we
 			// registered only to one event, but good style.
 			if (ojde.targetEquals(course, true)) {
-				dispose();
+				doDisposeAfterEvent();
 			}
 		} else if (event instanceof AssessmentChangedEvent) {
 			AssessmentChangedEvent ace = (AssessmentChangedEvent) event;
@@ -996,23 +996,22 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 
 		} else if (event instanceof CourseConfigEvent) {				
-			if(currentNodeController instanceof ConfigurationChangedListener) {
-				//give to opportunity to close popups ...
-				((ConfigurationChangedListener)currentNodeController).configurationChanged();
-			}
-			dispose();
-			
+			doDisposeAfterEvent();
 		} else if (event instanceof EntryChangedEvent && ((EntryChangedEvent)event).getChange()!=EntryChangedEvent.MODIFIED_AT_PUBLISH) {
 			//courseRepositoryEntry changed (e.g. fired at course access rule change)
 			EntryChangedEvent repoEvent = (EntryChangedEvent) event;			
 			if (courseRepositoryEntry.getKey().equals(repoEvent.getChangedEntryKey()) && repoEvent.getChange() == EntryChangedEvent.MODIFIED) {				
-				if(currentNodeController instanceof ConfigurationChangedListener) {
-					//give to opportunity to close popups ...
-					((ConfigurationChangedListener)currentNodeController).configurationChanged();
-				}
-				dispose();				
+				doDisposeAfterEvent();
 			}
 		}
+	}
+	
+	private void doDisposeAfterEvent() {
+		if(currentNodeController instanceof ConfigurationChangedListener) {
+			//give to opportunity to close popups ...
+			((ConfigurationChangedListener)currentNodeController).configurationChanged();
+		}
+		dispose();	
 	}
 		
 
