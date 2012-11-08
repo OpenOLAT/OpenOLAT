@@ -121,9 +121,8 @@ public class LiveBlogArtefactHandler extends EPAbstractHandler<LiveBlogArtefact>
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(BlogFileResource.TYPE_NAME, Long.parseLong(oresId));
 			Feed feed = manager.getFeed(ores);
 
-			DummyFilter filter = new DummyFilter();
 			for (Item item : feed.getPublishedItems()) {
-				OlatDocument itemDoc = new FeedItemDocument(item, context, filter);
+				OlatDocument itemDoc = new FeedItemDocument(item, context);
 				String content = itemDoc.getContent();
 				sb.append(content);
 			}

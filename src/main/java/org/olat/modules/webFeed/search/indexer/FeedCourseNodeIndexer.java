@@ -24,11 +24,8 @@ import java.io.IOException;
 import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.filter.Filter;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
-import org.olat.modules.webFeed.dispatching.Path;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
@@ -85,13 +82,9 @@ public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements Co
 			OlatDocument feedNodeDoc = new FeedNodeDocument(feed, nodeSearchContext);
 			indexer.addDocument(feedNodeDoc.getLuceneDocument());
 			
-			// Make sure images are displayed properly
-			String mapperBaseURL = Path.getFeedBaseUri(feed, null, course.getResourceableId(), courseNode.getIdent());
-			Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(mapperBaseURL);
-
 			// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
 			for (Item item : feed.getPublishedItems()) {
-				OlatDocument itemDoc = new FeedItemDocument(item, nodeSearchContext, mediaUrlFilter);
+				OlatDocument itemDoc = new FeedItemDocument(item, nodeSearchContext);
 				indexer.addDocument(itemDoc.getLuceneDocument());
 			}
 		} catch (NullPointerException e) {
