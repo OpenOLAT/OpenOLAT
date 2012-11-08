@@ -126,6 +126,8 @@ public class FolderRunController extends BasicController implements Activateable
 	 */
 	public FolderRunController(UserRequest ureq, WindowControl wControl) {
 		this(new BriefcaseWebDAVProvider().getContainer(ureq.getIdentity()), true, true, true, ureq, wControl);
+		//set the resource URL to match the indexer ones
+		setResourceURL("[Identity:" + ureq.getIdentity().getKey() + "][userfolder:0]");
 	}
  	 	 	 	
 	/**
@@ -267,6 +269,12 @@ public class FolderRunController extends BasicController implements Activateable
 		    
 		enableDisableQuota(ureq);		
 		putInitialPanel(folderContainer);
+	}
+	
+	public void setResourceURL(String resourceUrl) {
+		if(searchC != null) {
+			searchC.setResourceUrl(resourceUrl);
+		}
 	}
 
 	public void event(UserRequest ureq, Controller source, Event event) {
