@@ -80,7 +80,6 @@
 	    <test.env.db.postgresql.user>postgres</test.env.db.postgresql.user>
 	    <test.env.db.postgresql.pass>postgres</test.env.db.postgresql.pass>
 	    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
-	    <test.env.db.hibernate.ddl.auto>create</test.env.db.hibernate.ddl.auto>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
 
@@ -121,7 +120,6 @@
         <skipTests>false</skipTests>
         <skipITs>true</skipITs>
         <testFailureIgnore>false</testFailureIgnore>
-        <test.env.db.hibernate.ddl.auto> </test.env.db.hibernate.ddl.auto>
         <test.env>mysql</test.env>
       </properties>
       <build>
@@ -322,7 +320,6 @@
         <skipTests>false</skipTests>
         <skipITs>true</skipITs>
         <testFailureIgnore>false</testFailureIgnore>
-        <test.env.db.hibernate.ddl.auto> </test.env.db.hibernate.ddl.auto>
         <test.env>postgresql</test.env>
       </properties>
       <build>
@@ -523,8 +520,6 @@
 			<skipTests>false</skipTests>
 			<skipITs>true</skipITs>
 			<testFailureIgnore>false</testFailureIgnore>
-			<test.env.db.hibernate.ddl.auto>
-			</test.env.db.hibernate.ddl.auto>
 			<test.env>oracle</test.env>
 		</properties>
 		<build>
