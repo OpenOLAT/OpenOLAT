@@ -25,6 +25,7 @@ import java.util.Locale;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 
@@ -44,6 +45,9 @@ public interface OpenMeetingsManager {
 	public String setUserToRoom(Identity identity, long roomId, boolean moderator)
 	throws OpenMeetingsException;
 	
+	public String setGuestUserToRoom(String firstName, String lastName, long roomId, boolean moderator)
+	throws OpenMeetingsException;
+	
 	public Long getRoomId(BusinessGroup group, OLATResourceable ores, String subIdentifier);
 	
 	public List<OpenMeetingsRoom> getOpenOLATRooms();
@@ -55,7 +59,33 @@ public interface OpenMeetingsManager {
 	
 	public OpenMeetingsRoom updateRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room);
 	
+	/**
+	 * Open the room
+	 * @param roomId
+	 * @throws OpenMeetingsException
+	 */
+	public void openRoom(long roomId) throws OpenMeetingsException;
+	
+	/**
+	 * Close the room
+	 * @param roomId
+	 * @throws OpenMeetingsException
+	 */
+	public void closeRoom(long roomId) throws OpenMeetingsException;
+	
 	public boolean deleteRoom(OpenMeetingsRoom room);
+	
+	public List<OpenMeetingsRecording> getRecordings(long roomId)
+	throws OpenMeetingsException;
+	
+	/**
+	 * Forge the recording URL
+	 * @param filename
+	 * @param roomId
+	 * @param sid
+	 * @return
+	 */
+	public String getRecordingURL(OpenMeetingsRecording recording, String sid);
 	
 	
 	public List<OpenMeetingsUser> getUsersOf(OpenMeetingsRoom room);

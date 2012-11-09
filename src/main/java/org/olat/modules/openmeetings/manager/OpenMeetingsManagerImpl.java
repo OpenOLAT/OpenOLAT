@@ -27,8 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.axis2.AxisFault;
 import org.olat.admin.user.delete.service.UserDeletionManager;
@@ -44,6 +46,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
+import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 import org.olat.modules.openmeetings.model.RoomReturnInfo;
@@ -51,11 +54,16 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
 import org.openmeetings.app.conference.session.xsd.RoomClient;
+import org.openmeetings.app.persistence.beans.flvrecord.xsd.FlvRecording;
 import org.openmeetings.app.persistence.beans.rooms.xsd.Rooms;
 import org.openmeetings.axis.services.AddRoomWithModerationAndExternalType;
 import org.openmeetings.axis.services.AddRoomWithModerationAndExternalTypeResponse;
+import org.openmeetings.axis.services.CloseRoom;
+import org.openmeetings.axis.services.CloseRoomResponse;
 import org.openmeetings.axis.services.DeleteRoom;
 import org.openmeetings.axis.services.DeleteRoomResponse;
+import org.openmeetings.axis.services.GetFlvRecordingByRoomId;
+import org.openmeetings.axis.services.GetFlvRecordingByRoomIdResponse;
 import org.openmeetings.axis.services.GetRoomById;
 import org.openmeetings.axis.services.GetRoomByIdResponse;
 import org.openmeetings.axis.services.GetRoomWithClientObjectsById;
@@ -73,6 +81,8 @@ import org.openmeetings.axis.services.KickUserResponse;
 import org.openmeetings.axis.services.LoginUser;
 import org.openmeetings.axis.services.LoginUserResponse;
 import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURL;
+import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURLAndRecFlag;
+import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURLAndRecFlagResponse;
 import org.openmeetings.axis.services.SetUserObjectAndGenerateRoomHashByURLResponse;
 import org.openmeetings.axis.services.UpdateRoomWithModeration;
 import org.openmeetings.axis.services.UpdateRoomWithModerationResponse;
@@ -237,7 +247,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		try {
 			UserServiceStub userWs = getUserWebService();
 			String adminSessionId = adminLogin();
-
+/*
 			SetUserObjectAndGenerateRoomHashByURL userObj = new SetUserObjectAndGenerateRoomHashByURL();
 			userObj.setBecomeModeratorAsInt(moderator ? 1 : 0);
 			userObj.setEmail(identity.getUser().getProperty(UserConstants.EMAIL, null));
@@ -250,6 +260,63 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			userObj.setShowAudioVideoTestAsInt(0);
 			userObj.setSID(adminSessionId);
 			userObj.setUsername(identity.getName());
+			
+			SetUserObjectAndGenerateRoomHashByURLResponse response = userWs.setUserObjectAndGenerateRoomHashByURL(userObj);
+			String hashedUrl = response.get_return();
+			*/
+			
+			
+			SetUserObjectAndGenerateRoomHashByURLAndRecFlag userObj = new SetUserObjectAndGenerateRoomHashByURLAndRecFlag();
+			userObj.setBecomeModeratorAsInt(moderator ? 1 : 0);
+			userObj.setEmail(identity.getUser().getProperty(UserConstants.EMAIL, null));
+			userObj.setExternalUserId(getOpenOLATUserExternalId(identity));
+			userObj.setExternalUserType(getOpenOLATExternalType());
+			userObj.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
+			userObj.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, null));
+			userObj.setProfilePictureUrl("");
+			userObj.setRoom_id(roomId);
+			userObj.setShowAudioVideoTestAsInt(0);
+			userObj.setSID(adminSessionId);
+			userObj.setUsername(identity.getName());
+			userObj.setAllowRecording(1);
+			
+			SetUserObjectAndGenerateRoomHashByURLAndRecFlagResponse response = userWs.setUserObjectAndGenerateRoomHashByURLAndRecFlag(userObj);
+			String hashedUrl = response.get_return();
+			
+			
+			
+			
+			
+			
+			
+			
+			return hashedUrl;
+		} catch (Exception e) {
+			log.error("", e);
+			throw translateException(e, 0);
+		}
+	}
+	
+	@Override
+	public String setGuestUserToRoom(String firstName, String lastName, long roomId, boolean moderator)
+	throws OpenMeetingsException {
+		try {
+			UserServiceStub userWs = getUserWebService();
+			String adminSessionId = adminLogin();
+			
+			String username = UUID.randomUUID().toString().replace("-", "");
+			SetUserObjectAndGenerateRoomHashByURL userObj = new SetUserObjectAndGenerateRoomHashByURL();
+			userObj.setBecomeModeratorAsInt(moderator ? 1 : 0);
+			userObj.setEmail("");
+			userObj.setExternalUserId(getOpenOLATUserExternalId(username));
+			userObj.setExternalUserType(getOpenOLATExternalType());
+			userObj.setFirstname(firstName);
+			userObj.setLastname(lastName);
+			userObj.setProfilePictureUrl("");
+			userObj.setRoom_id(roomId);
+			userObj.setShowAudioVideoTestAsInt(0);
+			userObj.setSID(adminSessionId);
+			userObj.setUsername(username);
 			
 			SetUserObjectAndGenerateRoomHashByURLResponse response = userWs.setUserObjectAndGenerateRoomHashByURL(userObj);
 			String hashedUrl = response.get_return();
@@ -320,6 +387,89 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		return new OpenMeetingsException(e, type);
 	}
 	
+	public void openRoom(long roomId) throws OpenMeetingsException {
+		closeOpenMeetingsRoom(roomId, true);
+	}
+	
+	public void closeRoom(long roomId) throws OpenMeetingsException {
+		closeOpenMeetingsRoom(roomId, false);
+	}
+	
+	/**
+	 * In OpenMeetings, close can mean open :-)
+	 * @param roomId The room id
+	 * @param status false = close, true = open
+	 * @throws OpenMeetingsException
+	 */
+	private void closeOpenMeetingsRoom(long roomId, boolean status) throws OpenMeetingsException {
+		int responseCode = 0;
+		try {
+			String adminSID = adminLogin();
+
+			RoomServiceStub roomWs = getRoomWebService();
+			CloseRoom closeRoom = new CloseRoom();
+			closeRoom.setRoom_id(roomId);
+			closeRoom.setSID(adminSID);
+			closeRoom.setStatus(status); //false = close, true = open
+			
+			CloseRoomResponse closeResponse = roomWs.closeRoom(closeRoom);
+			responseCode = closeResponse.get_return();
+		} catch (Exception e) {
+			log.error("", e);
+			throw translateException(e, responseCode);
+		}
+	}
+	
+	@Override
+	public List<OpenMeetingsRecording> getRecordings(long roomId) 
+	throws OpenMeetingsException {
+
+		try {
+			String adminSID = adminLogin();
+			
+			RoomServiceStub roomWs = getRoomWebService();
+			GetFlvRecordingByRoomId recordingByRoom = new GetFlvRecordingByRoomId();
+			recordingByRoom.setRoomId(roomId);
+			recordingByRoom.setSID(adminSID);
+			GetFlvRecordingByRoomIdResponse recordingResponse = roomWs.getFlvRecordingByRoomId(recordingByRoom);
+			FlvRecording[] recordings = recordingResponse.get_return();
+
+			List<OpenMeetingsRecording> recList = new ArrayList<OpenMeetingsRecording>();
+			if(recordings != null) {
+				for(FlvRecording recording:recordings) {
+					if(recording != null) {
+						OpenMeetingsRecording rec = new OpenMeetingsRecording();
+						rec.setRoomId(recording.getRoom_id());
+						rec.setRecordingId(recording.getFlvRecordingId());
+						rec.setFilename(recording.getFileName());
+						rec.setDownloadName(recording.getFileHash());
+						rec.setDownloadNameAlt(recording.getAlternateDownload());
+						rec.setPreviewImage(recording.getPreviewImage());
+						recList.add(rec);
+					}
+				}
+			}
+			
+			return recList;
+		} catch (Exception e) {
+			throw translateException(e, 0);
+		}
+	}
+
+	@Override
+	public String getRecordingURL(OpenMeetingsRecording recording, String sid) {
+		if(sid == null) {
+			sid = adminLogin();
+		}
+		
+		String url = UriBuilder.fromUri(openMeetingsModule.getOpenMeetingsURI()).path("DownloadHandler")
+			.queryParam("fileName", recording.getDownloadName())
+			.queryParam("moduleName", "lzRecorderApp")
+			.queryParam("parentPath", "")
+			.queryParam("room_id", Long.toString(recording.getRoomId()))
+			.queryParam("sid", sid).build().toString();
+		return url;
+	}
 
 	@Override
 	public OpenMeetingsRoom addRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room) {
@@ -361,7 +511,11 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private String getOpenOLATUserExternalId(Identity identity) {
-		return identity.getName() + "@" + WebappHelper.getInstanceId();
+		return getOpenOLATUserExternalId(identity.getName());
+	}
+	
+	private String getOpenOLATUserExternalId(String username) {
+		return username + "@" + WebappHelper.getInstanceId();
 	}
 	
 	@Override
@@ -384,6 +538,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			omRoom.setIspublic(false);
 			omRoom.setName(room.getName());
 			omRoom.setNumberOfPartizipants(room.getSize());
+			omRoom.setRoom_id(room.getRoomId());
 			omRoom.setRoomtypes_id(room.getType());
 			omRoom.setSID(sessionId);
 

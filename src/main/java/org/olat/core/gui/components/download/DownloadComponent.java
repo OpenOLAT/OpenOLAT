@@ -22,6 +22,7 @@ package org.olat.core.gui.components.download;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 
@@ -37,7 +38,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  */
 public class DownloadComponent extends Component {
 	private static final ComponentRenderer RENDERER = new DownloadComponentRenderer();
-	private VFSMediaResource mediaResource;
+	private MediaResource mediaResource;
 	private String linkText;
 	private String linkToolTip;
 	private String linkCssIconClass;
@@ -52,6 +53,11 @@ public class DownloadComponent extends Component {
 	public DownloadComponent(String name, VFSLeaf downloadItem) {
 		this(name, downloadItem, downloadItem.getName(), null,
 				getCssIconClass(downloadItem.getName()));
+	}
+	
+	public DownloadComponent(String name, MediaResource downloadItem) {
+		super(name);
+		this.mediaResource = downloadItem;
 	}
 
 	/**
@@ -91,14 +97,18 @@ public class DownloadComponent extends Component {
 		}
 		this.setDirty(true);
 	}
+	
+	public void setMediaResource(MediaResource mediaResource) {
+		this.mediaResource = mediaResource;
+	}
 
 	/**
 	 * Package scope getter method for file download media resource
 	 * 
 	 * @return
 	 */
-	VFSMediaResource getDownloadMediaResoruce() {
-		return this.mediaResource;
+	MediaResource getDownloadMediaResoruce() {
+		return mediaResource;
 	}
 
 	/**

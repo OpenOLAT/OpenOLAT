@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
@@ -65,7 +66,6 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	
 	private OpenMeetingsRoom room;
 	private final OpenMeetingsManager openMeetingsManager;
-	
 
 	public OpenMeetingsRoomEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
 			String subIdentifier, String resourceName, boolean admin) {
@@ -94,6 +94,10 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 			showError(e.getType().i18nKey());
 		}
 		initForm(ureq);
+	}
+	
+	public OpenMeetingsRoom getRoom() {
+		return room;
 	}
 
 	@Override
@@ -133,6 +137,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonContainer);
 		uifactory.addFormSubmitButton("save", "save", buttonContainer);
+		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 
 	@Override
@@ -164,9 +169,15 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		}
 		
 		if(room.getRoomId() > 0) {
-			openMeetingsManager.updateRoom(group, ores, subIdentifier, room);
+			room = openMeetingsManager.updateRoom(group, ores, subIdentifier, room);
 		} else {
-			openMeetingsManager.addRoom(group, ores, subIdentifier, room);
+			room = openMeetingsManager.addRoom(group, ores, subIdentifier, room);
 		}
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 }

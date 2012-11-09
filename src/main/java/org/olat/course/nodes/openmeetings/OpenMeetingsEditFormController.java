@@ -5,17 +5,19 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.nodes.OpenMeetingsCourseNode;
-import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
+import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
 
@@ -27,6 +29,7 @@ import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
 public class OpenMeetingsEditFormController extends FormBasicController {
 	
 	private FormLink editLink;
+	private StaticTextElement roomNameEl;
 	private CloseableModalController cmc;
 	private OpenMeetingsRoomEditController editController;
 	
@@ -53,23 +56,47 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(room == null) {
-			FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			formLayout.add(buttonContainer);
-			editLink = uifactory.addFormLink("create.room", buttonContainer, Link.BUTTON);
-		} else {
-			String name = room.getName();
-			uifactory.addStaticTextElement("room.name", "room.name", name, formLayout);
+		String name = room == null ? "" : room.getName();
+		roomNameEl = uifactory.addStaticTextElement("room.name", "room.name", name, formLayout);
 
-			FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			formLayout.add(buttonContainer);
-			editLink = uifactory.addFormLink("edit.room", buttonContainer, Link.BUTTON);	
-		}
+		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add(buttonContainer);
+		String key = room == null ? "create.room" : "edit.room";
+		editLink = uifactory.addFormLink(key, buttonContainer, Link.BUTTON);	
+	}
+	
+	private void updateUI() {
+		String name = room == null ? "" : room.getName();
+		roomNameEl.setValue(name);
+		String key = room == null ? "create.room" : "edit.room";
+		editLink.setI18nKey(key);
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == cmc) {
+			cleanupPopups();
+		} else if(source == editController) {
+			if(event == Event.CHANGED_EVENT) {
+				room = editController.getRoom();
+				updateUI();
+			}
+			cmc.deactivate();
+			cleanupPopups();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanupPopups() {
+		this.removeAsListenerAndDispose(cmc);
+		this.removeAsListenerAndDispose(editController);
+		cmc = null;
+		editController = null;
 	}
 
 	@Override
@@ -87,10 +114,8 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	}
 
 	protected void doEditRoom(UserRequest ureq) {
-		removeAsListenerAndDispose(editController);
-		removeAsListenerAndDispose(cmc);
-		
 		try {
+			cleanupPopups();
 			editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), null, course, courseNode.getIdent(), courseTitle, true);
 			listenTo(editController);
 
@@ -101,7 +126,4 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 			showError(OpenMeetingsException.SERVER_NOT_I18N_KEY);
 		}
 	}
-	
-	
-
 }

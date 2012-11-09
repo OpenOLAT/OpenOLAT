@@ -26,9 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
@@ -40,12 +38,15 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.cp.CPEditController;
 import org.olat.course.nodes.openmeetings.OpenMeetingsEditController;
 import org.olat.course.nodes.openmeetings.OpenMeetingsPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
+import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRunController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -63,6 +64,8 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 
 	// configuration
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
+
+	private transient CourseGroupManager groupMgr;
 
 	public OpenMeetingsCourseNode() {
 		super(TYPE);
@@ -91,37 +94,30 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		Controller runCtr;
+
 		Roles roles = ureq.getUserSession().getRoles();
-		if (roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(OpenMeetingsPeekViewController.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			runCtr = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else {
-			// check if user is moderator of the virtual classroom
-			boolean moderator = roles.isOLATAdmin();
-			Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			if (!moderator) {
-				if(roles.isInstitutionalResourceManager() | roles.isAuthor()) {
-					RepositoryManager rm = RepositoryManager.getInstance();
-					ICourse course = CourseFactory.loadCourse(key);
-					RepositoryEntry re = rm.lookupRepositoryEntry(course, false);
-					if (re != null) {
-						moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
-						if(!moderator) {
-							moderator = rm.isInstitutionalRessourceManagerFor(re, ureq.getIdentity());
-						}
-					}
+
+		// check if user is moderator of the virtual classroom
+		boolean moderator = roles.isOLATAdmin();
+		Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+		if (!moderator) {
+			if(roles.isInstitutionalResourceManager() || roles.isAuthor()) {
+				RepositoryManager rm = RepositoryManager.getInstance();
+				ICourse course = CourseFactory.loadCourse(key);
+				RepositoryEntry re = rm.lookupRepositoryEntry(course, false);
+				if (re != null) {
+					moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re)
+							|| rm.isInstitutionalRessourceManagerFor(re, ureq.getIdentity());
 				}
 			}
-			// create run controller
-			Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
-			String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
-			runCtr = new OpenMeetingsRunController(ureq, wControl, null, ores, getIdent(), courseTitle, moderator);
 		}
-		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vitero_icon");
+		
+		// create run controller
+		Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
+		String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
+		Controller runCtr = new OpenMeetingsRunController(ureq, wControl, null, ores, getIdent(), courseTitle, moderator);
+		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_openmeetings_icon");
 		return new NodeRunConstructionResult(controller);
 	}
 
@@ -133,6 +129,9 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
+		if (groupMgr == null) {
+			groupMgr = cev.getCourseGroupManager();
+		}
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
@@ -145,8 +144,21 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-		StatusDescription status = StatusDescription.NOERROR;
-		return status;
+		
+		StatusDescription sd = StatusDescription.NOERROR;
+		OpenMeetingsManager openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
+		Long roomId = openMeetingsManager.getRoomId(null, groupMgr.getCourseResource(), getIdent());
+		if(roomId == null) {
+			String shortKey = "error.noroom.short";
+			String longKey = "error.noroom.long";
+			String[] params = new String[] { getShortTitle() };
+			String translPackage = Util.getPackageName(OpenMeetingsRoomEditController.class);
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			sd.setDescriptionForUnit(getIdent());
+			// set which pane is affected by error
+			sd.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG);
+		}
+		return sd;
 	}
 	
 	@Override
