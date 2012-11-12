@@ -36,6 +36,7 @@ public class OpenMeetingsRoom {
 	private long size;
 	private boolean moderated;
 	private boolean recordingAllowed;
+	private boolean closed;
 	
 	private transient Property property;
 	private transient int numOfUsers;
@@ -128,7 +129,12 @@ public class OpenMeetingsRoom {
 	public void setResourceName(String resourceName) {
 		this.resourceName = resourceName;
 	}
-	
-	
-	
+
+	public boolean isClosed() {
+		return closed;
+	}
+
+	public void setClosed(boolean closed) {
+		this.closed = closed;
+	}
 }

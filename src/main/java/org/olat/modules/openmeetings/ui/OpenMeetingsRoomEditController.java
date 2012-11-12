@@ -22,6 +22,7 @@ package org.olat.modules.openmeetings.ui;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -49,16 +50,14 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	private SingleSelection roomTypeEl;
 	private SingleSelection roomSizeEl;
 	private SingleSelection moderationModeEl;
-	private SingleSelection recordingEl;
+	private MultipleSelectionElement recordingEl;
 	private TextElement commentEl;
 	
 	private final String[] roomTypeKeys;
-	private final String[] roomTypeValues;
 	private final String[] roomSizes;
 	private final String[] moderationModeKeys;
-	private final String[] moderationModeValues;
 	private final String[] recordingKeys = {"xx"};
-	private final String[] recordingValues = {"???"};
+
 	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
@@ -78,20 +77,19 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		roomTypeKeys = new String[]{
 				RoomType.conference.typeStr(), RoomType.audience.typeStr(), RoomType.restricted.typeStr(), RoomType.interview.typeStr()
 		};
-		roomTypeValues = new String[]{
-				translate(RoomType.conference.i18nKey()), translate(RoomType.audience.i18nKey()), translate(RoomType.restricted.i18nKey()), translate(RoomType.interview.i18nKey())
-		};
-		
-		roomSizes = new String[]{"16", "100"};
-		
 		moderationModeKeys = new String[]{"yes", "no"};
-		moderationModeValues = new String[]{ translate("room.moderation.yes"), translate("room.moderation.no") };
 		
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		try {
 			room = openMeetingsManager.getRoom(group, ores, subIdentifier);
 		} catch (OpenMeetingsException e) {
 			showError(e.getType().i18nKey());
+		}
+
+		if(room != null && room.getSize() != 16 && room.getSize() != 100) {
+			roomSizes = new String[]{"16", Long.toString(room.getSize()),  "100"};
+		} else {
+			roomSizes = new String[]{"16", "100"};
 		}
 		initForm(ureq);
 	}
@@ -106,6 +104,9 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		String name = room == null ? "" : room.getName();
 		roomNameEl = uifactory.addTextElement("roomname", "room.name", 255, name, formLayout);
 		
+		String[] roomTypeValues = new String[]{
+				translate(RoomType.conference.i18nKey()), translate(RoomType.audience.i18nKey()), translate(RoomType.restricted.i18nKey()), translate(RoomType.interview.i18nKey())
+		};
 		roomTypeEl = uifactory.addDropdownSingleselect("roomtype", "room.type", formLayout, roomTypeKeys, roomTypeValues, null);
 		if(room != null) {
 			String type = Long.toString(room.getType());
@@ -118,13 +119,15 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 			roomSizeEl.select(size, true);
 		}
 		 
+		String[]  moderationModeValues = new String[]{ translate("room.moderation.yes"), translate("room.moderation.no") };
 		moderationModeEl = uifactory.addDropdownSingleselect("moderationmode", "room.moderation.mode", formLayout, moderationModeKeys, moderationModeValues, null);
 		if(room != null) {
 			String key = room.isModerated() ? moderationModeKeys[0] : moderationModeKeys[1];
 			moderationModeEl.select(key, true);
 		};
 
-		recordingEl = uifactory.addDropdownSingleselect("recording", "room.recording", formLayout, recordingKeys, recordingValues, null);
+		String[] recordingValues = new String[]{ translate("room.recording") };
+		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues, null);
 		if(room != null) {
 			String key = room.isRecordingAllowed() ? recordingKeys[0] : recordingKeys[1];
 			recordingEl.select(key, true);
@@ -153,7 +156,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		room.setComment(commentEl.getValue());
 		room.setModerated(moderationModeEl.isOneSelected() && moderationModeEl.isSelected(0));
 		room.setName(roomNameEl.getValue());
-		room.setRecordingAllowed(recordingEl.isOneSelected() && recordingEl.isSelected(0));
+		room.setRecordingAllowed(recordingEl.isAtLeastSelected(1));
 		if(roomSizeEl.isOneSelected()) {
 			String key = roomSizeEl.getSelectedKey();
 			if(StringHelper.isLong(key)) {

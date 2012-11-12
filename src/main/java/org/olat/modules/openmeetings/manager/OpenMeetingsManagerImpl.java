@@ -56,8 +56,8 @@ import org.olat.user.UserDataDeletable;
 import org.openmeetings.app.conference.session.xsd.RoomClient;
 import org.openmeetings.app.persistence.beans.flvrecord.xsd.FlvRecording;
 import org.openmeetings.app.persistence.beans.rooms.xsd.Rooms;
-import org.openmeetings.axis.services.AddRoomWithModerationAndExternalType;
-import org.openmeetings.axis.services.AddRoomWithModerationAndExternalTypeResponse;
+import org.openmeetings.axis.services.AddRoomWithModerationAndRecordingFlags;
+import org.openmeetings.axis.services.AddRoomWithModerationAndRecordingFlagsResponse;
 import org.openmeetings.axis.services.CloseRoom;
 import org.openmeetings.axis.services.CloseRoomResponse;
 import org.openmeetings.axis.services.DeleteRoom;
@@ -68,8 +68,6 @@ import org.openmeetings.axis.services.GetRoomById;
 import org.openmeetings.axis.services.GetRoomByIdResponse;
 import org.openmeetings.axis.services.GetRoomWithClientObjectsById;
 import org.openmeetings.axis.services.GetRoomWithClientObjectsByIdResponse;
-import org.openmeetings.axis.services.GetRoomsPublic;
-import org.openmeetings.axis.services.GetRoomsPublicResponse;
 import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;
 import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndTypeResponse;
 import org.openmeetings.axis.services.GetSession;
@@ -107,6 +105,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	private final static OLog log = Tracing.createLoggerFor(OpenMeetingsManagerImpl.class);
 	
 	private final static String OM_CATEGORY = "openmeetings_room";
+	private final static String GROUP_NAME_PLACEHOLDER = "omgrouptool";
 	
 	@Autowired
 	private OpenMeetingsModule openMeetingsModule;
@@ -365,6 +364,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 				room.setRoomId(omRoom.getRooms_id());
 				room.setSize(omRoom.getNumberOfPartizipants());
 				room.setType(omRoom.getRoomtype().getRoomtypes_id());
+				room.setClosed(omRoom.getIsClosed());
 				return room;
 			} else {
 				return null;
@@ -445,6 +445,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 						rec.setDownloadName(recording.getFileHash());
 						rec.setDownloadNameAlt(recording.getAlternateDownload());
 						rec.setPreviewImage(recording.getPreviewImage());
+						rec.setWidth(recording.getFlvWidth());
+						rec.setHeight(recording.getFlvHeight());
 						recList.add(rec);
 					}
 				}
@@ -481,8 +483,10 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			String sessionId = adminLogin();
 
 			RoomServiceStub roomWs = getRoomWebService();
-			AddRoomWithModerationAndExternalType omRoom = new AddRoomWithModerationAndExternalType();
+			AddRoomWithModerationAndRecordingFlags omRoom = new AddRoomWithModerationAndRecordingFlags();
 			omRoom.setAppointment(false);
+			omRoom.setAllowRecording(room.isRecordingAllowed());
+			omRoom.setAllowUserQuestions(true);
 			omRoom.setComment(room.getComment());
 			omRoom.setDemoTime(0);
 			omRoom.setExternalRoomType(getOpenOLATExternalType());
@@ -493,8 +497,9 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			omRoom.setNumberOfPartizipants(room.getSize());
 			omRoom.setRoomtypes_id(room.getType());
 			omRoom.setSID(sessionId);
+			omRoom.setWaitForRecording(true);
 
-			AddRoomWithModerationAndExternalTypeResponse addRoomResponse = roomWs.addRoomWithModerationAndExternalType(omRoom);
+			AddRoomWithModerationAndRecordingFlagsResponse addRoomResponse = roomWs.addRoomWithModerationAndRecordingFlags(omRoom);
 			long returned = addRoomResponse.get_return();
 			if(returned >= 0) {
 				room.setRoomId(returned);
@@ -708,33 +713,20 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		}
 	}
 	
-	public void getRooms(String sessionId) {
+	@Override
+	public void deleteAll(BusinessGroup group, OLATResourceable ores, String subIdentifier)
+	 throws OpenMeetingsException {
 		try {
-			RoomServiceStub roomsWs = getRoomWebService();
-			
-			GetRoomsPublic getRooms = new GetRoomsPublic();
-			getRooms.setSID(sessionId);
-
-			GetRoomsPublicResponse getRoomsResponse = roomsWs.getRoomsPublic(getRooms);
-			Rooms[] rooms = getRoomsResponse.get_return();
-			if(rooms != null) {
-				System.out.println(rooms.length);
-				for(Rooms room : rooms) {
-					if(room == null) {
-						System.out.println("Room is null");
-					} else {
-						System.out.println(room.getName());
-					}
+			Long roomId = getRoomId(group, ores, subIdentifier);
+			if(roomId != null) {
+				OpenMeetingsRoom room = getRoom(group, ores, subIdentifier);
+				if(room != null) {
+					deleteRoom(room);
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (OpenMeetingsException e) {
+			
 		}
-	}
-	
-	@Override
-	public void deleteAll(BusinessGroup group, OLATResourceable ores, String subIdentifier) {
-		//
 	}
 
 	@Override
@@ -764,6 +756,9 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private final Property getProperty(BusinessGroup group, OLATResourceable courseResource, String subIdentifier) {
+		if(group != null && subIdentifier == null) {
+			subIdentifier = GROUP_NAME_PLACEHOLDER;//name is mandatory
+		}
 		return propertyManager.findProperty(null, group, courseResource, OM_CATEGORY, subIdentifier);
 	}
 	
@@ -783,6 +778,9 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	private final Property createProperty(final BusinessGroup group, final OLATResourceable courseResource, String subIdentifier, OpenMeetingsRoom room) {
 		String serialized = serializeRoom(room);
 		long roomId = room.getRoomId();
+		if(group != null && subIdentifier == null) {
+			subIdentifier = GROUP_NAME_PLACEHOLDER;//name is mandatory
+		}
 		return propertyManager.createPropertyInstance(null, group, courseResource, OM_CATEGORY, subIdentifier, null, roomId, null, serialized);
 	}
 	

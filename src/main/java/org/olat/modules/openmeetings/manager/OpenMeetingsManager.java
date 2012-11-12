@@ -105,8 +105,10 @@ public interface OpenMeetingsManager {
 	public boolean removeUser(String publicSID);
 	
 	
-	public boolean checkConnection(String url, String login, String password) throws OpenMeetingsException;
+	public boolean checkConnection(String url, String login, String password)
+		throws OpenMeetingsException;
 	
-	public void deleteAll(BusinessGroup group, OLATResourceable ores, String subIdentifier);
+	public void deleteAll(BusinessGroup group, OLATResourceable ores, String subIdentifier)
+		throws OpenMeetingsException;
 
 }

@@ -8,6 +8,17 @@
 		$r.render("close.room")
 	#end
 
+	#if($r.available("open.recordings"))
+		$r.render("open.recordings")
+	#end
+	
+	#if($r.available("room.members"))
+		$r.render("room.members")
+	#end
+	
+	#if($r.available("edit"))
+		$r.render("edit")
+	#end
 
 	#if($r.available("start.room.guest"))
 		$r.render("start.room.guest")

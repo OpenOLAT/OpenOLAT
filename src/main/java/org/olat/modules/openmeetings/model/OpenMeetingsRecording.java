@@ -35,6 +35,9 @@ public class OpenMeetingsRecording {
 	private String downloadNameAlt;
 	private String previewImage;
 	
+	private long width;
+	private long height;
+	
 	
 	public long getRoomId() {
 		return roomId;
@@ -82,6 +85,22 @@ public class OpenMeetingsRecording {
 
 	public void setPreviewImage(String previewImage) {
 		this.previewImage = previewImage;
+	}
+
+	public long getWidth() {
+		return width;
+	}
+
+	public void setWidth(long width) {
+		this.width = width;
+	}
+
+	public long getHeight() {
+		return height;
+	}
+
+	public void setHeight(long height) {
+		this.height = height;
 	}
 	
 	

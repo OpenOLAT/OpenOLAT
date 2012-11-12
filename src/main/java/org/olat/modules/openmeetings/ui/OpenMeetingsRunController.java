@@ -19,8 +19,6 @@
  */
 package org.olat.modules.openmeetings.ui;
 
-import java.util.List;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,7 +37,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
-import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
+import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 
 /**
  * 
@@ -49,36 +47,36 @@ import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
  */
 public class OpenMeetingsRunController extends BasicController {
 
-	private Link openLink, closeLink, startLink, startGuestLink;
+	private Link openLink, closeLink, startLink, startGuestLink, recordingLink, membersLink, editLink;
 	private VelocityContainer mainVC;
 	
 	private CloseableModalController cmc;
 	private OpenMeetingsGuestController guestController;
+	private OpenMeetingsRecordingsController recordingsController;
+	private OpenMeetingsAdminRoomMembersController membersController;
+	private OpenMeetingsRoomEditController editController;
 	
 	private final boolean admin;
 	private final Long roomId;
 	private final OpenMeetingsModule openMeetingsModule;
 	private final OpenMeetingsManager openMeetingsManager;
+	
+	private final BusinessGroup group;
+	private final OLATResourceable ores;
+	private final String subIdentifier;
 
 	public OpenMeetingsRunController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
 			String subIdentifier, String resourceName, boolean admin) {
 		super(ureq, wControl);
 		
 		this.admin = admin;
+		this.group = group;
+		this.ores = ores;
+		this.subIdentifier = subIdentifier;
+
 		openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		roomId = openMeetingsManager.getRoomId(group, ores, subIdentifier);
-		
-		try {
-			List<OpenMeetingsRecording> recList = openMeetingsManager.getRecordings(roomId);
-			for(OpenMeetingsRecording rec:recList) {
-				System.out.println(openMeetingsManager.getRecordingURL(rec, null));
-			}
-			System.out.println(recList);
-		} catch (OpenMeetingsException e) {
-			e.printStackTrace();
-		}
-		
 		mainVC = createVelocityContainer("room");
 		init(ureq);
 		
@@ -89,7 +87,7 @@ public class OpenMeetingsRunController extends BasicController {
 		if(!openMeetingsModule.isEnabled()) {
 			mainVC.contextPut("disabled", Boolean.TRUE);
 		} else if(roomId == null) {
-			mainVC.contextPut("norroom", Boolean.TRUE);
+			mainVC.contextPut("noroom", Boolean.TRUE);
 		} else if (ureq.getUserSession().getRoles().isGuestOnly() || ureq.getUserSession().getRoles().isInvitee()){
 			startGuestLink = LinkFactory.createButton("start.room.guest", mainVC, this);
 			mainVC.put("start.room.guest", startGuestLink);
@@ -100,7 +98,17 @@ public class OpenMeetingsRunController extends BasicController {
 				
 				closeLink = LinkFactory.createButton("close.room", mainVC, this);
 				mainVC.put("close.room", closeLink);
+				
+				membersLink = LinkFactory.createButton("room.members", mainVC, this);
+				mainVC.put("room.members", membersLink);
+
+				editLink = LinkFactory.createButton("edit", mainVC, this);
+				mainVC.put("edit", editLink);
 			}
+			
+			recordingLink = LinkFactory.createButton("recordings", mainVC, this);
+			mainVC.put("open.recordings", recordingLink);
+			
 			startLink = LinkFactory.createButton("start.room", mainVC, this);
 			startLink.setTarget("openmeetings");
 			mainVC.put("start.room", startLink);
@@ -123,6 +131,12 @@ public class OpenMeetingsRunController extends BasicController {
 			doOpen(ureq);
 		} else if(source == closeLink) {
 			doClose(ureq);
+		} else if(source == recordingLink) {
+			doOpenRecordings(ureq);
+		} else if(source == membersLink) {
+			doOpenMembers(ureq);
+		} else if(source == editLink) {
+			doEdit(ureq);
 		}
 	}
 
@@ -136,6 +150,19 @@ public class OpenMeetingsRunController extends BasicController {
 			}
 			cmc.deactivate();
 			cleanupPopups();
+		} else if (source == recordingsController) {
+			cmc.deactivate();
+			cleanupPopups();
+		} else if(source == membersController) {
+			cmc.deactivate();
+			cleanupPopups();
+		} else if(source == editController) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				//do something
+				System.out.println("Room edited");
+			}
+			cmc.deactivate();
+			cleanupPopups();
 		} else if(source == cmc) {
 			cleanupPopups();
 		}
@@ -144,8 +171,14 @@ public class OpenMeetingsRunController extends BasicController {
 
 	private void cleanupPopups() {
 		removeAsListenerAndDispose(guestController);
+		removeAsListenerAndDispose(recordingsController);
+		removeAsListenerAndDispose(membersController);
+		removeAsListenerAndDispose(editController);
 		removeAsListenerAndDispose(cmc);
 		guestController = null;
+		editController = null;
+		recordingsController = null;
+		membersController = null;
 		cmc = null;
 	}
 	
@@ -163,6 +196,41 @@ public class OpenMeetingsRunController extends BasicController {
 		} catch (OpenMeetingsException e) {
 			showError(e.getType().i18nKey());
 		}
+	}
+	
+	private void doOpenRecordings(UserRequest ureq) {
+		cleanupPopups();
+		recordingsController = new OpenMeetingsRecordingsController(ureq, getWindowControl(), roomId);
+		listenTo(recordingsController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), recordingsController.getInitialComponent(), true, translate("recordings"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doOpenMembers(UserRequest ureq) {
+		cleanupPopups();
+		try {
+			OpenMeetingsRoom room = openMeetingsManager.getRoom(group, ores, subIdentifier);
+			membersController = new OpenMeetingsAdminRoomMembersController(ureq, getWindowControl(), room);
+			listenTo(membersController);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), membersController.getInitialComponent(), true, translate("room.members"));
+			listenTo(cmc);
+			cmc.activate();
+		} catch (OpenMeetingsException e) {
+			showError(e.getType().i18nKey());
+		}
+	}
+	
+	private void doEdit(UserRequest ureq) {
+		cleanupPopups();
+		editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), group, ores, subIdentifier, "", true);
+		listenTo(editController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), true, translate("edit"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doStartAsGuest(UserRequest ureq) {

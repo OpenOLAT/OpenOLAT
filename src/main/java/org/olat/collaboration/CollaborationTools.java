@@ -90,6 +90,10 @@ import org.olat.modules.fo.archiver.ForumArchiveManager;
 import org.olat.modules.fo.archiver.formatters.ForumFormatter;
 import org.olat.modules.fo.archiver.formatters.ForumRTFFormatter;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
+import org.olat.modules.openmeetings.manager.OpenMeetingsException;
+import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
+import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
+import org.olat.modules.openmeetings.model.RoomType;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRunController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
@@ -566,8 +570,8 @@ public class CollaborationTools implements Serializable {
 		return EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
 	}
 	
-	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group) {
-		OpenMeetingsRunController runController = new OpenMeetingsRunController(ureq, wControl, group, null, null, null, true);
+	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
+		OpenMeetingsRunController runController = new OpenMeetingsRunController(ureq, wControl, group, null, null, null, admin);
 		return runController;
 	}
 
@@ -646,12 +650,46 @@ public class CollaborationTools implements Serializable {
 		 * news content
 		 */
 		npm.deleteProperties(null, null, PROP_CAT_BG_COLLABTOOLS, null);
+		
+		/*
+		 * Delete OpenMeetings room
+		 */
+		OpenMeetingsModule omModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
+		if(omModule.isEnabled()) {
+			OpenMeetingsManager omManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
+			try {
+				omManager.deleteAll(ores, null, null);
+			} catch (OpenMeetingsException e) {
+				log.error("A room could not be deleted for group: " + ores, e);
+			}
+		}
 
 		/*
 		 * and last but not least the cache is reseted
 		 */
 		cacheToolStates.clear();
 		this.dirty = true;
+	}
+	
+	
+	private void openOpenMeetingsRoom() {
+		OpenMeetingsModule omModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
+		if(!omModule.isEnabled()) return;
+		
+		OpenMeetingsManager omm = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
+		Long roomId = omm.getRoomId(ores, null, null);
+		if(roomId == null) {
+			//create the room
+			OpenMeetingsRoom room = new OpenMeetingsRoom();
+			room.setComment(ores.getDescription());
+			room.setModerated(true);
+			room.setName(ores.getName());
+			room.setRecordingAllowed(true);
+			room.setResourceName(ores.getName());
+			room.setSize(25);
+			room.setType(RoomType.conference.type());
+			omm.addRoom(ores, null, null, room);
+		}
 	}
 
 	/**
@@ -667,7 +705,7 @@ public class CollaborationTools implements Serializable {
 		if (cv != null && cv.booleanValue() == toolValue) {
 			return; // nice, cache saved a needless update
 		}
-		
+
 		// handle Boolean Values via String Field in Property DB Table
 		final String toolValueStr = toolValue ? TRUE : FALSE;
 		final PropertyManager pm = PropertyManager.getInstance();
@@ -683,6 +721,12 @@ public class CollaborationTools implements Serializable {
 					// if existing -> update to desired value
 					property.setStringValue(toolValueStr);
 				}
+				
+				//create a room if needed
+				if(toolValue && TOOL_OPENMEETINGS.equals(selectedTool)) {
+					openOpenMeetingsRoom();
+				}
+				
 				// property becomes persistent
 				pm.saveProperty(property);
 			}});

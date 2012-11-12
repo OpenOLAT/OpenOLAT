@@ -29,6 +29,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -45,6 +47,7 @@ import org.olat.course.nodes.openmeetings.OpenMeetingsPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRunController;
@@ -59,6 +62,7 @@ import org.olat.repository.RepositoryManager;
 public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = 8680935159748506305L;
+	private static final OLog log = Tracing.createLoggerFor(OpenMeetingsCourseNode.class);
 
 	private static final String TYPE = "openmeetings";
 
@@ -172,6 +176,10 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 		OpenMeetingsManager provider = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		// remove meeting
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
-		provider.deleteAll(null, ores, getIdent());
+		try {
+			provider.deleteAll(null, ores, getIdent());
+		} catch (OpenMeetingsException e) {
+			log.error("A room could not be deleted for course node: " + getIdent() + " of course:" + course, e);
+		}
 	}
 }

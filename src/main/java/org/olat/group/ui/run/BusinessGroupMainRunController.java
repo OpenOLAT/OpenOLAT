@@ -692,7 +692,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, bwControl);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(ce.getOLATResourceable()));
 
-			collabToolCtr = collabTools.createOpenMeetingsController(ureq, bwControl, businessGroup);
+			collabToolCtr = collabTools.createOpenMeetingsController(ureq, bwControl, businessGroup, isAdmin);
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
 			//fxdiff VCRP-1,2: access control of resources
