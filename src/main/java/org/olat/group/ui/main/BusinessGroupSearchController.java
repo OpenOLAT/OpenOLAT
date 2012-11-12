@@ -94,24 +94,29 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		
 		if(showId) {
 			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", leftContainer);
+			id.setElementCssClass("o_sel_group_search_id_field");
 			id.setRegexMatchCheck("\\d*", "search.id.format");
 			id.setDisplaySize(28);
 		}
 
 		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", leftContainer);
+		displayName.setElementCssClass("o_sel_group_search_name_field");
 		displayName.setFocus(true);
 		displayName.setDisplaySize(28);
 		
 		owner = uifactory.addTextElement("cif_owner", "cif.owner", 255, "", leftContainer);
+		owner.setElementCssClass("o_sel_group_search_owner_field");
 		if (limitUsername != null) {
 			owner.setValue(limitUsername);
 			owner.setEnabled(false);
 		}
 		owner.setDisplaySize(28);
 		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", leftContainer);
+		description.setElementCssClass("o_sel_group_search_description_field");
 		description.setDisplaySize(28);
 		
 		courseTitle = uifactory.addTextElement("cif_coursetitle", "cif.coursetitle", 255, "", leftContainer);
+		courseTitle.setElementCssClass("o_sel_group_search_course_field");
 		courseTitle.setDisplaySize(28);
 
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
@@ -125,6 +130,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 				roleValues[i] = translate("search." + roleKeys[i]);
 			}
 			rolesEl = uifactory.addRadiosHorizontal("roles", "search.roles", rightContainer, roleKeys, roleValues);
+			rolesEl.setElementCssClass("o_sel_group_search_roles_field");
 			rolesEl.select("all", true);
 		}
 
@@ -134,6 +140,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 			openValues[i] = translate("search." + openKeys[i]);
 		}
 		publicEl = uifactory.addRadiosHorizontal("openBg", "search.open", rightContainer, openKeys, openValues);
+		publicEl.setElementCssClass("o_sel_group_search_public_field");
 		publicEl.select("all", true);
 
 		//resources
@@ -142,12 +149,14 @@ public class BusinessGroupSearchController extends FormBasicController implement
 			resourceValues[i] = translate("search." + resourceKeys[i]);
 		}
 		resourceEl = uifactory.addRadiosHorizontal("resourceBg", "search.resources", rightContainer, resourceKeys, resourceValues);
+		resourceEl.setElementCssClass("o_sel_group_search_resource_field");
 		resourceEl.select("all", true);
 		
 		if(showAdminTools) {
 			String[] keys = new String[] { "headless" };
 			String[] values = new String[] { translate("search.headless.check") };
 			headlessEl = uifactory.addCheckboxesHorizontal("headless.groups", "search.headless", rightContainer, keys, values, null);
+			headlessEl.setElementCssClass("o_sel_group_search_headless_field");
 		}
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
