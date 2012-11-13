@@ -28,6 +28,7 @@ package org.olat.modules.iq;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -65,6 +66,7 @@ import org.olat.ims.qti.container.AssessmentContext;
 import org.olat.ims.qti.container.ItemsInput;
 import org.olat.ims.qti.container.SectionContext;
 import org.olat.ims.qti.navigator.Navigator;
+import org.olat.ims.qti.navigator.NavigatorDelegate;
 import org.olat.ims.qti.process.AssessmentFactory;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
@@ -79,7 +81,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 /**
  * @author Felix Jost
  */
-public class IQDisplayController extends DefaultController implements GenericEventListener, Activateable2 {
+public class IQDisplayController extends DefaultController implements GenericEventListener, Activateable2, NavigatorDelegate {
 
 	private static final String PACKAGE = Util.getPackageName(IQDisplayController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(IQDisplayController.class);
@@ -92,8 +94,11 @@ public class IQDisplayController extends DefaultController implements GenericEve
 	private String repositorySoftkey = null;
 	private Resolver resolver = null;
 	private Persister persister = null;
+	private final Locale locale;
 	private final Identity assessedIdentity;
 	private volatile boolean retrievedFlag = false;
+	
+	private NavigatorDelegate delegate;
 
 	private ProgressBar qtiscoreprogress, qtiquestionprogress;
 	private IQComponent qticomp;
@@ -123,10 +128,12 @@ public class IQDisplayController extends DefaultController implements GenericEve
 	 * @param callingResDetail
 	 */
 	IQDisplayController(ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq,
-			WindowControl wControl, long callingResId, String callingResDetail) {
+			WindowControl wControl, long callingResId, String callingResDetail, NavigatorDelegate delegate) {
 		super(wControl);
 		
 		this.assessedIdentity = ureq.getIdentity();
+		this.locale = ureq.getLocale();
+		this.delegate = delegate;
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 
@@ -157,6 +164,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 
 		this.assessedIdentity = ureq.getIdentity();
+		this.locale = ureq.getLocale();
 		this.modConfig = new ModuleConfiguration();
 		modConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, Boolean.TRUE);
 		modConfig.set(IQEditController.CONFIG_KEY_TYPE, type);
@@ -252,26 +260,16 @@ public class IQDisplayController extends DefaultController implements GenericEve
 
 		// get the assessment
 		AssessmentInstance ai = null;
-		//
-		// IQManagers synchronizes display controller creation with qti editor, please see comment in qti editor
-		//
-		//synchronized (QTIEditorMainController.IS_SAVING) {
-		//QTIEditorMainController.IS_SAVING_RWL.readLock().lock();
-		//lock is now checked in the IQManager -> see there
-		//try{
-			if (repositorySoftkey != null) { // instantiate from repository
-				// build path information which will be used to store tempory qti file
-				String resourcePathInfo = callingResId + File.separator + callingResDetail; 
-				ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr(),
-						modConfig, iqsec.isPreview(), callingResId, callingResDetail, resourcePathInfo); 
-			} else if (resolver != null) { // instantiate from given resolver
-				ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr(),
-						callingResId, callingResDetail, resolver, persister, modConfig);
-			}
-		//}finally{
-			//QTIEditorMainController.IS_SAVING_RWL.readLock().unlock();
-		//}		
-		//}
+		if (repositorySoftkey != null) { // instantiate from repository
+			// build path information which will be used to store tempory qti file
+			String resourcePathInfo = callingResId + File.separator + callingResDetail; 
+			ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr(),
+					modConfig, iqsec.isPreview(), callingResId, callingResDetail, resourcePathInfo, this); 
+		} else if (resolver != null) { // instantiate from given resolver
+			ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr(),
+					callingResId, callingResDetail, resolver, persister, modConfig, this);
+		}
+
 		// check for null instance or instance with no items
 		if (ai == null || ai.getAssessmentContext().getSectionContext(0).getItemContextCount() == 0) throw new AssertException(
 				"Assessment Instance was null or no sections/items found.");
@@ -523,12 +521,11 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		}
 	}
 	
-	/**
-	 * Persist data in all cases: test, selftest, surveys except previews
-	 * In case of survey, data will be anonymized when reading from the
-	 * table (using the archiver)
-	 */
-	protected void postSubmitAssessment(UserRequest ureq, AssessmentInstance ai) {
+
+	
+	
+	@Override
+	public void submitAssessment(AssessmentInstance ai) {
 		if (!qtistatus.isPreview()) {
 			//iqm.persistResults(ai, callingResId, callingResDetail, ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr());
 			getWindowControl().setInfo(translator.translate("status.results.saved"));
@@ -536,25 +533,37 @@ public class IQDisplayController extends DefaultController implements GenericEve
 			getWindowControl().setInfo(translator.translate("status.results.notsaved"));
 		}
 
-		if (!qtistatus.isSurvey()) {
+		if (!qtistatus.isSurvey() && !iqsec.isPreview()) {
 			// for test and self-assessment, generate detailed results
-			generateDetailsResults(ureq, ai);
-		} else {
+			Document docResReporting = iqm.getResultsReporting(ai, assessedIdentity, locale);
+			FilePersister.createResultsReporting(docResReporting, assessedIdentity, ai.getFormattedType(), ai.getAssessID());
+		}
+		
+		if(delegate != null) {
+			delegate.submitAssessment(ai);
+		}
+	}
+
+	@Override
+	public void cancelAssessment(AssessmentInstance ai) {
+		//
+	}
+
+	/**
+	 * Persist data in all cases: test, selftest, surveys except previews
+	 * In case of survey, data will be anonymized when reading from the
+	 * table (using the archiver)
+	 */
+	protected void postSubmitAssessment(UserRequest ureq, AssessmentInstance ai) {
+		if (qtistatus.isSurvey()) {
 			// Send also finished event in case of survey
 			fireEvent(ureq, new IQSubmittedEvent());
 		}
 	}
 	
 	protected void generateDetailsResults(UserRequest ureq, AssessmentInstance ai) {
-		Document docResReporting = iqm.getResultsReporting(ai, ureq.getIdentity(), ureq.getLocale());
 		if (!iqsec.isPreview()) {
-			FilePersister.createResultsReporting(docResReporting, ureq.getIdentity(), ai.getFormattedType(), ai.getAssessID());
-			// Send score and passed to parent controller. Maybe it is necessary
-			// to save some data there
-			// Do this now and not later, maybe user will never click on
-			// 'close'...
-			AssessmentContext ac = ai.getAssessmentContext();
-			fireEvent(ureq, new IQSubmittedEvent(ac.getScore(), ac.isPassed(), ai.getAssessID()));
+			fireEvent(ureq, new IQSubmittedEvent());
 		}
 		
 		Boolean showResultsOnFinishObj = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
@@ -563,13 +572,12 @@ public class IQDisplayController extends DefaultController implements GenericEve
 			// do not display results reporting
 			myContent.contextPut("displayreporting", Boolean.FALSE);
 		} else { // display results reporting
+			Document docResReporting = iqm.getResultsReporting(ai, ureq.getIdentity(), ureq.getLocale());
 			String resReporting = iqm.transformResultsReporting(docResReporting, ureq.getLocale(), ai.getSummaryType() );
 			myContent.contextPut("resreporting", resReporting);
 			myContent.contextPut("displayreporting", Boolean.TRUE);
 		} 
 		myContent.setPage(VELOCITY_ROOT + "/result.html");
-		
-		
 	}
 
 	/**

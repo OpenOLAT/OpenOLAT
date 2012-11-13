@@ -45,16 +45,20 @@ public class DefaultNavigator implements Serializable {
 	private AssessmentInstance assessmentInstance;
 
 	private Info info;
+	private transient NavigatorDelegate delegate;
 
 	/**
 	 * 
 	 */
-	public DefaultNavigator(AssessmentInstance assessmentInstance) {
+	public DefaultNavigator(AssessmentInstance assessmentInstance, NavigatorDelegate delegate) {
 		this.assessmentInstance = assessmentInstance;
+		this.delegate = delegate;
 		info = new Info();
 	}
 	
-	
+	public void setDelegate(NavigatorDelegate delegate) {
+		this.delegate = delegate;
+	}
 
 	/**
 	 * @return AssessmentContext
@@ -138,11 +142,12 @@ public class DefaultNavigator implements Serializable {
 		}
 		return sectionResult;
 	}
+	
 
 	/**
 	 * @see org.olat.qti.process.Navigator#submitAssessment()
 	 */
-	public void submitAssessment() {
+	public final void submitAssessment() {
 		Output pendingOutput = null;
 		boolean pendingFeedback = getInfo().isFeedback();
 		boolean alreadyClosed = getAssessmentInstance().isClosed();
@@ -171,14 +176,22 @@ public class DefaultNavigator implements Serializable {
 		info.setMessage(QTIConstants.MESSAGE_ASSESSMENT_SUBMITTED);
 		info.setStatus(QTIConstants.ASSESSMENT_FINISHED);
 		info.setRenderItems(false);
+		
+		if(delegate != null) {
+			delegate.submitAssessment(assessmentInstance);
+		}
 	}
 
-	public void cancelAssessment() {
+	public final void cancelAssessment() {
 		getAssessmentInstance().close();
 		info.clear();
 		info.setMessage(QTIConstants.MESSAGE_ASSESSMENT_CANCELED);
 		info.setStatus(QTIConstants.ASSESSMENT_CANCELED);
 		info.setRenderItems(false);
+		
+		if(delegate != null) {
+			delegate.cancelAssessment(assessmentInstance);
+		}
 	}
 	
 	/**
