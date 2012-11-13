@@ -19,8 +19,11 @@
  */
 package org.olat.modules.openmeetings.manager;
 
+import java.io.File;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.ConnectException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +45,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
@@ -52,6 +57,7 @@ import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 import org.olat.modules.openmeetings.model.RoomReturnInfo;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserDataDeletable;
 import org.openmeetings.app.conference.session.xsd.RoomClient;
 import org.openmeetings.app.persistence.beans.flvrecord.xsd.FlvRecording;
@@ -68,6 +74,7 @@ import org.openmeetings.axis.services.GetRoomById;
 import org.openmeetings.axis.services.GetRoomByIdResponse;
 import org.openmeetings.axis.services.GetRoomWithClientObjectsById;
 import org.openmeetings.axis.services.GetRoomWithClientObjectsByIdResponse;
+import org.openmeetings.axis.services.GetRoomWithCurrentUsersByIdResponse;
 import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;
 import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndTypeResponse;
 import org.openmeetings.axis.services.GetSession;
@@ -113,8 +120,11 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	private PropertyManager propertyManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
+	@Autowired
+	private CoordinatorManager coordinator;
 
 	private XStream xStream;
+	private CacheWrapper sessionCache;
 	private OpenMeetingsLanguages languagesMapping;
 	
 	@PostConstruct
@@ -128,6 +138,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		
 		languagesMapping = new OpenMeetingsLanguages();
 		languagesMapping.read();
+
+		sessionCache = coordinator.getCoordinator().getCacher().getOrCreateCache(OpenMeetingsManager.class, "session");
 	}
 
 	@Override
@@ -246,25 +258,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		try {
 			UserServiceStub userWs = getUserWebService();
 			String adminSessionId = adminLogin();
-/*
-			SetUserObjectAndGenerateRoomHashByURL userObj = new SetUserObjectAndGenerateRoomHashByURL();
-			userObj.setBecomeModeratorAsInt(moderator ? 1 : 0);
-			userObj.setEmail(identity.getUser().getProperty(UserConstants.EMAIL, null));
-			userObj.setExternalUserId(getOpenOLATUserExternalId(identity));
-			userObj.setExternalUserType(getOpenOLATExternalType());
-			userObj.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
-			userObj.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, null));
-			userObj.setProfilePictureUrl("");
-			userObj.setRoom_id(roomId);
-			userObj.setShowAudioVideoTestAsInt(0);
-			userObj.setSID(adminSessionId);
-			userObj.setUsername(identity.getName());
-			
-			SetUserObjectAndGenerateRoomHashByURLResponse response = userWs.setUserObjectAndGenerateRoomHashByURL(userObj);
-			String hashedUrl = response.get_return();
-			*/
-			
-			
+
 			SetUserObjectAndGenerateRoomHashByURLAndRecFlag userObj = new SetUserObjectAndGenerateRoomHashByURLAndRecFlag();
 			userObj.setBecomeModeratorAsInt(moderator ? 1 : 0);
 			userObj.setEmail(identity.getUser().getProperty(UserConstants.EMAIL, null));
@@ -272,7 +266,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			userObj.setExternalUserType(getOpenOLATExternalType());
 			userObj.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
 			userObj.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, null));
-			userObj.setProfilePictureUrl("");
+			userObj.setProfilePictureUrl(getPortraitURL(identity));
 			userObj.setRoom_id(roomId);
 			userObj.setShowAudioVideoTestAsInt(0);
 			userObj.setSID(adminSessionId);
@@ -282,13 +276,6 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			SetUserObjectAndGenerateRoomHashByURLAndRecFlagResponse response = userWs.setUserObjectAndGenerateRoomHashByURLAndRecFlag(userObj);
 			String hashedUrl = response.get_return();
 			
-			
-			
-			
-			
-			
-			
-			
 			return hashedUrl;
 		} catch (Exception e) {
 			log.error("", e);
@@ -296,8 +283,35 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		}
 	}
 	
+	private String getPortraitURL(Identity identity) {
+		File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity);
+		if(portrait == null || !portrait.exists()) {
+			return "";
+		}
+		
+		String key = UUID.randomUUID().toString().replace("-", "");
+		sessionCache.put(key, identity.getKey());
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(Settings.getServerContextPathURI())
+		  .append("/restapi/openmeetings/")
+		  .append(key)
+		  .append("/portrait");
+
+		return sb.toString();
+	}
+	
 	@Override
-	public String setGuestUserToRoom(String firstName, String lastName, long roomId, boolean moderator)
+	public Long getIdentityKey(String token) {
+		Serializable obj = sessionCache.get(token);
+		if(obj instanceof Long) {
+			return (Long)obj;
+		}
+		return null;
+	}
+	
+	@Override
+	public String setGuestUserToRoom(String firstName, String lastName, long roomId)
 	throws OpenMeetingsException {
 		try {
 			UserServiceStub userWs = getUserWebService();
@@ -305,7 +319,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			
 			String username = UUID.randomUUID().toString().replace("-", "");
 			SetUserObjectAndGenerateRoomHashByURL userObj = new SetUserObjectAndGenerateRoomHashByURL();
-			userObj.setBecomeModeratorAsInt(moderator ? 1 : 0);
+			userObj.setBecomeModeratorAsInt(0);
 			userObj.setEmail("");
 			userObj.setExternalUserId(getOpenOLATUserExternalId(username));
 			userObj.setExternalUserType(getOpenOLATExternalType());
@@ -414,6 +428,9 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			
 			CloseRoomResponse closeResponse = roomWs.closeRoom(closeRoom);
 			responseCode = closeResponse.get_return();
+			if(responseCode < 0) {
+				throw new OpenMeetingsException(responseCode);
+			}
 		} catch (Exception e) {
 			log.error("", e);
 			throw translateException(e, responseCode);
@@ -584,7 +601,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 
 	@Override
-	public List<OpenMeetingsUser> getUsersOf(OpenMeetingsRoom room) {
+	public List<OpenMeetingsUser> getUsersOf(OpenMeetingsRoom room)
+	throws OpenMeetingsException {
 		try {
 			String adminSID = adminLogin();
 			RoomServiceStub roomWs = getRoomWebService();
@@ -600,8 +618,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			}
 			return Collections.emptyList();
 		} catch (Exception e) {
-			log.error("", e);
-			return Collections.emptyList();
+			throw translateException(e, 0);
 		}
 	}
 	
@@ -626,30 +643,6 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		user.setPublicSID(client.getPublicSID());
 		user.setFirstName(client.getFirstname());
 		user.setLastName(client.getLastname());
-		return user;
-	}
-	
-	private List<OpenMeetingsUser> convert(RoomClient[] clients) {
-		List<OpenMeetingsUser> users = new ArrayList<OpenMeetingsUser>();
-		for(RoomClient client:clients) {
-			OpenMeetingsUser user = convert(client);
-			if(user != null) {
-				users.add(user);
-			}
-		}
-		return users;
-	}
-	
-	private OpenMeetingsUser convert(RoomClient client) {
-		if(client == null) {
-			return null;
-		}
-		OpenMeetingsUser user = new OpenMeetingsUser();
-		user.setPublicSID(client.getPublicSID());
-		user.setFirstName(client.getFirstname());
-		user.setLastName(client.getLastname());
-		user.setExternalUserID(client.getExternalUserId());
-		user.setExternalUserType(client.getExternalUserType());
 		return user;
 	}
 
@@ -696,21 +689,52 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			return null;
 		}
 	}
+	
+	private String adminSID;
+	private long adminSIDCreationTime;
+	
 
 	private String adminLogin() {
 		try {
-			String sessionId = getSessionID() ;
-			LoginUser adminUser = new LoginUser();
-			adminUser.setSID(sessionId);
-			adminUser.setUsername(openMeetingsModule.getAdminLogin());
-			adminUser.setUserpass(openMeetingsModule.getAdminPassword());
-			LoginUserResponse loginResponse = getUserWebService().loginUser(adminUser);
-			long login = loginResponse.get_return();
-			return login > 0 ? sessionId : null;
+			synchronized(this) {
+				if(isAdminSIDValid()) {
+					return adminSID;
+				}
+				adminSID = adminLoginInternal();
+				adminSIDCreationTime = System.currentTimeMillis();
+			}
+			return adminSID;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	private String adminLoginInternal()
+	throws AxisFault, RemoteException {
+		String sid = getSessionID() ;
+		LoginUser adminUser = new LoginUser();
+		adminUser.setSID(sid);
+		adminUser.setUsername(openMeetingsModule.getAdminLogin());
+		adminUser.setUserpass(openMeetingsModule.getAdminPassword());
+		LoginUserResponse loginResponse = getUserWebService().loginUser(adminUser);
+		long login = loginResponse.get_return();
+		return login > 0 ? sid : null;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	private boolean isAdminSIDValid() {
+		if(adminSID != null) {
+			return true;
+			/*long age = System.currentTimeMillis() - adminSIDCreationTime;
+			if(age < 450000) {
+				return false;//don't cache
+			}*/
+		}
+		return false;
 	}
 	
 	@Override
@@ -725,7 +749,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 				}
 			}
 		} catch (OpenMeetingsException e) {
-			
+			log.error("", e);
 		}
 	}
 

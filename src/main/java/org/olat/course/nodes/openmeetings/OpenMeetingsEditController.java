@@ -37,7 +37,9 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.OpenMeetingsCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
+import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 
 /**
  * 
@@ -51,18 +53,24 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 	public static final String PANE_TAB_VCCONFIG = "pane.tab.vcconfig";
 	final static String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
 
+	public static final String CONFIG_ROOM_NAME = "roomName";
+	public static final String CONFIG_ROOM_SIZE = "roomSize";
+	public static final String CONFIG_ROOM_MODERATION = "roomModeration";
+	public static final String CONFIG_ROOM_RECORDING = "roomRecording";
+	public static final String CONFIG_ROOM_COMMENT = "roomComment";
+	public static final String CONFIG_ROOM_TYPE = "roomType";
+
 	private VelocityContainer editVc;
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
+	private OpenMeetingsEditFormController editForm;
 
 	private final OpenMeetingsCourseNode courseNode;
-	
 
 	public OpenMeetingsEditController(UserRequest ureq, WindowControl wControl, OpenMeetingsCourseNode courseNode,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
-
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, wControl, course.getCourseEnvironment().getCourseGroupManager(),
@@ -73,7 +81,9 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 		editVc = createVelocityContainer("edit");
 		try {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
-			Controller editForm = new OpenMeetingsEditFormController(ureq, getWindowControl(), ores, courseNode, course.getCourseTitle());
+			OpenMeetingsRoom defaultSettings = getDefaultValues();
+			editForm = new OpenMeetingsEditFormController(ureq, getWindowControl(), ores, courseNode, course.getCourseTitle(), defaultSettings);
+			listenTo(editForm);
 			editVc.put("editRooms", editForm.getInitialComponent());
 		} catch (OpenMeetingsException e) {
 			editVc.contextPut("error", e.getType().i18nKey());
@@ -108,6 +118,22 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 				courseNode.setPreConditionAccess(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == editForm) { // config form action
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				OpenMeetingsRoom room = editForm.getRoom();
+				if(room != null) {
+					ModuleConfiguration moduleConfiguration = courseNode.getModuleConfiguration();
+					moduleConfiguration.set(CONFIG_ROOM_NAME, room.getName());
+					moduleConfiguration.set(CONFIG_ROOM_SIZE, new Long(room.getSize()));
+					moduleConfiguration.set(CONFIG_ROOM_MODERATION, new Boolean(room.isModerated()));
+					moduleConfiguration.set(CONFIG_ROOM_RECORDING, new Boolean(room.isRecordingAllowed()));
+					moduleConfiguration.set(CONFIG_ROOM_COMMENT, room.getComment());
+					moduleConfiguration.set(CONFIG_ROOM_TYPE, new Long(room.getType()));
+				}
+			}
+			if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
 	}
 
@@ -117,5 +143,36 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), editVc);
 	}
+	
+	private OpenMeetingsRoom getDefaultValues() {
+		OpenMeetingsRoom room = new OpenMeetingsRoom();
+		ModuleConfiguration moduleConfiguration = courseNode.getModuleConfiguration();
+		Object name = moduleConfiguration.get(CONFIG_ROOM_NAME);
+		if(name instanceof String) {
+			room.setName((String)name);
+		}
 
+		Object size = moduleConfiguration.get(CONFIG_ROOM_SIZE);
+		if(size instanceof Long) {
+			room.setSize(((Long)size).longValue());
+		}
+		Object moderated = moduleConfiguration.get(CONFIG_ROOM_MODERATION);
+		if(moderated instanceof Boolean) {
+			room.setModerated(((Boolean)moderated).booleanValue());
+		}
+		Object recording = moduleConfiguration.get(CONFIG_ROOM_RECORDING);
+		if(recording instanceof Boolean) {
+			room.setRecordingAllowed(((Boolean)recording).booleanValue());
+		}
+		Object comment = moduleConfiguration.get(CONFIG_ROOM_COMMENT);
+		if(comment instanceof String) {
+			room.setComment((String)comment);
+		}
+		
+		Object type = moduleConfiguration.get(CONFIG_ROOM_TYPE);
+		if(type instanceof Long) {
+			room.setType(((Long)type).longValue());
+		}
+		return room;
+	}
 }

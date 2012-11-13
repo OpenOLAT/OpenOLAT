@@ -62,7 +62,7 @@ public class OpenMeetingsRecordingsController extends BasicController {
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("users.empty"));
+		tableConfig.setTableEmptyMessage(translate("recordings.empty"));
 		
 		Translator trans = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), trans);

@@ -40,6 +40,10 @@ public class OpenMeetingsException extends Exception {
 		this.type = type;
 	}
 	
+	public OpenMeetingsException(long code) {
+		this.type = Type.get(code);
+	}
+	
 	public OpenMeetingsException(String message, Type type) {
 		super(message);
 		this.type = type;
@@ -60,17 +64,31 @@ public class OpenMeetingsException extends Exception {
 	}
 
 	public enum Type {
-		unkown("error.unkown"),
-		serverNotAvailable("error.notAvailable");
+		unkown("error.unkown", 0),
+		serverNotAvailable("error.notAvailable", 0)
+		
+		;
+		
 
 		private final String i18nKey;
+		private final long code;
 		
-		private Type(String i18nKey) {
+		private Type(String i18nKey, long code) {
 			this.i18nKey = i18nKey;
+			this.code = code;
 		}
 		
 		public String i18nKey() {
 			return i18nKey;
+		}
+		
+		public static Type get(long code) {
+			for(Type t:Type.values()) {
+				if(t.code == code) {
+					return t;
+				}
+			}
+			return unkown;
 		}
 	}
 }

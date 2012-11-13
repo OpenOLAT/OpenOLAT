@@ -329,6 +329,7 @@ public class RestApiLoginFilter implements Filter {
 			openUrls.add(context + "/application.html");
 			openUrls.add(context + "/wadl");
 			openUrls.add(context + "/registration");
+			openUrls.add(context + "/openmeetings");
 		}
 		return openUrls;
 	}

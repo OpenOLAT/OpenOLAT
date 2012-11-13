@@ -225,7 +225,7 @@ public class OpenMeetingsRunController extends BasicController {
 	
 	private void doEdit(UserRequest ureq) {
 		cleanupPopups();
-		editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), group, ores, subIdentifier, "", true);
+		editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), group, ores, subIdentifier, "", null, true);
 		listenTo(editController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), true, translate("edit"));
@@ -248,7 +248,7 @@ public class OpenMeetingsRunController extends BasicController {
 			showError("room.notfound.error");
 		} else {
 			try {
-				String securedHash = openMeetingsManager.setGuestUserToRoom(firstName, lastName, roomId, true);
+				String securedHash = openMeetingsManager.setGuestUserToRoom(firstName, lastName, roomId);
 				String url = openMeetingsManager.getURL(getIdentity(), roomId.longValue(), securedHash, getLocale());
 				DisplayOrDownloadComponent cmp = new DisplayOrDownloadComponent("openCommand", url);
 				mainVC.put("openCmd", cmp);
@@ -263,7 +263,7 @@ public class OpenMeetingsRunController extends BasicController {
 			showError("room.notfound.error");
 		} else {
 			try {
-				String securedHash = openMeetingsManager.setUserToRoom(getIdentity(), roomId, true);
+				String securedHash = openMeetingsManager.setUserToRoom(getIdentity(), roomId, admin);
 				String url = openMeetingsManager.getURL(getIdentity(), roomId.longValue(), securedHash, getLocale());
 				RedirectMediaResource redirect = new RedirectMediaResource(url);
 				ureq.getDispatchResult().setResultingMediaResource(redirect);

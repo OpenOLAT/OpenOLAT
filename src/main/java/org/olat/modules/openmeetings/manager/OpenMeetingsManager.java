@@ -37,15 +37,45 @@ import org.olat.modules.openmeetings.model.OpenMeetingsUser;
  */
 public interface OpenMeetingsManager {
 	
+	/**
+	 * 
+	 * @return A string which identity rooms and users created by this OpenOLAT instance
+	 */
 	public String getOpenOLATExternalType();
 	
-	
+	/**
+	 * Create the URL to open a room
+	 * @param identity
+	 * @param roomId
+	 * @param securedHash
+	 * @param language
+	 * @return
+	 */
 	public String getURL(Identity identity, long roomId, String securedHash, Locale language);
 	
+	/**
+	 * Set a temporary user on the OpenMeetings server, this user is a regular OpenOLAT
+	 * user.
+	 * @param identity
+	 * @param roomId
+	 * @param moderator
+	 * @param sessionId
+	 * @return
+	 * @throws OpenMeetingsException
+	 */
 	public String setUserToRoom(Identity identity, long roomId, boolean moderator)
 	throws OpenMeetingsException;
 	
-	public String setGuestUserToRoom(String firstName, String lastName, long roomId, boolean moderator)
+	/**
+	 * Set a temporary user on the OpenMeetings server, this user is a guest in OpenOLAT.
+	 * @param firstName
+	 * @param lastName
+	 * @param roomId
+	 * @param moderator
+	 * @return
+	 * @throws OpenMeetingsException
+	 */
+	public String setGuestUserToRoom(String firstName, String lastName, long roomId)
 	throws OpenMeetingsException;
 	
 	public Long getRoomId(BusinessGroup group, OLATResourceable ores, String subIdentifier);
@@ -87,8 +117,20 @@ public interface OpenMeetingsManager {
 	 */
 	public String getRecordingURL(OpenMeetingsRecording recording, String sid);
 	
+	/**
+	 * A UUID mapped to the identity is saved in a cache
+	 * @param token
+	 * @return
+	 */
+	public Long getIdentityKey(String token);
 	
-	public List<OpenMeetingsUser> getUsersOf(OpenMeetingsRoom room);
+	/**
+	 * 
+	 * @param room
+	 * @return
+	 */
+	public List<OpenMeetingsUser> getUsersOf(OpenMeetingsRoom room)
+			throws OpenMeetingsException;
 	
 	/**
 	 * Kick all users from a room

@@ -64,15 +64,17 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	private final String subIdentifier;
 	
 	private OpenMeetingsRoom room;
+	private OpenMeetingsRoom defaultSettings;
 	private final OpenMeetingsManager openMeetingsManager;
 
 	public OpenMeetingsRoomEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
-			String subIdentifier, String resourceName, boolean admin) {
+			String subIdentifier, String resourceName, OpenMeetingsRoom defaultSettings, boolean admin) {
 		super(ureq, wControl);
 		
 		this.group = group;
 		this.ores = ores;
 		this.subIdentifier = subIdentifier;
+		this.defaultSettings = defaultSettings;
 		
 		roomTypeKeys = new String[]{
 				RoomType.conference.typeStr(), RoomType.audience.typeStr(), RoomType.restricted.typeStr(), RoomType.interview.typeStr()
@@ -101,8 +103,8 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		String name = room == null ? "" : room.getName();
-		roomNameEl = uifactory.addTextElement("roomname", "room.name", 255, name, formLayout);
+		String name = room == null ? (defaultSettings == null ? null : defaultSettings.getName()) : room.getName();
+		roomNameEl = uifactory.addTextElement("roomname", "room.name", 255, name == null ? "" : name, formLayout);
 		
 		String[] roomTypeValues = new String[]{
 				translate(RoomType.conference.i18nKey()), translate(RoomType.audience.i18nKey()), translate(RoomType.restricted.i18nKey()), translate(RoomType.interview.i18nKey())
@@ -111,11 +113,17 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		if(room != null) {
 			String type = Long.toString(room.getType());
 			roomTypeEl.select(type, true);
+		} else if(defaultSettings != null && defaultSettings.getType() > 0) {
+			String type = Long.toString(defaultSettings.getType());
+			roomTypeEl.select(type, true);
 		}
 		
 		roomSizeEl = uifactory.addDropdownSingleselect("roomsize", "room.size", formLayout, roomSizes, roomSizes, null);
 		if(room != null) {
 			String size = Long.toString(room.getSize());
+			roomSizeEl.select(size, true);
+		} else if(defaultSettings != null && defaultSettings.getSize() > 0) {
+			String size = Long.toString(defaultSettings.getSize());
 			roomSizeEl.select(size, true);
 		}
 		 
@@ -124,17 +132,21 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		if(room != null) {
 			String key = room.isModerated() ? moderationModeKeys[0] : moderationModeKeys[1];
 			moderationModeEl.select(key, true);
-		};
+		} else if(defaultSettings != null) {
+			String key = defaultSettings.isModerated() ? moderationModeKeys[0] : moderationModeKeys[1];
+			moderationModeEl.select(key, true);
+		}
 
 		String[] recordingValues = new String[]{ translate("room.recording") };
 		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues, null);
 		if(room != null) {
-			String key = room.isRecordingAllowed() ? recordingKeys[0] : recordingKeys[1];
-			recordingEl.select(key, true);
-		};
+			recordingEl.select(recordingKeys[0], room.isRecordingAllowed());
+		} else if(defaultSettings != null) {
+			recordingEl.select(recordingKeys[0], defaultSettings.isRecordingAllowed());
+		}
 
-		String comment = room == null ? "" : room.getComment();
-		commentEl = uifactory.addRichTextElementForStringData("roomcomment", "room.comment", comment,
+		String comment = room == null ? (defaultSettings == null ? null : defaultSettings.getComment()) : room.getComment();
+		commentEl = uifactory.addRichTextElementForStringData("roomcomment", "room.comment", comment == null ? "" : comment,
 				10, -1, false, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -173,10 +185,11 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		
 		if(room.getRoomId() > 0) {
 			room = openMeetingsManager.updateRoom(group, ores, subIdentifier, room);
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else {
 			room = openMeetingsManager.addRoom(group, ores, subIdentifier, room);
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
-		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	@Override

@@ -58,15 +58,17 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	private final OpenMeetingsManager openMeetingsManager;
 	
 	private OpenMeetingsRoom room;
+	private OpenMeetingsRoom defaultSettings;
 
 	public OpenMeetingsEditFormController(UserRequest ureq, WindowControl wControl, OLATResourceable course,
-			OpenMeetingsCourseNode courseNode, String courseTitle)
+			OpenMeetingsCourseNode courseNode, String courseTitle, OpenMeetingsRoom defaultSettings)
 	    throws OpenMeetingsException{
 		super(ureq, wControl);
 		
 		this.course = course;
 		this.courseNode = courseNode;
 		this.courseTitle = courseTitle;
+		this.defaultSettings = defaultSettings;
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
 		room = openMeetingsManager.getRoom(null, course, courseNode.getIdent());
@@ -82,6 +84,10 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		formLayout.add(buttonContainer);
 		String key = room == null ? "create.room" : "edit.room";
 		editLink = uifactory.addFormLink(key, buttonContainer, Link.BUTTON);	
+	}
+	
+	public OpenMeetingsRoom getRoom() {
+		return room;
 	}
 	
 	private void updateUI() {
@@ -101,9 +107,10 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		if(source == cmc) {
 			cleanupPopups();
 		} else if(source == editController) {
-			if(event == Event.CHANGED_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				room = editController.getRoom();
 				updateUI();
+				fireEvent(ureq, event);
 			}
 			cmc.deactivate();
 			cleanupPopups();
@@ -135,7 +142,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	protected void doEditRoom(UserRequest ureq) {
 		try {
 			cleanupPopups();
-			editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), null, course, courseNode.getIdent(), courseTitle, true);
+			editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), null, course, courseNode.getIdent(), courseTitle, defaultSettings,  true);
 			listenTo(editController);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), true, translate("edit.room"));

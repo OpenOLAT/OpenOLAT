@@ -160,8 +160,9 @@ public class OpenMeetingsAdminRoomMembersController extends BasicController {
 			
 			long numOfFreePlaces = room.getSize() - users.size();
 			mainVC.contextPut("freePlaces", new String[]{Long.toString(numOfFreePlaces)});
-		} catch (Exception e) {
-			showError(OpenMeetingsException.SERVER_NOT_I18N_KEY);
+		} catch (OpenMeetingsException e) {
+			tableCtr.setTableDataModel(new UserToGroupDataModel());
+			showError(e.getType().i18nKey());
 		}
 	}
 

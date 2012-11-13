@@ -76,6 +76,13 @@
         overflowToDisk="false"
         />
 
+	<cache name="org.olat.core.util.cache.n.impl.svm.SingleVMCacher@org.olat.modules.openmeetings.manager.OpenMeetingsManager_session__0"
+        maxElementsInMemory="10000"
+        eternal="false"
+        timeToIdleSeconds="900"
+        timeToLiveSeconds="900"
+        overflowToDisk="false"
+        />
 
 	<!-- 
 		specific OLAT caches
