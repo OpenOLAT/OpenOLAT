@@ -74,6 +74,7 @@ junit and integration tests in OpenOLAT 8
 - Run the tests
 	mvn -Parquillian surefire:test
 
+You can add "clean-mysql-dbsetup" to the profils to drop / restore the database
 
 * Execute a single selenium functional integration test in Eclipse
 -----------------------------------------
