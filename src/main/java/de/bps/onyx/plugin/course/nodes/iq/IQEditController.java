@@ -445,7 +445,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			// handle preview
 			if (previewLayoutCtr != null) previewLayoutCtr.dispose();
 			Controller previewController = IQManager.getInstance().createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), course
-					.getResourceableId().longValue(), courseNode.getIdent());
+					.getResourceableId().longValue(), courseNode.getIdent(), null);
 			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, null, previewController.getInitialComponent(), null);
 			previewLayoutCtr.addDisposableChildController(previewController);
 			previewLayoutCtr.activate();

@@ -30,6 +30,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.ims.qti.navigator.NavigatorDelegate;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -47,7 +48,7 @@ public class AssessmentFactory {
 	 * @return
 	 */
 	public static AssessmentInstance createAssessmentInstance(Identity subj, String remoteAddr, ModuleConfiguration modConfig, boolean preview,
-			long callingResId, String callingResDetail, String resourcePathInfo) {
+			long callingResId, String callingResDetail, String resourcePathInfo, NavigatorDelegate delegate) {
 		AssessmentInstance ai = null;
 		Persister persister = null;
 
@@ -74,7 +75,7 @@ public class AssessmentFactory {
 			Resolver resolver = new ImsRepositoryResolver(re.getKey());
 			long aiID = CodeHelper.getForeverUniqueID();
 			try {
-				ai = new AssessmentInstance(subj, remoteAddr, re.getKey().longValue(), aiID, callingResId, callingResDetail, resolver, persister, modConfig);
+				ai = new AssessmentInstance(subj, remoteAddr, re.getKey().longValue(), aiID, callingResId, callingResDetail, resolver, persister, modConfig, delegate);
 			} catch (Exception e) { return null; }
 		}
 		else {
@@ -86,6 +87,7 @@ public class AssessmentFactory {
 			ai.setAssessedIdentity(subj);
 			ai.setCallingResId(callingResId);
 			ai.setCallingResDetail(callingResDetail);
+			ai.setDelegate(delegate);
 			if(StringHelper.containsNonWhitespace(ai.getRemoteAddr())) {
 				ai.setRemoteAddr(remoteAddr);
 			}
@@ -101,9 +103,10 @@ public class AssessmentFactory {
 	 * @param doc
 	 * @return
 	 */
-	public static AssessmentInstance createAssessmentInstance(Identity subj, String remoteAddr, long callingResId, String callingResDetail, Resolver resolver, Persister persister, ModuleConfiguration modConfig) {
+	public static AssessmentInstance createAssessmentInstance(Identity subj, String remoteAddr, long callingResId, String callingResDetail, Resolver resolver, Persister persister,
+			ModuleConfiguration modConfig, NavigatorDelegate delegate) {
 		long aiID = CodeHelper.getForeverUniqueID();
-		return new AssessmentInstance(null, remoteAddr, 0, aiID, callingResId, callingResDetail, resolver, persister, modConfig);
+		return new AssessmentInstance(null, remoteAddr, 0, aiID, callingResId, callingResDetail, resolver, persister, modConfig, delegate);
 	}
 
 }

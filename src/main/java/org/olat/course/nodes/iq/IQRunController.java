@@ -75,6 +75,8 @@ import org.olat.course.nodes.SelfAssessableCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.QTIChangeLogMessage;
+import org.olat.ims.qti.container.AssessmentContext;
+import org.olat.ims.qti.navigator.NavigatorDelegate;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.instantMessaging.InstantMessaging;
@@ -95,7 +97,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * Initial Date:  Oct 13, 2004
  * @author Felix Jost
  */
-public class IQRunController extends BasicController implements GenericEventListener, Activateable2 {
+public class IQRunController extends BasicController implements GenericEventListener, Activateable2, NavigatorDelegate {
 
 	private VelocityContainer myContent;
 	
@@ -384,7 +386,7 @@ public class IQRunController extends BasicController implements GenericEventList
 			OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("test");
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = addToHistory(ureq, ores, null);
-			Controller returnController = IQManager.getInstance().createIQDisplayController(modConfig, secCallback, ureq, bwControl, callingResId, callingResDetail);
+			Controller returnController = IQManager.getInstance().createIQDisplayController(modConfig, secCallback, ureq, bwControl, callingResId, callingResDetail, this);
 			/*
 			 * either returnController is a MessageController or it is a IQDisplayController
 			 * this should not serve as pattern to be copy&pasted.
@@ -454,44 +456,56 @@ public class IQRunController extends BasicController implements GenericEventList
 		}
 	}
 
+	@Override
+	public void submitAssessment(AssessmentInstance ai) {
+		if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
+			AssessmentContext ac = ai.getAssessmentContext();
+			Float score = new Float(ac.getScore());
+			Boolean passed = new Boolean(ac.isPassed());
+			ScoreEvaluation sceval = new ScoreEvaluation(score, passed, new Long(ai.getAssessID()));
+			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable			
+			boolean incrementUserAttempts = true;
+			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), incrementUserAttempts);
+				
+			// Mark publisher for notifications
+			AssessmentNotificationsHandler anh = AssessmentNotificationsHandler.getInstance();
+			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+			anh.markPublisherNews(getIdentity(), courseId);
+			if(!assessmentStopped) {
+			  assessmentStopped = true;					  
+			  AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
+			  singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
+				singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
+			}
+		} else if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
+			// save number of attempts
+			// although this is not an assessable node we still use the assessment
+			// manager since this one uses caching
+			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv);
+		} else if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF)){
+			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv);
+		}
+	}
+
+	@Override
+	public void cancelAssessment(AssessmentInstance ai) {
+		//
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == displayController) {
 			if (event instanceof IQSubmittedEvent) {
-				IQSubmittedEvent se = (IQSubmittedEvent) event;
-				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-				
 				// Save results in case of test
-				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
-					// update scoring overview for the user in the current course
-					Float score = new Float(se.getScore());
-					Boolean passed = new Boolean(se.isPassed());
-					ScoreEvaluation sceval = new ScoreEvaluation(score, passed, new Long(se.getAssessmentID()));
-					AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable			
-					boolean incrementUserAttempts = true;
-					acn.updateUserScoreEvaluation(sceval, userCourseEnv, urequest.getIdentity(), incrementUserAttempts);
-					//userCourseEnv.getScoreAccounting().scoreInfoChanged(acn, sceval);					
+				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {		
 					exposeUserTestDataToVC(urequest);
-										
-					// Mark publisher for notifications
-					AssessmentNotificationsHandler anh = AssessmentNotificationsHandler.getInstance();
-					Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-					anh.markPublisherNews(urequest.getIdentity(), courseId);
-					if(!assessmentStopped) {
-					  assessmentStopped = true;					  
-					  AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
-					  singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
-						singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
-					}
 				} 
 				// Save results in case of questionnaire
 				else if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
-					// save number of attempts
-					// although this is not an assessable node we still use the assessment
-					// manager since this one uses caching
-					am.incrementNodeAttempts(courseNode, urequest.getIdentity(), userCourseEnv);
 					exposeUserQuestionnaireDataToVC();
 					
 					if(displayContainerController != null) {
@@ -505,7 +519,7 @@ public class IQRunController extends BasicController implements GenericEventList
 				// Don't save results in case of self-test
 				// but do safe attempts !
 				else if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF)){
-					am.incrementNodeAttempts(courseNode, urequest.getIdentity(), userCourseEnv);
+					//am.incrementNodeAttempts(courseNode, urequest.getIdentity(), userCourseEnv);
 				}
 			} else if (event.equals(Event.DONE_EVENT)) {
 				stopAssessment(urequest, event);

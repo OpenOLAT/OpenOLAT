@@ -39,6 +39,7 @@ import org.olat.ims.qti.container.SectionContext;
 import org.olat.ims.qti.navigator.MenuItemNavigator;
 import org.olat.ims.qti.navigator.MenuSectionNavigator;
 import org.olat.ims.qti.navigator.Navigator;
+import org.olat.ims.qti.navigator.NavigatorDelegate;
 import org.olat.ims.qti.navigator.SequentialItemNavigator;
 import org.olat.ims.qti.navigator.SequentialSectionNavigator;
 import org.olat.modules.ModuleConfiguration;
@@ -139,7 +140,7 @@ public class AssessmentInstance implements Serializable {
 	 * @param modConfig
 	 */
 	public AssessmentInstance(Identity identity, String remoteAddr, long repositoryEntryKey, long assessID, long callingResId, String callingResDetail,
-			Resolver resolver, Persister persistor, ModuleConfiguration modConfig) {
+			Resolver resolver, Persister persistor, ModuleConfiguration modConfig, NavigatorDelegate delegate) {
 		this.assessedIdentity = identity;
 		this.remoteAddr = remoteAddr;
 		this.callingResId = callingResId;
@@ -211,7 +212,7 @@ public class AssessmentInstance implements Serializable {
 		
 		assessmentContext = new AssessmentContext();
 		assessmentContext.setUp(this);
-		createNavigator();
+		createNavigator(delegate);
 	}
 
 	public Identity getAssessedIdentity() {
@@ -274,21 +275,21 @@ public class AssessmentInstance implements Serializable {
 	public boolean isSelfAssess() { return type == TYPE_SELF;	}
 	public boolean isSurvey() { return type == TYPE_SURVEY;	}
 	
-	private void createNavigator() {
+	private void createNavigator(NavigatorDelegate delegate) {
 		if (menu) {
 			if (sequence == SEQUENCE_SECTION) {
-				navigator = new MenuSectionNavigator(this);
+				navigator = new MenuSectionNavigator(this, delegate);
 			} 
 			else {
-				navigator = new MenuItemNavigator(this);
+				navigator = new MenuItemNavigator(this, delegate);
 			}
 		}
 		else { // not menu
 			if (sequence == SEQUENCE_SECTION) {
-				navigator = new SequentialSectionNavigator(this);
+				navigator = new SequentialSectionNavigator(this, delegate);
 			} 
 			else {
-				navigator = new SequentialItemNavigator(this);
+				navigator = new SequentialItemNavigator(this, delegate);
 			}
 		}
 	}
@@ -512,6 +513,12 @@ public class AssessmentInstance implements Serializable {
 	 */
 	public void setPreview(boolean b) {
 		preview = b;
+	}
+	
+	public void setDelegate(NavigatorDelegate delegate) {
+		if(navigator != null) {
+			navigator.setDelegate(delegate);
+		}
 	}
 	
 	/*
