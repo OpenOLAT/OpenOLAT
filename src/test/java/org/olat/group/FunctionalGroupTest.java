@@ -86,7 +86,6 @@ public class FunctionalGroupTest {
 		}
 	}
 	
-	@Ignore
 	@Test
 	@RunAsClient
 	public void checkCreate(@Drone @Tutor1 DefaultSelenium tutor0) throws IOException, URISyntaxException{
@@ -116,6 +115,31 @@ public class FunctionalGroupTest {
 		/*
 		 * verify
 		 */
+		
+		/* check for administration */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//ul[contains(@class, '")
+		.append(functionalUtil.getTreeLevel1Css())
+		.append("')]//li//a[contains(@class, '")
+		.append(FunctionalGroupsSiteUtil.ADMINISTRATION_ICON_CSS)
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(tutor0, selectorBuffer.toString());
+		
+		/* check for waiting list */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//ul[contains(@class, '")
+		.append(functionalUtil.getTreeLevel1Css())
+		.append("')]//li//a[contains(@class, '")
+		.append(FunctionalGroupsSiteUtil.BOOKING_ICON_CSS)
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(tutor0, selectorBuffer.toString());
+		
+		/* logout */
+		functionalUtil.logout(tutor0);
 	}
 
 	@Ignore
