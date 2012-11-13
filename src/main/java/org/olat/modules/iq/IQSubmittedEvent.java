@@ -33,49 +33,13 @@ import org.olat.core.gui.control.Event;
  * @author gnaegi
  */
 public class IQSubmittedEvent extends Event {
-	private float score = 0;
-	private boolean passed = false;
-	private long assessmentID;
 	
+	private static final long serialVersionUID = -7510782040615263505L;
 
 	/**
 	 * constructor for a finished survey event
 	 */
 	public IQSubmittedEvent() {
 		super("iqfinished");
-	}
-
-	/**
-	 * Constructor for a finished test or selftest event
-	 * @param score
-	 * @param passed
-	 */
-	public IQSubmittedEvent(float score, boolean passed, long assessmentID) {
-		super("iqfinished");
-		this.score = score;
-		this.passed = passed;
-		this.assessmentID = assessmentID;
-	}
-
-	
-	/**
-	 * @return Returns the passed.
-	 */
-	public boolean isPassed() {
-		return passed;
-	}
-	/**
-	 * @return Returns the score.
-	 */
-	public float getScore() {
-		return score;
-	}
-
-	/**
-	 * 
-	 * @return Returns the (last) assessmentID.
-	 */
-	public long getAssessmentID() {
-		return assessmentID;
 	}
 }

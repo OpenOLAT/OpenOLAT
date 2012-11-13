@@ -46,8 +46,8 @@ public class MenuSectionNavigator extends DefaultNavigator implements Navigator,
 	/**
 	 * @param assessmentContext
 	 */
-	public MenuSectionNavigator(AssessmentInstance assessmentInstance) {
-		super(assessmentInstance);
+	public MenuSectionNavigator(AssessmentInstance assessmentInstance, NavigatorDelegate delegate) {
+		super(assessmentInstance, delegate);
 	}
 
 	public void startAssessment() {

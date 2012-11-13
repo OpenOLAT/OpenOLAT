@@ -47,8 +47,8 @@ public class MenuItemNavigator extends DefaultNavigator implements Navigator, Se
 	/**
 	 * @param assessmentContext
 	 */
-	public MenuItemNavigator(AssessmentInstance assessmentInstance) {
-		super(assessmentInstance);
+	public MenuItemNavigator(AssessmentInstance assessmentInstance, NavigatorDelegate delegate) {
+		super(assessmentInstance, delegate);
 	}
 
 	public void startAssessment() {

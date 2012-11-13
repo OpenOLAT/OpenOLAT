@@ -298,43 +298,6 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
-	 * 
-	 * @param addedEntry
-	 */
-	public void deleteRepositoryEntryAndBasesecurity(RepositoryEntry entry) {
-		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
-		//delete all policies
-		BaseSecurityManager.getInstance().deletePolicies(entry.getOlatResource());
-		DBFactory.getInstance().deleteObject(entry);
-		OLATResourceManager.getInstance().deleteOLATResourceable(entry);
-		SecurityGroup ownerGroup = entry.getOwnerGroup();
-		if (ownerGroup != null) {
-			// delete secGroup
-			Tracing.logDebug("deleteRepositoryEntry deleteSecurityGroup ownerGroup=" + ownerGroup, this.getClass());
-			BaseSecurityManager.getInstance().deleteSecurityGroup(ownerGroup);
-			OLATResourceManager.getInstance().deleteOLATResourceable(ownerGroup);
-		}
-		SecurityGroup participantGroup = entry.getParticipantGroup();
-		if (participantGroup != null) {
-			// delete secGroup
-			logDebug("deleteRepositoryEntry deleteSecurityGroup participantGroup=" + participantGroup);
-			BaseSecurityManager.getInstance().deleteSecurityGroup(participantGroup);
-			OLATResourceManager.getInstance().deleteOLATResourceable(participantGroup);
-		}
-		SecurityGroup tutorGroup = entry.getTutorGroup();
-		if (tutorGroup != null) {
-			// delete secGroup
-			logDebug("deleteRepositoryEntry deleteSecurityGroup tutorGroup=" + tutorGroup);
-			BaseSecurityManager.getInstance().deleteSecurityGroup(tutorGroup);
-			OLATResourceManager.getInstance().deleteOLATResourceable(tutorGroup);
-		}
-		
-		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
-		//instead of a controller.
-		deleteImage(entry);
-	}
-	
-	/**
 	 * Copy the repo entry image from the source to the target repository entry.
 	 * If the source repo entry does not exists, nothing will happen
 	 * 
@@ -413,11 +376,11 @@ public class RepositoryManager extends BasicManager {
 		logDebug("deleteRepositoryEntry after load entry=" + entry);
 		logDebug("deleteRepositoryEntry after load entry.getOwnerGroup()=" + entry.getOwnerGroup());
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
-		OLATResource ores = entry.getOlatResource();
+		OLATResource resource = entry.getOlatResource();
 		//delete old context
-		deleteBGcontext(ores);
+		deleteBGcontext(resource);
 		
-		if (!handler.readyToDelete(ores, ureq, wControl)) {
+		if (!handler.readyToDelete(resource, ureq, wControl)) {
 			return false;
 		}
 
@@ -430,18 +393,52 @@ public class RepositoryManager extends BasicManager {
 		BookmarkManager.getInstance().deleteAllBookmarksFor(entry);
 		// delete all catalog entries referencing deleted entry
 		CatalogManager.getInstance().resourceableDeleted(entry);
-		// delete the entry
-		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
-		
-		// inform handler to do any cleanup work... handler must delete the
-		// referenced resourceable aswell.
-		handler.cleanupOnDelete(entry.getOlatResource());
-		
+
 		logDebug("deleteRepositoryEntry after reload entry=" + entry);
 		deleteRepositoryEntryAndBasesecurity(entry);
+		//delete all policies
+		securityManager.deletePolicies(resource);
+		
+		// inform handler to do any cleanup work... handler must delete the
+		// referenced resourceable a swell.
+		handler.cleanupOnDelete(resource);
 
 		logDebug("deleteRepositoryEntry Done");
 		return true;
+	}
+	
+	/**
+	 * 
+	 * @param addedEntry
+	 */
+	public void deleteRepositoryEntryAndBasesecurity(RepositoryEntry entry) {
+		RepositoryEntry reloadedEntry = (RepositoryEntry)DBFactory.getInstance().loadObject(entry, true);
+		dbInstance.getCurrentEntityManager().remove(reloadedEntry);
+		SecurityGroup ownerGroup = reloadedEntry.getOwnerGroup();
+		if (ownerGroup != null) {
+			// delete secGroup
+			logDebug("deleteRepositoryEntry deleteSecurityGroup ownerGroup=" + ownerGroup);
+			securityManager.deleteSecurityGroup(ownerGroup);
+			OLATResourceManager.getInstance().deleteOLATResourceable(ownerGroup);
+		}
+		SecurityGroup participantGroup = reloadedEntry.getParticipantGroup();
+		if (participantGroup != null) {
+			// delete secGroup
+			logDebug("deleteRepositoryEntry deleteSecurityGroup participantGroup=" + participantGroup);
+			securityManager.deleteSecurityGroup(participantGroup);
+			OLATResourceManager.getInstance().deleteOLATResourceable(participantGroup);
+		}
+		SecurityGroup tutorGroup = reloadedEntry.getTutorGroup();
+		if (tutorGroup != null) {
+			// delete secGroup
+			logDebug("deleteRepositoryEntry deleteSecurityGroup tutorGroup=" + tutorGroup);
+			securityManager.deleteSecurityGroup(tutorGroup);
+			OLATResourceManager.getInstance().deleteOLATResourceable(tutorGroup);
+		}
+		
+		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
+		//instead of a controller.
+		deleteImage(entry);
 	}
 	
 	private void deleteBGcontext(OLATResource resource) {

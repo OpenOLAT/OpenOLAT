@@ -74,14 +74,18 @@ public class OpenBusinessGroupSearchController extends FormBasicController imple
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(showId) {
 			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", formLayout);
+			id.setElementCssClass("o_sel_group_search_id_field");
 			id.setRegexMatchCheck("\\d*", "search.id.format");
 		}
 		
 		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", formLayout);
+		displayName.setElementCssClass("o_sel_group_search_name_field");
 		displayName.setFocus(true);
 		
 		owner = uifactory.addTextElement("cif_owner", "cif.owner", 255, "", formLayout);
+		owner.setElementCssClass("o_sel_group_search_owner_field");
 		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", formLayout);
+		description.setElementCssClass("o_sel_group_search_description_field");
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);

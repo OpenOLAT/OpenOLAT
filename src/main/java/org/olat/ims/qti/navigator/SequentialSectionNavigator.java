@@ -54,8 +54,8 @@ public class SequentialSectionNavigator extends DefaultNavigator implements Navi
 	/**
 	 * @param assessmentInstance
 	 */
-	public SequentialSectionNavigator(AssessmentInstance assessmentInstance) {
-		super(assessmentInstance);
+	public SequentialSectionNavigator(AssessmentInstance assessmentInstance, NavigatorDelegate delegate) {
+		super(assessmentInstance, delegate);
 	}
 
 	public void startAssessment() {
