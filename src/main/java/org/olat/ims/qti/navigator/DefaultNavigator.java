@@ -177,7 +177,7 @@ public class DefaultNavigator implements Serializable {
 		info.setStatus(QTIConstants.ASSESSMENT_FINISHED);
 		info.setRenderItems(false);
 		
-		if(delegate != null) {
+		if(delegate != null && !getAssessmentInstance().isPreview() && !alreadyClosed) {
 			delegate.submitAssessment(assessmentInstance);
 		}
 	}
