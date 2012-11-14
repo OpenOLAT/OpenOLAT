@@ -42,6 +42,10 @@ public class FunctionalGroupsSiteUtil {
 	
 	public final static String SEARCH_GROUP_BUTTONS_CSS = "o_sel_group_search_groups_buttons";
 	
+	public final static String BOOKING_ADD_METHOD_CSS = null; //TODO:JK: implement CSS class
+	public final static String BOOKING_ACCESS_CODE_ICON_CSS = "b_access_method_token_icon";
+	public final static String BOOKING_FREELY_AVAILABLE_ICON_CSS = "b_access_method_free_icon";
+	
 	public enum GroupsSiteAction {
 		MY_GROUPS("o_sel_MyGroups"),
 		PUBLISHED_GROUPS("o_sel_OpenGroups"),
@@ -135,6 +139,7 @@ public class FunctionalGroupsSiteUtil {
 	public enum GroupsTabAction {
 		INFORMATION("o_news_icon"),
 		CALENDAR("o_calendar_icon"),
+		GROUPS("b_group_icon"),
 		EMAIL("o_co_icon"),
 		FOLDER("o_bc_icon"),
 		FORUM("o_fo_icon"),
@@ -165,6 +170,14 @@ public class FunctionalGroupsSiteUtil {
 		COURSES,
 		PUBLISHING_AND_BOOKING;
 	}
+	
+	public enum MembersConfiguration {
+		CAN_SEE_COACHES,
+		CAN_SEE_PARTICIPANTS,
+		ALL_CAN_SEE_COACHES,
+		ALL_CAN_SEE_PARTICIPANTS,
+		ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS;
+	}
 
 	private String groupIconCss;
 	private String createGroupCss;
@@ -174,6 +187,10 @@ public class FunctionalGroupsSiteUtil {
 	private String createGroupAutoCloseRanksValue;
 	
 	private String searchGroupButtonsCss;
+	
+	private String bookingAddMethodCss;
+	private String bookingAccessCodeIconCss;
+	private String bookingFreelyAvailableCss;
 	
 	private FunctionalUtil functionalUtil;
 	
@@ -186,6 +203,10 @@ public class FunctionalGroupsSiteUtil {
 		this.createGroupAutoCloseRanksValue = CREATE_GROUP_AUTO_CLOSE_RANKS_VALUE;
 		
 		this.searchGroupButtonsCss = SEARCH_GROUP_BUTTONS_CSS;
+		
+		this.bookingAddMethodCss = BOOKING_ADD_METHOD_CSS;
+		this.bookingAccessCodeIconCss = BOOKING_ACCESS_CODE_ICON_CSS;
+		this.bookingFreelyAvailableCss = BOOKING_FREELY_AVAILABLE_ICON_CSS;
 		
 		this.functionalUtil = functionalUtil;
 	}
@@ -565,6 +586,111 @@ public class FunctionalGroupsSiteUtil {
 		return(true);
 	}
 	
+	
+	/**
+	 * @param browser
+	 * @param members
+	 * @return
+	 * 
+	 * Toggle members configuration.
+	 */
+	public boolean applyMembersConfiguration(Selenium browser, MembersConfiguration[] conf){
+		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
+			return(false);
+		}
+		
+		if(!functionalUtil.openContentTab(browser, AdministrationTabs.MEMBERS.ordinal())){
+			return(false);
+		}
+		
+		if(conf == null){
+			return(true);
+		}
+		
+		if(ArrayUtils.contains(conf, MembersConfiguration.CAN_SEE_COACHES)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.CAN_SEE_COACHES.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(conf, MembersConfiguration.CAN_SEE_PARTICIPANTS)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.CAN_SEE_PARTICIPANTS.ordinal()));
+			functionalUtil.idle(browser);
+		}
+
+		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_SEE_COACHES)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.ALL_CAN_SEE_COACHES.ordinal()));
+			functionalUtil.idle(browser);
+		}
+
+		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		return(true);
+	}
+	
+	public boolean applyBookingFreelyAvailable(Selenium browser, String description){
+		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
+			return(false);
+		}
+		
+		if(!functionalUtil.openContentTab(browser, AdministrationTabs.PUBLISHING_AND_BOOKING.ordinal())){
+			return(false);
+		}
+		
+		/* click button */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(functionalUtil.getButtonCss())
+		.append("') and contains(@class, '")
+		.append(getBookingAddMethodCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* choose freely available */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getBookingFreelyAvailableCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* enter description */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append("b_window_content")
+		.append("')]//form//textarea");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), description);
+		
+		/* click create */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append("b_window_content")
+		.append("')]//form//button[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
 	public FunctionalUtil getFunctionalUtil() {
 		return functionalUtil;
 	}
@@ -620,5 +746,29 @@ public class FunctionalGroupsSiteUtil {
 
 	public void setSearchGroupButtonsCss(String searchGroupButtonsCss) {
 		this.searchGroupButtonsCss = searchGroupButtonsCss;
+	}
+
+	public String getBookingAddMethodCss() {
+		return bookingAddMethodCss;
+	}
+
+	public void setBookingAddMethodCss(String bookingAddMethodCss) {
+		this.bookingAddMethodCss = bookingAddMethodCss;
+	}
+
+	public String getBookingAccessCodeIconCss() {
+		return bookingAccessCodeIconCss;
+	}
+
+	public void setBookingAccessCodeIconCss(String bookingAccessCodeIconCss) {
+		this.bookingAccessCodeIconCss = bookingAccessCodeIconCss;
+	}
+
+	public String getBookingFreelyAvailableCss() {
+		return bookingFreelyAvailableCss;
+	}
+
+	public void setBookingFreelyAvailableCss(String bookingFreelyAvailableCss) {
+		this.bookingFreelyAvailableCss = bookingFreelyAvailableCss;
 	}
 }
