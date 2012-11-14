@@ -650,12 +650,14 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 	 */
 	private int getStatusCode(String line) {
 		int code = StatusCode.UNDEFINED.getCode();
-		String extracted = line.split(" ", 2)[0];
-		if(extracted != null && !extracted.isEmpty()) {
-			try {
-				code = Integer.parseInt(extracted);
-			} catch(NumberFormatException e) {
-				// nothing to do since code is pre-set
+		if(line != null) {
+			String extracted = line.split(" ", 2)[0];
+			if(extracted != null && !extracted.isEmpty()) {
+				try {
+					code = Integer.parseInt(extracted);
+				} catch(NumberFormatException e) {
+					// nothing to do since code is pre-set
+				}
 			}
 		}
 		return code;

@@ -58,12 +58,12 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  */
 public class CourseNodeFactory {
 	
-	private static OLog log = Tracing.createLoggerFor(CourseNodeFactory.class);
+	private static final OLog log = Tracing.createLoggerFor(CourseNodeFactory.class);
 	private static CourseNodeFactory INSTANCE;
 	private static List<String> courseNodeConfigurationsAliases;
 	private static Map<String, CourseNodeConfiguration> courseNodeConfigurations;
 	private Object lockObject = new Object();
-	private HashMap<String, CourseNodeConfiguration> allCourseNodeConfigurations;
+	private Map<String, CourseNodeConfiguration> allCourseNodeConfigurations;
 
 	/**
 	 * [used by spring]

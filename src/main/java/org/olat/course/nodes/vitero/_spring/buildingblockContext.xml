@@ -9,6 +9,11 @@
 	<bean id="vitero" class="org.olat.course.nodes.vitero.ViteroCourseNodeConfiguration" scope="prototype">
 		<property name="enabled" value="${course.node.vitero.enabled}" />
 		<property name="order" value="301" />
+		<property name="alternativeCourseNodes">
+			<list>
+				<value>openmeetings</value>
+			</list>
+		</property>
 	</bean>
 	
 </beans>

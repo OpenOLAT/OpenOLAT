@@ -113,6 +113,14 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		
 	}
 	
+	public Locale getLocale() {
+		return locale;
+	}
+	
+	public void setLocale(Locale locale) {
+		this.locale = locale;
+	}
+	
 	/**
 	 * do NOT use normally. use the constructor super(wControl). only used for classes which are loaded by Class.forName and need an empty contstructor
 	 * @param wControl not null

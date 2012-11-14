@@ -78,6 +78,7 @@ import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockEntry;
@@ -188,6 +189,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private Controller areasController;
 	private DialogBoxController deleteDialogController;		
 	private LayoutMain3ColsController columnLayoutCtr;
+	private AlternativeCourseNodeController alternateCtr;
 	
 	private LockResult lockEntry;
 	
@@ -199,6 +201,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private Link keepOpenErrorButton;
 	private Link keepClosedWarningButton;
 	private Link keepOpenWarningButton;
+	private Link alternativeLink;
 	private CloseableModalController cmc;
 	
 	private MultiSPController multiSPChooserCtr;
@@ -300,6 +303,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 			tabbedNodeConfig = new TabbedPane("tabbedNodeConfig", ureq.getLocale());
 			main.put(tabbedNodeConfig.getComponentName(), tabbedNodeConfig);
+			
+			alternativeLink = LinkFactory.createButton("alternative", main, this);
+			main.put("alternative", alternativeLink);
 
 			toolC = ToolFactory.createToolController(getWindowControl());
 			listenTo(toolC);
@@ -431,12 +437,83 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			// do logging
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_RESTORED, getClass(),
 					LoggingResourceable.wrap(activeNode.getCourseNode()));
+		} else if(source == alternativeLink) {
+			CourseNode chosenNode = (CourseNode)alternativeLink.getUserObject();
+			askForAlternative(ureq, chosenNode);
 		}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Component,Event)]", e);			
 			this.dispose();
 			throw e;
 		}
+	}
+	
+	private void askForAlternative(UserRequest ureq, CourseNode chosenNode) {
+		removeAsListenerAndDispose(alternateCtr);
+		removeAsListenerAndDispose(cmc);
+
+		alternateCtr = new AlternativeCourseNodeController(ureq, getWindowControl(), chosenNode);				
+		listenTo(alternateCtr);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), alternateCtr.getInitialComponent(), true, translate("alternative.choose"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	/**
+	 * The following operation are done:
+	 * <ul>
+	 * 	<li>create a new instance of the replacement type
+	 * 	<li>add the new element below the original element
+	 * 	<li>copy the element title, description and the generic configuration options
+	 * 	<li>copy the access, visibility and scoring rules (easy and expert)
+	 * 	<li>optionally copy some other configuration if this is possible at all
+	 * 	<li>move all child elements from the original to the replacement element
+	 * 	<li>mark the original element as deleted
+	 * </ul>
+	 * 
+	 * @param chosenNode
+	 * @param selectAlternative
+	 */
+	private void doCreateAlternateBuildingBlock(UserRequest ureq, ICourse course, CourseNode chosenNode, String selectAlternative) {
+		if(!StringHelper.containsNonWhitespace(selectAlternative)) return;
+
+		//create the alternative node
+		CourseNodeConfiguration newConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(selectAlternative);
+		CourseNode newNode = newConfig.getInstance();
+		//copy configurations
+		newNode.setDisplayOption(chosenNode.getDisplayOption());
+		newNode.setLearningObjectives(chosenNode.getLearningObjectives());
+		newNode.setLongTitle(chosenNode.getLongTitle());
+		newNode.setNoAccessExplanation(chosenNode.getNoAccessExplanation());
+		newNode.setShortTitle(chosenNode.getShortTitle());
+		
+		//insert the node
+		CourseEditorTreeNode cetn = (CourseEditorTreeNode)cetm.getNodeById(chosenNode.getIdent());
+		CourseEditorTreeNode parentNode = (CourseEditorTreeNode)cetn.getParent();
+		int position = cetn.getPosition() + 1;
+		CourseEditorTreeNode newCetn =course.getEditorTreeModel().insertCourseNodeAt(newNode, parentNode.getCourseNode(), position);
+		doInsert(ureq, newNode);
+		
+		//copy the children
+		while(cetn.getChildCount() > 0) {
+			CourseEditorTreeNode childNode = (CourseEditorTreeNode)cetn.getChildAt(0);
+			newCetn.addChild(childNode);
+		}
+		
+		//set all dirty
+		TreeVisitor tv = new TreeVisitor( new Visitor() {
+			public void visit(INode node) {
+				CourseEditorTreeNode cetn = (CourseEditorTreeNode)node;
+				cetn.setDirty(true);
+			}
+		}, newCetn, true);
+		tv.visitAll();
+		
+		//mark as deleted
+		doDelete(course, chosenNode.getIdent());
+
+		//save
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 	}
 
 	/**
@@ -487,8 +564,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), stackPanel, course, euce);
 			listenTo(nodeEditCntrllr);
 			nodeEditCntrllr.addTabs(tabbedNodeConfig);
-		} 
-		main.contextPut("courseNodeDisabled", !cnConfig.isEnabled());
+		}
+		boolean disabled = !cnConfig.isEnabled();
+		main.contextPut("courseNodeDisabled", disabled);
+		alternativeLink.setVisible(disabled && !cnConfig.getAlternativeCourseNodes().isEmpty());
+		alternativeLink.setUserObject(chosenNode);
 		main.contextPut("courseNodeCss", cnConfig.getIconCSSClass());
 		main.contextPut("courseNode", chosenNode);
 	}
@@ -721,11 +801,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			removeAsListenerAndDispose(moveCopyController);
 			removeAsListenerAndDispose(insertNodeController);
 			removeAsListenerAndDispose(folderController);
+			removeAsListenerAndDispose(alternateCtr);
 			removeAsListenerAndDispose(cmc);
 			moveCopyController = null;
 			insertNodeController = null;
 			multiSPChooserCtr = null;
 			folderController = null;
+			alternateCtr = null;
 			cmc = null;
 		} else if (source == moveCopyController) {	
 			cmc.deactivate();
@@ -761,20 +843,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// necessary if previous action was a delete node action				
 				tabbedNodeConfig.setVisible(true);
 				main.setPage(VELOCITY_ROOT + "/index.html");				
-				CourseNode newNode = insertNodeController.getInsertedNode();				
-				menuTree.setSelectedNodeId(newNode.getIdent());
-				// update the current node in the editor course environment
-				euce.getCourseEditorEnv().setCurrentCourseNodeId(newNode.getIdent());
-				euce.getCourseEditorEnv().validateCourse();
-				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-				updateCourseStatusMessages(ureq.getLocale(), courseStatus);					
-				initNodeEditor(ureq, newNode);
-				// do logging
-				ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_CREATED, getClass(),
-						LoggingResourceable.wrap(newNode));
-				// Resize layout columns to make all nodes viewable in the menu column
-				JSCommand resizeCommand = new JSCommand("b_AddOnDomReplacementFinishedCallback( B_ResizableColumns.adjustHeight.bind(B_ResizableColumns));");
-				getWindowControl().getWindowBackOffice().sendCommandTo(resizeCommand);
+				CourseNode newNode = insertNodeController.getInsertedNode();		
+				doInsert(ureq, newNode);
 			}
 			// in all cases:
 			removeAsListenerAndDispose(insertNodeController);
@@ -788,30 +858,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// delete confirmed
 				String ident = menuTree.getSelectedNode().getIdent();
 				// udpate the current node in the course editor environment
-				euce.getCourseEditorEnv().setCurrentCourseNodeId(ident);
-				CourseNode activeNode = cetm.getCourseNode(ident);
-
-				cetm.markDeleted(activeNode);
-				menuTree.setDirty(true);
-			
-				CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-				tabbedNodeConfig.removeAll();
-				tabbedNodeConfig.setVisible(false);
-				toolC.setEnabled(CMD_DELNODE, false);
-				toolC.setEnabled(CMD_MOVENODE, false);
-				toolC.setEnabled(CMD_COPYNODE, false);
-				main.setPage(VELOCITY_ROOT + "/undeletenode.html"); // offer undelete
-				showInfo(NLS_DELETENODE_SUCCESS);
-				/*
-				 * validate course and update course status
-				 */
-				euce.getCourseEditorEnv().validateCourse();
-				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
-
-				ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_DELETED, getClass(),
-						LoggingResourceable.wrap(activeNode));
-			
+				doDelete(course, ident);
 			} else {
 				tabbedNodeConfig.setVisible(true);
 			}
@@ -827,6 +874,17 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
 			}
+		} else if (source == alternateCtr) {
+			cmc.deactivate();
+			if(event == Event.DONE_EVENT) {
+				CourseNode chosenNode = alternateCtr.getCourseNode();
+				String selectAlternative = alternateCtr.getSelectedAlternative();
+				doCreateAlternateBuildingBlock(ureq, course, chosenNode, selectAlternative);
+			}
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(alternateCtr);
+			cmc = null;
+			alternateCtr = null;
 		}
     } catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Controller,Event)]", e);			
@@ -835,6 +893,47 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 	}
 	
+	private void doDelete(ICourse course, String ident) {
+		CourseNode activeNode = cetm.getCourseNode(ident);
+
+		cetm.markDeleted(activeNode);
+		menuTree.setDirty(true);
+	
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		tabbedNodeConfig.removeAll();
+		tabbedNodeConfig.setVisible(false);
+		toolC.setEnabled(CMD_DELNODE, false);
+		toolC.setEnabled(CMD_MOVENODE, false);
+		toolC.setEnabled(CMD_COPYNODE, false);
+		main.setPage(VELOCITY_ROOT + "/undeletenode.html"); // offer undelete
+		showInfo(NLS_DELETENODE_SUCCESS);
+		/*
+		 * validate course and update course status
+		 */
+		euce.getCourseEditorEnv().validateCourse();
+		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		updateCourseStatusMessages(getLocale(), courseStatus);
+
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_DELETED, getClass(),
+				LoggingResourceable.wrap(activeNode));
+	}
+	
+	private void doInsert(UserRequest ureq, CourseNode newNode) {
+		menuTree.setSelectedNodeId(newNode.getIdent());
+		// update the current node in the editor course environment
+		euce.getCourseEditorEnv().setCurrentCourseNodeId(newNode.getIdent());
+		euce.getCourseEditorEnv().validateCourse();
+		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		updateCourseStatusMessages(getLocale(), courseStatus);					
+		initNodeEditor(ureq, newNode);
+		// do logging
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_CREATED, getClass(),
+				LoggingResourceable.wrap(newNode));
+		// Resize layout columns to make all nodes viewable in the menu column
+		JSCommand resizeCommand = new JSCommand("b_AddOnDomReplacementFinishedCallback( B_ResizableColumns.adjustHeight.bind(B_ResizableColumns));");
+		getWindowControl().getWindowBackOffice().sendCommandTo(resizeCommand);
+	}
+
 	//fxdiff VCRP-9: drag and drop in menu tree
 	private void dropNodeAsChild(UserRequest ureq, ICourse course, String droppedNodeId, String targetNodeId, boolean asChild, boolean atTheEnd) {
 		menuTree.setDirty(true); // setDirty when moving
