@@ -40,7 +40,7 @@ $top_nav_active_tabs_bg : #fff !default;
 /* toolbar with breadcrumb */
 $tool_bar_height : 24px !default;
 $tool_bar_bg : $top_nav_active_tabs_bg !default;
-$tool_bar_border : $basegray_ultra_light !default;
+$tool_bar_border : #DADADA !default;
 $tool_bar_color : #2D2E2D !default;
 $tool_bar_hover : #585A58 !default;
 
@@ -60,11 +60,13 @@ $ico_plus : '../openolat/images/toggle-small-expand.png'  !default;
 $ico_minus : '../openolat/images/toggle-small.png'  !default;
 
 /* the defaultfont used in : text, main content, etc. */
-$defaultfont : Arial, sans-serif !default;
+$defaultfont : 'Helvetica Neue', Helvetica, Arial, sans-serif !default;
+/* necessary for helvetica neue */
+html { -webkit-font-smoothing: antialiased; }
 /* the font used in :  navigation (tabs + tree), headings */
 $headerfont : Century Gothic, Apple Gothic, sans-serif !default;
 /* the overall default font-size */ 
-$defaultfontsize : 75% !default;
+$defaultfontsize : 80% !default;
 
 /* min and max content width */
 $page_width_max : 1324px !default;
@@ -75,7 +77,7 @@ $enablebiz : false !default;
 
 /* defines the body-background */
 @mixin bodybg(){
-	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 81px;
+	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 83px;
 	
 	@if $enablebiz == true {
 		background: #ECECEC url('../openolat/images/sky.png') repeat-x left 179px;
