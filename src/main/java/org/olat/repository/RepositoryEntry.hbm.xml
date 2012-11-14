@@ -132,4 +132,8 @@
                      cascade="none"/>
 	</class>
 	
+	<query name="loadRepositoryEntryShortsByResourceableIds">
+		<![CDATA[select v from org.olat.repository.model.RepositoryEntryShortImpl v inner join fetch v.olatResource as ores where ores.resId in (:resIds) and ores.resName=:resName]]>
+	</query>
+	
 </hibernate-mapping>

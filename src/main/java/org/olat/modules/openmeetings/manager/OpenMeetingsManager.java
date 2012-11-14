@@ -94,14 +94,14 @@ public interface OpenMeetingsManager {
 	 * @param roomId
 	 * @throws OpenMeetingsException
 	 */
-	public void openRoom(long roomId) throws OpenMeetingsException;
+	public OpenMeetingsRoom openRoom(OpenMeetingsRoom room) throws OpenMeetingsException;
 	
 	/**
 	 * Close the room
 	 * @param roomId
 	 * @throws OpenMeetingsException
 	 */
-	public void closeRoom(long roomId) throws OpenMeetingsException;
+	public OpenMeetingsRoom closeRoom(OpenMeetingsRoom room) throws OpenMeetingsException;
 	
 	public boolean deleteRoom(OpenMeetingsRoom room);
 	
@@ -115,7 +115,8 @@ public interface OpenMeetingsManager {
 	 * @param sid
 	 * @return
 	 */
-	public String getRecordingURL(OpenMeetingsRecording recording, String sid);
+	public String getRecordingURL(OpenMeetingsRecording recording)
+	throws OpenMeetingsException;
 	
 	/**
 	 * A UUID mapped to the identity is saved in a cache

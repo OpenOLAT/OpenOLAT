@@ -667,6 +667,20 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
+	 * Load a list of repository entry without all the security groups ...
+	 * @param resources
+	 * @return
+	 */
+	public List<RepositoryEntryShortImpl> loadRepositoryEntryShortsByResource(Collection<Long> resIds, String resourceType) {
+		List<RepositoryEntryShortImpl> shorties = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntryShortsByResourceableIds", RepositoryEntryShortImpl.class)
+				.setParameter("resIds", resIds)
+				.setParameter("resName", resourceType)
+				.getResultList();
+		return shorties;
+	}
+	
+	/**
 	 * Test a repo entry if identity is allowed to launch.
 	 * @param ureq
 	 * @param re

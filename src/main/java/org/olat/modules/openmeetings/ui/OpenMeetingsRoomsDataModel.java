@@ -24,7 +24,6 @@ import java.util.List;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
-import org.olat.properties.Property;
 
 /**
  * 
@@ -85,18 +84,12 @@ public class OpenMeetingsRoomsDataModel implements TableDataModel<OpenMeetingsRo
 				return "-";
 			}
 			case resource: {
-				Property property = room.getProperty();
-				if(property == null) {
-					return "???";
-				} else if(property.getGrp() != null) {
-					return property.getGrp().getName();
-				} else if(StringHelper.containsNonWhitespace(property.getResourceTypeName())) {
-					return property.getResourceTypeName() + "(" + property.getResourceTypeId() + ")";
+				String resourceName = room.getResourceName();
+				if(StringHelper.containsNonWhitespace(resourceName)) {
+					return resourceName;
 				}
-				return "";
+				return "???";
 			}
-
-
 			default: return "";
 		}
 	}

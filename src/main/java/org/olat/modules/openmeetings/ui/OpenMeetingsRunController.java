@@ -57,7 +57,8 @@ public class OpenMeetingsRunController extends BasicController {
 	private OpenMeetingsRoomEditController editController;
 	
 	private final boolean admin;
-	private final Long roomId;
+	private final boolean moderator;
+	private OpenMeetingsRoom room;
 	private final OpenMeetingsModule openMeetingsModule;
 	private final OpenMeetingsManager openMeetingsManager;
 	
@@ -66,17 +67,24 @@ public class OpenMeetingsRunController extends BasicController {
 	private final String subIdentifier;
 
 	public OpenMeetingsRunController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
-			String subIdentifier, String resourceName, boolean admin) {
+			String subIdentifier, String resourceName, boolean admin, boolean moderator) {
 		super(ureq, wControl);
 		
 		this.admin = admin;
+		this.moderator = moderator;
 		this.group = group;
 		this.ores = ores;
 		this.subIdentifier = subIdentifier;
 
 		openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
-		roomId = openMeetingsManager.getRoomId(group, ores, subIdentifier);
+
+		try {
+			room = openMeetingsManager.getRoom(group, ores, subIdentifier);
+		} catch (OpenMeetingsException e) {
+			logError("", e);
+		}
+		
 		mainVC = createVelocityContainer("room");
 		init(ureq);
 		
@@ -86,13 +94,13 @@ public class OpenMeetingsRunController extends BasicController {
 	protected void init(UserRequest ureq) {
 		if(!openMeetingsModule.isEnabled()) {
 			mainVC.contextPut("disabled", Boolean.TRUE);
-		} else if(roomId == null) {
+		} else if(room == null) {
 			mainVC.contextPut("noroom", Boolean.TRUE);
 		} else if (ureq.getUserSession().getRoles().isGuestOnly() || ureq.getUserSession().getRoles().isInvitee()){
 			startGuestLink = LinkFactory.createButton("start.room.guest", mainVC, this);
 			mainVC.put("start.room.guest", startGuestLink);
 		} else {
-			if (admin) {
+			if (moderator) {
 				openLink = LinkFactory.createButton("open.room", mainVC, this);
 				mainVC.put("open.room", openLink);
 				
@@ -101,7 +109,8 @@ public class OpenMeetingsRunController extends BasicController {
 				
 				membersLink = LinkFactory.createButton("room.members", mainVC, this);
 				mainVC.put("room.members", membersLink);
-
+			}
+			if(admin) {
 				editLink = LinkFactory.createButton("edit", mainVC, this);
 				mainVC.put("edit", editLink);
 			}
@@ -112,6 +121,34 @@ public class OpenMeetingsRunController extends BasicController {
 			startLink = LinkFactory.createButton("start.room", mainVC, this);
 			startLink.setTarget("openmeetings");
 			mainVC.put("start.room", startLink);
+		}
+		
+		updateState();
+	}
+	
+	private void updateState() {
+		if(!openMeetingsModule.isEnabled()) {
+			mainVC.contextPut("disabled", Boolean.TRUE);
+		} else if(room == null) {
+			mainVC.contextPut("noroom", Boolean.TRUE);
+		} else {
+			boolean closed = room.isClosed();
+			if(openLink != null) {
+				openLink.setVisible(closed);
+			}
+			if(closeLink != null) {
+				closeLink.setVisible(!closed);
+			}
+			if(startLink != null) {
+				startLink.setEnabled(!closed);
+			}
+			if(startGuestLink != null) {
+				startGuestLink.setEnabled(!closed);
+			}
+			
+			mainVC.contextPut("roomName", room.getName());
+			mainVC.contextPut("roomComment", room.getComment());
+			mainVC.contextPut("roomClosed", new Boolean(closed));
 		}
 	}
 
@@ -158,8 +195,8 @@ public class OpenMeetingsRunController extends BasicController {
 			cleanupPopups();
 		} else if(source == editController) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				//do something
-				System.out.println("Room edited");
+				room = editController.getRoom();
+				updateState();
 			}
 			cmc.deactivate();
 			cleanupPopups();
@@ -184,23 +221,25 @@ public class OpenMeetingsRunController extends BasicController {
 	
 	private void doOpen(UserRequest ureq) {
 		try {
-			openMeetingsManager.openRoom(roomId);
+			room = openMeetingsManager.openRoom(room);
 		} catch (OpenMeetingsException e) {
-			showError(e.getType().i18nKey());
+			showError(e.i18nKey());
 		}
+		updateState();
 	}
 	
 	private void doClose(UserRequest ureq) {
 		try {
-			openMeetingsManager.closeRoom(roomId);
+			room = openMeetingsManager.closeRoom(room);
 		} catch (OpenMeetingsException e) {
-			showError(e.getType().i18nKey());
+			showError(e.i18nKey());
 		}
+		updateState();
 	}
 	
 	private void doOpenRecordings(UserRequest ureq) {
 		cleanupPopups();
-		recordingsController = new OpenMeetingsRecordingsController(ureq, getWindowControl(), roomId);
+		recordingsController = new OpenMeetingsRecordingsController(ureq, getWindowControl(), room.getRoomId());
 		listenTo(recordingsController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), recordingsController.getInitialComponent(), true, translate("recordings"));
@@ -219,7 +258,7 @@ public class OpenMeetingsRunController extends BasicController {
 			listenTo(cmc);
 			cmc.activate();
 		} catch (OpenMeetingsException e) {
-			showError(e.getType().i18nKey());
+			showError(e.i18nKey());
 		}
 	}
 	
@@ -244,31 +283,31 @@ public class OpenMeetingsRunController extends BasicController {
 	}
 	
 	private void redirectToGuestRoom(UserRequest ureq, String firstName, String lastName) {	
-		if(roomId == null && roomId.longValue() <= 0) {
+		if(room == null && room.getRoomId() <= 0) {
 			showError("room.notfound.error");
 		} else {
 			try {
-				String securedHash = openMeetingsManager.setGuestUserToRoom(firstName, lastName, roomId);
-				String url = openMeetingsManager.getURL(getIdentity(), roomId.longValue(), securedHash, getLocale());
+				String securedHash = openMeetingsManager.setGuestUserToRoom(firstName, lastName, room.getRoomId());
+				String url = openMeetingsManager.getURL(getIdentity(), room.getRoomId(), securedHash, getLocale());
 				DisplayOrDownloadComponent cmp = new DisplayOrDownloadComponent("openCommand", url);
 				mainVC.put("openCmd", cmp);
 			} catch (OpenMeetingsException e) {
-				showError(e.getType().i18nKey());
+				showError(e.i18nKey());
 			}
 		}
 	}
 
 	private void doStart(UserRequest ureq) {	
-		if(roomId == null && roomId.longValue() <= 0) {
+		if(room == null && room.getRoomId() <= 0) {
 			showError("room.notfound.error");
 		} else {
 			try {
-				String securedHash = openMeetingsManager.setUserToRoom(getIdentity(), roomId, admin);
-				String url = openMeetingsManager.getURL(getIdentity(), roomId.longValue(), securedHash, getLocale());
+				String securedHash = openMeetingsManager.setUserToRoom(getIdentity(), room.getRoomId(), moderator);
+				String url = openMeetingsManager.getURL(getIdentity(), room.getRoomId(), securedHash, getLocale());
 				RedirectMediaResource redirect = new RedirectMediaResource(url);
 				ureq.getDispatchResult().setResultingMediaResource(redirect);
 			} catch (OpenMeetingsException e) {
-				showError(e.getType().i18nKey());
+				showError(e.i18nKey());
 			}
 		}
 	}

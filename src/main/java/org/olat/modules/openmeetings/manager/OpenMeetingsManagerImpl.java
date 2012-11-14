@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.ConnectException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,7 +46,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
@@ -57,9 +55,10 @@ import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 import org.olat.modules.openmeetings.model.RoomReturnInfo;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserDataDeletable;
-import org.openmeetings.app.conference.session.xsd.RoomClient;
 import org.openmeetings.app.persistence.beans.flvrecord.xsd.FlvRecording;
 import org.openmeetings.app.persistence.beans.rooms.xsd.Rooms;
 import org.openmeetings.axis.services.AddRoomWithModerationAndRecordingFlags;
@@ -74,7 +73,6 @@ import org.openmeetings.axis.services.GetRoomById;
 import org.openmeetings.axis.services.GetRoomByIdResponse;
 import org.openmeetings.axis.services.GetRoomWithClientObjectsById;
 import org.openmeetings.axis.services.GetRoomWithClientObjectsByIdResponse;
-import org.openmeetings.axis.services.GetRoomWithCurrentUsersByIdResponse;
 import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;
 import org.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndTypeResponse;
 import org.openmeetings.axis.services.GetSession;
@@ -122,6 +120,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	private UserDeletionManager userDeletionManager;
 	@Autowired
 	private CoordinatorManager coordinator;
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	private XStream xStream;
 	private CacheWrapper sessionCache;
@@ -192,10 +192,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			List<Property> props = getProperties();
 			Map<Long,String> roomIdToResources = getResourceNames(props);
 
-			
 			List<OpenMeetingsRoom> rooms = new ArrayList<OpenMeetingsRoom>();
 			for(Property prop:props) {
-				
 				Long roomId = new Long(prop.getLongValue());
 				RoomReturnInfo infos = realRooms.get(roomId);
 				if(infos != null) {
@@ -219,22 +217,30 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	
 	private Map<Long,String> getResourceNames(List<Property> properties) {
 		Map<Long,String> roomIdToResourceName = new HashMap<Long,String>();
-		
-		List<ResourceRoom> resources = new ArrayList<ResourceRoom>();
+		Map<Long,List<Long>> resourceIdToRoomIds = new HashMap<Long,List<Long>>();
 		for(Property prop:properties) {
 			Long roomId = prop.getLongValue();
 			if(prop.getGrp() != null) {
 				roomIdToResourceName.put(roomId, prop.getGrp().getName());
-			} else {
-				
-				ResourceRoom rroom = new ResourceRoom();
-				rroom.setRoomId(roomId);
-				OLATResourceable ores = OresHelper.createOLATResourceableInstance(prop.getResourceTypeName(), prop.getResourceTypeId());
-				rroom.setResource(ores);
+			} else if("CourseModule".equals(prop.getResourceTypeName())) {
+				if(!resourceIdToRoomIds.containsKey(prop.getResourceTypeId())) {
+					resourceIdToRoomIds.put(prop.getResourceTypeId(), new ArrayList<Long>());
+				}
+				resourceIdToRoomIds.get(prop.getResourceTypeId()).add(roomId);
 			}
 		}
-		return roomIdToResourceName;
 		
+		if(!resourceIdToRoomIds.isEmpty()) {
+			List<RepositoryEntryShortImpl> shortRepos = repositoryManager.loadRepositoryEntryShortsByResource(resourceIdToRoomIds.keySet(), "CourseModule");
+			for(RepositoryEntryShortImpl repoEntry : shortRepos) {
+				List<Long> roomIds = resourceIdToRoomIds.get(repoEntry.getOlatResource().getResourceableId());
+				for(Long roomId:roomIds) {
+					roomIdToResourceName.put(roomId, repoEntry.getDisplayname());
+				}
+			}
+		}
+		
+		return roomIdToResourceName;
 	}
 
 	@Override
@@ -275,11 +281,24 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			
 			SetUserObjectAndGenerateRoomHashByURLAndRecFlagResponse response = userWs.setUserObjectAndGenerateRoomHashByURLAndRecFlag(userObj);
 			String hashedUrl = response.get_return();
-			
+			if(hashedUrl.startsWith("-") && hashedUrl.length() < 5) {
+				throw new OpenMeetingsException(parseErrorCode(hashedUrl));
+			}
 			return hashedUrl;
+		} catch(OpenMeetingsException e) {
+			log.error("", e);
+			throw e;
 		} catch (Exception e) {
 			log.error("", e);
 			throw translateException(e, 0);
+		}
+	}
+	
+	private long parseErrorCode(String errorCode) {
+		try {
+			return Integer.parseInt(errorCode);
+		} catch (NumberFormatException e) {
+			return OpenMeetingsException.UNKOWN;
 		}
 	}
 	
@@ -333,7 +352,13 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			
 			SetUserObjectAndGenerateRoomHashByURLResponse response = userWs.setUserObjectAndGenerateRoomHashByURL(userObj);
 			String hashedUrl = response.get_return();
+			if(hashedUrl.startsWith("-") && hashedUrl.length() < 5) {
+				throw new OpenMeetingsException(parseErrorCode(hashedUrl));
+			}
 			return hashedUrl;
+		} catch(OpenMeetingsException e) {
+			log.error("", e);
+			throw e;
 		} catch (Exception e) {
 			log.error("", e);
 			throw translateException(e, 0);
@@ -342,7 +367,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 
 	@Override
 	public OpenMeetingsRoom getRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier) 
-	throws OpenMeetingsException{
+	throws OpenMeetingsException {
 		Property prop = getProperty(group, ores, subIdentifier);
 		if(prop == null) {
 			return null;
@@ -357,6 +382,9 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 				return room;
 			} catch(OpenMeetingsException e) {
 				throw e;
+			} catch(Exception e) {
+				log.error("", e);
+				throw translateException(e, 0);
 			}
 		}
 		return null;
@@ -384,29 +412,32 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 				return null;
 			}
 		} catch (Exception e) {
+			log.error("", e);
 			throw translateException(e, 0);
 		}
 	}
 	
 	private OpenMeetingsException translateException(Exception e, long ret) {
-		OpenMeetingsException.Type type = OpenMeetingsException.Type.unkown;
-		if(e instanceof AxisFault) {
+		long type = OpenMeetingsException.UNKOWN;
+		if(ret < 0) {
+			type = ret;
+		} else if(e instanceof AxisFault) {
 			Throwable cause = e.getCause();
 			if(cause instanceof ConnectException
 					&& cause.getMessage() != null
 					&& cause.getMessage().contains("onnection refused")) {
-				type = OpenMeetingsException.Type.serverNotAvailable;
+				type = OpenMeetingsException.SERVER_NOT_AVAILABLE;
 			}
 		}
 		return new OpenMeetingsException(e, type);
 	}
 	
-	public void openRoom(long roomId) throws OpenMeetingsException {
-		closeOpenMeetingsRoom(roomId, true);
+	public OpenMeetingsRoom openRoom(OpenMeetingsRoom room) throws OpenMeetingsException {
+		return closeOpenMeetingsRoom(room, false);
 	}
 	
-	public void closeRoom(long roomId) throws OpenMeetingsException {
-		closeOpenMeetingsRoom(roomId, false);
+	public OpenMeetingsRoom closeRoom(OpenMeetingsRoom room) throws OpenMeetingsException {
+		return closeOpenMeetingsRoom(room, true);
 	}
 	
 	/**
@@ -415,22 +446,28 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	 * @param status false = close, true = open
 	 * @throws OpenMeetingsException
 	 */
-	private void closeOpenMeetingsRoom(long roomId, boolean status) throws OpenMeetingsException {
+	private OpenMeetingsRoom closeOpenMeetingsRoom(OpenMeetingsRoom room, boolean status) throws OpenMeetingsException {
 		int responseCode = 0;
 		try {
 			String adminSID = adminLogin();
 
 			RoomServiceStub roomWs = getRoomWebService();
 			CloseRoom closeRoom = new CloseRoom();
-			closeRoom.setRoom_id(roomId);
+			closeRoom.setRoom_id(room.getRoomId());
 			closeRoom.setSID(adminSID);
-			closeRoom.setStatus(status); //false = close, true = open
+			closeRoom.setStatus(status);
+			//OpenMeetings doc: false = close, true = open
+			log.audit("Room state changed (true = close, false = open): " + status);
 			
 			CloseRoomResponse closeResponse = roomWs.closeRoom(closeRoom);
 			responseCode = closeResponse.get_return();
 			if(responseCode < 0) {
 				throw new OpenMeetingsException(responseCode);
 			}
+			return getRoomById(adminSID, room, room.getRoomId());
+		} catch(OpenMeetingsException e) {
+			log.error("", e);
+			throw e;
 		} catch (Exception e) {
 			log.error("", e);
 			throw translateException(e, responseCode);
@@ -471,23 +508,28 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			
 			return recList;
 		} catch (Exception e) {
+			log.error("", e);
 			throw translateException(e, 0);
 		}
 	}
 
 	@Override
-	public String getRecordingURL(OpenMeetingsRecording recording, String sid) {
-		if(sid == null) {
-			sid = adminLogin();
+	public String getRecordingURL(OpenMeetingsRecording recording)
+	throws OpenMeetingsException {
+		try {
+			String sid = adminLogin();
+
+			String url = UriBuilder.fromUri(openMeetingsModule.getOpenMeetingsURI()).path("DownloadHandler")
+				.queryParam("fileName", recording.getDownloadName())
+				.queryParam("moduleName", "lzRecorderApp")
+				.queryParam("parentPath", "")
+				.queryParam("room_id", Long.toString(recording.getRoomId()))
+				.queryParam("sid", sid).build().toString();
+			return url;
+		} catch (Exception e) {
+			log.error("", e);
+			throw translateException(e, 0);
 		}
-		
-		String url = UriBuilder.fromUri(openMeetingsModule.getOpenMeetingsURI()).path("DownloadHandler")
-			.queryParam("fileName", recording.getDownloadName())
-			.queryParam("moduleName", "lzRecorderApp")
-			.queryParam("parentPath", "")
-			.queryParam("room_id", Long.toString(recording.getRoomId()))
-			.queryParam("sid", sid).build().toString();
-		return url;
 	}
 
 	@Override
@@ -618,6 +660,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			}
 			return Collections.emptyList();
 		} catch (Exception e) {
+			log.error("", e);
 			throw translateException(e, 0);
 		}
 	}
@@ -689,52 +732,29 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			return null;
 		}
 	}
-	
-	private String adminSID;
-	private long adminSIDCreationTime;
-	
 
-	private String adminLogin() {
+	private String adminLogin()
+	throws OpenMeetingsException {
+		long returnCode = 0;
 		try {
-			synchronized(this) {
-				if(isAdminSIDValid()) {
-					return adminSID;
-				}
-				adminSID = adminLoginInternal();
-				adminSIDCreationTime = System.currentTimeMillis();
+			String sid = getSessionID();
+			LoginUser adminUser = new LoginUser();
+			adminUser.setSID(sid);
+			adminUser.setUsername(openMeetingsModule.getAdminLogin());
+			adminUser.setUserpass(openMeetingsModule.getAdminPassword());
+			LoginUserResponse loginResponse = getUserWebService().loginUser(adminUser);
+			returnCode = loginResponse.get_return();
+			if(returnCode > 0) {
+				return sid;
 			}
-			return adminSID;
+			throw new OpenMeetingsException(returnCode);
+		} catch(OpenMeetingsException e) {
+			log.error("", e);
+			throw e;
 		} catch (Exception e) {
 			log.error("", e);
-			return null;
+			throw translateException(e, returnCode);
 		}
-	}
-	
-	private String adminLoginInternal()
-	throws AxisFault, RemoteException {
-		String sid = getSessionID() ;
-		LoginUser adminUser = new LoginUser();
-		adminUser.setSID(sid);
-		adminUser.setUsername(openMeetingsModule.getAdminLogin());
-		adminUser.setUserpass(openMeetingsModule.getAdminPassword());
-		LoginUserResponse loginResponse = getUserWebService().loginUser(adminUser);
-		long login = loginResponse.get_return();
-		return login > 0 ? sid : null;
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	private boolean isAdminSIDValid() {
-		if(adminSID != null) {
-			return true;
-			/*long age = System.currentTimeMillis() - adminSIDCreationTime;
-			if(age < 450000) {
-				return false;//don't cache
-			}*/
-		}
-		return false;
 	}
 	
 	@Override
@@ -756,15 +776,31 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Override
 	public boolean checkConnection(String url, String login, String password)
 	throws OpenMeetingsException {
+		long returnCode;
 		try {
 			String endPoint = cleanUrl(url) + "/services/UserService?wsdl";
 			UserServiceStub userWs = new UserServiceStub(endPoint);
 			
 			GetSession  getSession = new GetSession();
 			GetSessionResponse getSessionResponse = userWs.getSession(getSession);
-			String sessionId = getSessionResponse.get_return().getSession_id();
-			return StringHelper.containsNonWhitespace(sessionId);
+			String sid = getSessionResponse.get_return().getSession_id();
+			
+			LoginUser adminUser = new LoginUser();
+			adminUser.setSID(sid);
+			adminUser.setUsername(login);
+			adminUser.setUserpass(password);
+			LoginUserResponse loginResponse = getUserWebService().loginUser(adminUser);
+			
+			returnCode = loginResponse.get_return();
+			if(returnCode > 0) {
+				return StringHelper.containsNonWhitespace(sid);
+			}
+			throw new OpenMeetingsException(returnCode);
+		} catch(OpenMeetingsException e) {
+			log.error("", e);
+			throw e;
 		} catch (Exception e) {
+			log.error("", e);
 			throw translateException(e, 0);
 		}
 	}
@@ -839,27 +875,5 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	
 	private String cleanUrl(String url) {
 		return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-	}
-	
-	private static class ResourceRoom {
-		
-		private Long roomId;
-		private OLATResourceable resource;
-		
-		public Long getRoomId() {
-			return roomId;
-		}
-		
-		public void setRoomId(Long roomId) {
-			this.roomId = roomId;
-		}
-		
-		public OLATResourceable getResource() {
-			return resource;
-		}
-		
-		public void setResource(OLATResourceable resource) {
-			this.resource = resource;
-		}
 	}
 }

@@ -69,7 +69,6 @@ public class OpenMeetingsRecordingsController extends BasicController {
 		listenTo(tableCtr);
 		
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("room.name", OpenMeetingsRecordingsDataModel.Col.name.ordinal(), null, getLocale()));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("download", "download", translate("download")));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("view", "view", translate("view")));
 		tableCtr.setTableDataModel(new OpenMeetingsRecordingsDataModel());
 		loadModel();
@@ -83,7 +82,7 @@ public class OpenMeetingsRecordingsController extends BasicController {
 			((OpenMeetingsRecordingsDataModel)tableCtr.getTableDataModel()).setObjects(recordings);
 			tableCtr.modelChanged();
 		} catch (OpenMeetingsException e) {
-			showError(e.getType().i18nKey());
+			showError(e.i18nKey());
 		}
 	}
 	
@@ -104,9 +103,7 @@ public class OpenMeetingsRecordingsController extends BasicController {
 				TableEvent e = (TableEvent)event;
 				int row = e.getRowId();
 				OpenMeetingsRecording recording = (OpenMeetingsRecording)tableCtr.getTableDataModel().getObject(row);
-				if("download".equals(e.getActionId())) {
-					doDownload(ureq, recording);
-				}else if("view".equals(e.getActionId())) {
+				if("view".equals(e.getActionId())) {
 					doView(ureq, recording);
 				}
 			}
@@ -124,10 +121,5 @@ public class OpenMeetingsRecordingsController extends BasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), recordingController.getInitialComponent(), true, name);
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private void doDownload(UserRequest ureq, OpenMeetingsRecording recording) {
-		String url = openMeetingsManager.getRecordingURL(recording, null);
-		System.out.println(url);
 	}
 }

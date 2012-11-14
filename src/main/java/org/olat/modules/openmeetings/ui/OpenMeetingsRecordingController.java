@@ -26,6 +26,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
 
@@ -45,11 +46,15 @@ public class OpenMeetingsRecordingController extends BasicController {
 
 		mainVC = createVelocityContainer("recording");
 
-		OpenMeetingsManager openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
-		String url = openMeetingsManager.getRecordingURL(recording, null);
-		mainVC.contextPut("recordingUrl", url);
-		mainVC.contextPut("width", new Long(recording.getWidth()));
-		mainVC.contextPut("height", new Long(recording.getHeight()));
+		try {
+			OpenMeetingsManager openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
+			String url = openMeetingsManager.getRecordingURL(recording);
+			mainVC.contextPut("recordingUrl", url);
+			mainVC.contextPut("width", new Long(recording.getWidth()));
+			mainVC.contextPut("height", new Long(recording.getHeight()));
+		} catch (OpenMeetingsException e) {
+			e.printStackTrace();
+		}
 		
 
 		putInitialPanel(mainVC);

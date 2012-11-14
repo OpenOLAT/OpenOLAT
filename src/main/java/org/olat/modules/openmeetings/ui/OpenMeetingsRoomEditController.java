@@ -77,7 +77,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		this.defaultSettings = defaultSettings;
 		
 		roomTypeKeys = new String[]{
-				RoomType.conference.typeStr(), RoomType.audience.typeStr(), RoomType.restricted.typeStr(), RoomType.interview.typeStr()
+				RoomType.conference.typeStr(), RoomType.restricted.typeStr(), RoomType.interview.typeStr()
 		};
 		moderationModeKeys = new String[]{"yes", "no"};
 		
@@ -85,7 +85,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		try {
 			room = openMeetingsManager.getRoom(group, ores, subIdentifier);
 		} catch (OpenMeetingsException e) {
-			showError(e.getType().i18nKey());
+			showError(e.i18nKey());
 		}
 
 		if(room != null && room.getSize() != 16 && room.getSize() != 100) {
@@ -107,7 +107,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		roomNameEl = uifactory.addTextElement("roomname", "room.name", 255, name == null ? "" : name, formLayout);
 		
 		String[] roomTypeValues = new String[]{
-				translate(RoomType.conference.i18nKey()), translate(RoomType.audience.i18nKey()), translate(RoomType.restricted.i18nKey()), translate(RoomType.interview.i18nKey())
+				translate(RoomType.conference.i18nKey()), translate(RoomType.restricted.i18nKey()), translate(RoomType.interview.i18nKey())
 		};
 		roomTypeEl = uifactory.addDropdownSingleselect("roomtype", "room.type", formLayout, roomTypeKeys, roomTypeValues, null);
 		if(room != null) {

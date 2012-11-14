@@ -33,62 +33,26 @@ public class OpenMeetingsException extends Exception {
 	private static final long serialVersionUID = 3260533359384969602L;
 	
 	public static final String SERVER_NOT_I18N_KEY = "error.notAvailable";
+	public static final long SERVER_NOT_AVAILABLE = 0;
+	public static final long UNKOWN = -1;
 
-	private final Type type;
-	
-	public OpenMeetingsException(Type type) {
-		this.type = type;
+	private final long errorCode;
+
+	public OpenMeetingsException(long errorCode) {
+		this.errorCode = errorCode;
 	}
 	
-	public OpenMeetingsException(long code) {
-		this.type = Type.get(code);
-	}
-	
-	public OpenMeetingsException(String message, Type type) {
-		super(message);
-		this.type = type;
-	}
-	
-	public OpenMeetingsException(String message, Exception cause, Type type) {
-		super(message, cause);
-		this.type = type;
-	}
-	
-	public OpenMeetingsException(Exception cause, Type type) {
+	public OpenMeetingsException(Exception cause, long errorCode) {
 		super(cause);
-		this.type = type;
+		this.errorCode = errorCode;
 	}
 	
-	public Type getType() {
-		return type;
-	}
-
-	public enum Type {
-		unkown("error.unkown", 0),
-		serverNotAvailable("error.notAvailable", 0)
-		
-		;
-		
-
-		private final String i18nKey;
-		private final long code;
-		
-		private Type(String i18nKey, long code) {
-			this.i18nKey = i18nKey;
-			this.code = code;
+	public String i18nKey() {
+		if(errorCode == 0) {
+			return SERVER_NOT_I18N_KEY;
+		} else if (errorCode >= -56 && errorCode < 0) {
+			return "error." + errorCode;
 		}
-		
-		public String i18nKey() {
-			return i18nKey;
-		}
-		
-		public static Type get(long code) {
-			for(Type t:Type.values()) {
-				if(t.code == code) {
-					return t;
-				}
-			}
-			return unkown;
-		}
+		return "error.-1";//or unkown
 	}
 }

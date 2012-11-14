@@ -3,6 +3,15 @@
 #elseif($noroom)
  <div class="b_warning">$r.translate("room.notfound.error")</div>
 #else
+	<h4>$roomName</h4>
+	#if($roomComment)
+		<p>$roomComment</p>
+	#end
+	
+	#if($roomClosed)
+		<p>$r.translate("room.closed.explanation")</p>
+	#end
+
 	#if($r.available("open.room"))
 		$r.render("open.room")
 		$r.render("close.room")

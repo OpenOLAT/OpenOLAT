@@ -162,7 +162,7 @@ public class OpenMeetingsAdminRoomMembersController extends BasicController {
 			mainVC.contextPut("freePlaces", new String[]{Long.toString(numOfFreePlaces)});
 		} catch (OpenMeetingsException e) {
 			tableCtr.setTableDataModel(new UserToGroupDataModel());
-			showError(e.getType().i18nKey());
+			showError(e.i18nKey());
 		}
 	}
 

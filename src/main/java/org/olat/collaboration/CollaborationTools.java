@@ -571,7 +571,7 @@ public class CollaborationTools implements Serializable {
 	}
 	
 	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
-		OpenMeetingsRunController runController = new OpenMeetingsRunController(ureq, wControl, group, null, null, null, admin);
+		OpenMeetingsRunController runController = new OpenMeetingsRunController(ureq, wControl, group, null, null, null, admin, admin);
 		return runController;
 	}
 

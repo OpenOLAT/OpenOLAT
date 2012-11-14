@@ -86,7 +86,7 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 			listenTo(editForm);
 			editVc.put("editRooms", editForm.getInitialComponent());
 		} catch (OpenMeetingsException e) {
-			editVc.contextPut("error", e.getType().i18nKey());
+			editVc.contextPut("error", e.i18nKey());
 		}
 	}
 
