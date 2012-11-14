@@ -235,6 +235,25 @@ public class FunctionalVOUtil {
 		return(group);
 	}
 	
+	public void addOwnerToGroup(URL deploymentUrl, GroupVO group, UserVO owner) throws IOException, URISyntaxException{
+		//add an owner
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(getUsername(), getPassword()));
+
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI())
+				.path("restapi")
+				.path("groups").path(group.getKey().toString())
+				.path("owners").path(owner.getKey().toString())
+				.build();
+
+		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = restConnection.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		restConnection.shutdown();
+	}
+	
 	/**
 	 * Imports the specified course via REST.
 	 * 

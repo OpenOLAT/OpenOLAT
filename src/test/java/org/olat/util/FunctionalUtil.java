@@ -965,7 +965,7 @@ public class FunctionalUtil {
 		.append(getContentSegmentCss())
 		.append("')])[")
 		.append(segmentIndex + 1)
-		.append("]");
+		.append("]//a");
 		
 		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
@@ -1006,6 +1006,38 @@ public class FunctionalUtil {
 		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		waitForPageToLoad(browser);
+		
+		return(true);
+	}
+	
+	/**
+	 * Clicks the checkbox at position checkboxIndex from the selection at position checkboxGroupIndex.
+	 * 
+	 * @param browser
+	 * @param formIndex
+	 * @param checkboxGroupIndex
+	 * @param checkboxIndex
+	 * @return true on success
+	 */
+	@Deprecated
+	public boolean clickCheckbox(Selenium browser, int formIndex, int checkboxGroupIndex, int checkboxIndex){
+		idle(browser);
+	
+		StringBuffer selectorBuffer = new StringBuffer();
+	
+		selectorBuffer.append("xpath=//form[")
+		.append(formIndex)
+		.append("]")
+		.append("//div[contains(@class, 'b_form_selection_vertical') or contains(@class, 'b_form_selection_horizontal')][")
+		.append(checkboxGroupIndex + 1)
+		.append("]")
+		.append("//input[@type='checkbox'][")
+		.append(checkboxIndex + 1)
+		.append("]");
+		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
 		
 		return(true);
 	}

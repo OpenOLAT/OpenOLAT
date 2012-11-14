@@ -42,9 +42,6 @@ public class FunctionalGroupsSiteUtil {
 	
 	public final static String SEARCH_GROUP_BUTTONS_CSS = "o_sel_group_search_groups_buttons";
 	
-	public final static String ADMINISTRATION_ICON_CSS = "o_admin_icon";
-	public final static String BOOKING_ICON_CSS = "b_order_icon";
-	
 	public enum GroupsSiteAction {
 		MY_GROUPS("o_sel_MyGroups"),
 		PUBLISHED_GROUPS("o_sel_OpenGroups"),
@@ -125,6 +122,50 @@ public class FunctionalGroupsSiteUtil {
 		}
 	}
 	
+	public enum GroupTools {
+		INFORMATION,
+		EMAIL,
+		CALENDAR,
+		FOLDER,
+		FORUM,
+		WIKI,
+		EPORTFOLIO;
+	}
+	
+	public enum GroupsTabAction {
+		INFORMATION("o_news_icon"),
+		CALENDAR("o_calendar_icon"),
+		EMAIL("o_co_icon"),
+		FOLDER("o_bc_icon"),
+		FORUM("o_fo_icon"),
+		WIKI("o_wiki_icon"),
+		PORTFOLIO("o_ep_icon"),
+		ADMINISTRATION("o_admin_icon"),
+		BOOKING("b_order_icon");
+		
+		private String iconCss;
+		
+		GroupsTabAction(String iconCss){
+			setIconCss(iconCss);
+		}
+
+		public String getIconCss() {
+			return iconCss;
+		}
+
+		public void setIconCss(String iconCss) {
+			this.iconCss = iconCss;
+		}
+	}
+	
+	public enum AdministrationTabs {
+		DESCRIPTION,
+		TOOLS,
+		MEMBERS,
+		COURSES,
+		PUBLISHING_AND_BOOKING;
+	}
+
 	private String groupIconCss;
 	private String createGroupCss;
 	
@@ -368,7 +409,160 @@ public class FunctionalGroupsSiteUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
-		return(false);
+		return(true);
+	}
+	
+	public GroupsTabAction findGroupTabActionForTool(GroupTools tool){
+		GroupsTabAction action = null;
+		
+		switch(tool){
+		case CALENDAR:
+		{
+			action = GroupsTabAction.CALENDAR;
+		}
+		break;
+		case EMAIL:
+		{
+			action = GroupsTabAction.EMAIL;
+		}
+		break;
+		case FOLDER:
+		{
+			action = GroupsTabAction.FOLDER;
+		}
+		break;
+		case FORUM:
+		{
+			action = GroupsTabAction.FORUM;
+		}
+		break;
+		case WIKI:
+		{
+			action = GroupsTabAction.WIKI;
+		}
+		break;
+		case EPORTFOLIO:
+		{
+			action = GroupsTabAction.PORTFOLIO;
+		}
+		break;
+		case INFORMATION:
+		{
+			action = GroupsTabAction.INFORMATION;
+		}
+		break;
+		}
+		
+		return(action);
+	}
+	
+	/**
+	 * @param browser
+	 * @param action
+	 * @return
+	 * 
+	 * Opens the appropriate action.
+	 */
+	public boolean openGroupsTabActionByMenuTree(Selenium browser, GroupsTabAction action){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//ul[contains(@class, '")
+		.append(functionalUtil.getTreeLevel1Css())
+		.append("')]//li//a[contains(@class, '")
+		.append(action.getIconCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param tools
+	 * @return
+	 * 
+	 * Toggle specified tools.
+	 */
+	public boolean applyTools(Selenium browser, GroupTools[] tools){
+		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
+			return(false);
+		}
+		
+		if(!functionalUtil.openContentTab(browser, AdministrationTabs.TOOLS.ordinal())){
+			return(false);
+		}
+		
+		if(tools == null)
+			return(true);
+		
+		if(ArrayUtils.contains(tools, GroupTools.INFORMATION)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.INFORMATION.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(tools, GroupTools.EMAIL)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.EMAIL.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(tools, GroupTools.CALENDAR)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.CALENDAR.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(tools, GroupTools.FOLDER)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.FOLDER.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(tools, GroupTools.FORUM)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.FORUM.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(tools, GroupTools.WIKI)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.WIKI.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		if(ArrayUtils.contains(tools, GroupTools.EPORTFOLIO)){
+			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.EPORTFOLIO.ordinal()));
+			functionalUtil.idle(browser);
+		}
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param information
+	 * @return
+	 * 
+	 * Sets the information for members.
+	 */
+	public boolean applyInformationForMembers(Selenium browser, String information){
+		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
+			return(false);
+		}
+		
+		if(!functionalUtil.openContentTab(browser, AdministrationTabs.TOOLS.ordinal())){
+			return(false);
+		}
+		
+		functionalUtil.typeMCE(browser, information);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//button[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
 	}
 	
 	public FunctionalUtil getFunctionalUtil() {

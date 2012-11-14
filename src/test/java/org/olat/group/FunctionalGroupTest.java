@@ -22,6 +22,7 @@ package org.olat.group;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -34,11 +35,15 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalGroupsSiteUtil;
 import org.olat.util.FunctionalGroupsSiteUtil.GroupOptions;
+import org.olat.util.FunctionalGroupsSiteUtil.GroupTools;
+import org.olat.util.FunctionalGroupsSiteUtil.GroupsTabAction;
 import org.olat.util.FunctionalUtil;
+import org.olat.util.FunctionalUtil.WaitLimitAttribute;
 import org.olat.util.FunctionalVOUtil;
 import org.olat.util.browser.Student1;
 import org.olat.util.browser.Tutor1;
@@ -55,13 +60,12 @@ public class FunctionalGroupTest {
 	public final static String CREATE_GROUP_NAME = "club of dead poets";
 	public final static String CREATE_GROUP_DESCRIPTION = "If you feel disappointed by the attitude and stance on free software of certain companies you're welcome.";
 	
+	public final static String CONFIGURE_TOOLS_INFORMATION = "group for testing";
+	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		return ArquillianDeployments.createDeployment();
 	}
-
-	@Drone
-	DefaultSelenium browser;
 	
 	@ArquillianResource
 	URL deploymentUrl;
@@ -115,38 +119,72 @@ public class FunctionalGroupTest {
 		/*
 		 * verify
 		 */
-		
 		/* check for administration */
-		StringBuffer selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//ul[contains(@class, '")
-		.append(functionalUtil.getTreeLevel1Css())
-		.append("')]//li//a[contains(@class, '")
-		.append(FunctionalGroupsSiteUtil.ADMINISTRATION_ICON_CSS)
-		.append("')]");
-		
-		functionalUtil.waitForPageToLoadElement(tutor0, selectorBuffer.toString());
+		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0, GroupsTabAction.ADMINISTRATION));
 		
 		/* check for waiting list */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//ul[contains(@class, '")
-		.append(functionalUtil.getTreeLevel1Css())
-		.append("')]//li//a[contains(@class, '")
-		.append(FunctionalGroupsSiteUtil.BOOKING_ICON_CSS)
-		.append("')]");
-		
-		functionalUtil.waitForPageToLoadElement(tutor0, selectorBuffer.toString());
+		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0, GroupsTabAction.BOOKING));
 		
 		/* logout */
 		functionalUtil.logout(tutor0);
 	}
 
-	@Ignore
 	@Test
 	@RunAsClient
-	public void checkConfigureTools(){
+	public void checkConfigureTools(@Drone @Tutor1 DefaultSelenium tutor0) throws IOException, URISyntaxException{
+		/*
+		 * test setup
+		 */
+		/* create group via REST */
+		int tutorCount = 1;
+			
+		final UserVO[] tutors = new UserVO[tutorCount];
+		functionalVOUtil.createTestUsers(deploymentUrl, tutorCount).toArray(tutors);
 		
+		final GroupVO[] groups = new GroupVO[tutorCount];
+		functionalVOUtil.createTestCourseGroups(deploymentUrl, tutorCount).toArray(groups);
+		
+		functionalVOUtil.addOwnerToGroup(deploymentUrl, groups[0], tutors[0]);
+		
+		/*
+		 * test case
+		 */
+		Assert.assertTrue(functionalUtil.login(tutor0, tutors[0].getLogin(), tutors[0].getPassword(), true));
+		
+		/* open group */
+		Assert.assertTrue(functionalGroupsSiteUtil.openMyGroup(tutor0, groups[0].getName()));
+		
+		/* apply tools */
+		GroupTools[] tools = new GroupTools[]{
+				GroupTools.INFORMATION,
+				GroupTools.EMAIL,
+				GroupTools.CALENDAR,
+				GroupTools.FOLDER,
+				GroupTools.FORUM,
+				GroupTools.WIKI,
+				GroupTools.EPORTFOLIO
+			};
+		Assert.assertTrue(functionalGroupsSiteUtil.applyTools(tutor0, tools));
+		
+		/* apply member information */
+		Assert.assertTrue(functionalGroupsSiteUtil.applyInformationForMembers(tutor0, CONFIGURE_TOOLS_INFORMATION));
+		
+		/*
+		 * verify
+		 */
+		/* information page */
+		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0, GroupsTabAction.INFORMATION));
+		Assert.assertTrue(functionalUtil.waitForPageToLoadContent(tutor0, null, CONFIGURE_TOOLS_INFORMATION, WaitLimitAttribute.VERY_SAVE, true));
+				
+		/* tools */
+		for(GroupTools currentTool: tools){
+			Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0,
+					functionalGroupsSiteUtil.findGroupTabActionForTool(currentTool)));
+		}
+		
+		/* logout */
+		functionalUtil.idle(tutor0);
+		functionalUtil.logout(tutor0);
 	}
 	
 	@Ignore
