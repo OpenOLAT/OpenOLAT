@@ -28,7 +28,6 @@ package org.olat.course.editor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -320,8 +319,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 			toolC.addHeader(translate(NLS_HEADER_INSERTNODES));
 			CourseNodeFactory cnf = CourseNodeFactory.getInstance();
-			for (Iterator<String> iter = cnf.getRegisteredCourseNodeAliases().iterator(); iter.hasNext();) {
-				String courseNodeAlias = iter.next();
+			for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
 				CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
 				try {
 					toolC.addLink(TB_ACTION + courseNodeAlias, cnConfig.getLinkText(ureq.getLocale()), courseNodeAlias, cnConfig.getIconCSSClass());
@@ -481,12 +479,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		CourseNodeConfiguration newConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(selectAlternative);
 		CourseNode newNode = newConfig.getInstance();
 		//copy configurations
-		newNode.setDisplayOption(chosenNode.getDisplayOption());
-		newNode.setLearningObjectives(chosenNode.getLearningObjectives());
-		newNode.setLongTitle(chosenNode.getLongTitle());
-		newNode.setNoAccessExplanation(chosenNode.getNoAccessExplanation());
-		newNode.setShortTitle(chosenNode.getShortTitle());
-		
+		chosenNode.copyConfigurationTo(newNode);
 		//insert the node
 		CourseEditorTreeNode cetn = (CourseEditorTreeNode)cetm.getNodeById(chosenNode.getIdent());
 		CourseEditorTreeNode parentNode = (CourseEditorTreeNode)cetn.getParent();

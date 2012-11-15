@@ -353,6 +353,14 @@ public interface CourseNode extends INode, ShortName {
 	public CourseNode createInstanceForCopy();
 	
 	/**
+	 * Try to copy the configuration of this course node to
+	 * the one passed as parameter. Warning, the 2 nodes can
+	 * be from different types.
+	 * @param courseNode
+	 */
+	public void copyConfigurationTo(CourseNode courseNode);
+	
+	/**
 	 * Create an instance for the copy process. The copy must have a different
 	 * unique ID and may take some of the configuration values configured for this
 	 * node.

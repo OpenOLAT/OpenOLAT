@@ -450,8 +450,8 @@ public class Condition implements Serializable, Cloneable {
 	/**
 	 * @see java.lang.Object#clone()
 	 */
-	protected Object clone() throws CloneNotSupportedException {
-		super.clone();
+	@Override
+	public Condition clone() {
 		Condition retVal = new Condition();
 		retVal.condition = this.condition;
 		retVal.conditionId = this.conditionId;
