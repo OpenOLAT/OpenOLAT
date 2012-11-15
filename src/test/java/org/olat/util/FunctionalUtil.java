@@ -473,8 +473,8 @@ public class FunctionalUtil {
 			}
 			
 			if((content == null && source == null) || 
-					(flags != null && source != null && !ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && content.equals(source)) ||
-					source.contains(content)){
+					(flags != null && content != null && ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && content.equals(source)) ||
+					(source != null && !ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && source.contains(content))){
 				log.info("found content after " + (currentTime - startTime) + "ms");
 				
 				/* go back to toplevel */

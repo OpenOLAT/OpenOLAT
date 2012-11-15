@@ -52,6 +52,8 @@ import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalEPortfolioUtil;
 import org.olat.util.FunctionalEPortfolioUtil.ArtefactAlias;
+import org.olat.util.FunctionalUtil.WaitLimitAttribute;
+import org.olat.util.FunctionalUtil.WaitForContentFlag;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
@@ -380,7 +382,10 @@ public class FunctionalArtefactTest {
 		String currentContent = null;
 
 		while((currentContent = artefact.nextContent()) != null){
-			if(!browser.isTextPresent(currentContent)){
+			if(!functionalUtil.waitForPageToLoadContent(browser, null,
+					currentContent,
+					WaitLimitAttribute.VERY_SAVE, null,
+					false)){
 				return(false);
 			}
 		}
