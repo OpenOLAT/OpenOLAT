@@ -26,7 +26,6 @@
 package org.olat.core.util.mail;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -331,7 +330,7 @@ public class MailerWithTemplate {
 		} catch (ResourceNotFoundException e) {
 			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 		}

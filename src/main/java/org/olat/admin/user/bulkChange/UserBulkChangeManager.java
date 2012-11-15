@@ -19,7 +19,6 @@
  */
 package org.olat.admin.user.bulkChange;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -272,7 +271,7 @@ public class UserBulkChangeManager extends BasicManager {
 			log.error("evaluating of values in BulkChange Field not possible!");
 			e.printStackTrace();
 			return "ERROR";
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("evaluating of values in BulkChange Field not possible!");
 			e.printStackTrace();
 			return "ERROR";

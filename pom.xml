@@ -65,6 +65,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.6</targetJdk>
 		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>
+		<org.hibernate.version>4.1.8.Final</org.hibernate.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -1226,16 +1227,6 @@
 			<version>3.2.2</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-highlighter</artifactId>
-			<version>3.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-spellchecker</artifactId>
-			<version>3.0.2</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
 			<version>3.7</version>
@@ -1463,7 +1454,7 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-			<version>4.1.7.Final</version>
+			<version>${org.hibernate.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -1474,17 +1465,17 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
-			<version>4.1.7.Final</version>
+			<version>${org.hibernate.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-ehcache</artifactId>
-			<version>4.1.7.Final</version>
+			<version>${org.hibernate.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-c3p0</artifactId>
-			<version>4.1.7.Final</version>
+			<version>${org.hibernate.version}</version>
 			<exclusions>
 				<!-- includes an old version of c3p0 -->
 				<exclusion>
@@ -1506,7 +1497,7 @@
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
-			<version>1.6.4</version>
+			<version>1.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
@@ -1569,11 +1560,23 @@
 			<classifier>patched</classifier> <!-- unknown patched version of jmep (java mathematical expression parser)[http://jmep.tigris.org/], 
 				do not replace unless you know what you do! -->
 		</dependency>
+		<!-- Lucene dependencies -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
 			<version>3.0.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-highlighter</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-spellchecker</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		<!-- End lucene dependencies -->
 		<!-- Spring dependencies -->
 		<dependency>
 			<groupId>org.springframework</groupId>
