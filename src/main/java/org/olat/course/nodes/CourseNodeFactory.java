@@ -27,10 +27,11 @@ package org.olat.course.nodes;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.olat.OlatBeanTypes;
 import org.olat.core.CoreSpringFactory;
@@ -43,8 +44,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.RepositoryDetailsController;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -57,12 +56,8 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author guido
  */
 public class CourseNodeFactory {
-	
-	private static final OLog log = Tracing.createLoggerFor(CourseNodeFactory.class);
+
 	private static CourseNodeFactory INSTANCE;
-	private static List<String> courseNodeConfigurationsAliases;
-	private static Map<String, CourseNodeConfiguration> courseNodeConfigurations;
-	private Object lockObject = new Object();
 	private Map<String, CourseNodeConfiguration> allCourseNodeConfigurations;
 
 	/**
@@ -80,70 +75,52 @@ public class CourseNodeFactory {
 		return INSTANCE;
 	}
 
+	/**
+	 * @return the list of enabled aliases
+	 */
 	public List<String> getRegisteredCourseNodeAliases() {
-		if (courseNodeConfigurationsAliases == null) {
-			initCourseNodeConfigurationList();
+		List<CourseNodeConfiguration> configList = new ArrayList<CourseNodeConfiguration>(getAllCourseNodeConfigurations().values());
+		Collections.sort(configList, new OrderComparator());
+		List<String> alias = new ArrayList<String>(configList.size());
+		for(CourseNodeConfiguration config:configList) {
+			if(config.isEnabled()) {
+				alias.add(config.getAlias());
+			}
 		}
-		return courseNodeConfigurationsAliases;
+		return alias;
 	}
 
-	private void initCourseNodeConfigurationList() {
-		courseNodeConfigurationsAliases = new ArrayList<String>();
-		courseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
-		allCourseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
-		Map<Integer,CourseNodeConfiguration> sortedMap = new TreeMap<Integer,CourseNodeConfiguration>(); 
-		Map<String, Object> courseNodeConfigurationMap = CoreSpringFactory.getBeansOfType(OlatBeanTypes.courseNodeConfiguration);
-		Collection<Object> courseNodeConfigurationValues = courseNodeConfigurationMap.values();
-		for (Object object : courseNodeConfigurationValues) {
-			CourseNodeConfiguration courseNodeConfiguration = (CourseNodeConfiguration) object;
-			int key = courseNodeConfiguration.getOrder();
-			if (courseNodeConfiguration.isEnabled()) {
-				while (sortedMap.containsKey(key) ) {
-					// a key with this value already exist => add 1000 because offset must be outside of other values.
-					key += 1000;
-				}
-				if ( key != courseNodeConfiguration.getOrder() ) {
-					log.warn("CourseNodeConfiguration Problem: Dublicate order-value for node=" + courseNodeConfiguration.getAlias() + ", append course node at the end");
-				}
-				sortedMap.put(key, courseNodeConfiguration);
-			} else {
-				log.debug("Disabled courseNodeConfiguration=" + courseNodeConfiguration);
+	private synchronized Map<String,CourseNodeConfiguration> getAllCourseNodeConfigurations() {
+		if(allCourseNodeConfigurations == null) {
+			allCourseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
+			Map<String, Object> courseNodeConfigurationMap = CoreSpringFactory.getBeansOfType(OlatBeanTypes.courseNodeConfiguration);
+			Collection<Object> courseNodeConfigurationValues = courseNodeConfigurationMap.values();
+			for (Object object : courseNodeConfigurationValues) {
+				CourseNodeConfiguration courseNodeConfiguration = (CourseNodeConfiguration)object;
+				allCourseNodeConfigurations.put(courseNodeConfiguration.getAlias(), courseNodeConfiguration);
 			}
-			allCourseNodeConfigurations.put(courseNodeConfiguration.getAlias(), courseNodeConfiguration);
 		}
-		
-		for (Object key : sortedMap.keySet()) {
-			CourseNodeConfiguration courseNodeConfiguration = sortedMap.get(key);
-			courseNodeConfigurationsAliases.add(courseNodeConfiguration.getAlias());
-			courseNodeConfigurations.put(courseNodeConfiguration.getAlias(), courseNodeConfiguration);
-		}
+		return allCourseNodeConfigurations;
 	}
-	
 	
 	/**
-	 * @param type The node type
-	 * @return a new instance of the desired type of node
+	 * @param alias The node type or alias
+	 * @return The instance of the desired type of node if enabled
 	 */
 	public CourseNodeConfiguration getCourseNodeConfiguration(String alias) {
-		if (courseNodeConfigurations == null) {
-			synchronized(lockObject) {
-				if (courseNodeConfigurations == null) { // check again in synchronized-block, only one may create list		
-					initCourseNodeConfigurationList();
-				}
-			}
+		CourseNodeConfiguration config = getAllCourseNodeConfigurations().get(alias);
+		if(config.isEnabled()) {
+			return config;
 		}
-		return courseNodeConfigurations.get(alias);
+		return null;
 	}
 
+	/**
+	 * @param alias The node type or alias
+	 * @return The instance of the desired type of node if enabled or not
+	 */
 	public CourseNodeConfiguration getCourseNodeConfigurationEvenForDisabledBB(String alias) {
-		if (allCourseNodeConfigurations == null) {
-			synchronized(lockObject) {
-				if (allCourseNodeConfigurations == null) { // check again in synchronized-block, only one may create list		
-					initCourseNodeConfigurationList();
-				}
-			}
-		}
-		return allCourseNodeConfigurations.get(alias);
+		return getAllCourseNodeConfigurations().get(alias);
 	}
 	
 	/**
@@ -187,5 +164,24 @@ public class CourseNodeFactory {
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
 		dts.activate(ureq, dt, entries);
 	}
-
+	
+	private static class OrderComparator implements Comparator<CourseNodeConfiguration> {
+		@Override
+		public int compare(CourseNodeConfiguration c1, CourseNodeConfiguration c2) {
+			if(c1 == null) return -1;
+			if(c2 == null) return 1;
+			
+			int k1 = c1.getOrder();
+			int k2 = c2.getOrder();
+			int diff = (k1 < k2 ? -1 : (k1==k2 ? 0 : 1));
+			if(diff == 0) {
+				String a1 = c1.getAlias();
+				String a2 = c2.getAlias();
+				if(a1 == null) return -1;
+				if(a2 == null) return 1;
+				diff = a1.compareTo(a1);
+			}
+			return diff;
+		}
+	}
 }
