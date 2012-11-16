@@ -197,9 +197,10 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	public void cleanupOnDelete(ICourse course) {
 		// Delete all qtiresults for this node. No properties used on this node
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-		QTIResultManager.getInstance().deleteAllResults(course.getResourceableId(), this.getIdent(), repKey);
-
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
+		if(re != null) {
+			QTIResultManager.getInstance().deleteAllResults(course.getResourceableId(), getIdent(), re.getKey());
+		}
 	}
 
 	/**

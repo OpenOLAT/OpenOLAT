@@ -281,14 +281,12 @@ public class RepositoryEntriesResource {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		File tmpFile = null;
-		long length = 0;
+		MultipartReader partsReader = null;
 		try {
 			Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
-			MultipartReader partsReader = new MultipartReader(request);
-			tmpFile = partsReader.getFile();
-			length = tmpFile.length();
-			
+			partsReader = new MultipartReader(request);
+			File tmpFile = partsReader.getFile();
+			long length = tmpFile.length();
 			if(length > 0) {
 				Long accessRaw = partsReader.getLongValue("access");
 				int access = accessRaw != null ? accessRaw.intValue() : RepositoryEntry.ACC_OWNERS;
@@ -303,9 +301,7 @@ public class RepositoryEntriesResource {
 		} catch (Exception e) {
 			log.error("Error while importing a file",e);
 		} finally {
-			if(tmpFile != null && tmpFile.exists()) {
-				tmpFile.delete();
-			}
+			MultipartReader.closeQuietly(partsReader);
 		}
 		return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 	}

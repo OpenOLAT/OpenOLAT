@@ -169,7 +169,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		File file = new File(fileUrl.toURI());
 		
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		conn.addMultipart(method, file.getName(), file);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());

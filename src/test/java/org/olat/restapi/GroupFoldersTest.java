@@ -334,7 +334,6 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("foldername", new StringBody("New folder 1 2 3"));

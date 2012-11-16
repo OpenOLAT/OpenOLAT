@@ -29,7 +29,6 @@ import static org.olat.user.restapi.UserVOFactory.parseUserProperty;
 import static org.olat.user.restapi.UserVOFactory.post;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -42,7 +41,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -74,11 +72,9 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.restapi.group.MyGroupWebService;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
@@ -376,7 +372,6 @@ public class UserWebService {
    * @response.representation.401.doc Not authorized
    * @response.representation.404.doc The identity or the portrait not found
 	 * @param identityKey The user key identifier of the user being searched
-	 * @param fileName The name of the image (mandatory)
 	 * @param file The image
 	 * @param request The REST request
 	 * @return The image
@@ -384,8 +379,8 @@ public class UserWebService {
 	@POST
 	@Path("{identityKey}/portrait")
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
-	public Response postPortrait(@PathParam("identityKey") Long identityKey, @FormParam("filename") String filename, 
-			@FormParam("file") InputStream file, @Context HttpServletRequest request) {
+	public Response postPortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		MultipartReader partsReader = null;
 		try {
 			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null) {
@@ -396,15 +391,15 @@ public class UserWebService {
 			if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
-			
-			File tmpFile = getTmpFile(filename);
-			FileUtils.save(file, tmpFile);
+			partsReader = new MultipartReader(request);
+			File tmpFile = partsReader.getFile();
 			DisplayPortraitManager.getInstance().setPortrait(tmpFile, identity);
-			tmpFile.delete();
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);
-		}	
+		}	finally {
+			MultipartReader.closeQuietly(partsReader);
+		}
 	}
 	
 	/**
@@ -595,12 +590,5 @@ public class UserWebService {
 	@Produces(MediaType.APPLICATION_XML)
 	public Response deletePost(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		return delete(identityKey, request);
-	}
-	
-	private File getTmpFile(String suffix) {
-		suffix = (suffix == null ? "" : suffix);
-		File tmpFile = new File(WebappHelper.getUserDataRoot()	+ "/tmp/", CodeHelper.getGlobalForeverUniqueID() + "_" + suffix);
-		FileUtils.createEmptyFile(tmpFile);
-		return tmpFile;
 	}
 }

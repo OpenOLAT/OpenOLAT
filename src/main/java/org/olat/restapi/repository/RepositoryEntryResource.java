@@ -30,7 +30,6 @@ import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +37,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -62,10 +60,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
@@ -77,6 +73,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ErrorWindowControl;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
@@ -514,32 +511,29 @@ public class RepositoryEntryResource {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   @Consumes({MediaType.MULTIPART_FORM_DATA})
   public Response replaceResource(@PathParam("repoEntryKey") String repoEntryKey,
-      @FormParam("filename") String filename, @FormParam("file") InputStream file,
-      @FormParam("displayname") String displayname, @FormParam("description") String description,
       @Context HttpServletRequest request) {
     if(!RestSecurityHelper.isAuthor(request)) {
       return Response.serverError().status(Status.UNAUTHORIZED).build();
     }
 
-    File tmpFile = null;
-    long length = 0;
+    MultipartReader reader = null;
     try {
       final RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
       if(re == null) {
         return Response.serverError().status(Status.NOT_FOUND).build();
       }
+      
+      reader = new MultipartReader(request);
+      File tmpFile = reader.getFile();
+      String displayname = reader.getValue("displayname");
+      String description = reader.getValue("description");
 
       Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
       RepositoryEntry replacedRe;
-      if(file == null) {
+      if(tmpFile == null) {
       	replacedRe = repositoryManager.setDescriptionAndName(re, displayname, description);
       } else {
-	      String tmpName = StringHelper.containsNonWhitespace(filename) ? filename : "import.zip";
-	      tmpFile = getTmpFile(tmpName);
-	      FileUtils.save(file, tmpFile);
-	      FileUtils.closeSafely(file);
-	      length = tmpFile.length();
-	
+	      long length = tmpFile.length();
 	      if(length == 0) {
 	        return Response.serverError().status(Status.NO_CONTENT).build();
 	      }
@@ -555,9 +549,7 @@ public class RepositoryEntryResource {
     } catch (Exception e) {
       log.error("Error while importing a file",e);
     } finally {
-      if(tmpFile != null && tmpFile.exists()) {
-        tmpFile.delete();
-      }
+    	MultipartReader.closeQuietly(reader);
     }
     return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
   }
@@ -591,13 +583,6 @@ public class RepositoryEntryResource {
 
     log.debug("Cannot replace a resource of the type: " + typeName);
     return null;
-  }
-
-  private File getTmpFile(String suffix) {
-    suffix = (suffix == null ? "" : suffix);
-    File tmpFile = new File(WebappHelper.getUserDataRoot()	+ "/tmp/", CodeHelper.getGlobalForeverUniqueID() + "_" + suffix);
-    FileUtils.createEmptyFile(tmpFile);
-    return tmpFile;
   }
   
   /**
