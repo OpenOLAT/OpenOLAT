@@ -26,8 +26,6 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -35,53 +33,41 @@ import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
- * Initial date: 15.11.2012<br>
+ * Initial date: 16.11.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSessionAdminController extends BasicController implements StackedControllerAware {
+public class ErrorAdminController extends BasicController {
 
-	private final Link sessionsLink, configLink, infosLink;
+	private final Link errorsLink, logLevelLink, requestLogLink;
 	private final SegmentViewComponent segmentView;
-	
 	private final VelocityContainer mainVC;
 	
-	private UserSessionController sessionListCtrl;
-	private UserSessionConfigAdminController configCtrl;
-	private UserSessionInformationsController infoCtrl;
-	private StackedController stackedController;
+	private ErrorSearchController searchCtrl;
+	private ErrorLogLevelController logLevelCtrl;
+	private RequestLoglevelController requestLogLevelCtrl;
 	
-	public UserSessionAdminController(UserRequest ureq, WindowControl wControl) {
+	public ErrorAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("segments");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		sessionsLink = LinkFactory.createLink("session.list", mainVC, this);
-		segmentView.addSegment(sessionsLink, true);
-		
-		configLink = LinkFactory.createLink("session.configuration", mainVC, this);
-		segmentView.addSegment(configLink, false);
-
-		infosLink = LinkFactory.createLink("sess.details", mainVC, this);
-		segmentView.addSegment(infosLink, false);
+		errorsLink = LinkFactory.createLink("errors", mainVC, this);
+		segmentView.addSegment(errorsLink, true);
+		logLevelLink = LinkFactory.createLink("loglevels", mainVC, this);
+		segmentView.addSegment(logLevelLink, false);
+		requestLogLink = LinkFactory.createLink("requestloglevel.title", mainVC, this);
+		segmentView.addSegment(requestLogLink, false);
 		
 		mainVC.put("segments", segmentView);
-		doOpenSessionList(ureq);
+		doErrorList(ureq);
 		putInitialPanel(mainVC);
 	}
-
-	@Override
-	public void setStackedController(StackedController stackPanel) {
-		this.stackedController = stackPanel;
-		if(sessionListCtrl != null) {
-			sessionListCtrl.setStackedController(stackedController);
-		}
-	}
-
+	
 	@Override
 	protected void doDispose() {
-		this.stackedController = null;
+		//
 	}
 
 	@Override
@@ -91,39 +77,39 @@ public class UserSessionAdminController extends BasicController implements Stack
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == sessionsLink) {
-					doOpenSessionList(ureq);
-				} else if (clickedLink == configLink) {
-					doOpenConfiguration(ureq);
-				} else if (clickedLink == infosLink) {
-					doOpenInformations(ureq);
+				if(clickedLink == errorsLink) {
+					doErrorList(ureq);
+				} else if(clickedLink == logLevelLink) {
+					doLogLevel(ureq);
+				} else if(clickedLink == requestLogLink) {
+					doRequestLog(ureq);
 				}
 			}
 		}
 	}
 
-	private void doOpenSessionList(UserRequest ureq) {
-		if(sessionListCtrl == null) {
-			sessionListCtrl = new UserSessionController(ureq, getWindowControl());
-			sessionListCtrl.setStackedController(stackedController);
-			listenTo(sessionListCtrl);
+	private void doLogLevel(UserRequest ureq) {
+		if(logLevelCtrl == null) {
+			logLevelCtrl = new ErrorLogLevelController(ureq, getWindowControl());
+			listenTo(logLevelCtrl);
 		}
-		mainVC.put("segmentCmp", sessionListCtrl.getInitialComponent());
-	}
-
-	private void doOpenConfiguration(UserRequest ureq) {
-		if(configCtrl == null) {
-			configCtrl = new UserSessionConfigAdminController(ureq, getWindowControl());
-			listenTo(configCtrl);
-		}
-		mainVC.put("segmentCmp", configCtrl.getInitialComponent());
+		mainVC.put("segmentCmp", logLevelCtrl.getInitialComponent());
 	}
 	
-	private void doOpenInformations(UserRequest ureq) {
-		if(infoCtrl == null) {
-			infoCtrl = new UserSessionInformationsController(ureq, getWindowControl());
-			listenTo(infoCtrl);
+	private void doErrorList(UserRequest ureq) {
+		if(searchCtrl == null) {
+			searchCtrl = new ErrorSearchController(ureq, getWindowControl());
+			listenTo(searchCtrl);
 		}
-		mainVC.put("segmentCmp", infoCtrl.getInitialComponent());
+		mainVC.put("segmentCmp", searchCtrl.getInitialComponent());
 	}
+	
+	private void doRequestLog(UserRequest ureq) {
+		if(requestLogLevelCtrl == null) {
+			requestLogLevelCtrl = new RequestLoglevelController(ureq, getWindowControl());
+			listenTo(requestLogLevelCtrl);
+		}
+		mainVC.put("segmentCmp", requestLogLevelCtrl.getInitialComponent());
+	}
+
 }

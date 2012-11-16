@@ -108,6 +108,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="booking" />
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="order.menu.title"/>
 		<property name="i18nDescriptionKey" value="order.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>

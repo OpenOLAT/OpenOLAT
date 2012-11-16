@@ -55,7 +55,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="vitero" />
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.vitero.ui"/>

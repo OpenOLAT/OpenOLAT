@@ -63,7 +63,7 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="order" value="7221" />
 	</bean>
 	

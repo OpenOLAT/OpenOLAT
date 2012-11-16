@@ -62,7 +62,7 @@ import org.olat.core.logging.Tracing;
  */
 public class AllCachesController extends BasicController {
 	
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(AllCachesController.class);
 	
 	private VelocityContainer myContent;
 	private TableController tableCtr;
