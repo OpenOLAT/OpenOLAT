@@ -33,7 +33,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -50,7 +49,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
@@ -203,7 +201,7 @@ public class CourseResourceFolderWebService {
 	@POST
 	@Path("coursefolder")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response attachFileToFolderPost(@PathParam("courseId") Long courseId, @FormParam("filename") String filename,
+	public Response attachFileToFolderPost(@PathParam("courseId") Long courseId,
 			@Context HttpServletRequest request) {
 		return attachFileToCourseFolder(courseId, Collections.<PathSegment>emptyList(), request);
 	}
@@ -249,7 +247,7 @@ public class CourseResourceFolderWebService {
 	@PUT
 	@Path("coursefolder")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response attachFileToFolder(@PathParam("courseId") Long courseId, @FormParam("filename") String filename,
+	public Response attachFileToFolder(@PathParam("courseId") Long courseId,
 			@Context HttpServletRequest request) {
 		return attachFileToCourseFolder(courseId, Collections.<PathSegment>emptyList(), request);
 	}
