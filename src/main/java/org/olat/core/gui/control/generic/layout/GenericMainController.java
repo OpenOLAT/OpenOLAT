@@ -77,6 +77,8 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 
 	private static final String GMCMT = "GMCMenuTree";
 
+
+	private Link backLink;
 	private MenuTree olatMenuTree;
 	private Panel content;
 	private VelocityContainer stackVC;
@@ -125,6 +127,13 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 		String stackPage = Util.getPackageVelocityRoot(StackedController.class) + "/stack.html";
 		stackVC = new VelocityContainer(null, "vc_stack", stackPage, getTranslator(), this);
 		stackVC.put("content", columnLayoutCtr.getInitialComponent());
+		//back link
+		backLink = LinkFactory.createCustomLink("back", "back", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, stackVC, this);
+		backLink.setCustomEnabledLinkCSS("b_breadcumb_back");
+		backLink.setCustomDisplayText("\u25C4"); // unicode back arrow (black left pointer symbol)
+		backLink.setTitle(translate("back"));
+		backLink.setAccessKey("b"); // allow navigation using keyboard
+		stackVC.put("back", backLink);
 		//add the root
 		Link link = LinkFactory.createLink("gcrumb_root", stackVC, this);
 		link.setCustomDisplayText(firstNode.getTitle());
@@ -318,6 +327,13 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (source.equals(backLink)) {
+			if (stack.size() > 1) {
+				// back means to one level down, change source to the stack item one below current
+				source = stack.get(stack.size()-2);
+				// now continue as if user manually pressed a stack item in the list
+			}
+		}
 		if(stack.contains(source)) {
 			int index = stack.indexOf(source);
 			if(index < (stack.size() - 1)) {

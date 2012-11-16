@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -48,6 +49,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * Initial Date: 28.11.2003
@@ -268,7 +270,7 @@ public class DMZDispatcher implements Dispatcher {
 					// the log-in link in the -same- browser window ->
 					// -> there is no window -> create a new one
 					window = null;
-					usess.signOffAndClear();
+					CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
 					usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 					I18nManager.updateLocaleInfoToThread(usess);//update locale infos
 					
@@ -280,7 +282,7 @@ public class DMZDispatcher implements Dispatcher {
 					} else {
 						// e.g. /dmz/ -> start screen, clear previous session data
 						window = null; 
-						usess.signOffAndClear();
+						CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
 						usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 						I18nManager.updateLocaleInfoToThread(usess);//update locale infos
 						// request new windows since it is a new usersession, the old one was purged

@@ -7,6 +7,8 @@
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+	<context:component-scan base-package="org.olat.core.util.session" />
 
 	<bean id="codeHelper" class="org.olat.core.util.CodeHelper" >
 		<constructor-arg value="${node.id}" />
@@ -21,4 +23,27 @@
 	<bean id="imageHelperServiceProvider_java" class="org.olat.core.util.image.spi.ImageHelperImpl" />
 	
 	<bean id="imageHelperServiceProvider_magick" class="org.olat.core.util.image.spi.ImageMagickHelper" />
+	
+		<!-- Definition of the providers -->
+	<bean id="userSessionModule" class="org.olat.core.util.session.UserSessionModule">
+		<property name="persistedProperties">
+	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
+	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
+	    	<constructor-arg index="0" ref="coordinatorManager"/>
+	    	<constructor-arg index="1" ref="userSessionModule" />
+	  	</bean>
+		</property>
+	</bean>
+
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="userSessionModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				session.timeout=${session.timeout}
+			</value>
+		</property>
+	</bean>
+	
+	
 </beans>

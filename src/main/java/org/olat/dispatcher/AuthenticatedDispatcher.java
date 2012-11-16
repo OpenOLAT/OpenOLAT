@@ -33,6 +33,7 @@ import javax.servlet.http.HttpSession;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -50,6 +51,7 @@ import org.olat.core.util.URIHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.core.util.threadlog.UserBasedLogLevelManager;
 import org.olat.login.LoginModule;
 
@@ -89,7 +91,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		if ( log.isDebug() ) {
 			startExecute = System.currentTimeMillis();
 		}
-		UserSession usess = UserSession.getUserSession(request);
+		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for 

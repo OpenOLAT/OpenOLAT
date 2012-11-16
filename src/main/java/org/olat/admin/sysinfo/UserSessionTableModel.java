@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 
@@ -39,14 +38,13 @@ import org.olat.core.util.UserSession;
  * @author Mike Stock
  */
 
-public class UserSessionTableModel extends DefaultTableDataModel {
-	private Translator trans;
+public class UserSessionTableModel extends DefaultTableDataModel<UserSession> {
+
 	/**
 	 * @param userSessions
 	 */
-	public UserSessionTableModel(List userSessions, Translator trans) {
+	public UserSessionTableModel(List<UserSession> userSessions) {
 		super(userSessions);
-		this.trans = trans;
 	}
 	
 	/**
@@ -91,16 +89,13 @@ public class UserSessionTableModel extends DefaultTableDataModel {
 					}
 				default: return "Error";
 			}
-		}
-		else { // not signed on
+		} else { // not signed on
 			switch (col) {
 				case 5: return null;
 				case 6: return null;
 				case 7: return null;
 				default: return "-";
 			}
-		}
-																					
+		}																			
 	}
-
 }

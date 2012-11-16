@@ -29,13 +29,10 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.commons.servlets.util.ResourceDescriptor;
-import org.olat.core.logging.StartupException;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 
 
@@ -64,15 +61,16 @@ public class ContextHelpFilePathHandler implements PathHandler {
 	 * @see org.olat.commons.servlets.pathhandlers.PathHandler#init(com.anthonyeden.lib.config.Configuration)
 	 */
 	public void init(String path) {
-		if (path == null) return;
-		if (path != null) {
+		if (path == null) {
+			return;
+		} else {
 			File f = new File(path);
 			if (f.isAbsolute()) {
 				setRoot(path);
 			} else {
 				setRoot(WebappHelper.getContextRoot() + "/" + path);
 			}
-		} else throw new StartupException("ContextHelpFilePathHandler did not find mandatory <root> element:" + path);
+		}
 	}
 
 	/**
@@ -96,14 +94,7 @@ public class ContextHelpFilePathHandler implements PathHandler {
 		try {
 			File f = new File(root + relPath);
 			if (f.isDirectory()) return null;
-			
-			if (!f.exists()) { // file not found ->
-				int i = 1;
-				i ++;
-			}
-			//FIXME:fj: handle appropriately
-			Locale loc = UserSession.getUserSession(request).getLocale();
-			
+
 			ResourceDescriptor rd = new ResourceDescriptor(relPath);
 			rd.setLastModified(f.lastModified());
 			rd.setSize(f.length());

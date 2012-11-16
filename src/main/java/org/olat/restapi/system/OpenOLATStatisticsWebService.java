@@ -34,6 +34,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.search.SearchServiceStatus;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -194,9 +195,11 @@ public class OpenOLATStatisticsWebService {
 	
 	private SessionsVO getSessionsVO() {
 		SessionsVO vo = new SessionsVO();
-		vo.setCount(UserSession.getUserSessionsCnt());
 
-		Set<UserSession> userSessions = UserSession.getAuthenticatedUserSessions();
+		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		vo.setCount(sessionManager.getUserSessionsCnt());
+
+		Set<UserSession> userSessions = sessionManager.getAuthenticatedUserSessions();
 		int webdavcount = 0;
 		int secureWebdavCount = 0;
 		int authenticatedcount = 0;

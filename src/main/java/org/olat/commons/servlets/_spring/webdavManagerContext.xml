@@ -9,6 +9,7 @@
 	<constructor-arg ref="coordinatorManager"/>
 	<!-- set to false to disable the WebDAV support and remove the WebDAV Link from the GUI -->
 	<property name="enabled" value="${webdav.links.enabled}" />
+	<property name="sessionManager" ref="userSessionManager" />
 </bean>  
                        
 </beans>

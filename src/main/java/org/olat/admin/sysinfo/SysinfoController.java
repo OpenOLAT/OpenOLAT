@@ -50,7 +50,6 @@ import org.olat.admin.cache.AllCachesController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.persistence.DBFactory;
@@ -107,9 +106,7 @@ public class SysinfoController extends BasicController implements Activateable2 
 
 	private VelocityContainer mySessions, mySnoop, myErrors, myLoglevels, mySysinfo, myMultiUserEvents,myHibernateInfo;
 	private Panel cachePanel;
-	private UserSessionController usessC;
 	private LockController lockController;
-	private SessionAdministrationController sessionAdministrationController;
 	private TabbedPane tabbedPane;
 	
 	private RequestLoglevelController requestLoglevelController;
@@ -146,7 +143,6 @@ public class SysinfoController extends BasicController implements Activateable2 
 				OresHelper.lookupType(this.getClass())))
 			throw new OLATSecurityException("Insufficient permissions to access SysinfoController");
 
-		usessC = new UserSessionController(ureq, getWindowControl());
 		lockController = new LockController(ureq, getWindowControl());
 		myErrors = createVelocityContainer("errors");
 		myLoglevels = createVelocityContainer("loglevels");
@@ -165,7 +161,6 @@ public class SysinfoController extends BasicController implements Activateable2 
 		disableHibernateStatisticsButton = LinkFactory.createButton("disable.hibernate.statistics", myHibernateInfo, this);
 		clearHibernateStatisticsButton = LinkFactory.createButton("clear.hibernate.statistics", myHibernateInfo, this);
 		
-		sessionAdministrationController = new SessionAdministrationController(ureq, getWindowControl() );
 		requestLoglevelController = new RequestLoglevelController(ureq, getWindowControl());
 		myMultiUserEvents = createVelocityContainer("multiuserevents");
 		
@@ -174,7 +169,6 @@ public class SysinfoController extends BasicController implements Activateable2 
 		infoMsgCtrl = InfoMgr.getInfoMessageController(ureq, getWindowControl());
 			
 		tabbedPane = new TabbedPane("tp", ureq.getLocale());
-		tabbedPane.addTab(ACTION_SESSIONS, usessC.getInitialComponent());
 		tabbedPane.addTab(ACTION_INFOMSG,infoMsgCtrl.getInitialComponent());
 		tabbedPane.addTab(ACTION_ERRORS, myErrors);
 		//fxdiff: FXOLAT-79 check fxadmin-rights
@@ -182,7 +176,6 @@ public class SysinfoController extends BasicController implements Activateable2 
 		tabbedPane.addTab(ACTION_SYSINFO, mySysinfo);
 		tabbedPane.addTab(ACTION_SNOOP, mySnoop);
 		tabbedPane.addTab("requestloglevel", requestLoglevelController.getInitialComponent());
-		tabbedPane.addTab("usersessions", sessionAdministrationController.getInitialComponent());
 		tabbedPane.addTab(ACTION_LOCKS, lockController.getInitialComponent());
 		// fxdiff: not usable:	tabbedPane.addTab(getTranslator().translate("sess.multiuserevents"), myMultiUserEvents);
 		tabbedPane.addTab(ACTION_HIBERNATEINFO, myHibernateInfo);
@@ -344,9 +337,6 @@ public class SysinfoController extends BasicController implements Activateable2 
 				mySysinfo.contextPut("threads",getThreadsInfo());
 				mySysinfo.contextPut("javaenv", getJavaenv());
 				
-			} 
-			else if (newComponent == usessC.getInitialComponent()) {
-				usessC.reset();
 			}
 			else if (newComponent == lockController.getInitialComponent()) {
 				lockController.resetTableModel();
@@ -379,8 +369,6 @@ public class SysinfoController extends BasicController implements Activateable2 
 				*/
 				sb.append(" <a href=\"http://bugs.olat.org/jira/browse/OLAT-3681\">OLAT-3681</a> ");
 				myMultiUserEvents.contextPut("info", sb.toString());
-			} 
-			else  if (newComponent == sessionAdministrationController.getInitialComponent()) {
 			}
 			else if (newComponent == myHibernateInfo) {
 				myHibernateInfo.contextPut("isStatisticsEnabled", DBFactory.getInstance(false).getStatistics().isStatisticsEnabled());
@@ -631,10 +619,6 @@ public class SysinfoController extends BasicController implements Activateable2 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		if (usessC != null) {
-			usessC.dispose();
-			usessC = null;
-		}
 		if (cacheController != null) {
 			cacheController.dispose();
 			cacheController = null;

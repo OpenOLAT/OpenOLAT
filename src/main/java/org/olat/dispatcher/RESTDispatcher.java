@@ -52,6 +52,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.LoginModule;
 import org.olat.restapi.security.RestSecurityBean;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -133,7 +134,7 @@ public class RESTDispatcher implements Dispatcher {
 		//
 		// create the olat ureq and get an associated main window to spawn the "tab"
 		//
-		UserSession usess = UserSession.getUserSession(request);
+		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		UserRequest ureq = null;
 		try {
 			//upon creation URL is checked for 

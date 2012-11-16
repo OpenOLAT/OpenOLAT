@@ -37,6 +37,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.dispatcher.DispatcherAction;
@@ -56,17 +57,16 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.LanguageChooserController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.registration.UserNameCreationInterceptor;
-import org.olat.shibboleth.util.ShibbolethAttribute;
 import org.olat.shibboleth.util.ShibbolethHelper;
 import org.olat.user.UserManager;
 
@@ -224,7 +224,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	 * @param attributes
 	 */
 	public static final void putShibAttributes(HttpServletRequest req, Map<String,String> attributes) {
-		UserSession.getUserSession(req).putEntry(KEY_SHIBATTRIBUTES, attributes);
+		CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(req).putEntry(KEY_SHIBATTRIBUTES, attributes);
 	}
 	
 	/**
@@ -233,7 +233,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	 * @param uniqueID
 	 */
 	public static final void putShibUniqueID(HttpServletRequest req, String uniqueID) {
-		UserSession.getUserSession(req).putEntry(KEY_SHIBUNIQUEID, uniqueID);
+		CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(req).putEntry(KEY_SHIBUNIQUEID, uniqueID);
 	}
 
 	/**

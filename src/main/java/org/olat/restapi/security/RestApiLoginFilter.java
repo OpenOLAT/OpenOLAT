@@ -49,6 +49,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.OLATAuthenticationController;
 import org.olat.restapi.RestModule;
 
@@ -108,7 +109,7 @@ public class RestApiLoginFilter implements Filter {
 				I18nManager.attachI18nInfoToThread(httpRequest);
 				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(httpRequest);
 
-				UserSession uress = UserSession.getUserSessionIfAlreadySet(httpRequest);
+				UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(httpRequest);
 				if(uress != null && uress.isAuthenticated()) {
 					//use the available session
 					followSession(httpRequest, httpResponse, chain);
@@ -212,7 +213,7 @@ public class RestApiLoginFilter implements Filter {
 	throws IOException, ServletException {
 	//create a session for login without security check
 		if(uress == null) {
-			uress = UserSession.getUserSession(request);
+			uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		}
 		UserRequest ureq = null;
 		try{
@@ -229,7 +230,7 @@ public class RestApiLoginFilter implements Filter {
 	
 	private void followWithoutAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain) 
 	throws IOException, ServletException {
-		UserSession uress = UserSession.getUserSessionIfAlreadySet(request);
+		UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(request);
 		if(uress != null && uress.isAuthenticated()) {
 			//is authenticated by session cookie, follow its current session
 			followSession(request, response, chain);
@@ -263,7 +264,7 @@ public class RestApiLoginFilter implements Filter {
 	throws IOException, ServletException {
 		HttpSession session = request.getSession(true);
 		session.setMaxInactiveInterval(TOKEN_BASED_SESSION_TIMEOUT);
-		UserSession uress = UserSession.getUserSession(session);
+		UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(session);
 		if(uress != null) {
 			UserRequest ureq = null;
 			try{
@@ -290,7 +291,7 @@ public class RestApiLoginFilter implements Filter {
 	
 	private void followSession(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 	throws IOException, ServletException {
-		UserSession uress = UserSession.getUserSessionIfAlreadySet(request);
+		UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(request);
 		if(uress != null && uress.isAuthenticated()) {
 			UserRequest ureq = null;
 			try{
