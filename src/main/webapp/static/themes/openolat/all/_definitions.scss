@@ -61,8 +61,6 @@ $ico_minus : '../openolat/images/toggle-small.png'  !default;
 
 /* the defaultfont used in : text, main content, etc. */
 $defaultfont : 'Helvetica Neue', Helvetica, Arial, sans-serif !default;
-/* necessary for helvetica neue */
-html { -webkit-font-smoothing: antialiased; }
 /* the font used in :  navigation (tabs + tree), headings */
 $headerfont : Century Gothic, Apple Gothic, sans-serif !default;
 /* the overall default font-size */ 

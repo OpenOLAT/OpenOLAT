@@ -200,8 +200,11 @@ div.b_tree {
 	
 	
 	/* the open/close node icons */
-	a.b_tree_level_close span { background: url($ico_minus) no-repeat 0% 50%; padding-right:$tree_opener_width_px;}
-	a.b_tree_level_open span { background: url($ico_plus) no-repeat 0% 50%; padding-right:$tree_opener_width_px;}
+	a.b_tree_level_close {background:transparent ! important;} /* override link hover colors */
+	a.b_tree_level_open {background:transparent ! important;}
+	a.b_tree_level_close span { background: url($ico_minus) no-repeat $tree_opener_spread_px 50%; padding-right:$tree_opener_width_px;}
+	a.b_tree_level_open span { background: url($ico_plus) no-repeat $tree_opener_spread_px 50%; padding-right:$tree_opener_width_px;}
+	
 	a.b_tree_level_close:hover,a.b_tree_level_open:hover {text-decoration:none;}
 	
 }// end b_tree
