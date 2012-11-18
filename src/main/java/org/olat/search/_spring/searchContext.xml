@@ -258,7 +258,7 @@
 	<!-- SEARCH PROXY SIDE CONFIGURATION -->
 	<!-- =============================== -->
 	<!-- OO-109: bypass the JMS server in no-cluster environment ==> use searchClientLocal if singleVM -->	
-	<alias alias="searchClient" name="searchClientCluster"/>
+	<alias alias="searchClient" name="searchClient${cluster.mode}"/>
 
 	<bean id="searchClientSingleVM" class="org.olat.search.service.searcher.SearchClientLocal"/>
 	
@@ -274,20 +274,4 @@
 
 	<import resource="classpath:org/olat/search/_spring/searchJms_${jms.provider}.xml" />
 
-	<!-- JMS Stuff -->
-	<alias alias="searchConnectionFactory" name="searchConnectionFactory.${jms.provider}"/>
-	<!--  <bean id="searchConnectionFactory.activemq" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
-		<property name="brokerURL" value="${search.broker.url}" /> 
-	</bean>  -->
-	<bean name="searchConnectionFactory.jndi" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-        <property name="jndiName"><value>java:/ConnectionFactory</value></property>
-    </bean>
-    
-	<alias alias="searchQueue" name="searchQueue.${jms.provider}"/>
-	<!-- <bean id="searchQueue.activemq" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
-		<constructor-arg value="olat/searchQueue" />
-	</bean> -->
-    <bean id="searchQueue.jndi" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-		<property name="jndiName"><value>java:jboss/exported/jms/queue/searchQueue</value></property>
-	</bean>
 </beans>

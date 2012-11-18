@@ -1,0 +1,37 @@
+
+EXPERIMENTAL: Setting up latest OpenOLAT version on Eclipse With an Application Server
+--------------------------------------------------------------------------------------
+
+OpenOLAT supports only Tomcat officially, but it can also run on other application
+servers like JBoss AS or Glassfish.
+
+The beginning of the installation is the same as Tomcat, it's described in INSTALL.README.
+To create your eclipse project, use these commands instead of the default one:
+
+for JBoss AS:
+  mvn eclipse:clean eclipse:eclipse -P-tomcat,jbossas
+  
+and for Glassfish
+  mvn eclipse:clean eclipse:eclipse -P-tomcat,gae
+  
+
+I use a JBoss AS 7.1 with Hibernate upgraded to the latest version and Glassfish 3.1.2.2
+community version. I created in them a JDBC connection Pool, a JMS connection factory
+(which already exists in JBoss) and a topic for the sysbus and a queue for the search.
+
+
+With this setup, OpenOLAT use the JDBC connection pool of your application server, the JMS
+server and its JAX-RS implementation. JBoss delivers Hibernate too.
+
+
+Features located on the application server:
+OK JDBC Connections
+OK JMS
+OK JAX-RS (restapi)
+x  JAX-WS (onyx, vitero)
+x  Mail
+x  LDAP Connection
+-- Hibernate/JPA (only JBoss because we depend on Hibernate)
+x  Infinispan for caching
+
+
