@@ -68,6 +68,8 @@
 		<org.hibernate.version>4.1.8.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.15</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
+		<org.mysql.version>5.1.21</org.mysql.version>
+		<org.postgresql.version>9.1-901.jdbc4</org.postgresql.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -110,6 +112,307 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+		<!-- This is the default build which had all dependencies needed by tomcat -->
+		<profile>
+			<id>tomcat</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<dependencies>
+				<!-- Jersey for tomcat -->
+				<dependency>
+					<groupId>javax.ws.rs</groupId>
+					<artifactId>jsr311-api</artifactId>
+					<version>1.1.1</version>
+				</dependency>
+				<dependency>
+					<groupId>com.sun.jersey</groupId>
+					<artifactId>jersey-server</artifactId>
+					<version>${com.sun.jersey.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-core</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-beans</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-context</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-web</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-aop</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-jca</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>com.sun.jersey</groupId>
+					<artifactId>jersey-servlet</artifactId>
+					<version>${com.sun.jersey.version}</version>
+				</dependency>
+				
+				<dependency>
+					<groupId>dom4j</groupId>
+					<artifactId>dom4j</artifactId>
+					<version>1.6.1</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-core</artifactId>
+					<version>${org.hibernate.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.slf4j</groupId>
+							<artifactId>slf4j-log4j12</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-entitymanager</artifactId>
+					<version>${org.hibernate.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-ehcache</artifactId>
+					<version>${org.hibernate.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-c3p0</artifactId>
+					<version>${org.hibernate.version}</version>
+					<exclusions>
+						<!-- includes an old version of c3p0 -->
+						<exclusion>
+							<artifactId>c3p0</artifactId>
+							<groupId>c3p0</groupId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+		
+				<dependency>
+					<groupId>mysql</groupId>
+					<artifactId>mysql-connector-java</artifactId>
+					<version>${org.mysql.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>${org.postgresql.version}</version>
+				</dependency>
+		
+				<dependency>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-core</artifactId>
+					<version>5.3.2</version>
+					<exclusions>
+						<exclusion>
+							<groupId>backport-util-concurrent</groupId>
+							<artifactId>backport-util-concurrent</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>javax.activation</groupId>
+							<artifactId>activation</artifactId>
+						</exclusion>
+						<!-- fxdiff: FXOLAT-243  clean up the dependencies of ActiveMQ -->
+						<exclusion>
+							<groupId>org.springframework.osgi</groupId>
+							<artifactId>spring-osgi-core</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.activemq</groupId>
+							<artifactId>kahadb</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.osgi</groupId>
+							<artifactId>org.osgi.core</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.geronimo.specs</groupId>
+							<artifactId>geronimo-j2ee-management_1.0_spec</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>commons-logging</groupId>
+							<artifactId>commons-logging-api</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+			</dependencies>
+			
+			<build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <webResources>
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/webapp-tomcat</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </webResources>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+		</profile>
+		
+		<profile>
+			<id>jbossas7</id>
+			
+			<build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <webResources>
+                                <resource>
+                                    <directory>src/main/webapp-jbossas7</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </webResources>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+		</profile>
+		
+		<profile>
+			<id>gae</id>
+			<dependencies>
+				<dependency>
+					<groupId>dom4j</groupId>
+					<artifactId>dom4j</artifactId>
+					<version>1.6.1</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-core</artifactId>
+					<version>${org.hibernate.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.slf4j</groupId>
+							<artifactId>slf4j-log4j12</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-entitymanager</artifactId>
+					<version>${org.hibernate.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-ehcache</artifactId>
+					<version>${org.hibernate.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-c3p0</artifactId>
+					<version>${org.hibernate.version}</version>
+					<exclusions>
+						<!-- includes an old version of c3p0 -->
+						<exclusion>
+							<artifactId>c3p0</artifactId>
+							<groupId>c3p0</groupId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+		
+				<dependency>
+					<groupId>mysql</groupId>
+					<artifactId>mysql-connector-java</artifactId>
+					<version>${org.mysql.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>${org.postgresql.version}</version>
+				</dependency>
+		
+				<dependency>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-core</artifactId>
+					<version>5.3.2</version>
+					<exclusions>
+						<exclusion>
+							<groupId>backport-util-concurrent</groupId>
+							<artifactId>backport-util-concurrent</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>javax.activation</groupId>
+							<artifactId>activation</artifactId>
+						</exclusion>
+						<!-- fxdiff: FXOLAT-243  clean up the dependencies of ActiveMQ -->
+						<exclusion>
+							<groupId>org.springframework.osgi</groupId>
+							<artifactId>spring-osgi-core</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.activemq</groupId>
+							<artifactId>kahadb</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.osgi</groupId>
+							<artifactId>org.osgi.core</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.geronimo.specs</groupId>
+							<artifactId>geronimo-j2ee-management_1.0_spec</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>commons-logging</groupId>
+							<artifactId>commons-logging-api</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+			</dependencies>
+			
+			<build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <webResources>
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/webapp-gae</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </webResources>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
 		</profile>
 
     <profile>
@@ -229,7 +532,7 @@
 				          from utf-8 to iso we cannot update this lib at the moment. -->
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.21</version>
+                <version>${org.mysql.version}</version>
               </dependency>
             </dependencies>
 
@@ -1076,6 +1379,7 @@
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-core</artifactId>
 			<version>5.3.2</version>
+			<scope>test</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>backport-util-concurrent</groupId>
@@ -1303,16 +1607,6 @@
 			<version>1.1.4</version>
 		</dependency>	
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.21</version>
-		</dependency>
-		<dependency>
-			<groupId>postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>9.1-901.jdbc4</version>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.5.11</version>
@@ -1328,14 +1622,20 @@
 			<artifactId>basiclti-util</artifactId>
 			<version>1.4</version>
 		</dependency>
-
-		<!-- core dependencies -->
+		<!-- J2EE dependencies but provided -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<version>1.1.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- core dependencies -->
 		<dependency>
 			<groupId>tomcat</groupId>
 			<artifactId>naming-resources</artifactId>
@@ -1448,15 +1748,15 @@
 			<version>1.0.3</version>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-core</artifactId>
+			<version>2.4.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>${org.hibernate.version}</version>
+			<scope>test</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -1468,16 +1768,19 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
 			<version>${org.hibernate.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-ehcache</artifactId>
 			<version>${org.hibernate.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-c3p0</artifactId>
 			<version>${org.hibernate.version}</version>
+			<scope>test</scope>
 			<exclusions>
 				<!-- includes an old version of c3p0 -->
 				<exclusion>
@@ -1520,11 +1823,6 @@
 			<groupId>cos</groupId>
 			<artifactId>cos</artifactId>
 			<version>05Nov2002</version>
-		</dependency>
-		<dependency>
-			<groupId>dom4j</groupId>
-			<artifactId>dom4j</artifactId>
-			<version>1.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
@@ -1632,11 +1930,13 @@
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>jsr311-api</artifactId>
 			<version>1.1.1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
 			<version>${com.sun.jersey.version}</version>
+			<scope>test</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>
@@ -1668,12 +1968,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-servlet</artifactId>
-			<version>${com.sun.jersey.version}</version>
-		</dependency>
-
 		<dependency>
 			<groupId>com.sun.jersey.jersey-test-framework</groupId>
 			<artifactId>jersey-test-framework-grizzly</artifactId>
@@ -1721,6 +2015,12 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
     
