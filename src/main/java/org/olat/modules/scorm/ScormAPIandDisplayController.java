@@ -26,6 +26,7 @@
 package org.olat.modules.scorm;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -124,9 +126,17 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		myContent.put("apiadapter", jsAdapter);
 		
 		// init SCORM adapter
-		scormAdapter = new OLATApiAdapter();	
-		scormAdapter.addAPIListener(apiCallback);
-		scormAdapter.init(cpRoot, resourceId, courseIdNodeId, FolderConfig.getCanonicalRoot(), this.username, ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, loc)+", "+ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, loc), lesson_mode, credit_mode, this.hashCode());
+		try {
+			scormAdapter = new OLATApiAdapter();	
+			scormAdapter.addAPIListener(apiCallback);
+			scormAdapter.init(cpRoot, resourceId, courseIdNodeId, FolderConfig.getCanonicalRoot(), this.username, ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, loc)+", "+ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, loc), lesson_mode, credit_mode, this.hashCode());
+		} catch (IOException e) {
+			showError("error.manifest.corrupted");
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, new Panel("empty"), "scorm" + resourceId);
+			columnLayoutCtr = ctr;
+			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			return;
+		}
 
 		// at this point we know the filelocation for our xstream-sco-score file (FIXME:fj: do better
 		

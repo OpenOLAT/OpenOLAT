@@ -29,6 +29,7 @@ import static org.olat.modules.scorm.ScormAPIandDisplayController.LMS_INITIALIZE
 import static org.olat.modules.scorm.ScormAPIandDisplayController.LMS_SETVALUE;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Properties;
@@ -105,10 +106,14 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		}
 		
 		if(scormAdapter == null) {
-			scormAdapter = new OLATApiAdapter();
-			String fullname = UserManager.getInstance().getUserDisplayName(identity.getUser());
-			scormAdapter.init(cpRoot, resourceId, courseIdNodeId, FolderConfig.getCanonicalRoot(), identity.getName(), fullname, lesson_mode, credit_mode, hashCode());
-			scormAdapter.addAPIListener(this);
+			try {
+				scormAdapter = new OLATApiAdapter();
+				String fullname = UserManager.getInstance().getUserDisplayName(identity.getUser());
+				scormAdapter.init(cpRoot, resourceId, courseIdNodeId, FolderConfig.getCanonicalRoot(), identity.getName(), fullname, lesson_mode, credit_mode, hashCode());
+				scormAdapter.addAPIListener(this);
+			} catch (IOException e) {
+				log.error("", e);
+			}
 		}
 	}
 	
