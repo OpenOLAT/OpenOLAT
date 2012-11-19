@@ -28,45 +28,25 @@ package org.olat.admin.sysinfo;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryType;
-import java.lang.management.MemoryUsage;
-import java.text.SimpleDateFormat;
+import java.lang.management.MemoryMXBean;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.helpers.Settings;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.servlets.WebDAVManager;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.resource.OresHelper;
 
 
 /**
@@ -75,255 +55,147 @@ import org.olat.core.util.resource.OresHelper;
 *
 * @author Felix Jost
 */
-public class SysinfoController extends BasicController implements Activateable2 {
-
-	private static final String ACTION_INFOMSG = "infomsg";
-	private static final String ACTION_SYSINFO = "sysinfo";
-
-	private VelocityContainer mySysinfo;
-
-	private TabbedPane tabbedPane;
-	private Link gcButton;
-	private Controller clusterController;
-	private Controller infoMsgCtrl;
+public class SysinfoController extends FormBasicController {
+	
+	private final BaseSecurity securityManager;
 	
 	/**
 	 * @param ureq
 	 * @param wControl
 	 */
 	public SysinfoController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, "sysinfo");
+		
+		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 
-		BaseSecurity mgr = BaseSecurityManager.getInstance();
-		if (!mgr.isIdentityPermittedOnResourceable(
-				ureq.getIdentity(), 
-				Constants.PERMISSION_ACCESS, 
-				OresHelper.lookupType(this.getClass())))
-			throw new OLATSecurityException("Insufficient permissions to access SysinfoController");
-
-		
-		mySysinfo = createVelocityContainer("sysinfo");
-		gcButton = LinkFactory.createButton("run.gc", mySysinfo, this);
-		// add system startup time
-		SimpleDateFormat startupTimeFormatter = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", ureq.getLocale());
-		mySysinfo.contextPut("startupTime", startupTimeFormatter.format(new Date(WebappHelper.getTimeOfServerStartup())));		
-		
-		
-
-		
-		//info message controller has two implementations (SingleVM or cluster)
-		InfoMessageManager InfoMgr = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-		infoMsgCtrl = InfoMgr.getInfoMessageController(ureq, getWindowControl());
-			
-		tabbedPane = new TabbedPane("tp", ureq.getLocale());
-		tabbedPane.addTab(ACTION_INFOMSG,infoMsgCtrl.getInitialComponent());
-		//fxdiff: FXOLAT-79 check fxadmin-rights
-		tabbedPane.addTab(ACTION_SYSINFO, mySysinfo);
-		
-		//fxdiff: no cluster anyway:
-//		AutoCreator controllerCreator = (AutoCreator)CoreSpringFactory.getBean("clusterAdminControllerCreator");
-//		clusterController = controllerCreator.createController(ureq, wControl);
-//		tabbedPane.addTab("Cluster", clusterController.getInitialComponent());
-		
-		VelocityContainer myBuildinfo = createVelocityContainer("buildinfo");
-		fillBuildInfoTab(myBuildinfo);		
-		tabbedPane.addTab("buildinfo", myBuildinfo);
-
-		tabbedPane.addListener(this);
-		putInitialPanel(tabbedPane);
+		initForm(ureq);
 	}
-
-	private void fillBuildInfoTab(VelocityContainer myBuildinfo) {
-		List<Map> properties = new LinkedList<Map>();
-		Map<String, String> m = new HashMap<String, String>();
-		m.put("key", "Version");
-		m.put("value", Settings.getFullVersionInfo());
-		properties.add(m);
-		
-		m = new HashMap<String, String>();
-		m.put("key", "HG changeset on build");
-		m.put("value", Settings.getRepoRevision());
-		properties.add(m);
-		
-		m = new HashMap<String, String>();
-		m.put("key", "isClusterMode");
-		m.put("value", Settings.getClusterMode().equals("Cluster") ? "true"  : "false" );
-		properties.add(m);
-		
-		m = new HashMap<String, String>();
-		m.put("key", "nodeId");
-		m.put("value", Settings.getNodeInfo().equals("") ? "N1" : Settings.getNodeInfo());
-		properties.add(m);
-		
-		m = new HashMap<String, String>();
-		m.put("key", "serverStartTime");
-		final Date timeOfServerStartup = new Date(WebappHelper.getTimeOfServerStartup());
-		m.put("value", String.valueOf(timeOfServerStartup));
-		properties.add(m);
-		
-		m = new HashMap<String, String>();
-		m.put("key", "Build date");
-		m.put("value", String.valueOf(Settings.getBuildDate()));
-		properties.add(m);
-		
-		File baseDir = new File(WebappHelper.getContextRoot(), "..");
-		m = new HashMap<String, String>();
-		try {
-			m.put("key", "baseDir");
-			m.put("value", baseDir.getCanonicalPath());
-		} catch (IOException e1) {
-			// then fall back to unresolved path
-			m.put("key", "baseDir");
-			m.put("value", baseDir.getAbsolutePath());
-		}
-		properties.add(m);
-				
-		m = new HashMap<String, String>();
-		m.put("key", "jsMathEnabled");
-		boolean jsMathEnabled = BaseChiefController.isJsMathEnabled();
-		m.put("value", Boolean.toString(jsMathEnabled));
-		properties.add(m);
-		
-		m = new HashMap<String, String>();
-		m.put("key", "WebDAVEnabled");
-		boolean webDavEnabled = WebDAVManager.getInstance().isEnabled();
-		m.put("value", Boolean.toString(webDavEnabled));
-		properties.add(m);
-		
-		myBuildinfo.contextPut("properties", properties);
-	}
-
-
 
 	@Override
-	//fxdiff BAKS-7 Resume function
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries != null && entries.isEmpty()) return;
-		tabbedPane.activate(ureq, entries, state);
-	}
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		Formatter format = Formatter.getInstance(getLocale());
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == tabbedPane) { // those must be links
-			TabbedPaneChangedEvent tbcEvent = (TabbedPaneChangedEvent)event;
-			Component newComponent = tbcEvent.getNewComponent();
-			//fxdiff BAKS-7 Resume function
-			tabbedPane.addToHistory(ureq, getWindowControl());
-			if (newComponent == infoMsgCtrl.getInitialComponent()) {
-				
-			}
-			
-			else if (newComponent == mySysinfo) {
-				Runtime r = Runtime.getRuntime();
-				StringBuilder sb = new StringBuilder();
-				appendFormattedKeyValue(sb, "Processors", new Integer(r.availableProcessors()));
-				appendFormattedKeyValue(sb, "Total Memory", StringHelper.formatMemory(r.totalMemory()));
-				appendFormattedKeyValue(sb, "Free Memory", StringHelper.formatMemory(r.freeMemory()));
-				appendFormattedKeyValue(sb, "Max Memory", StringHelper.formatMemory(r.maxMemory()));
-				
-				sb.append("<br />Detailed Memory Information (Init/Used/Max)<br/> ");
-				Iterator<MemoryPoolMXBean> iter = ManagementFactory.getMemoryPoolMXBeans().iterator();
-				while (iter.hasNext()) {
-				    MemoryPoolMXBean item = iter.next();
-				    String name = item.getName();
-				    MemoryType type = item.getType();
-				    appendFormattedKeyValue(sb, name, " Type: " + type);
-				    MemoryUsage usage = item.getUsage();
-				    appendFormattedKeyValue(sb, "Usage", StringHelper.formatMemory(usage.getInit()) + "/" + StringHelper.formatMemory(usage.getUsed()) + "/" + StringHelper.formatMemory(usage.getMax()));
-				    MemoryUsage peak = item.getPeakUsage();
-				    appendFormattedKeyValue(sb, "Peak", StringHelper.formatMemory(peak.getInit()) + "/" + StringHelper.formatMemory(peak.getUsed()) + "/" + StringHelper.formatMemory(peak.getMax()));
-				    MemoryUsage collections = item.getCollectionUsage();
-				    if (collections!= null){
-				    	appendFormattedKeyValue(sb, "Collections", StringHelper.formatMemory(collections.getInit()) + "/" + StringHelper.formatMemory(collections.getUsed()) + "/" + StringHelper.formatMemory(collections.getMax()));
-				    }
-				    sb.append("<hr/>");
-				}
-				
-				int controllerCnt = DefaultController.getControllerCount();
-				sb.append("<br />Controller Count (active and not disposed):"+controllerCnt);
-				sb.append("<br />Concurrent Dispatching Threads: "+DispatcherAction.getConcurrentCounter());
-				mySysinfo.contextPut("memory", sb.toString());
-				mySysinfo.contextPut("threads",getThreadsInfo());
-				mySysinfo.contextPut("javaenv", getJavaenv());
-				
-			}
-		} 
-		else if (source == gcButton){
-			Runtime.getRuntime().gc();
-			getWindowControl().setInfo("Garbage collection done.");
-			event(ureq, tabbedPane, new TabbedPaneChangedEvent(null, mySysinfo));
-		}
+		//runtime informations
+		FormLayoutContainer runtimeCont = FormLayoutContainer.createDefaultFormLayout("runtime", getTranslator());
+		formLayout.add(runtimeCont);
+		formLayout.add("runtime", runtimeCont);
 		
+		String startup = format.formatDateAndTime(new Date(WebappHelper.getTimeOfServerStartup()));
+		uifactory.addStaticTextElement("runtime.startup", "runtime.startup", startup, runtimeCont);
 		
-	}
+		Calendar lastLoginMonthlyLimit = Calendar.getInstance();
+		//users monthly
+		lastLoginMonthlyLimit.add(Calendar.MONTH, -1);
+		Long userLastMonth = securityManager.countUniqueUserLoginsSince(lastLoginMonthlyLimit.getTime());
+		lastLoginMonthlyLimit.add(Calendar.MONTH, -5); // -1 -5 = -6 for half a year
+		Long userLastSixMonths = securityManager.countUniqueUserLoginsSince(lastLoginMonthlyLimit.getTime());
+		uifactory.addStaticTextElement("users1month", "runtime.users.lastmonth", userLastMonth.toString(), runtimeCont);
+		uifactory.addStaticTextElement("users6month", "runtime.users.last6months", userLastSixMonths.toString(), runtimeCont);
+		
+		//users daily
+		Calendar lastLoginDailyLimit = Calendar.getInstance();
+		lastLoginDailyLimit.add(Calendar.DAY_OF_YEAR, -1);
+		Long userLastDay = securityManager.countUniqueUserLoginsSince(lastLoginDailyLimit.getTime());
+		lastLoginDailyLimit.add(Calendar.DAY_OF_YEAR, -6); // -1 - 6 = -7 for last week
+		Long userLast6Days = securityManager.countUniqueUserLoginsSince(lastLoginDailyLimit.getTime());
+		uifactory.addStaticTextElement("userslastday", "runtime.users.lastday", userLastDay.toString(), runtimeCont);
+		uifactory.addStaticTextElement("userslastweek", "runtime.users.lastweek", userLast6Days.toString(), runtimeCont);
 
-	private String getJavaenv() {
-		Properties p = System.getProperties();
-		Iterator it = p.keySet().iterator();
-		StringBuilder props = new StringBuilder();
-		int lineCut = 100;
-		while (it.hasNext()) {
-			String key = (String) it.next();
-			props.append("<b>" + key + "</b>&nbsp;=&nbsp;");
-			String value = p.getProperty(key);
-			if (value.length() <= lineCut)
-				props.append(value);
-			else {
-				props.append(value.substring(0, lineCut - key.length()));
-				while (value.length() > lineCut) {
-					value = "<br />" + value.substring(lineCut);
-					props.append(value.substring(0,	value.length() > lineCut ? lineCut : value.length()));
-				}
-			}
-			props.append("<br />");
+		//memory
+		String memoryPage = velocity_root + "/memory.html";
+		FormLayoutContainer memoryCont = FormLayoutContainer.createCustomFormLayout("memory", getTranslator(), memoryPage);
+		runtimeCont.add(memoryCont);
+		memoryCont.contextPut("used", getHeapValue());
+		memoryCont.contextPut("tooltip", getHeapTooltip());
+		memoryCont.setLabel("runtime.memory", null);
+		
+		FormLayoutContainer permGenCont = FormLayoutContainer.createCustomFormLayout("permgen", getTranslator(), memoryPage);
+		runtimeCont.add(permGenCont);
+		permGenCont.contextPut("used", getNonHeapValue());
+		permGenCont.contextPut("tooltip", getNonHeapTooltip());
+		permGenCont.setLabel("runtime.memory.permGen", null);
+		
+		//controllers
+		int controllerCnt = DefaultController.getControllerCount();
+		uifactory.addStaticTextElement("controllercount", "runtime.controllercount", Integer.toString(controllerCnt), runtimeCont);
+		int numOfDispatchingThreads = DispatcherAction.getConcurrentCounter();
+		uifactory.addStaticTextElement("dispatchingthreads", "runtime.dispatchingthreads", Integer.toString(numOfDispatchingThreads), runtimeCont);
+
+		//server informations
+		FormLayoutContainer serverCont = FormLayoutContainer.createDefaultFormLayout("server", getTranslator());
+		formLayout.add(serverCont);
+		formLayout.add("server", serverCont);
+		
+		//version
+		uifactory.addStaticTextElement("version", "sysinfo.version", Settings.getFullVersionInfo(), serverCont);
+		uifactory.addStaticTextElement("version.hg", "sysinfo.version.hg", Settings.getRepoRevision(), serverCont);
+		String buildDate = format.formatDateAndTime(Settings.getBuildDate());
+		uifactory.addStaticTextElement("version.date", "sysinfo.version.date", buildDate, serverCont);
+
+		//cluster
+		boolean clusterMode = "Cluster".equals(Settings.getClusterMode());
+		MultipleSelectionElement clusterEl
+			= uifactory.addCheckboxesHorizontal("cluster", "sysinfo.cluster", serverCont, new String[]{"xx"}, new String[]{""}, null);
+		clusterEl.setEnabled(false);
+		clusterEl.select("xx", clusterMode);
+		
+		String nodeId = StringHelper.containsNonWhitespace(Settings.getNodeInfo()) ? Settings.getNodeInfo() : "N1";
+		uifactory.addStaticTextElement("node", "sysinfo.node", nodeId, serverCont);
+
+		File baseDir = new File(WebappHelper.getContextRoot(), "..");
+		String baseDirPath = null;
+		try {
+			baseDirPath = baseDir.getCanonicalPath();
+		} catch (IOException e1) {
+			baseDirPath = baseDir.getAbsolutePath();
 		}
-		return props.toString();
-	}
-
-
-	
-	private void appendFormattedKeyValue(StringBuilder sb, String key, Object value) {
-		sb.append("&nbsp;&nbsp;&nbsp;<b>");
-		sb.append(key);
-		sb.append(":</b>&nbsp;");
-		sb.append(value);
-		sb.append("<br />");
+		uifactory.addStaticTextElement("sysinfo.basedir", "sysinfo.basedir", baseDirPath, serverCont);
 	}
 	
-	private String getThreadsInfo() {
-		StringBuilder sb = new StringBuilder("<pre>threads:<br />");
-		try { // to be sure
-			ThreadGroup tg = Thread.currentThread().getThreadGroup();
-			int actCnt = tg.activeCount();
-			int grpCnt = tg.activeGroupCount();
-			sb.append("about "+actCnt +" threads, "+grpCnt+" groups<br /><br />");
-			Thread[] threads = new Thread[actCnt];
-			tg.enumerate(threads, true);
-			for (int i = 0; i < actCnt; i++) {
-				Thread tr = threads[i];
-				if (tr != null) { // thread may have finished in the meantime 
-					String name = tr.getName();
-					boolean alive = tr.isAlive();
-					boolean interrupted = tr.isInterrupted();
-					sb.append("Thread: (alive = "+alive+", interrupted: "+interrupted+", group:"+tr.getThreadGroup().getName()+") "+name+"<br />");
-				}
-			}
-		}
-		catch (Exception e) {
-			sb.append("exception occured:"+e.getMessage());
-		}
-		return sb.toString()+"</pre>";
+	private String getHeapValue() {
+		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long used = memoryBean.getHeapMemoryUsage().getUsed();
+    long max = memoryBean.getHeapMemoryUsage().getMax();
+		return toPercent(used, max);
 	}
-
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	
+	private String getHeapTooltip() {
+		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long used = toMB(memoryBean.getHeapMemoryUsage().getUsed());
+    long max = toMB(memoryBean.getHeapMemoryUsage().getMax());
+		return translate("runtime.memory.tooltip", new String[]{ Long.toString(used), Long.toString(max)});
+	}
+	
+	private String getNonHeapValue() {
+		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+		long used = memoryBean.getNonHeapMemoryUsage().getUsed();
+    long max = memoryBean.getNonHeapMemoryUsage().getMax();
+		return toPercent(used, max);
+	}
+	
+	private String getNonHeapTooltip() {
+		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long used = toMB(memoryBean.getNonHeapMemoryUsage().getUsed());
+    long max = toMB(memoryBean.getNonHeapMemoryUsage().getMax());
+		return translate("runtime.memory.tooltip", new String[]{ Long.toString(used), Long.toString(max)});
+	}
+	
+	private final String toPercent(long used, long max) {
+		double ratio = (double)used / (double)max;
+    double percent = ratio * 100.0d;
+    return Math.round(percent) + "%";
+	}
+	
+	private final long toMB(long val) {
+		return val / (1024 * 1024);
+	}
+	
 	protected void doDispose() {
-		if (clusterController != null) {
-			clusterController.dispose();
-		}
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 }

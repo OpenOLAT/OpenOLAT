@@ -17,53 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.restapi.system.vo;
+package org.olat.admin.sysinfo;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.olat.admin.sysinfo.ThreadView;
 
 /**
  * 
- * Description:<br>
- * 
- * <P>
- * Initial Date:  6 mai 2011 <br>
- *
+ * Initial date: 19.11.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "threadVO")
-public class ThreadVO implements Comparable<ThreadVO> {
+public class ThreadView implements Comparable<ThreadView> {
 
-	@XmlAttribute(name="id", required=true)
 	private long id;
-	@XmlAttribute(name="name", required=true)
 	private String name;
-	@XmlAttribute(name="cpuUsage")
+	private String groupName;
 	private float cpuUsage;
-	@XmlAttribute(name="cpuUsagePercent")
 	private String cpuUsagePercent;
-	@XmlAttribute(name="cpuTime")
 	private long cpuTime;
+	private long prevCpuTime = 0l;
+	private int warningCounter = 0;
+	private Thread.State state;
 	
-	public ThreadVO() {
-		//make JAXB happy
-	}
 	
-	public ThreadVO(Long id, String name, float cpuUsage) {
-		this.id = id;
-		this.name = name;
-		this.cpuUsage = cpuUsage;
-	}
-	
-	public ThreadVO(ThreadView view) {
-		this(view.getId(), view.getName(), view.getCpuUsage());
-		cpuUsagePercent = view.getCpuUsagePercent();
-		cpuTime = view.getCpuTime();
+	public ThreadView() {
+		//
 	}
 	
 	public long getId() {
@@ -82,6 +59,14 @@ public class ThreadVO implements Comparable<ThreadVO> {
 		this.name = name;
 	}
 	
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
+
 	public float getCpuUsage() {
 		return cpuUsage;
 	}
@@ -98,6 +83,9 @@ public class ThreadVO implements Comparable<ThreadVO> {
 		this.cpuUsagePercent = cpuUsagePercent;
 	}
 
+	/**
+	 * @return CPU time in nanoseconds
+	 */
 	public long getCpuTime() {
 		return cpuTime;
 	}
@@ -106,8 +94,32 @@ public class ThreadVO implements Comparable<ThreadVO> {
 		this.cpuTime = cpuTime;
 	}
 
+	public long getPrevCpuTime() {
+		return prevCpuTime;
+	}
+
+	public void setPrevCpuTime(long prevCpuTime) {
+		this.prevCpuTime = prevCpuTime;
+	}
+
+	public int getWarningCounter() {
+		return warningCounter;
+	}
+
+	public void setWarningCounter(int warningCounter) {
+		this.warningCounter = warningCounter;
+	}
+
+	public Thread.State getState() {
+		return state;
+	}
+
+	public void setState(Thread.State state) {
+		this.state = state;
+	}
+
 	@Override
-	public int compareTo(ThreadVO o) {
+	public int compareTo(ThreadView o) {
 		return name.compareToIgnoreCase(o.name);
 	}
 
@@ -121,8 +133,8 @@ public class ThreadVO implements Comparable<ThreadVO> {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof ThreadVO) {
-			ThreadVO thread = (ThreadVO)obj;
+		if(obj instanceof ThreadView) {
+			ThreadView thread = (ThreadView)obj;
 			return id == thread.id;
 		}
 		return false;
@@ -131,7 +143,7 @@ public class ThreadVO implements Comparable<ThreadVO> {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("ThreadVO[id=").append(id).append(":name=").append(name).append(":cpu=").append(cpuUsagePercent).append("]");
+		sb.append("ThreadInfo[id=").append(id).append(":name=").append(name).append(":cpu=").append(cpuUsagePercent).append("]");
 		return sb.toString();
 	}
 }

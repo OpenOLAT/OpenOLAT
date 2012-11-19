@@ -84,6 +84,7 @@ public class AllCachesController extends BasicController {
 		myContent = createVelocityContainer("index");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
+		tableConfig.setDownloadOffered(true);
 		
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());		
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.name", 0, null, ureq.getLocale()));

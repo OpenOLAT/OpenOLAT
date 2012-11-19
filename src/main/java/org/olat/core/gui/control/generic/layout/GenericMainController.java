@@ -276,9 +276,22 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 			GenericTreeNode parentNode = (GenericTreeNode) gtm.getNodeById(childNodeEntry.getValue());
 			if (parentNode != null) {
 				parentNode.addChild(childNode);
-				if (parentNode.getDelegate() == null) {
-					parentNode.setDelegate(childNode);
-					parentNode.setUserObject(childNode.getUserObject());
+				if (parentNode.getDelegate() == null  ) {
+					boolean addDelegate = true;
+					
+					//add delegate only if hte parent hasn't not a controller defined
+					Object uo = parentNode.getUserObject();
+					if(uo instanceof GenericActionExtension) {
+						GenericActionExtension gae = (GenericActionExtension)uo;
+						if(StringHelper.containsNonWhitespace(gae.getClassNameOfCorrespondingController())) {
+							addDelegate = false;
+						}
+					}
+					
+					if(addDelegate) {
+						parentNode.setDelegate(childNode);
+						parentNode.setUserObject(childNode.getUserObject());
+					}
 				}
 			} else {
 				logWarn("Could not add navigation-menu (" + childNode.getTitle() + ") to parent:: " + childNodeEntry.getValue(), null);
