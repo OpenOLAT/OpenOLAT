@@ -31,7 +31,7 @@
 	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef" scope="prototype">
 	   <property name="order" value="6" />
 	</bean>
-	<bean id="olatsites_guidemo" class="org.olat.test.site.GUIDemoSiteDef" scope="prototype" >
+	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef" scope="prototype" >
 	   <property name="order" value="7" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
 	</bean>

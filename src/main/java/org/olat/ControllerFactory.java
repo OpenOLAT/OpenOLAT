@@ -48,13 +48,13 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGControllerFactory;
+import org.olat.gui.demo.GUIDemoMainController;
 import org.olat.home.HomeMainController;
 import org.olat.home.InviteeHomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.controllers.RepositoryMainController;
-import org.olat.test.GUIDemoMainController;
 
 
 /**
