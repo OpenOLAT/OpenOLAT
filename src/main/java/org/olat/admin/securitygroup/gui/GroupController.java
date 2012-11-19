@@ -164,7 +164,9 @@ public class GroupController extends BasicController {
 		groupmemberview = createVelocityContainer("index");
 
 		addUsersButton = LinkFactory.createButtonSmall("overview.addusers", groupmemberview, this);
+		addUsersButton.setElementCssClass("o_sel_group_import_users");
 		addUserButton = LinkFactory.createButtonSmall("overview.adduser", groupmemberview, this);
+		addUserButton.setElementCssClass("o_sel_group_add_user");
 
 		if (mayModifyMembers) {
 			groupmemberview.contextPut("mayadduser", Boolean.TRUE);
