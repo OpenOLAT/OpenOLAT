@@ -75,9 +75,7 @@ public class QTI_resprocessing {
 		int size = el_respconditions.size();
 		boolean cont = true;
 		int i = 0;
-		boolean hasBeenTrue = false;
 		EvalContext ect = new EvalContext();
-		ect.setHasBeenTrue(hasBeenTrue);
 		while (cont && i < size) {
 			Element el_respcond = (Element)el_respconditions.get(i);
 			String str_continue = el_respcond.attributeValue("continue");
@@ -85,8 +83,7 @@ public class QTI_resprocessing {
 			// eval conditions and set vars accordingly
 			boolean res = respCondition.process(el_respcond, userContext, ect);
 			if (!res) cont = true; // continue flag only effective if previous didn't match
-			hasBeenTrue = hasBeenTrue || res;
-			ect.setHasBeenTrue(hasBeenTrue);
+			if (!res) ect.setHasBeenFalse(true);
 			i++;
 		}
 		

@@ -34,6 +34,6 @@ import org.olat.ims.qti.container.ItemContext;
 public class QTI_other implements BooleanEvaluable{
 
 	public boolean eval(Element boolElement, ItemContext userContext, EvalContext ect) {
-		return !ect.isHasBeenTrue();
+		return ect.isHasBeenFalse();
 	}
 }
