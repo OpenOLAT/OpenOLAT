@@ -298,12 +298,6 @@ public class FunctionalVOUtil {
 				.path("configuration")
 				.build();
 
-//		HttpGet getMethod = restConnection.createGet(request, MediaType.APPLICATION_JSON, true);
-//		HttpResponse response = restConnection.execute(getMethod);
-//		assertEquals(200, response.getStatusLine().getStatusCode());
-//		
-//		InputStream body = response.getEntity().getContent();
-//		GroupConfigurationVO config = restConnection.parse(body, GroupConfigurationVO.class);
 		GroupConfigurationVO config = new GroupConfigurationVO();
 		
 		config.setTools(tools);
@@ -316,6 +310,8 @@ public class FunctionalVOUtil {
 		
 		/* post modified configuration */
 		HttpPost postMethod = restConnection.createPost(request, MediaType.APPLICATION_JSON, true);
+		restConnection.addJsonEntity(postMethod, config);
+		
 		HttpResponse response = restConnection.execute(postMethod);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());

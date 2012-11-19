@@ -42,7 +42,13 @@ public class FunctionalGroupsSiteUtil {
 	
 	public final static String SEARCH_GROUP_BUTTONS_CSS = "o_sel_group_search_groups_buttons";
 	
-	public final static String BOOKING_ADD_METHOD_CSS = "o_sel_group_create";
+	public final static String IMPORT_USER_CSS = "o_sel_group_import_users";
+	public final static String ADD_USER_CSS = "o_sel_group_add_user";
+	
+	public final static String USERSEARCH_AUTOCOMPLETION_CSS = "o_sel_usersearch_autocompletion";
+	public final static String USERSEARCH_SEARCHFORM_CSS = "o_sel_usersearch_searchform";
+	
+	public final static String BOOKING_ADD_METHOD_CSS = "o_sel_accesscontrol_create";
 	public final static String BOOKING_ACCESS_CODE_ICON_CSS = "b_access_method_token_icon";
 	public final static String BOOKING_FREELY_AVAILABLE_ICON_CSS = "b_access_method_free_icon";
 	
@@ -50,6 +56,8 @@ public class FunctionalGroupsSiteUtil {
 	public final static String GROUP_PARTICIPANTS_NOT_VISIBLE_CSS = "o_sel_group_participants_not_visible";
 	public final static String GROUP_COACHES_CSS = "o_sel_group_coaches";
 	public final static String GROUP_PARTICIPANTS_CSS = "o_sel_group_participants";
+	
+	public final static String ACCESS_CONTROL_TOKEN_ENTRY_CSS = "o_sel_accesscontrol_token_entry";
 	
 	public enum GroupsSiteAction {
 		MY_GROUPS("o_sel_MyGroups"),
@@ -176,7 +184,6 @@ public class FunctionalGroupsSiteUtil {
 		PUBLISHING_AND_BOOKING;
 	}
 	
-	//FIXME:JK: implement values
 	public enum MembersConfiguration {
 		CAN_SEE_COACHES("show_owners"),
 		CAN_SEE_PARTICIPANTS("show_participants"),
@@ -208,6 +215,12 @@ public class FunctionalGroupsSiteUtil {
 	
 	private String searchGroupButtonsCss;
 	
+	private String importUserCss;
+	private String addUserCss;
+	
+	private String usersearchAutocompletionCss;
+	private String usersearchSearchformCss;
+	
 	private String bookingAddMethodCss;
 	private String bookingAccessCodeIconCss;
 	private String bookingFreelyAvailableIconCss;
@@ -216,6 +229,8 @@ public class FunctionalGroupsSiteUtil {
 	private String groupParticipantsNotVisibleCss;
 	private String groupCoachesCss;
 	private String groupParticipantsCss;
+	
+	private String accessControlTokenEntryCss;
 	
 	private FunctionalUtil functionalUtil;
 	
@@ -229,6 +244,12 @@ public class FunctionalGroupsSiteUtil {
 		
 		this.searchGroupButtonsCss = SEARCH_GROUP_BUTTONS_CSS;
 		
+		this.importUserCss = IMPORT_USER_CSS;
+		this.addUserCss = ADD_USER_CSS;
+		
+		this.usersearchAutocompletionCss = USERSEARCH_AUTOCOMPLETION_CSS;
+		this.usersearchSearchformCss = USERSEARCH_SEARCHFORM_CSS;
+		
 		this.bookingAddMethodCss = BOOKING_ADD_METHOD_CSS;
 		this.bookingAccessCodeIconCss = BOOKING_ACCESS_CODE_ICON_CSS;
 		this.bookingFreelyAvailableIconCss = BOOKING_FREELY_AVAILABLE_ICON_CSS;
@@ -237,6 +258,8 @@ public class FunctionalGroupsSiteUtil {
 		this.groupParticipantsNotVisibleCss = GROUP_PARTICIPANTS_NOT_VISIBLE_CSS;
 		this.groupCoachesCss = GROUP_COACHES_CSS;
 		this.groupParticipantsCss = GROUP_PARTICIPANTS_CSS;
+		
+		this.accessControlTokenEntryCss = ACCESS_CONTROL_TOKEN_ENTRY_CSS;
 		
 		this.functionalUtil = functionalUtil;
 	}
@@ -514,11 +537,11 @@ public class FunctionalGroupsSiteUtil {
 	}
 	
 	/**
+	 * Opens the appropriate action.
+	 * 
 	 * @param browser
 	 * @param action
 	 * @return
-	 * 
-	 * Opens the appropriate action.
 	 */
 	public boolean openGroupsTabActionByMenuTree(Selenium browser, GroupsTabAction action){
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -667,6 +690,93 @@ public class FunctionalGroupsSiteUtil {
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS.getValue());
 			functionalUtil.idle(browser);
 		}
+		
+		return(true);
+	}
+	
+	/**
+	 * Adds a user as participant.
+	 * 
+	 * @param browser
+	 * @param userName
+	 * @return
+	 */
+	public boolean addUser(Selenium browser, String userName){
+		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
+			return(false);
+		}
+		
+		if(!functionalUtil.openContentTab(browser, AdministrationTabs.MEMBERS.ordinal())){
+			return(false);
+		}
+		
+		if(userName == null){
+			return(true);
+		}
+		
+		/* click add User(s) */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//a[contains(@class, '")
+		.append(getAddUserCss())
+		.append("')])[2]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* fill in user name */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//fieldset[contains(@class, '")
+		.append(getUsersearchSearchformCss())
+		.append("')]//form//input[@type='text'])[1]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), userName);
+		
+		/* click search */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//fieldset[contains(@class, '")
+		.append(getUsersearchSearchformCss())
+		.append("')]//form//a[contains(@class, '")
+		.append(functionalUtil.getButtonCss())
+		.append("')])[1]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* select first match */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//fieldset[contains(@class, '")
+		.append(getUsersearchSearchformCss())
+		.append("')]//form//tr//td//input[@type='checkbox'])[1]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* click choose */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//fieldset[contains(@class, '")
+		.append(getUsersearchSearchformCss())
+		.append("')]//form//input[@type='submit' and contains(@class, '")
+		.append(functionalUtil.getButtonCss())
+		.append("')])[1]");
+
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* no mail just next */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=(//fieldset//form//div[contains(@class, 'b_button_group')]//button[contains(@class, '")
+		.append(functionalUtil.getButtonCss())
+		.append("')])[1]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
 		
 		return(true);
 	}
@@ -866,7 +976,9 @@ public class FunctionalGroupsSiteUtil {
 		/* enter access code */
 		selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//form//input[@type='text']");
+		selectorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(getAccessControlTokenEntryCss())
+		.append("')]//input[@type='text']");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), accessCode);
@@ -941,6 +1053,38 @@ public class FunctionalGroupsSiteUtil {
 		this.searchGroupButtonsCss = searchGroupButtonsCss;
 	}
 
+	public String getImportUserCss() {
+		return importUserCss;
+	}
+
+	public void setImportUserCss(String importUserCss) {
+		this.importUserCss = importUserCss;
+	}
+
+	public String getAddUserCss() {
+		return addUserCss;
+	}
+
+	public void setAddUserCss(String addUserCss) {
+		this.addUserCss = addUserCss;
+	}
+
+	public String getUsersearchAutocompletionCss() {
+		return usersearchAutocompletionCss;
+	}
+
+	public void setUsersearchAutocompletionCss(String usersearchAutocompletionCss) {
+		this.usersearchAutocompletionCss = usersearchAutocompletionCss;
+	}
+
+	public String getUsersearchSearchformCss() {
+		return usersearchSearchformCss;
+	}
+
+	public void setUsersearchSearchformCss(String usersearchSearchformCss) {
+		this.usersearchSearchformCss = usersearchSearchformCss;
+	}
+
 	public String getBookingAddMethodCss() {
 		return bookingAddMethodCss;
 	}
@@ -996,5 +1140,13 @@ public class FunctionalGroupsSiteUtil {
 
 	public void setGroupParticipantsCss(String groupParticipantsCss) {
 		this.groupParticipantsCss = groupParticipantsCss;
+	}
+
+	public String getAccessControlTokenEntryCss() {
+		return accessControlTokenEntryCss;
+	}
+
+	public void setAccessControlTokenEntryCss(String accessControlTokenEntryCss) {
+		this.accessControlTokenEntryCss = accessControlTokenEntryCss;
 	}
 }

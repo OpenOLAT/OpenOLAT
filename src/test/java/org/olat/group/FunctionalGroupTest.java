@@ -194,7 +194,6 @@ public class FunctionalGroupTest {
 		functionalUtil.logout(tutor0);
 	}
 
-	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConfigureMembers(@Drone @Tutor1 DefaultSelenium tutor0) throws IOException, URISyntaxException
@@ -259,7 +258,6 @@ public class FunctionalGroupTest {
 		functionalUtil.logout(tutor0);
 	}
 
-	@Ignore
 	@Test
 	@RunAsClient
 	public void checkConfigureAccessControl(@Drone @Tutor1 DefaultSelenium tutor0,
@@ -297,8 +295,8 @@ public class FunctionalGroupTest {
 					CollaborationTools.TOOL_WIKI,
 				},
 				false, false,
-				false, false,
-				false, false);
+				false, true,
+				true, true);
 		
 		/*
 		 * test case
@@ -348,19 +346,84 @@ public class FunctionalGroupTest {
 			
 			functionalUtil.waitForPageToLoadElement(student0, selectorBuffer.toString());
 		}
+		
+		/* logout student */
+		functionalUtil.idle(student0);
+		functionalUtil.logout(student0);
 	}
 	
-	@Ignore
-	@Test
-	@RunAsClient
-	public void checkBookGroup(){
-		
-	}
+//	@Ignore
+//	@Test
+//	@RunAsClient
+//	public void checkBookGroup(){
+//		
+//	}
 
-	@Ignore
 	@Test
 	@RunAsClient
-	public void checkAddUser(){
+	public void checkAddUser(@Drone @Tutor1 DefaultSelenium tutor0,
+			@Drone @Student1 DefaultSelenium student0)
+					throws IOException, URISyntaxException{
+		/*
+		 * test setup
+		 */
+		/* create users */
+		int tutorCount = 1;
+			
+		final UserVO[] tutors = new UserVO[tutorCount];
+		functionalVOUtil.createTestAuthors(deploymentUrl, tutorCount).toArray(tutors);
 		
+		int studentCount = 1;
+		
+		final UserVO[] students = new UserVO[studentCount];
+		functionalVOUtil.createTestUsers(deploymentUrl, studentCount).toArray(students);
+		
+		/* create group via REST */
+		final GroupVO[] groups = new GroupVO[tutorCount];
+		functionalVOUtil.createTestCourseGroups(deploymentUrl, tutorCount).toArray(groups);
+		
+		functionalVOUtil.addOwnerToGroup(deploymentUrl, groups[0], tutors[0]);
+		
+		functionalVOUtil.setGroupConfiguration(deploymentUrl, groups[0],
+				new String[]{
+					CollaborationTools.TOOL_CALENDAR,
+					CollaborationTools.TOOL_CHAT,
+					CollaborationTools.TOOL_CONTACT,
+					CollaborationTools.TOOL_FOLDER,
+					CollaborationTools.TOOL_FORUM,
+					CollaborationTools.TOOL_NEWS,
+					CollaborationTools.TOOL_PORTFOLIO,
+					CollaborationTools.TOOL_WIKI,
+				},
+				false, false,
+				false, true,
+				true, true);
+		
+		/*
+		 * test case
+		 */
+		Assert.assertTrue(functionalUtil.login(tutor0, tutors[0].getLogin(), tutors[0].getPassword(), true));
+		
+		/* open group */
+		Assert.assertTrue(functionalGroupsSiteUtil.openMyGroup(tutor0, groups[0].getName()));
+
+		/* add participant */
+		Assert.assertTrue(functionalGroupsSiteUtil.addUser(tutor0, students[0].getLogin()));
+
+		/* logout tutor */
+		functionalUtil.idle(tutor0);
+		functionalUtil.logout(tutor0);
+
+		/*
+		 * verify
+		 */
+		Assert.assertTrue(functionalUtil.login(student0, students[0].getLogin(), students[0].getPassword(), true));
+		
+		Assert.assertTrue(functionalGroupsSiteUtil.openMyGroup(student0, groups[0].getName()));
+		
+
+		/* logout student */
+		functionalUtil.idle(student0);
+		functionalUtil.logout(student0);
 	}
 }
