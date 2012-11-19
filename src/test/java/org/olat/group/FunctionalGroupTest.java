@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.collaboration.CollaborationTools;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
@@ -61,6 +62,9 @@ public class FunctionalGroupTest {
 	public final static String CREATE_GROUP_DESCRIPTION = "If you feel disappointed by the attitude and stance on free software of certain companies you're welcome.";
 	
 	public final static String CONFIGURE_TOOLS_INFORMATION = "group for testing";
+	
+	public final static String CONFIGURE_ACCESS_CONTROL_DESCRIPTION = "test access code";
+	public final static String CONFIGURE_ACCESS_CONTROL_ACCESS_CODE = "1234";
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -139,7 +143,7 @@ public class FunctionalGroupTest {
 		int tutorCount = 1;
 			
 		final UserVO[] tutors = new UserVO[tutorCount];
-		functionalVOUtil.createTestUsers(deploymentUrl, tutorCount).toArray(tutors);
+		functionalVOUtil.createTestAuthors(deploymentUrl, tutorCount).toArray(tutors);
 		
 		final GroupVO[] groups = new GroupVO[tutorCount];
 		functionalVOUtil.createTestCourseGroups(deploymentUrl, tutorCount).toArray(groups);
@@ -174,7 +178,10 @@ public class FunctionalGroupTest {
 		 */
 		/* information page */
 		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0, GroupsTabAction.INFORMATION));
-		Assert.assertTrue(functionalUtil.waitForPageToLoadContent(tutor0, null, CONFIGURE_TOOLS_INFORMATION, WaitLimitAttribute.VERY_SAVE, true));
+		Assert.assertTrue(functionalUtil.waitForPageToLoadContent(tutor0, null,
+				CONFIGURE_TOOLS_INFORMATION,
+				WaitLimitAttribute.VERY_SAVE, null,
+				true));
 				
 		/* tools */
 		for(GroupTools currentTool: tools){
@@ -186,13 +193,11 @@ public class FunctionalGroupTest {
 		functionalUtil.idle(tutor0);
 		functionalUtil.logout(tutor0);
 	}
-	
+
 	@Ignore
 	@Test
 	@RunAsClient
-	public void checkConfigureMembers(@Drone @Tutor1 DefaultSelenium tutor0,
-			@Drone @Student1 DefaultSelenium student0)
-					throws IOException, URISyntaxException
+	public void checkConfigureMembers(@Drone @Tutor1 DefaultSelenium tutor0) throws IOException, URISyntaxException
 	{
 		/*
 		 * test setup
@@ -201,12 +206,7 @@ public class FunctionalGroupTest {
 		int tutorCount = 1;
 			
 		final UserVO[] tutors = new UserVO[tutorCount];
-		functionalVOUtil.createTestUsers(deploymentUrl, tutorCount).toArray(tutors);
-		
-		int userCount = 1;
-		
-		final UserVO[] students = new UserVO[userCount]; 
-		functionalVOUtil.createTestUsers(deploymentUrl, userCount).toArray(students);
+		functionalVOUtil.createTestAuthors(deploymentUrl, tutorCount).toArray(tutors);
 		
 		/* create group via REST */
 		final GroupVO[] groups = new GroupVO[tutorCount];
@@ -231,7 +231,88 @@ public class FunctionalGroupTest {
 		
 		Assert.assertTrue(functionalGroupsSiteUtil.applyMembersConfiguration(tutor0, conf));
 		
-		/* logout */
+		/*
+		 * verify
+		 */
+		/* check group with tutor0  */
+		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0, GroupsTabAction.GROUPS));
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(functionalGroupsSiteUtil.getGroupCoachesNotVisibleCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(tutor0, selectorBuffer.toString());
+		
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(functionalGroupsSiteUtil.getGroupParticipantsCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(tutor0, selectorBuffer.toString());
+		
+		
+		/* logout tutor */
+		functionalUtil.idle(tutor0);
+		functionalUtil.logout(tutor0);
+	}
+
+	@Ignore
+	@Test
+	@RunAsClient
+	public void checkConfigureAccessControl(@Drone @Tutor1 DefaultSelenium tutor0,
+			@Drone @Student1 DefaultSelenium student0)
+					throws IOException, URISyntaxException{
+		/*
+		 * test setup
+		 */
+		/* create users */
+		int tutorCount = 1;
+			
+		final UserVO[] tutors = new UserVO[tutorCount];
+		functionalVOUtil.createTestAuthors(deploymentUrl, tutorCount).toArray(tutors);
+		
+		int studentCount = 1;
+		
+		final UserVO[] students = new UserVO[studentCount];
+		functionalVOUtil.createTestUsers(deploymentUrl, studentCount).toArray(students);
+		
+		/* create group via REST */
+		final GroupVO[] groups = new GroupVO[tutorCount];
+		functionalVOUtil.createTestCourseGroups(deploymentUrl, tutorCount).toArray(groups);
+		
+		functionalVOUtil.addOwnerToGroup(deploymentUrl, groups[0], tutors[0]);
+		
+		functionalVOUtil.setGroupConfiguration(deploymentUrl, groups[0],
+				new String[]{
+					CollaborationTools.TOOL_CALENDAR,
+					CollaborationTools.TOOL_CHAT,
+					CollaborationTools.TOOL_CONTACT,
+					CollaborationTools.TOOL_FOLDER,
+					CollaborationTools.TOOL_FORUM,
+					CollaborationTools.TOOL_NEWS,
+					CollaborationTools.TOOL_PORTFOLIO,
+					CollaborationTools.TOOL_WIKI,
+				},
+				false, false,
+				false, false,
+				false, false);
+		
+		/*
+		 * test case
+		 */
+		Assert.assertTrue(functionalUtil.login(tutor0, tutors[0].getLogin(), tutors[0].getPassword(), true));
+		
+		/* open group */
+		Assert.assertTrue(functionalGroupsSiteUtil.openMyGroup(tutor0, groups[0].getName()));
+		
+		/* apply booking method */
+		Assert.assertTrue(functionalGroupsSiteUtil.applyBookingAccessCode(tutor0,
+				CONFIGURE_ACCESS_CONTROL_DESCRIPTION, CONFIGURE_ACCESS_CONTROL_ACCESS_CODE));
+		
+		/* logout tutor */
 		functionalUtil.idle(tutor0);
 		functionalUtil.logout(tutor0);
 		
@@ -240,24 +321,33 @@ public class FunctionalGroupTest {
 		 */
 		Assert.assertTrue(functionalUtil.login(student0, students[0].getLogin(), students[0].getPassword(), true));
 		
-		Assert.assertTrue(functionalGroupsSiteUtil.openPublishedGroup(student0, groups[0].getName()));
-
-		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(student0, GroupsTabAction.GROUPS));
+		/* book group */
+		Assert.assertTrue(functionalGroupsSiteUtil.bookWithAccessCode(student0,
+				groups[0].getName(), CONFIGURE_ACCESS_CONTROL_ACCESS_CODE));
 		
-		StringBuffer selectorBuffer = new StringBuffer();
+		/* verify tools */
+		GroupTools[] tools = new GroupTools[]{
+				GroupTools.CALENDAR,
+				GroupTools.EMAIL,
+				GroupTools.EPORTFOLIO,
+				GroupTools.FOLDER,
+				GroupTools.FORUM,
+				GroupTools.INFORMATION,
+				GroupTools.WIKI,
+		};
 		
-		//TODO:JK: implement me
-		
-		/* logout */
-		functionalUtil.idle(student0);
-		functionalUtil.logout(student0);
-	}
-
-	@Ignore
-	@Test
-	@RunAsClient
-	public void checkConfigureAccessControl(){
-		
+		for(GroupTools currentTool: tools){
+			GroupsTabAction action = functionalGroupsSiteUtil.findGroupTabActionForTool(currentTool);
+			
+			StringBuffer selectorBuffer = new StringBuffer();
+			selectorBuffer.append("xpath=//ul[contains(@class, '")
+			.append(functionalUtil.getTreeLevel1Css())
+			.append("')]//li//a[contains(@class, '")
+			.append(action.getIconCss())
+			.append("')]");
+			
+			functionalUtil.waitForPageToLoadElement(student0, selectorBuffer.toString());
+		}
 	}
 	
 	@Ignore

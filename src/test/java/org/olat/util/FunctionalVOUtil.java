@@ -51,6 +51,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.GroupConfigurationVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.RolesVO;
@@ -167,6 +168,15 @@ public class FunctionalVOUtil {
 		return(user);
 	}
 	
+	/**
+	 * Creates test authors.
+	 * 
+	 * @param deploymentUrl
+	 * @param count
+	 * @return
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	public List<UserVO> createTestAuthors(URL deploymentUrl, int count) throws IOException, URISyntaxException{
 		/* create ordinary users */
 		List<UserVO> user = createTestUsers(deploymentUrl, count);
@@ -203,6 +213,15 @@ public class FunctionalVOUtil {
 		return(user);
 	}
 	
+	/**
+	 * Creates course groups.
+	 * 
+	 * @param deploymentUrl
+	 * @param count
+	 * @return
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	public List<GroupVO> createTestCourseGroups(URL deploymentUrl, int count) throws IOException, URISyntaxException{
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 
@@ -235,6 +254,15 @@ public class FunctionalVOUtil {
 		return(group);
 	}
 	
+	/**
+	 * Adds owner to group.
+	 * 
+	 * @param deploymentUrl
+	 * @param group
+	 * @param owner
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	public void addOwnerToGroup(URL deploymentUrl, GroupVO group, UserVO owner) throws IOException, URISyntaxException{
 		//add an owner
 		RestConnection restConnection = new RestConnection(deploymentUrl);
@@ -248,6 +276,47 @@ public class FunctionalVOUtil {
 
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = restConnection.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		restConnection.shutdown();
+	}
+	
+	public void setGroupConfiguration(URL deploymentUrl, GroupVO group,
+			String[] tools,
+			boolean ownersPublic, boolean ownersVisible,
+			boolean participatnsPublic, boolean participantsVisible,
+			boolean waitingListPublic, boolean waitingListVisible)
+					throws IOException, URISyntaxException{
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(getUsername(), getPassword()));
+
+		/* retrieve existing configuration */
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI())
+				.path("restapi")
+				.path("groups").path(group.getKey().toString())
+				.path("configuration")
+				.build();
+
+//		HttpGet getMethod = restConnection.createGet(request, MediaType.APPLICATION_JSON, true);
+//		HttpResponse response = restConnection.execute(getMethod);
+//		assertEquals(200, response.getStatusLine().getStatusCode());
+//		
+//		InputStream body = response.getEntity().getContent();
+//		GroupConfigurationVO config = restConnection.parse(body, GroupConfigurationVO.class);
+		GroupConfigurationVO config = new GroupConfigurationVO();
+		
+		config.setTools(tools);
+		config.setOwnersPublic(ownersPublic);
+		config.setOwnersVisible(ownersVisible);
+		config.setParticipantsPublic(participatnsPublic);
+		config.setParticipantsVisible(participantsVisible);
+		config.setWaitingListPublic(waitingListPublic);
+		config.setWaitingListVisible(waitingListVisible);
+		
+		/* post modified configuration */
+		HttpPost postMethod = restConnection.createPost(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = restConnection.execute(postMethod);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 

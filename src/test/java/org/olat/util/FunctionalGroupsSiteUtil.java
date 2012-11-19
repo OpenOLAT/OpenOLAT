@@ -42,9 +42,14 @@ public class FunctionalGroupsSiteUtil {
 	
 	public final static String SEARCH_GROUP_BUTTONS_CSS = "o_sel_group_search_groups_buttons";
 	
-	public final static String BOOKING_ADD_METHOD_CSS = null; //TODO:JK: implement CSS class
+	public final static String BOOKING_ADD_METHOD_CSS = "o_sel_group_create";
 	public final static String BOOKING_ACCESS_CODE_ICON_CSS = "b_access_method_token_icon";
 	public final static String BOOKING_FREELY_AVAILABLE_ICON_CSS = "b_access_method_free_icon";
+	
+	public final static String GROUP_COACHES_NOT_VISIBLE_CSS = "o_sel_group_coaches_not_visible";
+	public final static String GROUP_PARTICIPANTS_NOT_VISIBLE_CSS = "o_sel_group_participants_not_visible";
+	public final static String GROUP_COACHES_CSS = "o_sel_group_coaches";
+	public final static String GROUP_PARTICIPANTS_CSS = "o_sel_group_participants";
 	
 	public enum GroupsSiteAction {
 		MY_GROUPS("o_sel_MyGroups"),
@@ -171,12 +176,27 @@ public class FunctionalGroupsSiteUtil {
 		PUBLISHING_AND_BOOKING;
 	}
 	
+	//FIXME:JK: implement values
 	public enum MembersConfiguration {
-		CAN_SEE_COACHES,
-		CAN_SEE_PARTICIPANTS,
-		ALL_CAN_SEE_COACHES,
-		ALL_CAN_SEE_PARTICIPANTS,
-		ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS;
+		CAN_SEE_COACHES("show_owners"),
+		CAN_SEE_PARTICIPANTS("show_participants"),
+		ALL_CAN_SEE_COACHES("open_owners"),
+		ALL_CAN_SEE_PARTICIPANTS("open_participants"),
+		ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS("download_list");
+		
+		private String value;
+		
+		MembersConfiguration(String value){
+			setValue(value);
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
 	}
 
 	private String groupIconCss;
@@ -190,7 +210,12 @@ public class FunctionalGroupsSiteUtil {
 	
 	private String bookingAddMethodCss;
 	private String bookingAccessCodeIconCss;
-	private String bookingFreelyAvailableCss;
+	private String bookingFreelyAvailableIconCss;
+	
+	private String groupCoachesNotVisibleCss;
+	private String groupParticipantsNotVisibleCss;
+	private String groupCoachesCss;
+	private String groupParticipantsCss;
 	
 	private FunctionalUtil functionalUtil;
 	
@@ -206,7 +231,12 @@ public class FunctionalGroupsSiteUtil {
 		
 		this.bookingAddMethodCss = BOOKING_ADD_METHOD_CSS;
 		this.bookingAccessCodeIconCss = BOOKING_ACCESS_CODE_ICON_CSS;
-		this.bookingFreelyAvailableCss = BOOKING_FREELY_AVAILABLE_ICON_CSS;
+		this.bookingFreelyAvailableIconCss = BOOKING_FREELY_AVAILABLE_ICON_CSS;
+		
+		this.groupCoachesNotVisibleCss = GROUP_COACHES_NOT_VISIBLE_CSS;
+		this.groupParticipantsNotVisibleCss = GROUP_PARTICIPANTS_NOT_VISIBLE_CSS;
+		this.groupCoachesCss = GROUP_COACHES_CSS;
+		this.groupParticipantsCss = GROUP_PARTICIPANTS_CSS;
 		
 		this.functionalUtil = functionalUtil;
 	}
@@ -242,14 +272,14 @@ public class FunctionalGroupsSiteUtil {
 	}
 
 	/**
+	 * Create a group with the given configuration.
+	 * 
 	 * @param browser
 	 * @param groupName
 	 * @param groupDescription
 	 * @param maxParticipants
 	 * @param options
 	 * @return
-	 * 
-	 * Create a group with the given configuration.
 	 */
 	public boolean createGroup(Selenium browser, String groupName, String groupDescription, int maxParticipants, GroupOptions[] options){
 		if(!functionalUtil.openSite(browser, OlatSite.GROUPS)){
@@ -324,11 +354,11 @@ public class FunctionalGroupsSiteUtil {
 	}
 	
 	/**
+	 * Opens the given my group.
+	 * 
 	 * @param browser
 	 * @param groupName
 	 * @return
-	 * 
-	 * Opens the given my group.
 	 */
 	public boolean openMyGroup(Selenium browser, String groupName){
 		if(!functionalUtil.openSite(browser, OlatSite.GROUPS)){
@@ -379,11 +409,11 @@ public class FunctionalGroupsSiteUtil {
 	}
 	
 	/**
+	 * Opens the given published group.
+	 * 
 	 * @param browser
 	 * @param groupName
 	 * @return
-	 * 
-	 * Opens the given published group.
 	 */
 	public boolean openPublishedGroup(Selenium browser, String groupName){
 		if(!functionalUtil.openSite(browser, OlatSite.GROUPS)){
@@ -433,6 +463,12 @@ public class FunctionalGroupsSiteUtil {
 		return(true);
 	}
 	
+	/**
+	 * Associates a GroupTools to a GroupsTabAction.
+	 * 
+	 * @param tool
+	 * @return
+	 */
 	public GroupsTabAction findGroupTabActionForTool(GroupTools tool){
 		GroupsTabAction action = null;
 		
@@ -500,11 +536,11 @@ public class FunctionalGroupsSiteUtil {
 	}
 	
 	/**
+	 * Toggle specified tools.
+	 * 
 	 * @param browser
 	 * @param tools
 	 * @return
-	 * 
-	 * Toggle specified tools.
 	 */
 	public boolean applyTools(Selenium browser, GroupTools[] tools){
 		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
@@ -557,11 +593,11 @@ public class FunctionalGroupsSiteUtil {
 	}
 	
 	/**
+	 * Sets the information for members.
+	 * 
 	 * @param browser
 	 * @param information
 	 * @return
-	 * 
-	 * Sets the information for members.
 	 */
 	public boolean applyInformationForMembers(Selenium browser, String information){
 		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
@@ -588,11 +624,11 @@ public class FunctionalGroupsSiteUtil {
 	
 	
 	/**
+	 * Toggle members configuration.
+	 * 
 	 * @param browser
 	 * @param members
 	 * @return
-	 * 
-	 * Toggle members configuration.
 	 */
 	public boolean applyMembersConfiguration(Selenium browser, MembersConfiguration[] conf){
 		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
@@ -608,33 +644,40 @@ public class FunctionalGroupsSiteUtil {
 		}
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.CAN_SEE_COACHES)){
-			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.CAN_SEE_COACHES.ordinal()));
+			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.CAN_SEE_COACHES.getValue());
 			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.CAN_SEE_PARTICIPANTS)){
-			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.CAN_SEE_PARTICIPANTS.ordinal()));
+			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.CAN_SEE_PARTICIPANTS.getValue());
 			functionalUtil.idle(browser);
 		}
 
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_SEE_COACHES)){
-			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.ALL_CAN_SEE_COACHES.ordinal()));
+			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_SEE_COACHES.getValue());
 			functionalUtil.idle(browser);
 		}
 
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS)){
-			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS.ordinal()));
+			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS.getValue());
 			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS)){
-			functionalUtil.clickCheckbox(browser, null, Integer.toString(MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS.ordinal()));
+			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS.getValue());
 			functionalUtil.idle(browser);
 		}
 		
 		return(true);
 	}
 	
+	/**
+	 * Applies free booking to group.
+	 * 
+	 * @param browser
+	 * @param description
+	 * @return
+	 */
 	public boolean applyBookingFreelyAvailable(Selenium browser, String description){
 		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
 			return(false);
@@ -660,7 +703,7 @@ public class FunctionalGroupsSiteUtil {
 		selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append(getBookingFreelyAvailableCss())
+		.append(getBookingFreelyAvailableIconCss())
 		.append("')]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -682,6 +725,156 @@ public class FunctionalGroupsSiteUtil {
 		selectorBuffer.append("xpath=//div[contains(@class, '")
 		.append("b_window_content")
 		.append("')]//form//button[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * Applies booking with access code to group.
+	 * 
+	 * @param browser
+	 * @param description
+	 * @param accessCode
+	 * @return
+	 */
+	public boolean applyBookingAccessCode(Selenium browser, String description, String accessCode){
+		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
+			return(false);
+		}
+		
+		if(!functionalUtil.openContentTab(browser, AdministrationTabs.PUBLISHING_AND_BOOKING.ordinal())){
+			return(false);
+		}
+		
+		/* click button */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(functionalUtil.getButtonCss())
+		.append("') and contains(@class, '")
+		.append(getBookingAddMethodCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* choose access code available */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getBookingAccessCodeIconCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* enter description */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append("b_window_content")
+		.append("')]//form//textarea");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), description);
+		
+		/* enter access code */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append("b_window_content")
+		.append("')]//form//input[@type='text']");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), accessCode);
+		
+		/* click create */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append("b_window_content")
+		.append("')]//form//button[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * Books a group with an access code.
+	 * 
+	 * @param browser
+	 * @param groupName
+	 * @param accessCode
+	 * @return
+	 */
+	public boolean bookWithAccessCode(Selenium browser, String groupName, String accessCode){
+		if(!functionalUtil.openSite(browser, OlatSite.GROUPS)){
+			return(false);
+		}
+		
+		if(!openActionByMenuTree(browser, GroupsSiteAction.PUBLISHED_GROUPS)){
+			return(false);
+		}
+		
+		if(!functionalUtil.openContentSegment(browser, PublishedGroupsTabs.SEARCH.ordinal())){
+			return(false);
+		}
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//div[contains(@class, '")
+		.append(MyGroupSearchFields.NAME.getCssClass())
+		.append("')]//input[@type='text']");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.type(selectorBuffer.toString(), groupName);
+		
+		/* click search */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[contains(@class, '")
+		.append(getSearchGroupButtonsCss())
+		.append("')]//button[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* book the group */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//tr/td/a/span[contains(@class, '")
+		.append(getGroupIconCss())
+		.append("')]/../../../td[contains(@class, '")
+		.append(functionalUtil.getTableLastChildCss())
+		.append("')]/a");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		/* enter access code */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//input[@type='text']");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), accessCode);
+		
+		/* do order */
+		selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//button[contains(@class, '")
 		.append(functionalUtil.getButtonDirtyCss())
 		.append("')]");
 		
@@ -764,11 +957,44 @@ public class FunctionalGroupsSiteUtil {
 		this.bookingAccessCodeIconCss = bookingAccessCodeIconCss;
 	}
 
-	public String getBookingFreelyAvailableCss() {
-		return bookingFreelyAvailableCss;
+	public String getBookingFreelyAvailableIconCss() {
+		return bookingFreelyAvailableIconCss;
 	}
 
-	public void setBookingFreelyAvailableCss(String bookingFreelyAvailableCss) {
-		this.bookingFreelyAvailableCss = bookingFreelyAvailableCss;
+	public void setBookingFreelyAvailableIconCss(String bookingFreelyAvailableIconCss) {
+		this.bookingFreelyAvailableIconCss = bookingFreelyAvailableIconCss;
+	}
+
+	public String getGroupCoachesNotVisibleCss() {
+		return groupCoachesNotVisibleCss;
+	}
+
+	public void setGroupCoachesNotVisibleCss(String groupCoachesNotVisibleCss) {
+		this.groupCoachesNotVisibleCss = groupCoachesNotVisibleCss;
+	}
+
+	public String getGroupParticipantsNotVisibleCss() {
+		return groupParticipantsNotVisibleCss;
+	}
+
+	public void setGroupParticipantsNotVisibleCss(
+			String groupParticipantsNotVisibleCss) {
+		this.groupParticipantsNotVisibleCss = groupParticipantsNotVisibleCss;
+	}
+
+	public String getGroupCoachesCss() {
+		return groupCoachesCss;
+	}
+
+	public void setGroupCoachesCss(String groupCoachesCss) {
+		this.groupCoachesCss = groupCoachesCss;
+	}
+
+	public String getGroupParticipantsCss() {
+		return groupParticipantsCss;
+	}
+
+	public void setGroupParticipantsCss(String groupParticipantsCss) {
+		this.groupParticipantsCss = groupParticipantsCss;
 	}
 }
