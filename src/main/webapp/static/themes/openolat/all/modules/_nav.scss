@@ -165,7 +165,7 @@ div.b_tree {
 						
 			/*  icon positioning */
 			@for $i from 1 through 11 {
-				.b_tree_oc_l#{$i}  { position:absolute; top:0px; left: 1px + ( ($i - 1) * $tree_padding_steps_px); z-index:9; }
+				.b_tree_oc_l#{$i}  { position:absolute; top:0px; left: 1px + ($i * $tree_padding_steps_px); z-index:9; }
 			}
 
 			@for $i from 0 through 11 {
@@ -193,7 +193,7 @@ div.b_tree {
 		
 		/* link to select the item with icon */
 		@for $i from 0 through 11 {
-			&.b_tree_l#{$i}  a.b_tree_icon { padding-left: ($tree_opener_spread_px + $treeicon_width_px  + $tree_padding_steps_px * $i);  background-position:($tree_opener_spread_px + 2px + $tree_padding_steps_px * $i)  50%; }
+			&.b_tree_l#{$i}  a.b_tree_icon { padding-left: ($tree_padding_opener_px + $treeicon_width_px  + $tree_padding_steps_px * $i);  background-position:($tree_padding_opener_px + 2px + $tree_padding_steps_px * $i)  50%; }
 		}
 	
 	}// end ul
@@ -202,8 +202,8 @@ div.b_tree {
 	/* the open/close node icons */
 	a.b_tree_level_close {background:transparent ! important;} /* override link hover colors */
 	a.b_tree_level_open {background:transparent ! important;}
-	a.b_tree_level_close span { background: url($ico_minus) no-repeat $tree_opener_spread_px 50%; padding-right:$tree_opener_width_px;}
-	a.b_tree_level_open span { background: url($ico_plus) no-repeat $tree_opener_spread_px 50%; padding-right:$tree_opener_width_px;}
+	a.b_tree_level_close span { background: url($ico_minus) no-repeat 0 50%; padding-right:$tree_padding_opener_px;}
+	a.b_tree_level_open span { background: url($ico_plus) no-repeat 0 50%; padding-right:$tree_padding_opener_px;}
 	
 	a.b_tree_level_close:hover,a.b_tree_level_open:hover {text-decoration:none;}
 	

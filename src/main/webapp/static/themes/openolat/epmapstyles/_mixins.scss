@@ -31,6 +31,7 @@
 	div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
 	div.b_pagination li a { padding: 1em; padding: 5px 8px; }
 	div.b_eportfolio_page,  div.b_portfolio_toc,  div.b_eportfolio_edit { background-image: none; }	
+	div.b_pagination li.b_changelog {float:right;}
 }
 
 @mixin epmst-actualpage($bg1,$bg2){
