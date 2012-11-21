@@ -26,9 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.TypedQuery;
+
 import org.hibernate.FlushMode;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.course.assessment.UserCourseInformations;
@@ -82,6 +85,33 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 				return null;
 			}
 			return infoList.get(0);
+		} catch (Exception e) {
+			logError("Cannot retrieve course informations for: " + identity + " from " + identity, e);
+			return null;
+		}
+	}
+	
+	@Override
+	public List<UserCourseInformations> getUserCourseInformations(Identity identity, List<OLATResource> resources) {
+		if(resources == null || resources.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select infos from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+				.append(" inner join fetch infos.resource as resource")
+				.append(" inner join fetch infos.identity as identity")
+			  .append(" where identity.key=:identityKey and resource.key in (:resKeys)");
+
+			List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
+			TypedQuery<UserCourseInformations> query = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserCourseInformations.class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("resKeys", resourceKeys);
+
+			List<UserCourseInformations> infoList = query.getResultList();
+			return infoList;
 		} catch (Exception e) {
 			logError("Cannot retrieve course informations for: " + identity + " from " + identity, e);
 			return null;

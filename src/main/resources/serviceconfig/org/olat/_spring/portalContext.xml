@@ -50,10 +50,6 @@
 		<property name="name" value="Groups" />
 		<property name="enabled" value="${portlet.groups.enabled}" />
 	</bean>
-	<bean id="Bookmarks" class="org.olat.bookmark.BookmarksPortlet" scope="prototype">
-		<property name="name" value="Bookmarks" />
-		<property name="enabled" value="${portlet.bookmarks.enabled}" />
-	</bean>
 	<bean id="Notes" class="org.olat.note.NotesPortlet" scope="prototype">
 		<property name="name" value="Notes" />
 		<property name="enabled" value="${portlet.notes.enabled}" />

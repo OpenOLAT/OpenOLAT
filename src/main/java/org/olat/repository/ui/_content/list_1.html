@@ -1,0 +1,91 @@
+<div class="b_clearfix">
+	$r.render("allcourses")
+	
+</div>
+
+<div class="f_library_catalog_wide">
+<div class="f_catalog_items">
+#set ($index=0)
+#foreach ( $item in $items )
+	<div class="f_item  #if($item.selected) f_item_selected #end">
+		<!-- 
+		<div class="f_item_links b_clearfix">
+			<a class="b_with_small_icon_left  $item.getCssClass()" href="$item.getBusinessPath()">$item.displayName</a>
+			<a class="f_permalink b_link_extern" href="$item.getBusinessPath()">&nbsp;</a>
+		</div>
+		-->
+		<div class="f_metadata b_clearfix">
+			#if($thumbnails)
+				<div class="f_thumbnail">
+					#if($info.isThumbnailAvailable())
+						<div class="f_thumbnail_inner f_thumbnail_unavailable" style="">&nbsp;</div>
+					#else
+						<div class="f_thumbnail_inner f_thumbnail_available" style="width:280px; height:158px; float:left; background:transparent url('${mapperURL}/${item.getThumbnailRelPath()}') no-repeat 50% 50%;">&nbsp;</div>
+					#end	
+				</div>
+			#end
+				<div class="f_metadata_text">
+					<div class="f_metadata_text_inner">
+					<h4>$r.render($item.getSelectLinkName())</h4>
+					#if($item.author)
+						$item.author<br/>
+					#end
+						
+						<table>
+							
+							<tr>
+								<th>Visit</th>
+								<td>$item.visit</td>
+							</tr>
+							<tr>
+								<th>Time spend</th>
+								<td>$item.timeSpend</td>
+							</tr>
+							
+							<tr>
+								<th>Passed</th>
+								<td>
+									#if($item.passed)
+										$r.translate("passed.true")
+									#elseif($item.failed)
+										$r.translate("passed.false")
+									#end
+								</td>
+							</tr>
+							<tr>
+								<th>Score</th>
+								<td>#if($item.score) $item.score #end</td>
+							</tr>
+							#if($item.progress)
+							<tr>
+								<th>Progress</th>
+								<td>
+									<div class='o_eff_statement_progress' ext:qtip=''>
+										<div class='o_eff_statement_solved' style='width:${item.progress.greenPerCent}%;'/>&#160;</div>
+									</div>
+								</td>
+							</tr>
+							#end
+						</table>	
+
+					</div>
+				</div>
+				<div class="f_metadata_additional_infos">
+					<div class="f_metadata_additional_infos_inner">
+						#if($item.initialLaunch)
+							Initial launch date:<br/>
+							$r.formatDateAndTime($item.initialLaunch)<br/>
+						#end
+						#if($item.recentLaunch)
+							Recent launch date:<br/>
+							$r.formatDateAndTime($item.recentLaunch)
+						#end
+					</div>
+				</div>
+		</div>
+	</div>
+	#set ($index=$index+1)
+#end
+</div></div>
+
+$r.render("allcourses")

@@ -49,6 +49,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.servlets.URLEncoder;
 
@@ -474,6 +475,23 @@ public class BusinessControlFactory {
 			String busPath = getBusinessPathAsURIFromCEList(ceList); 
 			
 			return Settings.getServerContextPathURI()+"/url/"+busPath;
+		} catch(Exception e) {
+			log.error("Error with business path: " + bPathString, e);
+			return null;
+		}
+	}
+	
+	public String getRelativeURLFromBusinessPathString(String bPathString){
+		if(!StringHelper.containsNonWhitespace(bPathString)) {
+			return null;
+		}
+		
+		try {
+			BusinessControlFactory bCF = BusinessControlFactory.getInstance(); 
+			List<ContextEntry> ceList = bCF.createCEListFromString(bPathString);
+			String busPath = getBusinessPathAsURIFromCEList(ceList); 
+			
+			return WebappHelper.getServletContextPath() +"/url/"+busPath;
 		} catch(Exception e) {
 			log.error("Error with business path: " + bPathString, e);
 			return null;

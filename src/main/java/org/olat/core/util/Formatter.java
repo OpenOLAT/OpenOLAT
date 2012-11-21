@@ -30,17 +30,19 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.LogDelegator;
 
 /**
  * enclosing_type Description: <br>
@@ -48,15 +50,32 @@ import org.olat.core.logging.LogDelegator;
  * 
  * @author Felix Jost
  */
-public class Formatter extends LogDelegator {
+public class Formatter {
 
-	private Locale locale;
+	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
+	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	
+	private static final Map<Locale,Formatter> localToFormatterMap = new HashMap<Locale,Formatter>();
+	
+	private final Locale locale;
+	private final DateFormat shortDateFormat;
+	private final DateFormat shortDateTimeFormat;
+	private final DateFormat shortTimeFormat;
+	private final DateFormat mediumTimeFormat;
 
 	/**
 	 * Constructor for Formatter.
 	 */
 	private Formatter(Locale locale) {
 		this.locale = locale;
+		shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+		shortDateFormat.setLenient(false);
+		mediumTimeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
+		mediumTimeFormat.setLenient(false);
+		shortDateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+		shortDateTimeFormat.setLenient(false);
+		shortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
+		shortTimeFormat.setLenient(false);
 	}
 
 	/**
@@ -66,7 +85,13 @@ public class Formatter extends LogDelegator {
 	 * @return the instance of the Formatter
 	 */
 	public static Formatter getInstance(Locale locale) {
-		return new Formatter(locale);
+		Formatter formatter;
+		if(localToFormatterMap.containsKey(locale)) {
+			formatter = localToFormatterMap.get(locale);
+		} else {
+			formatter = localToFormatterMap.put(locale, new Formatter(locale));
+		}
+		return formatter;
 	}
 
 	/**
@@ -76,10 +101,9 @@ public class Formatter extends LogDelegator {
 	 * @return a String with the formatted date
 	 */
 	public String formatDate(Date d) {
-		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, locale);
-		df.setLenient(false);
-		String da = df.format(d);
-		return da;
+		synchronized (shortDateFormat) {
+			return shortDateFormat.format(d);
+		}
 	}
 	
 	/**
@@ -89,10 +113,9 @@ public class Formatter extends LogDelegator {
 	 * @return a String with the formatted time
 	 */
 	public String formatTime(Date d) {
-		DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
-		df.setLenient(false);
-		String da = df.format(d);
-		return da;
+		synchronized (mediumTimeFormat) {
+			return mediumTimeFormat.format(d);
+		}
 	}
 
 	/**
@@ -103,10 +126,9 @@ public class Formatter extends LogDelegator {
 	 */
 	public String formatDateAndTime(Date d) {
 		if (d == null) return null;
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
-		df.setLenient(false);
-		String da = df.format(d);
-		return da;
+		synchronized (shortDateTimeFormat) {
+			return shortDateTimeFormat.format(d);
+		}
 	}
 
 	/**
@@ -166,8 +188,9 @@ public class Formatter extends LogDelegator {
 	 * @return a String with the formatted date and time
 	 */
 	public static String formatDatetime(Date d) {
-		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-		return formatter.format(d);
+		synchronized (formatDateTime) {
+			return formatDateTime.format(d);
+		}
 	}
 	
 	/**
@@ -178,8 +201,9 @@ public class Formatter extends LogDelegator {
 	 * @return a String with the formatted date and time
 	 */
 	public static String formatDatetimeFilesystemSave(Date d) {
-		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
-		return formatter.format(d);
+		synchronized (formatterDatetimeFilesystem) {
+			return formatterDatetimeFilesystem.format(d);
+		}
 	}
 
 	/**
@@ -189,10 +213,9 @@ public class Formatter extends LogDelegator {
 	 * @return a String with the formatted time
 	 */
 	public String formatTimeShort(Date d) {
-		DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
-		df.setLenient(false);
-		String da = df.format(d);
-		return da;
+		synchronized (shortTimeFormat) {
+			return shortTimeFormat.format(d);
+		}
 	}
 
 	/**

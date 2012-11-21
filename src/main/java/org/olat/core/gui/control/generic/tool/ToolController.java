@@ -155,6 +155,8 @@ public interface ToolController extends Controller {
 	 * @param ident An ident to reference this entry
 	 */
 	public void addComponent(Component component, String ident);
+	
+	public void setCssClass(String ident, String cssClass);
 
 	/**
 	 * Remove tool entry with given ident

@@ -37,13 +37,12 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.IdentityShort;
-import org.olat.bookmark.AddAndEditBookmarkController;
-import org.olat.bookmark.BookmarkManager;
 import org.olat.catalog.ui.CatalogAjaxAddController;
 import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.catalog.ui.RepoEntryCategoriesTableController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -149,8 +148,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private GroupController groupController;
 	private RepositoryMembersController membersEditController;
 	private OrdersAdminController ordersController;
-	private AddAndEditBookmarkController bookmarkController;
-	private ToolController detailsToolC = null;
+	private ToolController detailsToolC;
 	private RepositoryCopyController copyController;
 	private RepositoryEditPropertiesController repositoryEditPropertiesController;
 	private RepositoryEditDescriptionController repositoryEditDescriptionController;
@@ -184,6 +182,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	
 	private final BaseSecurity securityManager;
 	private final UserManager userManager;
+	private final MarkManager markManager;
 
 	/**
 	 * Controller displaying details of a given repository entry.
@@ -198,6 +197,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		setBasePackage(RepositoryManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		if (log.isDebug()){
 			log.debug("Constructing ReposityMainController using velocity root " + velocity_root);
 		}
@@ -456,7 +456,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				//mark as download link
 				detailsToolC.addLink(ACTION_DOWNLOAD, translate("details.download"), TOOL_DOWNLOAD, null, true);
 				detailsToolC.addLink(ACTION_DOWNLOAD_BACKWARD_COMPAT, translate("details.download.compatible"), TOOL_DOWNLOAD_BACKWARD_COMPAT, null, true);
-				detailsToolC.addLink(ACTION_BOOKMARK, translate("details.bookmark"), TOOL_BOOKMARK, null);
+				//bookmark
+				boolean marked = markManager.isMarked(repositoryEntry, getIdentity(), null);
+				String css = marked ? "b_mark_set" : "b_mark_not_set";
+				detailsToolC.addLink(ACTION_BOOKMARK, translate("details.bookmark"), TOOL_BOOKMARK, css);
 			}
 			boolean canDownload = repositoryEntry.getCanDownload() && handler.supportsDownload(repositoryEntry);
 			// disable download for courses if not author or owner
@@ -469,10 +472,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			detailsToolC.setEnabled(TOOL_DOWNLOAD, canDownload && !corrupted);
 			detailsToolC.setEnabled(TOOL_DOWNLOAD_BACKWARD_COMPAT, canDownload && !corrupted
 					&& "CourseModule".equals(repositoryEntry.getOlatResource().getResourceableTypeName()));
-			boolean canBookmark = true;
-			if (BookmarkManager.getInstance().isResourceableBookmarked(ureq.getIdentity(), repositoryEntry) || !repositoryEntry.getCanLaunch())
-				canBookmark = false;
-			detailsToolC.setEnabled(TOOL_BOOKMARK, canBookmark && !corrupted);
+			detailsToolC.setEnabled(TOOL_BOOKMARK, !corrupted);
 		}
 		//fxdiff VCRP-1 : moved some things around here to split large toolbox into smaller pieces
 		if (isNewController)
@@ -715,16 +715,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	  }
 	  return;
 	}
-	
-	private void doAddBookmark(Controller contentController) {
-		removeAsListenerAndDispose(closeableModalController);		
-		closeableModalController = new CloseableModalController(getWindowControl(), translate("close"),
-				contentController.getInitialComponent());
-		listenTo(closeableModalController);
-		
-		closeableModalController.activate();
-		return;
-	}
 
 	/**
 	 * Also used by RepositoryMainController
@@ -905,13 +895,15 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				doCloseDetailView(ureq);
 				return;
 			} else if (cmd.equals(ACTION_BOOKMARK)) {
-				removeAsListenerAndDispose(bookmarkController);
-				bookmarkController = new AddAndEditBookmarkController(ureq, getWindowControl(), repositoryEntry.getDisplayname(), "",
-						repositoryEntry, repositoryEntry.getOlatResource().getResourceableTypeName());
-				listenTo(bookmarkController);
-				
-				doAddBookmark(bookmarkController);
-				return;
+				boolean marked = markManager.isMarked(repositoryEntry, getIdentity(), null);
+				if(marked) {
+					markManager.deleteMark(repositoryEntry, null);
+				} else {
+					String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+					markManager.setMark(repositoryEntry, getIdentity(), null, businessPath);
+				}
+				String css = marked ? "b_mark_not_set" : "b_mark_set";
+				detailsToolC.setCssClass(TOOL_BOOKMARK, css);
 			} else if (cmd.equals(ACTION_COPY)) { // copy
 				if (!isAuthor) throw new OLATSecurityException("Trying to copy, but user is not author: user = " + ureq.getIdentity());
 				doCopy(ureq);
@@ -950,13 +942,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				detailsToolC = null; // force recreation of tool controller
 				updateView(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-		} else if (source == bookmarkController) {
-			closeableModalController.deactivate();
-			if (event.equals(Event.DONE_EVENT)) { // bookmark added... remove tool
-				if (detailsToolC != null) {
-					detailsToolC.setEnabled(TOOL_BOOKMARK, false);
-				}
 			}
 		} else if (source == copyController) {				
 			RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry).releaseLock(lockResult);		

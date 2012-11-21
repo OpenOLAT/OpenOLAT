@@ -22,6 +22,7 @@ package org.olat.course.assessment;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.resource.OLATResource;
 
 /**
  * Some statistical datas about a user visiting a course
@@ -42,5 +43,7 @@ public interface UserCourseInformations {
 	public long getTimeSpend();
 	
 	public Identity getIdentity();
+	
+	public OLATResource getResource();
 
 }

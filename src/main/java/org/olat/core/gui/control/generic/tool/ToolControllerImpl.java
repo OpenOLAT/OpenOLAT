@@ -171,6 +171,18 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 		// add as child of container so it can be rendered
 		content.put(internalCompName, component); 
 		entries.add(new ToolEntry(ident, internalCompName, component));
+	}	
+
+	@Override
+	public void setCssClass(String ident, String cssClass) {
+		int pos = getToolEntryPosition(ident);
+		if(pos >= 0 && pos < entries.size()) {
+			ToolEntry entry = entries.get(pos);
+			if(entry != null) {
+				entry.setCssClass(cssClass);
+				content.setDirty(true);
+			}
+		}
 	}
 
 	/**

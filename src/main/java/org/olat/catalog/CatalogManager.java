@@ -34,7 +34,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.bookmark.BookmarkManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -320,8 +319,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	private void deleteCatalogSubtree(CatalogEntry ce, List secGroupsToBeDeleted) {
 		DB db = DBFactory.getInstance();
 
-		List children = getChildrenOf(ce);
-		Iterator iter = children.iterator();
+		List<CatalogEntry> children = getChildrenOf(ce);
+		Iterator<CatalogEntry> iter = children.iterator();
 		while (iter.hasNext()) {
 			CatalogEntry nextCe = (CatalogEntry) iter.next();
 			deleteCatalogSubtree(nextCe,secGroupsToBeDeleted);
@@ -332,7 +331,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		if (owner != null) secGroupsToBeDeleted.add(owner);
 		// delete user bookmarks
 		OLATResourceable ores = createOLATResouceableFor(ce);
-		BookmarkManager.getInstance().deleteAllBookmarksFor(ores);
+		//TODO bookmark BookmarkManager.getInstance().deleteAllBookmarksFor(ores);
 		// delete catalog entry itself
 		db.deleteObject(ce);
 	}

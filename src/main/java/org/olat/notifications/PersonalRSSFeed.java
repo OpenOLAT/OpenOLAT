@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.bookmark.Bookmark;
-import org.olat.bookmark.BookmarkManager;
 import org.olat.commons.rss.RSSUtil;
 import org.olat.commons.servlets.RSSServlet;
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
@@ -76,7 +74,7 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(PersonalRSSFeed.class, locale);
 		NotificationsManager man = NotificationsManager.getInstance();
-		List<Bookmark> bookmarks = BookmarkManager.getInstance().findBookmarksByIdentity(identity);
+		//TODO bookmark List<Bookmark> bookmarks = BookmarkManager.getInstance().findBookmarksByIdentity(identity);
 
 		setTitle(translator.translate("rss.title", new String[] { identity.getName() }));
 		setLink(RSSUtil.URI_SERVER);
@@ -99,7 +97,8 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 		entry.setDescription(description);
 		entries.add(entry);
 
-		// bookmark news
+		//TODO bookmark  bookmark news
+		/*
 		for (Bookmark bookmark : bookmarks) {
 			SyndEntry item = new SyndEntryImpl();
 			item.setTitle(translator.translate("rss.bookmark.title", new String[] { bookmark.getTitle() }));
@@ -111,7 +110,7 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 			itemDescription.setValue(bookmark.getDescription());
 			item.setDescription(itemDescription);
 			entries.add(item);
-		}
+		}*/
 
 		// notification news
 		// we are only interested in subscribers which listen to a valid publisher

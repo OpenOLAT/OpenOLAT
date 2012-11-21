@@ -84,26 +84,7 @@
 				<value>org.olat.home.HomeMainController</value>		
 			</list>
 		</property>
-	</bean> 
-	
-	<!--  bookmarks -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="104" />
-		<property name="enabled" value="${minimalhome.ext.bookmarks}"></property>
-		<property name="navigationKey" value="bookmarks" />
-		<property name="actionController">
-			<bean class="org.olat.home.controllerCreators.ManageBookmarkControllerCreator" scope="prototype"/>
-		</property>
-		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
-		<property name="translationPackage" value="org.olat.home" />
-		<property name="i18nActionKey" value="menu.bookmarks"/>
-		<property name="i18nDescriptionKey" value="menu.bookmarks.alt"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.home.HomeMainController</value>		
-			</list>
-		</property>
-	</bean>	
+	</bean>
 	
 	<!--  the users personal folder -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
@@ -162,6 +143,26 @@
 		<property name="translationPackage" value="org.olat.home" />
 		<property name="i18nActionKey" value="menu.efficiencyStatements"/>
 		<property name="i18nDescriptionKey" value="menu.efficiencyStatements.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	<!--  the other users aka Usersearch -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="109" />
+		<property name="enabled" value="true"/>
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.home.CourseMainController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="translationPackage" value="org.olat.home" />
+		<property name="i18nActionKey" value="menu.course"/>
+		<property name="i18nDescriptionKey" value="menu.course.alt"/>
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.home.HomeMainController</value>		

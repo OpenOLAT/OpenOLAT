@@ -173,6 +173,10 @@ public class ToolEntry {
 	public String getCssClass() {
 		return cssClass;
 	}
+	
+	public void setCssClass(String cssClass) {
+		this.cssClass = cssClass;
+	}
 
 	/**
 	 * @return The element CSS class used for Selenium tests.

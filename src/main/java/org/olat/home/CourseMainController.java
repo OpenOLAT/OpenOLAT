@@ -17,34 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.manager;
+package org.olat.home;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import org.olat.core.id.Identity;
-import org.olat.course.assessment.UserCourseInformations;
-import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.repository.ui.AbstractRepositoryEntryListController;
 
 /**
  * 
+ * Initial date: 19.11.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface UserCourseInformationsManager {
-	
-	public UserCourseInformations getUserCourseInformations(Long courseResourceId, Identity identity);
+public class CourseMainController extends AbstractRepositoryEntryListController {
 
-	public List<UserCourseInformations> getUserCourseInformations(Identity identity, List<OLATResource> resources);
+	private SearchRepositoryEntryParameters searchParams;
 	
-	
-	public UserCourseInformations updateUserCourseInformations(Long courseResId, Identity identity);
-	
-	public Date getInitialLaunchDate(Long courseResourceId, Identity identity);
-	
-	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId, List<Identity> identities);
-	
-	public int deleteUserCourseInformations(RepositoryEntry entry);
-
+	public CourseMainController(UserRequest ureq, WindowControl wContorl) {
+		super(ureq, wContorl);
+		
+		searchParams = new SearchRepositoryEntryParameters(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+		searchParams.setOnlyExplicitMember(true);
+		
+		updateModel(searchParams, false);
+	}
 }

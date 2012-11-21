@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 
 /**
  * 
@@ -36,33 +35,29 @@ import org.olat.core.manager.BasicManager;
  * Initial Date:  9 mars 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public abstract class MarkManager extends BasicManager {
+public interface MarkManager {
 	
-	protected static MarkManager INSTANCE;
-
-	public static MarkManager getInstance() {
-		return INSTANCE;
-	}
-
-	public abstract List<Mark> getMarks(OLATResourceable ores, Identity identity, Collection<String> subPaths);
+	public List<Mark> getMarks(OLATResourceable ores, Identity identity, Collection<String> subPaths);
 	
-	public abstract List<Mark> getMarks(Identity identity, String resourceTypeName, Collection<String> subPaths);
+	public List<Mark> getMarks(Identity identity, String resourceTypeName, Collection<String> subPaths);
 	
-	public abstract void filterMarks(Identity identity, String resourceTypeName, Collection<Long> resIds);
+	public List<Mark> getMarks(Identity identity, Collection<String> resourceTypeNames);
 	
-	public abstract boolean isMarked(OLATResourceable ores, Identity identity, String subPath);
+	public void filterMarks(Identity identity, String resourceTypeName, Collection<Long> resIds);
 	
-	public abstract Mark setMark(OLATResourceable ores, Identity identity, String subPath, String businessPath);
+	public boolean isMarked(OLATResourceable ores, Identity identity, String subPath);
 	
-	public abstract void moveMarks(OLATResourceable ores, String oldSubPath, String newSubPath);
+	public Mark setMark(OLATResourceable ores, Identity identity, String subPath, String businessPath);
 	
-	public abstract void removeMark(OLATResourceable ores, Identity identity, String subPath);
+	public void moveMarks(OLATResourceable ores, String oldSubPath, String newSubPath);
 	
-	public abstract void removeMark(Mark mark);
+	public void removeMark(OLATResourceable ores, Identity identity, String subPath);
 	
-	public abstract void deleteMark(OLATResourceable ores);
+	public void removeMark(Mark mark);
 	
-	public abstract void deleteMark(OLATResourceable ores, String subPath);
+	public void deleteMark(OLATResourceable ores);
 	
-	public abstract List<MarkResourceStat> getStats(OLATResourceable ores, List<String> subPaths, Identity identity);
+	public void deleteMark(OLATResourceable ores, String subPath);
+	
+	public List<MarkResourceStat> getStats(OLATResourceable ores, List<String> subPaths, Identity identity);
 }

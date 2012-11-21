@@ -370,6 +370,13 @@ div.b_progress div.b_progress_label {}
 	
 	
 /* MARK */
+.b_mark_set {
+	background-image: url('../openolat/images/flag.png') ! important;
+}
+.b_mark_not_set {
+	background-image: url('../openolat/images/flag.png') ! important;
+	@include o-opacity(40);
+}
 div.b_mark { 
 	width:20px; height:20px; 
 	/* form within mark : no padding , no margin */
