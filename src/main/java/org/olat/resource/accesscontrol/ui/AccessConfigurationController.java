@@ -122,6 +122,7 @@ public class AccessConfigurationController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		createLink = uifactory.addFormLink("add.accesscontrol", formLayout, Link.BUTTON);
+		createLink.setElementCssClass("o_sel_accesscontrol_create");
 		
 		String confPage = velocity_root + "/configuration_list.html";
 		confControllerContainer = FormLayoutContainer.createCustomFormLayout("conf-controllers", getTranslator(), confPage);

@@ -89,9 +89,9 @@ div.b_ajax_busy {
 	height: 32px; 
 	width: 32px; 
 	background-repeat: no-repeat;
-	background-image:  url(images/ajax-loader.svg);
+	background-image:  url(../openolat/images/ajax-loader.svg);
 }	
-/* fallback for browsers with no SVG support (uses modernizr for detection)
+/* fallback for browsers with no SVG support (uses modernizr for detection) */
 html.no-svg div.b_ajax_busy { 
 	background-image: url(../openolat/images/ajax-loader.gif);
 }

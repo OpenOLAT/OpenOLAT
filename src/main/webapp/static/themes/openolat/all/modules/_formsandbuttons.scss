@@ -177,6 +177,12 @@ div.o_login {
 		fieldset legend {
 			display: none;
 		}
+				
+		/* fix pwd length isues on IE by explicitly define width */
+		input {
+			width: 15em;
+			padding: 2px 3px 2px 3px;
+		}
 	}
 }
 

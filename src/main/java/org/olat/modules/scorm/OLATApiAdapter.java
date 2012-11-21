@@ -110,7 +110,8 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 	 * @param studentName - the students name
 	 * @param isVerbose prints out what is going on inside the scorm RTE
 	 */
-	public	final void init (File cpRoot, String repoId, String courseId, String storagePath, String studentId, String studentName, String lesson_mode, String credit_mode, int controllerHashCode) {
+	public	final void init (File cpRoot, String repoId, String courseId, String storagePath, String studentId, String studentName, String lesson_mode, String credit_mode, int controllerHashCode)
+	throws IOException {
 		this.olatStudentId   = studentId;
 		this.olatStudentName = studentName;
 		say ("cmi.core.student_id=" +olatStudentId);
@@ -127,7 +128,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 				is = new BufferedInputStream(new FileInputStream(scorePropsFile));
 				scoresProp.load(is);
 			} catch (IOException e) {
-				throw new OLATRuntimeException(this.getClass(), "could not load existing scorm-score-properties file: "+scorePropsFile.getAbsolutePath(),e);
+				throw e;
 			}
 			finally {
 				if (is != null) FileUtils.closeSafely(is);

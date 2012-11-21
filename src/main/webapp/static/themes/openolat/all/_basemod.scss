@@ -249,6 +249,7 @@ but had to include here, don't want to change all layout.scss **/
 	padding:0;
 	margin:0;
 	position: relative;
+	min-height: 60px;
 
 	.b_floatbox {
 	
@@ -317,7 +318,7 @@ but had to include here, don't want to change all layout.scss **/
 	}
 	
 	.fx_footer #b_footer_version {
-		> a { display:block; min-height: 45px; height: 4em; background: transparent url('../../images/frentix/frentix_logo_grey.png') no-repeat left bottom ; }
+		> a { display:block; min-height: 45px; background: transparent url('../../images/frentix/frentix_logo_grey.png') no-repeat left bottom ; }
 		> a:hover { background-image: url('../../images/frentix/frentix_logo.png'); }
 	}	
 	
@@ -517,7 +518,6 @@ div.o_catalog {
 		display: none; //hide title
 	 }
 	div.o_catalog_nav {
-		font-size: 95%;
 		padding: 1px 0 2px 22px;
 		border-bottom: 1px solid #EEE;
 		background: url(../openolat/images/folder_open.png) 2px 50% no-repeat;
@@ -536,7 +536,7 @@ div.o_catalog {
 		a { display: block; }	    
 	}      
 	
-	div.o_catalog_desc { margin: 0.5em 0 0.5em 0; padding-left: 20px; font-size: 95%; font-style: italic;}
+	div.o_catalog_desc { margin: 0.5em 0 0.5em 0; padding-left: 20px; font-style: italic;}
 	
 }/* end div.o_catalog */
 

@@ -37,11 +37,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
@@ -143,6 +143,11 @@ public class CreateNewCourseController extends BasicController implements IAddCo
 		String displayName = re.getDisplayname();
 		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(displayName, 25)); //do not use truncate!
 		course.getRunStructure().getRootNode().setLongTitle(displayName);
+		
+		//enable efficiency statement per default
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		courseConfig.setEfficencyStatementIsEnabled(true);
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		
 		CourseNode rootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode()).getCourseNode();
 		rootNode.setShortTitle(Formatter.truncateOnly(displayName, 25)); //do not use truncate!
