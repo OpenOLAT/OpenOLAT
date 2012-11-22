@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -49,6 +51,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.user.UserDataDeletable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -78,6 +81,11 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * Resource identifyer for catalog entries
 	 */
 	public static final String CATALOGENTRY = "CatalogEntry";
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * [spring]
@@ -113,22 +121,52 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	}
 
 	public List<CatalogEntry> getChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
-		StringBuilder query = new StringBuilder();
-		query.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
-		     .append(" where cei.parent.key=:parentKey");
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
+		  .append(" left join fetch cei.repositoryEntry as repositoryEntry")
+		  .append(" left join fetch repositoryEntry.ownerGroup as repoOwnerGroup")
+		  .append(" left join fetch repositoryEntry.tutorGroup as repoTutorGroup")
+		  .append(" left join fetch repositoryEntry.participantGroup as repoParticipantGroup")
+		  .append(" where cei.parent.key=:parentKey");
 		if(orderBy != null) {
-			query.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
+			sb.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
 		}
 
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
-		dbQuery.setLong("parentKey", ce.getKey());
-		dbQuery.setFirstResult(0);
+		TypedQuery<CatalogEntry> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogEntry.class)
+				.setParameter("parentKey", ce.getKey())
+				.setFirstResult(0);
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
 		}
-		// cache this query
-		dbQuery.setCacheable(true);
-		List<CatalogEntry> entries = dbQuery.list();
+
+		List<CatalogEntry> entries = dbQuery.getResultList();
+		return entries;
+	}
+	
+	public List<CatalogEntryShort> getShortChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
+		  .append(" left join fetch cei.repositoryEntry as repositoryEntry")
+		  .append(" left join fetch repositoryEntry.ownerGroup as repoOwnerGroup")
+		  .append(" left join fetch repositoryEntry.tutorGroup as repoTutorGroup")
+		  .append(" left join fetch repositoryEntry.participantGroup as repoParticipantGroup")
+		  .append(" where cei.parent.key=:parentKey");
+		if(orderBy != null) {
+			sb.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
+		}
+
+		TypedQuery<CatalogEntryShort> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogEntryShort.class)
+				.setParameter("parentKey", ce.getKey())
+				.setFirstResult(0);
+		if(maxResults > 0) {
+			dbQuery.setMaxResults(maxResults);
+		}
+
+		List<CatalogEntryShort> entries = dbQuery.getResultList();
 		return entries;
 	}
 
@@ -239,15 +277,13 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * 
 	 * @param ce
 	 */
-	public void updateCatalogEntry(CatalogEntry ce) {
+	public CatalogEntry updateCatalogEntry(CatalogEntry ce) {
 		DBFactory.getInstance().updateObject(ce);
+		return ce;
 	}
 
 	public List entriesWithOwnerFrom(Identity owner,CatalogEntry ce) {
 		List retVal = new ArrayList();
-		/*
-		 * 
-		 */
 		findEntriesOf(owner, ce, retVal);
 		return retVal;
 	}
@@ -386,6 +422,23 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		return dbQuery.list();
 		
 	}
+	
+	public CatalogEntry getCatalogEntryByKey(Long key) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
+		  .append(" left join fetch cei.repositoryEntry as entry")
+		  .append(" where cei.key=:key");
+
+		List<CatalogEntry> entries = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogEntry.class)
+				.setParameter("key", key)
+				.getResultList();
+		
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
 
 	/**
 	 * Find catalog entries for certain identity
@@ -393,7 +446,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param binderName
 	 * @return List of catalog entries
 	 */
-	public List getCatalogEntriesOwnedBy(Identity identity) {
+	public List<CatalogEntry> getCatalogEntriesOwnedBy(Identity identity) {
 		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei inner join fetch cei.ownerGroup, " + 
 			" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" +
 			" where " +
@@ -404,6 +457,29 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		dbQuery.setCacheable(true);
 		return dbQuery.list();
 		
+	}
+	
+	public List<Identity> getOwnersOfParentLine(CatalogEntry entry) {
+		List<CatalogEntry> parentLine = getCategoryParentLine(entry);
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		for(CatalogEntry parent:parentLine) {
+			if(parent.getOwnerGroup() != null) {
+				secGroups.add(parent.getOwnerGroup());
+			}
+		}
+		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+	}
+	
+	public List<CatalogEntry> getCategoryParentLine(CatalogEntry entry) {
+		List<CatalogEntry> parentLine = new ArrayList<CatalogEntry>();
+		parentLine.add(entry);
+		
+		CatalogEntry current = entry;
+		while(current.getParent() != null) {
+			parentLine.add(current.getParent());
+			current = current.getParent();
+		}
+		return parentLine;
 	}
 
 	/**

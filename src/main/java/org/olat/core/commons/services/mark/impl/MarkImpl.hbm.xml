@@ -18,6 +18,11 @@
 		<property name="resSubPath" column="ressubpath" type="string"  length="2048" index="mark_subpath_idx"  not-null="false"/>
 		<property name="businessPath" column="businesspath" type="string" length="2048" index="mark_businesspath_idx"  not-null="false"/>
 		
-		<many-to-one name="creator" class="org.olat.basesecurity.IdentityImpl" column="creator_id" outer-join="true" cascade="none" not-null="true"/>
+		<many-to-one name="creator"
+			class="org.olat.basesecurity.IdentityImpl"
+			column="creator_id"
+			outer-join="true"
+			cascade="none"
+			not-null="true"/>
   </class>
 </hibernate-mapping>

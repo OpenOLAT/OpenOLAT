@@ -1,0 +1,43 @@
+<div class="o_buttons_box_right">
+
+	#if($r.available("tools.add.catalog.category"))
+		$r.render("tools.add.catalog.category")
+	#end
+	#if($r.available("tools.edit.catalog.category"))
+		$r.render("tools.edit.catalog.category")
+	#end
+	#if($r.available("tools.delete.catalog.entry"))
+		$r.render("tools.delete.catalog.entry")
+	#end
+	#if($r.available("tools.add.catalog.link"))
+		$r.render("tools.add.catalog.link")
+	#end
+	#if($r.available("tools.edit.catalog.category.ownergroup"))
+		$r.render("tools.edit.catalog.category.ownergroup")
+	#end
+	
+	#if($r.available("contact.to.groupname.caretaker"))
+		$r.render("contact.to.groupname.caretaker")
+	#end
+</div>
+<br/>
+<br/>
+<div class="o_catalog">
+	<fieldset>
+		<legend>$catalogEntryName</legend>
+		#if($catalogEntryDesc)
+			<i>$catalogEntryDesc</i>
+		#end
+		#if($subCategories.size != 0)
+			<div class="o_catalog_itemlist">
+				<ul>
+				#foreach($subCategory in $subCategories)
+					<li>$r.render($subCategory.componentName)</li>
+				#end
+				</ul>
+			</div>
+		#end
+		</fieldset>
+</div>
+
+$r.render("entries")

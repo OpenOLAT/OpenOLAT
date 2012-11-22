@@ -1,6 +1,5 @@
 <div class="b_clearfix">
 	$r.render("allcourses")
-	
 </div>
 
 <div class="f_library_catalog_wide">
@@ -8,12 +7,6 @@
 #set ($index=0)
 #foreach ( $item in $items )
 	<div class="f_item  #if($item.selected) f_item_selected #end">
-		<!-- 
-		<div class="f_item_links b_clearfix">
-			<a class="b_with_small_icon_left  $item.getCssClass()" href="$item.getBusinessPath()">$item.displayName</a>
-			<a class="f_permalink b_link_extern" href="$item.getBusinessPath()">&nbsp;</a>
-		</div>
-		-->
 		<div class="f_metadata b_clearfix">
 			#if($thumbnails)
 				<div class="f_thumbnail">
@@ -26,58 +19,44 @@
 			#end
 				<div class="f_metadata_text">
 					<div class="f_metadata_text_inner">
-					<h4>$r.render($item.getSelectLinkName())</h4>
-					#if($item.author)
-						$item.author<br/>
-					#end
+						<h4>$r.render($item.getSelectLinkName())</h4>
+						#if($item.author)
+							$item.author<br/>
+						#end
+						<p>$item.description</p>
 						
-						<table>
-							
-							<tr>
-								<th>Visit</th>
-								<td>$item.visit</td>
-							</tr>
-							<tr>
-								<th>Time spend</th>
-								<td>$item.timeSpend</td>
-							</tr>
-							
-							<tr>
-								<th>Passed</th>
-								<td>
-									#if($item.passed)
-										$r.translate("passed.true")
-									#elseif($item.failed)
-										$r.translate("passed.false")
-									#end
-								</td>
-							</tr>
-							<tr>
-								<th>Score</th>
-								<td>#if($item.score) $item.score #end</td>
-							</tr>
-							#if($item.progress)
-							<tr>
-								<th>Progress</th>
-								<td>
-									<div class='o_eff_statement_progress' ext:qtip=''>
-										<div class='o_eff_statement_solved' style='width:${item.progress.greenPerCent}%;'/>&#160;</div>
-									</div>
-								</td>
-							</tr>
+						<p>
+							#if($item.buttonNames)
+								#foreach($buttonName in $item.buttonNames)
+									$r.render($buttonName)
+								#end
 							#end
-						</table>	
-
+						</p>
 					</div>
 				</div>
 				<div class="f_metadata_additional_infos">
 					<div class="f_metadata_additional_infos_inner">
-						#if($item.initialLaunch)
-							Initial launch date:<br/>
-							$r.formatDateAndTime($item.initialLaunch)<br/>
+						$r.render($item.markLinkName)<br/>
+						
+						#if($r.get("ac_$item.key"))
+							#foreach($ac_type in $r.get("ac_$item.key"))
+								#if($ac_type.price && $ac_type.price.length() > 0)
+									<span class='b_float_right b_with_small_icon_left $ac_type.type'>$ac_type.price</span>
+								#else
+									<span class='b_float_right b_small_icon $ac_type.type'></span>
+								#end
+							#end
+							$r.render($item.getSelectLinkName())
 						#end
+
+						#if($item.passed)
+							$r.translate("passed.true")
+						#elseif($item.failed)
+							$r.translate("passed.false")
+						#end
+						#if($item.score) <span>/ $item.score</span> #end
+
 						#if($item.recentLaunch)
-							Recent launch date:<br/>
 							$r.formatDateAndTime($item.recentLaunch)
 						#end
 					</div>

@@ -71,6 +71,32 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 			ctrl.dispose();
 		}
 	}
+	
+	
+
+	@Override
+	public void popController(Controller controller) {
+		popController(controller.getInitialComponent());
+	}
+	
+	private Controller popController(Component source) {
+		int index = stack.indexOf(source);
+		if(index < (stack.size() - 1)) {
+			
+			Controller popedCtrl = null;
+			for(int i=stack.size(); i-->(index+1); ) {
+				Link link = stack.remove(i);
+				popedCtrl = (Controller)link.getUserObject();
+				popedCtrl.dispose();
+			}
+
+			Link currentLink = stack.get(index);
+			Controller currentCtrl  = (Controller)currentLink.getUserObject();
+			setContent(currentCtrl);
+			return popedCtrl;
+		}
+		return null;
+	}
 
 	@Override
 	public void popUpToRootController(UserRequest ureq) {
@@ -110,19 +136,8 @@ public class StackedControllerImpl extends DefaultController implements StackedC
 		}
 		
 		if(stack.contains(source)) {
-			int index = stack.indexOf(source);
-			if(index < (stack.size() - 1)) {
-				
-				Controller popedCtrl = null;
-				for(int i=stack.size(); i-->(index+1); ) {
-					Link link = stack.remove(i);
-					popedCtrl = (Controller)link.getUserObject();
-					popedCtrl.dispose();
-				}
-
-				Link currentLink = stack.get(index);
-				Controller currentCtrl  = (Controller)currentLink.getUserObject();
-				setContent(currentCtrl); 
+			Controller popedCtrl = popController(source);
+			if(popedCtrl != null) {
 				fireEvent(ureq, new PopEvent(popedCtrl));
 			}
 		}

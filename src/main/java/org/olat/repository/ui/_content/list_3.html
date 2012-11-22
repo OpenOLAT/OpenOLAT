@@ -19,22 +19,18 @@ $r.render("allcourses")
 			<div class="f_metadata_text">
 				<div class="f_metadata_text_inner">
 					<h4>$r.render($item.getSelectLinkName())</h4>
-					#if($item.author)
-						$item.author<br/>
-					#end
+
 					#if($item.passed)
 						$r.translate("passed.true")
 					#elseif($item.failed)
 						$r.translate("passed.false")
 					#end
-					
-					#if($item.progress)
-						<div class='o_eff_statement_progress' ext:qtip=''>
-							<div class='o_eff_statement_solved' style='width:${item.progress.greenPerCent}%;'/>&#160;</div>
-						</div>
+					#if($item.score)
+						<span>/ $item.score</span>
 					#end
+					
+					$r.render($item.markLinkName)
 				</div>
-				
 			</div>
 		</div>
 	</div>

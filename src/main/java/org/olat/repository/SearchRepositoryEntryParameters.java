@@ -41,6 +41,7 @@ public class SearchRepositoryEntryParameters {
 	private List<String> resourceTypes;
 	private Identity identity;
 	private Roles roles;
+	private Boolean marked;
 	private String institution;
 	private boolean onlyExplicitMember;
 	private List<Long> repositoryEntryKeys;
@@ -132,6 +133,14 @@ public class SearchRepositoryEntryParameters {
 	
 	public void setRoles(Roles roles) {
 		this.roles = roles;
+	}
+	
+	public Boolean getMarked() {
+		return marked;
+	}
+
+	public void setMarked(Boolean marked) {
+		this.marked = marked;
 	}
 	
 	public String getInstitution() {

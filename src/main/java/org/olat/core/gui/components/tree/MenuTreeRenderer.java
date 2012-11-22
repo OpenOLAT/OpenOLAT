@@ -119,7 +119,8 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		target.append("\n</div>");
 	}
 
-	private void renderLevel(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, TreeNode markedNode, MenuTree tree) {	
+	private void renderLevel(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds,
+			URLBuilder ubu, AJAXFlags flags, TreeNode markedNode, MenuTree tree) {	
 		//TODO make performant
 		INode curSel = null;
 		if (level < selPath.size()) {
@@ -167,7 +168,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		}
 		// expand icon
 		// add ajax support and real open/close function
-		if (level != 0 && chdCnt > 0) { // root has not open/close icon,  append open / close icon only if there is children
+		if (((tree.isRootVisible() && level != 0) || !tree.isRootVisible()) && chdCnt > 0) { // root has not open/close icon,  append open / close icon only if there is children
 			target.append("<a onclick=\"try {return o2cl()} catch(e){return false}\" href=\"");
 			
 			// Build menu item URI

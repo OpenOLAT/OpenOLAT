@@ -52,8 +52,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -144,7 +142,7 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  * Date: 2005/10/14 12:35:40 <br>
  * @author Felix Jost
  */
-public class CatalogController extends BasicController implements Activateable2, StackedControllerAware {
+public class CopyOfCatalogController extends BasicController implements Activateable2 {
 
 	// catalog actions
 	
@@ -244,14 +242,9 @@ public class CatalogController extends BasicController implements Activateable2,
 	 * @param wControl
 	 * @param rootce
 	 */
-	public CatalogController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
-	}
-	
-	public CatalogController(UserRequest ureq, WindowControl wControl, CatalogEntry parentNode) {
+	public CopyOfCatalogController(UserRequest ureq, WindowControl wControl) {
 		// fallback translator to repository package to reduce redundant translations
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
-		
 		
 		cm = CatalogManager.getInstance();
 		acService = CoreSpringFactory.getImpl(ACService.class);
@@ -288,13 +281,6 @@ public class CatalogController extends BasicController implements Activateable2,
 	
 		putInitialPanel(myContent);
 	}
-
-	@Override
-	public void setStackedController(StackedController stackPanel) {
-		//
-	}
-
-
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
@@ -445,7 +431,7 @@ public class CatalogController extends BasicController implements Activateable2,
 			 * add new subcategory to the currentCategory
 			 */
 			if (event.getCommand().equals(ACTION_ADD_CTLGCATEGORY)) {
-				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
+				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CopyOfCatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
 				if ( ! catModificationLock.isSuccess()) {
 					showError("catalog.locked.by", catModificationLock.getOwner().getName());
 					return;
@@ -487,7 +473,7 @@ public class CatalogController extends BasicController implements Activateable2,
 			 * edit the currentCategory
 			 */
 			else if (event.getCommand().equals(ACTION_EDIT_CTLGCATEGORY)) {
-				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
+				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CopyOfCatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
 				if ( ! catModificationLock.isSuccess()) {
 					showError("catalog.locked.by", catModificationLock.getOwner().getName());
 					return;
@@ -536,7 +522,7 @@ public class CatalogController extends BasicController implements Activateable2,
 			 * delete category (subtree)
 			 */
 			else if (event.getCommand().equals(ACTION_DELETE_CTLGCATEGORY)) {
-				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
+				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CopyOfCatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
 				if ( ! catModificationLock.isSuccess()) {
 					showError("catalog.locked.by", catModificationLock.getOwner().getName());
 					return;
@@ -615,7 +601,7 @@ public class CatalogController extends BasicController implements Activateable2,
 				// when an edit or move operation on the resource is done 
 				linkMarkedToBeEdited = null; 
 				//
-				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
+				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CopyOfCatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
 				if ( ! catModificationLock.isSuccess()) {
 					showError("catalog.locked.by", catModificationLock.getOwner().getName());
 					return;

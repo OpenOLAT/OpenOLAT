@@ -36,6 +36,8 @@ import org.olat.core.id.OLATResourceable;
  */
 public class MarkImpl extends PersistentObject implements Mark {
 
+	private static final long serialVersionUID = 9010184053104344959L;
+	
 	private String resName;
 	private Long resId;
 	private String resSubPath;

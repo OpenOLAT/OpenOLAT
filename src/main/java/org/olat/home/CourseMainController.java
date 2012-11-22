@@ -19,8 +19,13 @@
  */
 package org.olat.home;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Roles;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.ui.AbstractRepositoryEntryListController;
 
@@ -32,14 +37,38 @@ import org.olat.repository.ui.AbstractRepositoryEntryListController;
  */
 public class CourseMainController extends AbstractRepositoryEntryListController {
 
-	private SearchRepositoryEntryParameters searchParams;
+	private final int CONDENSED_MAX_SIZE = 9;
+	
+	private final Roles roles;
 	
 	public CourseMainController(UserRequest ureq, WindowControl wContorl) {
-		super(ureq, wContorl);
-		
-		searchParams = new SearchRepositoryEntryParameters(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
-		searchParams.setOnlyExplicitMember(true);
-		
-		updateModel(searchParams, false);
+		super(ureq, wContorl, true);
+		roles = ureq.getUserSession().getRoles();
+		loadModel();
+	}
+
+	@Override
+	protected void loadModel() {
+		List<RepositoryEntry> repoEntries;
+		if(isWideFormat()) {
+			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), roles, "CourseModule");
+			params.setOnlyExplicitMember(true);
+			repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
+		} else {
+			repoEntries = new ArrayList<RepositoryEntry>(getMarkedCourses());
+			if(repoEntries.size() < CONDENSED_MAX_SIZE) {
+				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), roles, "CourseModule");
+				params.setOnlyExplicitMember(true);
+				int maxResults = CONDENSED_MAX_SIZE - repoEntries.size();
+				repoEntries.addAll(repositoryManager.genericANDQueryWithRolesRestriction(params, 0, maxResults, true));
+			}
+		}
+		processModel(repoEntries);
+	}
+	
+	private List<RepositoryEntry> getMarkedCourses() {
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), roles, "CourseModule");
+		params.setMarked(Boolean.TRUE);
+		return repositoryManager.genericANDQueryWithRolesRestriction(params, 0, 9, true);
 	}
 }

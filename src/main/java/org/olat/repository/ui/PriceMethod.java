@@ -17,24 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.stack;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
+package org.olat.repository.ui;
 
 /**
  * 
+ * Initial date: 22.11.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface StackedController extends Controller {
+public class PriceMethod {
+	private String price;
+	private String type;
 	
-	/**
-	 * Dissmiss all controllers but the root
-	 */
-	public void popUpToRootController(UserRequest ureq);
+	public PriceMethod(String price, String type) {
+		this.price = price;
+		this.type = type;
+	}
 	
-	public void pushController(String displayName, Controller controller);
+	public String getPrice() {
+		return price;
+	}
 	
-	public void popController(Controller controller);
-
+	public String getType() {
+		return type;
+	}
 }

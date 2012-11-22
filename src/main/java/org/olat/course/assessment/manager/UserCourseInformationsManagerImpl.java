@@ -19,18 +19,16 @@
  */
 package org.olat.course.assessment.manager;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
-import org.hibernate.FlushMode;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
@@ -76,11 +74,12 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 				.append(" inner join infos.resource as resource")
 			  .append(" where infos.identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("identityKey", identity.getKey());
-			query.setLong("resId", courseResourceId);
-			@SuppressWarnings("unchecked")
-			List<UserCourseInfosImpl> infoList = query.list();
+			List<UserCourseInfosImpl> infoList = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserCourseInfosImpl.class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("resId", courseResourceId)
+					.getResultList();
+
 			if(infoList.isEmpty()) {
 				return null;
 			}
@@ -157,12 +156,12 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			  .append(" inner join infos.resource as resource")
 			  .append(" where infos.identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
+			List<Date> infoList = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Date.class)
+					.setParameter("identityKey", identityKey)
+					.setParameter("resId", courseResourceId)
+					.getResultList();
 
-			query.setLong("identityKey", identityKey);
-			query.setLong("resId", courseResourceId);
-			@SuppressWarnings("unchecked")
-			List<Date> infoList = query.list();
 			if(infoList.isEmpty()) {
 				return null;
 			}
@@ -190,15 +189,14 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			  .append(" inner join infos.resource as resource")
 			  .append(" where infos.identity.key in (:identityKeys) and resource.resId=:resId and resource.resName='CourseModule'");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			List<Long> identityKeys = new ArrayList<Long>();
-			for(Identity identity:identities) {
-				identityKeys.add(identity.getKey());
-			}
-			query.setParameterList("identityKeys", identityKeys);
-			query.setLong("resId", courseResourceId);
-			@SuppressWarnings("unchecked")
-			List<Object[]> infoList = query.list();
+			List<Long> identityKeys = PersistenceHelper.toKeys(identities);
+			
+			List<Object[]> infoList = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Object[].class)
+					.setParameter("identityKeys", identityKeys)
+					.setParameter("resId", courseResourceId)
+					.getResultList();
+
 			Map<Long,Date> dateMap = new HashMap<Long,Date>();
 			for(Object[] infos:infoList) {
 				Long identityKey = (Long)infos[0];
@@ -219,9 +217,12 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			sb.append("delete from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" where resource.key=:resourceKey");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("resourceKey", entry.getOlatResource().getKey());
-			return query.executeUpdate(FlushMode.AUTO);
+			int count = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString())
+					.setParameter("resourceKey", entry.getOlatResource().getKey())
+					.setFlushMode(FlushModeType.AUTO)
+					.executeUpdate();
+			return count;
 		} catch (Exception e) {
 			logError("Cannot Delete course informations for: " + entry, e);
 			return -1;

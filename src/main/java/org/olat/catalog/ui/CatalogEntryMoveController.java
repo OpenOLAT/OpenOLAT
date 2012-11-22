@@ -51,7 +51,7 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author BPS
  */
-public class CatalogEntryMoveController extends BasicController {
+public class CatalogEntryMoveController extends BasicController implements CatalogMoveController {
 	private SelectionTree selectionTree;
 	private VelocityContainer mainVC;
 	private final CatalogEntry moveMe;
@@ -81,6 +81,11 @@ public class CatalogEntryMoveController extends BasicController {
 
 		putInitialPanel(mainVC);
 
+	}
+
+	@Override
+	public CatalogEntry getMovedCatalogEntry() {
+		return moveMe;
 	}
 
 	@Override

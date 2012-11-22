@@ -307,6 +307,34 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 
 		return gtm;
 	}
+	
+	
+
+	@Override
+	public void popController(Controller controller) {
+		popController(controller.getInitialComponent());
+	}
+	
+	private void popController(Component source) {
+		int index = stack.indexOf(source);
+		if(index < (stack.size() - 1)) {
+			Controller popedCtrl = null;
+			for(int i=stack.size(); i-->(index+1); ) {
+				Link link = stack.remove(i);
+				popedCtrl = (Controller)link.getUserObject();
+				popedCtrl.dispose();
+			}
+
+			Link currentLink = stack.get(index);
+			Controller currentCtrl  = (Controller)currentLink.getUserObject();
+			if(currentCtrl == this) {
+				content.setContent(contentCtr.getInitialComponent());
+			} else {
+				content.setContent(currentCtrl.getInitialComponent());
+			}
+			stackVC.setDirty(true);
+		}
+	}
 
 	@Override
 	public void popUpToRootController(UserRequest ureq) {
@@ -348,24 +376,7 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 			}
 		}
 		if(stack.contains(source)) {
-			int index = stack.indexOf(source);
-			if(index < (stack.size() - 1)) {
-				Controller popedCtrl = null;
-				for(int i=stack.size(); i-->(index+1); ) {
-					Link link = stack.remove(i);
-					popedCtrl = (Controller)link.getUserObject();
-					popedCtrl.dispose();
-				}
-
-				Link currentLink = stack.get(index);
-				Controller currentCtrl  = (Controller)currentLink.getUserObject();
-				if(currentCtrl == this) {
-					content.setContent(contentCtr.getInitialComponent());
-				} else {
-					content.setContent(currentCtrl.getInitialComponent());
-				}
-				stackVC.setDirty(true);
-			}
+			popController(source);
 		} else if (source == olatMenuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				// process menu commands

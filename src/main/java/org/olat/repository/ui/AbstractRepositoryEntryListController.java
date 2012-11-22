@@ -43,8 +43,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.UserCourseInformations;
@@ -52,12 +54,14 @@ import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.coach.manager.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.modules.coach.ui.ProgressValue;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.model.OLATResourceAccess;
+import org.olat.resource.accesscontrol.model.PriceMethodBundle;
+import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
 
 /**
@@ -65,7 +69,7 @@ import org.olat.user.UserManager;
  * Initial date: 20.11.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class AbstractRepositoryEntryListController extends BasicController {
+public abstract class AbstractRepositoryEntryListController extends BasicController {
 	
 	private final Panel mainPanel;
 	private final VelocityContainer wideVC;
@@ -73,21 +77,22 @@ public class AbstractRepositoryEntryListController extends BasicController {
 	
 	private Link allCoursesLink;
 	
-	private final MarkManager markManager;
-	private final UserManager userManager;
-	private final CoachingService coachService;
-	private final BaseSecurityManager securityManager;
-	private final RepositoryManager repositoryManager;
-	private final UserCourseInformationsManager courseInfoManager;
-	
-	private SearchRepositoryEntryParameters currentParams;
+	protected final ACService acService;
+	protected final MarkManager markManager;
+	protected final UserManager userManager;
+	protected final CoachingService coachService;
+	protected final BaseSecurityManager securityManager;
+	protected final RepositoryManager repositoryManager;
+	protected final UserCourseInformationsManager courseInfoManager;
 	
 	private Map<Long,String> namesCache = new HashMap<Long,String>();
 
-	public AbstractRepositoryEntryListController(UserRequest ureq, WindowControl wControl) {
+	public AbstractRepositoryEntryListController(UserRequest ureq, WindowControl wControl,
+			boolean showAllCourses) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		
+		acService = CoreSpringFactory.getImpl(ACService.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		coachService = CoreSpringFactory.getImpl(CoachingService.class);
@@ -106,9 +111,10 @@ public class AbstractRepositoryEntryListController extends BasicController {
 		condensedVC.contextPut("mapperURL", mapperThumbnailUrl);
 		
 		allCoursesLink = LinkFactory.createButton("allcourses", wideVC, this);
+		allCoursesLink.setVisible(showAllCourses);
 		condensedVC.put("allcourses", allCoursesLink);
 
-		mainPanel = putInitialPanel(condensedVC);
+		mainPanel = putInitialPanel(showAllCourses ? condensedVC : wideVC);
 	}
 	
 	@Override
@@ -125,29 +131,41 @@ public class AbstractRepositoryEntryListController extends BasicController {
 			if("select".equals(link.getCommand())) {
 				String businessPath = "[RepositoryEntry:" + link.getUserObject() + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} else if("mark".equals(link.getCommand())) {
+				Long repoEntryKey = (Long)link.getUserObject();
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", repoEntryKey);
+				boolean marked = markManager.isMarked(ores, getIdentity(), null);
+				if(marked) {
+					markManager.deleteMark(ores, null);
+				} else {
+					String businessPath = "[RepositoryEntry:" + repoEntryKey + "]";
+					markManager.setMark(ores, getIdentity(), null, businessPath);
+				}
+				String css = marked ? "b_mark_not_set" : "b_mark_set";
+				link.setCustomEnabledLinkCSS(css);
 			}
 		}
 	}
-	
-	protected void doSwitch() {
-		boolean wide = mainPanel.getContent() == wideVC;
-		if(wide) {
-			updateModel(currentParams, false);
-			mainPanel.setContent(condensedVC);
-		} else {
-			updateModel(currentParams, true);
-			mainPanel.setContent(wideVC);
-		}
+	protected boolean isWideFormat() {
+		return mainPanel.getContent() == wideVC;
 	}
 	
-	protected void updateModel(SearchRepositoryEntryParameters params, boolean wide) {
-		currentParams = params;
+	protected void doSwitch() {
+		if(isWideFormat()) {
+			mainPanel.setContent(condensedVC);
+		} else {
+			mainPanel.setContent(wideVC);
+		}
+		loadModel();
+	}
+	
+	protected abstract void loadModel();
+	
+	protected void addAdditionalLinks(RepositoryEntryDetails entry, VelocityContainer vc) {
 		
-		int max = wide ? -1 : 9;
-		List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, max, true);
-		//List<OLATResourceAccess> withOffers = acService.filterRepositoryEntriesWithAC(repoEntries);
-		//System.out.println("Offers: " + withOffers.size());
-		
+	}
+	
+	protected void processModel(List<RepositoryEntry> repoEntries) {
 		List<OLATResource> resources = new ArrayList<OLATResource>(repoEntries.size());
 		List<SecurityGroup> authorsSecGroup = new ArrayList<SecurityGroup>(repoEntries.size());
 		for(RepositoryEntry entry:repoEntries) {
@@ -179,21 +197,31 @@ public class AbstractRepositoryEntryListController extends BasicController {
 			repoEntryKeys.add(mark.getOLATResourceable().getResourceableId());
 		}
 		
+		List<OLATResourceAccess> resourcesWithOffer = acService.filterRepositoryEntriesWithAC(repoEntries);
 		List<EfficiencyStatementEntry> statements = coachService.getEfficencyStatements(getIdentity(), repoEntries);
-		
-		VelocityContainer mainVC = wide ? wideVC : condensedVC;
 
+		VelocityContainer mainVC = (VelocityContainer)mainPanel.getContent();
+		
 		List<RepositoryEntryDetails> items = new ArrayList<RepositoryEntryDetails>();
 		for(RepositoryEntry entry:repoEntries) {
 			RepositoryEntryDetails details = new RepositoryEntryDetails();
 			details.setKey(entry.getKey());
 			details.setDisplayName(entry.getDisplayname());
+			details.setDescription(entry.getDescription());
 			
 			String cmpId = "sel_" + entry.getKey();
 			Link link = LinkFactory.createCustomLink(cmpId, "select", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 			link.setCustomDisplayText(details.getDisplayName());
 			link.setUserObject(entry.getKey());
 			details.setSelectLinkName(cmpId);
+			
+			String markId = "mark_" + entry.getKey();
+			Link markLink = LinkFactory.createCustomLink(markId, "mark", markId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
+			markLink.setCustomDisplayText("&#160;&#160;&#160;&#160;");
+			markLink.setUserObject(entry.getKey());
+			String css = repoEntryKeys.contains(entry.getKey()) ? "b_mark_set" : "b_mark_not_set";
+			markLink.setCustomEnabledLinkCSS(css);
+			details.setMarkLinkName(markId);
 			
 			VFSLeaf image = repositoryManager.getImage(entry);
 			if(image != null) {
@@ -229,16 +257,44 @@ public class AbstractRepositoryEntryListController extends BasicController {
 			for(EfficiencyStatementEntry statement:statements) {
 				if(statement.getUserEfficencyStatement() != null && statement.getCourse().equals(entry)) {
 					UserEfficiencyStatement userStatement = statement.getUserEfficencyStatement();
-					details.setProgress(getProgress(userStatement));
+
 					details.setPassed(userStatement.getPassed());
 					details.setScore(AssessmentHelper.getRoundedScore(userStatement.getScore()));
 				}
 			}
 			
+			List<PriceMethod> types = new ArrayList<PriceMethod>();
+			if (entry.isMembersOnly()) {
+				// members only always show lock icon
+				types.add(new PriceMethod("", "b_access_membersonly_icon"));
+			} else {
+				// collect access control method icons
+				OLATResource resource = entry.getOlatResource();
+				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
+					if(resource.getKey().equals(resourceAccess.getResource().getKey())) {
+						for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
+							String type = bundle.getMethod().getMethodCssClass() + "_icon";
+							String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
+							types.add(new PriceMethod(price, type));
+						}
+					}
+				}
+			}
+			
+			String acName = "ac_" + entry.getKey();
+			if(!types.isEmpty()) {
+				mainVC.contextPut(acName, types);
+			} else {
+				mainVC.contextRemove(acName);
+			}
+			
+			addAdditionalLinks(details, mainVC);
+			
 			items.add(details);
 		}
 		
-		if(wide) {
+		//if wide
+		if(isWideFormat()) {
 			wideVC.contextPut("items", items);
 			condensedVC.contextPut("items", Collections.emptyList());
 		} else {
@@ -246,23 +302,4 @@ public class AbstractRepositoryEntryListController extends BasicController {
 			condensedVC.contextPut("items", items);
 		}
 	}
-	
-	private ProgressValue getProgress(UserEfficiencyStatement s) {
-		if(s == null || s.getTotalNodes() == null) {
-			ProgressValue val = new ProgressValue();
-			val.setTotal(100);
-			val.setGreen(0);
-			return val;
-		}
-		
-		ProgressValue val = new ProgressValue();
-		val.setTotal(s.getTotalNodes().intValue());
-		val.setGreen(s.getAttemptedNodes() == null ? 0 : s.getAttemptedNodes().intValue());
-		return val;
-	}
-
-
-	
-	
-
 }

@@ -28,9 +28,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import org.hibernate.FlushMode;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.mark.MarkResourceStat;
@@ -52,10 +50,6 @@ public class MarkManagerImpl implements MarkManager {
 	
 	@Autowired
 	private DB dbInstance;
-	
-
-	
-	
 
 	@Override
 	public List<Mark> getMarks(OLATResourceable ores, Identity identity, Collection<String> subPath) {
@@ -66,15 +60,15 @@ public class MarkManagerImpl implements MarkManager {
 			sb.append(" and mark.resSubPath in (:resSubPaths)");
 		}
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("resName", ores.getResourceableTypeName());
-		query.setLong("resId", ores.getResourceableId());
-		query.setEntity("creator", identity);
+		TypedQuery<Mark> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Mark.class);
+		query.setParameter("resName", ores.getResourceableTypeName());
+		query.setParameter("resId", ores.getResourceableId());
+		query.setParameter("creator", identity);
 		if(!subPath.isEmpty()) {
-			query.setParameterList("resSubPaths", subPath);
+			query.setParameter("resSubPaths", subPath);
 		}
 		
-		List<Mark> results = query.list();
+		List<Mark> results = query.getResultList();
 		return results;
 	}
 
@@ -104,7 +98,7 @@ public class MarkManagerImpl implements MarkManager {
 		sb.append("select mark from ").append(MarkImpl.class.getName()).append(" mark where ")
 			.append("mark.creator=:creator ");
 		if(resourceTypeName != null && !resourceTypeName.isEmpty()) {
-			sb.append("and mark.resName not in(:resName)");
+			sb.append("and mark.resName in(:resName)");
 		}
 
 		
@@ -167,12 +161,13 @@ public class MarkManagerImpl implements MarkManager {
 		sb.append("update ").append(MarkImpl.class.getName()).append(" mark set mark.resSubPath=:newSubPath ")
 		  .append("where mark.resId=:resId and mark.resName=:resName and mark.resSubPath=:oldSubPath");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("resName", ores.getResourceableTypeName());
-		query.setLong("resId", ores.getResourceableId());
-		query.setString("oldSubPath", oldSubPath);
-		query.setString("newSubPath", newSubPath);
-		query.executeUpdate(FlushMode.AUTO);
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId())
+				.setParameter("oldSubPath", oldSubPath)
+				.setParameter("newSubPath", newSubPath)
+				.setFlushMode(FlushModeType.AUTO)
+				.executeUpdate();
 	}
 
 	@Override
@@ -196,15 +191,16 @@ public class MarkManagerImpl implements MarkManager {
 			sb.append(" and mark.resSubPath=:resSubPath");
 		}
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("resName", ores.getResourceableTypeName());
-		query.setLong("resId", ores.getResourceableId());
-		query.setEntity("creator", identity);
+		TypedQuery<MarkImpl> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), MarkImpl.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId())
+				.setParameter("creator", identity);
 		if(resSubPath != null) {
-			query.setString("resSubPath", resSubPath);
+			query.setParameter("resSubPath", resSubPath);
 		}
 
-		List<MarkImpl> results = query.list();
+		List<MarkImpl> results = query.getResultList();
 		if(results.isEmpty()) {
 			return null;
 		}
@@ -217,10 +213,11 @@ public class MarkManagerImpl implements MarkManager {
 		sb.append("delete from ").append(MarkImpl.class.getName()).append(" mark where ")
 			.append("mark.resId=:resId and mark.resName=:resName");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("resName", ores.getResourceableTypeName());
-		query.setLong("resId", ores.getResourceableId());
-		query.executeUpdate(FlushMode.AUTO);
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId())
+				.setFlushMode(FlushModeType.AUTO)
+				.executeUpdate();
 	}
 
 	/**
@@ -237,14 +234,14 @@ public class MarkManagerImpl implements MarkManager {
 			sb.append(" and mark.resSubPath=:resSubPath");
 		}
 		
-		Query query = dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+		Query query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
 				.setParameter("resName", ores.getResourceableTypeName())
 				.setParameter("resId", ores.getResourceableId());
 		if(subPath != null) {
 			query.setParameter("resSubPath", subPath);
 		}
-		query.setFlushMode(FlushModeType.AUTO)
-			.executeUpdate();
+		query.setFlushMode(FlushModeType.AUTO).executeUpdate();
 	}
 	
 	@Override
@@ -265,15 +262,16 @@ public class MarkManagerImpl implements MarkManager {
 			}
 			sb.append(" group by mark.resSubPath");
 			
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setString("resName", ores.getResourceableTypeName());
-			query.setLong("resId", ores.getResourceableId());
-			query.setParameterList("resSubPath", subPaths);
+			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Object[].class)
+					.setParameter("resName", ores.getResourceableTypeName())
+					.setParameter("resId", ores.getResourceableId())
+					.setParameter("resSubPath", subPaths);
 			if(identity != null) {
-				query.setEntity("creator", identity);
+				query.setParameter("creator", identity);
 			}
 			
-			List<Object[]> rawStats = query.list();
+			List<Object[]> rawStats = query.getResultList();
 			List<MarkResourceStat> stats = new ArrayList<MarkResourceStat>(rawStats.size());
 			for(Object[] rawStat:rawStats) {
 				stats.add(new MarkResourceStat(ores,(String)rawStat[1],((Number)rawStat[0]).intValue()));
@@ -289,11 +287,12 @@ public class MarkManagerImpl implements MarkManager {
 			.append("mark.resId=:resId and mark.resName=:resName")
 			.append(" group by mark.resSubPath");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("resName", ores.getResourceableTypeName());
-		query.setLong("resId", ores.getResourceableId());
-
-		List<Object[]> rawStats = query.list();
+		List<Object[]> rawStats = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId())
+				.getResultList();
+		
 		List<MarkResourceStat> stats = new ArrayList<MarkResourceStat>(rawStats.size());
 		for(Object[] rawStat:rawStats) {
 			stats.add(new MarkResourceStat(ores,(String)rawStat[1],((Number)rawStat[0]).intValue()));
@@ -308,12 +307,13 @@ public class MarkManagerImpl implements MarkManager {
 			.append("mark.resId=:resId and mark.resName=:resName")
 			.append(" and mark.creator=:creator");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("resName", ores.getResourceableTypeName());
-		query.setLong("resId", ores.getResourceableId());
-		query.setEntity("creator", identity);
+		List<String> markedSubPaths = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId())
+				.setParameter("creator", identity)
+				.getResultList();
 		
-		List<String> markedSubPaths = query.list();
 		List<MarkResourceStat> stats = new ArrayList<MarkResourceStat>(markedSubPaths.size());
 		for(String markedSubPath:markedSubPaths) {
 			stats.add(new MarkResourceStat(ores,markedSubPath,1));

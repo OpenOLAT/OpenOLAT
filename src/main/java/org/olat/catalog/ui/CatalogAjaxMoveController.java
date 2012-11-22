@@ -58,7 +58,7 @@ import org.olat.core.gui.control.generic.ajax.tree.TreeNodeClickedEvent;
  * 
  * @author gnaegi
  */
-public class CatalogAjaxMoveController extends BasicController {
+public class CatalogAjaxMoveController extends BasicController implements CatalogMoveController {
 
 	private TreeController treeCtr;
 	private AjaxTreeModel treeModel;
@@ -113,7 +113,11 @@ public class CatalogAjaxMoveController extends BasicController {
 
 		putInitialPanel(contentVC);
 	}
-
+	
+	@Override
+	public CatalogEntry getMovedCatalogEntry() {
+		return toBeMovedEntry;
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
@@ -195,9 +199,9 @@ public class CatalogAjaxMoveController extends BasicController {
 	 */
 	private List<CatalogEntry> getOwnedEntries(UserRequest ureq) {
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			return (List<CatalogEntry>) CatalogManager.getInstance().getRootCatalogEntries();
+			return CatalogManager.getInstance().getRootCatalogEntries();
 		} else {
-			return (List<CatalogEntry>) CatalogManager.getInstance().getCatalogEntriesOwnedBy(ureq.getIdentity());
+			return CatalogManager.getInstance().getCatalogEntriesOwnedBy(ureq.getIdentity());
 		}
 	}
 

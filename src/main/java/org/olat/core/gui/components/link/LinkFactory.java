@@ -158,8 +158,8 @@ public class LinkFactory {
 	 * @return the link component
 	 */
 	
-	public static Link createCustomLink(String name, String cmd, String key, int presentation, VelocityContainer vc, Controller listeningController){
-		return new Link(name, cmd, key, presentation, vc, listeningController);
+	public static Link createCustomLink(String name, String cmd, String i18nKey, int presentation, VelocityContainer vc, Controller listeningController){
+		return new Link(name, cmd, i18nKey, presentation, vc, listeningController);
 	}
 	
 	/**

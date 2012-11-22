@@ -19,10 +19,12 @@
  */
 package org.olat.repository.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.modules.coach.ui.ProgressValue;
 
 /**
  * Used in the view elements
@@ -40,18 +42,21 @@ public class RepositoryEntryDetails {
 	private Long key;
 	private String name;
 	private String author;
+	private String description;
 	private String thumbnailRelPath;
 	
 	private String score;
 	private Boolean passed;
-	private ProgressValue progress;
 	
 	public int visit;
 	public long timeSpend;
 	public Date initialLaunch;
 	public Date recentLaunch;
 	
+	private String markLinkName;
 	private String selectLinkName;
+	
+	private List<String> buttonNames;
 	
 	public RepositoryEntryDetails() {
 		//
@@ -77,12 +82,46 @@ public class RepositoryEntryDetails {
 		this.name = name;
 	}
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public String getSelectLinkName() {
 		return selectLinkName;
 	}
 
 	public void setSelectLinkName(String name) {
 		selectLinkName = name;
+	}
+
+	public String getMarkLinkName() {
+		return markLinkName;
+	}
+
+	public void setMarkLinkName(String markLinkName) {
+		this.markLinkName = markLinkName;
+	}
+
+	/**
+	 * Possibly immutable
+	 * @return
+	 */
+	public List<String> getButtonNames() {
+		if(buttonNames == null) {
+			return Collections.emptyList();
+		}
+		return buttonNames;
+	}
+
+	public void addButtonName(String buttonName) {
+		if(buttonNames == null) {
+			buttonNames = new ArrayList<String>(5);
+		}
+		buttonNames.add(buttonName);
 	}
 
 	public String getBusinessPath() {
@@ -150,14 +189,6 @@ public class RepositoryEntryDetails {
 	
 	public boolean isFailed() {
 		return passed != null && !passed.booleanValue();
-	}
-
-	public ProgressValue getProgress() {
-		return progress;
-	}
-
-	public void setProgress(ProgressValue progress) {
-		this.progress = progress;
 	}
 
 	public int getVisit() {
