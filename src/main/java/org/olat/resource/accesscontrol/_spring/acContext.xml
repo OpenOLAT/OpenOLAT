@@ -10,7 +10,6 @@
                         http://www.springframework.org/schema/tx
                         http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
-	<context:annotation-config />
 	<context:component-scan base-package="org.olat.resource.accesscontrol" />
 	
 	<bean id="acModule" class="org.olat.resource.accesscontrol.AccessControlModule" depends-on="org.olat.core.util.WebappHelper">
@@ -109,6 +108,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="booking" />
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="order.menu.title"/>
 		<property name="i18nDescriptionKey" value="order.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>

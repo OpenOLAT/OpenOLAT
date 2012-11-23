@@ -207,7 +207,7 @@ public class SelectionController extends BasicController {
 			deleteMailTemplate.addToContext("durationdeleteemail", Integer.toString(UserDeletionManager.getInstance().getDeleteEmailDuration() ));
 
 			removeAsListenerAndDispose(deleteUserMailCtr);
-			deleteUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, deleteMailTemplate, true);
+			deleteUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, deleteMailTemplate, true, false);
 			listenTo(deleteUserMailCtr);
 			
 			removeAsListenerAndDispose(cmc);

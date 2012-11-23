@@ -1,0 +1,41 @@
+#if($disabled)
+ <div class="b_warning">$r.translate("openmeetings.disabled.error")</div>
+#elseif($noroom)
+ <div class="b_warning">$r.translate("room.notfound.error")</div>
+#else
+	<h4>$roomName</h4>
+	#if($roomComment)
+		<p>$roomComment</p>
+	#end
+	
+	#if($roomClosed)
+		<p>$r.translate("room.closed.explanation")</p>
+	#end
+
+	#if($r.available("open.room"))
+		$r.render("open.room")
+		$r.render("close.room")
+	#end
+
+	#if($r.available("open.recordings"))
+		$r.render("open.recordings")
+	#end
+	
+	#if($r.available("room.members"))
+		$r.render("room.members")
+	#end
+	
+	#if($r.available("edit"))
+		$r.render("edit")
+	#end
+
+	#if($r.available("start.room.guest"))
+		$r.render("start.room.guest")
+	#else
+		$r.render("start.room")
+	#end
+#end
+
+#if($r.available("openCmd"))
+	$r.render("openCmd")
+#end

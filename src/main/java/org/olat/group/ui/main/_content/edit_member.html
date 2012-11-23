@@ -1,0 +1,18 @@
+#if($r.available("infos"))
+	$r.render("infos")<br/>
+#end
+#if($r.available("repoRights"))
+	<fieldset>
+		<legend>$editTitle</legend>
+		$r.render("repoRights")
+	</fieldset>
+#end
+#if($r.available("groupList"))
+	<fieldset>
+		<legend>$r.translate("edit.member.groups")</legend>
+		$r.render("groupList")
+	</fieldset>
+#end
+#if($r.available("buttonLayout"))
+	$r.render("buttonLayout")
+#end

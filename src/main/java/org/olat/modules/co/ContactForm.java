@@ -32,6 +32,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -53,7 +54,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
-import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailModule;
 
 /**
  * highly configurable contact form. Depending on each field value the
@@ -114,7 +115,7 @@ public class ContactForm extends FormBasicController {
 		this.readOnly = readOnly;
 		this.recipientsAreEditable = hasRecipientsEditable;
 		this.hasMsgCancel = isCancellable;
-		this.contactAttachmentMaxSizeInMb = MailHelper.getMaxSizeForAttachement();
+		this.contactAttachmentMaxSizeInMb = CoreSpringFactory.getImpl(MailModule.class).getMaxSizeForAttachement();
 		initForm(ureq);
 	}
 	
@@ -125,7 +126,7 @@ public class ContactForm extends FormBasicController {
 		this.recipientsAreEditable = hasRecipientsEditable;
 		this.hasMsgCancel = isCancellable;
 		this.hasMsgSave = isSaveable;
-		this.contactAttachmentMaxSizeInMb = MailHelper.getMaxSizeForAttachement();
+		this.contactAttachmentMaxSizeInMb = CoreSpringFactory.getImpl(MailModule.class).getMaxSizeForAttachement();
 		initForm(ureq);
 	}
 		

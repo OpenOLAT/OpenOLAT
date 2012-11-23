@@ -23,7 +23,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+
+import org.olat.admin.sysinfo.ThreadView;
 
 /**
  * 
@@ -48,19 +49,21 @@ public class ThreadVO implements Comparable<ThreadVO> {
 	private String cpuUsagePercent;
 	@XmlAttribute(name="cpuTime")
 	private long cpuTime;
-	@XmlTransient
-	private long prevCpuTime = 0l;
-	@XmlTransient
-	private int warningCounter = 0;
 	
 	public ThreadVO() {
 		//make JAXB happy
 	}
 	
-	public ThreadVO(Long id, String name, Float cpuUsage) {
+	public ThreadVO(Long id, String name, float cpuUsage) {
 		this.id = id;
 		this.name = name;
 		this.cpuUsage = cpuUsage;
+	}
+	
+	public ThreadVO(ThreadView view) {
+		this(view.getId(), view.getName(), view.getCpuUsage());
+		cpuUsagePercent = view.getCpuUsagePercent();
+		cpuTime = view.getCpuTime();
 	}
 	
 	public long getId() {
@@ -101,22 +104,6 @@ public class ThreadVO implements Comparable<ThreadVO> {
 
 	public void setCpuTime(long cpuTime) {
 		this.cpuTime = cpuTime;
-	}
-
-	public long getPrevCpuTime() {
-		return prevCpuTime;
-	}
-
-	public void setPrevCpuTime(long prevCpuTime) {
-		this.prevCpuTime = prevCpuTime;
-	}
-
-	public int getWarningCounter() {
-		return warningCounter;
-	}
-
-	public void setWarningCounter(int warningCounter) {
-		this.warningCounter = warningCounter;
 	}
 
 	@Override

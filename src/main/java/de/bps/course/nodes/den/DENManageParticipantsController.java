@@ -250,7 +250,7 @@ public class DENManageParticipantsController extends BasicController {
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
+				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();
@@ -265,7 +265,7 @@ public class DENManageParticipantsController extends BasicController {
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
+				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();
@@ -305,7 +305,8 @@ public class DENManageParticipantsController extends BasicController {
 	private void createAddedNotificationMail(UserRequest ureq, String subjectStr) {
 		MailTemplate mailTempl = denManager.getAddedMailTemplate(ureq, subjectStr, getTranslator());
 		removeAsListenerAndDispose(addedNotificationCtr);
-		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false);
+		//TODO memail
+		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false);
 		listenTo(addedNotificationCtr);
 		
 		VelocityContainer sendNotificationVC = createVelocityContainer("sendnotification");
@@ -321,7 +322,7 @@ public class DENManageParticipantsController extends BasicController {
 	private void createRemovedNotificationMail(UserRequest ureq, String subjectStr) {
 		MailTemplate mailTempl = denManager.getRemovedMailTemplate(ureq, subjectStr, getTranslator());
 		removeAsListenerAndDispose(addedNotificationCtr);
-		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false);
+		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false);
 		listenTo(addedNotificationCtr);
 		
 		VelocityContainer sendNotificationVC = createVelocityContainer("sendnotification");

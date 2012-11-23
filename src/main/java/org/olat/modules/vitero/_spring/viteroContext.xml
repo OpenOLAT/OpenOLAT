@@ -8,7 +8,6 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
   
-	<context:annotation-config />
 	<context:component-scan base-package="org.olat.modules.vitero" />
 
 	<!-- Definition of the providers -->
@@ -56,7 +55,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="vitero" />
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.vitero.ui"/>

@@ -1,14 +1,8 @@
-<h4>$r.translate("sysinfo")</h4>
-<p>
-	$r.translate("sysinfo.startuptime") : $startupTime
-</p>
-<h4>$r.translate("sysinfo.memory")</h4>
-$memory
-<br><br>
-$r.render("run.gc")
-<br>
-<h4>Current Threads</h4>
-$threads
-<br>
-<h4>JAVA Environment Properties</h4>
-$javaenv
+<fieldset><legend>$r.translate("runtime")</legend>
+$r.render("runtime")
+</fieldset>
+
+<fieldset><legend>$r.translate("sysinfo")</legend>
+$r.render("server")
+</fieldset>
+

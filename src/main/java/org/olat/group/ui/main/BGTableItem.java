@@ -86,6 +86,10 @@ public class BGTableItem {
 		return businessGroup.getNumOfParticipants();
 	}
 	
+	public long getNumOfPendings() {
+		return businessGroup.getNumOfPendings();
+	}
+	
 	public long getNumOfOwners() {
 		return businessGroup.getNumOfOwners();
 	}
@@ -111,7 +115,7 @@ public class BGTableItem {
 		if(maxParticipants == null || maxParticipants.intValue() <= 0) {
 			return false;
 		}
-		if(maxParticipants.intValue() <= getNumOfParticipants()) {
+		if(maxParticipants.intValue() <= (getNumOfPendings() + getNumOfParticipants())) {
 			return true;
 		}
 		return false;
@@ -201,6 +205,7 @@ public class BGTableItem {
 		private long numWaiting;
 		private long numOfOwners;
 		private long numOfParticipants;
+		private long numOfPendings;
 		private final boolean waitingListEnabled;
 		private final boolean autoCloseRanksEnabled;
 		
@@ -219,6 +224,7 @@ public class BGTableItem {
 			numWaiting = group.getNumWaiting();
 			numOfOwners = group.getNumOfOwners();
 			numOfParticipants = group.getNumOfParticipants();
+			numOfPendings = group.getNumOfPendings();
 			waitingListEnabled = group.getWaitingListEnabled() == null ? false : group.getWaitingListEnabled().booleanValue();
 			autoCloseRanksEnabled = group.getAutoCloseRanksEnabled() == null ? false : group.getAutoCloseRanksEnabled().booleanValue();
 		}
@@ -249,6 +255,10 @@ public class BGTableItem {
 
 		public long getNumOfParticipants() {
 			return numOfParticipants;
+		}
+		
+		public long getNumOfPendings() {
+			return numOfPendings;
 		}
 		
 		public long getNumOfOwners() {
@@ -293,10 +303,12 @@ public class BGTableItem {
 			this.displayname = rel.getRepositoryEntryDisplayName();
 		}
 
+		@Override
 		public Long getKey() {
 			return key;
 		}
 
+		@Override
 		public String getDisplayname() {
 			return displayname;
 		}

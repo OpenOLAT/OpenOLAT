@@ -19,7 +19,10 @@
  */
 package org.olat.course.member.wizard;
 
+import java.util.List;
+
 import org.apache.velocity.VelocityContext;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -30,7 +33,13 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailTemplateForm;
+import org.olat.group.BusinessGroupModule;
+import org.olat.group.BusinessGroupShort;
+import org.olat.group.manager.BusinessGroupMailing;
+import org.olat.group.manager.BusinessGroupMailing.MailType;
+import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.group.ui.wizard.BGMailTemplateController;
 
 /**
  * 
@@ -38,16 +47,46 @@ import org.olat.core.util.mail.MailTemplateForm;
  */
 public class ImportMemberMailController extends StepFormBasicController {
 	
-	private final MailTemplate mailTemplate;
-	private final MailTemplateForm mailTemplateForm;
+	private MailTemplate mailTemplate;
+	private final BGMailTemplateController mailTemplateForm;
 
 	public ImportMemberMailController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "mail_template");
+
+		MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)runContext.get("permissions");
+		boolean mandatoryEmail = CoreSpringFactory.getImpl(BusinessGroupModule.class).isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		if(mandatoryEmail) {
+			boolean includeParticipantsRights = hasParticipantRightsChanges(e);
+			if(!includeParticipantsRights) {
+				mandatoryEmail = false;//only mandatory for participants
+			}
+		}
 		
-		mailTemplate = new TestMailTemplate();
-		mailTemplateForm = new MailTemplateForm(ureq, wControl, mailTemplate, rootForm);
+		boolean customizing = e.size() == 1;
+		MailType defaultType = BusinessGroupMailing.getDefaultTemplateType(e);
+		if(defaultType != null && e.getGroups().size() == 1) {
+			BusinessGroupShort group = e.getGroups().get(0);
+			mailTemplate = BusinessGroupMailing.getDefaultTemplate(defaultType, group, getIdentity());
+		} else {
+			mailTemplate = new TestMailTemplate();
+		}
+		mailTemplateForm = new BGMailTemplateController(ureq, wControl, mailTemplate, false, customizing, false, mandatoryEmail, rootForm);
 		
 		initForm (ureq);
+	}
+	
+	private boolean hasParticipantRightsChanges(MemberPermissionChangeEvent e) {
+		if(e.getRepoParticipant() != null && e.getRepoParticipant().booleanValue()) {
+			return true;
+		}
+		
+		List<BusinessGroupMembershipChange> groupChanges = e.getGroupChanges();
+		for(BusinessGroupMembershipChange change:groupChanges) {
+			if(change.getParticipant() != null && change.getParticipant().booleanValue()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override
@@ -69,7 +108,9 @@ public class ImportMemberMailController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(mailTemplateForm.sendMailSwitchEnabled()) {
-			mailTemplateForm.updateTemplateFromForm(mailTemplate);
+			if(!mailTemplateForm.isDefaultTemplate()) {
+				mailTemplateForm.updateTemplateFromForm(mailTemplate);
+			}
 			addToRunContext("mailTemplate", mailTemplate);
 		} else {
 			addToRunContext("mailTemplate", null);

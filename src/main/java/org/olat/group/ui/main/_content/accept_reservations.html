@@ -1,0 +1,50 @@
+#foreach($reservation in $reservations)
+	#set($id = $reservation.key)
+	<div>
+		<div class="o_reservation b_clearfix">
+			<span class="o_reservation_name #if($reservation.accepted) o_reservation_accepted #elseif($reservation.refused) o_reservation_refused #end">
+				${reservation.name}
+			</span>
+			<div class="o_buttons_box_right">
+				<a href="#" class="o_reservation_details_link" id="o_reservation_details_show_$id">$r.translate("show")</a>
+				<a href="#" class="o_reservation_details_link" id="o_reservation_details_hide_$id" style="display:none">$r.translate("hide")</a>
+				$r.render("accept_$id")
+				$r.render("reject_$id")
+			</div>
+			<div class="o_reservation_details" style="display: none" id="o_reservation_details_$id">
+				<div>
+					<strong>$r.translate("table.header.description")</strong>: $reservation.description
+				</div>
+				<div>
+					#if($reservation.courses)
+						<strong>$r.translate("table.header.resources")</strong>:
+						<ul>
+						#foreach($course in $reservation.courses)
+							<li class=""><span class="b_with_small_icon_left o_CourseModule_icon">$course</span></li>
+						#end
+						</ul>
+					#end
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+	/* <![CDATA[ */ 
+		Ext.onReady(function() {  
+			Ext.get('o_reservation_details_show_$id').on('click', function() { 
+				Effect.toggle('o_reservation_details_$id', 'slide', {duration: 0.3});
+				$('o_reservation_details_show_$id').hide();
+				$('o_reservation_details_hide_$id').show();
+			});
+			Ext.get('o_reservation_details_hide_$id').on('click', function() { 
+				Effect.toggle('o_reservation_details_$id', 'slide', {duration: 0.3});
+				$('o_reservation_details_hide_$id').hide();
+				$('o_reservation_details_show_$id').show();
+			});
+		});
+	/* ]]> */
+	</script>
+#end
+
+$r.render("button_layout")

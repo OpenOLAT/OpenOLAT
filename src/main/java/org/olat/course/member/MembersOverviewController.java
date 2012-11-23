@@ -46,17 +46,18 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
@@ -208,7 +209,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
@@ -226,7 +227,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry);
+		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
@@ -246,21 +247,21 @@ public class MembersOverviewController extends BasicController implements Activa
 		List<Identity> members = (List<Identity>)runContext.get("members");
 		
 		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
+		
+		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
 		//commit changes to the repository entry
+		MailerResult result = new MailerResult();
+		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), template != null);
+		
 		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
-		repositoryManager.updateRepositoryEntryMembership(getIdentity(), repoEntry, repoChanges);
+		repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
-		businessGroupService.updateMemberships(getIdentity(), allModifications);
 		
-		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
-		if (template != null && !members.isEmpty()) {
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, members, null, null, template, getIdentity());
-			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
-		}
+		MailPackage mailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
+		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
 		
 		switchToAllMembers(ureq);
 	}
@@ -280,7 +281,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_ALL_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(true, true, true, true, true, false);
+			SearchMembersParams searchParams = new SearchMembersParams(true, true, true, true, true, false, true);
 			allMemberListCtrl = new MemberListWithOriginFilterController(ureq, bwControl, repoEntry, searchParams, null);
 			listenTo(allMemberListCtrl);
 		}
@@ -296,7 +297,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_OWNERS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(true, false, false, false, false, false);
+			SearchMembersParams searchParams = new SearchMembersParams(true, false, false, false, false, false, false);
 			String infos = translate("owners.infos");
 			ownersCtrl = new MemberListController(ureq, bwControl, repoEntry, searchParams, infos);
 			listenTo(ownersCtrl);
@@ -313,7 +314,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_TUTORS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(false, true, false, true, false, false);
+			SearchMembersParams searchParams = new SearchMembersParams(false, true, false, true, false, false, false);
 			String infos = translate("tutors.infos");
 			tutorsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, repoEntry, searchParams, infos);
 			listenTo(tutorsCtrl);
@@ -330,7 +331,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_PARTICIPANTS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(false, false, true, false, true, false);
+			SearchMembersParams searchParams = new SearchMembersParams(false, false, true, false, true, false, true);
 			String infos = translate("participants.infos");
 			participantsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, repoEntry, searchParams, infos);
 			listenTo(participantsCtrl);
@@ -347,7 +348,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_WAITING_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(false, false, false, false, false, true);
+			SearchMembersParams searchParams = new SearchMembersParams(false, false, false, false, false, true, false);
 			String infos = translate("waiting.infos");
 			waitingCtrl = new MemberListController(ureq, bwControl, repoEntry, searchParams, infos);
 			listenTo(waitingCtrl);

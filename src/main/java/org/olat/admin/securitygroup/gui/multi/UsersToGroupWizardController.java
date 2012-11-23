@@ -83,6 +83,7 @@ public class UsersToGroupWizardController extends WizardController {
 	private Link backButton;
 	private MailNotificationEditController mailCtr;
 	private MailTemplate mailTemplate;
+	private final boolean mandatoryEmail;
 
 	// TODO:fj:b WizardController does not need to be a super class!
 
@@ -90,13 +91,14 @@ public class UsersToGroupWizardController extends WizardController {
 	 * assumes that the user seeing this controller has full access rights to the
 	 * group (add/remove users)
 	 */
-	public UsersToGroupWizardController(UserRequest ureq, WindowControl wControl, SecurityGroup aSecurityGroup, MailTemplate mailTemplate) {
+	public UsersToGroupWizardController(UserRequest ureq, WindowControl wControl, SecurityGroup aSecurityGroup,
+			MailTemplate mailTemplate, boolean mandatoryEmail) {
 		// wizard has two or there steps depending whether the mail template should
 		// be configured or not
 		super(ureq, wControl, (mailTemplate == null ? 2 : 3));
 		
 		setBasePackage(UsersToGroupWizardController.class);
-		
+		this.mandatoryEmail = mandatoryEmail;
 		this.securityGroup = aSecurityGroup;
 		this.securityManager = BaseSecurityManager.getInstance();
 		this.mailTemplate = mailTemplate;
@@ -130,7 +132,7 @@ public class UsersToGroupWizardController extends WizardController {
 			} else {
 				// next step is the notification mail form
 				removeAsListenerAndDispose(mailCtr);
-				mailCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTemplate, false);
+				mailCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTemplate, false, mandatoryEmail);
 				listenTo(mailCtr);
 				
 				setNextWizardStep(translate("import.title.email"), mailCtr.getInitialComponent());
@@ -260,10 +262,8 @@ class UserIdsForm extends FormBasicController {
 		
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		idata = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, true, " ", formLayout);
 		idata.setExampleKey ("form.names.example", null);
 		uifactory.addFormSubmitButton("next", formLayout);

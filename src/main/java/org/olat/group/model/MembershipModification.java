@@ -72,6 +72,10 @@ public class MembershipModification {
 				&& addToWaitingList.isEmpty() && removedIdentities.isEmpty();
 	}
 	
+	public int size() {
+		return addOwners.size() + addParticipants.size() + addToWaitingList.size() + removedIdentities.size();
+	}
+	
 	public List<Identity> getAllIdentities() {
 		List<Identity> allIdentities = new ArrayList<Identity>();
 		allIdentities.addAll(addOwners);

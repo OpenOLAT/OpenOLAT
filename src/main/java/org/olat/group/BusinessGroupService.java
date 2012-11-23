@@ -26,6 +26,8 @@ import java.util.Locale;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -194,14 +196,16 @@ public interface BusinessGroupService {
 	 * @param groupsToMerge
 	 * @return
 	 */
-	public BusinessGroup mergeBusinessGroups(Identity merger, BusinessGroup targetGroup, List<BusinessGroup> groupsToMerge);
+	public BusinessGroup mergeBusinessGroups(Identity ureqIdentity, BusinessGroup targetGroup,
+			List<BusinessGroup> groupsToMerge, MailPackage mailing);
 	
 	/**
 	 * Update the members of a list of business groups
 	 * @param membersMod
 	 * @param groups
 	 */
-	public void updateMembership(Identity identity, MembershipModification modifications, List<BusinessGroup> groups);
+	public void updateMembership(Identity identity, MembershipModification modifications,
+			List<BusinessGroup> groups, MailPackage mailing);
 	
 	/**
 	 * Very fine tuned membership changes on several groups
@@ -209,7 +213,8 @@ public interface BusinessGroupService {
 	 * @param ureqIdentity
 	 * @param changes
 	 */
-	public void updateMemberships(Identity ureqIdentity, List<BusinessGroupMembershipChange> changes);
+	public void updateMemberships(Identity ureqIdentity, List<BusinessGroupMembershipChange> changes,
+			MailPackage mailing);
 	
 	//search methods
 	/**
@@ -349,7 +354,8 @@ public interface BusinessGroupService {
 	 * @param identity
 	 * @return
 	 */
-	public EnrollState enroll(final BusinessGroup group,  final Identity identity);
+	public EnrollState enroll(Identity ureqIdentity, Roles ureqRoles, Identity identityToEnroll, BusinessGroup group,
+			MailPackage mailing);
 	
 	/**
 	 * Adds a list of users to a group as participant and does all the magic that needs to
@@ -367,9 +373,16 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup);
-
-
+	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, Roles ureqRoles, List<Identity> addIdentities,
+			BusinessGroup currBusinessGroup, MailPackage mailing);
+	
+	/**
+	 * 
+	 * @param identity
+	 * @param resource
+	 */
+	public void acceptPendingParticipation(Identity ureqIdentity, Identity identity, OLATResource resource);
+	
 	/**
 	 * Remove a list of users from a group as participant and does all the magic that needs
 	 * to be done:
@@ -385,17 +398,18 @@ public interface BusinessGroupService {
 	 * @param group
 	 * @param flags
 	 */
-	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group);
+	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, MailPackage mailing);
 	
 	/**
 	 * Remove the members (tutors and participants) from all business groups connected
-	 * to the resource.
+	 * to the resource (the resource can be a BusinessGroup) by cancelling their membership
+	 * or their reservations.
 	 * 
 	 * @param ureqIdentity
 	 * @param identities
 	 * @param group
 	 */
-	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource);
+	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource, MailPackage mailing);
 
 	
 	/**
@@ -414,7 +428,8 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse addToWaitingList(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup);
+	public BusinessGroupAddResponse addToWaitingList(Identity ureqIdentity, List<Identity> addIdentities,
+			BusinessGroup businessGroup, MailPackage mailing);
 
 	/**
 	 * Remove a list of users from a waiting-list as participant and does all the magic that needs
@@ -427,7 +442,7 @@ public interface BusinessGroupService {
 	 * @param currBusinessGroup
 	 * @param flags
 	 */
-	public void removeFromWaitingList(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup);
+	public void removeFromWaitingList(Identity ureqIdentity, List<Identity> identities, BusinessGroup businessGroup, MailPackage mailing);
 
 	/**
 	 * Move users from a waiting-list to participant-list.
@@ -437,7 +452,8 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(List<Identity> identities, Identity ureqIdentity, BusinessGroup currBusinessGroup);
+	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(Identity ureqIdentity, List<Identity> identities,
+			BusinessGroup currBusinessGroup, MailPackage mailing);
 
 	
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);

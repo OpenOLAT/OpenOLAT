@@ -45,6 +45,7 @@ public class MailModule extends AbstractOLATModule {
 	
 	private boolean internSystem;
 	private boolean receiveRealMailUserDefaultSetting;
+	private int maxSizeOfAttachments = 5;
 	
 	private WebappHelper webappHelper;
 	
@@ -151,5 +152,24 @@ public class MailModule extends AbstractOLATModule {
 	public boolean isMailHostEnabled() {
 		String mailhost = WebappHelper.getMailConfig("mailhost");
 		return (StringHelper.containsNonWhitespace(mailhost) && !mailhost.equalsIgnoreCase("disabled"));
+	}
+	
+	/**
+	 * @return the maximum size allowed for attachements in MB (default 5MB)
+	 */
+	public int getMaxSizeForAttachement() {
+		String maxSizeStr = WebappHelper.getMailConfig("mailAttachmentMaxSize");
+		if(StringHelper.containsNonWhitespace(maxSizeStr)) {
+			maxSizeOfAttachments = Integer.parseInt(maxSizeStr);
+		}
+		return maxSizeOfAttachments;
+	}
+
+	/**
+	 * @return the configured mail host. Can be null, indicating that the system
+	 *         should not send any mail at all
+	 */
+	public String getMailhost() {
+		return WebappHelper.getMailConfig("mailhost");
 	}
 }

@@ -35,8 +35,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +48,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.coordinate.cluster.jms.ClusterEventBus;
 import org.olat.commons.coordinate.cluster.jms.SimpleProbe;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBQueryImpl;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
@@ -58,6 +59,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseModule;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.repository.RepositoryEntry;
@@ -169,7 +171,8 @@ public class MRTGStatsDispatcher implements Dispatcher {
 		int httpsCount = 0;
 		int activeSessionCnt = 0;
 		if (command.equals("users")) { // get user stats of (authenticated) usersessions
-			Set<UserSession> userSessions = UserSession.getAuthenticatedUserSessions();
+			UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+			Set<UserSession> userSessions = sessionManager.getAuthenticatedUserSessions();
 			for (Iterator<UserSession> it_usess = userSessions.iterator(); it_usess.hasNext();) {
 				UserSession usess = (UserSession) it_usess.next();
 				activeSessionCnt++;
@@ -182,7 +185,8 @@ public class MRTGStatsDispatcher implements Dispatcher {
 			result.append("\n0\n");
 			result.append(instanceId);
 		} else if (command.equals("webdav")) { // get webdav stats of (authenticated) usersessions
-			Set<UserSession> userSessions = UserSession.getAuthenticatedUserSessions();
+			UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+			Set<UserSession> userSessions = sessionManager.getAuthenticatedUserSessions();
 			int webdavcount = 0;
 			int securewebdavcount = 0;
 			for (Iterator<UserSession> it_usess = userSessions.iterator(); it_usess.hasNext();) {

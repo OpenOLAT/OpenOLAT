@@ -33,6 +33,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * 
@@ -92,7 +93,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 		}else if (cmd.equalsIgnoreCase(CMD_SET_MAX_SESSIONS)) {
 			handleSetMaxSessions(request, response);
 		}else if (cmd.equalsIgnoreCase(CMD_INVALIDATE_ALL_SESSIONS)) {
-			AdminModule.invalidateAllSessions();
+			CoreSpringFactory.getImpl(UserSessionManager.class).invalidateAllSessions();
 			ServletUtil.serveStringResource(request, response, "Ok, Invalidated all sessions");
 		}else if (cmd.equalsIgnoreCase(CMD_INVALIDATE_OLDEST_SESSIONS)) {
 			handleInvidateOldestSessions(request, response);
@@ -130,7 +131,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 		} else {
 			try {
 				int sessionTimeout = Integer.parseInt(paramStr);
-				AdminModule.setSessionTimeout(sessionTimeout);
+				CoreSpringFactory.getImpl(UserSessionManager.class).setGlobalSessionTimeout(sessionTimeout);
 				ServletUtil.serveStringResource(request, response, "Ok, sessiontimeout=" + sessionTimeout);
 			} catch (NumberFormatException nbrException) {
 				ServletUtil.serveStringResource(request, response, "NOT_OK, parameter " + PARAMETER_SESSIONTIMEOUT + " must be a number");
@@ -151,7 +152,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 		} else {
 			try {
 				int nbrSessions = Integer.parseInt(nbrSessionsString);
-				AdminModule.invalidateOldestSessions(nbrSessions);
+				CoreSpringFactory.getImpl(UserSessionManager.class).invalidateOldestSessions(nbrSessions);
 				ServletUtil.serveStringResource(request, response, "Ok, Invalidated oldest sessions, nbrSessions=" + nbrSessions);
 			} catch (NumberFormatException nbrException) {
 				ServletUtil.serveStringResource(request, response, "NOT_OK, parameter " + PARAMETER_NBR_SESSIONS + " must be a number");

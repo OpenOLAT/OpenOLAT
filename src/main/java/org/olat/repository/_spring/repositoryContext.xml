@@ -6,7 +6,7 @@
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 <bean id="repositoryModule" class="org.olat.repository.RepositoryModule" depends-on="userModule">
-
+	<property name="groupModule" ref="businessGroupModule"/>
 	<property name="persistedProperties">
 	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
 	    <constructor-arg index="0" ref="coordinatorManager"/>
@@ -21,11 +21,6 @@
 </bean>
 
 		
-<bean id="repositoryManager" class="org.olat.repository.RepositoryManager">
-	<property name="userCourseInformationsManager" ref="userCourseInformationsManager"/>
-	<property name="imageHelper" ref="imageHelper"/>
-	<property name="dbInstance" ref="database"/>
-	<property name="securityManager" ref="baseSecurityManager" />
-</bean>
+<bean id="repositoryManager" class="org.olat.repository.RepositoryManager"/>
 
 </beans>

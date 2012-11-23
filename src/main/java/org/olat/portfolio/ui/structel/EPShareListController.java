@@ -322,7 +322,7 @@ public class EPShareListController extends FormBasicController {
 			String[] bodyArgs = new String[]{busLink, sender};
 			//fxdiff VCRP-16: intern mail system
 			MailContext context = new MailContextImpl(map.getOlatResource(), null, getWindowControl().getBusinessControl().getAsString()); 
-			success = mailer.sendEmail(context, clList, translate("map.share.invitation.mail.subject"), translate("map.share.invitation.mail.body", bodyArgs));
+			success = mailer.sendEmail(context, clList, translate("map.share.invitation.mail.subject"), translate("map.share.invitation.mail.body", bodyArgs), null);
 		} catch (AddressException e) {
 			logError("Error on sending invitation mail to contactlist, invalid address.", e);
 		} catch (MessagingException e) {

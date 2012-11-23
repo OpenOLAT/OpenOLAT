@@ -106,8 +106,6 @@ public class SystemTest extends OlatJerseyTestCase {
 		Assert.assertTrue(threadVo.getCpuTime() >= 0);
 		Assert.assertTrue(threadVo.getCpuUsage() >= 0.0f);
 		Assert.assertTrue(threadVo.getId() > 0l);
-		Assert.assertTrue(threadVo.getPrevCpuTime() >= 0f);
-		Assert.assertTrue(threadVo.getWarningCounter() >= 0);
 		conn.shutdown();	
 	}
 

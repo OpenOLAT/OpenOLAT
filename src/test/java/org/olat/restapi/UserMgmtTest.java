@@ -890,7 +890,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		//upload portrait
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey() + "/portrait").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
-		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		conn.addMultipart(method, "portrait.jpg", portrait);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());

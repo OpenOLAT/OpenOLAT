@@ -59,6 +59,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
@@ -74,6 +75,7 @@ import org.olat.core.util.SortedProperties;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.session.UserSessionManager;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -1273,7 +1275,7 @@ public class I18nManager extends BasicManager {
 	 * @param hreq The http servlet request
 	 */
 	public static void attachI18nInfoToThread(HttpServletRequest hreq) {
-		UserSession usess = UserSession.getUserSession(hreq);
+		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(hreq);
 		if (threadLocalLocale == null) {
 			I18nManager.getInstance().logError("can't attach i18n info to thread: threadLocalLocale is null", null);
 		} else {

@@ -556,6 +556,22 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return copyInstance;
 	}
 
+	@Override
+	public void copyConfigurationTo(CourseNode courseNode) {
+		if(courseNode instanceof GenericCourseNode) {
+			GenericCourseNode newNode = (GenericCourseNode)courseNode;
+			newNode.setDisplayOption(getDisplayOption());
+			newNode.setLearningObjectives(getLearningObjectives());
+			newNode.setLongTitle(getLongTitle());
+			newNode.setNoAccessExplanation(getNoAccessExplanation());
+			newNode.setShortTitle(getShortTitle());
+			
+			if(preConditionVisibility != null) {
+				newNode.setPreConditionVisibility(preConditionVisibility.clone());
+			}
+		}
+	}
+
 	/**
 	 * @see java.lang.Object#toString()
 	 */

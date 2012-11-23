@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -45,6 +46,7 @@ import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.auth.WebDAVAuthManager;
 
 import com.oreilly.servlet.Base64Decoder;
@@ -65,6 +67,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	private CoordinatorManager coordinatorManager;
 
 	private CacheWrapper timedSessionCache;
+	private UserSessionManager sessionManager;
 
 	/**
 	 * [spring]
@@ -72,6 +75,14 @@ public class WebDAVManagerImpl extends WebDAVManager {
 	private WebDAVManagerImpl(CoordinatorManager coordinatorManager) {
 		this.coordinatorManager = coordinatorManager;
 		INSTANCE = this;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param sessionManager
+	 */
+	public void setSessionManager(UserSessionManager sessionManager) {
+		this.sessionManager = sessionManager;
 	}
 
 	/**
@@ -163,14 +174,14 @@ public class WebDAVManagerImpl extends WebDAVManager {
 			// that neither field is blank
 			Identity identity = WebDAVAuthManager.authenticate(userID, password);
 			if (identity != null) {
-				UserSession usess = UserSession.getUserSession(request);
+				UserSession usess = sessionManager.getUserSession(request);
 				synchronized(usess) {
 					//double check to prevent severals concurrent login
 					if(usess.isAuthenticated()) {
 						return usess;
 					}
 				
-					usess.signOffAndClear();
+					sessionManager.signOffAndClear(usess);
 					usess.setIdentity(identity);
 					UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 					// set the roles (admin, author, guest)
@@ -200,14 +211,13 @@ public class WebDAVManagerImpl extends WebDAVManager {
 					// set session info for this session
 					usess.setSessionInfo(sinfo);
 					//
-					usess.signOn();
+					sessionManager.signOn(usess);
 					return usess;
 				}
 			}
 		}
 		return null;
 	}
-	
 	
 	/**
 	 * @see org.olat.core.servlets.WebDAVManager#isEnabled()

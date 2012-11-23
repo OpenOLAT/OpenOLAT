@@ -23,7 +23,9 @@ import org.olat.NewControllerFactory;
 import org.olat.catalog.CatalogEntry;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
+import org.olat.group.BusinessGroupModule;
 import org.olat.repository.site.RepositorySite;
 
 /**
@@ -36,6 +38,9 @@ import org.olat.repository.site.RepositorySite;
  * @author gnaegi
  */
 public class RepositoryModule extends AbstractOLATModule {
+	
+	private BusinessGroupModule groupModule;
+	
 	/**
 	 * @see org.olat.core.configuration.AbstractOLATModule#init()
 	 */
@@ -51,6 +56,14 @@ public class RepositoryModule extends AbstractOLATModule {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositorySite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(RepositorySite.class));
 		
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param groupModule
+	 */
+	public void setGroupModule(BusinessGroupModule groupModule) {
+		this.groupModule = groupModule;
 	}
 
 	/**
@@ -72,6 +85,14 @@ public class RepositoryModule extends AbstractOLATModule {
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
+	}
+	
+	public boolean isAcceptMembership(Roles roles) {
+		return groupModule.isAcceptMembership(roles);
+	}
+	
+	public boolean isMandatoryEnrolmentEmail(Roles roles) {
+		return groupModule.isMandatoryEnrolmentEmail(roles);
 	}
 
 }

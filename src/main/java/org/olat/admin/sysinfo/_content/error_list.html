@@ -1,0 +1,21 @@
+<table border="0" cellspacing="0">
+	#set($count = 0)
+	#foreach ($errormsg in $errormsgs)
+		#if(($count==1)||($count==4))
+		<tr>
+		#else
+			<tr bgcolor="#eeeeee">
+		#end
+
+		#if($count==4)
+			#set($count = 0)
+			<td><hr size="1"></td>
+		</tr>
+<tr bgcolor="#eeeeee"><td>$errormsg</td>
+#else
+	<td>$errormsg</td>
+#end
+</tr>
+#set($count = $count + 1)
+#end
+</table>	

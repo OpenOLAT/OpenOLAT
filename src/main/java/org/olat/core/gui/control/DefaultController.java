@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -48,9 +49,9 @@ import org.olat.core.logging.activity.IUserActivityLogger;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.core.util.RunnableWithException;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * Description: <br>
@@ -111,6 +112,14 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 			this.newWControl = new LocalWindowControl(wControl,this);
 		}
 		
+	}
+	
+	public Locale getLocale() {
+		return locale;
+	}
+	
+	public void setLocale(Locale locale) {
+		this.locale = locale;
 	}
 	
 	/**
@@ -319,7 +328,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 			// throw this in the unlikely odd still
 			throw new IllegalStateException("no logger set");
 		}
-		logger.frameworkSetSession(UserSession.getUserSessionIfAlreadySet(req.getHttpReq()));
+		logger.frameworkSetSession(CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(req.getHttpReq()));
 	}
 	
 	/**

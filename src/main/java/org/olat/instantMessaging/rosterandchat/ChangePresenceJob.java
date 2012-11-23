@@ -25,16 +25,17 @@
 */
 package org.olat.instantMessaging.rosterandchat;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
 import org.jivesoftware.smack.packet.Presence;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.scheduler.JobWithDB;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.instantMessaging.ClientManager;
 import org.olat.instantMessaging.InstantMessagingClient;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -65,8 +66,8 @@ public class ChangePresenceJob extends JobWithDB  {
 	   	try{	
 		Long timeNow = System.currentTimeMillis();
 
-		List<UserSession> authUserSessions = new ArrayList<UserSession>(UserSession.getAuthenticatedUserSessions());
-
+		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		Collection<UserSession> authUserSessions = sessionManager.getAuthenticatedUserSessions();
 		for (Iterator<UserSession> iter = authUserSessions.iterator(); iter.hasNext();) {
 			UserSession session = iter.next();
 			long lastAccessTime = 0;
@@ -184,9 +185,6 @@ public class ChangePresenceJob extends JobWithDB  {
 		// Initialize static value only once because setInitialAutoLogOutCutTime is called at each ChangePresenceJob-run
 		if (!initializedAutoLogOutCutTime) {
 			autoLogOutCutTime = initialAutoLogOutCutTime;
-			// init GlobalSessionTimeout used by tomcat for session-timeout
-			int sessionTimeoutSeconds = Math.round((ChangePresenceJob.getAutoLogOutCutTimeValue() / 1000));
-			UserSession.setGlobalSessionTimeout(sessionTimeoutSeconds);
 			initializedAutoLogOutCutTime = true;
 		}
 	}

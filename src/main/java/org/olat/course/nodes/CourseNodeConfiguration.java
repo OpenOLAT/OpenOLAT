@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.configuration.ConfigOnOff;
@@ -47,5 +48,7 @@ public interface CourseNodeConfiguration extends ConfigOnOff{
 	public String getLinkCSSClass();
 	
 	public int getOrder();
+	
+	public List<String> getAlternativeCourseNodes();
 
 }

@@ -39,6 +39,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Encoder;
@@ -73,6 +74,14 @@ public class JunitTestHelper {
 		if (maildomain == null) {
 			maildomain = "mytrashmail.com";
 		}
+	}
+	
+	public static Roles getAdminRoles() {
+		return new Roles(true, true, true, true, false, false, false);
+	}
+	
+	public static Roles getUserRoles() {
+		return new Roles(false, false, false, false, false, false, false);
 	}
 	
 	public static final OLATResource createRandomResource() {

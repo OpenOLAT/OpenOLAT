@@ -29,6 +29,7 @@ import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.BusinessGroupAccess;
@@ -112,15 +113,54 @@ public interface ACService {
 	
 	public void removeReservation(ResourceReservation reservation);
 	
+	/**
+	 * Get the reservation form an identity on a resource
+	 * @param identity
+	 * @param resource
+	 * @return
+	 */
 	public ResourceReservation getReservation(Identity identity, OLATResource resource);
 	
+	/**
+	 * Get the reservations pending a list of resources.
+	 * @param resources
+	 * @return
+	 */
+	public List<ResourceReservation> getReservations(List<OLATResource> resources);
+	
+	/**
+	 * The list of pending reservations
+	 * @param identity
+	 * @return
+	 */
+	public List<ResourceReservation> getReservations(Identity identity);
+	
+	/**
+	 * Reserve a resource
+	 * @param identity
+	 * @param offer
+	 * @return
+	 */
 	public boolean reserveAccessToResource(Identity identity, OfferAccess offer);
+	
+	/**
+	 * A user must sometimes explicitly accept a reservation.
+	 * @param identity
+	 * @param reservation
+	 */
+	public void acceptReservationToResource(Identity identity, ResourceReservation reservation);
 	
 	public int countReservations(OLATResource resource);
 	
 	public void cleanupReservations();
 	
-	
+	/**
+	 * 
+	 * @param resources
+	 * @return
+	 */
+	public List<ACResourceInfo> getResourceInfos(List<OLATResource> resources);
+
 	public String resolveDisplayName(OLATResource resource);
 	
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable);

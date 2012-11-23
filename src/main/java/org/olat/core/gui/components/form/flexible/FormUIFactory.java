@@ -47,7 +47,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorText;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleLabelText;
@@ -1090,7 +1089,7 @@ public class FormUIFactory {
 	 * @param wControl
 	 * @return
 	 */
-	public FormCancel addFormCancelButton(String name, FormLayoutContainer formLayoutContainer, UserRequest ureq, WindowControl wControl) {
+	public FormCancel addFormCancelButton(String name, FormItemContainer formLayoutContainer, UserRequest ureq, WindowControl wControl) {
 		FormCancel cancel = new FormCancel(name, formLayoutContainer, ureq, wControl);
 		formLayoutContainer.add(cancel);
 		return cancel;

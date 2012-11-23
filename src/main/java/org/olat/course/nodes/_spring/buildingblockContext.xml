@@ -8,7 +8,6 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<context:annotation-config />
 	<context:component-scan base-package="org.olat.course.nodes.en" />
 	  
 	<!-- Course node spring config: Course Nodes are searched on the whole classpath, just place your CourceNodeConfiguration somewhere

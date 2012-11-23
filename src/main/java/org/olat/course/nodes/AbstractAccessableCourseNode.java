@@ -29,10 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -126,6 +123,17 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		CourseNode copyInstance = super.createInstanceForCopy();
 		setPreConditionAccess(null);
 		return copyInstance;
+	}
+
+	@Override
+	public void copyConfigurationTo(CourseNode courseNode) {
+		super.copyConfigurationTo(courseNode);
+		if(courseNode instanceof AbstractAccessableCourseNode) {
+			AbstractAccessableCourseNode accessableNode = (AbstractAccessableCourseNode)courseNode;
+			if(preConditionAccess != null) {
+				accessableNode.setPreConditionAccess(preConditionAccess.clone());
+			}
+		}
 	}
 
 	/**

@@ -36,8 +36,8 @@ public class BGUserMailTemplate extends MailTemplate {
 	private final MembershipModification modifications;
 	
 	public BGUserMailTemplate(List<BusinessGroup> groups, MembershipModification modifications, 
-			String subject, String body) {
-		super(subject, body, null);
+			MailTemplate template) {
+		super(template == null ? "" : template.getSubjectTemplate(), template == null ? "" : template.getBodyTemplate(), null);
 		this.groups = groups;
 		this.modifications = modifications;
 	}

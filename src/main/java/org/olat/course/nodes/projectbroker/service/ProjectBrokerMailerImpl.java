@@ -185,7 +185,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		enrolledIdentityList.add(enrolledIdentity);
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, enrolledIdentityList, null, null, enrolledMailTemplate, null);
+		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, enrolledIdentityList, null, enrolledMailTemplate, null);
 		log.audit("ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getName() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
 		return mailerResult;
 	}
@@ -201,7 +201,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		}
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, projectManagerList, null, null, enrolledMailTemplate, null);
+		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, projectManagerList, null, enrolledMailTemplate, null);
 		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
 		return mailerResult;
 	}
@@ -217,7 +217,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		}
 		//fxdiff VCRP-16: intern mail system
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, projectManagerList, null, null, enrolledMailTemplate, null);
+		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, projectManagerList, null, enrolledMailTemplate, null);
 		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
 		return mailerResult;
 	}

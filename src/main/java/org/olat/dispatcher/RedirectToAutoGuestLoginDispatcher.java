@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -35,9 +36,11 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * Description:<br>
@@ -53,12 +56,14 @@ import org.olat.core.util.i18n.I18nManager;
  * @author Lars Eberle (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class RedirectToAutoGuestLoginDispatcher implements Dispatcher {
+	
+	private static final OLog log = Tracing.createLoggerFor(RedirectToAutoGuestLoginDispatcher.class);
 		
 	/**
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
 	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
-		UserSession usess = UserSession.getUserSession(request);
+		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for 
@@ -70,8 +75,8 @@ public class RedirectToAutoGuestLoginDispatcher implements Dispatcher {
 			//or authors copy-pasted links to the content.
 			//showing redscreens for non valid URL is wrong instead
 			//a 404 message must be shown -> e.g. robots correct their links.
-			if(Tracing.isDebugEnabled(RedirectToAutoGuestLoginDispatcher.class)){
-				Tracing.logDebug("Bad Request "+request.getPathInfo(), this.getClass());
+			if(log.isDebug()){
+				log.debug("Bad Request "+request.getPathInfo());
 			}
 			DispatcherAction.sendBadRequest(request.getPathInfo(), response);
 			return;

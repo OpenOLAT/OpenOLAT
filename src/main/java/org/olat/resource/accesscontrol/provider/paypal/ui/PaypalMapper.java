@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
@@ -33,6 +34,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 
 /**
@@ -59,7 +61,7 @@ public class PaypalMapper implements Mapper {
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		List<ContextEntry> entries = null;
-		UserSession usess = UserSession.getUserSession(request);
+		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		try {
 			entries = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
 			if(relPath.indexOf(';') > 0) {

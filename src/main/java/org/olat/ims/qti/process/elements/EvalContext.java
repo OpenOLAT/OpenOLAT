@@ -29,24 +29,23 @@ package org.olat.ims.qti.process.elements;
  * @author Felix Jost
  */
 public class EvalContext {
-	private boolean hasBeenTrue = false;
-	
+	private boolean hasBeenFalse = false;
 	
 	
 	/**
-	 * Returns the hasBeenTrue.
+	 * Returns the hasBeenFalse.
 	 * @return boolean
 	 */
-	public boolean isHasBeenTrue() {
-		return hasBeenTrue;
+	public boolean isHasBeenFalse() {
+		return hasBeenFalse;
 	}
 
 	/**
-	 * Sets the hasBeenTrue.
-	 * @param hasBeenTrue The hasBeenTrue to set
+	 * Sets the hasBeenFalse.
+	 * @param hasBeenTrue The hasBeenFalse to set
 	 */
-	public void setHasBeenTrue(boolean hasBeenTrue) {
-		this.hasBeenTrue= hasBeenTrue;
+	public void setHasBeenFalse(boolean hasBeenFalse) {
+		this.hasBeenFalse= hasBeenFalse;
 	}
 
 }

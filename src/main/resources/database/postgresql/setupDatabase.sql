@@ -802,6 +802,8 @@ create table o_ac_reservation (
    creationdate timestamp,
    lastmodified timestamp,
    version int4 not null,
+   expirationdate timestamp,
+   reservationtype varchar(32),
    fk_identity int8 not null,
    fk_resource int8 not null,
    primary key (reservation_id)
@@ -1163,6 +1165,7 @@ create or replace view o_gp_business_v  as (
       gp.waitinglist_enabled as waitinglist_enabled,
       gp.autocloseranks_enabled as autocloseranks_enabled,
       (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
+      (select count(pending.reservation_id) from o_ac_reservation as pending where pending.fk_resource = gp.fk_resource) as num_of_pendings,
       (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
       (case when gp.waitinglist_enabled = true
          then 
@@ -1173,8 +1176,8 @@ create or replace view o_gp_business_v  as (
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = gp.fk_resource
          and offer.is_valid=true
-         and (offer.validfrom is null or offer.validfrom >= current_timestamp)
-         and (offer.validto is null or offer.validto <= current_timestamp)
+         and (offer.validfrom is null or offer.validfrom <= current_timestamp)
+         and (offer.validto is null or offer.validto >= current_timestamp)
       ) as num_of_valid_offers,
       (select count(offer.offer_id) from o_ac_offer as offer 
          where offer.fk_resource_id = gp.fk_resource
@@ -1446,6 +1449,10 @@ alter table o_as_eff_statement add constraint eff_statement_id_cstr foreign key 
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
 alter table o_as_user_course_infos add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_user_course_infos add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
+
+alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
+
 
 
 insert into hibernate_unique_key values ( 0 );

@@ -938,6 +938,8 @@ create table  if not exists o_ac_reservation (
    creationdate datetime,
    lastmodified datetime,
    version mediumint unsigned not null,
+   expirationdate datetime,
+   reservationtype varchar(32),
    fk_identity bigint not null,
    fk_resource bigint not null,
    primary key (reservation_id)
@@ -1167,6 +1169,7 @@ create or replace view o_gp_business_v  as (
       gp.waitinglist_enabled as waitinglist_enabled,
       gp.autocloseranks_enabled as autocloseranks_enabled,
       (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
+      (select count(pending.reservation_id) from o_ac_reservation as pending where pending.fk_resource = gp.fk_resource) as num_of_pendings,
       (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
       (case when gp.waitinglist_enabled = 1
          then 
@@ -1437,6 +1440,9 @@ create index  readmessage_identity_idx on o_readmessage (identity_id);
 create index  projectbroker_project_broker_idx on o_projectbroker_project (projectbroker_fk);
 create index  projectbroker_project_id_idx on o_projectbroker_project (project_id);
 create index  o_projectbroker_customfields_idx on o_projectbroker_customfields (fk_project_id);
+
+alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
 
 alter table o_checkpoint_results add constraint FK9E30F4B661159ZZY foreign key (checkpoint_fk) references o_checkpoint (checkpoint_id) ;
 alter table o_checkpoint_results add constraint FK9E30F4B661159ZZX foreign key (identity_fk) references o_bs_identity (id);

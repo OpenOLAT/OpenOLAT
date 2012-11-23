@@ -24,10 +24,10 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.Cancel;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -54,7 +54,7 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 	private Controller dispatchLinkController;
 	private final FormCancel self;
 
-	public FormCancel(String name, FormLayoutContainer formLayoutContainer,
+	public FormCancel(String name, FormItemContainer formLayoutContainer,
 			UserRequest ureq, WindowControl wControl) {
 		super(name);
 		self = this;

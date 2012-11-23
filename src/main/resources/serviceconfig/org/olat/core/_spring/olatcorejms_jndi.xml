@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="sysbus.topic" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+        <property name="jndiName"><value>${sysbus.broker.jndi}</value></property>
+    </bean>
+
+	<bean name="jmsConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+        <property name="jndiName"><value>${jms.broker.jndi}</value></property>
+    </bean>
+    
+    <!-- Only for testing -->
+    <bean id="org.olat.core.util.codepoint.CodepointServer"
+		class="org.olat.testutils.codepoints.server.impl.JMSCodepointServer"
+		destroy-method="close" init-method="springInit">
+		<constructor-arg value="false" 
+			type="boolean" index="0" /><!-- ${codepoint_server.enabled} whether or not the codepoint server is enabled -->
+		<property name="brokerUrl" value="${codepoint.jms.broker.url}" /><!-- e.g.: tcp://localhost:61616 -->
+		<property name="uniqueNodeId" value="${instance.id}-${node.id}" /><!-- the unique id of the codepoint server -->
+	</bean>
+
+</beans>	

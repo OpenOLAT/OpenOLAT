@@ -255,12 +255,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				
 	}
 	
-
 	private VFSSecurityCallback getTaskFolderSecCallback(String relPath) {
-		// check if any tasks assigned yet
-		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
-		List assignedProps = cpm.listCourseNodeProperties(node, null, null, TaskController.PROP_ASSIGNED);
-//		return new TaskFolderCallback(relPath, (assignedProps.size() > 0));
 		return new TaskFolderCallback(relPath, false); // do not look task folder
 	}
 
@@ -274,7 +269,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		if (source == btfButton){
 			// check if there are already assigned tasks
 			CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
-			List assignedProps = cpm.listCourseNodeProperties(node, null, null, TaskController.PROP_ASSIGNED);
+			List<Property> assignedProps = cpm.listCourseNodeProperties(node, null, null, TaskController.PROP_ASSIGNED);
 			if (assignedProps.size() == 0) {
 				// no task assigned
 				String relPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, node);
@@ -291,8 +286,6 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				// already assigned task => open dialog with warn
 				String[] args = new String[] { new Integer(assignedProps.size()).toString() };				
 				dialogBoxController = this.activateOkCancelDialog(ureq, "", getTranslator().translate("taskfolder.overwriting.confirm", args), dialogBoxController);
-				List cs = new ArrayList();
-				cs.add(dialogBoxController);
 			}
 		} else if (source == vfButton) {			
 			if (log.isDebug()) log.debug("Event for sampleVC");
@@ -449,7 +442,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			  RepositoryEntry repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 			  String courseURL = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repositoryEntry.getKey();
 			  MailTemplate mailTemplate = this.createTaskDeletedMailTemplate(urequest, course.getCourseTitle(), courseURL, deletedTaskFile);
-			  mailCtr = new MailNotificationEditController(getWindowControl(), urequest, mailTemplate, true);
+			  mailCtr = new MailNotificationEditController(getWindowControl(), urequest, mailTemplate, true, false);
 			  listenTo(mailCtr);
 			  cmc = new CloseableModalController(getWindowControl(), translate("close"), mailCtr.getInitialComponent());
 			  listenTo(cmc);			
@@ -541,7 +534,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 			//fxdiff VCRP-16: intern mail system
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, recipients, ccIdentities, null, mailTemplate, sender);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, recipients, ccIdentities, mailTemplate, sender);
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 		}
 	}
@@ -556,7 +549,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		//identities to be notified
 		List<Identity> identityList = new ArrayList<Identity>();
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();				
-		List properties = cpm.listCourseNodeProperties(node, null, null, TaskController.PROP_ASSIGNED);
+		List<Property> properties = cpm.listCourseNodeProperties(node, null, null, TaskController.PROP_ASSIGNED);
 		if(properties!=null && properties.size()>0) {
 		  for(Object propetyObj:properties) {
 		    Property propety = (Property)propetyObj;		    

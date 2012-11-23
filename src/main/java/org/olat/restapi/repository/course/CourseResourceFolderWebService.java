@@ -22,6 +22,9 @@ package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -30,7 +33,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -62,6 +64,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.course.ICourse;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.LinkVO;
 
 /**
@@ -198,9 +201,9 @@ public class CourseResourceFolderWebService {
 	@POST
 	@Path("coursefolder")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response attachFileToFolderPost(@PathParam("courseId") Long courseId, @FormParam("filename") String filename,
-			@FormParam("file") InputStream file, @Context HttpServletRequest request) {
-		return attachFileToCourseFolder(courseId, Collections.<PathSegment>emptyList(), filename, file, request);
+	public Response attachFileToFolderPost(@PathParam("courseId") Long courseId,
+			@Context HttpServletRequest request) {
+		return attachFileToCourseFolder(courseId, Collections.<PathSegment>emptyList(), request);
 	}
 	
 	/**
@@ -222,9 +225,8 @@ public class CourseResourceFolderWebService {
 	@Path("coursefolder/{path:.*}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response attachFileToFolderPost(@PathParam("courseId") Long courseId, @PathParam("path") List<PathSegment> path,
-			@FormParam("filename") String filename, @FormParam("file") InputStream file,
 			@Context HttpServletRequest request) {
-		return attachFileToCourseFolder(courseId, path, filename, file, request);
+		return attachFileToCourseFolder(courseId, path, request);
 	}
 	
 	/**
@@ -245,9 +247,9 @@ public class CourseResourceFolderWebService {
 	@PUT
 	@Path("coursefolder")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response attachFileToFolder(@PathParam("courseId") Long courseId, @FormParam("filename") String filename,
-			@FormParam("file") InputStream file, @Context HttpServletRequest request) {
-		return attachFileToCourseFolder(courseId, Collections.<PathSegment>emptyList(), filename, file, request);
+	public Response attachFileToFolder(@PathParam("courseId") Long courseId,
+			@Context HttpServletRequest request) {
+		return attachFileToCourseFolder(courseId, Collections.<PathSegment>emptyList(), request);
 	}
 		
 	/**
@@ -269,9 +271,25 @@ public class CourseResourceFolderWebService {
 	@Path("coursefolder/{path:.*}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response attachFileToFolder(@PathParam("courseId") Long courseId, @PathParam("path") List<PathSegment> path,
-			@FormParam("filename") String filename, @FormParam("file") InputStream file,
 			@Context HttpServletRequest request) {
-		return attachFileToCourseFolder(courseId, path, filename, file, request);
+		return attachFileToCourseFolder(courseId, path, request);
+	}
+	
+	private Response attachFileToCourseFolder(Long courseId, List<PathSegment> path, HttpServletRequest request) {
+
+		MultipartReader partsReader = null;
+		try {
+			partsReader = new MultipartReader(request);
+			File tmpFile = partsReader.getFile();
+			InputStream in = new FileInputStream(tmpFile);
+			String filename = partsReader.getValue("filename");
+			return attachFileToCourseFolder(courseId, path, filename, in, request);
+		} catch (FileNotFoundException e) {
+			log.error("", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			MultipartReader.closeQuietly(partsReader);
+		}
 	}
 	
 	private Response attachFileToCourseFolder(Long courseId, List<PathSegment> path, String filename, InputStream file, HttpServletRequest request) {

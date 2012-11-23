@@ -52,6 +52,7 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 
 	private long numOfOwners;
 	private long numOfParticipants;
+	private long numOfPendings;
 	private long numWaiting;
 	private long numOfRelations;
 	private long numOfOffers;
@@ -82,6 +83,15 @@ public class BusinessGroupViewImpl extends PersistentObject implements BusinessG
 
 	public void setNumOfParticipants(long numOfParticipants) {
 		this.numOfParticipants = numOfParticipants;
+	}
+
+	@Override
+	public long getNumOfPendings() {
+		return numOfPendings;
+	}
+
+	public void setNumOfPendings(long numOfPendings) {
+		this.numOfPendings = numOfPendings;
 	}
 
 	@Override

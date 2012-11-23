@@ -35,7 +35,7 @@ import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
 import javax.mail.internet.AddressException;
 
-import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -68,7 +68,7 @@ public class Emailer {
 	public Emailer(Locale locale) {
 		this.mailfrom =  WebappHelper.getMailConfig("mailReplyTo");
 		// initialize the mail footer with info about this OLAt installation
-		PackageTranslator trans = new PackageTranslator(Util.getPackageName(Emailer.class), locale);
+		Translator trans = Util.createPackageTranslator(Emailer.class, locale);
 		footer = trans.translate("footer.no.userdata", new String[] { Settings.getServerContextPathURI() });
 	}
 
@@ -141,15 +141,12 @@ public class Emailer {
 	 * @throws MessagingException
 	 */
 	//fxdiff VCRP-16: intern mail system
-	public boolean sendEmail(MailContext context, List<ContactList> listOfContactLists, String subject, String body) throws AddressException, MessagingException {
-		return sendEmail(context, listOfContactLists, subject, body, null);
-	}
-	//fxdiff VCRP-16: intern mail system
 	public boolean sendEmail(MailContext context, List<ContactList> listOfContactLists, String subject, String body, List<File> attachments) throws AddressException, MessagingException {
 		body += footer;
 		MailerResult result = MailManager.getInstance().sendMessage(context, mailFromIdentity, mailfrom, null, null, null, null, listOfContactLists, null, subject, body, attachments);
 		return result.getReturnCode() == MailerResult.OK;
 	}
+	
 	//fxdiff VCRP-16: intern mail system
 	public boolean sendEmailCC(MailContext context, Identity cc, String subject, String body, List<File> attachments) throws AddressException, MessagingException {
 		MailerResult result = MailManager.getInstance().sendMessage(context, mailFromIdentity, mailfrom, null, null, cc, null, null, null, subject, body, attachments);

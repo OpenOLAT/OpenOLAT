@@ -33,6 +33,7 @@ import org.olat.core.dispatcher.mapper.manager.MapperDAO;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpSession;
@@ -49,6 +50,8 @@ public class MapperServiceTest extends OlatTestCase {
 	private MapperService mapperService;
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserSessionManager sessionManager;
 	
 	@Test
 	public void should_service_present() {
@@ -179,7 +182,7 @@ public class MapperServiceTest extends OlatTestCase {
 	
 	private UserSession createUserSession() {
 		HttpSession httpSession = new MockHttpSession();
-		UserSession userSession = UserSession.getUserSession(httpSession);
+		UserSession userSession = sessionManager.getUserSession(httpSession);
 		SessionInfo infos = new SessionInfo(UUID.randomUUID().toString(), httpSession);
 		userSession.setSessionInfo(infos);
 		//check if our mocked HTTP session makes what we want

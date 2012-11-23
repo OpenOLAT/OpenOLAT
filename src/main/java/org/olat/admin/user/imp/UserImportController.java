@@ -27,6 +27,7 @@ package org.olat.admin.user.imp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -248,7 +249,7 @@ public class UserImportController extends BasicController {
 				}
 			}
 		}
-		businessGroupService.updateMemberships(getIdentity(), changes);
+		businessGroupService.updateMemberships(getIdentity(), changes, null);//TODO memail
 		DBFactory.getInstance().commit();
 		
 		if(mailGroups != null && !mailGroups.isEmpty()) {
@@ -257,7 +258,7 @@ public class UserImportController extends BasicController {
 				for(Identity identity:identities) {
 					MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, getIdentity());
 					MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-					MailerResult mailerResult = mailer.sendMail(null, identity, null, null, mailTemplate, null);
+					MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), null, mailTemplate, null);
 					if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
 						logDebug("Problems sending Group invitation mail for identity: " + identity.getName() + " and group: " 
 								+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);

@@ -58,6 +58,7 @@ public class MailTemplateForm extends FormBasicController {
 	private final boolean useCancel;
 	private final boolean useSubmit;
 	private MailTemplate template;
+	private final boolean mandatoryEmail;
 	/**
 	 * Constructor for the mail notification form
 	 * @param locale
@@ -65,18 +66,20 @@ public class MailTemplateForm extends FormBasicController {
 	 * @param useCancel 
 	 * @param listeningController Controller that listens to form events
 	 */
-	public MailTemplateForm(UserRequest ureq, WindowControl wControl, MailTemplate template, boolean useCancel) {
+	public MailTemplateForm(UserRequest ureq, WindowControl wControl, MailTemplate template, boolean useCancel, boolean mandatoryEmail) {
 		super(ureq, wControl);
 		this.template = template;
 		this.useCancel = useCancel;
 		this.useSubmit = true;
+		this.mandatoryEmail = mandatoryEmail;
 		initForm (ureq);
 	}
 	
-	public MailTemplateForm(UserRequest ureq, WindowControl wControl, MailTemplate template, Form rootForm) {
+	public MailTemplateForm(UserRequest ureq, WindowControl wControl, MailTemplate template, boolean mandatoryEmail, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		this.template = template;
 		useCancel = useSubmit = false;
+		this.mandatoryEmail = mandatoryEmail;
 		initForm (ureq);
 	}
 
@@ -103,7 +106,7 @@ public class MailTemplateForm extends FormBasicController {
 	@Override
 	public boolean validateFormLogic (UserRequest ureq) {
 		// validate only when sendMail is enabled
-		if (sendMail.isSelected(0)) {
+		if (mandatoryEmail || sendMail.isSelected(0)) {
 			if (subjectElem.getValue().trim().length() == 0) {
 				subjectElem.setErrorKey("mailtemplateform.error.emptyfield", null);
 				return false;
@@ -129,9 +132,10 @@ public class MailTemplateForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		sendMail = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.sendMailSwitchElem")}, null, 1);
-		sendMail.addActionListener(listener, FormEvent.ONCLICK);
+		if(!mandatoryEmail) {
+			sendMail = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.sendMailSwitchElem")}, null, 1);
+			sendMail.addActionListener(listener, FormEvent.ONCLICK);
+		}
 
 		subjectElem = uifactory.addTextElement("subjectElem", "mailtemplateform.subject", 128, template.getSubjectTemplate(), formLayout);
 		subjectElem.setDisplaySize(60);
@@ -156,7 +160,7 @@ public class MailTemplateForm extends FormBasicController {
 	}
 	
 	private void update () {
-		boolean sm = sendMail.isSelected(0);
+		boolean sm = mandatoryEmail || sendMail.isSelected(0);
 		subjectElem.setVisible(sm);
 		bodyElem.setVisible(sm);
 		ccSender.setVisible(sm);	
@@ -171,7 +175,7 @@ public class MailTemplateForm extends FormBasicController {
 	 * @return true: mail switch is enabled; false: otherwise
 	 */
 	public boolean sendMailSwitchEnabled() {
-		return (sendMail.isSelected(0));
+		return mandatoryEmail || sendMail.isSelected(0);
 	}
 	
 	@Override

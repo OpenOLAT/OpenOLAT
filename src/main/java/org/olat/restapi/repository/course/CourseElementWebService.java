@@ -22,6 +22,8 @@ package org.olat.restapi.repository.course;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -45,7 +47,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -70,6 +75,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.config.CustomConfigFactory;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.elements.SurveyConfigVO;
@@ -86,7 +92,7 @@ import org.olat.restapi.support.vo.elements.TestConfigVO;
  */
 @Path("repo/courses/{courseId}/elements")
 public class CourseElementWebService extends AbstractCourseNodeWebService {
-	
+	private static final OLog log = Tracing.createLoggerFor(CourseElementWebService.class);
 	private static final String VERSION = "0.1";
 	
 	/**
@@ -168,17 +174,32 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("structure/{nodeId}")
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.MULTIPART_FORM_DATA})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateStructure(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
-			@FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("displayType") @DefaultValue(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC) String displayType,
-			@FormParam("filename") @DefaultValue("attachment") String filename, @FormParam("file") InputStream file,
 			@Context HttpServletRequest request) {
-		CustomConfigDelegate config = new StructureFullConfig(displayType, file, filename);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		
+		InputStream in = null;
+		MultipartReader reader = null;
+		try {
+			reader = new MultipartReader(request);
+			String shortTitle = reader.getValue("shortTitle");
+			String longTitle = reader.getValue("longTitle");
+			String objectives = reader.getValue("objectives");
+			String visibilityExpertRules = reader.getValue("visibilityExpertRules");
+			String accessExpertRules = reader.getValue("accessExpertRules");
+			String displayType = reader.getValue("displayType", STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC);
+			String filename = reader.getValue("filename", "attachment");
+			if(reader.getFile() != null) {
+				in = new FileInputStream(reader.getFile());
+			}
+			CustomConfigDelegate config = new StructureFullConfig(displayType, in, filename);
+			return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		} catch (Exception e) {
+			log.error("", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			MultipartReader.closeQuietly(reader);
+			IOUtils.closeQuietly(in);
+		}
 	}
 	
 	/**
@@ -206,18 +227,36 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 */
 	@POST
 	@Path("structure")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachStructurePost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("displayType") @DefaultValue(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC) String displayType,
-			@FormParam("filename") @DefaultValue("attachment") String filename, @FormParam("file") InputStream file,
+	public Response attachStructurePostMultiparts(@PathParam("courseId") Long courseId, 
 			@Context HttpServletRequest request) {
-		//fxdiff FXOLAT-122: course management
-		CustomConfigDelegate config = new StructureFullConfig(displayType, file, filename);
-		return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+
+		InputStream in = null;
+		MultipartReader reader = null;
+		try {
+			reader = new MultipartReader(request);
+			String parentNodeId = reader.getValue("parentNodeId");
+			Integer position = reader.getIntegerValue("position");
+			String shortTitle = reader.getValue("shortTitle");
+			String longTitle = reader.getValue("longTitle");
+			String objectives = reader.getValue("objectives");
+			String visibilityExpertRules = reader.getValue("visibilityExpertRules");
+			String displayType = reader.getValue("displayType", STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC);
+			String filename = reader.getValue("filename", "attachment");
+			String accessExpertRules = reader.getValue("accessExpertRules");
+			if(reader.getFile() != null) {
+				in = new FileInputStream(reader.getFile());
+			}
+			CustomConfigDelegate config = new StructureFullConfig(displayType, in, filename);
+			return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		} catch (Exception e) {
+			log.error("", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			MultipartReader.closeQuietly(reader);
+			IOUtils.closeQuietly(in);
+		}
 	}
 	
 	/**
@@ -285,15 +324,29 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("singlepage/{nodeId}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateSinglePage(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@FormParam("filename") @DefaultValue("attachment") String filename, @FormParam("file") InputStream file,
 			@Context HttpServletRequest request) {
-		SinglePageCustomConfig config = new SinglePageCustomConfig(file, filename);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+
+		InputStream in = null;
+		MultipartReader reader = null;
+		try {
+			reader = new MultipartReader(request);
+			String shortTitle = reader.getValue("shortTitle");
+			String longTitle = reader.getValue("longTitle");
+			String objectives = reader.getValue("objectives");
+			String visibilityExpertRules = reader.getValue("visibilityExpertRules");
+			String filename = reader.getValue("filename", "attachment");
+			String accessExpertRules = reader.getValue("accessExpertRules");
+			in = new FileInputStream(reader.getFile());
+			SinglePageCustomConfig config = new SinglePageCustomConfig(in, filename);
+			return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		} catch (Exception e) {
+			log.error("", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			MultipartReader.closeQuietly(reader);
+			IOUtils.closeQuietly(in);
+		}
 	}
 	
 	/**
@@ -325,15 +378,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("singlepage")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachSinglePagePost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("filename") @DefaultValue("attachment") String filename, @FormParam("file") InputStream file,
-			@Context HttpServletRequest request) {
-		return attachSinglePage(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, filename, file, request);
+	public Response attachSinglePagePost(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
+		return attachSinglePage(courseId, request);
 	}
-	
+
 	/**
 	 * This attaches a Single Page Element onto a given course. The element will
 	 * be inserted underneath the supplied parentNodeId.
@@ -363,14 +411,29 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("singlepage")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachSinglePage(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@FormParam("filename") @DefaultValue("attachment") String filename, @FormParam("file") InputStream file,
-			@Context HttpServletRequest request) {
-		SinglePageCustomConfig config = new SinglePageCustomConfig(file, filename);
-		return attach(courseId, parentNodeId, "sp", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	public Response attachSinglePage(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
+		InputStream in = null;
+		MultipartReader reader = null;
+		try {
+			reader = new MultipartReader(request);
+			String parentNodeId = reader.getValue("parentNodeId");
+			Integer position = reader.getIntegerValue("position");
+			String shortTitle = reader.getValue("shortTitle");
+			String longTitle = reader.getValue("longTitle");
+			String objectives = reader.getValue("objectives");
+			String visibilityExpertRules = reader.getValue("visibilityExpertRules");
+			String accessExpertRules = reader.getValue("accessExpertRules");
+			String filename = reader.getValue("filename", "attachment");
+			in = new FileInputStream(reader.getFile());
+			SinglePageCustomConfig config = new SinglePageCustomConfig(in, filename);
+			return attach(courseId, parentNodeId, "sp", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		} catch (Exception e) {
+			log.error("", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			MultipartReader.closeQuietly(reader);
+			IOUtils.closeQuietly(in);
+		}
 	}
 	
 	/**
@@ -1270,10 +1333,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("task/{nodeId}/file")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachTaskFilePost(@PathParam("courseId") Long courseId, @FormParam("nodeId") String nodeId,
-			@FormParam("filename") @DefaultValue("task") String filename, @FormParam("file") InputStream file,
+	public Response attachTaskFilePost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@Context HttpServletRequest request) {
-		return attachTaskFile(courseId, nodeId, filename, file, request);
+		return attachTaskFile(courseId, nodeId, request);
 	}
 
 	/**
@@ -1297,7 +1359,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTaskFile(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("filename") @DefaultValue("task") String filename, @FormParam("file") InputStream file,
 			@Context HttpServletRequest request) {
 		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode node = getParentNode(course, nodeId);
@@ -1312,19 +1373,33 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, node);
-		OlatRootFolderImpl taskFolder = new OlatRootFolderImpl(taskFolderPath, null);
-		VFSLeaf singleFile = (VFSLeaf) taskFolder.resolve("/" + filename);
-		if (singleFile == null) {
-			singleFile = taskFolder.createChildLeaf("/" + filename);
-		}
-		if(file != null) {
-			OutputStream out = singleFile.getOutputStream(false);
-			FileUtils.copy(file, out);
-			FileUtils.closeSafely(out);
-			FileUtils.closeSafely(file);
-		} else {
-			return Response.status(Status.NOT_ACCEPTABLE).build();
+
+		InputStream in = null;
+		MultipartReader reader = null;
+		try {
+			reader = new MultipartReader(request);
+			String filename = reader.getValue("filename", "task");
+			String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, node);
+			OlatRootFolderImpl taskFolder = new OlatRootFolderImpl(taskFolderPath, null);
+			VFSLeaf singleFile = (VFSLeaf) taskFolder.resolve("/" + filename);
+			if (singleFile == null) {
+				singleFile = taskFolder.createChildLeaf("/" + filename);
+			}
+			File file = reader.getFile();
+			if(file != null) {
+				in = new FileInputStream(file);
+				OutputStream out = singleFile.getOutputStream(false);
+				IOUtils.copy(in, out);
+				IOUtils.closeQuietly(out);
+			} else {
+				return Response.status(Status.NOT_ACCEPTABLE).build();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			MultipartReader.closeQuietly(reader);
+			IOUtils.closeQuietly(in);
 		}
 		
 		return Response.ok().build();

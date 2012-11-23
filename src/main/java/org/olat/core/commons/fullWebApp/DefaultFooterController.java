@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.fullWebApp;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -28,7 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * <h3>Description:</h3>
@@ -70,7 +71,7 @@ public class DefaultFooterController extends BasicController {
 
 		// Push information about logged in users
 		footerVC
-				.contextPut("userSessionsCnt", UserSession.getUserSessionsCnt());
+				.contextPut("userSessionsCnt", CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionsCnt());
 
 		// Push information about user
 		if (ureq.getUserSession().isAuthenticated()) {

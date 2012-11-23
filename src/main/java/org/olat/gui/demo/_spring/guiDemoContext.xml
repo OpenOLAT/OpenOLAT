@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+
+				 
+	<!-- Extensions in GuiDemo -->	
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="12" />
+		</bean>
+				
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoFlexiFormMainController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="14" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.wizard.GuiDemoStepsRunner"/>
+				</bean>
+			</property>
+			<property name="translationPackage" value="org.olat.gui.demo.guidemo" />
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="15" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoPanesController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="16" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoLinksController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="17" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.guisoa.GuiDemoSoaController"/>
+				</bean>
+			</property>
+			<property name="translationPackage" value="org.olat.gui.demo.guidemo" />
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="18" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoWindowControlController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="19" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoTablesController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="20" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoFlexiTablesController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="21" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoTextMarkerController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="22" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoIconsController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="23" />
+		</bean>		
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoTooltipsController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="23" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoFloatingPanelController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="24" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.error.ErrorDemoController"/>
+				</bean>
+			</property>
+			<property name="translationPackage" value="org.olat.gui.demo.guidemo" />
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="25" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.cssjs.GUIDemoCSSJSController"/>
+				</bean>
+			</property>
+			<property name="translationPackage" value="org.olat.gui.demo.guidemo" />
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="27" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoDialogController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="28" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoAjaxTreeController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="29" />
+		</bean>		
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoFileChooserController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="30" />
+		</bean>			
+
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoBreadCrumbController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="31" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoTextBoxListController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="32" />
+		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoCalloutWindowController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="33" />
+		</bean>
+</beans>

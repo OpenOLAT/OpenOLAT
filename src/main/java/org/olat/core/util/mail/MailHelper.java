@@ -25,30 +25,21 @@
 */ 
 package org.olat.core.util.mail;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.mail.Address;
-import javax.mail.Authenticator;
-
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -63,104 +54,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *         http://www.frentix.com
  */
 public class MailHelper {
-	private static String mailhost;
-	private static String mailhostTimeout;
-	private static Authenticator smtpAuth; // null or the username/pwd used for
-											// authentication
-	private static boolean sslEnabled = false;
-	private static boolean sslCheckCertificate = false;
-	
-	private static int maxSizeOfAttachments = 5;
-	
-	private static Map<String, Translator> translators;
-
-	static {
-		mailhost = WebappHelper.getMailConfig("mailhost");
-		mailhostTimeout = WebappHelper.getMailConfig("mailTimeout");
-		sslEnabled = Boolean.parseBoolean(WebappHelper.getMailConfig("sslEnabled"));
-		sslCheckCertificate = Boolean.parseBoolean(WebappHelper.getMailConfig("sslCheckCertificate"));
-		translators = new HashMap<String, Translator>();
-		String smtpUser = null, smtpPwd = null;
-		if (WebappHelper.isMailHostAuthenticationEnabled()) {
-			smtpUser = WebappHelper.getMailConfig("smtpUser");
-			smtpPwd = WebappHelper.getMailConfig("smtpPwd");
-			smtpAuth = new MailerSMTPAuthenticator(smtpUser, smtpPwd);
-		} else {
-			smtpAuth = null;
-		}
-
-		if (Tracing.isDebugEnabled(Emailer.class)) {
-			Tracing.logDebug("using smtp host::" + mailhost + " with timeout::"
-					+ mailhostTimeout + ", smtpUser::" + smtpUser
-					+ " and smtpPwd::" + smtpPwd, Emailer.class);
-		}
-		
-		String maxSizeStr = WebappHelper.getMailConfig("mailAttachmentMaxSize");
-		if(StringHelper.containsNonWhitespace(maxSizeStr)) {
-			maxSizeOfAttachments = Integer.parseInt(maxSizeStr);
-		}
-		
-	}
-
-	/**
-	 * Create a configures mail message object that is ready to use
-	 * 
-	 * @return MimeMessage
-	 */
-//fxdiff VCRP-16: intern mail system
-	//public static MimeMessage createMessage()
-
-	/**
-	 * create MimeMessage from given fields, this may be used for creation of
-	 * the email but sending it later. E.g. previewing the email first.
-	 * @param from
-	 * @param recipients
-	 * @param recipientsCC
-	 * @param recipientsBCC
-	 * @param body
-	 * @param subject
-	 * @param attachments
-	 * @param result
-	 * @return
-	 */
-	//fxdiff VCRP-16: intern mail system
-	//protected static MimeMessage createMessage(Address from, Address[] recipients, Address[] recipientsCC, Address[] recipientsBCC, String body,
-
-	
-	/**
-	 * Send an email message to the given TO, CC and BCC address. The result will
-	 * be stored in the result object. The message can contain attachments.<br>
-	 * At this point HTML mails are not supported.
-	 * 
-	 * fxdiff: change from/replyto, see FXOLAT-74
-	 * @param replyTo Address used as reply-to address. The real sender is a no-reply-adress (see config: mailFrom). Must not be NULL
-	 * @param recipients Address array used as sender addresses. Must not be NULL
-	 *          and contain at lease one address
-	 * @param recipientsCC Address array used as CC addresses. Can be NULL
-	 * @param recipientsBCC Address array used as BCC addresses. Can be NULL
-	 * @param body Body text of message. Must not be NULL
-	 * @param subject Subject text of message. Must not be NULL
-	 * @param attachments File array used as attachments. Can be NULL
-	 * @param result MailerResult object that stores the result code
-
-	//fxdiff VCRP-16: intern mail system
-	//private static void sendMessage(Address from, Address[] recipients, Address[] recipientsCC, Address[] recipientsBCC, String body,
-	//		String subject, File[] attachments, MailerResult result)
-	
-	/**
-	 * @return the maximum size allowed for attachements in MB (default 5MB)
-	 */
-	public static int getMaxSizeForAttachement() {
-		return maxSizeOfAttachments;
-	}
-
-	/**
-	 * @return the configured mail host. Can be null, indicating that the system
-	 *         should not send any mail at all
-	 */
-	public static Object getMailhost() {
-		return mailhost;
-	}
+	private static Map<String, Translator> translators = new HashMap<String, Translator>();
 
 	/**
 	 * Create a mail footer for the given locale and sender.
@@ -236,7 +130,7 @@ public class MailHelper {
 		synchronized (translators) {  //o_clusterok   brasato:::: nice idea, but move to translatorfactory and kick out translator.setLocale() (move it to LocaleChangableTranslator)
 			Translator trans = translators.get(ident);
 			if (trans == null) {
-				trans = new PackageTranslator(Util.getPackageName(Emailer.class), locale);
+				trans = Util.createPackageTranslator(Emailer.class, locale);
 				translators.put(ident, trans);
 			}
 			return trans;
@@ -277,7 +171,7 @@ public class MailHelper {
 	 * @param locale The users local
 	 */
 	public static void appendErrorsAndWarnings(MailerResult mailerResult, StringBuilder errors, StringBuilder warnings, Locale locale) {
-		Translator trans = new PackageTranslator(Util.getPackageName(MailerResult.class), locale);
+		Translator trans = Util.createPackageTranslator(MailerResult.class, locale);
 		int returnCode = mailerResult.getReturnCode();
 		List<Identity> failedIdentites = mailerResult.getFailedIdentites();
 
@@ -322,46 +216,6 @@ public class MailHelper {
 	 */
 	public static boolean isValidEmailAddress(String mailAddress) {
 		return EmailAddressValidator.isValidEmailAddress(mailAddress);
-	}
-	
-	
-	/**
-	 * Internal helper
-	 * 
-	 * @param from
-	 * @param recipients
-	 * @param recipientsCC
-	 * @param recipientsBCC
-	 * @param body
-	 * @param subject
-	 * @param attachments
-	 */
-	private static void doDebugMessage(Address from, Address[] recipients, Address[] recipientsCC, Address[] recipientsBCC, String body,
-			String subject, File[] attachments) {
-		String to = new String();
-		String cc = new String();
-		String bcc = new String();
-		String att = new String();
-		for (Address addr : recipients) {
-			to = to + "'" + addr.toString() + "' ";
-		}
-		if (recipientsCC != null) {
-			for (Address addr : recipientsCC) {
-				cc = cc + "'" + addr.toString() + "' ";
-			}
-		}
-		if (recipientsBCC != null) {
-			for (Address addr : recipientsBCC) {
-				bcc = bcc + "'" + addr.toString() + "' ";
-			}
-		}
-		if (attachments != null) {
-			for (File file : attachments) {
-				if (file != null) att = att + "'" + file.getAbsolutePath() + "' ";
-			}
-		}
-		Tracing.logDebug("Sending mail from::'" + from + "' to::" + to + " CC::" + cc + " BCC::" + bcc + " subject::" + subject + " body::"
-				+ body + " attachments::" + att, Emailer.class);
 	}
 	
 	/**

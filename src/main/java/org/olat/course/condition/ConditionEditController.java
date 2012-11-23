@@ -37,7 +37,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.course.editor.EditorMainController;
@@ -105,12 +104,7 @@ public class ConditionEditController extends BasicController {
 
 
 	private Condition cloneCondition(Condition orig) {
-		try {
-			return (Condition)orig.clone();
-		} catch (CloneNotSupportedException e) {
-			throw new AssertException("could not clone condition", e);
-			//
-		}
+		return orig.clone();
 	}
 	
 	

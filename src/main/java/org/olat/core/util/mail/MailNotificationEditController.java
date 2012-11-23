@@ -64,7 +64,8 @@ public class MailNotificationEditController extends BasicController {
 	 * @param mailTemplate
 	 * @param useCancel
 	 */
-	public MailNotificationEditController(WindowControl wControl, UserRequest ureq, MailTemplate mailTemplate, boolean useCancel) {
+	public MailNotificationEditController(WindowControl wControl, UserRequest ureq, MailTemplate mailTemplate,
+			boolean useCancel, boolean mandatory) {
 		super(ureq, wControl);
 		this.mailTemplate = mailTemplate;
 		orgMailSubject = mailTemplate.getSubjectTemplate();
@@ -72,7 +73,7 @@ public class MailNotificationEditController extends BasicController {
 		cpFrom = mailTemplate.getCpfrom();
 		
 		mainVC = createVelocityContainer("mailnotification");
-		mailForm = new MailTemplateForm(ureq, wControl, mailTemplate, useCancel);
+		mailForm = new MailTemplateForm(ureq, wControl, mailTemplate, useCancel, mandatory);
 		listenTo(mailForm);
 		
 		mainVC.put("mailForm", mailForm.getInitialComponent());

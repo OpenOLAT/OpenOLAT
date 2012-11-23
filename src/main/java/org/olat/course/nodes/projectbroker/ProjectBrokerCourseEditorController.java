@@ -189,7 +189,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
     String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
     accountManagerGroup = ProjectBrokerManagerFactory.getProjectGroupManager().getAccountManagerGroupFor(cpm, node, course, groupName, groupDescription, ureq.getIdentity());
     if (accountManagerGroup != null) {
-	    accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, accountManagerGroup.getPartipiciantGroup());
+		//TODO memail
+    	accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, accountManagerGroup.getPartipiciantGroup());
 			listenTo(accountManagerGroupController);
 			// add mail templates used when adding and removing users
 			MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(accountManagerGroup, ureq.getIdentity());
@@ -300,14 +301,15 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		} else if (source == accountManagerGroupController) {
 			if (event instanceof IdentitiesAddEvent) {
 				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), accountManagerGroup);
+				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), urequest.getUserSession().getRoles(),
+						identitiesAddedEvent.getAddIdentities(), accountManagerGroup, null);//TODO memail
 				identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 				identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 				identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 				getLogger().info("Add users as account-managers");
 				fireEvent(urequest, Event.CHANGED_EVENT );			
 			} else if (event instanceof IdentitiesRemoveEvent) {
-				businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), accountManagerGroup);
+				businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), accountManagerGroup, null);
 				getLogger().info("Remove users as account-managers");
 				fireEvent(urequest, Event.CHANGED_EVENT );
 			}

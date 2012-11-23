@@ -27,8 +27,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.member.EditMembershipController;
-import org.olat.course.member.MemberPermissionChangeEvent;
+import org.olat.group.BusinessGroup;
+import org.olat.group.ui.main.EditMembershipController;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -38,11 +39,12 @@ import org.olat.repository.RepositoryEntry;
 public class ImportMemberPermissionChoiceController extends StepFormBasicController {
 	private EditMembershipController permissionCtrl;
 
-	public ImportMemberPermissionChoiceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry,
+	public ImportMemberPermissionChoiceController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry repoEntry, BusinessGroup group,
 			Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
-		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, repoEntry, rootForm);
+		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, repoEntry, group, rootForm);
 		listenTo(permissionCtrl);
 
 		initForm (ureq);

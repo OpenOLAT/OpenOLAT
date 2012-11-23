@@ -63,13 +63,9 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailNotificationEditController;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
@@ -79,6 +75,8 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.manager.BusinessGroupMailing;
+import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.model.MembershipModification;
@@ -90,6 +88,7 @@ import org.olat.group.ui.wizard.BGConfigToolsStep;
 import org.olat.group.ui.wizard.BGCopyBusinessGroup;
 import org.olat.group.ui.wizard.BGCopyPreparationStep;
 import org.olat.group.ui.wizard.BGEmailSelectReceiversStep;
+import org.olat.group.ui.wizard.BGMailNotificationEditController;
 import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
@@ -129,7 +128,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	
 	private NewBGController groupCreateController;
 	private BGUserManagementController userManagementController;
-	private MailNotificationEditController userManagementSendMailController;
+	private BGMailNotificationEditController userManagementSendMailController;
 	private BusinessGroupDeleteDialogBoxController deleteDialogBox;
 	private StepsMainRunController businessGroupWizard;
 	protected CloseableModalController cmc;
@@ -417,9 +416,9 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		// if identity was also owner it must have successfully removed to end here.
 		// now remove the identity also as participant.
 		// 2) remove as participant
-		businessGroupService.removeParticipants(getIdentity(), identityToRemove, group);
+		businessGroupService.removeParticipants(getIdentity(), identityToRemove, group, null);//TODO memail
 		// 3) remove from waiting list
-		businessGroupService.removeFromWaitingList(getIdentity(), identityToRemove, group);
+		businessGroupService.removeFromWaitingList(getIdentity(), identityToRemove, group, null);
 	}
 	
 	/**
@@ -605,8 +604,20 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(userManagementSendMailController);
 		
-		MailTemplate template = new BGUserMailTemplate(groups, mod, "", "");
-		userManagementSendMailController = new MailNotificationEditController(getWindowControl(), ureq, template, false);
+		MailTemplate defaultTemplate = null;
+		int totalModification = (mod.size() * groups.size());
+		if(totalModification == 1) {
+			MailType type = BusinessGroupMailing.getDefaultTemplateType(mod);
+			if(type != null) {
+				defaultTemplate = BusinessGroupMailing.getDefaultTemplate(type, groups.get(0), ureq.getIdentity());
+			}
+		}
+		
+		MailTemplate template = new BGUserMailTemplate(groups, mod, defaultTemplate);
+		boolean mandatoryEmail = !mod.getAddParticipants().isEmpty() &&
+				groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		userManagementSendMailController = new BGMailNotificationEditController(getWindowControl(), ureq, template,
+				totalModification == 1, totalModification == 1, false, mandatoryEmail);
 		Component cmp = userManagementSendMailController.getInitialComponent();
 		listenTo(userManagementSendMailController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), cmp, true, translate("users.group"));
@@ -615,15 +626,9 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	}
 	
 	private void finishUserManagement(MembershipModification mod, List<BusinessGroup> groups, MailTemplate template, boolean sendMail) {
-		businessGroupService.updateMembership(getIdentity(), mod, groups);
-		
-		if (template != null && !mod.isEmpty() && sendMail) {
-			List<Identity> movedIdentities = mod.getAllIdentities();
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailContext context = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, movedIdentities, null, null, template, getIdentity());
-			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
-		}
+		MailPackage mailing = new MailPackage(template, getWindowControl().getBusinessControl().getAsString(), sendMail);
+		businessGroupService.updateMembership(getIdentity(), mod, groups, mailing);
+		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), getLocale());
 	}
 	
 	private void doSelect(UserRequest ureq, List<BGTableItem> items) {
@@ -657,7 +662,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 				BusinessGroup targetGroup = (BusinessGroup)runContext.get("targetGroup");
 				groups.remove(targetGroup);
-				businessGroupService.mergeBusinessGroups(getIdentity(), targetGroup, groups);
+				businessGroupService.mergeBusinessGroups(getIdentity(), targetGroup, groups, null);//TODO memail
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};

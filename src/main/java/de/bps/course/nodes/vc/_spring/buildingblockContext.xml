@@ -8,6 +8,11 @@
 	<bean id="vc" class="de.bps.course.nodes.vc.VCCourseNodeConfiguration" scope="prototype">
 		<property name="enabled" value="${course.node.vc.enabled}" />
 		<property name="order"   value="300" />
+		<property name="alternativeCourseNodes">
+			<list>
+				<value>openmeetings</value>
+			</list>
+		</property>
 	</bean>
 	
 </beans>

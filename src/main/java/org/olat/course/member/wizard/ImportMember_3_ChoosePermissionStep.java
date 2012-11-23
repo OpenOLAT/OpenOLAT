@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 
 
@@ -34,11 +35,13 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ImportMember_3_ChoosePermissionStep extends BasicStep {
-	
+
+	private final BusinessGroup group;
 	private final RepositoryEntry repoEntry;
 	
-	public ImportMember_3_ChoosePermissionStep(UserRequest ureq, RepositoryEntry repoEntry) {
+	public ImportMember_3_ChoosePermissionStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group) {
 		super(ureq);
+		this.group = group;
 		this.repoEntry = repoEntry;
 		setNextStep(new ImportMember_4_MailStep(ureq));
 		setI18nTitleAndDescr("import.permission.title", "import.permission.title");
@@ -52,7 +55,7 @@ public class ImportMember_3_ChoosePermissionStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		ImportMemberPermissionChoiceController controller
-			= new ImportMemberPermissionChoiceController(ureq, wControl, repoEntry, form, runContext);
+			= new ImportMemberPermissionChoiceController(ureq, wControl, repoEntry, group, form, runContext);
 		return controller;
 	}
 }

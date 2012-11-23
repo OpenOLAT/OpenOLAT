@@ -272,15 +272,6 @@
 	<!-- SEARCH COMMON CONFIGURATION (PROXY-SIDE AND SERVICE-SIDE) -->
 	<!-- ========================================================= -->
 
-	<!-- JMS Stuff -->
-	<bean id="searchConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
-		<property name="brokerURL" value="${search.broker.url}" /> 
-	</bean>
-
-	<!-- used for sending the search requests -->
-	<bean id="searchQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
-		<constructor-arg value="olat/searchQueue" />
-	</bean>
-
+	<import resource="classpath:org/olat/search/_spring/searchJms_${jms.provider}.xml" />
 
 </beans>

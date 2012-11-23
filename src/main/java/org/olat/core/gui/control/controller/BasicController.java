@@ -64,7 +64,6 @@ import org.olat.core.util.Util;
 public abstract class BasicController extends DefaultController {
 
 	protected String velocity_root;
-	private Locale locale;
 	private final Identity identity;
 	private Translator translator;
 	private Translator fallbackTranslator;
@@ -83,9 +82,9 @@ public abstract class BasicController extends DefaultController {
 	 */
 	protected BasicController(UserRequest ureq, WindowControl wControl) {
 		super(wControl);
-		this.locale = ureq.getLocale();
+		setLocale(ureq.getLocale());
 		this.identity = ureq.getIdentity();
-		this.translator = Util.createPackageTranslator(this.getClass(), locale);
+		this.translator = Util.createPackageTranslator(this.getClass(), getLocale());
 		this.fallbackTranslator = null;
 		this.velocity_root = Util.getPackageVelocityRoot(this.getClass());
 		this.logger = Tracing.createLoggerFor(this.getClass());
@@ -106,14 +105,14 @@ public abstract class BasicController extends DefaultController {
 	protected BasicController(UserRequest ureq, WindowControl wControl,
 			Translator fallBackTranslator) {
 		super(wControl);
-		this.locale = ureq.getLocale();
+		setLocale(ureq.getLocale());
 		this.identity = ureq.getIdentity();
 		if (fallBackTranslator == null) {
 			throw new AssertException(
 					"please provide a fall translator if using this constructor!!");
 		}
 		this.fallbackTranslator = fallBackTranslator;
-		this.translator = Util.createPackageTranslator(this.getClass(), locale,
+		this.translator = Util.createPackageTranslator(this.getClass(), getLocale(),
 				fallBackTranslator);
 		this.velocity_root = Util.getPackageVelocityRoot(this.getClass());
 		this.logger = Tracing.createLoggerFor(this.getClass());
@@ -393,13 +392,6 @@ public abstract class BasicController extends DefaultController {
 	}
 
 	/**
-	 * @return Returns the locale.
-	 */
-	protected Locale getLocale() {
-		return locale;
-	}
-
-	/**
 	 * @return Returns the translator.
 	 */
 	protected Translator getTranslator() {
@@ -592,7 +584,7 @@ public abstract class BasicController extends DefaultController {
 	 *          translator; false: the new locale is not applied to the translator
 	 */
 	protected void setLocale(Locale locale, boolean setLocaleOnTranslator) {
-		this.locale = locale;
+		setLocale(locale);
 		if (setLocaleOnTranslator) {
 			getTranslator().setLocale(locale);
 		}

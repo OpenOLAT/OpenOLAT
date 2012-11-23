@@ -44,6 +44,7 @@
 				<value>org.olat.modules.fo.restapi.ForumImportWebService</value>
 				<value>org.olat.modules.fo.restapi.ForumCourseNodeWebService</value>
 				<value>org.olat.modules.fo.restapi.MyForumsWebService</value>
+				<value>org.olat.modules.openmeetings.restapi.OpenMeetingsWebService</value>
 				<value>org.olat.catalog.restapi.CatalogWebService</value>
 				<value>org.olat.notifications.restapi.NotificationsWebService</value>
 				<value>org.olat.registration.restapi.RegistrationWebService</value>

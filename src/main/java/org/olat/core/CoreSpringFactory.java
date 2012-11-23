@@ -44,6 +44,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.support.StandardServletEnvironment;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
@@ -102,6 +103,9 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	 */
 	public static Object getBean(String beanName) {
 		ApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
+		StandardServletEnvironment env = (StandardServletEnvironment)context.getEnvironment();
+		Object o1 = env.getSystemProperties();
+		Object o2 = env.getSystemEnvironment();
 		Object o = context.getBean(beanName);
 		return o;
 	}
@@ -206,6 +210,8 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	
 	public static Map<String, Object> getBeansOfType(BeanType extensionType) {
 		XmlWebApplicationContext context = (XmlWebApplicationContext) WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
+		
+		
 		Map beans = context.getBeansOfType(extensionType.getExtensionTypeClass());
 		Map<String, Object> clone = new HashMap<String, Object>(beans);
 		return clone;
@@ -214,6 +220,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = (DefaultListableBeanFactory) beanFactory;
+
 		
 	}
 

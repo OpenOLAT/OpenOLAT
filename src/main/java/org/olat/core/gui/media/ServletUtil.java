@@ -40,6 +40,7 @@ import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
 import org.olat.core.helpers.Settings;
@@ -47,7 +48,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * @author Felix Jost
@@ -144,7 +145,7 @@ public class ServletUtil {
 				}
 				
 				if (Settings.isDebuging()) {
-					SlowBandWidthSimulator sbs = Windows.getWindows(UserSession.getUserSession(httpReq)).getSlowBandWidthSimulator();
+					SlowBandWidthSimulator sbs = Windows.getWindows(CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(httpReq)).getSlowBandWidthSimulator();
 					out = sbs.wrapOutputStream(httpResp.getOutputStream());
 				} else {
 					out = httpResp.getOutputStream();
@@ -446,7 +447,7 @@ public class ServletUtil {
 			
 			OutputStream os;
 			if (Settings.isDebuging()) {
-				SlowBandWidthSimulator sbs = Windows.getWindows(UserSession.getUserSession(httpReq)).getSlowBandWidthSimulator();
+				SlowBandWidthSimulator sbs = Windows.getWindows(CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(httpReq)).getSlowBandWidthSimulator();
 				os = sbs.wrapOutputStream(response.getOutputStream());	
 			} else {
 				os = response.getOutputStream();

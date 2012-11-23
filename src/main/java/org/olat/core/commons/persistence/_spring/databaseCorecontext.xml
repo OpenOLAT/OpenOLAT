@@ -136,12 +136,6 @@
 				<prop key="hibernate.jdbc.use_streams_for_binary">true</prop>
 				<prop key="hibernate.use_outer_join">true</prop>
 				<prop key="hibernate.max_fetch_depth">10</prop>
-	            <prop key="hibernate.cache.provider_class">${hibernate.caching.singlevm.class}</prop>
-				<prop key="hibernate.cache.use_query_cache">${hibernate.caching.use.query.cache}</prop>
-				<prop key="hibernate.cache.use_second_level_cache">${hibernate.use.second.level.cache}</prop>
-				<prop key="hibernate.cache.region.factory_class">${hibernate.caching.cluster.class}</prop>
-				<prop key="hibernate.cache.region.jbc2.query.localonly">true</prop>
-				<prop key="hibernate.cache.region_prefix">olat</prop>
 				<!-- from java.sql.Connection
 					int TRANSACTION_READ_UNCOMMITTED = 1;
 					int TRANSACTION_READ_COMMITTED   = 2;
@@ -151,6 +145,29 @@
 				-->
 				<prop key="hibernate.connection.isolation">2</prop>
 				<prop key="javax.persistence.lock.timeout">30000</prop>
+	        </props>
+		</constructor-arg> 
+		<property name="addMoreProperties" ref="hibernateCacheProps_${hibernate.cache}" />      
+	</bean>
+	
+	<bean id="hibernateCacheProps_enabled" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+		<constructor-arg>
+	        <props>
+	            <prop key="hibernate.cache.provider_class">${hibernate.caching.singlevm.class}</prop>
+				<prop key="hibernate.cache.use_query_cache">${hibernate.caching.use.query.cache}</prop>
+				<prop key="hibernate.cache.use_second_level_cache">${hibernate.use.second.level.cache}</prop>
+				<prop key="hibernate.cache.region.factory_class">${hibernate.caching.cluster.class}</prop>
+				<prop key="hibernate.cache.region.jbc2.query.localonly">true</prop>
+				<prop key="hibernate.cache.region_prefix">olat</prop>
+	        </props>
+		</constructor-arg>        
+	</bean>
+	
+	<bean id="hibernateCacheProps_disabled" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+		<constructor-arg>
+	        <props>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.cache.use_second_level_cache">false</prop>
 	        </props>
 		</constructor-arg>        
 	</bean>

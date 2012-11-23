@@ -221,7 +221,7 @@ public class LocalizedXSLTransformer {
 		} catch (ResourceNotFoundException e) {
 			log.error("xsl-file of LocalizedXSLTransformer not found!", e);
 			return "ERROR";
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("could not read xsl-file of LocalizedXSLTransformer!", e);
 			return "ERROR";
 		}

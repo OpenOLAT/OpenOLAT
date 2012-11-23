@@ -129,6 +129,7 @@ public class GroupController extends BasicController {
 	private CloseableModalController cmc;
 	protected static final String usageIdentifyer = IdentitiesOfGroupTableDataModel.class.getCanonicalName();
 	protected boolean isAdministrativeUser;
+	protected boolean mandatoryEmail;
 
 	/**
 	 * @param ureq
@@ -141,17 +142,18 @@ public class GroupController extends BasicController {
 	 */	 
 	public GroupController(UserRequest ureq, WindowControl wControl, 
 			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
-			boolean allowDownload, SecurityGroup aSecurityGroup) {
+			boolean allowDownload, boolean mandatoryEmail, SecurityGroup aSecurityGroup) {
 		super(ureq, wControl);
-		init(ureq, mayModifyMembers, keepAtLeastOne, enableTablePreferences, enableUserSelection, allowDownload, aSecurityGroup);
+		init(ureq, mayModifyMembers, keepAtLeastOne, enableTablePreferences, enableUserSelection, allowDownload, mandatoryEmail, aSecurityGroup);
 	}
 
 	protected void init(UserRequest ureq,
 			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
-			boolean allowDownload, SecurityGroup aSecurityGroup) {
+			boolean allowDownload, boolean mandatoryEmail, SecurityGroup aSecurityGroup) {
 		this.securityGroup = aSecurityGroup;
 		this.mayModifyMembers = mayModifyMembers;
 		this.keepAtLeastOne = keepAtLeastOne;
+		this.mandatoryEmail = mandatoryEmail;
 		this.securityManager = BaseSecurityManager.getInstance();
 		Roles roles = ureq.getUserSession().getRoles();
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
@@ -241,7 +243,7 @@ public class GroupController extends BasicController {
 			if (!mayModifyMembers) throw new AssertException("not allowed to add members!");
 			
 			removeAsListenerAndDispose(userToGroupWizardCtr);
-			userToGroupWizardCtr = new UsersToGroupWizardController(ureq, getWindowControl(), this.securityGroup, addUserMailDefaultTempl);			
+			userToGroupWizardCtr = new UsersToGroupWizardController(ureq, getWindowControl(), securityGroup, addUserMailDefaultTempl, mandatoryEmail);			
 			listenTo(userToGroupWizardCtr);
 			
 			removeAsListenerAndDispose(cmc);
@@ -309,7 +311,7 @@ public class GroupController extends BasicController {
 							doBuildConfirmDeleteDialog(ureq);
 						} else {
 							removeAsListenerAndDispose(removeUserMailCtr);
-							removeUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, removeUserMailDefaultTempl, true);							
+							removeUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, removeUserMailDefaultTempl, true, false);							
 							listenTo(removeUserMailCtr);
 							
 							removeAsListenerAndDispose(cmc);
@@ -364,22 +366,20 @@ public class GroupController extends BasicController {
 					}
 				} else if (toAdd.size() > 1) {
 					//check if already in group
-					boolean someAlreadyInGroup = false;
 					List<Identity> alreadyInGroup = new ArrayList<Identity>();
 					for (int i = 0; i < toAdd.size(); i++) {
 						if (securityManager.isIdentityInSecurityGroup(toAdd.get(i), securityGroup)) {
 							tableCtr.setMultiSelectSelectedAt(i, false);
 							alreadyInGroup.add(toAdd.get(i));
-							someAlreadyInGroup = true;
 						}
 					}
-					if (someAlreadyInGroup) {
-						String names = "";
+					if (!alreadyInGroup.isEmpty()) {
+						StringBuilder names = new StringBuilder();
 						for(Identity ident: alreadyInGroup) {
-							names +=" "+ident.getName();
+							names.append(" ").append(ident.getName());
 							toAdd.remove(ident);
 						}
-						getWindowControl().setInfo(translate("msg.subjectsalreadyingroup", names));
+						getWindowControl().setInfo(translate("msg.subjectsalreadyingroup", names.toString()));
 					}
 					if (toAdd.isEmpty()) {
 						return;
@@ -393,7 +393,7 @@ public class GroupController extends BasicController {
 					doAddIdentitiesToGroup(ureq, toAdd, null);
 				} else {
 					removeAsListenerAndDispose(addUserMailCtr);
-					addUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, addUserMailDefaultTempl, true);					
+					addUserMailCtr = new MailNotificationEditController(getWindowControl(), ureq, addUserMailDefaultTempl, true, mandatoryEmail);					
 					listenTo(addUserMailCtr);
 					
 					removeAsListenerAndDispose(cmc);
@@ -491,7 +491,7 @@ public class GroupController extends BasicController {
 			}
 			//fxdiff VCRP-16: intern mail system
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, toBeRemoved, ccIdentities, null, mailTemplate, sender);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, toBeRemoved, ccIdentities, mailTemplate, sender);
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 		}
 	}
@@ -539,7 +539,7 @@ public class GroupController extends BasicController {
 			}
 			//fxdiff VCRP-16: intern mail system
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesAddedEvent.getAddedIdentities(), ccIdentities, null, mailTemplate, sender);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesAddedEvent.getAddedIdentities(), ccIdentities, mailTemplate, sender);
 			MailHelper.appendErrorsAndWarnings(mailerResult, errorMessage, infoMessage, ureq.getLocale());
 		}
 		// report any errors on screen

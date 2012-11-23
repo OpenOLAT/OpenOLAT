@@ -1,0 +1,605 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.core.util.session;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.olat.core.gui.control.Disposable;
+import org.olat.core.gui.control.Event;
+import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.HistoryManager;
+import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.OlatLoggingAction;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.logging.activity.UserActivityLoggerImpl;
+import org.olat.core.util.SessionInfo;
+import org.olat.core.util.SignOnOffEvent;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * 
+ * Initial date: 15.11.2012<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+@Service
+public class UserSessionManager implements GenericEventListener {
+	
+	private static final OLog log = Tracing.createLoggerFor(UserSessionManager.class);
+	private static final String USERSESSIONKEY = UserSession.class.getName();
+	
+	public static final OLATResourceable ORES_USERSESSION = OresHelper.createOLATResourceableType(UserSession.class);
+	public static final String STORE_KEY_KILLED_EXISTING_SESSION = "killedExistingSession";
+
+  //clusterNOK cache ??
+	private static final Set<UserSession> authUserSessions = new HashSet<UserSession>(101);
+	private static final Set<String> userNameToIdentity = new HashSet<String>(101);
+	private static final Set<String> authUsersNamesOtherNodes = new HashSet<String>(101);
+
+	private static final AtomicInteger sessionCountWeb = new AtomicInteger();
+	private static final AtomicInteger sessionCountRest = new AtomicInteger();
+	private static final AtomicInteger sessionCountDav = new AtomicInteger();
+	
+	@Autowired
+	private UserSessionModule sessionModule;
+	@Autowired
+	private CoordinatorManager coordinator;
+	@Autowired
+	private HistoryManager historyManager;
+	
+	@PostConstruct
+	public void initBean() {
+		coordinator.getCoordinator().getEventBus().registerFor(this, null, ORES_USERSESSION);
+	}
+
+	/**
+	 * @param session
+	 * @return associated user session
+	 */
+	public UserSession getUserSession(HttpSession session) {
+		UserSession us;
+		synchronized (session) {//o_clusterOK by:fj
+			us = (UserSession) session.getAttribute(USERSESSIONKEY);
+			if (us == null) {
+				us = new UserSession();
+				session.setAttribute(USERSESSIONKEY, us); // triggers the
+				// valueBoundEvent -> nothing
+				// more to do here
+			}
+		}
+		//set a possible changed session timeout interval
+		if(us.isAuthenticated()) {
+			session.setMaxInactiveInterval(sessionModule.getSessionTimeoutAuthenticated());
+		} else {
+			session.setMaxInactiveInterval(sessionModule.getSessionTimeout());
+		}
+		return us;
+	}
+
+	/**
+	 * @param hreq
+	 * @return associated user session
+	 */
+	public UserSession getUserSession(HttpServletRequest hreq) {
+		// get existing or create new session
+		HttpSession httpSession = hreq.getSession(true);
+		UserSession usess = getUserSession(httpSession);
+		return usess;
+	}
+	
+	/**
+	 * Return the UserSession of the given request if it is already set or null otherwise
+	 * @param hreq
+	 * @return
+	 */
+	public UserSession getUserSessionIfAlreadySet(HttpServletRequest hreq) {
+		HttpSession session = hreq.getSession(false);
+		if (session==null) {
+			return null;
+		}
+
+		synchronized (session) {//o_clusterOK by:se
+			UserSession us = (UserSession) session.getAttribute(USERSESSIONKEY);
+			if(us != null && us.isAuthenticated()) {
+				session.setMaxInactiveInterval(sessionModule.getSessionTimeoutAuthenticated());
+			} else {
+				session.setMaxInactiveInterval(sessionModule.getSessionTimeout());
+			}
+			return us;
+		}
+	}
+
+  /**
+ * @param userName
+ * @return the identity or null if no user with userName is currently logged
+ *         on
+ */
+	public boolean isSignedOnIdentity(String userName) {
+		synchronized (authUserSessions) {  //o_clusterOK by:fj
+			return userNameToIdentity.contains(userName.toLowerCase());
+		}
+	}
+	
+	/**
+	 * @return set of authenticated active user sessions
+	 */
+	public Set<UserSession> getAuthenticatedUserSessions() {
+		Set<UserSession> copy;
+		synchronized (authUserSessions) {  //o_clusterOK by:fj
+			copy = new HashSet<UserSession>(authUserSessions);
+		}
+		return copy;
+	}
+	
+	public int getNumberOfAuthenticatedUserSessions() {
+		synchronized(authUserSessions) {
+			return authUserSessions.size();
+		}
+	}
+	
+	/**
+	 * @return Returns the userSessionsCnt (Web, WebDAV, REST) from this VM
+	 */
+	public int getUserSessionsCnt() {
+	  //clusterNOK ?? return only number of locale sessions ?
+		synchronized(authUserSessions) {
+			return authUserSessions.size();
+		}
+	}
+	
+	/**
+	 * @return The number of users currently logged in using the web interface
+	 *         (guests and authenticated users). Note that currently this only
+	 *         returns the users from this VM as the synchronization of user
+	 *         between cluster node is not correctly. In the long run we return
+	 *         all users here.
+	 */
+	public int getUserSessionWebCounter() {
+		// clusterNOK ?? return only number of locale sessions ?
+		return sessionCountWeb.get();
+	}
+	
+	/**
+	 * @return The number of users currently logged in using a WebDAV client.
+	 *         Note that currently this only returns the users from this VM as
+	 *         the synchronization of user between cluster node is not
+	 *         correctly. In the long run we return all users here.
+	 */
+	public int getUserSessionDavCounter() {
+		// clusterNOK ?? return only number of locale sessions ?
+		return sessionCountDav.get();
+	}
+	
+	/**
+	 * @return The number of users currently logged in using the REST API. Note
+	 *         that currently this only returns the users from this VM as the
+	 *         synchronization of user between cluster node is not correctly. In
+	 *         the long run we return all users here.
+	 */
+	public int getUserSessionRestCounter() {
+		// clusterNOK ?? return only number of locale sessions ?
+		return sessionCountRest.get();
+	}
+
+
+
+	/**
+	 * prior to calling this method, all instance vars must be set.
+	 */
+	public synchronized void signOn(UserSession usess) {
+		//   ^^^^^^^^^^^^ Added synchronized to be symmetric with sign off and to
+		//                fix a possible dead-lock see also OLAT-3390
+		
+		boolean isDebug = log.isDebug();
+		if(isDebug) log.debug("signOn() START");
+		if (usess.isAuthenticated()) {
+			throw new AssertException("sign on: already signed on!");
+		}
+		
+		IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
+		Identity identity = identityEnvironment.getIdentity();
+		if (identity == null) {
+			throw new AssertException("identity is null in identityEnvironment!");
+		}
+		SessionInfo sessionInfo = usess.getSessionInfo();
+		if (sessionInfo == null) {
+			throw new AssertException("sessionInfo was null for identity " + identity);
+		}
+		//String login = identity.getName();
+		usess.setAuthenticated(true);
+
+		if (sessionInfo.isWebDAV()) {
+			// load user prefs
+			usess.reloadPreferences();
+			synchronized (authUserSessions) {  //o_clusterOK by:se
+				// we're only adding this webdav session to the authUserSessions - not to the userNameToIdentity.
+				// userNameToIdentity is only needed for IM which can't do anything with a webdav session
+				authUserSessions.add(usess);
+			}
+			log.audit("Logged on [via webdav]: " + sessionInfo.toString());
+		} else {
+		
+			if(isDebug) log.debug("signOn() authUsersNamesOtherNodes.contains "+identity.getName()+": "+authUsersNamesOtherNodes.contains(identity.getName()));
+		
+			UserSession invalidatedSession = null;
+			synchronized (authUserSessions) {  //o_clusterOK by:fj
+		    // check if already a session exist for this user
+		    if ( (userNameToIdentity.contains(identity.getName().toLowerCase()) || authUsersNamesOtherNodes.contains(identity.getName()) ) 
+		         && !sessionInfo.isWebDAV() && !sessionInfo.isREST() && !usess.getRoles().isGuestOnly()) {
+		        log.info("Loggin-process II: User has already a session => signOffAndClear existing session");
+		        
+		        invalidatedSession = getUserSessionForGui(identity.getName().toLowerCase());
+		        //remove session to be invalidated
+		        //SIDEEFFECT!! to signOffAndClear
+		        //if invalidatedSession is removed from authUserSessions
+		        //signOffAndClear does not remove the identity.getName().toLowerCase() from the userNameToIdentity
+		        //
+		        authUserSessions.remove(invalidatedSession);
+		    }
+		    authUserSessions.add(usess);
+				// user can choose upercase letters in identity name, but this has no effect on the
+				// database queries, the login form or the IM account. IM works only with lowercase
+				// characters -> map stores values as such
+				if(isDebug) log.debug("signOn() adding to userNameToIdentity: "+identity.getName().toLowerCase());
+				userNameToIdentity.add(identity.getName().toLowerCase());
+			}
+		
+			//reload user prefs
+			usess.reloadPreferences();
+
+			log.audit("Logged on: " + sessionInfo.toString());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, true), ORES_USERSESSION);
+
+			// THE FOLLOWING CHECK MUST BE PLACED HERE NOT TO PRODUCE A DEAD-LOCK WITH SIGNOFFANDCLEAR
+			// check if a session from any browser was invalidated (IE has a cookie set per Browserinstance!!)
+			if (invalidatedSession != null || authUsersNamesOtherNodes.contains(identity.getName())) {
+				// put flag killed-existing-session into session-store to show info-message 'only one session for each user' on user-home screen
+				usess.putEntry(STORE_KEY_KILLED_EXISTING_SESSION, Boolean.TRUE);
+				if(isDebug) log.debug("signOn() removing from authUsersNamesOtherNodes: "+identity.getName());
+				authUsersNamesOtherNodes.remove(identity.getName());
+				//OLAT-3381 & OLAT-3382
+				if(invalidatedSession != null) {
+					signOffAndClear(invalidatedSession);
+				}
+			}
+
+			if(isDebug) log.debug("signOn() END");
+		}
+		
+		// update logged in users counters
+		if (sessionInfo.isREST()) {
+			sessionCountRest.incrementAndGet();
+		} else if (sessionInfo.isWebDAV()) {
+			sessionCountDav.incrementAndGet();
+		} else {
+			sessionCountWeb.incrementAndGet();
+		}
+	}
+	
+	/**
+	 * called to make sure the current authenticated user (if there is one at all)
+	 * is cleared and signed off. This method is firing the SignOnOffEvent Multiuserevent.
+	 */
+	public synchronized void signOffAndClear(UserSession usess) {  //o_clusterOK by:fj
+		boolean isDebug = log.isDebug();
+		if(isDebug) log.debug("signOffAndClear() START");
+		//
+		
+		signOffAndClearWithout(usess);
+		// handle safely
+		try {
+			if (usess.isAuthenticated()) {
+				SessionInfo sessionInfo = usess.getSessionInfo();
+				IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
+				Identity identity = identityEnvironment.getIdentity();
+				log.audit("Logged off: " + sessionInfo);
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, false), ORES_USERSESSION);
+				if(isDebug) log.debug("signOffAndClear() deregistering usersession from eventbus, id="+sessionInfo);
+				//fxdiff FXOLAT-231: event on GUI Preferences extern changes
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Preferences.class, identity.getKey());
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(usess, ores);
+			}
+		} catch (Exception e) {
+			log.error("exception in signOffAndClear: while sending signonoffevent!", e);
+		}
+		// clear all instance variables, set authenticated to false
+		usess.init();
+		if(isDebug) log.debug("signOffAndClear() END");
+	}
+
+
+	/**
+	 * called from signOffAndClear()
+	 * called from event -> MUEvent
+	 * the real work to do during sign off but without sending the multiuserevent
+	 * this is used in case the user logs in to node1 and was logged in on node2 => 
+	 * node2 catches the sign on event and invalidates the user on node2 "silently", e.g.
+	 * without firing an event.
+	 */
+	public void signOffAndClearWithout(final UserSession usess) {
+		boolean isDebug = log.isDebug();
+		if(isDebug) log.debug("signOffAndClearWithout() START");
+		
+		final IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
+		final SessionInfo sessionInfo = usess.getSessionInfo();
+		final Identity ident = identityEnvironment.getIdentity();
+		if (isDebug) log.debug("UserSession:::logging off: " + sessionInfo);
+
+		//fxdiff BAKS-7 Resume function
+		if(usess.isAuthenticated() && usess.getLastHistoryPoint() != null && !usess.getRoles().isGuestOnly()) {
+			historyManager.persistHistoryPoint(ident, usess.getLastHistoryPoint());
+		}
+
+		/**
+		 * use not RunnableWithException, as exceptionHandlng is inside the run
+		 */
+		Runnable run = new Runnable() {
+			public void run() {
+				Object obj = null;
+				try {
+					// do logging
+					if (ident != null) {
+						ThreadLocalUserActivityLogger.log(OlatLoggingAction.OLAT_LOGOUT, UserSession.class, CoreLoggingResourceable.wrap(ident));
+					} else {
+						//System.out.println("identity is null!!!!!!!!!!!!!!!!!!!!!");
+					}
+					// notify all variables in the store (the values) about the disposal
+					// if
+					// Disposable
+					List<Object> storeList = new ArrayList<Object>(usess.getStore().values());
+
+					for (Iterator<Object> it_storevals = storeList.iterator(); it_storevals.hasNext();) {
+						obj = it_storevals.next();
+						if (obj instanceof Disposable) {
+							// synchronous, since triggered by tomcat session timeout or user
+							// click and
+							// asynchronous, if kicked out by administrator.
+							// we assume synchronous
+							// !!!!
+							// As a reminder, this .dispose() calls dispose on
+							// DefaultController which is synchronized.
+							// (Windows/WindowManagerImpl/WindowBackOfficeImpl/BaseChiefController/../
+							// dispose()
+							// !!!! was important for bug OLAT-3390
+
+							((Disposable) obj).dispose();
+						}
+					}
+				} catch (Exception e) {
+
+					String objtostr = "n/a";
+					try {
+						objtostr = obj.toString();
+					} catch (Exception ee) {
+						// ignore
+					}
+					log.error("exception in signOffAndClear: while disposing object:" + objtostr, e);
+				}
+			}
+		};
+
+		ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(run, UserActivityLoggerImpl.newLoggerForValueUnbound(usess));
+
+		synchronized (authUserSessions) {  //o_clusterOK by:fj
+			if(authUserSessions.remove(usess)){
+				//remove only from identityEnvironment if found in sessions.
+				//see also SIDEEFFECT!! line in signOn(..)
+				Identity previousSignedOn = identityEnvironment.getIdentity();
+				if (previousSignedOn != null) {
+					if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: "+previousSignedOn.getName().toLowerCase());
+					userNameToIdentity.remove(previousSignedOn.getName().toLowerCase());
+				}
+			} else if (isDebug) {
+				log.info("UserSession already removed! for ["+ident+"]");			
+			}
+		}
+		// update logged in users counters
+		if (sessionInfo != null) {
+			if (sessionInfo.isREST()) {
+				sessionCountRest.decrementAndGet();
+			} else if (sessionInfo.isWebDAV()) {
+				sessionCountDav.decrementAndGet();
+			} else {
+				sessionCountWeb.decrementAndGet();
+			}
+		}
+		
+		if (isDebug) log.debug("signOffAndClearWithout() END");
+	}
+
+	/**
+	 * only for SignOffEvents
+	 * - Usersession keeps book about usernames
+	 * - WindowManager responsible to dispose controller chain
+	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
+	 */
+	public void event(Event event) {
+		if(event instanceof SignOnOffEvent) {
+			SignOnOffEvent se = (SignOnOffEvent) event;
+			processSignOnOffEvent(se);
+		}
+	}
+	
+	private void processSignOnOffEvent(SignOnOffEvent se) {
+		try {
+			boolean debug = log.isDebug();
+			if(debug) log.debug("event() START");
+			if(debug) log.debug("event() is SignOnOffEvent. isSignOn="+se.isSignOn());
+			if (!se.isEventOnThisNode()) {
+				// - signOnOff from other node
+				// - Single OLAT Instance is never passing by here.
+				if (se.isSignOn()) {
+					// it is a logged on event
+					// -> remember other nodes logged usernames
+					if(debug) log.debug("event() adding to authUsersNamesOtherNodes: "+se.getIdentityName());
+					authUsersNamesOtherNodes.add(se.getIdentityName());
+					UserSession usess = getUserSessionForGui(se.getIdentityName());
+					if (usess.getSessionInfo() != null && se.getIdentityName().equals(usess.getSessionInfo().getLogin())
+							&& !usess.getSessionInfo().isWebDAV() && !usess.getRoles().isGuestOnly()) {
+						
+						// if this listening UserSession instance is from the same user
+						// and it is not a WebDAV Session, and it is not GuestSession
+						// => log user off on this node
+						signOffAndClearWithout(usess);
+						usess.init();
+					}
+				} else {
+					// it is logged off event
+					// -> remove from other nodes logged on list.
+					if(debug) log.debug("event() removing from authUsersNamesOtherNodes: "+se.getIdentityName());
+					authUsersNamesOtherNodes.remove(se.getIdentityName());
+				}
+			}
+			if(debug) log.debug("event() END");
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	/**
+	 * Invalidate all sessions except admin-sessions.
+	 * @return  Number of invalidated sessions.
+	 */
+	public int invalidateAllSessions() {
+		log.debug("invalidateAllSessions() START");
+		int invalidateCounter = 0;
+		log.audit("All sessions were invalidated by an administrator");
+		//clusterNOK ?? invalidate only locale sessions ?
+		Set<UserSession> iterCopy = getAuthenticatedUserSessions();
+		for (Iterator<UserSession> iterator = iterCopy.iterator(); iterator.hasNext();) {
+			UserSession userSession = iterator.next();
+			Roles userRoles = userSession != null ? userSession.getRoles() : null; 
+			if (userRoles != null && !userRoles.isOLATAdmin()) {
+				//do not logout administrators
+				try {
+					signOffAndClear(userSession);
+					if(userSession.getSessionInfo() != null && userSession.getSessionInfo().getSession() != null) {
+						userSession.getSessionInfo().getSession().invalidate();
+					}
+					invalidateCounter++;
+				} catch(Exception ex) {
+					// Session already signed off => do nothing and continues
+				}
+			}
+		}
+		log.debug("invalidateAllSessions() END");
+		return invalidateCounter;
+	}
+	
+	/**
+	 * Invalidate a given number of oldest (last-click-time) sessions except admin-sessions.
+	 * @param nbrSessions  number of sessions whisch will be invalidated
+	 * @return  Number of invalidated sessions. 
+	 */
+	public int invalidateOldestSessions(int nbrSessions) {
+		int invalidateCounter = 0;
+		// 1. Copy authUserSessions in sorted TreeMap
+		// This is the Comparator that will be used to sort the TreeSet:
+		Comparator<UserSession> sessionComparator = new Comparator<UserSession>() {
+			public int compare(UserSession o1, UserSession o2) {
+				Long long1 = new Long((o1).getSessionInfo().getLastClickTime());
+				Long long2 = new Long((o2).getSessionInfo().getLastClickTime());
+				return long1.compareTo(long2);
+			}
+		};
+		// clusterNOK ?? invalidate only locale sessions ?
+		TreeSet<UserSession> sortedSet = new TreeSet<UserSession>(sessionComparator);
+		sortedSet.addAll(authUserSessions);
+		int i = 0;	
+		for (Iterator<UserSession> iterator = sortedSet.iterator(); iterator.hasNext() && i++<nbrSessions;) {
+			try {
+				UserSession userSession = (UserSession) iterator.next();
+				if (!userSession.getRoles().isOLATAdmin() && !userSession.getSessionInfo().isWebDAV()) {
+					signOffAndClear(userSession);
+					invalidateCounter++;
+				}
+			} catch (Throwable th) {
+				log.warn("Error signOffAndClear ", th);
+			}
+		}
+		return invalidateCounter;		
+	}
+
+	/**
+	 * set session timeout on http session - 
+	 * @param sessionTimeoutInSec
+	 */
+	public void setGlobalSessionTimeout(int sessionTimeoutInSec) {
+		Collection<UserSession> sessionSnapShot = getAuthenticatedUserSessions();
+		for (UserSession session : sessionSnapShot) {
+			try{
+				SessionInfo sessionInfo = session.getSessionInfo();
+				if(sessionInfo != null && sessionInfo.getSession() != null) {
+					sessionInfo.getSession().setMaxInactiveInterval(sessionTimeoutInSec);
+				}
+			} catch(Throwable th){
+				log.error("error setting sesssionTimeout", th);
+			}
+		}
+	}
+	
+	/**
+	 * Lookup non-webdav, non-REST UserSession for username.
+	 * @param userName
+	 * @return user-session or null when no session was founded. 
+	 */
+	private UserSession getUserSessionForGui(String userName) {
+		if(StringHelper.containsNonWhitespace(userName)) {
+			//do not call from somewhere else then signOffAndClear!!
+			Collection<UserSession> authUserSessionsCopy = getAuthenticatedUserSessions();
+			for (UserSession userSession : authUserSessionsCopy) {		
+				Identity identity = userSession.getIdentity();
+				if (identity != null && userName.equalsIgnoreCase(identity.getName())
+						&& userSession.getSessionInfo() != null
+						&& !userSession.getSessionInfo().isWebDAV()
+						&& !userSession.getSessionInfo().isREST()) {
+					return userSession;
+				}
+			}
+		}
+		return null;
+	}
+}

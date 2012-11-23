@@ -11,7 +11,6 @@
   http://www.springframework.org/schema/tx
   http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
-	<context:annotation-config />
 	<context:component-scan base-package="org.olat.group.manager,org.olat.group.area,org.olat.group.right" />
 	<tx:annotation-driven transaction-manager="txManager"/>
 
@@ -38,7 +37,47 @@
 				     Values are: never,always,groupconfig -->
 				contact.business.card=${group.card.contact}
 				userlist.download.default.allowed=${group.userlist.download.default.allowed}
+
+				mandatoryEnrolmentEmailForUsers=${group.mandatory.enrolment.email.users}
+				mandatoryEnrolmentEmailForAuthors=${group.mandatory.enrolment.email.authors}
+				mandatoryEnrolmentEmailForUsermanagers=${group.mandatory.enrolment.email.usermanagers}
+				mandatoryEnrolmentEmailForGroupmanagers=${group.mandatory.enrolment.email.groupmanagers}
+				mandatoryEnrolmentEmailForAdministrators=${group.mandatory.enrolment.email.administrators}
+
+				acceptMembershipForUsers=${group.accept.membership.users}
+				acceptMembershipForAuthors=${group.accept.membership.authors}
+				acceptMembershipForUsermanagers=${group.accept.membership.usermanagers}
+				acceptMembershipForGroupmanagers=${group.accept.membership.groupmanagers}
+				acceptMembershipForAdministrators=${group.accept.membership.administrators}
 			</value>
+		</property>
+	</bean>
+	
+	<!-- Login interceptor -->
+	<bean id="reservation.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="afterLoginInterceptionManager" />
+		<property name="targetMethod" value="addAfterLoginControllerConfig" />
+		<property name="arguments">
+			<ref bean="reservation.AfterLoginConfig"/>
+		</property>
+	</bean>
+
+	<bean id="reservation.AfterLoginConfig" class="org.olat.login.AfterLoginConfig">
+		<property name="afterLoginControllerList">
+			<list>
+				<map>
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="org.olat.group.ui.main.PendingEnrollmentController"/>
+						</bean>
+					</entry>
+					<entry key="forceUser"><value>false</value></entry>
+					<entry key="redoTimeout"><value>0</value></entry>
+					<entry key="i18nIntro"><value>org.olat.group.ui.main:pending.reservations</value></entry>	
+					<entry key="size"><value>800x400</value></entry>
+					<entry key="order"><value>1</value></entry>
+				</map>
+			</list>
 		</property>
 	</bean>
 	
@@ -54,7 +93,7 @@
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.group.ui"/>
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.admin.SystemAdminMainController</value>		

@@ -27,8 +27,7 @@
 package org.olat.core.util.mail;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +43,7 @@ import org.olat.core.id.Identity;
  */
 public class ContactMessage {
 
-	private Hashtable contactLists = new Hashtable();
+	private Map<String,ContactList> contactLists = new HashMap<String,ContactList>();
 	private List<Identity> disabledIdentities;
 	private String bodyText;
 	private String subject;
@@ -86,7 +85,7 @@ public class ContactMessage {
 		if (emailList != null) {
 			if (contactLists.containsKey(emailList.getName())) {
 				// there is already a ContactList with this name...
-				ContactList existing = (ContactList) contactLists.get(emailList.getName());
+				ContactList existing = contactLists.get(emailList.getName());
 				// , merge their values.
 				existing.add(emailList);
 			} else {
@@ -104,7 +103,6 @@ public class ContactMessage {
 	}
 	
 	private ContactList cleanEMailList(ContactList emailList) {
-		String value = "";
 		for (Identity identity: emailList.getIdentiEmails().values()) {
 			List<Identity> singleIdentityList = new ArrayList<Identity>();
 			singleIdentityList.add(identity);
@@ -127,13 +125,7 @@ public class ContactMessage {
 	 * 
 	 * @return
 	 */
-	public List getEmailToContactLists() {
-		ArrayList retVal = new ArrayList();
-		Enumeration enumeration = this.contactLists.elements();
-		while (enumeration.hasMoreElements()) {
-			retVal.add(enumeration.nextElement());
-		}
-		return retVal;
+	public List<ContactList> getEmailToContactLists() {
+		return new ArrayList<ContactList>(contactLists.values());
 	}
-
 }

@@ -31,8 +31,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.commons.servlets.pathhandlers.FilePathHandler;
 import org.olat.commons.servlets.util.ResourceDescriptor;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * Initial Date:  16.06.2003
@@ -61,7 +62,7 @@ public class QTIStaticsHandler extends FilePathHandler {
 	}
 
 	public ResourceDescriptor getResourceDescriptor(HttpServletRequest request, String relPath) {
-		if (UserSession.getUserSession(request).isAuthenticated()) {
+		if (CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request).isAuthenticated()) {
 			if (relPath.endsWith("qti.xml")) return null;
 			return super.getResourceDescriptor(request, relPath);
 		}	else

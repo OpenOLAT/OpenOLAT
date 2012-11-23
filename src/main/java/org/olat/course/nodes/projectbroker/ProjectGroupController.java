@@ -87,12 +87,14 @@ public class ProjectGroupController extends BasicController {
 		VelocityContainer myContent = createVelocityContainer("projectgroup_management");
 
 		// Project Leader Management
-		projectLeaderController = new GroupController(ureq, getWindowControl(), true, true, true, false, true, project.getProjectLeaderGroup());
+		//TODO memail
+		projectLeaderController = new GroupController(ureq, getWindowControl(), true, true, true, false, true, false, project.getProjectLeaderGroup());
 		listenTo(projectLeaderController);
 		myContent.put("projectLeaderController", projectLeaderController.getInitialComponent());
 
 		// Project Member Management
-		projectMemberController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, project.getProjectParticipantGroup());
+		//TODO memail
+		projectMemberController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, project.getProjectParticipantGroup());
 		listenTo(projectMemberController);
 		myContent.put("projectMemberController", projectMemberController.getInitialComponent());
 		// add mail templates used when adding and removing users
@@ -103,7 +105,8 @@ public class ProjectGroupController extends BasicController {
 
 		// Project Candidates Management
 		if (projectBrokerModuleConfiguration.isAcceptSelectionManually()) {
-			projectCandidatesController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, project.getCandidateGroup());
+			//TODO memail
+			projectCandidatesController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, false, project.getCandidateGroup());
 			listenTo(projectCandidatesController);
 			myContent.contextPut("isProjectCandidatesListEmpty", ProjectBrokerManagerFactory.getProjectGroupManager().isCandidateListEmpty(project.getCandidateGroup()) );
 			myContent.put("projectCandidatesController", projectCandidatesController.getInitialComponent());
@@ -169,7 +172,7 @@ public class ProjectGroupController extends BasicController {
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-				MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesMoveEvent.getMovedIdentities(), ccIdentities, null, mailTemplate, null);
+				MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesMoveEvent.getMovedIdentities(), ccIdentities, mailTemplate, null);
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), urequest.getLocale());
 			}
 			fireEvent(urequest, Event.CHANGED_EVENT );		
@@ -182,14 +185,15 @@ public class ProjectGroupController extends BasicController {
 	private void handleProjectMemberGroupEvent(UserRequest urequest, Event event) {
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-			BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup());
+			BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), urequest.getUserSession().getRoles(),
+					identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), null);//TODO memail
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 			getLogger().info("Add users as project-members");
 			fireEvent(urequest, Event.CHANGED_EVENT );			
 		} else if (event instanceof IdentitiesRemoveEvent) {
-			businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup());
+			businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup(), null);
 			getLogger().info("Remove users as account-managers");
 			fireEvent(urequest, Event.CHANGED_EVENT );
 		}

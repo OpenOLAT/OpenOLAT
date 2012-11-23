@@ -75,7 +75,7 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 	 * @param parentNode
 	 * @param pos
 	 */
-	public void insertCourseNodeAt(CourseNode newNode, CourseNode parentNode, int pos) {
+	public CourseEditorTreeNode insertCourseNodeAt(CourseNode newNode, CourseNode parentNode, int pos) {
 		// update editor tree model
 		CourseEditorTreeNode ctnParent = (CourseEditorTreeNode) getNodeById(parentNode.getIdent());
 		if (ctnParent == null) throw new AssertException("Corrupt CourseEditorTreeModel.");
@@ -84,6 +84,7 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 		newCetn.setDirty(true);
 		ctnParent.insert(newCetn, pos);
 		log.debug("insertCourseNodeAt - nodeId: " + newNode.getIdent());
+		return newCetn;
 	}
 	
 	/**
@@ -91,7 +92,7 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 	 * @param newNode
 	 * @param parentNode
 	 */
-	public void addCourseNode(CourseNode newNode, CourseNode parentNode){
+	public CourseEditorTreeNode addCourseNode(CourseNode newNode, CourseNode parentNode){
 		//update editor tree model
 		CourseEditorTreeNode ctnParent = (CourseEditorTreeNode) getNodeById(parentNode.getIdent());
 		if (ctnParent == null) throw new AssertException("Corrupt CourseEditorTreeModel.");
@@ -100,6 +101,7 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 		newCetn.setDirty(true);
 		ctnParent.addChild(newCetn);
 			log.debug("addCourseNode - nodeId: " + newNode.getIdent());
+		return newCetn;
 }
 
 	/**

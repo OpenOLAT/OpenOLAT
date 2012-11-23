@@ -33,6 +33,7 @@ import org.olat.NewControllerFactory;
 import org.olat.admin.site.AdminSite;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.AbstractOLATModule;
@@ -40,7 +41,7 @@ import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.User;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.instantMessaging.rosterandchat.ChangePresenceJob;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -172,9 +173,9 @@ public class AdminModule extends AbstractOLATModule {
 	 * Invalidated all session except administrator-sessions. 
 	 * @return  Number of invalidated sessions
 	 */
-	public static int invalidateAllSessions() {
+	public static int invalidateAllSessionsDepr() {
 		Tracing.logAudit("Session administration: Invalidate all sessions.", AdminModule.class);
-		return UserSession.invalidateAllSessions();
+		return CoreSpringFactory.getImpl(UserSessionManager.class).invalidateAllSessions();
 	}
 
 	/**
@@ -182,19 +183,20 @@ public class AdminModule extends AbstractOLATModule {
 	 * @param nbrSessions
 	 * @return  Number of invalidated sessions
 	 */
-	public static int invalidateOldestSessions(int nbrSessions) {
+	public static int invalidateOldestSessionsDepr(int nbrSessions) {
 		Tracing.logAudit("Session administration: Invalidate oldest sessions Nbr-Sessions=" + nbrSessions, AdminModule.class);
-		return UserSession.invalidateOldestSessions(nbrSessions);
+		return  CoreSpringFactory.getImpl(UserSessionManager.class).invalidateOldestSessions(nbrSessions);
 	}
 
 	/**
 	 * Set global session timeout in msec.
 	 * @param sessionTimeout
 	 */
-	public static void setSessionTimeout(int sessionTimeout) {
+	public static void setSessionTimeoutDepr(int sessionTimeout) {
 		Tracing.logAudit("Session administration: Set session-timeout=" + sessionTimeout, AdminModule.class);
 		//in seconds
-		UserSession.setGlobalSessionTimeout(sessionTimeout);
+
+		CoreSpringFactory.getImpl(UserSessionManager.class).setGlobalSessionTimeout(sessionTimeout);
 		//in milliseconds for presence job
 		ChangePresenceJob.setAutoLogOutCutTimeValue(sessionTimeout*1000);
 	}

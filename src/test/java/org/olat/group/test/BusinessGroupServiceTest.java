@@ -42,6 +42,7 @@ import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -379,7 +380,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		groupsToMerge.add(g1);
 		groupsToMerge.add(g2);
 		groupsToMerge.add(g3);
-		BusinessGroup mergedGroup = businessGroupService.mergeBusinessGroups(wg1, g3, groupsToMerge);
+		BusinessGroup mergedGroup = businessGroupService.mergeBusinessGroups(wg1, g3, groupsToMerge, null);
 		Assert.assertNotNull(mergedGroup);
 		Assert.assertEquals(g3, mergedGroup);
 		dbInstance.commitAndCloseSession();
@@ -460,15 +461,15 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-2-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-1", "move-desc", 0, 10, true, false, null);
-		businessGroupService.addToWaitingList(admin, Collections.singletonList(id1), group);
-		businessGroupService.addToWaitingList(admin, Collections.singletonList(id2), group);
-		businessGroupService.addParticipants(admin, Collections.singletonList(id3), group);
+		businessGroupService.addToWaitingList(admin, Collections.singletonList(id1), group, null);
+		businessGroupService.addToWaitingList(admin, Collections.singletonList(id2), group, null);
+		businessGroupService.addParticipants(admin, JunitTestHelper.getAdminRoles(), Collections.singletonList(id3), group, null);
 		
 		dbInstance.commitAndCloseSession();
 		
 		//move id1 from waiting-list to participant
 		List<Identity> identities = Collections.singletonList(id1);
-		businessGroupService.moveIdentityFromWaitingListToParticipant(identities, admin, group);
+		businessGroupService.moveIdentityFromWaitingListToParticipant(admin, identities, group, null);
 		//check position of 'id2'
 		int pos = businessGroupService.getPositionInWaitingListFor(id2, group);
 		Assert.assertEquals("pos must be 1, bit is=" + pos, 1, pos);
@@ -488,13 +489,13 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-1", "move-desc", 0, 10, true, false, null);
 		//add id1
-		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group);
+		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group, null);
 		dbInstance.commitAndCloseSession();
 		//add id2
-		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group);
+		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group, null);
 		dbInstance.commitAndCloseSession();
 		//add id3
-		businessGroupService.addToWaitingList(id3, Collections.singletonList(id3), group);
+		businessGroupService.addToWaitingList(id3, Collections.singletonList(id3), group, null);
 		dbInstance.commitAndCloseSession();
 		
 
@@ -520,13 +521,13 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-2-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-3", "move-desc", 0, 10, true, false, null);
-		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group);
-		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group);
-		businessGroupService.addToWaitingList(id3, Collections.singletonList(id3), group);
+		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group, null);
+		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group, null);
+		businessGroupService.addToWaitingList(id3, Collections.singletonList(id3), group, null);
 		dbInstance.commitAndCloseSession();
 		
 		//remove id2
-		businessGroupService.removeFromWaitingList(wg1, Collections.singletonList(id2), group);
+		businessGroupService.removeFromWaitingList(wg1, Collections.singletonList(id2), group, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check position of 'id1'
@@ -570,7 +571,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<Identity> identitiesToRemove = new ArrayList<Identity>();
 		identitiesToRemove.add(id1);
 		identitiesToRemove.add(id3);
-		businessGroupService.removeMembers(admin, identitiesToRemove, resource.getOlatResource());
+		businessGroupService.removeMembers(admin, identitiesToRemove, resource.getOlatResource(), null);
 		dbInstance.commitAndCloseSession();
 
 		//check in group1 stay only id2 in waiting list
@@ -616,15 +617,16 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	public void testMoveRegisteredIdentityFromWaitingToParticipant() throws Exception {
 		//add 1 identity as participant
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w4-1-" + UUID.randomUUID().toString());
+		Roles rolesId1 = securityManager.getRoles(id1);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-4", "move-desc", 0, 10, true, false, null);
-		businessGroupService.addParticipants(id1, Collections.singletonList(id1), group);
+		businessGroupService.addParticipants(id1, rolesId1, Collections.singletonList(id1), group, null);
 		dbInstance.commitAndCloseSession();
 
 		//add a user to waiting-list which is already in participant-list 
-		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group);
+		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group, null);
 		dbInstance.commitAndCloseSession();
 		//try to move this user => user will be removed from waiting-list
-		businessGroupService.moveIdentityFromWaitingListToParticipant(Collections.singletonList(id1), id1, group);
+		businessGroupService.moveIdentityFromWaitingListToParticipant(id1, Collections.singletonList(id1), group, null);
 		dbInstance.commitAndCloseSession();
 
 		//check position of 'id1'
@@ -639,14 +641,15 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	public void testAutoTransferFromWaitingListToParticipants() {
 		//add 1 identity as participant, 1 in waiting list
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w5-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w5-2-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w5-2-" + UUID.randomUUID().toString());;
+		Roles rolesId1 = securityManager.getRoles(id1);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-5", "move-desc", 0, 1, true, true, null);
-		businessGroupService.addParticipants(id1, Collections.singletonList(id1), group);
-		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group);
+		businessGroupService.addParticipants(id1, rolesId1, Collections.singletonList(id1), group, null);
+		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group, null);
 		dbInstance.commitAndCloseSession();
 
 		//add a user to waiting-list which is already in participant-list 
-		businessGroupService.removeParticipants(id1, Collections.singletonList(id1), group);
+		businessGroupService.removeParticipants(id1, Collections.singletonList(id1), group, null);
 		dbInstance.commitAndCloseSession();
 
 		//check position of 'id2'

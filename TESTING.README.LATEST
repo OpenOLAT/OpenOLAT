@@ -47,9 +47,9 @@ junit and integration tests in OpenOLAT 8
 -----------------------------------------
 - junit integration tests that load the framework to execute (execution time ca. 10-15m)
   - MySQL
-	  mvn clean test -Dwith-mysql
+	  mvn clean test -Dwith-mysql -Ptomcat
   - PostgreSQL
-	  mvn clean test -Dwith-postgresql 
+	  mvn clean test -Dwith-postgresql -Ptomcat
   - Oracle
     The support of Oracle is still EXPERIMENTAL
     - you need a clean database as the maven process doesn't create a new one (every time)
@@ -59,7 +59,7 @@ junit and integration tests in OpenOLAT 8
     - you need to install the JDBC driver locally (one time) as there isn't any maven repo for them (licensing issue)
       mvn install:install-file -Dfile=ojdbc6.jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.0 -Dpackaging=jar -DcreateChecksum=true
 	then you can run the test suite
-	  mvn clean test -Dwith-oracle
+	  mvn clean test -Dwith-oracle -Ptomcat
 	  
 
 - The junit testresults can be found at target/surefire-reports/*

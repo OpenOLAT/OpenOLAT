@@ -236,10 +236,10 @@ public class CoursesWebService {
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 		Identity identity = ureq.getIdentity();
 		
-		File tmpFile = null;
+		MultipartReader partsReader = null;
 		try {
-			MultipartReader partsReader = new MultipartReader(request);
-			tmpFile = partsReader.getFile();
+			partsReader = new MultipartReader(request);
+			File tmpFile = partsReader.getFile();
 			long length = tmpFile.length();
 			if(length > 0) {
 				Long accessRaw = partsReader.getLongValue("access");
@@ -254,9 +254,7 @@ public class CoursesWebService {
 		} catch (Exception e) {
 			log.error("Error while importing a file",e);
 		} finally {
-			if(tmpFile != null && tmpFile.exists()) {
-				tmpFile.delete();
-			}
+			MultipartReader.closeQuietly(partsReader);
 		}
 
 		CourseVO vo = null;
