@@ -37,12 +37,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Ignore;
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.coordinate.cluster.ClusterCoordinator;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.TestTable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
@@ -56,6 +56,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.coordinate.Locker;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -67,19 +68,39 @@ public class LockTest extends OlatTestCase {
 	private static final int MAX_USERS_MORE = 100; //20; //100;
 	
 	private static OLog log = Tracing.createLoggerFor(LockTest.class);
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private ClusterLockManager clusterLockManager;
+	@Autowired
+	private ClusterCoordinator clusterCoordinator;
 
-	@Test @Ignore
+	/**
+	 * The test is not trivial, it checks if several beans are
+	 * loaded. As they are set with "lazy-init", other tests
+	 * would not failed if they are not loaded.
+	 */
+	@Test
+	public void testServices() {
+		Assert.assertNotNull(dbInstance);
+		Assert.assertNotNull(securityManager);
+		Assert.assertNotNull(clusterCoordinator);
+		Assert.assertNotNull(clusterLockManager);
+	}
+
+	@Test
 	public void testCreateDeleteAcquire() {
 		// some setup
-		final List<Identity> identities = new ArrayList<Identity>();
-		BaseSecurity baseSecurityManager = applicationContext.getBean(BaseSecurity.class);
+		List<Identity> identities = new ArrayList<Identity>();
 		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
-			Identity i1 = baseSecurityManager.createAndPersistIdentity("lock-" + UUID.randomUUID().toString(), null, null, null, null);
+			Identity i1 = securityManager.createAndPersistIdentity("lock-" + UUID.randomUUID().toString(), null, null, null, null);
 			identities.add(i1);
 		}
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 
-		ClusterLockManager cm = ClusterLockManager.getInstance();
 		Identity ident = identities.get(0);
 		Identity ident2 = identities.get(1);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(LockTest.class.getName(), new Long(123456789)); 
@@ -87,49 +108,49 @@ public class LockTest extends OlatTestCase {
 		// ------------------ test the clusterlockmanager ----------------------
 		// create a lock
 		String asset = OresHelper.createStringRepresenting(ores, "locktest");
-		LockImpl li = cm.createLockImpl(asset, ident);
-		cm.saveLock(li);
-		DBFactory.getInstance().closeSession();
+		LockImpl li = clusterLockManager.createLockImpl(asset, ident);
+		clusterLockManager.saveLock(li);
+		dbInstance.closeSession();
 		
 		// find it
-		LockImpl l2 = cm.findLock(asset);
+		LockImpl l2 = clusterLockManager.findLock(asset);
 		assertNotNull(l2);
 		assertEquals(li.getKey(), l2.getKey());
 		
 		// delete it 
-		cm.deleteLock(l2);
-		DBFactory.getInstance().closeSession();
+		clusterLockManager.deleteLock(l2);
+		dbInstance.closeSession();
 		
 		// may not find it again
-		LockImpl l3 = cm.findLock(asset);
+		LockImpl l3 = clusterLockManager.findLock(asset);
 		assertNull(l3);
 		
 		
 		// ------------------ test the clusterlocker ----------------------	
 		//access the cluster locker explicitely
-		Locker cl = applicationContext.getBean(ClusterCoordinator.class).getLocker();
+		Locker cl = clusterCoordinator.getLocker();
 		
 		// acquire
 		LockResult res1 = cl.acquireLock(ores, ident, "abc");
 		assertTrue(res1.isSuccess());
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 		
 		// reacquire same identity (get from db)
 		LockResult res11 = cl.acquireLock(ores, ident, "abc");
 		long lock1Ac = res11.getLockAquiredTime();
 		assertTrue(res11.isSuccess());
 		assertTrue(lock1Ac > 0);
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 
 		// acquire by another identity must fail
 		LockResult res2 = cl.acquireLock(ores, ident2, "abc");
 		assertFalse(res2.isSuccess());
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 
 		// reacquire same identity
 		LockResult res3 = cl.acquireLock(ores, ident, "abc");
 		assertTrue(res3.isSuccess());
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 
 		// test the admin
 		List<LockEntry> entries = cl.adminOnlyGetLockEntries();
@@ -140,7 +161,7 @@ public class LockTest extends OlatTestCase {
 
 		// release lock
 		cl.releaseLock(res3);
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 		// test the admin
 		entries = cl.adminOnlyGetLockEntries();
 		assertEquals(0,entries.size());
@@ -148,96 +169,38 @@ public class LockTest extends OlatTestCase {
 		// make sure it is not locked anymore
 		boolean lo = cl.isLocked(ores, "abc");
 		assertFalse(lo);
-		
-		
-		
-		
-		
-		/*LockResult res3 = cl.releaseLock(lockResult)acquireLock(ores, ident, "abc");
-		assertTrue(res3.isSuccess());
-		DBFactory.getInstance().closeSession();
-		*/
-		
-		//final SecurityGroup group2 = ManagerFactory.getManager().createAndPersistSecurityGroup();
-		// make sure the lock has been written to the disk (tests for createOrFind see other methods)
-
-		//PLock p1 = PessimisticLockManager.getInstance().findOrPersistPLock("befinsert");
-		//assertNotNull(p1);
-
-		
-		// try to enrol all in the same group
-		/*for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
-			final int j = i;
-			new Thread(new Runnable(){
-				public void run() {
-					try {
-						System.out.println("thread started");
-						Identity id = identities.get(j);
-						//
-						DBFactory.getInstance().beginSingleTransaction();
-						PLock p2 = ClusterLockManager.getInstance().findOrPersistPLock("befinsert");
-						assertNotNull(p2);
-						doNoLockingEnrol(id, group2);
-						DBFactory.getInstance().commit();
-						DBFactory.getInstance().closeSession();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}}).start();
-		}		
-		
-		sleep(20000);
-		// now count 
-		DBFactory.getInstance().closeSession();
-		int cnt2 = ManagerFactory.getManager().countIdentitiesOfSecurityGroup(group2);
-		assertTrue("cnt should be smaller or eq than allowed since synced with select for update. cnt:"+cnt2+", max "+MAX_COUNT, cnt2 <= MAX_COUNT);
-		assertTrue("cnt should be eq to allowed since synced with select for update. cnt:"+cnt2+", max "+MAX_COUNT, cnt2 == MAX_COUNT);
-		System.out.println("cnt lock "+cnt2);
-		*/
 	}
 
-	@Test @Ignore
+	@Test
 	public void testSaveEvent() {
 		BaseSecurity baseSecurityManager = applicationContext.getBean(BaseSecurity.class);
     Identity identity = baseSecurityManager.createAndPersistIdentity("lock-save-event-" + UUID.randomUUID().toString(), null, null, null, null);
-    DBFactory.getInstance().closeSession();
-    System.out.println("Created identity=" + identity);
+    dbInstance.closeSession();
+    log.info("Created identity=" + identity);
 		//
 		TestTable entry = new TestTable();
 		entry.setField1("bar");
 		entry.setField2(2221234354566776L);
 		try {
-	    DBFactory.getInstance().saveObject(entry);
-	    DBFactory.getInstance().commit();
+			dbInstance.saveObject(entry);
+			dbInstance.commit();
 	    fail("Should generate an error");
 		} catch (DBRuntimeException dre) {
-			System.out.println("DB connection is in error-state");
+			log.info("DB connection is in error-state");
 		}
 		// DB transaction must be in error state for this test
 		try {
 			
-			ClusterLocker locker = (ClusterLocker) applicationContext.getBean(ClusterCoordinator.class).getLocker();
-			System.out.println("ClusterLocker created");
+			Locker locker = clusterCoordinator.getLocker();
+			assertTrue(locker instanceof ClusterLocker);
+			log.info("ClusterLocker created");
 	    Event event = new SignOnOffEvent(identity, false);
-	    System.out.println("START locker.event(event)");
-	    locker.event(event);
-			System.out.println("DONE locker.event(event)");
+	    log.info("START locker.event(event)");
+	    ((ClusterLocker)locker).event(event);
+			log.info("DONE locker.event(event)");
 		} catch(Exception ex) {
-			System.err.println(ex);
+			log.error("", ex);
 			fail("BLOCKER : ClusterLocker.event is not error-safe, db exception could happen and de-register event-listener");
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
 		}
 	}
 }

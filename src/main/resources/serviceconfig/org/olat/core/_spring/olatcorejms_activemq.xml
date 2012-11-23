@@ -9,7 +9,7 @@
 		<constructor-arg value="olat/${instance.id}/sysbus" />
 	</bean>
   
-	<bean id="jmsConnectionFactory.activemq" class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+	<bean id="jmsConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory">
 		<property name="brokerURL" value="${jms.broker.url}" />
 	</bean>
 

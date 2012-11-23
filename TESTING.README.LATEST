@@ -69,7 +69,7 @@ junit and integration tests in OpenOLAT 8
 * Execute selenium functional integration tests
 -----------------------------------------
 - First build the application without tests (arquillian need the library before mvn give them)
-    mvn -DskipTests=true -Parquillian clean package
+    mvn -DskipTests=true -Parquillian,tomcat clean package
     
 - Run the tests
 	mvn -Parquillian surefire:test
