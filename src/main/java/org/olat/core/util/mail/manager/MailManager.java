@@ -1122,7 +1122,10 @@ public class MailManager extends BasicManager {
 	}
 	
 	// converts an address "bla bli <bla@bli.ch>" => "bla@bli.ch"
-	private InternetAddress getRawEmailFromAddress(Address address) throws AddressException{
+	private InternetAddress getRawEmailFromAddress(Address address) throws AddressException {
+		if(address == null) {
+			throw new AddressException("Address cannot be null");
+		}
 		InternetAddress fromAddress = new InternetAddress(address.toString());
 		String fromPlainAddress = fromAddress.getAddress();
 		return new InternetAddress(fromPlainAddress);
@@ -1186,6 +1189,10 @@ public class MailManager extends BasicManager {
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 			return msg;
+		} catch (AddressException e) {
+			result.setReturnCode(MailerResult.SENDER_ADDRESS_ERROR);
+			logError("", e);
+			return null;
 		} catch (MessagingException e) {
 			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
 			logError("", e);

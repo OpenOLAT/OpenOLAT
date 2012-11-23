@@ -35,9 +35,10 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.coordinate.cluster.ClusterCoordinator;
@@ -47,6 +48,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.DBRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.coordinate.LockResult;
@@ -63,15 +66,15 @@ public class LockTest extends OlatTestCase {
 	private static final int MAX_COUNT = 30; //at least 2
 	private static final int MAX_USERS_MORE = 100; //20; //100;
 	
-	private static Logger log = Logger.getLogger(LockTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(LockTest.class);
 
-	@Test
+	@Test @Ignore
 	public void testCreateDeleteAcquire() {
 		// some setup
 		final List<Identity> identities = new ArrayList<Identity>();
 		BaseSecurity baseSecurityManager = applicationContext.getBean(BaseSecurity.class);
 		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
-			Identity i1 = baseSecurityManager.createAndPersistIdentity("u"+i, null, null, null, null);
+			Identity i1 = baseSecurityManager.createAndPersistIdentity("lock-" + UUID.randomUUID().toString(), null, null, null, null);
 			identities.add(i1);
 		}
 		DBFactory.getInstance().closeSession();
@@ -115,6 +118,7 @@ public class LockTest extends OlatTestCase {
 		LockResult res11 = cl.acquireLock(ores, ident, "abc");
 		long lock1Ac = res11.getLockAquiredTime();
 		assertTrue(res11.isSuccess());
+		assertTrue(lock1Ac > 0);
 		DBFactory.getInstance().closeSession();
 
 		// acquire by another identity must fail
@@ -192,10 +196,10 @@ public class LockTest extends OlatTestCase {
 		*/
 	}
 
-	@Test
+	@Test @Ignore
 	public void testSaveEvent() {
 		BaseSecurity baseSecurityManager = applicationContext.getBean(BaseSecurity.class);
-    Identity identity = baseSecurityManager.createAndPersistIdentity("testSaveEvent", null, null, null, null);
+    Identity identity = baseSecurityManager.createAndPersistIdentity("lock-save-event-" + UUID.randomUUID().toString(), null, null, null, null);
     DBFactory.getInstance().closeSession();
     System.out.println("Created identity=" + identity);
 		//
@@ -223,17 +227,6 @@ public class LockTest extends OlatTestCase {
 			fail("BLOCKER : ClusterLocker.event is not error-safe, db exception could happen and de-register event-listener");
 		}
 	}
-
-
-	private void sleep(int i) {
-		try {
-			Thread.sleep(i);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 
 	/*
 	 * (non-Javadoc)

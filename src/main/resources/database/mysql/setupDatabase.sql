@@ -1450,12 +1450,12 @@ alter table o_checkpoint add constraint FK9E30F4B661159ZZZ foreign key (checklis
 
 create index cmt_id_idx on o_usercomment (resid);
 create index cmt_name_idx on o_usercomment (resname);
-create index cmt_subpath_idx on o_usercomment (ressubpath);
+create index cmt_subpath_idx on o_usercomment (ressubpath(255));
 alter table o_usercomment add index FK92B6864A18251F0 (parent_key), add constraint FK92B6864A18251F0 foreign key (parent_key) references o_usercomment (comment_id);
 alter table o_usercomment add index FKF26C8375236F20A (creator_id), add constraint FKF26C8375236F20A foreign key (creator_id) references o_bs_identity (id);
 create index rtn_id_idx on o_userrating (resid);
 create index rtn_name_idx on o_userrating (resname);
-create index rtn_subpath_idx on o_userrating (ressubpath);
+create index rtn_subpath_idx on o_userrating (ressubpath(255));
 create index rtn_rating_idx on o_userrating (rating);
 alter table o_userrating add index FKF26C8375236F20X (creator_id), add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
 
@@ -1463,8 +1463,8 @@ create index usr_notification_interval_idx on o_user (notification_interval);
 
 create index mark_id_idx on o_mark(resid);
 create index mark_name_idx on o_mark(resname);
-create index mark_subpath_idx on o_mark(ressubpath);
-create index mark_businesspath_idx on o_mark(businesspath);
+create index mark_subpath_idx on o_mark(ressubpath(255));
+create index mark_businesspath_idx on o_mark(businesspath(255));
 create index FKF26C8375236F21X on o_mark(creator_id);
 alter table o_mark add constraint FKF26C8375236F21X foreign key (creator_id) references o_bs_identity (id);
 

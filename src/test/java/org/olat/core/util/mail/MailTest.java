@@ -34,23 +34,17 @@ import java.io.File;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Persistable;
-import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.AssertException;
-import org.olat.core.test.OlatcoreTestWithMocking;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
 	
 /**
  * Description:<br>
@@ -61,8 +55,7 @@ import org.olat.core.test.OlatcoreTestWithMocking;
  * @author Florian Gnaegi, frentix GmbH<br>
  *         http://www.frentix.com
  */
-public class MailTest extends OlatcoreTestWithMocking {
-	private static Logger log = Logger.getLogger(MailTest.class);
+public class MailTest extends OlatTestCase {
 	private Identity id1, id2, id3, id4, id5, id6;
 
 	// for local debugging you can set a systemproperty to a maildomain where
@@ -81,20 +74,13 @@ public class MailTest extends OlatcoreTestWithMocking {
 	 */
 	@Before
 	public void setup() {
-		id1 = createIdentity("one");
-		id2 = createIdentity("two");
-		id3 = createIdentity("three");
-		id4 = createIdentity("four");
-		id5 = createIdentity("five");
-		id6 = createIdentity("six");
+		id1 = JunitTestHelper.createAndPersistIdentityAsUser("one");
+		id2 = JunitTestHelper.createAndPersistIdentityAsUser("two");
+		id3 = JunitTestHelper.createAndPersistIdentityAsUser("three");
+		id4 = JunitTestHelper.createAndPersistIdentityAsUser("four");
+		id5 = JunitTestHelper.createAndPersistIdentityAsUser("five");
+		id6 = JunitTestHelper.createAndPersistIdentityAsUser("six");
 	}
-
-	private Identity createIdentity(String login) {
-		User testUser = new TestUser(login + "olattest@" + maildomain, login + "first", login + "last");
-		Identity id = new TestIdentity(login, testUser);
-		return id;
-	}
-
 
 	/**
 	 * Simple helper to test valid email addresses
@@ -293,7 +279,7 @@ public class MailTest extends OlatcoreTestWithMocking {
 
 		// some attachemnts
 		File[] attachments = new File[1];
-		File file1, file2;
+		File file1;
 		try {
 			System.out.println("MailTest.testMailAttachments Url1=" + MailTest.class.getResource("MailTest.class") );
 			file1 = new File(MailTest.class.getResource("MailTest.class").toURI());
@@ -369,16 +355,17 @@ public class MailTest extends OlatcoreTestWithMocking {
 		};
 
 		// some recipients data
-		Identity illegal1 = createIdentity("illegal1");
+		Identity illegal1 = JunitTestHelper.createAndPersistIdentityAsUser("illegal1");
 		illegal1.getUser().setProperty(UserConstants.EMAIL, "doesnotexisteserlkmlkm@sdf.com");
-		Identity illegal2 = createIdentity("illegal2");
+		Identity illegal2 = JunitTestHelper.createAndPersistIdentityAsUser("illegal2");
 		illegal2.getUser().setProperty(UserConstants.EMAIL, "sd@this.domain.does.not.exist.at.all");
-		Identity illegal3 = createIdentity("illegal3");
+		Identity illegal3 = JunitTestHelper.createAndPersistIdentityAsUser("illegal3");
 		illegal3.getUser().setProperty(UserConstants.EMAIL, "@ sdf");
+		
+		DBFactory.getInstance().intermediateCommit();
 
 		List<Identity> recipients = new ArrayList<Identity>();
 		List<Identity> recipientsCC = new ArrayList<Identity>();
-		List<Identity> recipientsBCC = new ArrayList<Identity>();
 
 		recipients.add(illegal1);
 
@@ -418,181 +405,10 @@ public class MailTest extends OlatcoreTestWithMocking {
 		recipients.add(id1);
 		recipients.add(illegal3); // first
 		recipientsCC.add(illegal3); // second
-		recipientsBCC.add(illegal3); // third
 		result = MailerWithTemplate.getInstance().sendMailAsSeparateMails(null, recipients, recipientsCC, template, id6);
 		// mail will bounce back since address does not exist, but sent to local MTA
 		assertEquals(MailerResult.OK, result.getReturnCode());
-		assertEquals(3, result.getFailedIdentites().size());
+		assertEquals(2, result.getFailedIdentites().size());
 
 	}
-
-}
-
-/**
- * Test classes: user and identity
- */
-class TestUser implements User {
-	private Map<String, String> userProperties = new HashMap<String, String>();
-	private Preferences preferences;
-
-	TestUser(String email, String firstname, String lastname) {
-		
-		setProperty(UserConstants.FIRSTNAME, firstname);
-		setProperty(UserConstants.LASTNAME, lastname);
-		setProperty(UserConstants.EMAIL, email);
-		
-		setPreferences(new Preferences() {
-			public String getFontsize() {
-				return null;
-			}
-
-			public String getNotificationInterval() {
-				return null;
-			}
-
-			public boolean getInformSessionTimeout() {
-				return false;
-			}
-
-			public String getLanguage() {
-				return "en";
-			}
-
-			public boolean getPresenceMessagesPublic() {
-				return false;
-			}
-
-			public void setFontsize(String l) {}
-
-			public void setNotificationInterval(String ni) {}
-
-			public void setInformSessionTimeout(boolean b) {}
-
-			public void setLanguage(String l) {}
-
-			public void setPresenceMessagesPublic(boolean b) {}
-
-			@Override
-			public String getReceiveRealMail() {
-				return "false";
-			}
-
-			@Override
-			public void setReceiveRealMail(String receiveRealMail) {
-				//
-			}
-		});
-	}
-
-	public Long getKey() {
-		return null;
-	}
-
-	public boolean equalsByPersistableKey(Persistable persistable) {
-		return false;
-	}
-
-	public Date getLastModified() {
-		return null;
-	}
-
-	public Date getCreationDate() {
-		return null;
-	}
-
-	public void setPreferences(Preferences prefs) {
-		preferences = prefs;
-	}
-
-	public Preferences getPreferences() {
-		return preferences;
-	}
-
-	public String getProperty(String name, Locale locale) {
-		return userProperties.get(name);
-	}
-
-	public void setProperty(String name, String value) {
-		if (value == null) {
-			userProperties.remove(name);
-		} else {
-			userProperties.put(name, value);
-		}
-	}
-	
-
-	public void setIdentityEnvironmentAttributes(Map<String, String> identEnvAttribs) {
-		throw new AssertException("SETTER not yet implemented, not used in tests so far, must be used if IdentityEnvironmentAttributes should be tested");
-	}	
-
-	public String getPropertyOrIdentityEnvAttribute(String propertyName, Locale locale) {
-		throw new AssertException("GETTER not yet implemented, not used in tests so far, must be used if IdentityEnvironmentAttributes should be tested");
-	}
-
-	public int getFieldCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-}
-
-class TestIdentity implements Identity {
-	String name;
-	User user;
-
-	public TestIdentity(String login, User testUser) {
-		this.name = login;
-		this.user = testUser;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public Date getCreationDate() {
-		return null;
-	}
-
-	public Date getLastModified() {
-		return null;
-	}
-
-	public boolean equalsByPersistableKey(Persistable persistable) {
-		return false;
-	}
-
-	public Long getKey() {
-		return null;
-	}
-
-	public Date getLastLogin() {
-		return null;
-	}
-
-	public void setLastLogin(Date loginDate) {
-	}
-
-	public Integer getStatus() {
-		return Identity.STATUS_ACTIV;
-	}
-
-	public void setStatus(Integer newStatus) {
-	}
-
-	public Date getDeleteEmailDate() {
-		return null;
-	}
-
-	public void setDeleteEmailDate(Date newDeleteEmail) {
-	}
-
-	public void setName(String loginName) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }
