@@ -91,11 +91,6 @@ public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfigur
 	 */
 	@Override
 	public boolean isEnabled() {
-		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
-		if (!portfolioModule.isEnabled()) return false;
-		else return super.isEnabled();
+		return CoreSpringFactory.getImpl(PortfolioModule.class).isEnabled();
 	}
-
-	
-	
 }
