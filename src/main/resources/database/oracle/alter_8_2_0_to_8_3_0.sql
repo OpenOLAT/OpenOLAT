@@ -48,3 +48,21 @@ create or replace view o_gp_business_v  as (
       gp.fk_waitinggroup as fk_waitinggroup
    from o_gp_business gp
 );
+
+-- openmeetings
+create table o_om_room_reference (
+   id number(20) not null,
+   version number(20) not null,
+   lastmodified date,
+   creationdate date,
+   businessgroup number(20),
+   resourcetypename varchar(50),
+   resourcetypeid number(20),
+   ressubpath varchar(255),
+   roomId number(20),
+   config clob,
+   primary key (id)
+);
+
+alter table o_om_room_reference  add constraint idx_omroom_to_bgroup foreign key (businessgroup) references o_gp_business (group_id);
+create index idx_omroom_residname on o_om_room_reference (resourcetypename,resourcetypeid);

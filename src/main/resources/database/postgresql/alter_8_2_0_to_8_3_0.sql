@@ -5,8 +5,6 @@ alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (f
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
 
 
-
-
 drop view o_gp_business_v;
 create or replace view o_gp_business_v  as (
    select
@@ -48,3 +46,21 @@ create or replace view o_gp_business_v  as (
       gp.fk_waitinggroup as fk_waitinggroup
    from o_gp_business as gp
 );
+
+-- openmeetings
+create table o_om_room_reference (
+   id int8 not null,
+   version int4 not null,
+   lastmodified timestamp,
+   creationdate timestamp,
+   businessgroup int8,
+   resourcetypename varchar(50),
+   resourcetypeid int8,
+   ressubpath varchar(255),
+   roomId int8,
+   config text,
+   primary key (id)
+);
+
+alter table o_om_room_reference  add constraint idx_omroom_to_bgroup foreign key (businessgroup) references o_gp_business (group_id);
+create index idx_omroom_residname on o_om_room_reference (resourcetypename,resourcetypeid);

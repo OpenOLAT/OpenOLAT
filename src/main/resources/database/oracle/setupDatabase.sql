@@ -1278,6 +1278,24 @@ create table o_mark (
 );
 
 --
+-- Table: o_om_room_reference
+--;
+
+create table o_om_room_reference (
+   id number(20) not null,
+   version number(20) not null,
+   lastmodified date,
+   creationdate date,
+   businessgroup number(20),
+   resourcetypename varchar(50),
+   resourcetypeid number(20),
+   ressubpath varchar(255),
+   roomId number(20),
+   config clob,
+   primary key (id)
+);
+
+--
 -- Table: o_as_eff_statement
 --;
 
@@ -1941,6 +1959,9 @@ create index o_co_db_course_idx on o_co_db_entry (courseid);
 create index o_co_db_cat_idx on o_co_db_entry (category);
 create index o_co_db_name_idx on o_co_db_entry (name);
 alter table o_co_db_entry add constraint FKB60B1BA5F7E870XY foreign key (identity) references o_bs_identity;
+
+alter table o_om_room_reference  add constraint idx_omroom_to_bgroup foreign key (businessgroup) references o_gp_business (group_id);
+create index idx_omroom_residname on o_om_room_reference (resourcetypename,resourcetypeid);
 
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 

@@ -976,6 +976,21 @@ create table if not exists o_ac_paypal_transaction (
    primary key (transaction_id)
 );
 
+-- openmeetings
+create table if not exists o_om_room_reference (
+   id bigint not null,
+   version mediumint unsigned not null,
+   lastmodified datetime,
+   creationdate datetime,
+   businessgroup bigint,
+   resourcetypename varchar(50),
+   resourcetypeid bigint,
+   ressubpath varchar(255),
+   roomId bigint,
+   config longtext,
+   primary key (id)
+);
+
 -- assessment tables
 -- efficiency statments
 create table if not exists o_as_eff_statement (
@@ -1479,6 +1494,8 @@ create index o_co_db_cat_idx on o_co_db_entry (category);
 create index o_co_db_name_idx on o_co_db_entry (name);
 alter table o_co_db_entry add constraint FK_DB_ENTRY_TO_IDENT foreign key (identity) references o_bs_identity (id);
 
+alter table o_om_room_reference  add constraint idx_omroom_to_bgroup foreign key (businessgroup) references o_gp_business (group_id);
+create index idx_omroom_residname on o_om_room_reference (resourcetypename,resourcetypeid);
 
 alter table o_ep_artefact add constraint FKF26C8375236F28X foreign key (fk_artefact_auth_id) references o_bs_identity (id);
 alter table o_ep_struct_el add constraint FKF26C8375236F26X foreign key (fk_olatresource) references o_olatresource (resource_id);

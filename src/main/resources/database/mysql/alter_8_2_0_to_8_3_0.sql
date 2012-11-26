@@ -61,3 +61,5 @@ create table if not exists o_om_room_reference (
    primary key (id)
 );
 
+alter table o_om_room_reference  add constraint idx_omroom_to_bgroup foreign key (businessgroup) references o_gp_business (group_id);
+create index idx_omroom_residname on o_om_room_reference (resourcetypename,resourcetypeid);
