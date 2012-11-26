@@ -61,7 +61,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.StringHelperTest.class,
 	org.olat.core.util.FormatterTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
-
+	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.note.NoteTest.class,//ok
 	org.olat.user.UserPropertiesPerformanceTest.class,//ok
 	org.olat.user.EmailCheckPerformanceTest.class,//fail
