@@ -21,7 +21,6 @@ package org.olat.modules.openmeetings.manager;
 
 import java.io.File;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,15 +45,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
+import org.olat.modules.openmeetings.model.OpenMeetingsRoomReference;
 import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 import org.olat.modules.openmeetings.model.RoomReturnInfo;
-import org.olat.properties.Property;
-import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.user.DisplayPortraitManager;
@@ -96,9 +93,6 @@ import org.openmeetings.stubs.UserServiceStub;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.CompactWriter;
-
 
 /**
  * 
@@ -109,13 +103,10 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	
 	private final static OLog log = Tracing.createLoggerFor(OpenMeetingsManagerImpl.class);
 	
-	private final static String OM_CATEGORY = "openmeetings_room";
-	private final static String GROUP_NAME_PLACEHOLDER = "omgrouptool";
-	
+	@Autowired
+	private OpenMeetingsDAO openMeetingsDao;
 	@Autowired
 	private OpenMeetingsModule openMeetingsModule;
-	@Autowired
-	private PropertyManager propertyManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
 	@Autowired
@@ -123,17 +114,11 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Autowired
 	private RepositoryManager repositoryManager;
 
-	private XStream xStream;
 	private CacheWrapper sessionCache;
 	private OpenMeetingsLanguages languagesMapping;
 	
 	@PostConstruct
 	public void init() {
-		xStream = XStreamHelper.createXStreamInstance();
-		xStream.alias("room", OpenMeetingsRoom.class);
-		xStream.omitField(OpenMeetingsRoom.class, "property");
-		xStream.omitField(OpenMeetingsRoom.class, "numOfUsers");
-		
 		userDeletionManager.registerDeletableUserData(this);
 		
 		languagesMapping = new OpenMeetingsLanguages();
@@ -144,11 +129,11 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 
 	@Override
 	public Long getRoomId(BusinessGroup group, OLATResourceable ores, String subIdentifier) {
-		Property prop = getProperty(group, ores, subIdentifier);
+		OpenMeetingsRoomReference prop = openMeetingsDao.getReference(group, ores, subIdentifier);
 		if(prop == null) {
 			return null;
 		}
-		return prop.getLongValue();
+		return prop.getRoomId();
 	}
 	
 	@Override
@@ -189,16 +174,16 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			}
 
 			//get properties saved
-			List<Property> props = getProperties();
+			List<OpenMeetingsRoomReference> props = openMeetingsDao.getReferences();
 			Map<Long,String> roomIdToResources = getResourceNames(props);
 
 			List<OpenMeetingsRoom> rooms = new ArrayList<OpenMeetingsRoom>();
-			for(Property prop:props) {
-				Long roomId = new Long(prop.getLongValue());
+			for(OpenMeetingsRoomReference prop:props) {
+				Long roomId = new Long(prop.getRoomId());
 				RoomReturnInfo infos = realRooms.get(roomId);
 				if(infos != null) {
-					OpenMeetingsRoom room = deserializeRoom(prop.getTextValue());
-					room.setProperty(prop);
+					OpenMeetingsRoom room = openMeetingsDao.deserializeRoom(prop.getConfig());
+					room.setReference(prop);
 					room.setName(infos.getName());
 					room.setNumOfUsers(infos.getNumOfUsers());
 					String resourceName = roomIdToResources.get(roomId);
@@ -215,13 +200,13 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		}
 	}
 	
-	private Map<Long,String> getResourceNames(List<Property> properties) {
+	private Map<Long,String> getResourceNames(List<OpenMeetingsRoomReference> properties) {
 		Map<Long,String> roomIdToResourceName = new HashMap<Long,String>();
 		Map<Long,List<Long>> resourceIdToRoomIds = new HashMap<Long,List<Long>>();
-		for(Property prop:properties) {
-			Long roomId = prop.getLongValue();
-			if(prop.getGrp() != null) {
-				roomIdToResourceName.put(roomId, prop.getGrp().getName());
+		for(OpenMeetingsRoomReference prop:properties) {
+			long roomId = prop.getRoomId();
+			if(prop.getGroup() != null) {
+				roomIdToResourceName.put(roomId, prop.getGroup().getName());
 			} else if("CourseModule".equals(prop.getResourceTypeName())) {
 				if(!resourceIdToRoomIds.containsKey(prop.getResourceTypeId())) {
 					resourceIdToRoomIds.put(prop.getResourceTypeId(), new ArrayList<Long>());
@@ -368,16 +353,16 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Override
 	public OpenMeetingsRoom getRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier) 
 	throws OpenMeetingsException {
-		Property prop = getProperty(group, ores, subIdentifier);
+		OpenMeetingsRoomReference prop = openMeetingsDao.getReference(group, ores, subIdentifier);
 		if(prop == null) {
 			return null;
 		}
 		
-		Long roomId = prop.getLongValue();
+		Long roomId = prop.getRoomId();
 		if(roomId != null && roomId.longValue() > 0) {
 			try {
 				String sessionId = adminLogin();
-				OpenMeetingsRoom room = deserializeRoom(prop.getTextValue());
+				OpenMeetingsRoom room = openMeetingsDao.deserializeRoom(prop.getConfig());
 				getRoomById(sessionId, room, roomId.longValue());
 				return room;
 			} catch(OpenMeetingsException e) {
@@ -390,6 +375,17 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		return null;
 	}
 	
+	@Override
+	public OpenMeetingsRoom getLocalRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier) {
+		OpenMeetingsRoomReference ref = openMeetingsDao.getReference(group, ores, subIdentifier);
+		if(ref == null) {
+			return null;
+		}
+		OpenMeetingsRoom room = openMeetingsDao.deserializeRoom(ref.getConfig());
+		room.setReference(ref);
+		return room;
+	}
+
 	private OpenMeetingsRoom getRoomById(String sid, OpenMeetingsRoom room, long roomId)
 	throws OpenMeetingsException {
 		try {
@@ -563,8 +559,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			if(returned >= 0) {
 				room.setRoomId(returned);
 				log.audit("Room created");
-				Property prop = createProperty(group, ores, subIdentifier, room);
-				propertyManager.saveProperty(prop);
+				OpenMeetingsRoomReference ref = openMeetingsDao.createReference(group, ores, subIdentifier, room);
+				room.setReference(ref);
 				return room;
 			}
 			return null;
@@ -610,7 +606,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			long returned = updateRoomResponse.get_return();
 			if(returned >= 0) {
 				log.audit("Room updated");
-				updateProperty(group, ores, subIdentifier, room);
+				openMeetingsDao.updateReference(group, ores, subIdentifier, room);
 				return room;
 			}
 			return null;
@@ -632,8 +628,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 
 			long ret = deleteRoomResponse.get_return();
 			boolean ok = ret > 0;
-			if(ok && room.getProperty() != null) {
-				propertyManager.deleteProperty(room.getProperty());
+			if(ok && room.getReference() != null) {
+				openMeetingsDao.delete(room.getReference());
 			}
 			return ok;
 		} catch (Exception e) {
@@ -808,51 +804,6 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		//
-	}
-
-	//Properties
-	private final List<Property> getProperties() {
-		return propertyManager.listProperties(null, null, null, OM_CATEGORY, null);
-	}
-	
-	private final Property getProperty(BusinessGroup group, OLATResourceable courseResource, String subIdentifier) {
-		if(group != null && subIdentifier == null) {
-			subIdentifier = GROUP_NAME_PLACEHOLDER;//name is mandatory
-		}
-		return propertyManager.findProperty(null, group, courseResource, OM_CATEGORY, subIdentifier);
-	}
-	
-	private final Property updateProperty(BusinessGroup group, OLATResourceable courseResource, String subIdentifier, OpenMeetingsRoom room) {
-		Property property = getProperty(group, courseResource, subIdentifier);
-		if(property == null) {
-			property = createProperty(group, courseResource, subIdentifier, room);
-			propertyManager.saveProperty(property);
-		} else {
-			String serialized = serializeRoom(room);
-			property.setTextValue(serialized);
-			propertyManager.updateProperty(property);
-		}
-		return property;
-	}
-	
-	private final Property createProperty(final BusinessGroup group, final OLATResourceable courseResource, String subIdentifier, OpenMeetingsRoom room) {
-		String serialized = serializeRoom(room);
-		long roomId = room.getRoomId();
-		if(group != null && subIdentifier == null) {
-			subIdentifier = GROUP_NAME_PLACEHOLDER;//name is mandatory
-		}
-		return propertyManager.createPropertyInstance(null, group, courseResource, OM_CATEGORY, subIdentifier, null, roomId, null, serialized);
-	}
-	
-	private final OpenMeetingsRoom deserializeRoom(String room) {
-		return (OpenMeetingsRoom)xStream.fromXML(room);
-	}
-	
-	private final String serializeRoom(OpenMeetingsRoom room) {
-		StringWriter writer = new StringWriter();
-		xStream.marshal(room, new CompactWriter(writer));
-		writer.flush();
-		return writer.toString();
 	}
 
 	private final RoomServiceStub getRoomWebService()

@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -34,10 +35,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.OpenMeetingsCourseNode;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
+import org.olat.modules.openmeetings.model.RoomType;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
 
 /**
@@ -48,22 +51,27 @@ import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
 public class OpenMeetingsEditFormController extends FormBasicController {
 	
 	private FormLink editLink;
-	private StaticTextElement roomNameEl;
+	private StaticTextElement roomNameEl, roomTypeEl, roomSizeEl;
+	private StaticTextElement moderationModeEl, roomCommentEl;
+	private MultipleSelectionElement recordingEl;
 	private CloseableModalController cmc;
 	private OpenMeetingsRoomEditController editController;
+	
+	private final String[] recordingKeys = {"xx"};
 	
 	private String courseTitle;
 	private final OLATResourceable course;
 	private final OpenMeetingsCourseNode courseNode;
 	private final OpenMeetingsManager openMeetingsManager;
 	
+	private boolean serverDown = false;
+	private String errorKey;
 	private OpenMeetingsRoom room;
 	private OpenMeetingsRoom defaultSettings;
 
 	public OpenMeetingsEditFormController(UserRequest ureq, WindowControl wControl, OLATResourceable course,
-			OpenMeetingsCourseNode courseNode, String courseTitle, OpenMeetingsRoom defaultSettings)
-	    throws OpenMeetingsException{
-		super(ureq, wControl);
+			OpenMeetingsCourseNode courseNode, String courseTitle, OpenMeetingsRoom defaultSettings) {
+		super(ureq, wControl, null, Util.createPackageTranslator(OpenMeetingsRoomEditController.class, ureq.getLocale()));
 		
 		this.course = course;
 		this.courseNode = courseNode;
@@ -71,19 +79,36 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		this.defaultSettings = defaultSettings;
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
-		room = openMeetingsManager.getRoom(null, course, courseNode.getIdent());
+		try {
+			room = openMeetingsManager.getRoom(null, course, courseNode.getIdent());
+		} catch (OpenMeetingsException e) {
+			room = openMeetingsManager.getLocalRoom(null, course, courseNode.getIdent());
+			serverDown = true;
+			errorKey = e.i18nKey();
+		}
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String name = room == null ? "" : room.getName();
-		roomNameEl = uifactory.addStaticTextElement("room.name", "room.name", name, formLayout);
+		setFormDescription("create.room.desc");
+		if(serverDown) {
+			setFormWarning(errorKey);
+		}
+		roomNameEl = uifactory.addStaticTextElement("room.name", "room.name", "", formLayout);
+		roomTypeEl = uifactory.addStaticTextElement("room.type", "room.type", "", formLayout);
+		roomSizeEl = uifactory.addStaticTextElement("room.size", "room.size", "", formLayout);
+		moderationModeEl = uifactory.addStaticTextElement("mod", "room.moderation.mode", "", formLayout);
+		String[] recordingValues = new String[]{ translate("room.recording.enabled") };
+		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues, null);
+		recordingEl.setEnabled(false);
+		roomCommentEl = uifactory.addStaticTextElement("room.comment", "room.comment", "", formLayout);
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonContainer);
-		String key = room == null ? "create.room" : "edit.room";
-		editLink = uifactory.addFormLink(key, buttonContainer, Link.BUTTON);	
+		editLink = uifactory.addFormLink("create.room", buttonContainer, Link.BUTTON);
+		
+		updateUI();
 	}
 	
 	public OpenMeetingsRoom getRoom() {
@@ -91,10 +116,34 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		String name = room == null ? "" : room.getName();
-		roomNameEl.setValue(name);
-		String key = room == null ? "create.room" : "edit.room";
-		editLink.setI18nKey(key);
+		boolean hasRoom = room != null;
+		setFormDescription(hasRoom ? null : "create.room.desc");
+		roomNameEl.setValue(hasRoom ? room.getName() : "");
+		roomNameEl.setVisible(hasRoom);
+		if(hasRoom) {
+			String typeStr = translate(RoomType.values()[(int)room.getType()].i18nKey());
+			roomTypeEl.setValue(typeStr);
+		} else {
+			roomTypeEl.setValue("");
+		}
+		roomTypeEl.setVisible(hasRoom);
+		roomSizeEl.setValue(hasRoom ? Long.toString(room.getSize()) : "");
+		roomSizeEl.setVisible(hasRoom);
+		
+		String modVal;
+		if(hasRoom) {
+			modVal = room.isModerated() ? translate("room.moderation.yes") : translate("room.moderation.no");
+		} else {
+			modVal = "";
+		}
+		moderationModeEl.setValue(modVal);
+		moderationModeEl.setVisible(hasRoom);
+		recordingEl.select(recordingKeys[0], hasRoom && room.isRecordingAllowed());
+		recordingEl.setVisible(hasRoom);
+		roomCommentEl.setValue(hasRoom ? room.getComment() : "");
+		roomCommentEl.setVisible(hasRoom);
+		editLink.setI18nKey(hasRoom ? "edit.room" : "create.room");
+		editLink.setEnabled(!serverDown);
 	}
 	
 	@Override

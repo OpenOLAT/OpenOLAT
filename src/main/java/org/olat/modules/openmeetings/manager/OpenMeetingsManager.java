@@ -85,6 +85,8 @@ public interface OpenMeetingsManager {
 	public OpenMeetingsRoom getRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier)
 	throws OpenMeetingsException;
 	
+	public OpenMeetingsRoom getLocalRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier);
+	
 	public OpenMeetingsRoom addRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room);
 	
 	public OpenMeetingsRoom updateRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room);

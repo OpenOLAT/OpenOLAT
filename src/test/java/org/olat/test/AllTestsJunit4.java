@@ -130,6 +130,7 @@ import org.junit.runners.Suite;
 	org.olat.portfolio.EPStructureToArtefactTest.class,
 	org.olat.portfolio.EPImportTest.class,
 	org.olat.modules.openmeetings.OpenMeetingsTest.class,
+	org.olat.modules.openmeetings.manager.OpenMeetingsDAOTest.class,
 	org.olat.commons.info.InfoManagerTest.class,
 	org.olat.core.commons.service.tagging.SimpleTagProposalManagerTest.class,
 	org.olat.commons.coordinate.singlevm.SingleVMLockerTest.class,

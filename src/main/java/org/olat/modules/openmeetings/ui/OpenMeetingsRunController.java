@@ -267,7 +267,8 @@ public class OpenMeetingsRunController extends BasicController {
 		editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), group, ores, subIdentifier, "", null, true);
 		listenTo(editController);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), true, translate("edit"));
+		String edit = translate("edit.room");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), true, edit);
 		listenTo(cmc);
 		cmc.activate();
 	}

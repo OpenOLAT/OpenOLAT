@@ -22,10 +22,14 @@ package org.olat.modules.openmeetings.ui;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
@@ -39,23 +43,31 @@ import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
 public class OpenMeetingsRecordingController extends BasicController {
 
 	private final VelocityContainer mainVC;
-
+	private Link downloadLink;
+	
+	private final OpenMeetingsRecording recording;
+	private final OpenMeetingsManager openMeetingsManager;
 	
 	public OpenMeetingsRecordingController(UserRequest ureq, WindowControl wControl, OpenMeetingsRecording recording) {
 		super(ureq, wControl);
-
+		this.recording = recording;
+		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
+		
 		mainVC = createVelocityContainer("recording");
+		downloadLink = LinkFactory.createLink("download", mainVC, this);
+		downloadLink.setTarget("_blanck");
+		downloadLink.setCustomEnabledLinkCSS("b_content_download");
 
 		try {
-			OpenMeetingsManager openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 			String url = openMeetingsManager.getRecordingURL(recording);
+			long width = recording.getWidth();
+			long height = recording.getHeight();
 			mainVC.contextPut("recordingUrl", url);
-			mainVC.contextPut("width", new Long(recording.getWidth()));
-			mainVC.contextPut("height", new Long(recording.getHeight()));
+			mainVC.contextPut("width", new Long(width));
+			mainVC.contextPut("height", new Long(height));
 		} catch (OpenMeetingsException e) {
-			e.printStackTrace();
+			logError("", e);
 		}
-		
 
 		putInitialPanel(mainVC);
 	}
@@ -67,6 +79,14 @@ public class OpenMeetingsRecordingController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == downloadLink) {
+			try {
+				String url = openMeetingsManager.getRecordingURL(recording);
+				MediaResource downloadUrl = new RedirectMediaResource(url);
+				ureq.getDispatchResult().setResultingMediaResource(downloadUrl);
+			} catch (OpenMeetingsException e) {
+				logError("", e);
+			}
+		}
 	}
 }

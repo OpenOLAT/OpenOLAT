@@ -137,7 +137,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 			moderationModeEl.select(key, true);
 		}
 
-		String[] recordingValues = new String[]{ translate("room.recording") };
+		String[] recordingValues = new String[]{ translate("room.recording.enabled") };
 		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues, null);
 		if(room != null) {
 			recordingEl.select(recordingKeys[0], room.isRecordingAllowed());
