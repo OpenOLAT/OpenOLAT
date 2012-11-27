@@ -1006,12 +1006,13 @@ public class EPStructureManager extends BasicManager {
 		if(map == null) {
 			return;//nothing to delete
 		}
+
+		//already delete in removeStructureRecursively: deletePortfolioMapTemplateRecursively((EPStructureElement)map);
 		removeStructureRecursively(map);
-		deletePortfolioMapTemplateRecursively((EPStructureElement)map); 
-		dbInstance.deleteObject(map);
+		//already delete in removeStructureRecursively: dbInstance.deleteObject(map);
 	}
 	
-	private void deletePortfolioMapTemplateRecursively(EPStructureElement element) {
+	/*private void deletePortfolioMapTemplateRecursively(EPStructureElement element) {
 		element.getInternalArtefacts().clear();
 		element.setRoot(null);
 		element.setRootMap(null);
@@ -1020,7 +1021,7 @@ public class EPStructureManager extends BasicManager {
 			deletePortfolioMapTemplateRecursively((EPStructureElement)subLink.getChild());
 		}
 		links.clear();
-	}
+	}*/
 	
 	public void removeStructureRecursively(PortfolioStructure struct){
 		List<PortfolioStructure> children = loadStructureChildren(struct); 
