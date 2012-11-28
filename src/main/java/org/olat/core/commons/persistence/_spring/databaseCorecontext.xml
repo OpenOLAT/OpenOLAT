@@ -9,7 +9,7 @@
 	<bean id="collectingAdditionalDBMappings" class="org.olat.core.commons.persistence.AdditionalMappingsListFactoryBean"/>
 	
 	<!-- Persistence unit manager -->
-	<bean id="pum" class="org.olat.core.commons.persistence.OLATPersistenceUnitManager">
+	<bean id="pum" class="org.olat.core.commons.persistence.OLATPersistenceUnitManager" depends-on="databaseUpgrader">
 		<property name="additionalDBMappings" ref="collectingAdditionalDBMappings" />
   		<property name="persistenceXmlLocations">
     		<list>
