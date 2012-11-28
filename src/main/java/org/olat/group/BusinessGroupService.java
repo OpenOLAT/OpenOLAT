@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
+import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -443,6 +444,14 @@ public interface BusinessGroupService {
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
 	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
+	
+	/**
+	 * Remove the members of the repository entry which are already in a business group
+	 * linked to it.
+	 */
+	public void dedupMembers(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants);
+	
+	public void dedupMembers(Identity ureqIdentity, boolean coaches, boolean participants, ProgressDelegate progressDelegate);
 
 	
 	//security
