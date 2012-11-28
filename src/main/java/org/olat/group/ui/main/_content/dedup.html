@@ -1,3 +1,6 @@
 $r.translate("dedup.members.info")
+#if($numOfDuplicates)
+	$r.translate("dedup.members.info2", $numOfDuplicates)
+#end
 $r.render("options")
 $r.render("buttons")

@@ -446,11 +446,26 @@ public interface BusinessGroupService {
 	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
 	/**
+	 * Count the duplicates
+	 * @param entry
+	 * @param coaches
+	 * @param participants
+	 */
+	public int countDuplicateMembers(RepositoryEntry entry, boolean coaches, boolean participants);
+	
+	/**
 	 * Remove the members of the repository entry which are already in a business group
 	 * linked to it.
 	 */
 	public void dedupMembers(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants);
 	
+	/**
+	 * Deduplicate all the courses in the repository
+	 * @param ureqIdentity
+	 * @param coaches
+	 * @param participants
+	 * @param progressDelegate
+	 */
 	public void dedupMembers(Identity ureqIdentity, boolean coaches, boolean participants, ProgressDelegate progressDelegate);
 
 	

@@ -40,15 +40,26 @@ public class DedupMembersConfirmationController extends FormBasicController {
 	private static final String[] keys = { "coaches", "participants" };
 	
 	private MultipleSelectionElement typEl;
-
+	private final int numOfDuplicates;
+	
 	public DedupMembersConfirmationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "dedup");
-		
+		this.numOfDuplicates = -1;
+		initForm(ureq);
+	}
+
+	public DedupMembersConfirmationController(UserRequest ureq, WindowControl wControl, int numOfDuplicates) {
+		super(ureq, wControl, "dedup");
+		this.numOfDuplicates = numOfDuplicates;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(numOfDuplicates > -1 && formLayout instanceof FormLayoutContainer) {
+			((FormLayoutContainer)formLayout).contextPut("numOfDuplicates", Integer.toString(numOfDuplicates));
+		}
+		
 		FormLayoutContainer optionsCont = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
 		formLayout.add(optionsCont);
 		formLayout.add("options", optionsCont);

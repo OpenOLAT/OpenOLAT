@@ -289,13 +289,18 @@ public class MembersOverviewController extends BasicController implements Activa
 	}
 	
 	protected void doDedupMembers(UserRequest ureq) {
-		dedupCtrl = new DedupMembersConfirmationController(ureq, getWindowControl());
-		listenTo(dedupCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), dedupCtrl.getInitialComponent(),
-				true, translate("dedup.members"));
-		cmc.activate();
-		listenTo(cmc);
+		int numOfDuplicate = businessGroupService.countDuplicateMembers(repoEntry, true, true);
+		if(numOfDuplicate <= 0) {
+			showInfo("dedup.members.notfound");
+		} else {
+			dedupCtrl = new DedupMembersConfirmationController(ureq, getWindowControl(), numOfDuplicate);
+			listenTo(dedupCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), dedupCtrl.getInitialComponent(),
+					true, translate("dedup.members"));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 	
 	protected void dedupMembers(UserRequest ureq, boolean coaches, boolean participants) {

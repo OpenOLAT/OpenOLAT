@@ -1397,7 +1397,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		do {
 			entries = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, batch, true);
 			for(RepositoryEntry re:entries) {
-				countForCommit += dedupSingleRepositoryentry(ureqIdentity, re, coaches, participants);
+				countForCommit += 2 + dedupSingleRepositoryentry(ureqIdentity, re, coaches, participants, false);
 				if(countForCommit > 25) {
 					dbInstance.intermediateCommit();
 					countForCommit = 0;
@@ -1418,10 +1418,16 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	@Transactional
 	public void dedupMembers(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants) {
-		dedupSingleRepositoryentry(ureqIdentity, entry, coaches, participants);
+		dedupSingleRepositoryentry(ureqIdentity, entry, coaches, participants, false);
 	}
 	
-	private int dedupSingleRepositoryentry(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants) {
+	@Override
+	@Transactional(readOnly=true)
+	public int countDuplicateMembers(RepositoryEntry entry, boolean coaches, boolean participants) {
+		return dedupSingleRepositoryentry(null, entry, coaches, participants, true);
+	}
+
+	private int dedupSingleRepositoryentry(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants, boolean dryRun) {
 		int count = 0;
 		
 		List<BusinessGroup> groups = null;//load only if needed
@@ -1437,7 +1443,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				
 				List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroups(ownerSecGroups);
 				repoTutorList.retainAll(ownerList);
-				repositoryManager.removeTutors(null, repoTutorList, entry);
+				if(!dryRun) {
+					repositoryManager.removeTutors(null, repoTutorList, entry);
+				}
 				count += repoTutorList.size();
 			}
 		}
@@ -1456,11 +1464,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 				List<Identity> participantList = securityManager.getIdentitiesOfSecurityGroups(participantSecGroups);
 				repoParticipantList.retainAll(participantList);
-				repositoryManager.removeParticipants(ureqIdentity, repoParticipantList, entry);
-				count += participantList.size();
+				if(!dryRun) {
+					repositoryManager.removeParticipants(ureqIdentity, repoParticipantList, entry);
+				}
+				count += repoParticipantList.size();
 			}
 		}
-		return 2 + count;
+		return count;
 	}
 
 	@Override
