@@ -86,6 +86,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	private ChooseScormRunModeForm chooseScormRunMode;
 	private boolean isPreview;
 	private boolean isAssessable;
+	private String assessableType;
 
 	/**
 	 * Use this constructor to launch a CP via Repository reference key set in
@@ -118,6 +119,10 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// show browse mode option only if not assessable, hide it if in
 		// "real test mode"
 		isAssessable = config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
+		if(isAssessable) {
+			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
+					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
+		}
 
 		// <OLATCE-289>
 		// attemptsDependOnScore means that attempts are only incremented when a
@@ -218,7 +223,9 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		if (isAssessable) {
 			ScoreEvaluation scoreEval = scormNode.getUserScoreEvaluation(userCourseEnv);
 			Float score = scoreEval.getScore();
-			startPage.contextPut("score", score != null ? AssessmentHelper.getRoundedScore(score) : "0");
+			if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
+				startPage.contextPut("score", score != null ? AssessmentHelper.getRoundedScore(score) : "0");
+			}
 			startPage.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			startPage.contextPut("passed", scoreEval.getPassed());
 			startPage.contextPut("comment", scormNode.getUserUserComment(userCourseEnv));
@@ -259,7 +266,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		if (isPreview) {
 			courseId = new Long(CodeHelper.getRAMUniqueID()).toString();
 			scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
-					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, false, doActivate,
+					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, null, doActivate,
 					fullWindow, false);
 		} else {
 			boolean attemptsIncremented = false;
@@ -271,20 +278,21 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			}
 			
 			courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
+
 			if (isAssessable) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow, attemptsIncremented);
+						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow, attemptsIncremented);
 				// <OLATCE-289>
 				// scormNode.incrementUserAttempts(userCourseEnv);
 				// </OLATCE-289>
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, isAssessable, doActivate, fullWindow, attemptsIncremented);
+						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow, attemptsIncremented);
 			} else {
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
-						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, isAssessable, doActivate,
+						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, assessableType, doActivate,
 						fullWindow, attemptsIncremented);
 			}
 			
@@ -316,7 +324,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	 * @see org.olat.modules.scorm.ScormAPICallback#lmsCommit(java.lang.String,
 	 * java.util.Properties)
 	 */
-	public void lmsCommit(String olatSahsId, Properties scoScores) {
+	public void lmsCommit(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
 		//
 	}
 
@@ -325,7 +333,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	 * @see org.olat.modules.scorm.ScormAPICallback#lmsFinish(java.lang.String,
 	 *      java.util.Properties)
 	 */
-	public void lmsFinish(String olatSahsId, Properties scoProperties) {
+	public void lmsFinish(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
 		if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
 			doStartPage();
 			scormDispC.close();

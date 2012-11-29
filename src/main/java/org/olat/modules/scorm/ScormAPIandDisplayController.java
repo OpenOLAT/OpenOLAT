@@ -106,7 +106,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback,
 			File cpRoot, String resourceId, String courseIdNodeId, String lesson_mode, String credit_mode,
-			boolean previewMode, boolean assessable, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
+			boolean previewMode, String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -227,7 +227,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		listenTo(columnLayoutCtr);
 		
 		//scrom API calls get handled by this mapper
-		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessable, cpRoot, scormAdapter, attemptsIncremented);
+		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessableType, cpRoot, scormAdapter, attemptsIncremented);
 		String scormCallbackUri = registerMapper(ureq, mapper);
 		myContent.contextPut("scormCallbackUri", scormCallbackUri+"/");
 	}
@@ -430,11 +430,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private void updateMenuTreeIconsAndMessages() {
 		menuTree.setDirty(true);
 		Map<String,String> itemsStat = scormAdapter.getScoItemsStatus();
-		Map idToNode = treeModel.getScormIdToNodeRelation();
+		Map<String,GenericTreeNode> idToNode = treeModel.getScormIdToNodeRelation();
 		
 		for (Iterator<String> it = itemsStat.keySet().iterator(); it.hasNext();) {
 			String itemId = it.next();
-			GenericTreeNode tn = (GenericTreeNode) idToNode.get(itemId);
+			GenericTreeNode tn = idToNode.get(itemId);
 			// change icon decorator
 			tn.setIconDecorator1CssClass("o_scorm_" + (String) itemsStat.get(itemId));
 		}

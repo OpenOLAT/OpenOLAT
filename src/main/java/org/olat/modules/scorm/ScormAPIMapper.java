@@ -46,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.ScormCourseNode;
@@ -78,6 +79,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 	private String lesson_mode;
 	private String credit_mode;
 	private boolean isAssessable;
+	private String assessableType;
 	private boolean attemptsIncremeted;
 	private File cpRoot;
 	
@@ -85,14 +87,15 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		//for XStream
 	}
 	
-	public ScormAPIMapper(Identity identity, String resourceId, String courseIdNodeId, boolean isAssessable,
+	public ScormAPIMapper(Identity identity, String resourceId, String courseIdNodeId, String assessableType,
 			File cpRoot, OLATApiAdapter scormAdapter, boolean attemptsIncremeted) {
 		this.scormAdapter = scormAdapter;
 		this.identity = identity;
 		this.identityKey = identity.getKey();
 		this.resourceId = resourceId;
 		this.courseIdNodeId = courseIdNodeId;
-		this.isAssessable = isAssessable;
+		this.isAssessable = StringHelper.containsNonWhitespace(assessableType);
+		this.assessableType = assessableType;
 		this.cpRoot = cpRoot;
 		this.lesson_mode = scormAdapter.getLessonMode();
 		this.credit_mode = scormAdapter.getCreditMode();
@@ -103,6 +106,10 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 	private final void check() {
 		if(identity == null) {
 			identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
+		}
+		
+		if(isAssessable && !StringHelper.containsNonWhitespace(assessableType)) {
+			assessableType = ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE;
 		}
 		
 		if(scormAdapter == null) {
@@ -134,18 +141,68 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 	}
 
 	@Override
-	public void lmsCommit(String olatSahsId, Properties scoProperties) {
+	public void lmsCommit(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
 		if (isAssessable) {
 			checkForLms();
-			calculateScorePassed(olatSahsId, scoProperties);
+			calculateResults(olatSahsId, scoreProp, lessonStatusProp);
 		}
 	}
 
 	@Override
-	public void lmsFinish(String olatSahsId, Properties scoProperties) {
+	public void lmsFinish(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
 		if (isAssessable) {
 			checkForLms();
-			calculateScorePassed(olatSahsId, scoProperties);
+			calculateResults(olatSahsId, scoreProp, lessonStatusProp);
+		}
+	}
+	
+	private void calculateResults(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
+		if(ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED.equals(assessableType)) {
+			calculatePassed(olatSahsId, lessonStatusProp);
+		} else {
+			calculateScorePassed(olatSahsId, scoreProp);
+		}
+	}
+
+	private void calculatePassed(String olatSahsId, Properties lessonStatusProp) {
+		int found = 0;
+		boolean passedScos = true;
+		for (Iterator<Object> it_status = lessonStatusProp.values().iterator(); it_status.hasNext();) {
+			String status = (String)it_status.next();
+			passedScos &= "passed".equals(status);
+			found++;
+		}
+
+		boolean passed = (found == scormAdapter.getNumOfSCOs()) && passedScos;
+		// if advanceScore option is set update the score only if it is higher
+		// <OLATEE-27>
+		ModuleConfiguration config = scormNode.getModuleConfiguration();
+		if (config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)) {
+			Boolean currentPassed = scormNode.getUserScoreEvaluation(userCourseEnv).getPassed();
+			if (currentPassed == null || !currentPassed.booleanValue()) {
+				// </OLATEE-27>
+				if(!attemptsIncremeted && config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
+					attemptsIncremeted = true;
+				}
+				ScoreEvaluation sceval = new ScoreEvaluation(new Float(0.0f), Boolean.valueOf(passed));
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, attemptsIncremeted);
+				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
+				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
+				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+			}
+		} else {
+			ScoreEvaluation sceval = new ScoreEvaluation(new Float(0.0f), Boolean.valueOf(passed));
+			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
+			userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+		}
+
+		if (log.isDebug()) {
+			String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
+					+ olatSahsId + " occured, passed: " + passed
+					+ ", all lesson status now = " + lessonStatusProp.toString();
+			log.debug(msg, null);
 		}
 	}
 	

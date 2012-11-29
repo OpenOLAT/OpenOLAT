@@ -271,6 +271,14 @@ public class ScormManager extends BasicManager {
 		v.copyInto(javascriptStrings);
 		return javascriptStrings;
 	}
+	
+	public String[] getAllScoIdentifiers() {
+		return _navViewer.getAllScoIdentifiers();
+	}
+	
+	public int getNumOfSCOs() {
+		return _navViewer.getAllScoIdentifiers().length;
+	}
 
 	protected void createNavLinksForAllOranizations(Vector javascriptStrings, String menuParent, boolean useRelativePaths) {
 		_itemCount = -1;

@@ -33,7 +33,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +44,6 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.resources.IMSEntityResolver;
 
@@ -55,21 +53,21 @@ import org.olat.ims.resources.IMSEntityResolver;
 public class ScormCPManifestTreeModel extends GenericTreeModel {
 
 	private Element rootElement;
-	private Map	nsuris = new HashMap(2);
-	private Map hrefToTreeNode = new HashMap();
-	private Map resources; // keys: resource att 'identifier'; values: resource att 'href'
+	private Map<String,String>	nsuris = new HashMap<String,String>(2);
+	private Map<String,GenericTreeNode> hrefToTreeNode = new HashMap<String,GenericTreeNode>();
+	private Map<String,String> resources; // keys: resource att 'identifier'; values: resource att 'href'
 	private int nodeId = 0;
 	//number tree ascending in depth first traversal. Keys: GenericTreeNode | values: int
-	private Map nodeToId = new HashMap();
-	private Map scormIdToNode = new HashMap();
-	private Map itemStatus;
+	private Map<GenericTreeNode,Integer> nodeToId = new HashMap<GenericTreeNode,Integer>();
+	private Map<String,GenericTreeNode> scormIdToNode = new HashMap<String,GenericTreeNode>();
+	private Map<String,String> itemStatus;
 
 	/**
 	 * Constructor of the content packaging tree model
 	 * @param manifest the imsmanifest.xml file
 	 * @param itemStatus a Map containing the status of each item like "completed, not attempted, ..."
 	 */
-	public ScormCPManifestTreeModel(File manifest, Map itemStatus) {
+	public ScormCPManifestTreeModel(File manifest, Map<String,String> itemStatus) {
 		this.itemStatus = itemStatus;
 		Document doc = loadDocument(manifest);
 		// get all organization elements. need to set namespace
@@ -85,10 +83,10 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		Element elResources = (Element) metares.selectSingleNode(rootElement);
 		if (elResources == null) throw new AssertException("could not find element resources");
 		
-		List resourcesList = elResources.elements("resource");
-		resources = new HashMap(resourcesList.size());
-		for (Iterator iter = resourcesList.iterator(); iter.hasNext();) {
-			Element elRes = (Element) iter.next();
+		List<Element> resourcesList = elResources.elements("resource");
+		resources = new HashMap<String,String>(resourcesList.size());
+		for (Iterator<Element> iter = resourcesList.iterator(); iter.hasNext();) {
+			Element elRes = iter.next();
 			String identVal = elRes.attributeValue("identifier");
 			String hrefVal = elRes.attributeValue("href");
 			if (hrefVal != null) { // href is optional element for resource element
@@ -103,8 +101,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		/*
 		 * Get all organizations
 		 */
-		List organizations = new LinkedList();
-		organizations = meta.selectNodes(rootElement);
+		List<Element> organizations = meta.selectNodes(rootElement);
 		if (organizations.isEmpty()) {
 			throw new AssertException("could not find element organization");
 		}
@@ -112,6 +109,10 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		setRootNode(gtn);
 		rootElement = null; // help gc
 		resources = null;
+	}
+	
+	public int size() {
+		return nodeToId.size();
 	}
 	
 	/**
@@ -122,7 +123,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		return (TreeNode) hrefToTreeNode.get(href);
 	}
 
-	private GenericTreeNode buildTreeNodes(List organizations) {
+	private GenericTreeNode buildTreeNodes(List<Element> organizations) {
 		GenericTreeNode gtn = new GenericTreeNode();
 		// 0 is a valid index since List is testet be be not empty above
 		String rootNode = ((Element)organizations.get(0)).getParent().elementText("default");
@@ -136,7 +137,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		gtn.setAccessible(false);
 		
 		for (int i = 0; i < organizations.size(); ++i) {
-			GenericTreeNode gtnchild = buildNode((Element)organizations.get(i));
+			GenericTreeNode gtnchild = buildNode(organizations.get(i));
 			gtn.addChild(gtnchild);
 		}
 		return gtn;
@@ -159,7 +160,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 			nodeToId.put(treeNode, new Integer(nodeId));
 			
 			//set node images according to scorm sco status
-			String itemStatusDesc = (String)itemStatus.get(Integer.toString(nodeId));
+			String itemStatusDesc = itemStatus.get(Integer.toString(nodeId));
 			treeNode.setIconCssClass("o_scorm_item");
 			if(itemStatusDesc != null){
 				// add icon decorator for current status
@@ -180,10 +181,10 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 			else treeNode.setAccessible(false);
 		}
 		
-		List chds = item.elements("item");
+		List<Element> chds = item.elements("item");
 		int childcnt = chds.size();
 		for (int i = 0; i < childcnt; i++) {
-			Element childitem = (Element) chds.get(i);
+			Element childitem = chds.get(i);
 			GenericTreeNode gtnchild = buildNode(childitem);
 			treeNode.addChild(gtnchild);
 		}
@@ -236,7 +237,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 	/**
 	 * @return a map with key->ascending flat string number from traversing tree. value->TreeNode 
 	 */
-	public Map getScormIdToNodeRelation(){
+	public Map<String,GenericTreeNode> getScormIdToNodeRelation(){
 		return scormIdToNode;
 	}
 
