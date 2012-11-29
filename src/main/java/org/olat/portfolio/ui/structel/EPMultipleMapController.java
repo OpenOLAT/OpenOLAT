@@ -261,7 +261,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 					shareLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_share_icon");
 					shareLink.setUserObject(map);
 					boolean shared = ePFMgr.isMapShared(map);
-					if(shared) {
+					if(shared || (map instanceof EPStructuredMap && ((EPStructuredMap)map).getTargetResource() != null)) {
 						shareLink.setCustomDisplayText(translate("map.share.shared"));
 					}
 				}

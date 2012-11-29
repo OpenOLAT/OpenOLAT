@@ -74,6 +74,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.portfolio.manager.EPMapPolicy.Type;
+import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.user.UserManager;
@@ -112,6 +113,11 @@ public class EPShareListController extends FormBasicController {
 		for(int i=targetKeys.length; i-->0; ) {
 			targetValues[i] = translate("map.share.to." + targetKeys[i]);
 		}
+		
+		if(map instanceof EPStructuredMap && ((EPStructuredMap)map).getTargetResource() != null) {
+			policyWrappers.add(new TutorPolicyWrapper());
+		}
+
 		for(EPMapPolicy policy:ePFMgr.getMapPolicies(map)) {
 			policyWrappers.add(new PolicyWrapper(policy));
 		}
@@ -483,26 +489,31 @@ public class EPShareListController extends FormBasicController {
 				}
 			}
 			
-			DateChooser fromChooser = uifactory.addDateChooser("map.share.from." + cmpName, "map.share.from", "", container);
-			fromChooser.setDate(policyWrapper.getFrom());
-			fromChooser.setValidDateCheck("map.share.date.invalid");
-			policyWrapper.setFromChooser(fromChooser);
-			DateChooser toChooser = uifactory.addDateChooser("map.share.to." + cmpName, "map.share.to", "", container);
-			toChooser.setDate(policyWrapper.getTo());
-			toChooser.setValidDateCheck("map.share.date.invalid");
-			policyWrapper.setToChooser(toChooser);
-
-			FormLink addLink = uifactory.addFormLink("map.share.policy.add." + cmpName, "map.share.policy.add", null, container, Link.BUTTON_SMALL);
-			addLink.setUserObject(policyWrapper);
-			FormLink removeLink = uifactory.addFormLink("map.share.policy.delete." + cmpName, "map.share.policy.delete", null, container, Link.BUTTON_SMALL);
-			removeLink.setUserObject(policyWrapper);
-			if (!policyWrapper.getType().equals(EPMapPolicy.Type.allusers)){
-				FormLink inviteLink = uifactory.addFormLink("map.share.policy.invite." + cmpName, "map.share.policy.invite", null, container, Link.BUTTON_XSMALL);
-				inviteLink.setUserObject(policyWrapper);
-				inviteLink.setEnabled(!policyWrapper.isInvitationSend());
+			if(policyWrapper instanceof TutorPolicyWrapper) {
+				String text = translate("map.share.with.tutor");
+				uifactory.addStaticTextElement("map.share.text." + cmpName, text, container);
+			} else {
+				DateChooser fromChooser = uifactory.addDateChooser("map.share.from." + cmpName, "map.share.from", "", container);
+				fromChooser.setDate(policyWrapper.getFrom());
+				fromChooser.setValidDateCheck("map.share.date.invalid");
+				policyWrapper.setFromChooser(fromChooser);
+				DateChooser toChooser = uifactory.addDateChooser("map.share.to." + cmpName, "map.share.to", "", container);
+				toChooser.setDate(policyWrapper.getTo());
+				toChooser.setValidDateCheck("map.share.date.invalid");
+				policyWrapper.setToChooser(toChooser);
+	
+				FormLink addLink = uifactory.addFormLink("map.share.policy.add." + cmpName, "map.share.policy.add", null, container, Link.BUTTON_SMALL);
+				addLink.setUserObject(policyWrapper);
+				FormLink removeLink = uifactory.addFormLink("map.share.policy.delete." + cmpName, "map.share.policy.delete", null, container, Link.BUTTON_SMALL);
+				removeLink.setUserObject(policyWrapper);
+				if (!policyWrapper.getType().equals(EPMapPolicy.Type.allusers)){
+					FormLink inviteLink = uifactory.addFormLink("map.share.policy.invite." + cmpName, "map.share.policy.invite", null, container, Link.BUTTON_XSMALL);
+					inviteLink.setUserObject(policyWrapper);
+					inviteLink.setEnabled(!policyWrapper.isInvitationSend());
+				}
+				StaticTextElement genErrorPanel = uifactory.addStaticTextElement("errorpanel." + cmpName, "", container);
+				genErrorPanel.setUserObject(policyWrapper);
 			}
-			StaticTextElement genErrorPanel = uifactory.addStaticTextElement("errorpanel." + cmpName, "", container);
-			genErrorPanel.setUserObject(policyWrapper);
 			
 			policyWrapper.setComponentName(cmpName);
 			
@@ -622,6 +633,27 @@ public class EPShareListController extends FormBasicController {
 					}
 				}
 			}
+		}
+	}
+	
+	public class TutorPolicyWrapper extends PolicyWrapper {
+
+		@Override
+		public Date getTo() {
+			return null;
+		}
+
+		@Override
+		public DateChooser getFromChooser() {
+			return null;
+		}
+
+		@Override
+		public String calc(String cmpName) {
+			if("map.share.target".equals(cmpName) || "map.share.with".equals(cmpName) ) {
+				return "xxx";
+			}
+			return super.calc(cmpName);
 		}
 	}
 	
