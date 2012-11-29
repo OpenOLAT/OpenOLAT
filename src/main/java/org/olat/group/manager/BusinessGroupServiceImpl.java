@@ -1559,7 +1559,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				List<Identity> participantList = securityManager.getIdentitiesOfSecurityGroups(participantSecGroups);
 				repoParticipantList.retainAll(participantList);
 				if(!dryRun) {
-					repositoryManager.removeParticipants(ureqIdentity, repoParticipantList, entry);
+					repositoryManager.removeParticipants(ureqIdentity, repoParticipantList, entry, null);
 				}
 				count += repoParticipantList.size();
 			}
