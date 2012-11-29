@@ -760,6 +760,30 @@ public class EPStructureManager extends BasicManager {
 		return allOk;
 	}
 	
+	protected boolean moveArtefactInStruct(AbstractArtefact artefact, PortfolioStructure parStruct, int position) {
+		EPStructureElement structureEl = (EPStructureElement)dbInstance.loadObject((EPStructureElement)parStruct);
+		Identity author = structureEl.getInternalArtefacts().get(0).getAuthor();
+		if (author == null) return false; // old model without author, doesn't work!
+
+		List<EPStructureToArtefactLink> artefactLinks =  structureEl.getInternalArtefacts();
+		int currentIndex = -1;
+		for(EPStructureToArtefactLink link:artefactLinks) {
+			currentIndex++;
+			if(link.getArtefact().equals(artefact)) {
+				break;
+			}
+		}
+		
+		if(currentIndex > -1 && currentIndex < artefactLinks.size()) {
+			EPStructureToArtefactLink link = artefactLinks.remove(currentIndex);
+			if(position > currentIndex) {
+				position--;
+			}
+			artefactLinks.add(position, link);
+		}
+		return true;
+	}
+	
 	/**
 	 * Check the collect restriction against the structure element
 	 * @param structure
