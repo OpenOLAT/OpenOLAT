@@ -148,7 +148,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		mainPopPanel = new Panel("dedup");
 		mainPopPanel.setContent(dedupCtrl.getInitialComponent());
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainPopPanel, true, translate("dedup.members"), true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainPopPanel, true, translate("dedup.members"), false);
 		cmc.activate();
 		listenTo(cmc);
 	}
