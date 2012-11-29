@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
@@ -56,6 +57,7 @@ import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.DedupMembersConfirmationController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
@@ -89,9 +91,11 @@ public class MembersOverviewController extends BasicController implements Activa
 	private AbstractMemberListController waitingCtrl;
 	private AbstractMemberListController selectedCtrl;
 	private AbstractMemberListController searchCtrl;
-	private final Link importMemberLink, addMemberLink;
-	
+	private final Link importMemberLink, addMemberLink, dedupLink;
+
+	private CloseableModalController cmc;
 	private StepsMainRunController importMembersWizard;
+	private DedupMembersConfirmationController dedupCtrl;
 	
 	private final RepositoryEntry repoEntry;
 	private final RepositoryManager repositoryManager;
@@ -119,12 +123,14 @@ public class MembersOverviewController extends BasicController implements Activa
 		searchLink = LinkFactory.createLink("search", mainVC, this);
 		segmentView.addSegment(searchLink, false);
 		
-		updateAllMembers(ureq);
+		selectedCtrl = updateAllMembers(ureq);
 		
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
 		mainVC.put("importMembers", importMemberLink);
+		dedupLink = LinkFactory.createButton("dedup.members", mainVC, this);
+		mainVC.put("dedupMembers", dedupLink);
 		
 		putInitialPanel(mainVC);
 	}
@@ -186,6 +192,8 @@ public class MembersOverviewController extends BasicController implements Activa
 			doChooseMembers(ureq);
 		} else if (source == importMemberLink) {
 			doImportMembers(ureq);
+		} else if (source == dedupLink) {
+			doDedupMembers(ureq);
 		}
 	}
 
@@ -204,6 +212,13 @@ public class MembersOverviewController extends BasicController implements Activa
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(dedupCtrl);
+		removeAsListenerAndDispose(cmc);
+		dedupCtrl = null;
+		cmc = null;
 	}
 
 	private void doChooseMembers(UserRequest ureq) {
@@ -264,6 +279,29 @@ public class MembersOverviewController extends BasicController implements Activa
 		MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
 		
 		switchToAllMembers(ureq);
+	}
+	
+	protected void doDedupMembers(UserRequest ureq) {
+		int numOfDuplicate = businessGroupService.countDuplicateMembers(repoEntry, true, true);
+		if(numOfDuplicate <= 0) {
+			showInfo("dedup.members.notfound");
+		} else {
+			dedupCtrl = new DedupMembersConfirmationController(ureq, getWindowControl(), numOfDuplicate);
+			listenTo(dedupCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), dedupCtrl.getInitialComponent(),
+					true, translate("dedup.members"));
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+	
+	protected void dedupMembers(UserRequest ureq, boolean coaches, boolean participants) {
+		businessGroupService.dedupMembers(ureq.getIdentity(), repoEntry, coaches, participants);
+		showInfo("dedup.done");
+		if(selectedCtrl != null) {
+			selectedCtrl.reloadModel();
+		}
 	}
 	
 	private void switchToAllMembers(UserRequest ureq) {

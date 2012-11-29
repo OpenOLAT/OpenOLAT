@@ -953,23 +953,25 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select sgmsi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		sb.append("select identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+	   .append(" inner join sgmsi.identity identity ")
+	   .append(" inner join fetch  identity.user user ")
 			.append(" where sgmsi.securityGroup=:secGroup");
 
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setEntity("secGroup", secGroup);
+		TypedQuery<Identity> query = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("secGroup", secGroup);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		List<Identity> idents = query.list();
-		return idents;
+		return query.getResultList();
 	}
 
 	/**
-	 * Return a list of unique identites which are in the list of security groups
+	 * Return a list of unique identities which are in the list of security groups
 	 * @see org.olat.basesecurity.BaseSecurity#getIdentitiesOfSecurityGroups(java.util.List)
 	 */
 	@Override
@@ -979,13 +981,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(sgmsi.identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		sb.append("select distinct(identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		  .append(" inner join sgmsi.identity identity ")
+		  .append(" inner join fetch  identity.user user ")
 			.append(" where sgmsi.securityGroup in (:secGroups)");
 		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setParameterList("secGroups", secGroups);
-		List<Identity> idents = query.list();
-		return idents;
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("secGroups", secGroups)
+				.getResultList();
 	}
 	
 	@Override

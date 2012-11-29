@@ -19,16 +19,20 @@
  */
 package org.olat.course.assessment.manager;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.TypedQuery;
 
 import org.hibernate.FlushMode;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.course.assessment.UserCourseInformations;
@@ -154,26 +158,34 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 		if(identities == null || identities.isEmpty()) {
 			return new HashMap<Long,Date>();
 		}
-		try { 
+		try {
+			List<Long> identityKeys = PersistenceHelper.toKeys(identities);
+
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos.identity.key, infos.initialLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" inner join infos.resource as resource")
-			  .append(" where infos.identity.key in (:identityKeys) and resource.resId=:resId and resource.resName='CourseModule'");
-
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			List<Long> identityKeys = new ArrayList<Long>();
-			for(Identity identity:identities) {
-				identityKeys.add(identity.getKey());
+			  .append(" where resource.resId=:resId and resource.resName='CourseModule'");
+			
+			Set<Long> identityKeySet = null;
+			if(identityKeys.size() < 100) {
+				sb.append(" and infos.identity.key in (:identityKeys)");
+				identityKeySet = new HashSet<Long>(identityKeys);
 			}
-			query.setParameterList("identityKeys", identityKeys);
-			query.setLong("resId", courseResourceId);
-			@SuppressWarnings("unchecked")
-			List<Object[]> infoList = query.list();
+
+			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+					.setParameter("resId", courseResourceId);
+			if(identityKeys.size() < 100) {
+				query.setParameter("identityKeys", identityKeys);
+			}
+
+			List<Object[]> infoList = query.getResultList();
 			Map<Long,Date> dateMap = new HashMap<Long,Date>();
 			for(Object[] infos:infoList) {
 				Long identityKey = (Long)infos[0];
-				Date initialLaunch = (Date)infos[1];
-				dateMap.put(identityKey, initialLaunch);
+				if(identityKeySet == null || identityKeySet.contains(identityKey)) {
+					Date initialLaunch = (Date)infos[1];
+					dateMap.put(identityKey, initialLaunch);
+				}
 			}
 			return dateMap;
 		} catch (Exception e) {

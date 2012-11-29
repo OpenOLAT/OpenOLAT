@@ -195,8 +195,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 		this.stackPanel = stackPanel;
 		this.ores = ores;
 		this.callback = assessmentCallback;
-		localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>();
-		initialLaunchDates = new HashMap<Long,Date>();
+		localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>(10000);
+		initialLaunchDates = new HashMap<Long,Date>(10000);
 		
     //use the PropertyHandlerTranslator	as tableCtr translator
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());

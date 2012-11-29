@@ -54,6 +54,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -103,6 +104,8 @@ import org.olat.instantMessaging.syncservice.SyncUserListTask;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
@@ -131,6 +134,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupModule groupModule;
 	@Autowired
 	private BusinessGroupDAO businessGroupDAO;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -1464,6 +1469,102 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				}
 			}
 		}
+	}
+
+	@Override
+	public void dedupMembers(Identity ureqIdentity, boolean coaches, boolean participants, ProgressDelegate delegate) {
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+		params.setRoles(new Roles(true, false, false, false, false, false, false));
+		params.setResourceTypes(Collections.singletonList("CourseModule"));
+		
+		float ratio = -1.0f;
+		if(delegate != null) {
+			int numOfEntries = repositoryManager.countGenericANDQueryWithRolesRestriction(params, true);
+			ratio = 100.0f / (float)numOfEntries;
+		}
+
+		int counter = 0;
+		int countForCommit = 0;
+		float actual = 100.0f;
+		int batch = 25;
+		List<RepositoryEntry> entries;
+		do {
+			entries = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, batch, true);
+			for(RepositoryEntry re:entries) {
+				countForCommit += 2 + dedupSingleRepositoryentry(ureqIdentity, re, coaches, participants, false);
+				if(countForCommit > 25) {
+					dbInstance.intermediateCommit();
+					countForCommit = 0;
+				}
+			}
+			counter += entries.size();
+			if(delegate != null) {
+				actual -= (entries.size() * ratio);
+				delegate.setActual(actual);
+			}
+		} while(entries.size() == batch);
+		
+		if(delegate != null) {
+			delegate.finished();
+		}
+	}
+
+	@Override
+	@Transactional
+	public void dedupMembers(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants) {
+		dedupSingleRepositoryentry(ureqIdentity, entry, coaches, participants, false);
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public int countDuplicateMembers(RepositoryEntry entry, boolean coaches, boolean participants) {
+		return dedupSingleRepositoryentry(null, entry, coaches, participants, true);
+	}
+
+	private int dedupSingleRepositoryentry(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants, boolean dryRun) {
+		int count = 0;
+		
+		List<BusinessGroup> groups = null;//load only if needed
+		if(coaches) {
+			List<Identity> repoTutorList = securityManager.getIdentitiesOfSecurityGroup(entry.getTutorGroup());
+			if(!repoTutorList.isEmpty()) {
+				SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+				groups = businessGroupDAO.findBusinessGroups(params, entry.getOlatResource(), 0, -1);
+				List<SecurityGroup> ownerSecGroups = new ArrayList<SecurityGroup>();
+				for(BusinessGroup group:groups) {
+					ownerSecGroups.add(group.getOwnerGroup());
+				}
+				
+				List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroups(ownerSecGroups);
+				repoTutorList.retainAll(ownerList);
+				if(!dryRun) {
+					repositoryManager.removeTutors(ureqIdentity, repoTutorList, entry);
+				}
+				count += repoTutorList.size();
+			}
+		}
+		
+		if(participants) {
+			List<Identity> repoParticipantList = securityManager.getIdentitiesOfSecurityGroup(entry.getParticipantGroup());
+			if(!repoParticipantList.isEmpty()) {
+			
+				if(groups == null) {
+					SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+					groups = businessGroupDAO.findBusinessGroups(params, entry.getOlatResource(), 0, -1);
+				}
+				List<SecurityGroup> participantSecGroups = new ArrayList<SecurityGroup>();
+				for(BusinessGroup group:groups) {
+					participantSecGroups.add(group.getPartipiciantGroup());
+				}
+				List<Identity> participantList = securityManager.getIdentitiesOfSecurityGroups(participantSecGroups);
+				repoParticipantList.retainAll(participantList);
+				if(!dryRun) {
+					repositoryManager.removeParticipants(ureqIdentity, repoParticipantList, entry);
+				}
+				count += repoParticipantList.size();
+			}
+		}
+		return count;
 	}
 
 	@Override
