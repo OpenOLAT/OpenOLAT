@@ -581,7 +581,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		List<Identity> usersList = secMgr.getIdentitiesOfSecurityGroups(secGroups);
 
-		if(callback.mayViewAllUsersAssessments()) {
+		if(callback.mayViewAllUsersAssessments() && usersList.size() < 500) {
 			ICourse course = CourseFactory.loadCourse(ores);
 			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 			List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(usersList);
@@ -1107,9 +1107,10 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 			ICourse course = CourseFactory.loadCourse(ores);
 			// 1) preload assessment cache with database properties
 			long start = 0;
-			boolean logDebug = log.isDebug();
+			boolean logDebug = true || log.isDebug();
 			if(logDebug) start = System.currentTimeMillis();
 			List<Identity> identities = getAllAssessableIdentities();
+			course.getCourseEnvironment().getAssessmentManager().preloadCache(identities);
 
 			UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 			initialLaunchDates.putAll(mgr.getInitialLaunchDates(course.getResourceableId(), identities));
@@ -1119,7 +1120,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 				if (Thread.interrupted()) break;
 			}
 			if (logDebug) {
-				log.debug("Preloading of user course environment cache for course::" + course.getResourceableId() + " for "
+				log.info("Preloading of user course environment cache for course::" + course.getResourceableId() + " for "
 						+ localUserCourseEnvironmentCache.size() + " user course environments. Loading time::" + (System.currentTimeMillis() - start)
 						+ "ms");
 			}
