@@ -32,10 +32,14 @@ import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
+import org.olat.core.gui.components.table.Table;
+import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -54,10 +58,13 @@ import org.olat.resource.OLATResource;
  */
 public class CourseBusinessGroupListController extends AbstractBusinessGroupListController {
 	
+	private static String TABLE_ACTION_UNLINK = "tblUnlink";
+	
 	private final RepositoryEntry re;
 	private final Link createGroup;
 	private final Link addGroup;
-	
+
+	private DialogBoxController confirmRemoveResource;
 	private SelectBusinessGroupController selectController;
 	
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
@@ -96,7 +103,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
 		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "table.header.edit", translate("table.header.edit")));
-		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_LAUNCH, "table.header.remove", translate("table.header.remove")));
+		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_UNLINK, "table.header.remove", translate("table.header.remove")));
 		return 11;
 	}
 
@@ -119,9 +126,26 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 			cmc.deactivate();
 			cleanUpPopups();
 			addGroupsToCourse(selectedGroups);
-		} else {
-			super.event(ureq, source, event);
+		} else if (source == groupListCtr) {
+			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
+				TableEvent te = (TableEvent) event;
+				String actionid = te.getActionId();
+				if(TABLE_ACTION_UNLINK.equals(actionid)) {
+					Long businessGroupKey = groupListModel.getObject(te.getRowId()).getBusinessGroupKey();
+					BusinessGroup group = businessGroupService.loadBusinessGroup(businessGroupKey);
+					String text = getTranslator().translate("group.remove", new String[] { group.getName(), re.getDisplayname() });
+					confirmRemoveResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
+					confirmRemoveResource.setUserObject(group);
+				}
+			}
+		} else if (source == confirmRemoveResource) {
+			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
+				BusinessGroup group = (BusinessGroup)confirmRemoveResource.getUserObject();
+				doRemoveBusinessGroup(group);
+			}
 		}
+
+		super.event(ureq, source, event);
 	}
 	
 	@Override
@@ -129,6 +153,11 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		super.cleanUpPopups();
 		removeAsListenerAndDispose(selectController);
 		selectController = null;
+	}
+	
+	private void doRemoveBusinessGroup(BusinessGroup group) {
+		businessGroupService.removeResourceFrom(group, re);
+		reloadModel();
 	}
 
 	protected void doSelectGroups(UserRequest ureq) {
