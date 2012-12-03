@@ -527,7 +527,7 @@ public class MailManager extends BasicManager {
 				result = new MailerResult();
 			}
 			
-			boolean makeRealMail = makeRealMail(toId, ccLists, bccLists);
+			boolean makeRealMail = makeRealMail(toId, cc, ccLists, bccLists);
 			Address fromAddress = null;
 			List<Address> toAddress = new ArrayList<Address>();
 			List<Address> ccAddress = new ArrayList<Address>();
@@ -758,14 +758,18 @@ public class MailManager extends BasicManager {
 		}
 	}
 	
-	private boolean makeRealMail(Identity toId, List<ContactList> ccLists, List<ContactList> bccLists) {
+	private boolean makeRealMail(Identity toId, Identity cc, List<ContactList> ccLists, List<ContactList> bccLists) {
 		//need real mail to???
 		boolean makeRealMail = false;
 		// can occur on self-registration
-		if (toId == null && ccLists == null && bccLists == null) return true;
+		if (toId == null && cc == null && ccLists == null && bccLists == null) return true;
 		
 		if(toId != null) {
 			makeRealMail |= wantRealMailToo(toId);
+		}
+		
+		if(cc != null) {
+			makeRealMail |= wantRealMailToo(cc);
 		}
 		
 		//add bcc recipients

@@ -105,7 +105,9 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 	 * @return
 	 */
 	public boolean checkAccess(BusinessControl businessControl, Identity identity, Roles roles) {
-		if (isLogDebugEnabled()) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
+		boolean debug = isLogDebugEnabled();
+		if(debug) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
+		
 		ContextEntry contextEntry = businessControl.popLauncherContextEntry();
 		if (contextEntry != null) {
 			// there is an other context-entry => go further
@@ -117,7 +119,7 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 				for (Indexer childIndexer: childIndexers) {
 					List<Indexer> foundSubChildIndexers = childIndexer instanceof  AbstractHierarchicalIndexer ? ((AbstractHierarchicalIndexer)childIndexer).getIndexerByType(type) : null;
 					if (foundSubChildIndexers != null) {
-						if (isLogDebugEnabled()) logDebug("took a childindexer for ores= " + ores + " not directly linked (means businesspath is not the same stack as indexer -> childindexer). type= " +type + " . indexer parent-type not on businesspath=" + childIndexer.getSupportedTypeName());
+						if (debug) logDebug("took a childindexer for ores= " + ores + " not directly linked (means businesspath is not the same stack as indexer -> childindexer). type= " +type + " . indexer parent-type not on businesspath=" + childIndexer.getSupportedTypeName());
 						for(Indexer foundSubChildIndexer:foundSubChildIndexers) {
 							boolean allow = foundSubChildIndexer.checkAccess(contextEntry, businessControl, identity, roles)
 									&& super.checkAccess(contextEntry, businessControl, identity, roles);
@@ -127,7 +129,7 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 						}
 					}
 				}				
-				logError("could not find an indexer for type="+type + " businessControl="+businessControl + " identity=" + identity, null);
+				if(debug) logDebug("could not find an indexer for type="+type + " businessControl="+businessControl + " identity=" + identity, null);
 			} else {
 				for(Indexer indexer:indexers) {
 					boolean allow = indexer.checkAccess(contextEntry, businessControl, identity, roles)

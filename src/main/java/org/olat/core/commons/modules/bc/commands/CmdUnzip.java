@@ -146,7 +146,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		if(zipContainer == null) {
 			return Collections.emptyList();
 		} else if (zipContainer instanceof VFSContainer) {
-			return ZipUtil.checkLockedFileBeforeUnzip(vfsItem, (VFSContainer)zipContainer, identity, isAdmin);
+			return ZipUtil.checkLockedFileBeforeUnzipNonStrict(vfsItem, (VFSContainer)zipContainer, identity, isAdmin);
 		} else {
 			//replace a file with a folder ???
 			return Collections.emptyList();
@@ -182,7 +182,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			}
 		}
 		
-		if (!ZipUtil.unzip(vfsItem, zipContainer, ureq.getIdentity(), versioning)) {
+		if (!ZipUtil.unzipNonStrict(vfsItem, zipContainer, ureq.getIdentity(), versioning)) {
 			// operation failed - rollback
 			zipContainer.delete();
 			wControl.setError(translator.translate("failed"));

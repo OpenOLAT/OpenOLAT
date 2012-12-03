@@ -27,6 +27,7 @@ package org.olat.course.run.preview;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -155,19 +156,18 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	}
 
 	/**
-	 * @see org.olat.course.assessment.AssessmentManager#preloadCache()
-	 */
-	public void preloadCache() {
-		throw new AssertException("Not implemented for preview.");
-	}
-
-	/**
 	 * @see org.olat.course.assessment.AssessmentManager#preloadCache(org.olat.core.id.Identity)
 	 */
+	@Override
 	public void preloadCache(Identity identity) {
 		throw new AssertException("Not implemented for preview.");
 	}
-	
+
+	@Override
+	public void preloadCache(List<Identity> identities) {
+		throw new AssertException("Not implemented for preview.");
+	}
+
 	/**
 	 * 
 	 * @see org.olat.course.assessment.AssessmentManager#saveAssessmentID(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, java.lang.String)

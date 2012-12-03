@@ -143,6 +143,10 @@ class PublishStepCatalog extends BasicStep {
 			
 			Property prop = cpm.findCourseNodeProperty(rootNode, null, null, "catalog-choice");
 			String value = prop == null ? null : prop.getStringValue();
+			List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(repositoryEntry);
+			if("no".equals(value) && !catalogEntries.isEmpty()) {
+				value = "yes";
+			}
 			
 			FormItemContainer fc = FormLayoutContainer.createDefaultFormLayout("catalogSettings", getTranslator());
 			fc.setRootForm(mainForm);
@@ -164,15 +168,14 @@ class PublishStepCatalog extends BasicStep {
 			addToCatalog = uifactory.addFormLink("publish.catalog.add", flc, Link.BUTTON_SMALL);
 			addToCatalog.setElementCssClass("o_sel_publish_add_to_catalog");
 			addToCatalog.setVisible(activate);
-			if(activate) {
-				List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(repositoryEntry);
-				for(CatalogEntry entry:catalogEntries) {
-					CategoryLabel label = new CategoryLabel(entry, entry.getParent(), getPath(entry));
-					FormLink link = uifactory.addFormLink(label.getCategoryUUID(), "delete", null, flc, Link.LINK);
-					link.setUserObject(label);
-					deleteLinks.add(link);
-				}
+
+			for(CatalogEntry entry:catalogEntries) {
+				CategoryLabel label = new CategoryLabel(entry, entry.getParent(), getPath(entry));
+				FormLink link = uifactory.addFormLink(label.getCategoryUUID(), "delete", null, flc, Link.LINK);
+				link.setUserObject(label);
+				deleteLinks.add(link);
 			}
+
 			flc.contextPut("categories", deleteLinks);
 		}
 		
@@ -467,7 +470,8 @@ class PublishStepCatalog extends BasicStep {
 		}
 	}
 	
-	public class UndoCategoryEvent extends Event {
+	public static class UndoCategoryEvent extends Event {
+		private static final long serialVersionUID = 1086895594328098215L;
 		private final CategoryLabel undelete;
 		
 		public UndoCategoryEvent(CategoryLabel undelete) {
@@ -480,8 +484,8 @@ class PublishStepCatalog extends BasicStep {
 		}
 	}
 	
-	public class AddToCategoryEvent extends Event {
-		
+	public static class AddToCategoryEvent extends Event {
+		private static final long serialVersionUID = -5188729058364093274L;
 		private final CatalogEntry category;
 		private final CatalogEntry parentCategory;
 		
@@ -500,7 +504,7 @@ class PublishStepCatalog extends BasicStep {
 		}
 	}
 	
-	public class CategoryLabel {
+	public static class CategoryLabel {
 		private final CatalogEntry category;
 		private final CatalogEntry parentCategory;
 		private final String path;

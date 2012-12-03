@@ -233,6 +233,114 @@ public class ZipUtil {
 	} // unzip
 	
 	/**
+	 * Unzip a file to a directory using the versioning system of VFS and a ZIP
+	 * library which handle encoding errors. It may results in special characters
+	 * wrongly translated on the file system.
+	 * @param zipLeaf	The file to unzip
+	 * @param targetDir	The directory to unzip the file to
+	 * @param the identity of who unzip the file
+	 * @param versioning enabled or not
+	 * @return	True if successfull, false otherwise
+	 */
+	public static boolean unzipNonStrict(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, boolean versioning) {
+		InputStream in = zipLeaf.getInputStream();
+		boolean unzipped = unzipNonStrict(in, targetDir, identity, versioning);
+		FileUtils.closeSafely(in);
+		return unzipped;
+	}	
+	
+	/**
+	 * Unzip with jazzlib
+	 * @param in
+	 * @param targetDir
+	 * @param identity
+	 * @param versioning
+	 * @return
+	 */
+	private static boolean unzipNonStrict(InputStream in, VFSContainer targetDir, Identity identity, boolean versioning) {
+		net.sf.jazzlib.ZipInputStream oZip = new net.sf.jazzlib.ZipInputStream(in);
+		
+		try {
+			// unzip files
+			net.sf.jazzlib.ZipEntry oEntr = oZip.getNextEntry();
+			while (oEntr != null) {
+				if (oEntr.getName() != null && !oEntr.getName().startsWith(DIR_NAME__MACOSX)) {
+					if (oEntr.isDirectory()) {
+						// skip MacOSX specific metadata directory
+						// create directories
+						getAllSubdirs(targetDir, oEntr.getName(), identity, true);
+					} else {
+						// create file
+						VFSContainer createIn = targetDir;
+						String name = oEntr.getName();
+						// check if entry has directories which did not show up as
+						// directories above
+						int dirSepIndex = name.lastIndexOf('/');
+						if (dirSepIndex == -1) {
+							// try it windows style, backslash is also valid format
+							dirSepIndex = name.lastIndexOf('\\');
+						}
+						if (dirSepIndex > 0) {
+							// create subdirs
+							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, true);
+							if (createIn == null) {
+								if (log.isDebug()) log.debug("Error creating directory structure for zip entry: "
+										+ oEntr.getName());
+								return false;
+							}
+							name = name.substring(dirSepIndex + 1);
+						}
+						
+						if(versioning) {
+							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
+							if(newEntry == null) {
+								newEntry = createIn.createChildLeaf(name);
+								OutputStream out = newEntry.getOutputStream(false);
+								if (!FileUtils.copy(oZip, out)) return false;
+								FileUtils.closeSafely(out);
+							} else if (newEntry instanceof Versionable) {
+								Versionable versionable = (Versionable)newEntry;
+								if(versionable.getVersions().isVersioned()) {
+									versionable.getVersions().addVersion(identity, "", oZip);
+								}
+							}
+							if(newEntry instanceof MetaTagged) {
+								MetaInfo info = ((MetaTagged)newEntry).getMetaInfo();
+								if(info != null) {
+									info.setAuthor(identity.getName());
+									info.write();
+								}
+							}
+							
+						} else {
+							VFSLeaf newEntry = createIn.createChildLeaf(name);
+							if (newEntry != null) {
+								OutputStream out = newEntry.getOutputStream(false);
+								if (!FileUtils.copy(oZip, out)) return false;
+								FileUtils.closeSafely(out);
+							}
+							if(newEntry instanceof MetaTagged) {
+								MetaInfo info = ((MetaTagged)newEntry).getMetaInfo();
+								if(info != null && identity != null) {
+									info.setAuthor(identity.getName());
+									info.write();
+								}
+							}
+						}
+					}
+				}
+				oZip.closeEntry();
+				oEntr = oZip.getNextEntry();
+			}
+		} catch (IOException e) {
+			return false;
+		} finally {
+			FileUtils.closeSafely(oZip);
+		}
+		return true;
+	} // unzip
+	
+	/**
 	 * Check if a file in the zip is already in the path
 	 * @param zipLeaf
 	 * @param targetDir
@@ -249,6 +357,73 @@ public class ZipUtil {
 		try {
 			// unzip files
 			ZipEntry oEntr = oZip.getNextEntry();
+			while (oEntr != null) {
+				if (oEntr.getName() != null && !oEntr.getName().startsWith(DIR_NAME__MACOSX)) {
+					if (oEntr.isDirectory()) {
+						// skip MacOSX specific metadata directory
+						// directories aren't locked
+						oZip.closeEntry();
+						oEntr = oZip.getNextEntry();
+						continue;
+					} else {
+						// search file
+						VFSContainer createIn = targetDir;
+						String name = oEntr.getName();
+						// check if entry has directories which did not show up as
+						// directories above
+						int dirSepIndex = name.lastIndexOf('/');
+						if (dirSepIndex == -1) {
+							// try it windows style, backslash is also valid format
+							dirSepIndex = name.lastIndexOf('\\');
+						}
+						if (dirSepIndex > 0) {
+							// get subdirs
+							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, false);
+							if (createIn == null) {
+								//sub directories don't exist, and aren't locked
+								oZip.closeEntry();
+								oEntr = oZip.getNextEntry();
+								continue;
+							}
+							name = name.substring(dirSepIndex + 1);
+						}
+						
+						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
+						if(MetaInfoHelper.isLocked(newEntry, identity, isAdmin)) {
+							lockedFiles.add(name);
+						}
+					}
+				}
+				oZip.closeEntry();
+				oEntr = oZip.getNextEntry();
+			}
+		} catch (IOException e) {
+			return null;
+		} finally {
+			FileUtils.closeSafely(oZip);
+			FileUtils.closeSafely(in);
+		}
+
+		return lockedFiles;
+	}
+	
+	/**
+	 * 
+	 * @param zipLeaf
+	 * @param targetDir
+	 * @param identity
+	 * @param isAdmin
+	 * @return
+	 */
+	public static List<String> checkLockedFileBeforeUnzipNonStrict(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, boolean isAdmin) {
+		List<String> lockedFiles = new ArrayList<String>();
+		
+		InputStream in = zipLeaf.getInputStream();
+		net.sf.jazzlib.ZipInputStream oZip = new net.sf.jazzlib.ZipInputStream(in);
+		
+		try {
+			// unzip files
+			net.sf.jazzlib.ZipEntry oEntr = oZip.getNextEntry();
 			while (oEntr != null) {
 				if (oEntr.getName() != null && !oEntr.getName().startsWith(DIR_NAME__MACOSX)) {
 					if (oEntr.isDirectory()) {
