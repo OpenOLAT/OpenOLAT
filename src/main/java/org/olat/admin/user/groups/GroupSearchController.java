@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -69,7 +70,8 @@ import org.olat.group.ui.BusinessGroupTableModel;
 public class GroupSearchController extends StepFormBasicController {
 
 	private TextElement search;
-	private FormLink searchButton;
+	private FormSubmit searchButton;
+	private FormLink saveLink, searchLink;
 	private FormItem errorComp;
 	private FormLayoutContainer tableCont;
 	private GroupTableDataModel tableDataModel;
@@ -105,8 +107,11 @@ public class GroupSearchController extends StepFormBasicController {
 		setFormDescription("group.search.description");
 
 		search = uifactory.addTextElement("search.field", "search.field", 100, "", formLayout);
-		searchButton = uifactory.addFormLink("search", formLayout, Link.BUTTON_SMALL);
-		if (!isUsedInStepWizzard()) {
+		
+		if (isUsedInStepWizzard()) {
+			searchLink = uifactory.addFormLink("search", formLayout, Link.BUTTON);
+		} else {
+			searchButton = uifactory.addFormSubmitButton("search", formLayout);
 			uifactory.addSpacerElement("space", formLayout, false);
 		}
 		
@@ -131,17 +136,39 @@ public class GroupSearchController extends StepFormBasicController {
 		tableCont.add("groupList", table);
 		
 		if (!isUsedInStepWizzard()) {
-			uifactory.addFormSubmitButton("save", formLayout);
+			saveLink = uifactory.addFormLink("save", formLayout, Link.BUTTON);
+		}
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
+	 */
+	@Override
+	protected void formOK(UserRequest ureq) {
+		if(isUsedInStepWizzard()) {
+			doSave(ureq);//in wizard form OK == next
+		} else {
+			doSearchGroups(ureq);
 		}
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == searchButton || source == search) {
-			String searchValue = search.getValue();
-			doSearchGroups(searchValue, ureq);
-			lastSearchValue = searchValue;
+		if (source == searchButton || source == searchLink || source == search) {
+			doSearchGroups(ureq);
+		} else if(source == saveLink) {
+			if(validateFormLogic(ureq)) {
+				doSave(ureq);
+			}
+		} else {
+			super.formInnerEvent(ureq, source, event);
 		}
+	}
+	
+	private void doSearchGroups(UserRequest ureq) {
+		String searchValue = search.getValue();
+		doSearchGroups(searchValue, ureq);
+		lastSearchValue = searchValue;
 	}
 
 	/**
@@ -202,7 +229,7 @@ public class GroupSearchController extends StepFormBasicController {
 		if (isUsedInStepWizzard()) {
 			return true;
 		}
-		if ((lastSearchValue == null && !StringHelper.containsNonWhitespace(searchValue))
+		if ((lastSearchValue == null && StringHelper.containsNonWhitespace(searchValue))
 				|| (lastSearchValue != null && !lastSearchValue.equals(searchValue))) {
 			// User pressed enter in input field to search for groups, no group
 			// selected yet. Just search for groups that matches for this input
@@ -220,12 +247,8 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 		return result;
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	protected void formOK(UserRequest ureq) {
+
+	private void doSave(UserRequest ureq) {
 		List<Long> ownerGroups = getCheckedTutorKeys();
 		List<Long> partGroups = getCheckedParticipantKeys();
 		List<Long> mailGroups = getCheckedMailKeys();
@@ -246,7 +269,7 @@ public class GroupSearchController extends StepFormBasicController {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			fireEvent(ureq, new AddToGroupsEvent(ownerGroups, partGroups, mailGroups));
-		}		
+		}	
 	}
 
 	private List<Long> getCheckedTutorKeys() {
