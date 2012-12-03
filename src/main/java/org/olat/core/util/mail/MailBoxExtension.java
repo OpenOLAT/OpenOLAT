@@ -19,7 +19,9 @@
  */
 package org.olat.core.util.mail;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -103,15 +105,15 @@ public class MailBoxExtension extends BasicManager implements MailContextResolve
 	
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		//set as deleted all recpient
+		//set as deleted all recipients
 		logInfo("Delete intern messages");
 		
-		List<DBMail> inbox = mailManager.getInbox(identity, null, false, null, 0, 0);
+		Collection<DBMail> inbox = new HashSet<DBMail>(mailManager.getInbox(identity, null, false, null, 0, 0));
 		for(DBMail inMail:inbox) {
 			mailManager.delete(inMail, identity, true);
 		}
-		
-		List<DBMail> outbox = mailManager.getOutbox(identity, 0, 0);
+
+		Collection<DBMail> outbox = new HashSet<DBMail>(mailManager.getOutbox(identity, 0, 0));
 		for(DBMail outMail:outbox) {
 			mailManager.delete(outMail, identity, true);
 		}

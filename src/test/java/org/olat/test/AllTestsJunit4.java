@@ -60,6 +60,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.coordinate.LockEntryTest.class,
 	org.olat.core.util.StringHelperTest.class,
 	org.olat.core.util.FormatterTest.class,
+	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
 
 	org.olat.note.NoteTest.class,//ok
