@@ -247,6 +247,18 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				for (Property property:loadedProperties) {
 					addPropertyToCache(m, property);
 				}
+				
+				//If property not found, prefill with default value.
+				if(!m.containsKey(ATTEMPTS)) {
+					m.put(ATTEMPTS, INTEGER_ZERO);
+				}
+				if(!m.containsKey(SCORE)) {
+					m.put(SCORE, FLOAT_ZERO);
+				}
+				if(!m.containsKey(LAST_MODIFIED)) {
+					m.put(LAST_MODIFIED, null);
+				}
+				
 				// we use a putSilent here (no invalidation notifications to other cluster nodes), since
 				// we did not generate new data, but simply asked to reload it. 
 				if (prepareForNewData) {

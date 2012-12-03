@@ -442,7 +442,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 					// cast should be save, only assessable nodes are selectable
 					if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
 						identitiesList = getAllAssessableIdentities();
-						doUserChooseWithData(ureq, this.identitiesList, null, currentCourseNode);
+						doUserChooseWithData(ureq, identitiesList, null, currentCourseNode);
 					} else {
 						doGroupChoose(ureq);
 					}
@@ -705,6 +705,12 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 					localUserCourseEnvironmentCache, initialLaunchDates, course, courseNode);
 			wrappedIdentities.add(aiw);
 		}
+		
+		if(userListCtr == null) {
+			//takes too long -> controller disposed
+			return;
+		}
+		
 		// Add the wrapped identities to the table data model
 		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, ureq.getLocale(), isAdministrativeUser, mode == MODE_USERFOCUS);
 		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS);
