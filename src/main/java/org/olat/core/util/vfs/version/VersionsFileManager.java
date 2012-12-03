@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.zip.ZipInputStream;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -166,8 +165,10 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		VFSLeaf currentFile = (VFSLeaf) currentVersion;
 		if (addToRevisions(currentVersion, identity, comment)) {
 			// copy the content of the new file to the old
-			boolean closeInputStream = !(newFile instanceof ZipInputStream);
-			if (VFSManager.copyContent(newFile, currentFile, closeInputStream)) { return true; }
+			boolean closeInputStream = !(newFile instanceof net.sf.jazzlib.ZipInputStream || newFile instanceof java.util.zip.ZipInputStream);
+			if (VFSManager.copyContent(newFile, currentFile, closeInputStream)) {
+				return true;
+			}
 		} else {
 			log.error("Cannot create a version of this file: " + currentVersion);
 		}

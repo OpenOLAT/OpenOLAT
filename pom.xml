@@ -1525,6 +1525,12 @@
 			<version>20080701</version>
 		</dependency>
 		<dependency>
+			<groupId>jazzlib</groupId>
+			<artifactId>jazzlib</artifactId>
+			<version>0.0.6</version> <!-- do not replace with 0.0.7 as this version is highly patched. -->
+			<classifier>patched</classifier>
+		</dependency>
+		<dependency>
 			<groupId>quartz</groupId>
 			<artifactId>quartz</artifactId>
 			<version>1.5.2</version>
