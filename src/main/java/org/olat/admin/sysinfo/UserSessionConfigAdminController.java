@@ -34,6 +34,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -51,21 +52,24 @@ public class UserSessionConfigAdminController extends FormBasicController {
 	private IntegerElement sessionTimeoutAuthEl;
 	private IntegerElement maxSessionsEl;
 	private IntegerElement nbrSessionsEl;
-	
+
+	private CloseableModalController cmc;
 	private DialogBoxController invalidateAllConfirmController;
-	private DialogBoxController blockLoginConfirmController;
 	private DialogBoxController rejectDMZRequestsConfirmController;
+	private BlockLoginConfirmationController blockLoginConfirmController;
 	
 	private FormLink saveLink, invalidateOldSessionLink, invalidateAllSessionLink;
 	private FormLink allowLoginLink, blockLoginLink;
 	private FormLink rejectDMZRequestsLink, allowDMZRequestsLink;
 	
+	private final AdminModule adminModule;
 	private final UserSessionModule sessionModule;
 	private final UserSessionManager sessionManager;
 	
 	public UserSessionConfigAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
+		adminModule = CoreSpringFactory.getImpl(AdminModule.class);
 		sessionModule = CoreSpringFactory.getImpl(UserSessionModule.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		
@@ -78,7 +82,7 @@ public class UserSessionConfigAdminController extends FormBasicController {
 		sessionTimeoutEl = uifactory.addIntegerElement("session.timeout", "session.timeout.label", sessionTimeout, formLayout);
 		int initialSessionAuth = sessionModule.getSessionTimeoutAuthenticated();
 		sessionTimeoutAuthEl = uifactory.addIntegerElement("session.timeout.auth", "session.timeout.auth.label", initialSessionAuth, formLayout);
-		int maxSessions = AdminModule.getMaxSessions();
+		int maxSessions = adminModule.getMaxSessions();
 		maxSessionsEl = uifactory.addIntegerElement("max.sessions", "max.sessions.label", maxSessions, formLayout);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -116,8 +120,8 @@ public class UserSessionConfigAdminController extends FormBasicController {
 	}
 	
 	private void updateLoginBlock() {
-		blockLoginLink.setVisible(!AdminModule.isLoginBlocked());
-		allowLoginLink.setVisible(AdminModule.isLoginBlocked());
+		blockLoginLink.setVisible(!adminModule.isLoginBlocked());
+		allowLoginLink.setVisible(adminModule.isLoginBlocked());
 	}
 	
 	@Override
@@ -138,7 +142,7 @@ public class UserSessionConfigAdminController extends FormBasicController {
 			int sessionTimeoutAuth = sessionTimeoutAuthEl.getIntValue();
 			sessionModule.setSessionTimeoutAuthenticated(sessionTimeoutAuth);
 			int maxSessions = maxSessionsEl.getIntValue();
-			AdminModule.setMaxSessions(maxSessions);
+			adminModule.setMaxSessions(maxSessions);
 			sessionManager.setGlobalSessionTimeout(sessionTimeoutAuth);
 		} else if(source == invalidateOldSessionLink) {
 			int nbrSessions = nbrSessionsEl.getIntValue();
@@ -147,14 +151,14 @@ public class UserSessionConfigAdminController extends FormBasicController {
 		} else if(source == invalidateAllSessionLink) {
 			invalidateAllConfirmController = activateYesNoDialog(ureq, null, translate("invalidate.all.sure"), invalidateAllConfirmController);
 		} else if(source == blockLoginLink) {	
-			blockLoginConfirmController = activateYesNoDialog(ureq, null, translate("block.login.sure"), blockLoginConfirmController);
+			doConfirmLoginBlocked(ureq);
 		} else if(source == allowLoginLink) {
-			AdminModule.setLoginBlocked(false);
+			adminModule.setLoginBlocked(false, true);
 			updateLoginBlock();
 		} else if(source == rejectDMZRequestsLink) {
 			rejectDMZRequestsConfirmController = activateYesNoDialog(ureq, null, translate("reject.dmz.requests.sure"), rejectDMZRequestsConfirmController);
 		} else if(source == allowDMZRequestsLink) {
-			AdminModule.setRejectDMZRequests(false);
+			adminModule.setRejectDMZRequests(false);
 			updateDmzBlock();
 			showInfo("allow.dmz.requests.done");
 		} else {
@@ -170,17 +174,37 @@ public class UserSessionConfigAdminController extends FormBasicController {
 				showInfo("invalidate.session.done", Integer.toString(nbrOfInvalidatedSessions));
 			}
 		} else if (source == blockLoginConfirmController) {
-			if (DialogBoxUIFactory.isYesEvent(event)) { 
-				AdminModule.setLoginBlocked(true);
+			if (event == Event.DONE_EVENT) { 
+				boolean persist = blockLoginConfirmController.isPersist();
+				adminModule.setLoginBlocked(true, persist);
 				showInfo("block.login.done");
 			}
+			cmc.deactivate();
 			updateLoginBlock();
 		} else if (source == rejectDMZRequestsConfirmController) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { 
-				AdminModule.setRejectDMZRequests(true);
+				adminModule.setRejectDMZRequests(true);
 				showInfo("reject.dmz.requests.done");
 			}
 			updateDmzBlock();
+		} else if(source == cmc) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(blockLoginConfirmController);
+		removeAsListenerAndDispose(cmc);
+		blockLoginConfirmController = null;
+		cmc = null;
+	}
+	
+	private void doConfirmLoginBlocked(UserRequest ureq) {
+		blockLoginConfirmController = new BlockLoginConfirmationController(ureq, getWindowControl());
+		listenTo(blockLoginConfirmController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), blockLoginConfirmController.getInitialComponent(), true, translate("block.login.title"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 }
