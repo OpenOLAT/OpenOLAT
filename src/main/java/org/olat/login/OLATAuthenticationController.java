@@ -299,10 +299,10 @@ public class OLATAuthenticationController extends AuthenticationController imple
 				ident = findIdentInChangingEmailWorkflow(login);
 			}
 		}
-		
-		ident.getUser().getPreferences().getLanguage();
-		
-		if (ident == null) return null;
+
+		if (ident == null) {
+			return null;
+		}
 		
 		// find OLAT authentication provider
 		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(
