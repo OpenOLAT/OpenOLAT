@@ -32,7 +32,6 @@ import java.util.Map;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -116,36 +115,34 @@ public class ChatManagerController extends BasicController {
 		}
 		chats.clear();
 	}
-
-	public void createChat(UserRequest ureq, Buddy buddy, int offsetX, int offsetY) {
+	
+	public void createChat(UserRequest ureq, Buddy buddy) {	
 		if (buddy == null || chats.containsKey(buddy.getIdentityKey())) {
 			return; // chat  with this person is already ongoing
 		}
 		
-		ChatController chat = new ChatController(ureq, getWindowControl(), buddy, offsetX, offsetY);
-		listenTo(chat);
-
-		Panel p = new Panel("chatholder");
-		p.setContent(chat.getInitialComponent());
-		container.put(buddy.getIdentityKey().toString(), p);
-		chats.put(buddy.getIdentityKey(), chat);
-	}
-
-	public void createChat(UserRequest ureq, Long identityKey) {
-		Buddy buddy = imService.getBuddyById(identityKey);
-		createChat(ureq, buddy);
-	}
-	
-	public void createChat(UserRequest ureq, Buddy buddy) {
-		createChat(ureq, buddy, 100 + (chats.size() * 10), 100 + (chats.size() * 5));
-	}
-	
-	public void createGroupChat(UserRequest ureq, OLATResourceable ores) {
-		ChatController groupchat = new ChatController(ureq, getWindowControl(), ores, 100, 120);
-		listenTo(groupchat);
+		OLATResourceable ores = imService.getPrivateChatresource(getIdentity().getKey(), buddy.getIdentityKey());
 		
-		container.put(ores.getResourceableId().toString(), groupchat.getInitialComponent());
-		chats.put(ores.getResourceableId(), groupchat);
+		int offsetX = 100 + (chats.size() * 10);
+		int offsetY = 100 + (chats.size() * 5);
+		String roomName = translate("im.chat.with") + ": " + buddy.getFullname();
+		ChatController chat = new ChatController(ureq, getWindowControl(), ores, roomName, buddy.getIdentityKey(), 400, 300, offsetX, offsetY);
+		listenTo(chat);
+		container.put(chat.getOlatResourceable().getResourceableId().toString(), chat.getInitialComponent());
+		chats.put(chat.getOlatResourceable().getResourceableId(), chat);
+	}
+
+	public void createGroupChat(UserRequest ureq, OLATResourceable ores, String roomName) {
+		if (ores == null || chats.containsKey(ores.getResourceableId())) {
+			return; // chat with this resource is already ongoing
+		}
+		
+		int offsetX = 100 + (chats.size() * 10);
+		int offsetY = 100 + (chats.size() * 5);
+		ChatController chat = new ChatController(ureq, getWindowControl(), ores, roomName, null, 550, 320, offsetX, offsetY);
+		listenTo(chat);
+		container.put(chat.getOlatResourceable().getResourceableId().toString(), chat.getInitialComponent());
+		chats.put(chat.getOlatResourceable().getResourceableId(), chat);
 	}
 
 	/**

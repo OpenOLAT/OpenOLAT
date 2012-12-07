@@ -58,19 +58,26 @@ public interface InstantMessagingService {
 	
 	public void unlistenChat(OLATResourceable chatResource, GenericEventListener listener);
 	
+	public OLATResourceable getPrivateChatresource(Long identityKey1, Long identityKey2);
 	
 	public InstantMessage getMessageById(Long messageId);
 	
-	public InstantMessage createMessage(Identity from, String body);
+	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym,
+			String body, OLATResourceable chatResource);
 	
-	public InstantMessage sendMessage(Identity from, String body, OLATResourceable to);
+	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey,
+			String body, OLATResourceable chatResource);
+	
+	public List<InstantMessage> getMessages(OLATResourceable ores, int firstResult, int maxResults);
+	
+	public void sendPresence(Identity me, String nickName, boolean anonym, OLATResourceable chatResource);
 	
 	
 	public String getStatus(Long identityKey);
 	
 	public ImPreferences getImPreferences(Identity identity);
 	
-	public void updateImPreferences(Identity identity, boolean visible, boolean onlineTime);
+	public void updateImPreferences(Identity identity, boolean visible);
 	
 	public void updateStatus(Identity identity, String status);
 

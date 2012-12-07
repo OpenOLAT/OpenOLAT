@@ -22,9 +22,12 @@ package org.olat.instantMessaging.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.LockModeType;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.instantMessaging.model.ImPreferencesImpl;
+import org.olat.instantMessaging.model.Presence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,20 +43,58 @@ public class InstantMessagePreferencesDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public ImPreferencesImpl createPreferences(Identity from) {
+	public ImPreferencesImpl createPreferences(Identity identity) {
 		ImPreferencesImpl msg = new ImPreferencesImpl();
 		msg.setCreationDate(new Date());
+		msg.setIdentity(identity);
+		msg.setVisibleToOthers(false);
+		msg.setRosterDefaultStatus(Presence.unavailable.name());
 		dbInstance.getCurrentEntityManager().persist(msg);
 		return msg;
 	}
 
-	public ImPreferencesImpl getPreferences(Identity from) {
+	/**
+	 * Synchronized to prevent
+	 * @param identity
+	 * @return
+	 */
+	public synchronized ImPreferencesImpl getPreferences(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select msg from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
+		  .append(" where msg.identity.key=:identityKey");
+		
+		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ImPreferencesImpl.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		
+		if(msgs.isEmpty()) {
+			return createPreferences(identity);
+		}
+		return msgs.get(0);
+	}
+	
+	public ImPreferencesImpl updatePreferences(Identity identity, String status) {
+		ImPreferencesImpl prefs = loadForUpdate(identity);
+		prefs.setRosterDefaultStatus(status);
+		prefs = dbInstance.getCurrentEntityManager().merge(prefs);
+		return prefs;
+	}
+	
+	public ImPreferencesImpl updatePreferences(Identity identity, boolean visible) {
+		ImPreferencesImpl prefs = loadForUpdate(identity);
+		prefs.setVisibleToOthers(visible);
+		prefs = dbInstance.getCurrentEntityManager().merge(prefs);
+		return prefs;
+	}
+	
+	private ImPreferencesImpl loadForUpdate(Identity from) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select msg from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
 		  .append(" where msg.identity.key=:identityKey");
 		
 		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ImPreferencesImpl.class)
 				.setParameter("identityKey", from.getKey())
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
 		
 		if(msgs.isEmpty()) {

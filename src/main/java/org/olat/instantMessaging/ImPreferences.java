@@ -37,12 +37,6 @@ public interface ImPreferences {
 	 * @return boolean true if this user is visible on the onlinelist to other users
 	 */
 	public boolean isVisibleToOthers(); 
-	
-	/**
-	 * 
-	 * @return boolean isOnlineVisible
-	 */
-	public boolean isOnlineTimeVisible();
 
 	/**
 	 * 

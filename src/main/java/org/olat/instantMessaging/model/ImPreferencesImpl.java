@@ -74,9 +74,6 @@ public class ImPreferencesImpl implements ImPreferences, Persistable, CreateInfo
 	@Column(name="visible_to_others", nullable=true, insertable=true, updatable=true)
 	private boolean visibleToOthers;
 
-	@Column(name="online_time_visible", nullable=true, insertable=true, updatable=true)
-	private boolean onlineTimeVisible;
-
 	@Column(name="roster_def_status", nullable=true, insertable=true, updatable=true)
 	private String rosterDefaultStatus;
 
@@ -120,20 +117,6 @@ public class ImPreferencesImpl implements ImPreferences, Persistable, CreateInfo
 	 */
 	public void setVisibleToOthers(boolean isVisible){
 		this.visibleToOthers = isVisible;
-	}
-	
-	/**
-	 * 
-	 * @return boolean isOnlineVisible
-	 */
-	public boolean isOnlineTimeVisible(){
-	    return onlineTimeVisible;
-	}
-	/**
-	 * @param isVisible
-	 */
-	public void setOnlineTimeVisible(boolean isVisible){
-		this.onlineTimeVisible = isVisible;
 	}
 
 	/**

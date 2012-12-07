@@ -56,7 +56,6 @@
 								<entry key="org.olat.collaboration.CollaborationToolsFactory_tools" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
 								<entry key="org.olat.course.assessment.NewCachePersistingAssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
 								<entry key="org.olat.core.util.UserSession" value-ref="org.olat.core.util.UserSession" />
-								<entry key="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items" value-ref="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items"/>
 								<entry key="org.olat.core.modules.glossary.GlossaryItemManager_glossary" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
 								<entry key="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
 								<entry key="org.olat.commons.servlets.WebDAVManagerImpl_webdav" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
@@ -113,7 +112,6 @@
 								<entry key="org.olat.collaboration.CollaborationToolsFactory_tools" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
 								<entry key="org.olat.course.assessment.NewCachePersistingAssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
 								<entry key="org.olat.core.util.UserSession" value-ref="org.olat.core.util.UserSession" />
-								<entry key="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items" value-ref="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items"/>
 								<entry key="org.olat.core.modules.glossary.GlossaryItemManager_glossary" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
 								<entry key="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
 								<entry key="org.olat.commons.servlets.WebDAVManagerImpl_webdav" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
@@ -229,11 +227,6 @@
 	<property name="timeToLive" value="3600" />
 	<property name="timeToIdle" value="3600" />
 	<property name="maxElementsInMemory" value="2000" />								
-</bean>
-<bean id="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items" class="org.olat.core.util.cache.n.CacheConfig">
-	<property name="timeToLive" value="1800" />
-	<property name="timeToIdle" value="600" />
-	<property name="maxElementsInMemory" value="5000" />								
 </bean>
 															
 <!-- end cache beans -->

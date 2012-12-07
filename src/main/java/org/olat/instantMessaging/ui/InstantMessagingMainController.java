@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.floatingresizabledialog.FloatingResizableDialogController;
 import org.olat.core.gui.themes.Theme;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -69,11 +70,13 @@ public class InstantMessagingMainController extends BasicController implements G
 	
 	private static final String ACTION_MSG = "cmd.msg";
 	
-	private VelocityContainer main = createVelocityContainer("index");
+	private VelocityContainer main = createVelocityContainer("topnav");
 	private VelocityContainer chatContent = createVelocityContainer("chat");
-	private VelocityContainer newMsgIcon = createVelocityContainer("newMsgIcon");
-	private Panel notifieNewMsgPanel;
 	
+	//new messages
+	private Panel notifieNewMsgPanel;
+	private Map<Long, Buddy> showNewMessageHolder = new HashMap<Long, Buddy>();
+	private VelocityContainer newMsgIcon = createVelocityContainer("newMsgIcon");
 	//roster
 	private Panel rosterPanel;
 	private Link onlineOfflineCount;
@@ -87,9 +90,6 @@ public class InstantMessagingMainController extends BasicController implements G
 	//chat list
 	private JSAndCSSComponent jsc;
 	private ChatManagerController chatMgrCtrl;
-	private Map<Long, Buddy> showNewMessageHolder = new HashMap<Long, Buddy>();
-
-	
 
 	private EventBus singleUserEventCenter;
 	private final InstantMessagingService imService;
@@ -301,8 +301,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		if(ureq != null) {
 			if(event.getOres() != null) {
 				//open a group chat
-				chatMgrCtrl.createGroupChat(ureq, event.getOres());
-				
+				chatMgrCtrl.createGroupChat(ureq, event.getOres(), event.getRoomName());
 			}	
 		}
 	}
@@ -332,8 +331,12 @@ public class InstantMessagingMainController extends BasicController implements G
 				//add follow up message to info holder
 				if (!showNewMessageHolder.containsKey(fromId)) {
 					Buddy buddy = imService.getBuddyById(fromId);
-					showNewMessageHolder.put(fromId, buddy);
-					createShowNewMessageLink(fromId, buddy);
+					if(true) {
+						doOpenPrivateChat(new SyntheticUserRequest(getIdentity(), getLocale()), buddy);
+					} else {
+						showNewMessageHolder.put(fromId, buddy);
+						createShowNewMessageLink(fromId, buddy);
+					}
 				}
 			}
 		}

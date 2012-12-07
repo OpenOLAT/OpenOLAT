@@ -26,6 +26,8 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.manager.InstantMessageDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -46,8 +48,9 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void testCreateMessage() {
+		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-1", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-1-" + UUID.randomUUID().toString());
-		InstantMessage msg = imDao.createMessage(id, "Hello world");
+		InstantMessage msg = imDao.createMessage(id, id.getName(), false, "Hello world", chatResources);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getKey());
 		Assert.assertNotNull(msg.getCreationDate());
@@ -59,8 +62,9 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	@Test
 	public void testLoadMessage() {
 		//create a message
+		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-2", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-2-" + UUID.randomUUID().toString());
-		InstantMessage msg = imDao.createMessage(id, "Hello load by id");
+		InstantMessage msg = imDao.createMessage(id, id.getName(), false, "Hello load by id", chatResources);
 		Assert.assertNotNull(msg);
 		dbInstance.commitAndCloseSession();
 		

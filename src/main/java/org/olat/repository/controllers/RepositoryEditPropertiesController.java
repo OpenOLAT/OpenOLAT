@@ -197,7 +197,8 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 			  // editproptabinfVC.put(CourseFactory.getDetailsComponent(repositoryEntry.getOlatResource(),ureq));
 			  // enable course chat settings, if instant messenger module is available
 			  // and course chat is enabled.
-			  if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()&& CourseModule.isCourseChatEnabled()) {
+				InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+			  if (imModule.isEnabled() && imModule.isCourseEnabled() && CourseModule.isCourseChatEnabled()) {
 				  ccc = new CourseChatSettingController(ureq, getWindowControl(), changedCourseConfig);
 				  listenTo(ccc);
 				  // push on controller stack and register <this> as controllerlistener

@@ -27,7 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.OLATResourceable;
+import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 
@@ -39,10 +39,10 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
 public class ChatToolController extends BasicController {
 	
 	private final VelocityContainer mainVC;
-	private final OLATResourceable resource;
+	private final BusinessGroup resource;
 	private final Link openChatLink;
 
-	public ChatToolController(UserRequest ureq, WindowControl wControl, OLATResourceable resource) {
+	public ChatToolController(UserRequest ureq, WindowControl wControl, BusinessGroup resource) {
 		super(ureq, wControl);
 		this.resource = resource;
 		
@@ -60,7 +60,7 @@ public class ChatToolController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(openChatLink == source) {
-			OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, resource);
+			OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, resource, resource.getName());
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 		}
 	}

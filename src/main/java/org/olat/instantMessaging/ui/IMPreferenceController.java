@@ -28,30 +28,32 @@ package org.olat.instantMessaging.ui;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.model.Presence;
 
 /**
  * Initial Date:  August 08, 2005
  *
  * @author Alexander Schneider
  */
+public class IMPreferenceController extends FormBasicController {
 
-public class IMPreferenceController extends BasicController {
-	private VelocityContainer myContent;
+  private SingleSelection statusList;
+	private SelectionElement toogleVisibility;
+  private String[] keys, values;
 	
-	private Identity changeableIdentity;
-	
-	private IMPreferencesOnlineController onlineListForm;
-	private IMPreferenceRosterController rosterForm;
-	
+	private final Identity changeableIdentity;
 	private final InstantMessagingService imService;
 	
 	/**
@@ -66,50 +68,55 @@ public class IMPreferenceController extends BasicController {
 		this.changeableIdentity = changeableIdentity;
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 
-		myContent = createVelocityContainer("imsettings");
+		keys = new String[] {
+        Presence.available.name(),
+        Presence.dnd.name(),
+        Presence.unavailable.name()
+		};
+
+		values = new String[] {
+		    translate("presence.available"),
+        translate("presence.dnd"),
+        translate("presence.unavailable")
+		};
 		
+		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("title.roster");
+		setFormContextHelp("org.olat.user","home-imsettings-roster.html","help.hover.imsettings-roster");
 		
 		ImPreferences imPrefs = imService.getImPreferences(changeableIdentity);
 		
-		onlineListForm = new IMPreferencesOnlineController(ureq, wControl, imPrefs);
-		listenTo(onlineListForm);
-		myContent.put("onlinelistform", onlineListForm.getInitialComponent());
+		toogleVisibility = uifactory.addCheckboxesVertical("online_list", "form.onlinelist", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		toogleVisibility.select("xx", imPrefs.isVisibleToOthers());
+		toogleVisibility.addActionListener(this, FormEvent.ONCHANGE);
 		
-		rosterForm = new IMPreferenceRosterController(ureq, wControl, imPrefs);
-		listenTo(rosterForm);
-		myContent.put("rosterform", rosterForm.getInitialComponent());
-
-		putInitialPanel(myContent);
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Component source, Event event) {
-		//
-	}
-		
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == onlineListForm) {
-			if (event == Event.DONE_EVENT) {
-			  imService.updateImPreferences(changeableIdentity, true, true);
-			   
-				fireEvent(ureq, Event.DONE_EVENT);
-			} else if (event == Event.CANCELLED_EVENT) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
-			} 
-		} else if (source == rosterForm) {
-			if (event == Event.DONE_EVENT) {
-			   imService.updateImPreferences(changeableIdentity, true, true); 
-			   fireEvent(ureq, Event.DONE_EVENT);
-			} else if (event == Event.CANCELLED_EVENT) {
-				// Form is cancelled
-				fireEvent(ureq, Event.CANCELLED_EVENT);
-			} 
+		statusList = uifactory.addRadiosVertical("status_list", "form.defaultstatus", formLayout, keys, values);
+		if(StringHelper.containsNonWhitespace(imPrefs.getRosterDefaultStatus())) {
+			statusList.select(imPrefs.getRosterDefaultStatus(), true);
 		}
+		statusList.addActionListener(this, FormEvent.ONCHANGE);
 	}
-	
+
+	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == toogleVisibility) {
+		  imService.updateImPreferences(changeableIdentity, toogleVisibility.isSelected(0));
+		} else if (source == statusList) {
+		   imService.updateStatus(changeableIdentity, statusList.getSelectedKey());
+		}
 	}
 }

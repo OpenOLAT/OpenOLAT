@@ -76,15 +76,15 @@ public class IMTopNavStatusController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == available) {
-			status = Presence.Mode.available.name();
+			status = Presence.available.name();
 			imService.updateStatus(getIdentity(), status);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == dnd) {
-			status = Presence.Mode.dnd.name();
+			status = Presence.dnd.name();
 			imService.updateStatus(getIdentity(), status);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == unavailable) {
-			status = Presence.Mode.unavailable.name();
+			status = Presence.unavailable.name();
 			imService.updateStatus(getIdentity(), status);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}

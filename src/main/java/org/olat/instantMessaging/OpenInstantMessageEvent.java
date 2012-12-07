@@ -42,6 +42,7 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 	private final UserRequest ureq;
 	private Buddy buddy;
 	private OLATResourceable ores;
+	private String roomName;
 
 	public OpenInstantMessageEvent(UserRequest ureq) {
 		super("openim");
@@ -57,9 +58,10 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 		this(ureq, new Buddy(entry.getIdentityKey(), entry.getName()));
 	}
 	
-	public OpenInstantMessageEvent(UserRequest ureq, OLATResourceable ores) {
+	public OpenInstantMessageEvent(UserRequest ureq, OLATResourceable ores, String roomName) {
 		this(ureq);
 		this.ores = ores;
+		this.roomName = roomName;
 	}
 
 	public Buddy getBuddy() {
@@ -72,5 +74,9 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 
 	public OLATResourceable getOres() {
 		return ores;
+	}
+	
+	public String getRoomName() {
+		return roomName;
 	}
 }

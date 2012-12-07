@@ -22,23 +22,35 @@ package org.olat.instantMessaging.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.model.InstantMessageImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * 
+ * Initial date: 07.12.2012<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
 @Service
 public class InstantMessageDAO {
 	
 	@Autowired
 	private DB dbInstance;
 	
-	public InstantMessage createMessage(Identity from, String body) {
+	public InstantMessage createMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
 		InstantMessageImpl msg = new InstantMessageImpl();
 		msg.setBody(body);
 		msg.setFrom(from);
+		msg.setFromNickName(fromNickName);
+		msg.setAnonym(anonym);
+		msg.setResourceTypeName(chatResource.getResourceableTypeName());
+		msg.setResourceId(chatResource.getResourceableId());
 		msg.setCreationDate(new Date());
 		dbInstance.getCurrentEntityManager().persist(msg);
 		return msg;
@@ -57,5 +69,22 @@ public class InstantMessageDAO {
 			return null;
 		}
 		return msgs.get(0);
+	}
+
+	public List<InstantMessage> getMessages(OLATResourceable ores, int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select msg from ").append(InstantMessageImpl.class.getName()).append(" msg ")
+		  .append(" where msg.resourceId=:resid and msg.resourceTypeName=:resname")
+		  .append(" order by msg.creationDate desc");
+		
+		TypedQuery<InstantMessage> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), InstantMessage.class)
+				.setParameter("resid", ores.getResourceableId())
+				.setParameter("resname", ores.getResourceableTypeName())
+				.setFirstResult(firstResult)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
 	}
 }

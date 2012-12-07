@@ -25,15 +25,18 @@
 */
 package org.olat.instantMessaging.ui;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.user.UserManager;
 
 
 /**
@@ -44,49 +47,47 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class ToggleAnonymousForm extends FormBasicController {
 
+	private TextElement nickNameEl;
 	private MultipleSelectionElement toggle;
+	
+	private final String fullName;
 
 	public ToggleAnonymousForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "toogleForm");
-		initForm(this.flc, this, ureq);
+		
+		fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(getIdentity().getUser());
+		
+		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		toggle = uifactory.addCheckboxesHorizontal("toggle", "toogle.anonymous", formLayout, new String[] {""}, new String[] {""}, null);
+		toggle.addActionListener(this, FormEvent.ONCLICK);
+
+		nickNameEl = uifactory.addTextElement("nickname", "", 20, fullName, formLayout);
+	}
+
 	@Override
 	protected void doDispose() {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		toggle = uifactory.addCheckboxesHorizontal("toggle", "toogle.anonymous", formLayout, new String[] {""}, new String[] {""}, null);
-		toggle.addActionListener(this, FormEvent.ONCLICK);
-	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	protected boolean isAnonymous () {
-		return !toggle.isSelected(0);
+	protected String getNickName() {
+		return nickNameEl.getValue();
 	}
-
+	
+	protected boolean isUseNickName() {
+		return toggle.isSelected(0);
+	}
 }

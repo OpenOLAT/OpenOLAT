@@ -19,59 +19,14 @@
  */
 package org.olat.instantMessaging.model;
 
-public class Presence {
-	
-	private Type type;
-	private Mode mode;
-	private String status;
-	private int priority;
-	
-	public Presence(Type type) {
-		this.type = type;
-	}
-	
-	public Type getType() {
-		return type;
-	}
-	
-	public void setType(Type type) {
-		this.type = type;
-	}
-
-	public Mode getMode() {
-		return mode;
-	}
-
-	public void setMode(Mode mode) {
-		this.mode = mode;
-	}
-
-	public int getPriority() {
-		return priority;
-	}
-
-	public void setPriority(int priority) {
-		this.priority = priority;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-	
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public enum Mode {
+/**
+ * 
+ * Initial date: 07.12.2012<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public enum Presence {
 		available,
 		dnd,
 		unavailable
-	}
-	
-	public enum Type {
-		available,
-		unavailable,
-		subscribe
-	}
-
 }

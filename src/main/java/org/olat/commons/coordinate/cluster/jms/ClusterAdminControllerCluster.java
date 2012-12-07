@@ -342,7 +342,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 				// we configured usc to either cancel or to only accept single user selection.
 				SingleIdentityChosenEvent sce = (SingleIdentityChosenEvent)event;
 				Identity ident = sce.getChosenIdentity();
-				ClusterLockManager.getInstance().releaseAllLocksFor(ident.getName());
+				ClusterLockManager.getInstance().releaseAllLocksFor(ident.getKey());
 				showInfo("locks.released", ident.getName());
 			}
 		}

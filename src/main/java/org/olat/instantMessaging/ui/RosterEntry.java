@@ -31,21 +31,21 @@ import org.olat.instantMessaging.model.Buddy;
 public class RosterEntry implements Comparable<RosterEntry>{
 
 	private final Long identityKey;
-	private String name;
+	
+	private String fullName;
+	private String nickName;
+	
 	private boolean anonym;
 	private String status;
-
-	public RosterEntry(Long identityKey) {
-		this.identityKey = identityKey;
-	}
 	
 	public RosterEntry(Buddy buddy) {
-		this(buddy.getIdentityKey(), buddy.getFullname(), false, buddy.getStatus());
+		this(buddy.getIdentityKey(), null, buddy.getFullname(), false, buddy.getStatus());
 	}
 	
-	public RosterEntry(Long identityKey, String name, boolean anonym, String status) {
-		this(identityKey);
-		this.name = name;
+	public RosterEntry(Long identityKey, String nickName, String fullName, boolean anonym, String status) {
+		this.identityKey = identityKey;
+		this.nickName = nickName;
+		this.fullName = fullName;
 		this.anonym = anonym;
 		this.status = status;
 	}
@@ -55,13 +55,28 @@ public class RosterEntry implements Comparable<RosterEntry>{
 	}
 	
 	public String getName() {
-		return name;
+		if(anonym) {
+			return nickName;
+		}
+		return fullName;
 	}
 	
-	public void setName(String name) {
-		this.name = name;
+	public String getFullName() {
+		return fullName;
 	}
 	
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+	
+	public String getNickName() {
+		return nickName;
+	}
+
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
+	}
+
 	public boolean isAnonym() {
 		return anonym;
 	}
@@ -80,11 +95,14 @@ public class RosterEntry implements Comparable<RosterEntry>{
 	
 	@Override
 	public int compareTo(RosterEntry o) {
-		if(o == null) return -1;
+		if(o == null) return 1;
 		int result = 0;
-		if(name != null && o.name != null) {
-			result = name.compareTo(o.name);
-		}
+		
+		String n1 = getName();
+		String n2 = o.getName();
+		if(n1 == null) return -1;
+		if(n2 == null) return 1;
+		result = n1.compareTo(n2);
 		if(result == 0 && identityKey != null && o.identityKey != null) {
 			result = identityKey.compareTo(o.identityKey);
 		}
@@ -110,7 +128,6 @@ public class RosterEntry implements Comparable<RosterEntry>{
 
 	@Override
 	public String toString() {
-		return "rosterEntry[identityKey=" + identityKey + ":name=" + name + ":anonym=" + anonym + ":status=" + status + "]";
+		return "rosterEntry[identityKey=" + identityKey + ":fullName=" + fullName + ":nickName=" + nickName + ":anonym=" + anonym + ":status=" + status + "]";
 	}
-
 }

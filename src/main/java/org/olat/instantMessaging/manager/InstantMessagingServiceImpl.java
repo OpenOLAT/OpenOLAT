@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -78,13 +79,13 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	public void updateImPreferences(Identity identity, boolean visible, boolean onlineTime) {
-		//
+	public void updateImPreferences(Identity identity, boolean visible) {
+		prefsDao.updatePreferences(identity, visible);
 	}
 
 	@Override
 	public void updateStatus(Identity identity, String status) {
-		//
+		prefsDao.updatePreferences(identity, status);
 	}
 
 	@Override
@@ -93,29 +94,65 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	public OLATResourceable getPrivateChatresource(Long identityKey1, Long identityKey2) {
+		String resName;
+		if(identityKey1.longValue() > identityKey2.longValue()) {
+			resName = identityKey2 + "-" + identityKey1;
+		} else {
+			resName = identityKey1 + "-" + identityKey2;
+		}
+		long key = identityKey1.longValue() + identityKey2.longValue();
+		return OresHelper.createOLATResourceableInstance(resName, new Long(key));
+	}
+
+	@Override
 	public InstantMessage getMessageById(Long messageId) {
 		return imDao.loadMessageById(messageId);
 	}
 
 	@Override
-	public InstantMessage createMessage(Identity from, String body) {
-		return imDao.createMessage(from, body);
+	public List<InstantMessage> getMessages(OLATResourceable chatResource, int firstResult, int maxResults) {
+		return imDao.getMessages(chatResource, firstResult, maxResults);
 	}
 
 	@Override
-	public InstantMessage sendMessage(Identity from, String body, OLATResourceable to) {
-		InstantMessage message = imDao.createMessage(from, body);
+	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
+		InstantMessage message = imDao.createMessage(from, fromNickName, anonym, body, chatResource);
 		InstantMessagingEvent event = new InstantMessagingEvent("message");
 		event.setFromId(from.getKey());
+		event.setName(fromNickName);
+		event.setAnonym(anonym);
 		event.setMessageId(message.getKey());
-		
-		//reverse the target as the target listen to me
-		if("Buddy".equals(to.getResourceableTypeName())
-				&& !from.getKey().equals(to.getResourceableId())) {
-			to = OresHelper.createOLATResourceableInstance("Buddy", from.getKey());
-		}
-		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, to);
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 		return message;
+	}
+	
+	@Override
+	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey, String body, OLATResourceable chatResource) {
+		String name = userManager.getUserDisplayName(from.getUser());
+		InstantMessage message = imDao.createMessage(from, name, false, body, chatResource);
+		InstantMessagingEvent event = new InstantMessagingEvent("message");
+		event.setFromId(from.getKey());
+		event.setName(name);
+		event.setAnonym(false);
+		event.setMessageId(message.getKey());
+		//general event
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
+		//buddy event
+		OLATResourceable buddy = OresHelper.createOLATResourceableInstance("Buddy", toIdentityKey);
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, buddy);
+		return message;
+	}
+
+	@Override
+	public void sendPresence(Identity me, String nickName, boolean anonym, OLATResourceable chatResource) {
+		InstantMessagingEvent event = new InstantMessagingEvent("participant");
+		event.setAnonym(anonym);
+		event.setFromId(me.getKey());
+		if(StringHelper.containsNonWhitespace(nickName)) {
+			event.setName(nickName);
+		}
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 	}
 	
 	@Override

@@ -63,8 +63,20 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 	@OneToOne(targetEntity=IdentityImpl.class, cascade={})
 	@JoinColumn(name="fk_from_identity_id", nullable=false, insertable=true, updatable=false)
 	private Identity from;
+	
+	@Column(name="msg_resname", nullable=false, insertable=true, updatable=false)
+	private String resourceTypeName;
+	
+	@Column(name="msg_resid", nullable=false, insertable=true, updatable=false)
+	private Long resourceId;
+	
+	@Column(name="msg_anonym", nullable=false, insertable=true, updatable=false)
+	private boolean anonym;
+	
+	@Column(name="msg_from", nullable=false, insertable=true, updatable=false)
+	private String fromNickName;
 
-	@Column(name="msgbody", nullable=false, insertable=true, updatable=false)
+	@Column(name="msg_body", nullable=false, insertable=true, updatable=false)
 	private String body;
 
 	@Override
@@ -91,6 +103,38 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 
 	public void setFrom(Identity from) {
 		this.from = from;
+	}
+
+	public String getResourceTypeName() {
+		return resourceTypeName;
+	}
+
+	public void setResourceTypeName(String resourceTypeName) {
+		this.resourceTypeName = resourceTypeName;
+	}
+
+	public Long getResourceId() {
+		return resourceId;
+	}
+
+	public void setResourceId(Long resourceId) {
+		this.resourceId = resourceId;
+	}
+
+	public boolean isAnonym() {
+		return anonym;
+	}
+
+	public void setAnonym(boolean anonym) {
+		this.anonym = anonym;
+	}
+
+	public String getFromNickName() {
+		return fromNickName;
+	}
+
+	public void setFromNickName(String fromNickName) {
+		this.fromNickName = fromNickName;
 	}
 
 	public String getBody() {
