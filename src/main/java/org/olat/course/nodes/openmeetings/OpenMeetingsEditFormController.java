@@ -121,7 +121,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		roomNameEl.setValue(hasRoom ? room.getName() : "");
 		roomNameEl.setVisible(hasRoom);
 		if(hasRoom) {
-			String typeStr = translate(RoomType.values()[(int)room.getType()].i18nKey());
+			String typeStr = translate(RoomType.getType(room.getType()).i18nKey());
 			roomTypeEl.setValue(typeStr);
 		} else {
 			roomTypeEl.setValue("");

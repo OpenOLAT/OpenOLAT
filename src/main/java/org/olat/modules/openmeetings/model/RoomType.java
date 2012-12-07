@@ -44,6 +44,15 @@ public enum RoomType {
 		return type;
 	}
 	
+	public static RoomType getType(long type) {
+		for(RoomType roomType:RoomType.values()) {
+			if(roomType.type == type) {
+				return roomType;
+			}
+		}
+		return null;
+	}
+	
 	public String typeStr() {
 		return Long.toString(type);
 	}
