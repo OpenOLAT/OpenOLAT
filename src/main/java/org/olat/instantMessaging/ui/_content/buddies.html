@@ -1,0 +1,9 @@
+<div id='o_instantmessages_buddieslist'>
+	$r.contextHelpWithWrapper("org.olat.instantMessaging.rosterandchat","instant-messenger.html","help.hover.im")
+	$r.render("toggleOffline")<br />
+	## show or hide groups
+	$r.render("toggleGroups")
+	<hr class="b_form_spacer" />
+	${buddyList.size()}&nbsp;$r.translate("im.others.connected")
+	$r.render("buddiesListContent")
+</div>

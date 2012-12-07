@@ -34,7 +34,7 @@ import org.olat.admin.registration.SystemRegistrationManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
-import org.olat.instantMessaging.IMConfig;
+import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.restapi.system.vo.MonitoringDependencyVO;
 import org.olat.restapi.system.vo.MonitoringInfosVO;
 
@@ -109,11 +109,11 @@ public class MonitoringWebService {
 		vo.setDescription(module.getDescription());
 		
 		List<MonitoringDependencyVO> dependencies = new ArrayList<MonitoringDependencyVO>();
-		IMConfig imConfig = CoreSpringFactory.getImpl(IMConfig.class);
+		InstantMessagingModule imConfig = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		if(imConfig.isEnabled()) {
 			MonitoringDependencyVO dependency = new MonitoringDependencyVO();
 			dependency.setType("openfire");
-			dependency.setUrl(imConfig.getServername());
+			dependency.setUrl("");
 			dependencies.add(dependency);	
 		}
 		

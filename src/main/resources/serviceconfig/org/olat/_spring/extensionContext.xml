@@ -404,26 +404,6 @@
 				</list>
 			</property>
 		</bean>	
-		
-		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="order" value="7210" />
-			<property name="actionController">	
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.admin.instantMessaging.InstantMessagingAdminController"/>
-				</bean>
-			</property>
-			<property name="navigationKey" value="im" />
-			<property name="i18nActionKey" value="menu.imadmin"/>
-			<property name="i18nDescriptionKey" value="menu.imadmin.alt"/>
-			<property name="translationPackage" value="org.olat.admin"/>
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.admin.SystemAdminMainController</value>		
-				</list>
-			</property>
-			<property name="enabled" value="${instantMessaging.enable}"/>
-			<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
-		</bean>	
 
 
 		<!-- Customizing parent node -->

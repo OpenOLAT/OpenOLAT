@@ -41,7 +41,6 @@ import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.User;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.session.UserSessionManager;
-import org.olat.instantMessaging.rosterandchat.ChangePresenceJob;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 
@@ -177,19 +176,7 @@ public class AdminModule extends AbstractOLATModule {
 	public void setSessionTimeoutDepr(int sessionTimeout) {
 		logAudit("Session administration: Set session-timeout=" + sessionTimeout);
 		//in seconds
-
 		CoreSpringFactory.getImpl(UserSessionManager.class).setGlobalSessionTimeout(sessionTimeout);
-		//in milliseconds for presence job
-		ChangePresenceJob.setAutoLogOutCutTimeValue(sessionTimeout*1000);
-	}
-
-	/**
-	 * @return  Current session timeout in msec.
-	 */
-	public int getSessionTimeout() {
-		//changepresencejob holds the session timeout so far in milliseconds
-		int sessionTimeoutSeconds = Math.round((ChangePresenceJob.getAutoLogOutCutTimeValue() / 1000));
-		return sessionTimeoutSeconds;
 	}
 
 	/**

@@ -37,7 +37,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
-import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.system.vo.IndexerStatisticsVO;
@@ -234,7 +234,7 @@ public class OpenOLATStatisticsWebService {
 		vo.setSecureRestCount(secureRestCount);
 		
 		//Instant messaging
-		int imConnections = InstantMessagingModule.getAdapter().countConnectedUsers();
+		int imConnections = CoreSpringFactory.getImpl(InstantMessagingService.class).getNumOfconnectedUsers();
 		vo.setInstantMessagingCount(imConnections);
 		
 		return vo;

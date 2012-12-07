@@ -51,7 +51,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
-import org.olat.instantMessaging.InstantMessaging;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.scorm.ScormAPICallback;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
@@ -237,7 +237,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 
 	private void doLaunch(UserRequest ureq, boolean doActivate) {
 		ureq.getUserSession().getSingleUserEventCenter()
-			.fireEventToListenersOf(new CloseInstantMessagingEvent(), InstantMessaging.TOWER_EVENT_ORES);
+			.fireEventToListenersOf(new CloseInstantMessagingEvent(), InstantMessagingService.TOWER_EVENT_ORES);
 
 		if (cpRoot == null) {
 			// it is the first time we start the contentpackaging from this

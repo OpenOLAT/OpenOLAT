@@ -117,7 +117,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.groupchat.GroupChatManagerController;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.note.NoteController;
 import org.olat.repository.RepositoryEntry;
@@ -156,7 +155,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private NavigationHandler navHandler;
 	private UserCourseEnvironment uce;
 	private LayoutMain3ColsController columnLayoutCtr;
-	private GroupChatManagerController courseChatManagerCtr;
 
 	private Controller currentToolCtr;
 	private ToolController toolC;
@@ -264,9 +262,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// instant messaging: send presence like "reading course: Biology I" as
 		// awareness info. Important: do this before initializing the toolbox
 		// controller!
-		if (InstantMessagingModule.isEnabled() && CourseModule.isCourseChatEnabled() && !isGuest) {
-			String intro = translate("course.presence.message.enter") + " " + getExtendedCourseTitle(ureq.getLocale());
-			InstantMessagingModule.getAdapter().sendStatus(identity.getName(), intro);
+		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() && CourseModule.isCourseChatEnabled() && !isGuest) {
 			if (course.getCourseEnvironment().getCourseConfig().isChatEnabled()) {
 				// create groupchat room link only if course chat is enabled
 				createCourseGroupChatLink(ureq);
@@ -366,12 +362,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param ureq
 	 */
 	private void createCourseGroupChatLink(UserRequest ureq) {
-		
-		courseChatManagerCtr = InstantMessagingModule.getAdapter().getGroupChatManagerController(ureq);
+		/*
+		courseChatManagerCtr = CoreSpringFactory.getImpl(InstantMessaging.class).getGroupChatManagerController(ureq);
 		if (courseChatManagerCtr != null) {
 			courseChatManagerCtr.createGroupChat(ureq, getWindowControl(), course, getExtendedCourseTitle(ureq.getLocale()), true, true);
 			listenTo(courseChatManagerCtr);
-		}
+		}*/
 	}
 
 	/**
@@ -1126,10 +1122,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		
 		//add group chat to toolbox
-		boolean instantMsgYes = InstantMessagingModule.isEnabled();
+		boolean instantMsgYes = CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled();
 		boolean chatIsEnabled = CourseModule.isCourseChatEnabled() &&  cc.isChatEnabled();
 		if (instantMsgYes && chatIsEnabled && !isGuest) {
 			// we add the course chat link controller to the toolbox
+			//TODO im 
+			/*
 			if (courseChatManagerCtr == null && ureq != null) createCourseGroupChatLink(ureq);
 			if (courseChatManagerCtr != null){
 				Controller groupChatController = courseChatManagerCtr.getGroupChatController(course);
@@ -1137,6 +1135,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					myTool.addComponent(groupChatController.getInitialComponent());
 				}
 			}
+			 */
 		}
 		
 		if (CourseModule.displayParticipantsCount() && !isGuest) {
@@ -1227,12 +1226,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// instant messaging: send presence like "leaving course: Biology I" as
 		// awareness info.
-		if (InstantMessagingModule.isEnabled()&& CourseModule.isCourseChatEnabled() && !isGuest) {
-			if (courseChatManagerCtr != null) {
+		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()&& CourseModule.isCourseChatEnabled() && !isGuest) {
+			//TODO im
+			/*if (courseChatManagerCtr != null) {
 				courseChatManagerCtr.removeChat(course);
-			}
-			String intro = translate("course.presence.message.leave") + " " + getExtendedCourseTitle(getLocale());
-			InstantMessagingModule.getAdapter().sendStatus(getIdentity().getName(), intro);
+			}*/
 		}
 		// log to Statistical and User log
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_LEAVING, getClass());

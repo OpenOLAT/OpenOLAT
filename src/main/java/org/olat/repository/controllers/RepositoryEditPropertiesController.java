@@ -31,6 +31,7 @@ import java.util.List;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -196,9 +197,9 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 			  // editproptabinfVC.put(CourseFactory.getDetailsComponent(repositoryEntry.getOlatResource(),ureq));
 			  // enable course chat settings, if instant messenger module is available
 			  // and course chat is enabled.
-			  if (InstantMessagingModule.isEnabled()&& CourseModule.isCourseChatEnabled()) {
+			  if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()&& CourseModule.isCourseChatEnabled()) {
 				  ccc = new CourseChatSettingController(ureq, getWindowControl(), changedCourseConfig);
-				  this.listenTo(ccc);
+				  listenTo(ccc);
 				  // push on controller stack and register <this> as controllerlistener
 				  tabbedPane.addTab(translate("tab.chat"), ccc.getInitialComponent());
 			  }

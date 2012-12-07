@@ -1,0 +1,5 @@
+<ul>
+	#foreach ($buddy in $buddyList.entries)
+		<li>$r.render("buddy_${buddy.identityKey}")</li>
+	#end
+</ul>

@@ -110,7 +110,6 @@
 				<entry key="org.olat.core.commons.modules.bc:name=FilesInfoMBean" >
 					<ref bean="org.olat.core.commons.modules.bc.FilesInfoMBean"/>
 				</entry>
-      			<entry key="bean:name=changePresence" value-ref="changePresenceJob"/>
 			</map>
 		</property>
 		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>

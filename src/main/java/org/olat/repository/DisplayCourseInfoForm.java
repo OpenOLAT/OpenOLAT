@@ -25,6 +25,7 @@
 
 package org.olat.repository;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
@@ -74,7 +75,7 @@ public class DisplayCourseInfoForm extends FormBasicController {
 		
 		chatIsOn = uifactory.addCheckboxesVertical("chatIsOn", "chkbx.chat.onoff", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		chatIsOn.select("xx", cc.isChatEnabled());
-		chatIsOn.setVisible(InstantMessagingModule.isEnabled()&& CourseModule.isCourseChatEnabled());
+		chatIsOn.setVisible(CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() && CourseModule.isCourseChatEnabled());
 		
 		uifactory.addStaticTextElement(
 				"layout", "form.layout.cssfile",

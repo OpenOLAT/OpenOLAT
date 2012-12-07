@@ -33,7 +33,6 @@ How to add a new job:
         <list>
         	<!-- Include every bean here that should be scheduled -->
             <ref bean="sendNotificationsEmailTrigger" />
-            <ref bean="changePresenceJobTrigger" />
             <!-- <ref bean="dumpJMXJobTrigger"/> -->
             <ref bean="adobeCleanupJob"/>
 		    <!--
@@ -45,9 +44,7 @@ How to add a new job:
             <ref bean="invitationCleanupTrigger" />
             <ref bean="epDeadlineTrigger" />
             <ref bean="systemSamplerTrigger"/>
-            <ref bean="instantMessagingSyncTrigger"/>
             <ref bean="updateQtiResultsTriggerOnyx"/>
-            <ref bean="countUserOnlineTrigger"/>
             <ref bean="acReservationCleanupJob"/>
             <ref bean="mapperSlayerTrigger"/>
         </list>
@@ -55,16 +52,6 @@ How to add a new job:
 </bean>
 
 <!-- add referenced schedulers here -->
-
-<!-- triggers the job that either sends the instant messaging status to away or does logout of idle users. This is done because in the ajax mode may keep sending polling
-requests and therefore the session in never invalidated --> 
-<bean id="changePresenceJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-    <property name="jobDetail" ref="changePresenceJob" />
-    <!-- 5 minute -->
-    <property name="startDelay" value="300000" />
-    <!-- repeat every minute -->
-    <property name="repeatInterval" value="60000" />
-</bean>
 
 <!-- Only needed in cluster mode, dumps jmx info to disc --> 
 <bean id="dumpJMXJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
@@ -109,20 +96,7 @@ requests and therefore the session in never invalidated -->
 
 
 
-<!--  job definition  -->
-<bean id="changePresenceJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-  <property name="jobClass" value="org.olat.instantMessaging.rosterandchat.ChangePresenceJob" />
-  <property name="jobDataAsMap">
-    <map>
-    	<!-- default is 5 minutes - values are milliseconds -->
-    	<entry key="idleWaitTime" value="300000" />
-    	<!-- default is 60 minutes  - values are milliseconds 
-    	fxdiff: we allow longer sessions. see also org.olat.core.util.UserSession
-    	-->
-    	<entry key="initialAutoLogOutCutTime" value="7200000" />
-    </map>
-  </property>
-</bean>
+
 
 <!--  job definition  -->
 <bean id="dumpJMXJob" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -143,16 +117,6 @@ requests and therefore the session in never invalidated -->
 	Export your Beans via JMX, to enable start you JVM with "-Dcom.sun.management.jmxremote=true".
 	This only enables JMX locally and allows you to connect with the same user. To connect via remote read:
 	http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html
--->
-<!-- this bean must not be lazily initialized if the exporting is to happen -->
-<!-- Use Exporter in org.olat.olatextconfig.xml
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
-	  <property name="beans">
-	    <map>
-	      <entry key="bean:name=changePresence" value-ref="changePresenceJob"/>
-	    </map>
-	  </property>
-	</bean>
 -->
 
 	<!-- SEARCH INDEXING CONFIGURATION -->

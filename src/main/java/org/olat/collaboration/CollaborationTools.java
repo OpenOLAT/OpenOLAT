@@ -80,7 +80,7 @@ import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.groupchat.GroupChatManagerController;
+import org.olat.instantMessaging.ui.ChatToolController;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -244,7 +244,7 @@ public class CollaborationTools implements Serializable {
 		toolArr.add(TOOL_CALENDAR);
 		toolArr.add(TOOL_FOLDER);
 		toolArr.add(TOOL_FORUM);
-		if (InstantMessagingModule.isEnabled()) {
+		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
 			toolArr.add(TOOL_CHAT);
 		}
 		toolArr.add(TOOL_WIKI);
@@ -476,21 +476,12 @@ public class CollaborationTools implements Serializable {
 	 * @param chatName
 	 * @return Controller
 	 */
-	public Controller createChatController(UserRequest ureq, WindowControl wControl, BusinessGroup grp) {
-		if (InstantMessagingModule.isEnabled()) {
-			GroupChatManagerController ccmc;
-			ccmc = InstantMessagingModule.getAdapter().getGroupChatManagerController(ureq);
-			if(ccmc == null) {
-				return null;//no chat available
-			}
-			ccmc.createGroupChat(ureq, wControl, ores, grp.getName(), false, false);
-			return ccmc.getGroupChatController(ores);
-		
-		} else {
-			throw new AssertException(
-					"cannot create a chat controller when instant messasging is disabled in the configuration"
-			);
+	public ChatToolController createChatController(UserRequest ureq, WindowControl wControl, BusinessGroup grp) {
+		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+		if (imModule.isEnabled() && imModule.isGroupEnabled()) {
+			return new ChatToolController(ureq, wControl, grp);
 		}
+		return null;
 	}
 	
 	/**

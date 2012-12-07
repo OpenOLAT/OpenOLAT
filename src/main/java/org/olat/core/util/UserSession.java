@@ -27,6 +27,7 @@
 package org.olat.core.util;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -83,6 +84,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private boolean authenticated = false;
 	private Preferences guiPreferences;
 	private EventBus singleUserSystemBus;
+	private List<String> chats;
 	private Stack<HistoryPoint> history = new Stack<HistoryPoint>();
 
 	public UserSession() {
@@ -158,6 +160,17 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 */
 	public Object removeEntryFromNonClearedStore(String key) {
 		return nonClearedStore.remove(key);
+	}
+	
+	public List<String> getChats() {
+		if(chats == null) {
+			synchronized(this) {
+				if(chats == null) {
+					chats = new ArrayList<String>(5);
+				}
+			}
+		}
+		return chats;
 	}
 
 	/**
