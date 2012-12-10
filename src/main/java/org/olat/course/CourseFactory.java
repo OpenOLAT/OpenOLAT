@@ -118,6 +118,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.group.BusinessGroup;
+import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
@@ -879,6 +880,9 @@ public class CourseFactory extends BasicManager {
 		}, course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, charset, null, null);
 
 		PersistingCourseGroupManager.getInstance(course).archiveCourseGroups(exportDirectory);
+		
+		CoreSpringFactory.getImpl(ChatLogHelper.class).archive(course, exportDirectory);
+		
 	}
 
 	/**

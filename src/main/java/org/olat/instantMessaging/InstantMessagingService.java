@@ -27,6 +27,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.BuddyStats;
 
 /**
  * 
@@ -52,15 +53,41 @@ public interface InstantMessagingService {
 	
 	public Buddy getBuddyById(Long identityKey);
 	
+	public List<Buddy> getOnlineBuddies();
+	
+	/**
+	 * Return the list of users who are chating
+	 * @param chatResource
+	 * @return
+	 */
 	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource);
 	
+	public BuddyStats getBuddyStats(Identity me);
+	
+	/**
+	 * Enter a chat conversation
+	 * @param identity
+	 * @param chatResource
+	 * @param listener
+	 */
 	public void listenChat(Identity identity, OLATResourceable chatResource,  GenericEventListener listener);
 	
+	/**
+	 * Go away
+	 * @param chatResource
+	 * @param listener
+	 */
 	public void unlistenChat(OLATResourceable chatResource, GenericEventListener listener);
 	
-	public OLATResourceable getPrivateChatresource(Long identityKey1, Long identityKey2);
+	/**
+	 * Factory method to build the OLATResourceable for privat chat
+	 * @param identityKey1
+	 * @param identityKey2
+	 * @return
+	 */
+	public OLATResourceable getPrivateChatResource(Long identityKey1, Long identityKey2);
 	
-	public InstantMessage getMessageById(Long messageId);
+
 	
 	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym,
 			String body, OLATResourceable chatResource);
@@ -68,21 +95,73 @@ public interface InstantMessagingService {
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey,
 			String body, OLATResourceable chatResource);
 	
-	public List<InstantMessage> getMessages(OLATResourceable ores, int firstResult, int maxResults);
+	/**
+	 * 
+	 * @param me
+	 * @param messageId
+	 * @param markAsRead
+	 * @return
+	 */
+	public InstantMessage getMessageById(Identity me, Long messageId, boolean markAsRead);
+	
+	/**
+	 * Get the messages of a chat
+	 * @param ores
+	 * @param firstResult
+	 * @param maxResults
+	 * @param markAsRead
+	 * @return
+	 */
+	public List<InstantMessage> getMessages(Identity me, OLATResourceable ores, int firstResult, int maxResults, boolean markAsRead);
 	
 	public void sendPresence(Identity me, String nickName, boolean anonym, OLATResourceable chatResource);
 	
+	/**
+	 * Get the notifications of message waiting to be read
+	 * @param identity
+	 * @return
+	 */
+	public List<InstantMessageNotification> getNotifications(Identity identity);
 	
+	
+	/**
+	 * Return the status of an user, available, unavailable or dnd (do not disturb)
+	 * @param identityKey
+	 * @return
+	 */
 	public String getStatus(Long identityKey);
 	
+	/**
+	 * Get or create the instant messaging preferences of an user
+	 * @param identity
+	 * @return
+	 */
 	public ImPreferences getImPreferences(Identity identity);
 	
+	/**
+	 * Update the preference of an user
+	 * @param identity
+	 * @param visible
+	 */
 	public void updateImPreferences(Identity identity, boolean visible);
 	
+	/**
+	 * Update the status of an user
+	 * @param identity
+	 * @param status
+	 */
 	public void updateStatus(Identity identity, String status);
 
+	/**
+	 * Enable chat of an user
+	 * @param identity
+	 */
 	public void enableChat(Identity identity);
 	
+	/**
+	 * Disable the chat function of an user
+	 * @param identity
+	 */
 	public void disableChat(Identity identity);
 	
 	public int getNumOfconnectedUsers();

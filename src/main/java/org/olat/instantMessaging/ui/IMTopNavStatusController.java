@@ -48,10 +48,10 @@ public class IMTopNavStatusController extends BasicController {
 	
 	private final InstantMessagingService imService;
 	
-	public IMTopNavStatusController(UserRequest ureq, WindowControl wControl) {
+	public IMTopNavStatusController(UserRequest ureq, WindowControl wControl, String status) {
 		super(ureq, wControl);
+		this.status = status;
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
-		
 		mainVC = createVelocityContainer("status_changer");
 		
 		available = LinkFactory.createLink("presence.available", mainVC, this);

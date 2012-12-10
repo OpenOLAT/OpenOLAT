@@ -32,17 +32,20 @@ import org.olat.instantMessaging.model.Buddy;
  */
 public class Roster {
 	
+	private final Long identityKey;
 	private final List<RosterEntry> entries;
 	
-	public Roster() {
+	public Roster(Long identityKey) {
+		this.identityKey = identityKey;
 		entries = new ArrayList<RosterEntry>();
 	}
 	
-	public Roster(List<RosterEntry> entries) {
+	public Roster(List<RosterEntry> entries, Long identityKey) {
+		this.identityKey = identityKey;
 		this.entries = entries;
 	}
 	
-	public boolean contains(Long identityKey) {
+	public synchronized boolean contains(Long identityKey) {
 		for(RosterEntry entry:entries) {
 			if(identityKey.equals(entry.getIdentityKey())) {
 				return true;
@@ -51,7 +54,7 @@ public class Roster {
 		return false;
 	}
 
-	public RosterEntry get(Long identityKey) {
+	public synchronized RosterEntry get(Long identityKey) {
 		for(RosterEntry entry:entries) {
 			if(identityKey.equals(entry.getIdentityKey())) {
 				return entry;
@@ -60,10 +63,12 @@ public class Roster {
 		return null;
 	}
 	
-	public void addBuddies(List<Buddy> buddies) {
+	public synchronized void addBuddies(List<Buddy> buddies) {
 		if(buddies != null) {
 			for(Buddy buddy:buddies) {
-				if(contains(buddy.getIdentityKey())) {
+				if(identityKey != null && identityKey.equals(buddy.getIdentityKey())) {
+					//continue
+				} else if(contains(buddy.getIdentityKey())) {
 					//update status
 					get(buddy.getIdentityKey()).setStatus(buddy.getStatus());
 				} else {
@@ -73,22 +78,26 @@ public class Roster {
 		}
 	}
 	
-	public void add(RosterEntry entry) {
+	public synchronized void add(RosterEntry entry) {
 		entries.add(entry);
 	}
 	
-	public int size() {
+	public synchronized int size() {
 		return entries == null ? 0: entries.size();
 	}
 
-	public List<RosterEntry> getEntries() {
+	public synchronized List<RosterEntry> getEntries() {
 		return entries;
 	}
 	
-	public void update(List<RosterEntry> newBuddies) {
+	public synchronized void update(List<RosterEntry> newBuddies) {
 		//remove duplicates
 		newBuddies.removeAll(entries);
 		//add the new buddies
 		entries.addAll(newBuddies);
+	}
+	
+	public synchronized void clear() {
+		entries.clear();
 	}
 }

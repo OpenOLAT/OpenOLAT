@@ -19,6 +19,7 @@
  */
 package org.olat.instantMessaging.ui;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -27,9 +28,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.manager.ChatLogHelper;
 
 /**
  * 
@@ -41,14 +44,19 @@ public class ChatToolController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final BusinessGroup resource;
 	private final Link openChatLink;
+	private Link logLink;
 
-	public ChatToolController(UserRequest ureq, WindowControl wControl, BusinessGroup resource) {
+	public ChatToolController(UserRequest ureq, WindowControl wControl, BusinessGroup resource, boolean isAdmin) {
 		super(ureq, wControl);
 		this.resource = resource;
 		
 		mainVC = createVelocityContainer("summary");
 		mainVC.contextPut("isInAssessment", Boolean.FALSE);
 		openChatLink = LinkFactory.createButton("openChat", mainVC, this);
+		if(isAdmin) {
+			logLink = LinkFactory.createButton("logChat", mainVC, this);
+		}
+		
 		putInitialPanel(mainVC);
 	}
 	
@@ -62,6 +70,14 @@ public class ChatToolController extends BasicController {
 		if(openChatLink == source) {
 			OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, resource, resource.getName());
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
+		} else if(logLink == source) {
+			downloadChatLog(ureq);
 		}
+	}
+	
+	private void downloadChatLog(UserRequest ureq) {
+		ChatLogHelper helper = CoreSpringFactory.getImpl(ChatLogHelper.class);
+		MediaResource download = helper.logMediaResource(resource, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(download);
 	}
 }

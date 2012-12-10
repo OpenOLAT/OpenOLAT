@@ -21,24 +21,22 @@ package org.olat.instantMessaging;
 
 import java.util.Date;
 
-import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
- * Initial date: 04.12.2012<br>
+ * Initial date: 10.12.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface InstantMessage {
+public interface InstantMessageNotification {
 	
 	public Long getKey();
 	
-	public Identity getFrom();
-	
-	public String getFromNickName();
-	
 	public Date getCreationDate();
 	
-	public String getBody();
+	public Long getFromIdentityKey();
+	
+	public OLATResourceable getChatResource();
 
 }

@@ -609,7 +609,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
 		} else if (ACTIVITY_MENUSELECT_CHAT.equals(cmd)) {
-			collabToolCtr = collabTools.createChatController(ureq, getWindowControl(), businessGroup);
+			collabToolCtr = collabTools.createChatController(ureq, getWindowControl(), businessGroup, isAdmin);
 			if(collabToolCtr == null) {
 				showWarning("groupchat.not.available");
 				mainPanel.setContent(new Panel("empty"));

@@ -17,28 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.instantMessaging;
-
-import java.util.Date;
-
-import org.olat.core.id.Identity;
+package org.olat.instantMessaging.model;
 
 /**
  * 
- * Initial date: 04.12.2012<br>
+ * Initial date: 10.12.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
  */
-public interface InstantMessage {
-	
-	public Long getKey();
-	
-	public Identity getFrom();
-	
-	public String getFromNickName();
-	
-	public Date getCreationDate();
-	
-	public String getBody();
+public class BuddyStats {
 
+	private long onlineBuddies;
+	private long offlineBuddies;
+	
+	public long getOnlineBuddies() {
+		return onlineBuddies;
+	}
+	
+	public void setOnlineBuddies(long onlineBuddies) {
+		this.onlineBuddies = onlineBuddies;
+	}
+	
+	public long getOfflineBuddies() {
+		return offlineBuddies;
+	}
+	
+	public void setOfflineBuddies(long offlineBuddies) {
+		this.offlineBuddies = offlineBuddies;
+	}
 }

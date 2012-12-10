@@ -43,12 +43,12 @@ public class InstantMessagePreferencesDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public ImPreferencesImpl createPreferences(Identity identity) {
+	public ImPreferencesImpl createPreferences(Identity identity, String status, boolean visible) {
 		ImPreferencesImpl msg = new ImPreferencesImpl();
 		msg.setCreationDate(new Date());
 		msg.setIdentity(identity);
-		msg.setVisibleToOthers(false);
-		msg.setRosterDefaultStatus(Presence.unavailable.name());
+		msg.setVisibleToOthers(visible);
+		msg.setRosterDefaultStatus(status);
 		dbInstance.getCurrentEntityManager().persist(msg);
 		return msg;
 	}
@@ -68,22 +68,30 @@ public class InstantMessagePreferencesDAO {
 				.getResultList();
 		
 		if(msgs.isEmpty()) {
-			return createPreferences(identity);
+			return createPreferences(identity, Presence.available.name(), true);
 		}
 		return msgs.get(0);
 	}
 	
 	public ImPreferencesImpl updatePreferences(Identity identity, String status) {
 		ImPreferencesImpl prefs = loadForUpdate(identity);
-		prefs.setRosterDefaultStatus(status);
-		prefs = dbInstance.getCurrentEntityManager().merge(prefs);
+		if(prefs == null) {
+			prefs = createPreferences(identity, status, true);
+		} else {
+			prefs.setRosterDefaultStatus(status);
+			prefs = dbInstance.getCurrentEntityManager().merge(prefs);
+		}
 		return prefs;
 	}
 	
 	public ImPreferencesImpl updatePreferences(Identity identity, boolean visible) {
 		ImPreferencesImpl prefs = loadForUpdate(identity);
-		prefs.setVisibleToOthers(visible);
-		prefs = dbInstance.getCurrentEntityManager().merge(prefs);
+		if(prefs == null) {
+			prefs = createPreferences(identity, Presence.available.name(), visible);
+		} else {
+			prefs.setVisibleToOthers(visible);
+			prefs = dbInstance.getCurrentEntityManager().merge(prefs);
+		}
 		return prefs;
 	}
 	

@@ -5,4 +5,4 @@
 #if ($isInAssessment)
 <p>$r.translate("im.conference.assessment.open")</p>
 #end
-<p>$r.render("openChat")</p>
+<p>$r.render("openChat") #if($r.available("logChat")) $r.render("logChat") #end</p>

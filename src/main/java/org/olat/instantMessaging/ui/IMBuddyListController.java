@@ -28,7 +28,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.WebappHelper;
+import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 
@@ -40,46 +40,45 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
  */
 public class IMBuddyListController extends BasicController {
 	
-	private final Link toggleOffline, toggleGroups; 
-	private final VelocityContainer buddiesList;
+	private Link toggleOffline, toggleGroups; 
+	private final VelocityContainer mainVC;
 	private final VelocityContainer buddiesListContent;
 
-	private int toggleOfflineMode;
-	private int toggleGroupsMode;
 	private Roster buddyList;
+	private ViewMode viewMode;
+	
+	private final InstantMessagingModule imModule;
 	private final InstantMessagingService imService;
 	
 	public IMBuddyListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		
-		buddiesList = createVelocityContainer("buddies");
+		mainVC = createVelocityContainer("buddies");
 		buddiesListContent = createVelocityContainer("buddies_content");
 		
-		toggleOffline = LinkFactory.createCustomLink("toggleOffline", "cmd.offline", "", Link.NONTRANSLATED, buddiesList, this);
-		toggleOffline.setCustomDisplayText(getTranslator().translate("im.show.offline.buddies"));
-		toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_showofflineswitch");
-		
-		toggleGroups = LinkFactory.createCustomLink("toggleGroups", "cmd.groups", "", Link.NONTRANSLATED, buddiesList, this);
-		toggleGroups.setCustomDisplayText(getTranslator().translate("im.show.groups"));
-		toggleGroups.setCustomEnabledLinkCSS("o_instantmessaging_showgroupswitch");
-		
-		buddiesList.contextPut("contextpath", WebappHelper.getServletContextPath());
-		buddiesList.contextPut("lang", ureq.getLocale().toString());
-		
-		buddyList = new Roster();
-		buddyList.addBuddies(imService.getBuddies(getIdentity()));
-		buddiesList.contextPut("buddyList", buddyList);
-		buddiesListContent.contextPut("buddyList", buddyList);
-		for(RosterEntry buddy:buddyList.getEntries()) {
-			Link buddyLink = LinkFactory.createCustomLink("buddy_" + buddy.getIdentityKey(), "cmd.buddy", "", Link.NONTRANSLATED, buddiesListContent, this);
-			buddyLink.setCustomDisplayText(buddy.getName());
-			buddyLink.setCustomEnabledLinkCSS(getStatusCss(buddy.getStatus()));
-			buddyLink.setUserObject(buddy);
+		if(imModule.isOnlineUsersEnabled()) {
+			toggleOffline = LinkFactory.createCustomLink("toggleOnline", "cmd.online", "", Link.NONTRANSLATED, mainVC, this);
+			toggleOffline.setCustomDisplayText(translate("im.show.online.buddies"));
+			toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_showofflineswitch");
+			viewMode = ViewMode.onlineUsers;
 		}
-		buddiesList.put("buddiesListContent", buddiesListContent);
 		
-		putInitialPanel(buddiesList);
+		if(imModule.isGroupEnabled() || imModule.isCourseEnabled()) {
+			toggleGroups = LinkFactory.createCustomLink("toggleGroups", "cmd.groups", "", Link.NONTRANSLATED, mainVC, this);
+			toggleGroups.setCustomDisplayText(getTranslator().translate("im.show.groups"));
+			toggleGroups.setCustomEnabledLinkCSS("o_instantmessaging_showgroupswitch");
+			viewMode = ViewMode.groups;
+		}
+
+		buddyList = new Roster(getIdentity().getKey());
+		mainVC.contextPut("buddyList", buddyList);
+		buddiesListContent.contextPut("buddyList", buddyList);
+		loadRoster(viewMode);
+		mainVC.put("buddiesListContent", buddiesListContent);
+		putInitialPanel(mainVC);
 	}
 	
 	private String getStatusCss(String status) {
@@ -95,25 +94,21 @@ public class IMBuddyListController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {	
 		//buddies list
 		if (source == toggleOffline) {
-			if (toggleOfflineMode == 0) {
+			if (viewMode == ViewMode.groups) {
 				toggleOffline.setCustomDisplayText(translate("im.hide.offline.buddies"));
-				toggleOfflineMode = 1;
+				loadRoster(ViewMode.onlineUsers);
 			} else {
 				toggleOffline.setCustomDisplayText(translate("im.show.offline.buddies"));
-				toggleOfflineMode = 0;
+				loadRoster(ViewMode.groups);
 			}
-			buddiesListContent.setDirty(true);
-			
 		} else if (source == toggleGroups) {
-			if (toggleGroupsMode == 0) {
+			if (viewMode == ViewMode.onlineUsers) {
 				toggleGroups.setCustomDisplayText(translate("im.hide.groups"));
-				toggleGroupsMode = 1;
+				loadRoster(ViewMode.groups);
 			} else {
 				toggleGroups.setCustomDisplayText(translate("im.show.groups"));
-				toggleGroupsMode = 0;
-			}
-			buddiesListContent.setDirty(true);
-			
+				loadRoster(ViewMode.onlineUsers);
+			}	
 		} else if (source instanceof Link) {
 			Link link = (Link)source;
 			if("cmd.buddy".equals(link.getCommand())) {
@@ -121,5 +116,34 @@ public class IMBuddyListController extends BasicController {
 				fireEvent(ureq, new OpenInstantMessageEvent(ureq, buddy));
 			}
 		}
+	}
+	
+	private void loadRoster(ViewMode mode) {
+		this.viewMode = mode;
+
+		buddyList.clear();
+		if(viewMode == ViewMode.onlineUsers) {
+			if(imModule.isViewOnlineUsersEnabled()) {
+				buddyList.addBuddies(imService.getOnlineBuddies());
+			}
+		} else {
+			buddyList.addBuddies(imService.getBuddies(getIdentity()));
+		}
+		
+		for(RosterEntry buddy:buddyList.getEntries()) {
+			String linkId = "buddy_" + buddy.getIdentityKey();
+			if(buddiesListContent.getComponent(linkId) == null) {
+				Link buddyLink = LinkFactory.createCustomLink(linkId, "cmd.buddy", "", Link.NONTRANSLATED, buddiesListContent, this);
+				buddyLink.setCustomDisplayText(buddy.getName());
+				buddyLink.setCustomEnabledLinkCSS(getStatusCss(buddy.getStatus()));
+				buddyLink.setUserObject(buddy);
+			}
+		}
+		buddiesListContent.setDirty(true);
+	}
+	
+	private enum ViewMode {
+		onlineUsers,
+		groups,
 	}
 }

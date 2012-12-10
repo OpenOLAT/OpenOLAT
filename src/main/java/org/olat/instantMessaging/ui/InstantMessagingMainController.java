@@ -26,8 +26,8 @@
 package org.olat.instantMessaging.ui;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -53,10 +53,13 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
+import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.BuddyStats;
+import org.olat.instantMessaging.model.Presence;
 
 /**
  * Description:<br />
@@ -74,8 +77,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private VelocityContainer chatContent = createVelocityContainer("chat");
 	
 	//new messages
-	private Panel notifieNewMsgPanel;
-	private Map<Long, Buddy> showNewMessageHolder = new HashMap<Long, Buddy>();
+	private List<Long> showNewMessageHolder = new ArrayList<Long>();
 	private VelocityContainer newMsgIcon = createVelocityContainer("newMsgIcon");
 	//roster
 	private Panel rosterPanel;
@@ -91,6 +93,8 @@ public class InstantMessagingMainController extends BasicController implements G
 	private JSAndCSSComponent jsc;
 	private ChatManagerController chatMgrCtrl;
 
+	private String imStatus;
+	private boolean inAssessment = false;
 	private EventBus singleUserEventCenter;
 	private final InstantMessagingService imService;
 
@@ -117,11 +121,8 @@ public class InstantMessagingMainController extends BasicController implements G
 			newMessageSoundURL = newMessageSoundURL.replace("/themes/" + guiTheme.getIdentifyer(), "/themes/openolat");
 		}
 		newMsgIcon.contextPut("newMessageSoundURL", newMessageSoundURL);
+		loadNotifications();
 
-		notifieNewMsgPanel = new Panel("newMsgPanel");
-		notifieNewMsgPanel.setContent(newMsgIcon);
-			
-		
 		//status changer link
 		statusChangerLink = LinkFactory.createCustomLink("statusChanger", "cmd.status", "", Link.NONTRANSLATED, null, this);
 		statusChangerLink.registerForMousePositionEvent(true);
@@ -136,7 +137,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		onlineOfflineCount.registerForMousePositionEvent(true);
 		main.put("buddiesSummaryPanel", onlineOfflineCount);
 
-		main.put("newMsgPanel", notifieNewMsgPanel);
+		main.put("newMsgPanel", newMsgIcon);
 		rosterPanel = new Panel("rosterPanel");
 		main.put("rosterPanel", rosterPanel);
 		statusPanel = new Panel("statusPanel");
@@ -183,10 +184,14 @@ public class InstantMessagingMainController extends BasicController implements G
 		} else if (source instanceof Link) {
 			Link link = (Link)source;
 			//chat gets created by click on buddy list
-			if (link.getCommand().equals(ACTION_MSG)) {//chats gets created by click on new message icon
-				Buddy buddy = (Buddy)link.getUserObject();
-				chatMgrCtrl.createChat(ureq, buddy);
-				showNewMessageHolder.remove(buddy.getIdentityKey());
+			if (link.getCommand().equals(ACTION_MSG)) {
+				//chats gets created by click on new message icon
+				Object obj = link.getUserObject();
+				if(obj instanceof Buddy) {
+					Buddy buddy = (Buddy)obj;
+					chatMgrCtrl.createChat(ureq, buddy);
+					showNewMessageHolder.remove(buddy.getIdentityKey());
+				}
 				newMsgIcon.setDirty(true);
 			}
 		}
@@ -206,8 +211,8 @@ public class InstantMessagingMainController extends BasicController implements G
 			updateStatusCss(statusChangerCtr.getSelectedStatus());
 		} else if (source == rosterPanelCtr) {
 			//closing the floating panel event
-			int buddyCount = 12;//clientHelper.buddyCountOnline()
-			onlineOfflineCount.setCustomDisplayText("" + buddyCount);
+			BuddyStats stats = imService.getBuddyStats(getIdentity());
+			onlineOfflineCount.setCustomDisplayText("(" + stats.getOnlineBuddies() + "/" + stats.getOfflineBuddies() + ")");
 			removeAsListenerAndDispose(rosterCtr);
 			removeAsListenerAndDispose(rosterPanelCtr);
 			rosterCtr = null;
@@ -220,7 +225,6 @@ public class InstantMessagingMainController extends BasicController implements G
 			}
 		} else if (source == chatMgrCtrl) {
 			//closing events from chat manager controller
-			notifieNewMsgPanel.setContent(newMsgIcon);
 		}
 	}
 
@@ -238,6 +242,17 @@ public class InstantMessagingMainController extends BasicController implements G
 			processOpenInstantMessageEvent((OpenInstantMessageEvent)event);
 		} else if(event instanceof CloseInstantMessagingEvent) {
 			processCloseInstantMessageEvent();
+		}
+	}
+	
+	private void loadNotifications() {
+		List<InstantMessageNotification> notifications = imService.getNotifications(getIdentity());
+		for(InstantMessageNotification notification:notifications) {
+			if(!showNewMessageHolder.contains(notification.getFromIdentityKey())) {
+				showNewMessageHolder.add(notification.getFromIdentityKey());
+				Buddy buddy = imService.getBuddyById(notification.getFromIdentityKey());
+				createShowNewMessageLink(buddy);
+			}
 		}
 	}
 	
@@ -266,7 +281,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		removeAsListenerAndDispose(statusChangerCtr);
 		removeAsListenerAndDispose(statusChangerPanelCtr);
 		
-		statusChangerCtr = new IMTopNavStatusController(ureq, getWindowControl());
+		statusChangerCtr = new IMTopNavStatusController(ureq, getWindowControl(), imStatus);
 		listenTo(statusChangerCtr);
 		
 		statusChangerPanelCtr = new FloatingResizableDialogController(ureq, getWindowControl(), statusChangerCtr.getInitialComponent(),
@@ -279,19 +294,26 @@ public class InstantMessagingMainController extends BasicController implements G
 	
 	private void updateStatusCss(String status) {
 		if(!StringHelper.containsNonWhitespace(status)) {
-			status = imService.getStatus(getIdentity().getKey());
+			imStatus = imService.getStatus(getIdentity().getKey());
+		} else {
+			imStatus = status;
 		}
-		String cssClass = "o_instantmessaging_" + status + "_icon";
+		String cssClass = "o_instantmessaging_" + imStatus + "_icon";
 		statusChangerLink.setCustomEnabledLinkCSS("b_small_icon " + cssClass);
 	}
 	
 	private void processAssessmentEvent(AssessmentEvent event) {
 		if(event.getEventType().equals(AssessmentEvent.TYPE.STARTED)) {
+			inAssessment = true;
 			main.contextPut("inAssessment", true);
+			chatMgrCtrl.closeAllChats();
+			rosterPanelCtr.executeCloseCommand();
 		} else if(event.getEventType().equals(AssessmentEvent.TYPE.STOPPED)) {
 			OLATResourceable a = OresHelper.createOLATResourceableType(AssessmentInstance.class);
-			if (singleUserEventCenter.getListeningIdentityCntFor(a)<1) {
+			if (singleUserEventCenter.getListeningIdentityCntFor(a) < 1) {
+				inAssessment = false;
 				main.contextPut("inAssessment", false);
+				loadNotifications();
 			}
 		} 
 	}
@@ -299,7 +321,9 @@ public class InstantMessagingMainController extends BasicController implements G
 	private void processOpenInstantMessageEvent(OpenInstantMessageEvent event) {
 		UserRequest ureq = event.getUserRequest();
 		if(ureq != null) {
-			if(event.getOres() != null) {
+			if(event.getBuddy() != null) {
+				chatMgrCtrl.createChat(ureq, event.getBuddy());
+			} else if(event.getOres() != null) {
 				//open a group chat
 				chatMgrCtrl.createGroupChat(ureq, event.getOres(), event.getRoomName());
 			}	
@@ -329,13 +353,13 @@ public class InstantMessagingMainController extends BasicController implements G
 			if(!chatMgrCtrl.hasRunningChat(fromId)) {
 				//only show icon if no chat running or msg from other user
 				//add follow up message to info holder
-				if (!showNewMessageHolder.containsKey(fromId)) {
+				if (!showNewMessageHolder.contains(fromId)) {
 					Buddy buddy = imService.getBuddyById(fromId);
-					if(true) {
+					if(Presence.available.name().equals(imStatus) && !inAssessment) {
 						doOpenPrivateChat(new SyntheticUserRequest(getIdentity(), getLocale()), buddy);
 					} else {
-						showNewMessageHolder.put(fromId, buddy);
-						createShowNewMessageLink(fromId, buddy);
+						showNewMessageHolder.add(fromId);
+						createShowNewMessageLink(buddy);
 					}
 				}
 			}
@@ -346,13 +370,13 @@ public class InstantMessagingMainController extends BasicController implements G
 	 * creates an new message icon link
 	 * @param jabberId
 	 */
-	private Link createShowNewMessageLink(Long fromId, Buddy buddy) {
-		Link link = LinkFactory.createCustomLink(fromId.toString(), ACTION_MSG, "", Link.NONTRANSLATED, newMsgIcon, this);
+	private Link createShowNewMessageLink(Buddy buddy) {
+		Link link = LinkFactory.createCustomLink(buddy.getIdentityKey().toString(), ACTION_MSG, "", Link.NONTRANSLATED, newMsgIcon, this);
 		link.registerForMousePositionEvent(true);
 		link.setCustomEnabledLinkCSS("b_small_icon o_instantmessaging_new_msg_icon");
-		link.setTooltip(getTranslator().translate("im.new.message", new String[]{ fromId.toString() }), false);
+		link.setTooltip(translate("im.new.message", new String[]{ buddy.getFullname() }), false);
 		link.setUserObject(buddy);
-		newMsgIcon.put(fromId.toString(), link);
+		newMsgIcon.put(buddy.getIdentityKey().toString(), link);
 		return link;
 	}
 }

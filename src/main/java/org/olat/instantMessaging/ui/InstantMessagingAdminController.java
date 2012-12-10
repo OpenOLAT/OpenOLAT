@@ -52,8 +52,9 @@ public class InstantMessagingAdminController extends FormBasicController {
 	private MultipleSelectionElement imEnableGroupEl;
 	private MultipleSelectionElement imEnableCourseEl;
 	private MultipleSelectionElement imEnablePrivateEl;
-	private MultipleSelectionElement imEnableOnlineUsersEl;
 	private MultipleSelectionElement imEnableGroupPeersEl;
+	private MultipleSelectionElement imEnableOnlineUsersEl;
+	private MultipleSelectionElement imEnableViewOnlineUsersEl;
 	
 	private static String[] enabledKeys = new String[]{"on"};
 	
@@ -94,13 +95,17 @@ public class InstantMessagingAdminController extends FormBasicController {
 		imEnablePrivateEl.select(enabledKeys[0], imModule.isPrivateEnabled());
 		imEnablePrivateEl.addActionListener(listener, FormEvent.ONCHANGE);
 		
+		imEnableGroupPeersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.grouppeers", optionsFlc, enabledKeys, enabledValues, null);
+		imEnableGroupPeersEl.select(enabledKeys[0], imModule.isGroupPeersEnabled());
+		imEnableGroupPeersEl.addActionListener(listener, FormEvent.ONCHANGE);
+		
 		imEnableOnlineUsersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.onlineusers", optionsFlc, enabledKeys, enabledValues, null);
 		imEnableOnlineUsersEl.select(enabledKeys[0], imModule.isOnlineUsersEnabled());
 		imEnableOnlineUsersEl.addActionListener(listener, FormEvent.ONCHANGE);
 		
-		imEnableGroupPeersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.grouppeers", optionsFlc, enabledKeys, enabledValues, null);
-		imEnableGroupPeersEl.select(enabledKeys[0], imModule.isGroupPeersEnabled());
-		imEnableGroupPeersEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableViewOnlineUsersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.viewonlineusers", optionsFlc, enabledKeys, enabledValues, null);
+		imEnableViewOnlineUsersEl.select(enabledKeys[0], imModule.isViewOnlineUsersEnabled());
+		imEnableViewOnlineUsersEl.addActionListener(listener, FormEvent.ONCHANGE);
 	}
 	
 	protected void doDispose() {
@@ -117,10 +122,12 @@ public class InstantMessagingAdminController extends FormBasicController {
 			imModule.setCourseEnabled(imEnableCourseEl.isSelected(0));
 		} else if(source == imEnablePrivateEl) {
 			imModule.setPrivateEnabled(imEnablePrivateEl.isSelected(0));
-		} else if(source == imEnableOnlineUsersEl) {
-			imModule.setOnlineUsersEnabled(imEnableOnlineUsersEl.isSelected(0));
 		} else if(source == imEnableGroupPeersEl) {
 			imModule.setGroupPeersEnabled(imEnableGroupPeersEl.isSelected(0));
+		} else if(source == imEnableOnlineUsersEl) {
+			imModule.setOnlineUsersEnabled(imEnableOnlineUsersEl.isSelected(0));
+		} else if(source == imEnableViewOnlineUsersEl) {
+			imModule.setViewOnlineUsersEnabled(imEnableViewOnlineUsersEl.isSelected(0));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.instantMessaging.manager.InstantMessagePreferencesDAO;
 import org.olat.instantMessaging.model.ImPreferencesImpl;
+import org.olat.instantMessaging.model.Presence;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	@Test
 	public void testCreateMessage() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-prefs-1-" + UUID.randomUUID().toString());
-		ImPreferencesImpl prefs = imDao.createPreferences(id);
+		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.available.name(), true);
 		Assert.assertNotNull(prefs);
 		Assert.assertNotNull(prefs.getKey());
 		Assert.assertNotNull(prefs.getCreationDate());
@@ -60,7 +61,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	public void testLoadMessage() {
 		//create a message
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-prefs-2-" + UUID.randomUUID().toString());
-		ImPreferencesImpl prefs = imDao.createPreferences(id);
+		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.available.name(), true);
 		Assert.assertNotNull(prefs);
 		dbInstance.commitAndCloseSession();
 		

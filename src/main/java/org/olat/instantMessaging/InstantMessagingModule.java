@@ -50,6 +50,7 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 	private static final String CONFIG_PRIVATE_ENABLED = "im.enabled.private";
 	private static final String CONFIG_ONLINEUSERS_ENABLED = "im.enabled.onlineusers";
 	private static final String CONFIG_GROUPPEERS_ENABLED = "im.enabled.grouppeers";
+	private static final String CONFIG_VIEW_ONLINE_USERS_ENABLED = "im.enabled.viewonlineusers";
 
 	private boolean enabled = false;
 	private boolean groupEnabled = false;
@@ -57,6 +58,7 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 	private boolean privateEnabled = false;
 	private boolean onlineUsersEnabled = false;
 	private boolean groupPeersEnabled = false;
+	private boolean viewOnlineUsersEnabled = false;
 
 	public void init() {
 		String enabledObj = getStringPropertyValue(CONFIG_ENABLED, true);
@@ -83,6 +85,10 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			groupPeersEnabled = "true".equals(enabledObj);
 		}
+		enabledObj = getStringPropertyValue(CONFIG_VIEW_ONLINE_USERS_ENABLED, false);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			viewOnlineUsersEnabled = "true".equals(enabledObj);
+		}
 	}
 
 	@Override
@@ -93,6 +99,7 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		privateEnabled = getBooleanConfigParameter(CONFIG_PRIVATE_ENABLED, true);
 		onlineUsersEnabled = getBooleanConfigParameter(CONFIG_ONLINEUSERS_ENABLED, true);
 		groupPeersEnabled = getBooleanConfigParameter(CONFIG_GROUPPEERS_ENABLED, true);
+		viewOnlineUsersEnabled = getBooleanConfigParameter(CONFIG_VIEW_ONLINE_USERS_ENABLED, false);
 	}
 
 	@Override
@@ -155,5 +162,13 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 
 	public void setGroupPeersEnabled(boolean enabled) {
 		setStringProperty(CONFIG_GROUPPEERS_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isViewOnlineUsersEnabled() {
+		return viewOnlineUsersEnabled;
+	}
+
+	public void setViewOnlineUsersEnabled(boolean enabled) {
+		setStringProperty(CONFIG_VIEW_ONLINE_USERS_ENABLED, Boolean.toString(enabled), true);
 	}
 }

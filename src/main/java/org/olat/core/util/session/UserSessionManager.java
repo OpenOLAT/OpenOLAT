@@ -162,6 +162,12 @@ public class UserSessionManager implements GenericEventListener {
 		}
 	}
 	
+	public List<Long> getAuthenticatedIdentityKey() {
+		synchronized (authUserSessions) {  //o_clusterOK by:fj
+			return new ArrayList<Long>(userNameToIdentity);
+		}
+	}
+	
 	/**
 	 * @return set of authenticated active user sessions
 	 */

@@ -20,6 +20,7 @@
 package org.olat.instantMessaging.manager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
@@ -36,9 +37,12 @@ import org.olat.core.util.session.UserSessionManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessage;
+import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.BuddyStats;
+import org.olat.instantMessaging.model.InstantMessageImpl;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +60,8 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	private InstantMessageDAO imDao;
 	@Autowired
 	private InstantMessagePreferencesDAO prefsDao;
+	@Autowired
+	private ChatLogHelper logHelper;
 	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
@@ -94,7 +100,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	public OLATResourceable getPrivateChatresource(Long identityKey1, Long identityKey2) {
+	public OLATResourceable getPrivateChatResource(Long identityKey1, Long identityKey2) {
 		String resName;
 		if(identityKey1.longValue() > identityKey2.longValue()) {
 			resName = identityKey2 + "-" + identityKey1;
@@ -106,13 +112,23 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	public InstantMessage getMessageById(Long messageId) {
-		return imDao.loadMessageById(messageId);
+	public InstantMessage getMessageById(Identity identity, Long messageId, boolean markedAsRead) {
+		InstantMessageImpl msg = imDao.loadMessageById(messageId);
+		if(markedAsRead && msg != null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(msg.getResourceTypeName(), msg.getResourceId());
+			imDao.deleteNotification(identity, ores);
+		}
+		return msg;
 	}
 
 	@Override
-	public List<InstantMessage> getMessages(OLATResourceable chatResource, int firstResult, int maxResults) {
-		return imDao.getMessages(chatResource, firstResult, maxResults);
+	public List<InstantMessage> getMessages(Identity identity, OLATResourceable chatResource,
+			int firstResult, int maxResults, boolean markedAsRead) {
+		List<InstantMessage> msgs = imDao.getMessages(chatResource, firstResult, maxResults);
+		if(markedAsRead) {
+			imDao.deleteNotification(identity, chatResource);
+		}
+		return msgs;
 	}
 
 	@Override
@@ -131,6 +147,8 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey, String body, OLATResourceable chatResource) {
 		String name = userManager.getUserDisplayName(from.getUser());
 		InstantMessage message = imDao.createMessage(from, name, false, body, chatResource);
+		imDao.createNotification(from.getKey(), toIdentityKey, chatResource);
+		
 		InstantMessagingEvent event = new InstantMessagingEvent("message");
 		event.setFromId(from.getKey());
 		event.setName(name);
@@ -156,6 +174,11 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	@Override
+	public List<InstantMessageNotification> getNotifications(Identity identity) {
+		return imDao.getNotifications(identity);
+	}
+
+	@Override
 	public Buddy getBuddyById(Long identityKey) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
 		String fullname = userManager.getUserDisplayName(identity);
@@ -165,12 +188,37 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Override
 	public List<Buddy> getBuddies(Identity me) {
 		List<Identity> contacts = businessGroupService.findContacts(me, 0, -1);
-		List<Buddy> buddies = new ArrayList<Buddy>();
+		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
 		for(Identity contact:contacts) {
 			String fullname = userManager.getUserDisplayName(contact.getUser());
 			buddies.add(new Buddy(contact.getKey(), fullname));
 		}
 		return buddies;
+	}
+
+	@Override
+	public List<Buddy> getOnlineBuddies() {
+		List<Long> ids = sessionManager.getAuthenticatedIdentityKey();
+		List<Identity> contacts = securityManager.loadIdentityByKeys(ids);
+		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
+		for(Identity contact:contacts) {
+			String fullname = userManager.getUserDisplayName(contact.getUser());
+			buddies.add(new Buddy(contact.getKey(), fullname));
+		}
+		return buddies;
+	}
+	
+	
+
+	@Override
+	public BuddyStats getBuddyStats(Identity me) {
+		BuddyStats stats = new BuddyStats();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.YEAR, -1);
+		stats.setOfflineBuddies(securityManager.countUniqueUserLoginsSince(cal.getTime()));
+		stats.setOnlineBuddies(sessionManager.getUserSessionsCnt());
+		return stats;
 	}
 
 	@Override

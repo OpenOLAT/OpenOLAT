@@ -121,7 +121,7 @@ public class ChatManagerController extends BasicController {
 			return; // chat  with this person is already ongoing
 		}
 		
-		OLATResourceable ores = imService.getPrivateChatresource(getIdentity().getKey(), buddy.getIdentityKey());
+		OLATResourceable ores = imService.getPrivateChatResource(getIdentity().getKey(), buddy.getIdentityKey());
 		
 		int offsetX = 100 + (chats.size() * 10);
 		int offsetY = 100 + (chats.size() * 5);

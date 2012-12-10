@@ -127,7 +127,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		chatMsgFieldPanel.setContent(chatMsgFieldContent);
 		
 		if(privateReceiverKey == null) {
-			buddyList = new Roster();
+			buddyList = new Roster(getIdentity().getKey());
 			rosterVC = createVelocityContainer("roster");
 			rosterVC.contextPut("rosterList", buddyList);
 			updateRosterList();
@@ -152,7 +152,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		jsFocusCmd = "<script>Ext.onReady(function(){try{focus_"+pn+"();}catch(e){}});</script>";
 
 		chatMsgFieldContent.contextPut("chatMessages", "");
-		List<InstantMessage> lastMessages = imService.getMessages(getOlatResourceable(), 0, 10);
+		List<InstantMessage> lastMessages = imService.getMessages(getIdentity(), getOlatResourceable(), 0, 10, true);
 		for(int i=lastMessages.size(); i-->0; ) {
 			appendToMessageHistory(lastMessages.get(i));
 		}
@@ -240,7 +240,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			Long from = event.getFromId();
 			if(!getIdentity().getKey().equals(from)) {
 				Long messageId = event.getMessageId();
-				InstantMessage message = imService.getMessageById(messageId);
+				InstantMessage message = imService.getMessageById(getIdentity(), messageId, true);
 				appendToMessageHistory(message);
 			}
 		} else if ("participant".equals(event.getCommand())) {
@@ -282,7 +282,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			fh.append(jsFocusCmd);
 		}
 		chatMsgFieldContent.contextPut("chatMessages", fh.toString());
-		chatMsgFieldContent.contextPut("id", this.hashCode());
+		chatMsgFieldContent.contextPut("id", hashCode());
 	}
 	
 	private String prepareMsgBody(String body) {

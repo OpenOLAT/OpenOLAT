@@ -28,7 +28,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.instantMessaging.InstantMessage;
+import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.model.InstantMessageImpl;
+import org.olat.instantMessaging.model.InstantMessageNotificationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,12 +58,13 @@ public class InstantMessageDAO {
 		return msg;
 	}
 
-	public InstantMessage loadMessageById(Long key) {
+	public InstantMessageImpl loadMessageById(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select msg from ").append(InstantMessageImpl.class.getName()).append(" msg ")
 		  .append(" where msg.key=:key");
 		
-		List<InstantMessage> msgs = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), InstantMessage.class)
+		List<InstantMessageImpl> msgs = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), InstantMessageImpl.class)
 				.setParameter("key", key)
 				.getResultList();
 		
@@ -86,5 +89,48 @@ public class InstantMessageDAO {
 			query.setMaxResults(maxResults);
 		}
 		return query.getResultList();
+	}
+	
+	public InstantMessageNotification createNotification(Long fromIdentityKey, Long toIdentityKey, OLATResourceable chatResource) {
+		InstantMessageNotificationImpl notification = new InstantMessageNotificationImpl();
+		notification.setToIdentityKey(toIdentityKey);
+		notification.setFromIdentityKey(fromIdentityKey);
+		notification.setResourceTypeName(chatResource.getResourceableTypeName());
+		notification.setResourceId(chatResource.getResourceableId());
+		notification.setCreationDate(new Date());
+		dbInstance.getCurrentEntityManager().persist(notification);
+		return notification;
+	}
+	
+	public void deleteNotification(Long notificationId) {
+		InstantMessageNotificationImpl notification = dbInstance.getCurrentEntityManager()
+				.getReference(InstantMessageNotificationImpl.class, notificationId);
+		dbInstance.getCurrentEntityManager().remove(notification);
+	}
+	
+	public void deleteNotification(Identity identity, OLATResourceable ores) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(InstantMessageNotificationImpl.class.getName()).append(" notification ")
+		  .append(" where notification.toIdentityKey=:identityKey")
+		  .append(" and notification.resourceId=:resid and notification.resourceTypeName=:resname");
+		
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resid", ores.getResourceableId())
+				.setParameter("resname", ores.getResourceableTypeName())
+				.executeUpdate();
+	}
+	
+	public List<InstantMessageNotification> getNotifications(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select notification from ").append(InstantMessageNotificationImpl.class.getName()).append(" notification ")
+		  .append(" where notification.toIdentityKey=:identityKey")
+		  .append(" order by notification.creationDate desc");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), InstantMessageNotification.class)
+				.setParameter("identityKey", identity.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
 	}
 }

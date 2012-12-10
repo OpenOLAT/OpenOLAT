@@ -476,10 +476,10 @@ public class CollaborationTools implements Serializable {
 	 * @param chatName
 	 * @return Controller
 	 */
-	public ChatToolController createChatController(UserRequest ureq, WindowControl wControl, BusinessGroup grp) {
+	public ChatToolController createChatController(UserRequest ureq, WindowControl wControl, BusinessGroup grp, boolean isAdmin) {
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		if (imModule.isEnabled() && imModule.isGroupEnabled()) {
-			return new ChatToolController(ureq, wControl, grp);
+			return new ChatToolController(ureq, wControl, grp, isAdmin);
 		}
 		return null;
 	}
