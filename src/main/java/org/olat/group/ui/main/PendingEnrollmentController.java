@@ -194,6 +194,10 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		public Long getKey() {
 			return reservation.getKey();
 		}
+		
+		public boolean isCoach() {
+			return "group_coach".equals(reservation.getType());
+		}
 
 		public String getName() {
 			return name == null ? "" : name;

@@ -333,7 +333,8 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group);
+	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, Roles ureqRoles, List<Identity> addIdentities,
+			BusinessGroup group, MailPackage mailing);
 	
 	/**
 	 * Remove a list of users from a group as owner and does all the magic that needs to be

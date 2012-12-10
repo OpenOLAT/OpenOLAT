@@ -202,7 +202,7 @@ public class ProjectGroupController extends BasicController {
 	private void handleProjectLeaderGroupEvent(UserRequest urequest, Event event) {
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-			BusinessGroupAddResponse response = businessGroupService.addOwners(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup());
+			BusinessGroupAddResponse response = businessGroupService.addOwners(urequest.getIdentity(), urequest.getUserSession().getRoles(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), null);
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());

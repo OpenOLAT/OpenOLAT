@@ -4,6 +4,9 @@
 		<div class="o_reservation b_clearfix">
 			<span class="o_reservation_name #if($reservation.accepted) o_reservation_accepted #elseif($reservation.refused) o_reservation_refused #end">
 				${reservation.name}
+				#if($reservation.coach)
+					$r.translate("reservation.coach")
+				#end
 			</span>
 			<div class="o_buttons_box_right">
 				<a href="#" class="o_reservation_details_link" id="o_reservation_details_show_$id">$r.translate("show")</a>

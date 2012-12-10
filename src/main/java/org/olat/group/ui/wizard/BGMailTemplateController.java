@@ -105,7 +105,9 @@ public class BGMailTemplateController extends FormBasicController {
 		if(bodyElem != null) {
 			template.setBodyTemplate(bodyElem.getValue());
 		}
-		template.setCpfrom(ccSender.isSelected(0));
+		if(ccSender != null) {
+			template.setCpfrom(ccSender.isSelected(0));
+		}
 	}
 
 	@Override
