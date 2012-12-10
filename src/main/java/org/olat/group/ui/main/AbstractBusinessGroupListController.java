@@ -263,6 +263,9 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 				if(businessGroup == null) {
 					groupListModel.removeBusinessGroup(businessGroup);
 					groupListCtr.modelChanged();
+				} else if(TABLE_ACTION_DELETE.equals(actionid)) {
+					BGTableItem item = groupListModel.getObject(te.getRowId());
+					confirmDelete(ureq, Collections.singletonList(item));
 				} else if(actionid.equals(TABLE_ACTION_LAUNCH)) {
 					doLaunch(ureq, businessGroup);
 				} else if(actionid.equals(TABLE_ACTION_LEAVE)) {
