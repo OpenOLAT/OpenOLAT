@@ -191,8 +191,7 @@ public class UserBulkChangeManager extends BasicManager {
 			// set status
 			if (roleChangeMap.containsKey("Status")) {
 				Integer status = Integer.parseInt(roleChangeMap.get("Status"));
-				secMgr.saveIdentityStatus(identity, status);
-				identity = (Identity) db.loadObject(identity);
+				identity = secMgr.saveIdentityStatus(identity, status);
 			}
 
 			// persist changes:
