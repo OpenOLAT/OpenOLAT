@@ -47,7 +47,7 @@ public class RepositoryMailing {
 		if(event.size() == 1) {
 			if(event.getRepoTutor() != null && event.getRepoTutor().booleanValue()) {
 				return Type.addTutor;
-			} else if(event.getRepoParticipant() != null && event.getRepoTutor().booleanValue()) {
+			} else if(event.getRepoParticipant() != null && event.getRepoParticipant().booleanValue()) {
 				return Type.addParticipant;
 			}
 		}
