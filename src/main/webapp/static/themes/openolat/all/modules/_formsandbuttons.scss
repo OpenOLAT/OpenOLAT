@@ -220,7 +220,7 @@ fieldset {
 
 div.b_form { 
 	div.b_form_desc { padding-bottom: 1em; font-style: italic;}
-	div.b_form_general_error { padding: 10px 10px 10px 50px; margin-bottom: 20px; text-align: left; background: url(../openolat/images/icon_error_32.png) no-repeat 10px 10px; min-height: 32px; border: 1px solid #990000; color: #990000; font-style: italic;}
+	div.b_form_general_error { padding: 10px 10px 10px 50px; margin-bottom: 20px; text-align: left; background: url(../openolat/images/icon_error_32.png) no-repeat 10px 10px; min-height: 32px; border: 1px solid $nokcolor; color: $nokcolor; font-style: italic;}
 	div.b_form_spacer { margin: 10px 0; }
 	
 	hr {
@@ -257,9 +257,9 @@ div.b_form {
 	 	
 	 	/** errors  **/
 	 	&.b_form_error {
-	 		input,select {border: 1px solid #990000; background: #ebcccc;}
+	 		input,select {border: 1px solid $nokcolor; background: #ebcccc;}
 	 	}
-	 	div.b_form_error_msg { clear: both; color: #990000; font-style: italic; display: block;}	
+	 	div.b_form_error_msg { clear: both; color: $nokcolor; font-style: italic; display: block;}	
 	 	
 	 	div.b_form_element_wrapper {
 			margin: 0;
@@ -389,5 +389,14 @@ div.b_mark {
 }
 	
 	
+/* Fix for firefox strange spacing in button and other input elements (http://stackoverflow.com/questions/5517744/remove-extra-button-spacing-padding-in-firefox) */
+button::-moz-focus-inner,
+input[type="reset"]::-moz-focus-inner, 
+input[type="button"]::-moz-focus-inner, 
+input[type="submit"]::-moz-focus-inner, 
+input[type="file"] > input[type="button"]::-moz-focus-inner {
+    padding: 0;
+    border: 0
+}
 	
 	

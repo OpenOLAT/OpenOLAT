@@ -2,25 +2,38 @@
 	#set($id = $reservation.key)
 	<div>
 		<div class="o_reservation b_clearfix">
-			<span class="o_reservation_name #if($reservation.accepted) o_reservation_accepted #elseif($reservation.refused) o_reservation_refused #end">
-				${reservation.name}
+			<div>
+				<span class="o_reservation_name b_with_small_icon_left b_group_icon">
+					${reservation.name}
+				</span>
 				#if($reservation.coach)
-					$r.translate("reservation.coach")
-				#end
-			</span>
-			<div class="o_buttons_box_right">
-				<a href="#" class="o_reservation_details_link" id="o_reservation_details_show_$id">$r.translate("show")</a>
-				<a href="#" class="o_reservation_details_link" id="o_reservation_details_hide_$id" style="display:none">$r.translate("hide")</a>
-				$r.render("accept_$id")
-				$r.render("reject_$id")
+					<span class="o_reservation_role_coach">
+							($r.translate("reservation.coach"))
+					</span>
+				#end					
+				#if($reservation.accepted)
+					<span class="o_reservation_accepted">
+						$r.translate("confirm.accept")
+					</span>
+				#elseif($reservation.refused)
+					<span class="o_reservation_refused">
+						$r.translate("confirm.reject")					
+					</span>			
+				#end	
+				<div class="b_float_right">
+					<a href="#" class="o_reservation_details_link" id="o_reservation_details_show_$id">$r.translate("show")</a>
+					<a href="#" class="o_reservation_details_link" id="o_reservation_details_hide_$id" style="display:none">$r.translate("hide")</a>
+					$r.render("accept_$id")
+					$r.render("reject_$id")
+				</div>
 			</div>
 			<div class="o_reservation_details" style="display: none" id="o_reservation_details_$id">
-				<div>
-					<strong>$r.translate("table.header.description")</strong>: $reservation.description
+				<div class="o_reservation_details_desc">
+					$reservation.description
 				</div>
-				<div>
-					#if($reservation.courses)
-						<strong>$r.translate("table.header.resources")</strong>:
+				<div class="o_reservation_details_resources">
+					#if(!$reservation.courses.isEmpty())
+						<strong>$r.translate("table.header.resources")</strong>
 						<ul>
 						#foreach($course in $reservation.courses)
 							<li class=""><span class="b_with_small_icon_left o_CourseModule_icon">$course</span></li>
