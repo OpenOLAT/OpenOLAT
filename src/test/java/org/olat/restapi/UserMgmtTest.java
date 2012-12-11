@@ -549,16 +549,18 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteUser() throws IOException, URISyntaxException {
+		Identity idToDelete = JunitTestHelper.createAndPersistIdentityAsUser("user-to-delete-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
 		assertTrue(conn.login("administrator", "openolat"));
-		
+
 		//delete an authentication token
-		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id2.getKey()).build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + idToDelete.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
 		
-		
-		Identity deletedIdent = BaseSecurityManager.getInstance().loadIdentityByKey(id2.getKey());
+		Identity deletedIdent = BaseSecurityManager.getInstance().loadIdentityByKey(idToDelete.getKey());
 		assertNotNull(deletedIdent);//Identity aren't deleted anymore
 		assertEquals(Identity.STATUS_DELETED, deletedIdent.getStatus());
 	}
