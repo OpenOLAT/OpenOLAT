@@ -166,6 +166,15 @@ span.b_toggle_slide_legend {font-size: 90%; }
 	> span {background-image: url('../openolat/images/le_resources/thumb-up.png');}
 }
 
+.b_link_ok {
+	> span {background-image: url('../openolat/images/tick.png');}
+}
+
+.b_link_nok {
+	> span {background-image: url('../openolat/images/cross.png');}
+}
+
+
 /** ----------------- FORMS + LOGIN  ----------------- **/
 div.o_login {
 	div.o_login_form {

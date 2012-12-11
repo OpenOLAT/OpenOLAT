@@ -3,7 +3,7 @@
 	<div>
 		<div class="o_reservation b_clearfix">
 			<div>
-				<span class="o_reservation_name b_with_small_icon_left b_group_icon">
+				<span class="o_reservation_name b_with_small_icon_left #if($reservation.isGroupReservation()) b_group_icon #elseif($reservation.isRepositoryEntryReservation()) o_course_icon  #end">
 					${reservation.name}
 				</span>
 				#if($reservation.coach)
@@ -33,7 +33,7 @@
 				</div>
 				<div class="o_reservation_details_resources">
 					#if(!$reservation.courses.isEmpty())
-						<strong>$r.translate("table.header.resources")</strong>
+						<strong>$r.translate("group.used.in.course")</strong>
 						<ul>
 						#foreach($course in $reservation.courses)
 							<li class=""><span class="b_with_small_icon_left o_CourseModule_icon">$course</span></li>
