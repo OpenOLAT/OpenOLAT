@@ -40,6 +40,8 @@ import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.wizard.BGMailTemplateController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryMailing;
 
 /**
  * 
@@ -50,23 +52,28 @@ public class ImportMemberMailController extends StepFormBasicController {
 	private MailTemplate mailTemplate;
 	private final BGMailTemplateController mailTemplateForm;
 
-	public ImportMemberMailController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public ImportMemberMailController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry,
+			Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "mail_template");
-
+		
 		MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)runContext.get("permissions");
 		boolean mandatoryEmail = CoreSpringFactory.getImpl(BusinessGroupModule.class).isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
 		if(mandatoryEmail) {
-			boolean includeParticipantsRights = hasParticipantRightsChanges(e);
-			if(!includeParticipantsRights) {
-				mandatoryEmail = false;//only mandatory for participants
+			boolean includeParticipantsOrTutorsRights = hasParticipantOrTutorsRightsChanges(e);
+			if(!includeParticipantsOrTutorsRights) {
+				mandatoryEmail = false;//only mandatory for participants and tutors
 			}
 		}
 		
 		boolean customizing = e.size() == 1;
-		MailType defaultType = BusinessGroupMailing.getDefaultTemplateType(e);
-		if(defaultType != null && e.getGroups().size() == 1) {
+		MailType defaultGroupType = BusinessGroupMailing.getDefaultTemplateType(e);
+		RepositoryMailing.Type defaultRepoType = RepositoryMailing.getDefaultTemplateType(e);
+
+		if(defaultGroupType != null && e.getGroups().size() == 1) {
 			BusinessGroupShort group = e.getGroups().get(0);
-			mailTemplate = BusinessGroupMailing.getDefaultTemplate(defaultType, group, getIdentity());
+			mailTemplate = BusinessGroupMailing.getDefaultTemplate(defaultGroupType, group, getIdentity());
+		} else if(defaultRepoType != null) {
+			mailTemplate = RepositoryMailing.getDefaultTemplate(defaultRepoType, repoEntry, getIdentity());
 		} else {
 			mailTemplate = new TestMailTemplate();
 		}
@@ -75,14 +82,18 @@ public class ImportMemberMailController extends StepFormBasicController {
 		initForm (ureq);
 	}
 	
-	private boolean hasParticipantRightsChanges(MemberPermissionChangeEvent e) {
-		if(e.getRepoParticipant() != null && e.getRepoParticipant().booleanValue()) {
+	private boolean hasParticipantOrTutorsRightsChanges(MemberPermissionChangeEvent e) {
+		if((e.getRepoParticipant() != null && e.getRepoParticipant().booleanValue())
+				|| (e.getRepoTutor() != null && e.getRepoTutor().booleanValue())){
 			return true;
 		}
 		
 		List<BusinessGroupMembershipChange> groupChanges = e.getGroupChanges();
 		for(BusinessGroupMembershipChange change:groupChanges) {
 			if(change.getParticipant() != null && change.getParticipant().booleanValue()) {
+				return true;
+			}
+			if(change.getTutor() != null && change.getTutor().booleanValue()) {
 				return true;
 			}
 		}

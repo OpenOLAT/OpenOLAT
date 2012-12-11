@@ -210,6 +210,8 @@ public class MembersOverviewController extends BasicController implements Activa
 					}
 				}
 			}
+		} else if (source == cmc) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}

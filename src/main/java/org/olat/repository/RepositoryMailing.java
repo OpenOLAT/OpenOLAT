@@ -35,6 +35,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
 
 /**
  * 
@@ -42,10 +43,19 @@ import org.olat.core.util.mail.MailerWithTemplate;
  */
 public class RepositoryMailing {
 	
+	public static Type getDefaultTemplateType(MemberPermissionChangeEvent event) {
+		if(event.size() == 1) {
+			if(event.getRepoTutor() != null && event.getRepoTutor().booleanValue()) {
+				return Type.addTutor;
+			} else if(event.getRepoParticipant() != null && event.getRepoTutor().booleanValue()) {
+				return Type.addParticipant;
+			}
+		}
+		return null;
+	}
+	
 	/**
-	 * The mail template when adding users to a group. The method chooses
-	 * automatically the right translator for the given group type to customize
-	 * the template text
+	 * The mail template when adding users to a group.
 	 * 
 	 * @param re
 	 * @param actor
@@ -58,9 +68,20 @@ public class RepositoryMailing {
 	}
 	
 	/**
-	 * The mail template when removing users from a repository entry. The method chooses
-	 * automatically the right translator for the given group type to customize
-	 * the template text
+	 * The mail template when adding tutors to a group.
+	 * 
+	 * @param re
+	 * @param actor
+	 * @return the generated MailTemplate
+	 */
+	public static MailTemplate createAddTutorMailTemplate(RepositoryEntry re, Identity actor) {
+		String subjectKey = "notification.mail.added.subject";
+		String bodyKey = "notification.mail.added.body";
+		return createMailTemplate(re, actor, subjectKey, bodyKey);
+	}
+	
+	/**
+	 * The mail template when removing users from a repository entry.
 	 * 
 	 * @param re
 	 * @param actor
@@ -80,6 +101,8 @@ public class RepositoryMailing {
 				return createAddParticipantMailTemplate(re, ureqIdentity);
 			case removeParticipant:
 				return createRemoveParticipantMailTemplate(re, ureqIdentity);
+			case addTutor:
+				return createAddTutorMailTemplate(re, ureqIdentity);
 		}
 		return null;
 	}
@@ -100,8 +123,6 @@ public class RepositoryMailing {
 		if(context == null) {
 			context = new MailContextImpl(null, null, "[RepositoryEntry:" + re.getKey() + "]");
 		}
-		
-		System.out.println("***************************** Send mail");
 
 		MailerResult result = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, null);
 		if(mailing != null) {
@@ -112,6 +133,7 @@ public class RepositoryMailing {
 	public enum Type {
 		addParticipant,
 		removeParticipant,
+		addTutor,
 	}
 	
 	private static MailTemplate createMailTemplate(RepositoryEntry re, Identity actor, String subjectKey, String bodyKey) {
@@ -151,5 +173,4 @@ public class RepositoryMailing {
 		};
 		return mailTempl;
 	}
-
 }

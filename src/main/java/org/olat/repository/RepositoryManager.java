@@ -1641,26 +1641,63 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param userActivityLogger
 	 */
-	public void addTutors(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re) {
+	public void addTutors(Identity ureqIdentity, Roles ureqRoles, IdentitiesAddEvent iae, RepositoryEntry re, MailPackage mailing) {
 		List<Identity> addIdentities = iae.getAddIdentities();
 		List<Identity> reallyAddedId = new ArrayList<Identity>();
-		for (Identity identity : addIdentities) {
-			if (!securityManager.isIdentityInSecurityGroup(identity, re.getTutorGroup())) {
-				securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
-				reallyAddedId.add(identity);
-				ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-				ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-				try{
-					ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
-							LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-				} finally {
-					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		for (Identity identityToAdd : addIdentities) {
+			if (!securityManager.isIdentityInSecurityGroup(identityToAdd, re.getTutorGroup())) {
+				
+				boolean mustAccept = true;
+				if(ureqIdentity != null && ureqIdentity.equals(identityToAdd)) {
+					mustAccept = false;//adding itself, we hope that he knows what he makes
+				} else if(ureqRoles == null || ureqIdentity == null) {
+					mustAccept = false;//administrative task
+				} else {
+					mustAccept = repositoryModule.isAcceptMembership(ureqRoles);
 				}
-				logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
-						+ "' to securitygroup with key " + re.getTutorGroup().getKey());
+				
+				if(mustAccept) {
+					ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, re.getOlatResource());
+					if(olderReservation == null) {
+						Calendar cal = Calendar.getInstance();
+						cal.add(Calendar.MONTH, 6);
+						Date expiration = cal.getTime();
+						ResourceReservation reservation =
+								reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, re.getOlatResource());
+						if(reservation != null) {
+							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing, mailer);
+						}
+					}
+				} else {
+					addInternalTutors(ureqIdentity, identityToAdd, re, reallyAddedId);
+					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing, mailer);
+				}
+
 			}//else silently ignore already owner identities
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);
+	}
+	
+	/**
+	 * Internal method to add tutors, it makes no check.
+	 * @param ureqIdentity
+	 * @param identity
+	 * @param re
+	 * @param reallyAddedId
+	 */
+	private void addInternalTutors(Identity ureqIdentity, Identity identity, RepositoryEntry re, List<Identity> reallyAddedId) {
+		securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
+		reallyAddedId.add(identity);
+		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+		try{
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+		} finally {
+			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		}
+		logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+				+ "' to securitygroup with key " + re.getTutorGroup().getKey());
 	}
 	
 	/**
@@ -1979,7 +2016,7 @@ public class RepositoryManager extends BasicManager {
 			
 			if(e.getRepoTutor() != null) {
 				if(e.getRepoTutor().booleanValue()) {
-					addTutors(ureqIdentity, new IdentitiesAddEvent(e.getMember()), re);
+					addTutors(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re, mailing);
 				} else {
 					removeTutors(ureqIdentity, Collections.singletonList(e.getMember()), re);
 				}
