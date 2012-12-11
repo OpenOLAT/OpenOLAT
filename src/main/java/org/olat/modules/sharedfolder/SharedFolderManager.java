@@ -27,7 +27,6 @@ package org.olat.modules.sharedfolder;
 
 import java.io.File;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
@@ -36,6 +35,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -91,7 +91,7 @@ public class SharedFolderManager extends BasicManager {
 
 	public MediaResource getAsMediaResource(OLATResourceable res) {
 		String exportFileName = res.getResourceableId() + ".zip";
-		File fExportZIP = new File(FolderConfig.getCanonicalTmpDir() + "/" + exportFileName);
+		File fExportZIP = new File(WebappHelper.getTmpDir() + "/" + exportFileName);
 		VFSContainer sharedFolder = SharedFolderManager.getInstance().getSharedFolder(res);
 		
 		//OLAT-5368: do intermediate commit to avoid transaction timeout

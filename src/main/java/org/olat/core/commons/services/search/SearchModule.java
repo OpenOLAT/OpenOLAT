@@ -113,7 +113,7 @@ public class SearchModule extends AbstractOLATModule {
 	private boolean pdfFileEnabled;
 	private boolean pdfTextBuffering;
 	private boolean isSpellCheckEnabled;
-	private String fullTempPdfTextBufferPath;
+	private String fullPdfTextBufferPath;
 	private List<String> fileSizeSuffixes;
 
 	private long maxFileSize;
@@ -163,10 +163,11 @@ public class SearchModule extends AbstractOLATModule {
 		String tempIndexPath = getStringConfigParameter(CONF_TEMP_INDEX_PATH, "/tmp", false);
 		String tempSpellCheckPath = getStringConfigParameter(CONF_TEMP_SPELL_CHECK_PATH, "/tmp",false);
 		String tempPdfTextBufferPath = getStringConfigParameter(CONF_TEMP_PDF_TEXT_BUF_PATH, "/tmp", false);
-    fullIndexPath = FolderConfig.getCanonicalTmpDir() + File.separator + indexPath;
-    fullTempIndexPath = FolderConfig.getCanonicalTmpDir() + File.separator + tempIndexPath;
-    fullTempSpellCheckPath = FolderConfig.getCanonicalTmpDir() + File.separator + tempSpellCheckPath;
-    fullTempPdfTextBufferPath = FolderConfig.getCanonicalTmpDir() + File.separator + tempPdfTextBufferPath;
+    
+		fullIndexPath = buildPath(indexPath);
+    fullTempIndexPath = buildPath(tempIndexPath);
+    fullTempSpellCheckPath = buildPath(tempSpellCheckPath);
+    fullPdfTextBufferPath = buildPath(tempPdfTextBufferPath);
 
     generateAtStartup = getBooleanConfigParameter(CONF_GENERATE_AT_STARTUP, true);
     restartInterval = getIntConfigParameter(CONF_RESTART_INTERVAL, DEFAULT_RESTART_INTERVAL);
@@ -188,6 +189,14 @@ public class SearchModule extends AbstractOLATModule {
     maxFileSize = Integer.parseInt(getStringConfigParameter(CONF_MAX_FILE_SIZE, "0", false));
     ramBufferSizeMB = Double.parseDouble(getStringConfigParameter(CONF_RAM_BUFFER_SIZE_MB, DEFAULT_RAM_BUFFER_SIZE_MB, false));
     useCompoundFile = getBooleanConfigParameter(CONF_USE_COMPOUND_FILE, false);
+	}
+	
+	private String buildPath(String path) {
+		File f = new File(path);
+		if(f.isAbsolute() && (f.exists() || f.mkdirs())) {
+			return path;
+		}
+		return FolderConfig.getCanonicalTmpDir() + File.separator + path;
 	}
 	
 	@Override
@@ -414,7 +423,7 @@ public class SearchModule extends AbstractOLATModule {
 	}
 
 	public String getPdfTextBufferPath() {
-		return fullTempPdfTextBufferPath;
+		return fullPdfTextBufferPath;
 	}
 
 	public List<String> getFileSizeSuffixes() {

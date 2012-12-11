@@ -29,9 +29,9 @@ import java.io.File;
 import java.io.IOException;
 
 import org.jdom.JDOMException;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.WebappHelper;
 import org.olat.modules.scorm.contentpackaging.NoItemFoundException;
 import org.olat.modules.scorm.contentpackaging.ScormPackageHandler;
 
@@ -165,8 +165,8 @@ public class SettingsHandlerImpl implements ISettingsHandler {
 			if(courseId == null) courseId = "";
 			if(repoId == null) repoId = "";
 			StringBuilder tempPath = new StringBuilder();
-			tempPath.append(FolderConfig.getCanonicalRoot());
-			tempPath.append("/tmp/");
+			tempPath.append(WebappHelper.getTmpDir());
+			tempPath.append("/tmpscorm/");
 			tempPath.append(controllerHashCode);
 			tempPath.append("/");
 			tempPath.append(userid);

@@ -36,18 +36,18 @@ import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
 import javax.mail.internet.AddressException;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.ExportUtil;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.Emailer;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -136,8 +136,8 @@ public class ExportManager extends BasicManager {
     String zipName = ExportUtil.createFileNameWithTimeStamp(ExportManager.COURSE_LOG_FILES, "zip");
     Date date = new Date();
     String tmpDirName = oresID + "-" + date.getTime();
-    final VFSContainer tmpDirVFSContainer = new OlatRootFolderImpl(new File(FolderConfig.getRelativeTmpDir(), tmpDirName).getPath(), null);
-		final File tmpDir = new File(new File(FolderConfig.getCanonicalRoot(), FolderConfig.getRelativeTmpDir()), tmpDirName);
+    final VFSContainer tmpDirVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), tmpDirName));
+		final File tmpDir = new File(WebappHelper.getTmpDir(), tmpDirName);
 		
     List<VFSItem> logFiles = new ArrayList<VFSItem>();
 		if (adminLog) {

@@ -29,7 +29,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -157,7 +156,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
 		String exportFileName = re.getDisplayname() + ".zip";
 		exportFileName = StringHelper.transformDisplayNameToFileSystemName(exportFileName);
-		File fExportZIP = new File(System.getProperty("java.io.tmpdir")+File.separator+exportFileName);
+		File fExportZIP = new File(WebappHelper.getTmpDir() + File.separator + exportFileName);
 		CourseFactory.exportCourseToZIP(res, fExportZIP, backwardsCompatible);
 		return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
 	}
@@ -267,7 +266,7 @@ public class CourseHandler implements RepositoryHandler {
 	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry entry) {
 		ICourse course = CourseFactory.loadCourse(entry.getOlatResource() );
 		// Archive course runtime data (like delete course, archive e.g. logfiles, node-data)
-		File tmpExportDir = new File(FolderConfig.getCanonicalTmpDir() + "/" + CodeHelper.getRAMUniqueID());
+		File tmpExportDir = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
 		tmpExportDir.mkdirs();
 		CourseFactory.archiveCourse(archiveOnBehalfOf, course, WebappHelper.getDefaultCharset(), I18nModule.getDefaultLocale(), tmpExportDir , true);
 		// Archive course run structure (like course export)

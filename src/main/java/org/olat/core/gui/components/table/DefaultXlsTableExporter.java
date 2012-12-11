@@ -35,7 +35,6 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.StringOutput;
@@ -43,6 +42,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.FilterFactory;
 
 /**
@@ -119,8 +119,7 @@ public class DefaultXlsTableExporter implements TableExporter {
 	private MediaResource createMediaResourceFromDocument(final Workbook wb) {
 		FileOutputStream fos = null;
 		try {
-			String tmpFilePath = FolderConfig.getCanonicalTmpDir()+File.separator+"TableExport"+CodeHelper.getRAMUniqueID()+".xls";
-			File f = new File(tmpFilePath);
+			File f = new File(WebappHelper.getTmpDir(), "TableExport" + CodeHelper.getUniqueID() + ".xls");
 			fos = new FileOutputStream(f);
 			wb.write(fos);
 			fos.close();

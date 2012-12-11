@@ -114,7 +114,7 @@ public class UserFileDeletionManager extends BasicManager implements UserDataDel
 
 	private void deleteAllTempQtiEditorFilesOf(Identity identity) {
 		// Temp QTI-editor File path e.g. /usr/local/olatfs/olat/olatdata/tmp/qtieditor/schuessler
-		File userTempQtiEditorDir = new File(QTIEditorPackage.getTmpBaseDir(),identity.getName());
+		File userTempQtiEditorDir = new File(QTIEditorPackage.getQTIEditorBaseDir(),identity.getName());
 		if (userTempQtiEditorDir.exists()) {
 			FileUtils.deleteDirsAndFiles(userTempQtiEditorDir, true, true); 
 			logAudit("User-Deletion: identity=" + identity.getName() +" : QTI editor temp files deleted under dir=" + userTempQtiEditorDir.getAbsolutePath());

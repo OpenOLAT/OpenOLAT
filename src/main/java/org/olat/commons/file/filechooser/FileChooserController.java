@@ -32,7 +32,6 @@ import java.util.List;
 import org.olat.core.commons.controllers.filechooser.FileChoosenEvent;
 import org.olat.core.commons.controllers.filechooser.FileChooserUIFactory;
 import org.olat.core.commons.modules.bc.FileUploadController;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.gui.UserRequest;
@@ -42,13 +41,13 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
@@ -123,7 +122,7 @@ public class FileChooserController extends BasicController {
 		uploadButton = LinkFactory.createButton("upload", main, this);
 		cancelButton = LinkFactory.createButton("cancel", main, this);
 		// tmp upload container
-		uploadDir = new File(FolderConfig.getCanonicalTmpDir() + "/" + CodeHelper.getGlobalForeverUniqueID());
+		uploadDir = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
 		uploadContainer = new LocalFolderImpl(uploadDir);
 		
 		folderNames = new ArrayList<String>(3);

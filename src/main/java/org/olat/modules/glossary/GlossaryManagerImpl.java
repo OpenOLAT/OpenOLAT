@@ -20,6 +20,7 @@
 package org.olat.modules.glossary;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
@@ -66,7 +68,8 @@ import org.olat.search.service.SearchResourceContext;
  * Initial Date:  15.01.2009 <br>
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
-public class GlossaryManagerImpl extends GlossaryManager {	
+public class GlossaryManagerImpl extends GlossaryManager {
+	
 	private static final String EXPORT_FOLDER_NAME = "glossary";
 	private ReferenceManager referenceManager;
 	
@@ -171,13 +174,20 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	 */
 	public MediaResource getAsMediaResource(OLATResourceable res) {
 		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
-		String exportFileName = repoEntry.getDisplayname() + ".zip";
+		String exportFileName = repoEntry.getDisplayname();
 		// OO-135 check for special / illegal chars in filename
 		exportFileName = StringHelper.transformDisplayNameToFileSystemName(exportFileName);
-		File fExportZIP = new File(FolderConfig.getCanonicalTmpDir() + "/" + exportFileName);
-		VFSContainer glossaryRoot = getGlossaryRootFolder(res);
-		ZipUtil.zip(glossaryRoot.getItems(), new LocalFileImpl(fExportZIP), false);
-		return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
+
+		try {
+			File tmpDir = new File(WebappHelper.getTmpDir());
+			File fExportZIP = File.createTempFile(exportFileName, ".zip", tmpDir);
+			VFSContainer glossaryRoot = getGlossaryRootFolder(res);
+			ZipUtil.zip(glossaryRoot.getItems(), new LocalFileImpl(fExportZIP), false);
+			return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
+		} catch (IOException e) {
+			logError("Cannot export glossar: " + res, e);
+			return null;
+		}
 	}
 	
 	

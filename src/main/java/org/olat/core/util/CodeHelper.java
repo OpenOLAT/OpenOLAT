@@ -26,6 +26,7 @@
 
 package org.olat.core.util;
 
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -97,6 +98,10 @@ public class CodeHelper {
 	 */
 	public static long getRAMUniqueID() {
 		return ramid.incrementAndGet();
+	}
+	
+	public static String getUniqueID() {
+		return UUID.randomUUID().toString();
 	}
 
 }

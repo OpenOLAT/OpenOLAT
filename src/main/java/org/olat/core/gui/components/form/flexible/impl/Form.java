@@ -59,6 +59,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.component.FormComponentTraverser;
 import org.olat.core.util.component.FormComponentVisitor;
 
@@ -350,7 +351,7 @@ public class Form extends LogDelegator {
 						slashpos = fileName.lastIndexOf("\\");
 						if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
 
-						File tmpFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "upload-" + CodeHelper.getGlobalForeverUniqueID());
+						File tmpFile = new File(WebappHelper.getTmpDir() + File.separator + "upload-" + CodeHelper.getGlobalForeverUniqueID());
 						
 						try {
 							FileUtils.save(itemStream, tmpFile);
