@@ -229,7 +229,7 @@ div.b_form_auto_completer_item { background-color:#FFF; text-align: left; paddin
 div.b_form_auto_completer_item.x-combo-selected { background-color: $basecolor_ultra_light; border-left:0 ! important; border-right:0 ! important;}
 div.b_form_auto_completer_item span.b_key { color: #999; margin-right: 2px; }
 div.b_form_auto_completer_item span.b_value { }
-div.b_form_auto_completer_item.b_error_icon { color: #990000; font-style: italic;}
+div.b_form_auto_completer_item.b_error_icon { color: $nokcolor; font-style: italic;}
 
 
 /* ---------- smilies / emoticons in tinyMCE ------------------------ */
