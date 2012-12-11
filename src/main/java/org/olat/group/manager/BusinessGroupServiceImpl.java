@@ -1554,7 +1554,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		int count = 0;
 		
 		List<BusinessGroup> groups = null;//load only if needed
-		if(coaches) {
+		if(coaches && entry.getTutorGroup() != null) {
 			List<Identity> repoTutorList = securityManager.getIdentitiesOfSecurityGroup(entry.getTutorGroup());
 			if(!repoTutorList.isEmpty()) {
 				SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -1573,7 +1573,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 		}
 		
-		if(participants) {
+		if(participants && entry.getParticipantGroup() != null) {
 			List<Identity> repoParticipantList = securityManager.getIdentitiesOfSecurityGroup(entry.getParticipantGroup());
 			if(!repoParticipantList.isEmpty()) {
 			

@@ -19,6 +19,8 @@
  */
 package org.olat.group.ui;
 
+import java.util.Set;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
@@ -47,8 +49,10 @@ import org.olat.group.ui.main.DedupMembersConfirmationController;
  */
 public class BusinessGroupModuleAdminController extends FormBasicController implements ProgressDelegate {
 	
-	private FormLink dedupLink;
+	private FormLink dedupLink, optionLink, privacyLink;
 	private MultipleSelectionElement allowEl;
+	private MultipleSelectionElement enrolmentEl;
+	private MultipleSelectionElement membershipEl;
 
 	private Panel mainPopPanel;
 	private CloseableModalController cmc;
@@ -58,6 +62,9 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	private final BusinessGroupModule module;
 	private final BusinessGroupService businessGroupService;
 	private String[] onKeys = new String[]{"user","author"};
+	private String[] enrollmentKeys = new String[]{
+			"users","authors", "usermanagers", "groupmanagers", "administrators"
+	};
 	
 	public BusinessGroupModuleAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "bg_admin");
@@ -80,9 +87,45 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("module.buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
-		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("ok", "ok", formLayout);
+		optionsContainer.add(buttonsContainer);
+		optionLink = uifactory.addFormLink("ok", "ok", null, buttonsContainer, Link.BUTTON);
 		
+		FormLayoutContainer privacyOptionsContainer = FormLayoutContainer.createDefaultFormLayout("privacy_options", getTranslator());
+		formLayout.add(privacyOptionsContainer);
+		String[] enrollmentValues = new String[]{
+				translate("enrolment.email.users"),
+				translate("enrolment.email.authors"),
+				translate("enrolment.email.usermanagers"),
+				translate("enrolment.email.groupmanagers"),
+				translate("enrolment.email.administrators")
+		};
+		enrolmentEl = uifactory.addCheckboxesVertical("mandatory.enrolment", privacyOptionsContainer, enrollmentKeys, enrollmentValues, null, 1);
+		enrolmentEl.select("users", "true".equals(module.getMandatoryEnrolmentEmailForUsers()));
+		enrolmentEl.select("authors", "true".equals(module.getMandatoryEnrolmentEmailForAuthors()));
+		enrolmentEl.select("usermanagers", "true".equals(module.getMandatoryEnrolmentEmailForUsermanagers()));
+		enrolmentEl.select("groupmanagers", "true".equals(module.getMandatoryEnrolmentEmailForGroupmanagers()));
+		enrolmentEl.select("administrators", "true".equals(module.getMandatoryEnrolmentEmailForAdministrators()));
+		
+		String[] membershipValues = new String[]{
+				translate("enrolment.email.users"),
+				translate("enrolment.email.authors"),
+				translate("enrolment.email.usermanagers"),
+				translate("enrolment.email.groupmanagers"),
+				translate("enrolment.email.administrators")
+		};
+		membershipEl = uifactory.addCheckboxesVertical("mandatory.membership", privacyOptionsContainer, enrollmentKeys, membershipValues, null, 1);
+		membershipEl.select("users", "true".equals(module.getAcceptMembershipForUsers()));
+		membershipEl.select("authors", "true".equals(module.getAcceptMembershipForAuthors()));
+		membershipEl.select("usermanagers", "true".equals(module.getAcceptMembershipForUsermanagers()));
+		membershipEl.select("groupmanagers", "true".equals(module.getAcceptMembershipForGroupmanagers()));
+		membershipEl.select("administrators", "true".equals(module.getAcceptMembershipForAdministrators()));
+		
+		FormLayoutContainer buttonsPrivacyContainer = FormLayoutContainer.createButtonLayout("module.buttons.privacy", getTranslator());
+		buttonsPrivacyContainer.setRootForm(mainForm);
+		privacyOptionsContainer.add(buttonsPrivacyContainer);
+		privacyLink = uifactory.addFormLink("ok", "ok", "", buttonsPrivacyContainer, Link.BUTTON);
+		
+
 		FormLayoutContainer dedupCont = FormLayoutContainer.createDefaultFormLayout("dedup", getTranslator());
 		formLayout.add(dedupCont);
 		dedupLink = uifactory.addFormLink("dedup.members", dedupCont, Link.BUTTON);
@@ -136,6 +179,23 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == dedupLink) {
 			doDedupMembers(ureq);
+		} else if(source == optionLink) {
+			module.setUserAllowedCreate(allowEl.isSelected(0));
+			module.setAuthorAllowedCreate(allowEl.isSelected(1));
+		} else if(source == privacyLink) {
+			Set<String> membershipSelectedKeys = membershipEl.getSelectedKeys();
+			module.setAcceptMembershipForUsers(membershipSelectedKeys.contains("users") ? "true" : "false");
+			module.setAcceptMembershipForAuthors(membershipSelectedKeys.contains("authors") ? "true" : "false");
+			module.setAcceptMembershipForUsermanagers(membershipSelectedKeys.contains("usermanagers") ? "true" : "false");
+			module.setAcceptMembershipForGroupmanagers(membershipSelectedKeys.contains("groupmanagers") ? "true" : "false");
+			module.setAcceptMembershipForAdministrators(membershipSelectedKeys.contains("administrators") ? "true" : "false");
+
+			Set<String> enrolmentSelectedKeys = enrolmentEl.getSelectedKeys();
+			module.setMandatoryEnrolmentEmailForUsers(enrolmentSelectedKeys.contains("users") ? "true" : "false");
+			module.setMandatoryEnrolmentEmailForAuthors(enrolmentSelectedKeys.contains("authors") ? "true" : "false");
+			module.setMandatoryEnrolmentEmailForUsermanagers(enrolmentSelectedKeys.contains("usermanagers") ? "true" : "false");
+			module.setMandatoryEnrolmentEmailForGroupmanagers(enrolmentSelectedKeys.contains("groupmanagers") ? "true" : "false");
+			module.setMandatoryEnrolmentEmailForAdministrators(enrolmentSelectedKeys.contains("administrators") ? "true" : "false");
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -170,7 +230,6 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		module.setUserAllowedCreate(allowEl.isSelected(0));
-		module.setAuthorAllowedCreate(allowEl.isSelected(1));
+		//
 	}
 }
