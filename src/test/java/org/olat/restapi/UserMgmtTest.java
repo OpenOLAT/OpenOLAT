@@ -131,7 +131,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	private static boolean setuped = false;
 
-	private RestConnection conn;
 	
 	@Autowired
 	DB dbInstance;
@@ -144,7 +143,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		conn = new RestConnection();
 		if(setuped) return;
 		
 		//create identities
@@ -277,9 +275,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
   @After
 	public void tearDown() throws Exception {
 		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
       dbInstance.closeSession();
 		} catch (Exception e) {
       e.printStackTrace();
@@ -289,6 +284,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 	@Test
 	public void testGetUsers() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
@@ -303,10 +299,13 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
 		assertEquals(vos.size(), identities.size());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testFindUsersByLogin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
@@ -331,10 +330,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 			}
 		}
 		assertTrue(onlyLikeAdmin);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testFindUsersByProperty() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
@@ -350,10 +351,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testFindAdminByAuth() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
@@ -370,10 +373,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertFalse(vos.isEmpty());
 		assertEquals(1, vos.size());
 		assertEquals("administrator",vos.get(0).getLogin());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
@@ -387,10 +392,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals(vo.getLogin(), id1.getName());
 		//are the properties there?
 		assertFalse(vo.getProperties().isEmpty());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetUserNotAdmin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id2.getKey()).build();
@@ -404,6 +411,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals(vo.getLogin(), id2.getName());
 		//no properties for security reason
 		assertTrue(vo.getProperties().isEmpty());
+		conn.shutdown();
 	}
 		
 	/**
@@ -412,6 +420,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 */
 	@Test	
 	public void testGetRawJsonUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
@@ -422,6 +431,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		System.out.println("User");
 		System.out.println(bodyJson);
 		System.out.println("User");
+		conn.shutdown();
 	}
 		
 	/**
@@ -430,6 +440,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 */
 	@Test	
 	public void testGetRawXmlUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
@@ -440,10 +451,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		System.out.println("User");
 		System.out.println(bodyXml);
 		System.out.println("User");
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		UserVO vo = new UserVO();
@@ -475,6 +488,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
 		assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
 		assertEquals("12/12/09", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
+		conn.shutdown();
 	}
 	
 	/**
@@ -482,6 +496,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testCreateUser2() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		UserVO vo = new UserVO();
@@ -513,10 +528,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
 		assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
 		assertEquals("12/12/09", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateUserWithValidationError() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		UserVO vo = new UserVO();
@@ -545,12 +562,14 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName("rest-809");
 		assertNull(savedIdent);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testDeleteUser() throws IOException, URISyntaxException {
 		Identity idToDelete = JunitTestHelper.createAndPersistIdentityAsUser("user-to-delete-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 
 		//delete an authentication token
@@ -563,6 +582,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		Identity deletedIdent = BaseSecurityManager.getInstance().loadIdentityByKey(idToDelete.getKey());
 		assertNotNull(deletedIdent);//Identity aren't deleted anymore
 		assertEquals(Identity.STATUS_DELETED, deletedIdent.getStatus());
+		conn.shutdown();
 	}
 	
 	@Test
@@ -570,7 +590,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		//create an author
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
-		
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//get roles of author
@@ -587,6 +607,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		Assert.assertFalse(roles.isInvitee());
 		Assert.assertFalse(roles.isOlatAdmin());
 		Assert.assertFalse(roles.isUserManager());
+		conn.shutdown();
 	}
 	
 	@Test
@@ -594,7 +615,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		//create an author
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
-
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		RolesVO roles = new RolesVO();
@@ -619,10 +640,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		Assert.assertFalse(reloadRoles.isInvitee());
 		Assert.assertFalse(reloadRoles.isOLATAdmin());
 		Assert.assertTrue(reloadRoles.isUserManager());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserForums() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
@@ -653,10 +676,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 				assertNotNull(forum.getCourseKey());
 			}
 		}
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserGroupForum() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
@@ -671,10 +696,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
 		assertTrue(threads.getMessages().length > 0);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserCourseForum() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
@@ -689,10 +716,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
 		assertTrue(threads.getMessages().length > 0);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserFolders() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").build();
@@ -729,10 +758,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//id1 is participant of g2. Make sure it found the folder
 		assertTrue(matchG2);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserGroupFolder() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
@@ -750,10 +781,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		FileVO portrait = folders.get(0);
 		assertEquals("portrait.jpg", portrait.getTitle());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserBCCourseNodeFolder() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
@@ -771,10 +804,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		FileVO singlePage = folders.get(0);
 		assertEquals("singlepage.html", singlePage.getTitle());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserPersonalFolder() throws Exception {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").path("personal").build();
@@ -788,10 +823,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(files);
 		assertFalse(files.isEmpty());
 		assertEquals(2, files.size()); //private and public
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testOtherUserPersonalFolder() throws Exception {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("folders").path("personal").build();
@@ -805,10 +842,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(files);
 		assertTrue(files.isEmpty());
 		assertEquals(0, files.size()); //private and public
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testOtherUserPersonalFolderOfId3() throws Exception {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id3.getKey().toString()).path("folders").path("personal").build();
@@ -825,10 +864,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		FileVO portrait = files.get(0);
 		assertEquals("portrait.jpg", portrait.getTitle());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserGroup() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//retrieve all groups
@@ -841,10 +882,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
 		assertEquals(3, groups.size());//g1, g2 and g3
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserGroupWithPaging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//retrieve all groups
@@ -860,10 +903,12 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
 		assertEquals(3, groups.getTotalCount());//g1, g2 and g3
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUserGroupInfosWithPaging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//retrieve all groups
@@ -879,6 +924,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
 		assertEquals(3, groups.getTotalCount());//g1, g2 and g3
+		conn.shutdown();
 	}
 	
 	@Test
@@ -886,7 +932,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		URL portraitUrl = CoursesElementsTest.class.getResource("portrait.jpg");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
-
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		//upload portrait
@@ -944,6 +990,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		} catch (Exception e) {
 			assertFalse("Cannot read the portrait after Base64 encoding/decoding", false);
 		}
+		
+		conn.shutdown();
 	}
 	
 	protected List<UserVO> parseUserArray(InputStream body) {
