@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -39,14 +39,14 @@ import org.olat.group.BusinessGroup;
  */
 public class BusinessGroupDeleteDialogBoxController extends FormBasicController {
 	
-	private MultipleSelectionElement sendMail;
+	private SingleSelection sendMail;
 	
-	private final String[] keys = {"send"};
+	private final String[] keys = {"yes","no"};
 	
 	private final List<BusinessGroup> groupsToDelete;
 	
 	public BusinessGroupDeleteDialogBoxController(UserRequest ureq, WindowControl wControl, List<BusinessGroup> groupsToDelete) {
-		super(ureq, wControl);
+		super(ureq, wControl, "group_delete_confirmation");
 		this.groupsToDelete = groupsToDelete;
 		initForm(ureq);
 	}
@@ -59,20 +59,24 @@ public class BusinessGroupDeleteDialogBoxController extends FormBasicController 
 			names.append(group.getName());
 		}
 		
-		String text = translate("dialog.modal.bg.delete.text", new String[]{names.toString()});
-		uifactory.addStaticTextElement("delete.desc", null, text, formLayout);
+		if(formLayout instanceof FormLayoutContainer) {
+			((FormLayoutContainer)formLayout).contextPut("groups", names.toString());
+		}
 
-		
+		FormLayoutContainer mailCont = FormLayoutContainer.createDefaultFormLayout("sendmail", getTranslator());
+		formLayout.add(mailCont);
 		String[] values = new String[]{
-				translate("dialog.modal.bg.mail.text")
+				translate("yes"),
+				translate("no")
 		};
-		sendMail = uifactory.addCheckboxesHorizontal("send.mail", null, formLayout, keys, values, null);
+		sendMail = uifactory.addRadiosVertical("send.mail", "dialog.modal.bg.mail.text", mailCont, keys, values);
+		sendMail.select("no", true);
 		
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("deleteButton", "ok", buttonsContainer);
-		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("deleteButton", "yes", buttonsContainer);
+		uifactory.addFormCancelButton("no", buttonsContainer, ureq, getWindowControl());
 	}
 	
 	@Override
@@ -81,7 +85,7 @@ public class BusinessGroupDeleteDialogBoxController extends FormBasicController 
 	}
 
 	public boolean isSendMail() {
-		return sendMail.isAtLeastSelected(1);
+		return sendMail.isOneSelected() && sendMail.isSelected(0);
 	}
 
 	public List<BusinessGroup> getGroupsToDelete() {
