@@ -679,7 +679,7 @@ public class Form extends LogDelegator {
 	}
 	
 
-	private class FormDependencyRulesInitComponentVisitor implements FormComponentVisitor {
+	private static class FormDependencyRulesInitComponentVisitor implements FormComponentVisitor {
 
 		public boolean visit(FormItem comp, UserRequest ureq) {
 			if (comp instanceof FormItemContainer) {
@@ -698,18 +698,8 @@ public class Form extends LogDelegator {
 		
 	}
 	
-	
-	/**
-	 * Description:<br>
-	 * TODO: patrickb Class Description for ValidatingFormComponentVisitor
-	 * <P>
-	 * Initial Date: 07.12.2006 <br>
-	 * 
-	 * @author patrickb
-	 */
-	private class ValidatingFormComponentVisitor implements FormComponentVisitor {
-
-		List tmp = new ArrayList();
+	private static class ValidatingFormComponentVisitor implements FormComponentVisitor {
+		final List<ValidationStatus> tmp = new ArrayList<ValidationStatus>();
 
 		public ValidationStatus[] getStatus() {
 			return ValidationStatusHelper.sort(tmp);
@@ -723,15 +713,8 @@ public class Form extends LogDelegator {
 			return true;
 		}
 	}
-	/**
-	 * Description:<br>
-	 * TODO: patrickb Class Description for ValidatingFormComponentVisitor
-	 * <P>
-	 * Initial Date: 07.12.2006 <br>
-	 * 
-	 * @author patrickb
-	 */
-	private class ResettingFormComponentVisitor implements FormComponentVisitor {
+
+	private static class ResettingFormComponentVisitor implements FormComponentVisitor {
 
 		public boolean visit(FormItem comp, UserRequest ureq) {
 			//reset all fields including also non visible and disabled form items!
