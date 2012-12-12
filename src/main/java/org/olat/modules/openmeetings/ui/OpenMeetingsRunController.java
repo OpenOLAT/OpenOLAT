@@ -239,7 +239,7 @@ public class OpenMeetingsRunController extends BasicController {
 	
 	private void doOpenRecordings(UserRequest ureq) {
 		cleanupPopups();
-		recordingsController = new OpenMeetingsRecordingsController(ureq, getWindowControl(), room.getRoomId());
+		recordingsController = new OpenMeetingsRecordingsController(ureq, getWindowControl(), room.getRoomId(), admin || moderator);
 		listenTo(recordingsController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), recordingsController.getInitialComponent(), true, translate("recordings"));

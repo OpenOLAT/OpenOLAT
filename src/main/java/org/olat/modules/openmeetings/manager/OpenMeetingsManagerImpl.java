@@ -62,6 +62,8 @@ import org.openmeetings.axis.services.AddRoomWithModerationAndRecordingFlags;
 import org.openmeetings.axis.services.AddRoomWithModerationAndRecordingFlagsResponse;
 import org.openmeetings.axis.services.CloseRoom;
 import org.openmeetings.axis.services.CloseRoomResponse;
+import org.openmeetings.axis.services.DeleteFlvRecording;
+import org.openmeetings.axis.services.DeleteFlvRecordingResponse;
 import org.openmeetings.axis.services.DeleteRoom;
 import org.openmeetings.axis.services.DeleteRoomResponse;
 import org.openmeetings.axis.services.GetFlvRecordingByRoomId;
@@ -632,6 +634,22 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 				openMeetingsDao.delete(room.getReference());
 			}
 			return ok;
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean deleteRecording (OpenMeetingsRecording recording) {
+		try {
+			String adminSID = adminLogin();
+			RoomServiceStub roomWs = getRoomWebService();
+			DeleteFlvRecording deleteRecordingCl = new DeleteFlvRecording();
+			deleteRecordingCl.setFlvRecordingId(recording.getRecordingId());
+			deleteRecordingCl.setSID(adminSID);
+			DeleteFlvRecordingResponse resp = roomWs.deleteFlvRecording(deleteRecordingCl);
+			return resp.get_return();
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
