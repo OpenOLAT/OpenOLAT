@@ -28,9 +28,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
@@ -74,6 +77,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	private static final OLog log = Tracing.createLoggerFor(VersionsFileManager.class);
 
 	private static final Versions NOT_VERSIONED = new NotVersioned();
+	private static final Pattern TAG_PATTERN = Pattern.compile("\\s*[<>]\\s*");
 	private static XStream mystream;
 	
 
@@ -118,11 +122,14 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 
 			List<VFSItem> versionItems = versionContainer.getItems(new VFSItemSuffixFilter(new String[] { "xml" }));
 			for (VFSItem versionItem : versionItems) {
-				if (versionItem instanceof VFSLeaf && !currentNames.contains(versionItem.getName())) {
+				String name = versionItem.getName();
+				if (versionItem instanceof VFSLeaf && !currentNames.contains(name) && isVersionsXmlFile((VFSLeaf)versionItem)) {
 					Versions versions = readVersions(null, (VFSLeaf) versionItem);
-					List<VFSRevision> revisions = versions.getRevisions();
-					if (!revisions.isEmpty()) {
-						deletedRevisions.add(versions);
+					if(versions != null) {
+						List<VFSRevision> revisions = versions.getRevisions();
+						if (!revisions.isEmpty()) {
+							deletedRevisions.add(versions);
+						}
 					}
 				}
 			}
@@ -141,23 +148,47 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		}
 		return readVersions(leaf, fVersions);
 	}
+	
+	private boolean isVersionsXmlFile(VFSLeaf fVersions) {
+		InputStream in = fVersions.getInputStream();
+		Scanner scanner = new Scanner(in);
+		scanner.useDelimiter(TAG_PATTERN);
+		
+		boolean foundVersionsTag = false;
+		while (scanner.hasNext()) {
+      String tag = scanner.next();
+      if("versions".equals(tag)) {
+      	foundVersionsTag = true;
+      	break;
+      }
+		}
+
+		scanner.close();
+		IOUtils.closeQuietly(in);
+		return foundVersionsTag;
+	}
 
 	private Versions readVersions(VFSLeaf leaf, VFSLeaf fVersions) {
 		if (fVersions == null) { return new NotVersioned(); }
 
-		VFSContainer fVersionContainer = fVersions.getParentContainer();
-		VersionsFileImpl versions = (VersionsFileImpl) XStreamHelper.readObject(mystream, fVersions);
-		versions.setVersionFile(fVersions);
-		versions.setCurrentVersion((Versionable) leaf);
-		if (versions.getRevisionNr() == null || versions.getRevisionNr().length() == 0) {
-			versions.setRevisionNr(getNextRevisionNr(versions));
-		}
+		try {
+			VFSContainer fVersionContainer = fVersions.getParentContainer();
+			VersionsFileImpl versions = (VersionsFileImpl) XStreamHelper.readObject(mystream, fVersions);
+			versions.setVersionFile(fVersions);
+			versions.setCurrentVersion((Versionable) leaf);
+			if (versions.getRevisionNr() == null || versions.getRevisionNr().length() == 0) {
+				versions.setRevisionNr(getNextRevisionNr(versions));
+			}
 
-		for (VFSRevision revision : versions.getRevisions()) {
-			RevisionFileImpl revisionImpl = (RevisionFileImpl) revision;
-			revisionImpl.setContainer(fVersionContainer);
+			for (VFSRevision revision : versions.getRevisions()) {
+				RevisionFileImpl revisionImpl = (RevisionFileImpl) revision;
+				revisionImpl.setContainer(fVersionContainer);
+			}
+			return versions;
+		} catch (Exception e) {
+			log.warn("This file is not a versions XML file: " + fVersions, e);
+			return null;
 		}
-		return versions;
 	}
 
 	@Override
