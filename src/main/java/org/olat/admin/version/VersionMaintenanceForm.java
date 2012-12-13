@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.admin.SystemAdminMainController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -35,11 +36,17 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressController;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
+import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.vfs.version.OrphanVersion;
+import org.olat.core.util.vfs.version.SimpleVersionConfig;
 import org.olat.core.util.vfs.version.VFSRevision;
 import org.olat.core.util.vfs.version.VersionsManager;
 
@@ -55,18 +62,24 @@ import org.olat.core.util.vfs.version.VersionsManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
  //fxdiff FXOLAT-127: file versions maintenance tool
-public class VersionMaintenanceForm extends FormBasicController {
+public class VersionMaintenanceForm extends FormBasicController implements ProgressDelegate {
 	
-	private FormLink cleanUp, orphanSize;
+	private FormLink cleanUpLink, pruneLink, showOrphanLink, orphanSize;
 	private StaticTextElement orphanSizeEl;
 	private CloseableModalController cmc;
 	private OrphanVersionsController orphansController;
+	private DialogBoxController confirmPrunehistoryBox;
+	private DialogBoxController confirmDeleteOrphansBox;
+	private ProgressController progressCtrl;
+	
+	private final VersionsManager versionsManager;
 	
 	public VersionMaintenanceForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		// use combined translator from system admin main
 		setTranslator(Util.createPackageTranslator(SystemAdminMainController.class, ureq.getLocale(), getTranslator()));
-
+		versionsManager = CoreSpringFactory.getImpl(VersionsManager.class);
+		
 		initForm(ureq);
 	}
 	
@@ -79,16 +92,48 @@ public class VersionMaintenanceForm extends FormBasicController {
 		
 		orphanSizeEl = uifactory.addStaticTextElement("version.orphan.size", "version.orphan.size", "???", formLayout);
 		
-		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsLayout = FormLayoutContainer.createHorizontalFormLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);
 		
 		orphanSize = uifactory.addFormLink("version.orphan.size.calc", buttonsLayout, Link.BUTTON);
-		cleanUp = uifactory.addFormLink("version.clean.up", buttonsLayout, Link.BUTTON);
+		showOrphanLink = uifactory.addFormLink("version.show.orphans", buttonsLayout, Link.BUTTON);
+		cleanUpLink = uifactory.addFormLink("version.clean.up", buttonsLayout, Link.BUTTON);
+		
+		FormLayoutContainer buttons2Layout = FormLayoutContainer.createHorizontalFormLayout("buttons2", getTranslator());
+		formLayout.add(buttons2Layout);
+		
+		pruneLink = uifactory.addFormLink("version.prune.history", buttons2Layout, Link.BUTTON);
 	}
 
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == orphansController) {
+			cmc.deactivate();
+			cleanup();
+		} else if(source == confirmDeleteOrphansBox) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doDeleteOrphans(ureq);
+			}
+		} else if(source == confirmPrunehistoryBox) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doPruneHistory(ureq);
+			}
+		} else if(source == cmc) {
+			cleanup();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanup() {
+		removeAsListenerAndDispose(orphansController);
+		removeAsListenerAndDispose(cmc);
+		orphansController = null;
+		cmc = null;
 	}
 
 	@Override
@@ -98,13 +143,19 @@ public class VersionMaintenanceForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == cleanUp) {
-			List<OrphanVersion> orphans = VersionsManager.getInstance().orphans();
+		if(source == showOrphanLink) {
+			List<OrphanVersion> orphans = versionsManager.orphans();
 			orphansController = new OrphanVersionsController(ureq, getWindowControl(), orphans);			
 			listenTo(orphansController);
 			cmc = new CloseableModalController(getWindowControl(), "close", orphansController.getInitialComponent());
 			cmc.insertHeaderCss();
 			cmc.activate();
+		} else if(source == cleanUpLink) {
+			String text = translate("confirm.delete.orphans");
+			confirmDeleteOrphansBox = activateYesNoDialog(ureq, null, text, confirmDeleteOrphansBox);
+		} else if(source == pruneLink) {
+			String text = translate("confirm.prune.history");
+			confirmPrunehistoryBox = activateYesNoDialog(ureq, null, text, confirmPrunehistoryBox);
 		} else if (source == orphanSize) {
 			orphanSizeEl.setValue(translate("version.orphan.size.calculating"));
 			TaskExecutorManager.getInstance().runTask(new Runnable() {
@@ -116,9 +167,54 @@ public class VersionMaintenanceForm extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private void doDeleteOrphans(UserRequest ureq) {
+		progressCtrl = new ProgressController(ureq, getWindowControl());
+		progressCtrl.setMessage(translate("version.clean.up"));
+		progressCtrl.setPercentagesEnabled(false);
+		progressCtrl.setUnitLabel("");
+		progressCtrl.setActual(0.0f);
+		progressCtrl.setMax(100.0f);
+		listenTo(progressCtrl);
+		
+		TaskExecutorManager.getInstance().runTask(new Runnable() {
+			public void run() {
+				versionsManager.deleteOrphans(VersionMaintenanceForm.this);
+			}
+		});
+
+		cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, null, false);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doPruneHistory(UserRequest ureq) {
+		progressCtrl = new ProgressController(ureq, getWindowControl());
+		progressCtrl.setMessage(translate("version.prune.history"));
+		progressCtrl.setPercentagesEnabled(false);
+		progressCtrl.setUnitLabel("");
+		progressCtrl.setMax(versionsManager.countDirectories());
+		listenTo(progressCtrl);
+		
+		TaskExecutorManager.getInstance().runTask(new Runnable() {
+			public void run() {
+				Long numOfVersions = getNumOfVersions();
+				versionsManager.pruneHistory(numOfVersions.longValue(), VersionMaintenanceForm.this);
+			}
+		});
+
+		cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, null, false);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	public Long getNumOfVersions() {
+		SimpleVersionConfig config = (SimpleVersionConfig) CoreSpringFactory.getBean(SimpleVersionConfig.class);
+		return config.getMaxNumberOfVersionsProperty();
+	}
+	
 	public final void calculateOrphanSize() {
 		long size = 0l;
-		List<OrphanVersion> orphans = VersionsManager.getInstance().orphans();
+		List<OrphanVersion> orphans = versionsManager.orphans();
 		for(OrphanVersion orphan:orphans) {
 			List<VFSRevision> revisions = orphan.getVersions().getRevisions();
 			if(revisions != null) {
@@ -139,6 +235,35 @@ public class VersionMaintenanceForm extends FormBasicController {
 		String readableSize = sizeFormat.format(humanSize) + " " + unit;
 		if(orphanSizeEl != null && !isDisposed()) {
 			orphanSizeEl.setValue(readableSize);
+		}
+	}
+	
+	@Override
+	public void setMax(float max) {
+		if(progressCtrl != null && !progressCtrl.isDisposed()) {
+			progressCtrl.setMax(max);
+		}
+	}
+
+	@Override
+	public void setActual(float value) {
+		if(progressCtrl != null && !progressCtrl.isDisposed()) {
+			progressCtrl.setActual(value);
+		}
+	}
+
+	@Override
+	public void setInfo(String message) {
+		if(progressCtrl != null && !progressCtrl.isDisposed()) {
+			progressCtrl.setInfo(message);
+		}
+	}
+
+	@Override
+	public void finished() {
+		if(cmc != null && !cmc.isDisposed()) {
+			cmc.deactivate();
+			cleanup();
 		}
 	}
 }

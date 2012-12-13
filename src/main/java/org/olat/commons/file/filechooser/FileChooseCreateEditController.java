@@ -556,7 +556,7 @@ public class FileChooseCreateEditController extends BasicController{
 	}
 	
 	protected Controller createWysiwygController(UserRequest ureq, WindowControl windowControl, VFSContainer rootContainer, String chosenFile) {
-	  return WysiwygFactory.createWysiwygController(ureq, windowControl, rootContainer, chosenFile, true);
+	  return WysiwygFactory.createWysiwygController(ureq, windowControl, rootContainer, chosenFile, true, true);
 	}
 	
 	/**

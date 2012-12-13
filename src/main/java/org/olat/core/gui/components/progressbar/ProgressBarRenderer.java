@@ -34,6 +34,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date: Feb 2, 2004 A <b>ChoiceRenderer </b> is
@@ -65,13 +66,13 @@ public class ProgressBarRenderer implements ComponentRenderer {
 		if (!ubar.getIsNoMax()) percent = 100 * ubar.getActual() / ubar.getMax();
 		if (percent < 0) percent = 0;
 		if (percent > 100) percent = 100;
-		target.append("<div class=\"b_progress\"><div class=\"b_progress_bar\" style=\"width:");
-		target.append(ubar.getWidth());
-		target.append("px;\"><div style=\"width:");
-		target.append(Math.round(percent * ubar.getWidth() / 100));
-		target.append("px\" title=\"");
-		target.append(Math.round(percent * ubar.getWidth() / 100));
-		target.append("%\"></div></div>");
+		target.append("<div class=\"b_progress\"><div class=\"b_progress_bar\" style=\"width:")
+			.append(ubar.getWidth())
+			.append("px;\"><div style=\"width:")
+			.append(Math.round(percent * ubar.getWidth() / 100))
+			.append("px\" title=\"")
+			.append(Math.round(percent * ubar.getWidth() / 100))
+			.append("%\"></div></div>");
 		if (renderLabels) {
 			target.append("<div class=\"b_progress_label\">");
 			if (ubar.isPercentagesEnabled()) {
@@ -89,8 +90,13 @@ public class ProgressBarRenderer implements ComponentRenderer {
 			}
 			target.append("</div>");				
 		}
+		String info = ubar.getInfo();
+		if(StringHelper.containsNonWhitespace(info)) {
+			target.append("<div class=\"b_progress_label\">")
+				.append(info)
+				.append("</div>");
+		}
 		target.append("</div>");
-
 	}
 
 	/**

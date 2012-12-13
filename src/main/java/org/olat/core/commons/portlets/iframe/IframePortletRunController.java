@@ -172,8 +172,8 @@ public class IframePortletRunController extends BasicController {
 			if (editorCtr != null)
 				editorCtr.dispose();
 			editorCtr = WysiwygFactory.createWysiwygController(ureq,
-					getWindowControl(), rootDir, fileName, true);			
-			this.listenTo(editorCtr);
+					getWindowControl(), rootDir, fileName, true, true);			
+			listenTo(editorCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), editorCtr.getInitialComponent());
 			cmc.activate();
 		}

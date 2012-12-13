@@ -35,15 +35,20 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 public class VirtualContainer extends AbstractVirtualContainer {
 
-	private List children;
+	private List<VFSItem> children;
 	private VFSSecurityCallback secCallback = null;
 	private VFSContainer parentContainer;
 		
 	public VirtualContainer(String name) {
 		super(name);
-		children = new ArrayList();
-	}
+		children = new ArrayList<VFSItem>();
+	}	
 	
+	@Override
+	public boolean exists() {
+		return true;
+	}
+
 	/**
 	 * Add a VFSItem to this CirtualContainer.
 	 * @param vfsItem
@@ -52,15 +57,15 @@ public class VirtualContainer extends AbstractVirtualContainer {
 		children.add(vfsItem);
 	}
 	
-	public List getItems() {
+	public List<VFSItem> getItems() {
 		return getItems(null);
 	}
 
-	public List getItems(VFSItemFilter filter) {
+	public List<VFSItem> getItems(VFSItemFilter filter) {
 		if (filter == null) return children;
 		else {
-			List filtered = new ArrayList();
-			for (Iterator iter = children.iterator(); iter.hasNext();) {
+			List<VFSItem> filtered = new ArrayList<VFSItem>();
+			for (Iterator<VFSItem> iter = children.iterator(); iter.hasNext();) {
 				VFSItem vfsItem = (VFSItem) iter.next();
 				if (filter.accept(vfsItem)) filtered.add(vfsItem);
 			}

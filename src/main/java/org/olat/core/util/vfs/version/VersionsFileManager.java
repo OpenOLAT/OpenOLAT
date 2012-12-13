@@ -25,14 +25,19 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -43,6 +48,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
@@ -56,6 +62,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
+import org.olat.core.util.vfs.restapi.SystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 
 import com.thoughtworks.xstream.XStream;
@@ -150,7 +157,14 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	}
 	
 	private boolean isVersionsXmlFile(VFSLeaf fVersions) {
+		if(fVersions == null || !fVersions.exists()) {
+			return false;
+		}
 		InputStream in = fVersions.getInputStream();
+		if(in == null) {
+			return false;
+		}
+		
 		Scanner scanner = new Scanner(in);
 		scanner.useDelimiter(TAG_PATTERN);
 		
@@ -359,6 +373,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		Versions versions = readVersions(currentFile, true);
 		List<VFSRevision> allVersions = versions.getRevisions();
 
+		Map<String,VFSLeaf> filenamesToDelete = new HashMap<String,VFSLeaf>(allVersions.size());
 		for (VFSRevision versionToDelete : versionsToDelete) {
 			RevisionFileImpl versionImpl = (RevisionFileImpl) versionToDelete;
 			for (Iterator<VFSRevision> allVersionIt = allVersions.iterator(); allVersionIt.hasNext();) {
@@ -371,8 +386,20 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 
 			VFSLeaf fileToDelete = versionImpl.getFile();
 			if (fileToDelete != null) {
-				fileToDelete.delete();
+				filenamesToDelete.put(fileToDelete.getName(), fileToDelete);
 			}
+		}
+		
+		for(VFSRevision survivingVersion:allVersions) {
+			RevisionFileImpl survivingVersionImpl = (RevisionFileImpl)survivingVersion;
+			VFSLeaf revFile = survivingVersionImpl.getFile();
+			if(filenamesToDelete.containsKey(revFile.getName())) {
+				filenamesToDelete.remove(revFile.getName());
+			}
+		}
+		
+		for(VFSLeaf fileToDelete:filenamesToDelete.values()) {
+			fileToDelete.deleteSilently();
 		}
 
 		VFSLeaf versionFile = getCanonicalVersionXmlFile(currentFile, true);
@@ -391,13 +418,13 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 				VFSLeaf versionFile = versionsImpl.getVersionFile();
 				if(versionFile != null) {
 					//robust against manual file system manipulation
-					versionFile.delete();
+					versionFile.deleteSilently();
 				}
 				for (VFSRevision revisionToDelete : versionsImpl.getRevisions()) {
 					RevisionFileImpl versionImpl = (RevisionFileImpl)revisionToDelete;
 					VFSLeaf fileToDelete = versionImpl.getFile();
 					if (fileToDelete != null) {
-						fileToDelete.delete();
+						fileToDelete.deleteSilently();
 					}
 				}
 			}
@@ -534,8 +561,10 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			return false;
 		}
 		VersionsFileImpl versions = (VersionsFileImpl) v;
-
-		String uuid = UUID.randomUUID().toString() + "_" + name;
+		boolean sameFile = isSameFile(currentFile, versions);
+		String uuid = sameFile ? getLastRevisionFilename(versions)
+				: UUID.randomUUID().toString() + "_" + name;
+		
 		String versionNr = getNextRevisionNr(versions);
 		String currentAuthor = versions.getAuthor();
 		long lastModifiedDate = 0;
@@ -570,8 +599,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			versions.setCreator(metaTagged.getMetaInfo().getAuthor());
 		}
 
-		VFSLeaf target = versionContainer.createChildLeaf(uuid);
-		if (VFSManager.copyContent(currentFile, target)) {
+		if (sameFile || VFSManager.copyContent(currentFile, versionContainer.createChildLeaf(uuid))) {
 			if (identity != null) {
 				versions.setAuthor(identity.getName());
 			}
@@ -588,6 +616,31 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		}
 		return false;
 	}
+	
+	private boolean isSameFile(VFSLeaf currentFile, VersionsFileImpl versions) {
+		boolean same = false;
+		if(versions.getRevisions() != null && !versions.getRevisions().isEmpty()) {
+			VFSRevision lastRevision = versions.getRevisions().get(versions.getRevisions().size() -1);
+			
+			long lastSize = lastRevision.getSize();
+			long currentSize = currentFile.getSize();
+			if(currentSize == lastSize && currentSize > 0
+					&& lastRevision instanceof RevisionFileImpl
+					&& currentFile instanceof LocalFileImpl) {
+				RevisionFileImpl lastRev = ((RevisionFileImpl)lastRevision);
+				LocalFileImpl current = (LocalFileImpl)currentFile;
+					//can be the same file
+				try {
+					Checksum cm1 = FileUtils.checksum(((LocalFileImpl)((RevisionFileImpl)lastRev).getFile()).getBasefile() , new Adler32());
+					Checksum cm2 = FileUtils.checksum(current.getBasefile() , new Adler32());
+					same = cm1.getValue() == cm2.getValue();
+				} catch (IOException e) {
+					log.debug("Error calculating the checksum of files");
+				}	
+			}
+		}
+		return same;
+	}
 
 	public String getNextRevisionNr(Versions versions) {
 		int maxNumber = 0;
@@ -603,6 +656,18 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			}
 		}
 		return Integer.toString(maxNumber + 1);
+	}
+	
+	private String getLastRevisionFilename(Versions versions) {
+		if(versions.getRevisions() == null || versions.getRevisions().isEmpty()) {
+			return null;
+		}
+		
+		VFSRevision revision = versions.getRevisions().get(versions.getRevisions().size() - 1);
+		if(revision instanceof RevisionFileImpl) {
+			return ((RevisionFileImpl)revision).getFilename();
+		}
+		return null;
 	}
 
 	/**
@@ -642,7 +707,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		return null;
 	}
 
-	private VFSContainer getCanonicalVersionFolder(VFSContainer container, boolean create) {
+	protected VFSContainer getCanonicalVersionFolder(VFSContainer container, boolean create) {
 		String relPath = getRelPath(container);
 		File fVersion = new File(getRootVersionsFile(), relPath);
 		if (fVersion.exists()) { return new LocalFolderImpl(fVersion); }
@@ -734,8 +799,101 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		return rootVersionsContainer;
 	}
 	
+	
+
 	@Override
-	//fxdiff FXOLAT-127: file versions maintenance tool
+	public int countDirectories() {
+		VFSContainer versionsContainer = getRootVersionsContainer();
+		return countDirectories(versionsContainer);
+	}
+	
+	private int countDirectories(VFSContainer container) {
+		int count = 1;//itself
+		List<VFSItem> children = container.getItems(new SystemItemFilter());
+		for(VFSItem child:children) {
+			if(child instanceof VFSContainer) {
+				count += countDirectories((VFSContainer)child);
+			}
+		}
+		return count;
+	}
+
+	@Override
+	public void pruneHistory(long maxHistoryLength, ProgressDelegate progress) {
+		VFSContainer versionsContainer = getRootVersionsContainer();
+		//delete folder without versioning first
+		
+		int count = 0;
+		String[] excludedRootFolders = new String[]{"tmp","scorm","forum","portfolio"};
+		for(String excludedRootFolder:excludedRootFolders) {
+			VFSItem excludedContainer = versionsContainer.resolve(excludedRootFolder);
+			if(excludedContainer instanceof LocalFolderImpl) {
+				File excludedFile = ((LocalFolderImpl)excludedContainer).getBasefile();
+				FileUtils.deleteQuietly(excludedFile);
+				if(progress != null) progress.setInfo(excludedContainer.getName());
+			}
+			if(progress != null) progress.setActual(++count);
+		}
+
+		if(maxHistoryLength < 0) {
+			//nothing to do
+		} else if(maxHistoryLength == 0 && versionsContainer instanceof LocalFolderImpl) {
+			//delete all the stuff
+			FileUtils.deleteQuietly(((LocalFolderImpl)versionsContainer).getBasefile());
+		} else {
+			pruneVersionHistory(versionsContainer, maxHistoryLength, progress, count);
+		}
+
+		if(progress != null) progress.finished();
+	}
+	
+	private void pruneVersionHistory(VFSContainer container, long maxHistoryLength, ProgressDelegate progress, int count) {
+		List<VFSItem> children = container.getItems(new SystemItemFilter());
+		for(VFSItem child:children) {
+			if(child instanceof VFSContainer) {
+				if(progress != null) progress.setActual(++count);
+				pruneVersionHistory((VFSContainer)child, maxHistoryLength, progress, count);
+			}
+			if(child instanceof VFSLeaf) {
+				VFSLeaf versionsLeaf = (VFSLeaf)child;
+				pruneVersionHistory(versionsLeaf, maxHistoryLength, progress);
+			}
+		}
+	}
+	
+	private void pruneVersionHistory(VFSLeaf versionsLeaf, long maxHistoryLength, ProgressDelegate progress) {
+		if(versionsLeaf.getName().endsWith(".xml") && isVersionsXmlFile(versionsLeaf)) {	
+			File originalFile = reversedOriginFile(versionsLeaf);
+			if(originalFile.exists()) {
+				VFSLeaf original = new LocalFileImpl(originalFile);
+				if(progress != null) progress.setInfo(original.getName());
+				Versions versions = readVersions(original, versionsLeaf);
+				List<VFSRevision> revisions = versions.getRevisions();
+				if(revisions.size() > maxHistoryLength) {
+					List<VFSRevision> revisionsToDelete = revisions.subList(0, revisions.size() - (int)maxHistoryLength);
+					deleteRevisions((Versionable)original, revisionsToDelete);
+				}
+			}
+		}
+	}
+
+	@Override
+	public boolean deleteOrphans(ProgressDelegate progress) {
+		List<OrphanVersion> orphans = orphans();
+		if(progress != null) progress.setMax(orphans.size());
+		int count = 0;
+		for(OrphanVersion orphan:orphans) {
+			delete(orphan);
+			if(progress != null) {
+				progress.setActual(++count);
+				progress.setInfo(orphan.getOriginalFilePath());
+			}
+		}
+		if(progress != null) progress.finished();
+		return true;
+	}
+	
+	@Override
 	public boolean delete(OrphanVersion orphan) {
 		VFSLeaf versionLeaf = orphan.getVersionsLeaf();
 
@@ -754,14 +912,13 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	}
 
 	@Override
-	//fxdiff FXOLAT-127: file versions maintenance tool
 	public List<OrphanVersion> orphans() {
 		List<OrphanVersion> orphans = new ArrayList<OrphanVersion>();
 		VFSContainer versionsContainer = getRootVersionsContainer();
 		crawlForOrphans(versionsContainer, orphans);
 		return orphans;
 	}
-	//fxdiff FXOLAT-127: file versions maintenance tool
+	
 	private void crawlForOrphans(VFSContainer container, List<OrphanVersion> orphans) {
 		List<VFSItem> children = container.getItems();
 		for(VFSItem child:children) {
@@ -793,16 +950,19 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			}
 		}
 	}
-	//fxdiff FXOLAT-127: file versions maintenance tool
+
 	private Versions isOrphan(VFSLeaf potentialOrphan) {
 		try {
-			VersionsFileImpl versions = (VersionsFileImpl) XStreamHelper.readObject(mystream, potentialOrphan);
-			return versions;
+			if(potentialOrphan.exists()) {
+				VersionsFileImpl versions = (VersionsFileImpl) XStreamHelper.readObject(mystream, potentialOrphan);
+				return versions;
+			}
+			return null;
 		} catch (Exception e) {
 			return null;
 		}
 	}
-	//fxdiff FXOLAT-127: file versions maintenance tool
+
 	private File reversedOriginFile(VFSItem versionXml) {
 		String path = File.separatorChar + versionXml.getName().substring(0, versionXml.getName().length() - 4);
 		for(VFSContainer parent=versionXml.getParentContainer(); parent != null && !parent.isSame(getRootVersionsContainer()); parent = parent.getParentContainer()) {

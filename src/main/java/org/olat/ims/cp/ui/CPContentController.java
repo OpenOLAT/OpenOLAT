@@ -134,7 +134,7 @@ public class CPContentController extends BasicController {
 			String virtualRootFolderName = translate("cpfileuploadcontroller.virtual.root");
 			VFSContainer pseudoContainer = new VFSRootCPContainer(virtualRootFolderName, cp, rootDir, getTranslator());
 
-			mceCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), pseudoContainer, filePath, false);
+			mceCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), pseudoContainer, filePath, false, false);
 			if(mceCtr.isEditable()) {
 				mceCtr.setCancelButtonEnabled(false);
 				mceCtr.setSaveCloseButtonEnabled(false);

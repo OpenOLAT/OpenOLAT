@@ -58,9 +58,26 @@ public class ProgressController extends BasicController implements ProgressDeleg
 		mainVC.contextPut("msg", translatedMsg);
 	}
 
+	public void setMax(float i) {
+		progressBar.setMax(i);
+	}
+
+	public void setPercentagesEnabled(boolean percentagesEnabled) {
+		progressBar.setPercentagesEnabled(percentagesEnabled);
+	}
+
 	@Override
 	public void setActual(float i) {
 		progressBar.setActual(i);
+	}
+
+	@Override
+	public void setInfo(String message) {
+		progressBar.setInfo(message);
+	}
+	
+	public void setUnitLabel(String label) {
+		progressBar.setUnitLabel(label);
 	}
 
 	@Override

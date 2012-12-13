@@ -161,11 +161,27 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		dedupCtrl = null;
 		cmc = null;
 	}
+	
+	
+
+	@Override
+	public void setMax(float max) {
+		if(progressCtrl != null) {
+			progressCtrl.setMax(max);
+		}
+	}
 
 	@Override
 	public void setActual(float value) {
 		if(progressCtrl != null) {
 			progressCtrl.setActual(value);
+		}
+	}
+
+	@Override
+	public void setInfo(String message) {
+		if(progressCtrl != null) {
+			progressCtrl.setInfo(message);
 		}
 	}
 
