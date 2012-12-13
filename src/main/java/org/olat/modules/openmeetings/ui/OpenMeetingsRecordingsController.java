@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openmeetings.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
@@ -92,7 +94,13 @@ public class OpenMeetingsRecordingsController extends BasicController {
 	private void loadModel() {
 		try {
 			List<OpenMeetingsRecording> recordings = openMeetingsManager.getRecordings(roomId);
-			((OpenMeetingsRecordingsDataModel)tableCtr.getTableDataModel()).setObjects(recordings);
+			List<OpenMeetingsRecording> readyRecordings = new ArrayList<OpenMeetingsRecording>(recordings.size());
+			for (OpenMeetingsRecording recording : recordings) {
+				if (StringHelper.containsNonWhitespace(recording.getDownloadName())) {
+					readyRecordings.add(recording);
+				}
+			}
+			((OpenMeetingsRecordingsDataModel)tableCtr.getTableDataModel()).setObjects(readyRecordings);
 			tableCtr.modelChanged();
 		} catch (OpenMeetingsException e) {
 			showError(e.i18nKey());

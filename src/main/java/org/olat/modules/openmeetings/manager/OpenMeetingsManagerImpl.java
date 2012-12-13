@@ -554,7 +554,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			omRoom.setNumberOfPartizipants(room.getSize());
 			omRoom.setRoomtypes_id(room.getType());
 			omRoom.setSID(sessionId);
-			omRoom.setWaitForRecording(true);
+			omRoom.setWaitForRecording(false);
 
 			AddRoomWithModerationAndRecordingFlagsResponse addRoomResponse = roomWs.addRoomWithModerationAndRecordingFlags(omRoom);
 			long returned = addRoomResponse.get_return();

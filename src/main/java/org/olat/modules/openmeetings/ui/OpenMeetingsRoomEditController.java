@@ -19,6 +19,9 @@
  */
 package org.olat.modules.openmeetings.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +40,8 @@ import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.RoomType;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -58,7 +63,6 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	private final String[] moderationModeKeys;
 	private final String[] recordingKeys = {"xx"};
 
-	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	private final String subIdentifier;
@@ -66,6 +70,8 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	private OpenMeetingsRoom room;
 	private OpenMeetingsRoom defaultSettings;
 	private final OpenMeetingsManager openMeetingsManager;
+	
+	private long[] sizes = {2, 4, 6, 8, 10, 12, 14, 16, 25, 50, 100, 150, 200, 1000};
 
 	public OpenMeetingsRoomEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
 			String subIdentifier, String resourceName, OpenMeetingsRoom defaultSettings, boolean admin) {
@@ -88,12 +94,40 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 			showError(e.i18nKey());
 		}
 
-		if(room != null && room.getSize() != 16 && room.getSize() != 100) {
-			roomSizes = new String[]{"16", Long.toString(room.getSize()),  "100"};
+		if(room != null && !isLegalSize(room.getSize())) {
+			roomSizes = toStringSizes(room.getSize());
 		} else {
-			roomSizes = new String[]{"16", "100"};
+			roomSizes = toStringSizes();
 		}
 		initForm(ureq);
+	}
+	
+	private String[] toStringSizes(long... addSizes) {
+		List<Long> endSizes = new ArrayList<Long>(sizes.length + 2);
+		for(long size:sizes) {
+			endSizes.add(new Long(size));
+		}
+		if(addSizes != null && addSizes.length > 0) {
+			for(long size:addSizes) {
+				endSizes.add(new Long(size));
+			}
+		}
+		Collections.sort(endSizes);
+		String[] stringuifiedSizes = new String[endSizes.size()];
+		int count = 0;
+		for(Long endSize:endSizes) {
+			stringuifiedSizes[count++] = endSize.toString();
+		}
+		return stringuifiedSizes;
+	}
+	
+	private boolean isLegalSize(long roomSize) {
+		for(long size:sizes) {
+			if(size == roomSize) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public OpenMeetingsRoom getRoom() {
