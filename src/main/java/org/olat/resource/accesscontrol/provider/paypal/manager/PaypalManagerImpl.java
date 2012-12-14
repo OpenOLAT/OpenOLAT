@@ -387,7 +387,7 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 					OLATResource resource = line.getOffer().getResource();
 					ResourceReservation reservation = acService.getReservation(identity, resource);
 					if(reservation != null) {
-						acService.removeReservation(reservation);
+						acService.removeReservation(identity, identity, reservation);
 						logAudit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
 					}
 				}
@@ -455,7 +455,7 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 
 						ResourceReservation reservation = reservationDao.loadReservation(identity, line.getOffer().getResource());
 						if(reservation != null) {
-							acService.removeReservation(reservation);
+							acService.removeReservation(identity, identity, reservation);
 							logAudit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
 						}
 					}

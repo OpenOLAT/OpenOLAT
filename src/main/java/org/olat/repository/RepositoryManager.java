@@ -1633,6 +1633,22 @@ public class RepositoryManager extends BasicManager {
     }
 	}
 	
+	public void acceptPendingParticipation(Identity ureqIdentity, Identity identityToAdd, OLATResource resource, ResourceReservation reservation) {
+		RepositoryEntry re = lookupRepositoryEntry(resource, false);
+		if(re != null) {
+			if("repo_participant".equals(reservation.getType())) {
+				IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+				//roles is not needed as I add myself as participant
+				addParticipants(ureqIdentity, null, iae, re, null);
+			} else if("repo_tutors".equals(reservation.getType())) {
+				IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+				//roles is not needed as I add myself as tutor
+				addTutors(ureqIdentity, null, iae, re, null);
+			}
+			reservationDao.deleteReservation(reservation);
+		}
+	}
+	
 	/**
 	 * add provided list of identities as tutor to the repo entry. silently ignore
 	 * if some identities were already tutor before.
@@ -1845,6 +1861,13 @@ public class RepositoryManager extends BasicManager {
 						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
 			} finally {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+			}
+		}
+		
+		List<ResourceReservation> reservations = reservationDao.loadReservations(Collections.singletonList(re.getOlatResource()));
+		for(ResourceReservation reservation:reservations) {
+			if(members.contains(reservation.getIdentity())) {
+				reservationDao.deleteReservation(reservation);
 			}
 		}
 		

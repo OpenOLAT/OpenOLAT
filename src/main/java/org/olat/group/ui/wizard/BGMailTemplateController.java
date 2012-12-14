@@ -159,7 +159,7 @@ public class BGMailTemplateController extends FormBasicController {
 		}
 		
 		defaultTemplate = uifactory.addCheckboxesVertical("deftemplate", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.defaultTemplate")}, null, 1);
-		if(!customizingAvailable || !StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
+		if(!customizingAvailable && StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
 			defaultTemplate.select("xx", true);
 		}
 		

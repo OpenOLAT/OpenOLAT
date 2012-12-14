@@ -305,7 +305,7 @@ public class DENManageParticipantsController extends BasicController {
 	private void createAddedNotificationMail(UserRequest ureq, String subjectStr) {
 		MailTemplate mailTempl = denManager.getAddedMailTemplate(ureq, subjectStr, getTranslator());
 		removeAsListenerAndDispose(addedNotificationCtr);
-		//TODO memail
+
 		addedNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false);
 		listenTo(addedNotificationCtr);
 		

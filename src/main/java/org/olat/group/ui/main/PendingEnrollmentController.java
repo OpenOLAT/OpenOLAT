@@ -169,7 +169,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 				if(reservation.getAccept().booleanValue()) {
 					acService.acceptReservationToResource(getIdentity(), reservation.getReservation());
 				} else {
-					acService.removeReservation(reservation.getReservation());
+					acService.removeReservation(getIdentity(), getIdentity(), reservation.getReservation());
 				}
 			}
 		}
@@ -198,7 +198,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		}
 		
 		public boolean isCoach() {
-			return "group_coach".equals(reservation.getType());
+			return "group_coach".equals(reservation.getType()) || "repo_tutors".equals(reservation.getType());
 		}
 
 		public String getName() {

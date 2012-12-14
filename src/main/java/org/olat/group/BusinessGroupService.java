@@ -41,6 +41,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 
 /**
  * 
@@ -380,10 +381,13 @@ public interface BusinessGroupService {
 	
 	/**
 	 * 
-	 * @param identity
+	 * @param ureqIdentity
+	 * @param reservationOwner
 	 * @param resource
 	 */
-	public void acceptPendingParticipation(Identity ureqIdentity, Identity identity, OLATResource resource);
+	public void acceptPendingParticipation(Identity ureqIdentity, Identity reservationOwner, OLATResource resource);
+	
+	public void cancelPendingParticipation(Identity ureqIdentity, ResourceReservation reservation);
 	
 	/**
 	 * Remove a list of users from a group as participant and does all the magic that needs

@@ -82,23 +82,17 @@ public class PaypalIPNFilter implements Filter {
 	@SuppressWarnings("deprecation")
 	private void verify(ServletRequest request, PaypalManager paypalManager) {
 		try {
-			System.out.println("Verifify **************************************************");
-			
 			//code from the Paypal example
 			// read post from PayPal system and add 'cmd'	
 			StringBuilder sb = new StringBuilder();
 			sb.append("cmd=_notify-validate");
 			Map<String,String> values = new HashMap<String,String>();
-			for(@SuppressWarnings("unchecked")
-			Enumeration<String> en = request.getParameterNames(); en.hasMoreElements(); ){
+			for(Enumeration<String> en = request.getParameterNames(); en.hasMoreElements(); ){
 				String paramName = en.nextElement();
 				String paramValue = request.getParameter(paramName);
 				sb.append("&").append(paramName).append("=").append(URLEncoder.encode(paramValue));
 				values.put(paramName, paramValue);
 			}
-			
-
-			System.out.println("Verifify " + values);
 
 			// post back to PayPal system to validate
 			// NOTE: change http: to https: in the following URL to verify using SSL (for increased security).

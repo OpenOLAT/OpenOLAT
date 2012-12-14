@@ -1005,18 +1005,41 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		syncIM(syncIM, group);
 		return response;
 	}
+	
+	@Override
+	@Transactional
+	public void cancelPendingParticipation(Identity ureqIdentity, ResourceReservation reservation) {
+		if(reservation != null && "BusinessGroup".equals(reservation.getResource().getResourceableTypeName())) {
+			BusinessGroup group = businessGroupDAO.loadForUpdate(reservation.getResource().getResourceableId());
+
+			SyncUserListTask syncIM = new SyncUserListTask(group);
+			transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, null, null);
+			syncIM(syncIM, group);
+		}
+	}
 
 	@Override
 	@Transactional
-	public void acceptPendingParticipation(Identity ureqIdentity, Identity identityToAdd, OLATResource resource) {
-		ResourceReservation reservation = acService.getReservation(identityToAdd, resource);
+	public void acceptPendingParticipation(Identity ureqIdentity, Identity reservationOwner, OLATResource resource) {
+		ResourceReservation reservation = acService.getReservation(reservationOwner, resource);
 		if(reservation != null && "BusinessGroup".equals(resource.getResourceableTypeName())) {
 			BusinessGroup group = businessGroupDAO.loadForUpdate(resource.getResourceableId());
-			if(!securityManager.isIdentityInSecurityGroup(identityToAdd, group.getPartipiciantGroup())) {
-				SyncUserListTask syncIM = new SyncUserListTask(group);
-				internalAddParticipant(identityToAdd, group, syncIM);
-				syncIM(syncIM, group);
+
+			String type = reservation.getType();
+			if("group_coach".equals(type)) {
+				if(!securityManager.isIdentityInSecurityGroup(reservationOwner, group.getOwnerGroup())) {
+					SyncUserListTask syncIM = new SyncUserListTask(group);
+					internalAddCoach(reservationOwner, group, syncIM);
+					syncIM(syncIM, group);
+				}
+			} else if("group_participant".equals(type)) {
+				if(!securityManager.isIdentityInSecurityGroup(reservationOwner, group.getPartipiciantGroup())) {
+					SyncUserListTask syncIM = new SyncUserListTask(group);
+					internalAddParticipant(reservationOwner, group, syncIM);
+					syncIM(syncIM, group);
+				}
 			}
+			
 			reservationDao.deleteReservation(reservation);
 		}
 	}
@@ -1298,7 +1321,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			enrollStatus.setEnrolled(BGMembership.participant);
 			log.info("doEnroll (reservation) - setIsEnrolled ", identity.getName());
 			if(reservation != null) {
-				acService.removeReservation(reservation);
+				reservationDao.deleteReservation(reservation);
 			}
 		} else if (reloadedGroup.getMaxParticipants() != null) {
 			int participantsCounter = securityManager.countIdentitiesOfSecurityGroup(reloadedGroup.getPartipiciantGroup());
@@ -1333,6 +1356,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		return enrollStatus;
 	}
 
+	/**
+	 * Don't forget to lock the business group before calling this method.
+	 * @param ureqIdentity
+	 * @param group
+	 * @param mailing
+	 * @param syncIM
+	 */
 	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group, 
 			MailPackage mailing, SyncUserListTask syncIM) {
 
@@ -1378,8 +1408,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				  }
 				}
 			}
-		} else {
-			log.warn("Called method transferFirstIdentityFromWaitingToParticipant but waiting-list or autoCloseRanks is disabled.");
 		}
 	}
 	

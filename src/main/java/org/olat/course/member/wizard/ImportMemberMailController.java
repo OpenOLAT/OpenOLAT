@@ -65,7 +65,6 @@ public class ImportMemberMailController extends StepFormBasicController {
 			}
 		}
 		
-		boolean customizing = e.size() == 1;
 		MailType defaultGroupType = BusinessGroupMailing.getDefaultTemplateType(e);
 		RepositoryMailing.Type defaultRepoType = RepositoryMailing.getDefaultTemplateType(e);
 
@@ -74,12 +73,20 @@ public class ImportMemberMailController extends StepFormBasicController {
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(defaultGroupType, group, getIdentity());
 		} else if(defaultRepoType != null) {
 			mailTemplate = RepositoryMailing.getDefaultTemplate(defaultRepoType, repoEntry, getIdentity());
+		} else if(hasCouresRights(e)) {
+			mailTemplate = RepositoryMailing.createAddParticipantMailTemplate(repoEntry, getIdentity());
 		} else {
-			mailTemplate = new TestMailTemplate();
+			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.addParticipant, null, getIdentity());
 		}
-		mailTemplateForm = new BGMailTemplateController(ureq, wControl, mailTemplate, false, customizing, false, mandatoryEmail, rootForm);
+		mailTemplateForm = new BGMailTemplateController(ureq, wControl, mailTemplate, false, true, false, mandatoryEmail, rootForm);
 		
 		initForm (ureq);
+	}
+	
+	private boolean hasCouresRights(MemberPermissionChangeEvent e) {
+		return ((e.getRepoOwner() != null && e.getRepoOwner().booleanValue())
+				|| (e.getRepoParticipant() != null && e.getRepoParticipant().booleanValue())
+				|| (e.getRepoTutor() != null && e.getRepoTutor().booleanValue()));
 	}
 	
 	private boolean hasParticipantOrTutorsRightsChanges(MemberPermissionChangeEvent e) {

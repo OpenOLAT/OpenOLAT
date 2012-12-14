@@ -188,37 +188,47 @@ public class BGMailHelper {
 	 * @return
 	 */
 	private static MailTemplate createMailTemplate(BusinessGroupShort group, Identity actor, String subjectKey, String bodyKey) {
-		// build learning resources as list of url as string
-		StringBuilder learningResources = new StringBuilder();
-		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
-		for (RepositoryEntryShort entry: repoEntries) {
-			String title = entry.getDisplayname();
-			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
-			learningResources.append(title);
-			learningResources.append(" (");
-			learningResources.append(url);
-			learningResources.append(")\n");
-		}
-
-		final String courselist = learningResources.toString();
-		// get group name and description
-		final String groupname = group.getName();
-		final String groupdescription = (group instanceof BusinessGroup ?
-				FilterFactory.getHtmlTagAndDescapingFilter().filter(((BusinessGroup)group).getDescription()) : ""); 
-
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] { actor.getUser().getProperty(UserConstants.FIRSTNAME, null), actor.getUser().getProperty(UserConstants.LASTNAME, null), actor.getUser().getProperty(UserConstants.EMAIL, null),
-				actor.getName() };
+					actor.getName() };
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale);
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey, bodyArgs);
 		
-		subject = subject.replaceAll("\\$groupname", groupname == null ? "" : groupname);
-		body = body.replaceAll("\\$groupname", groupname == null ? "" : groupname);
-		body = body.replaceAll("\\$groupdescription", groupdescription == null ? "" : groupdescription);
-		body = body.replaceAll("\\$courselist", courselist == null ? "" : courselist);
+		// build learning resources as list of url as string
+		
+		final String courselist;
+		final String groupname;
+		final String groupdescription; 
+		StringBuilder learningResources = new StringBuilder();
+		if(group != null) {
+			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
+			for (RepositoryEntryShort entry: repoEntries) {
+				String title = entry.getDisplayname();
+				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
+				learningResources.append(title);
+				learningResources.append(" (");
+				learningResources.append(url);
+				learningResources.append(")\n");
+			}
+	
+			courselist = learningResources.toString();
+			// get group name and description
+			groupname = group.getName();
+			groupdescription = (group instanceof BusinessGroup ?
+					FilterFactory.getHtmlTagAndDescapingFilter().filter(((BusinessGroup)group).getDescription()) : ""); 
+
+			subject = subject.replaceAll("\\$groupname", groupname == null ? "" : groupname);
+			body = body.replaceAll("\\$groupname", groupname == null ? "" : groupname);
+			body = body.replaceAll("\\$groupdescription", groupdescription == null ? "" : groupdescription);
+			body = body.replaceAll("\\$courselist", courselist == null ? "" : courselist);
+		} else {
+			courselist = "";
+			groupname = "";
+			groupdescription = "";
+		}
 		
 		// create a mail template which all these data
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {

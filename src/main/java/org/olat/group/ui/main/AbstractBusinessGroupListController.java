@@ -419,7 +419,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		// if identity was also owner it must have successfully removed to end here.
 		// now remove the identity also as participant.
 		// 2) remove as participant
-		businessGroupService.removeParticipants(getIdentity(), identityToRemove, group, null);//TODO memail
+		businessGroupService.removeParticipants(getIdentity(), identityToRemove, group, null);
 		// 3) remove from waiting list
 		businessGroupService.removeFromWaitingList(getIdentity(), identityToRemove, group, null);
 	}
@@ -665,7 +665,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 				BusinessGroup targetGroup = (BusinessGroup)runContext.get("targetGroup");
 				groups.remove(targetGroup);
-				businessGroupService.mergeBusinessGroups(getIdentity(), targetGroup, groups, null);//TODO memail
+				businessGroupService.mergeBusinessGroups(getIdentity(), targetGroup, groups, null);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};

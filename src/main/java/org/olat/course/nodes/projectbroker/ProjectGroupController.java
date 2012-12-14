@@ -87,13 +87,11 @@ public class ProjectGroupController extends BasicController {
 		VelocityContainer myContent = createVelocityContainer("projectgroup_management");
 
 		// Project Leader Management
-		//TODO memail
 		projectLeaderController = new GroupController(ureq, getWindowControl(), true, true, true, false, true, false, project.getProjectLeaderGroup());
 		listenTo(projectLeaderController);
 		myContent.put("projectLeaderController", projectLeaderController.getInitialComponent());
 
 		// Project Member Management
-		//TODO memail
 		projectMemberController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, project.getProjectParticipantGroup());
 		listenTo(projectMemberController);
 		myContent.put("projectMemberController", projectMemberController.getInitialComponent());
@@ -105,7 +103,6 @@ public class ProjectGroupController extends BasicController {
 
 		// Project Candidates Management
 		if (projectBrokerModuleConfiguration.isAcceptSelectionManually()) {
-			//TODO memail
 			projectCandidatesController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, false, project.getCandidateGroup());
 			listenTo(projectCandidatesController);
 			myContent.contextPut("isProjectCandidatesListEmpty", ProjectBrokerManagerFactory.getProjectGroupManager().isCandidateListEmpty(project.getCandidateGroup()) );
@@ -186,7 +183,7 @@ public class ProjectGroupController extends BasicController {
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
 			BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), urequest.getUserSession().getRoles(),
-					identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), null);//TODO memail
+					identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), null);
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());

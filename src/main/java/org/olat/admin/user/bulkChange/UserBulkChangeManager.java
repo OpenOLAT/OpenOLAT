@@ -231,25 +231,8 @@ public class UserBulkChangeManager extends BasicManager {
 
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			MailPackage mailing = new MailPackage();
-			bgs.updateMemberships(addingIdentity, changes, mailing);//TODO memail
+			bgs.updateMemberships(addingIdentity, changes, mailing);
 			DBFactory.getInstance().commit();
-			
-			//TODO memail not needed anymore
-			/*if(mailGroups != null && !mailGroups.isEmpty()) {
-				List<BusinessGroup> notifGroups = bgs.loadBusinessGroups(mailGroups);
-				for (BusinessGroup group : notifGroups) {
-					for(Identity selIdentity:selIdentities) {
-
-						MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, addingIdentity);
-						MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-						MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(selIdentity), null, mailTemplate, null);
-						if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
-							logDebug("Problems sending Group invitation mail for identity: " + selIdentity.getName() + " and group: " 
-									+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
-						}
-					}
-				}
-			}*/
 		}
 	}
 

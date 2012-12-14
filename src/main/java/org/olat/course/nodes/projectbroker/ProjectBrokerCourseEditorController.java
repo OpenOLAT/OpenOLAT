@@ -189,7 +189,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
     String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
     accountManagerGroup = ProjectBrokerManagerFactory.getProjectGroupManager().getAccountManagerGroupFor(cpm, node, course, groupName, groupDescription, ureq.getIdentity());
     if (accountManagerGroup != null) {
-		//TODO memail
     	accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, accountManagerGroup.getPartipiciantGroup());
 			listenTo(accountManagerGroupController);
 			// add mail templates used when adding and removing users
@@ -302,7 +301,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			if (event instanceof IdentitiesAddEvent) {
 				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
 				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), urequest.getUserSession().getRoles(),
-						identitiesAddedEvent.getAddIdentities(), accountManagerGroup, null);//TODO memail
+						identitiesAddedEvent.getAddIdentities(), accountManagerGroup, null);
 				identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 				identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 				identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
