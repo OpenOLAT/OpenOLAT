@@ -77,6 +77,9 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		this.courseNode = courseNode;
 		this.courseTitle = courseTitle;
 		this.defaultSettings = defaultSettings;
+		if(defaultSettings != null) {
+			defaultSettings.setName(courseNode.getShortTitle());
+		}
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
 		try {
