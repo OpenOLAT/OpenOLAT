@@ -94,6 +94,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 	private void instantiateGrizzlyWebServer() {
 		if(webServer == null) {
 			webServer = new GrizzlyWebServer(PORT);
+			webServer.useAsynchronousWrite(false);
 			ServletAdapter sa = new ServletAdapter();
 			Servlet servletInstance = null;
 			try {
@@ -105,7 +106,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 			sa.addFilter(new RestApiLoginFilter(), "jerseyfilter", null);
 			sa.addInitParameter("javax.ws.rs.Application", OlatRestApplication.class.getName());
 			sa.setContextPath("/" + CONTEXT_PATH);
-			webServer.addGrizzlyAdapter(sa, null);
+			webServer.addGrizzlyAdapter(sa, new String[]{""});
 		}
 	}
 	

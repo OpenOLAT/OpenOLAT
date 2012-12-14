@@ -135,16 +135,12 @@ public class UserWebService {
 	public Response getUserListQuery(@QueryParam("login") String login, @QueryParam("authProvider") String authProvider,
 			@QueryParam("authUsername") String authUsername,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
-		MultivaluedMap<String,String> params = uriInfo.getQueryParameters();
-		return getUserList(login, authProvider, authUsername, params, uriInfo, httpRequest);
-	}
-
-	private Response getUserList(String login, String authProvider, String authUsername, Map<String,List<String>> params,
-			UriInfo uriInfo, HttpServletRequest httpRequest) {
+		
 		if(!isUserManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
+		MultivaluedMap<String,String> params = uriInfo.getQueryParameters();
 		List<Identity> identities;
 		//make only a search by authUsername
 		if(StringHelper.containsNonWhitespace(authProvider) && StringHelper.containsNonWhitespace(authUsername)) {
