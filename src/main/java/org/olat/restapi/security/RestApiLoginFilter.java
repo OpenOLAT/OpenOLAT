@@ -71,6 +71,7 @@ public class RestApiLoginFilter implements Filter {
 	private static final String BASIC_AUTH_REALM = "OLAT Rest API";
 	
 	private static List<String> openUrls;
+	private static List<String> alwaysEnabledUrls;
 	private static String LOGIN_URL;
 	
 	/**
@@ -98,8 +99,9 @@ public class RestApiLoginFilter implements Filter {
 				HttpServletRequest httpRequest = (HttpServletRequest)request;
 				HttpServletResponse httpResponse = (HttpServletResponse)response;
 				
+				String requestURI = httpRequest.getRequestURI();
 				RestModule restModule = (RestModule)CoreSpringFactory.getBean("restModule");
-				if(!restModule.isEnabled()) {
+				if(!restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
 					httpResponse.sendError(403);
 					return;
 				}
@@ -114,7 +116,6 @@ public class RestApiLoginFilter implements Filter {
 					//use the available session
 					followSession(httpRequest, httpResponse, chain);
 				} else {
-					String requestURI = httpRequest.getRequestURI();
 					if(requestURI.startsWith(getLoginUrl())) {
 						followForAuthentication(requestURI, uress, httpRequest, httpResponse, chain);
 					} else if(isRequestURIInOpenSpace(requestURI)) {
@@ -202,6 +203,15 @@ public class RestApiLoginFilter implements Filter {
 	
 	private boolean isRequestURIInOpenSpace(String requestURI) {
 		for(String openURI : getOpenURIs()) {
+			if(requestURI.startsWith(openURI)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean isRequestURIAlwaysEnabled(String requestURI) {
+		for(String openURI : getAlwaysEnabledURIs()) {
 			if(requestURI.startsWith(openURI)) {
 				return true;
 			}
@@ -317,6 +327,19 @@ public class RestApiLoginFilter implements Filter {
 			LOGIN_URL = context + "/auth";
 		}
 		return LOGIN_URL;
+	}
+	
+	private List<String> getAlwaysEnabledURIs() {
+		if(alwaysEnabledUrls == null) {
+			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
+			alwaysEnabledUrls = new ArrayList<String>();
+			alwaysEnabledUrls.add(context + "/i18n");
+			alwaysEnabledUrls.add(context + "/api");
+			alwaysEnabledUrls.add(context + "/ping");
+			alwaysEnabledUrls.add(context + "/openmeetings");
+			alwaysEnabledUrls.add(context + "/system");
+		}
+		return alwaysEnabledUrls;
 	}
 	
 	private List<String> getOpenURIs() {
