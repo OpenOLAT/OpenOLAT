@@ -58,7 +58,7 @@ import org.olat.repository.RepositoryEntryShort;
 public class BGMailHelper {
 
 	/**
-	 * The mail templated when adding users to a group. The method chooses
+	 * The mail template when adding users to a group. The method chooses
 	 * automatically the right translator for the given group type to customize
 	 * the template text
 	 * 
@@ -73,7 +73,7 @@ public class BGMailHelper {
 	}
 
 	/**
-	 * The mail templated when removing users from a group. The method chooses
+	 * The mail template when removing users from a group. The method chooses
 	 * automatically the right translator for the given group type to customize
 	 * the template text
 	 * 
@@ -88,7 +88,7 @@ public class BGMailHelper {
 	}
 
 	/**
-	 * The mail templated when deleting a whole group. The method chooses
+	 * The mail template when deleting a whole group. The method chooses
 	 * automatically the right translator for the given group type to customize
 	 * the template text
 	 * 
@@ -103,7 +103,7 @@ public class BGMailHelper {
 	}
 
 	/**
-	 * The mail templated when a user added himself to a group. The method chooses
+	 * The mail template when a user added himself to a group. The method chooses
 	 * automatically the right translator for the given group type to customize
 	 * the template text
 	 * 
@@ -118,7 +118,7 @@ public class BGMailHelper {
 	}
 
 	/**
-	 * The mail templated when a user removed himself from a group. The method
+	 * The mail template when a user removed himself from a group. The method
 	 * chooses automatically the right translator for the given group type to
 	 * customize the template text
 	 * 
@@ -133,7 +133,7 @@ public class BGMailHelper {
 	}
 
 	/**
-	 * The mail templated when adding users to a waitinglist. The method chooses
+	 * The mail template when adding users to a waitinglist. The method chooses
 	 * automatically the right translator for the given group type to customize
 	 * the template text
 	 * 
@@ -148,7 +148,7 @@ public class BGMailHelper {
 	}
 
 	/**
-	 * The mail templated when removing users from a waiting list. The method
+	 * The mail template when removing users from a waiting list. The method
 	 * chooses automatically the right translator for the given group type to
 	 * customize the template text
 	 * 
@@ -163,7 +163,7 @@ public class BGMailHelper {
 	}
 
 	/**
-	 * The mail templated when automatically transferring users from the
+	 * The mail template when automatically transferring users from the
 	 * waitinglist to the participants list adding users to a waitinglist. The
 	 * method chooses automatically the right translator for the given group type
 	 * to customize the template text

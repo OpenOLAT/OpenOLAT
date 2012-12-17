@@ -27,7 +27,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -139,7 +141,7 @@ public class RepositoryMailing {
 	private static MailTemplate createMailTemplate(RepositoryEntry re, Identity actor, String subjectKey, String bodyKey) {
 		// build learning resources as list of url as string
 		final String reName = re.getDisplayname();
-		final String redescription = re.getDescription(); 
+		final String redescription = (StringHelper.containsNonWhitespace(re.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(re.getDescription()) : ""); 
 
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] {
