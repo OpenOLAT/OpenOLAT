@@ -200,11 +200,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		if(room == null) {
 			room = new OpenMeetingsRoom();
 		}
-		String comment = commentEl.getValue();
-		if (!StringHelper.containsNonWhitespace(comment)) {
-			comment = null;
-		}
-		room.setComment(comment);
+		room.setComment(commentEl.getValue());
 		room.setModerated(moderationModeEl.isOneSelected() && moderationModeEl.isSelected(0));
 		room.setName(roomNameEl.getValue());
 		room.setRecordingAllowed(recordingEl.isAtLeastSelected(1));
