@@ -136,6 +136,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp(this.getClass().getPackage().getName(), "room.html", "help.hover.openmeetings.room");
 		
 		String name = room == null ? (defaultSettings == null ? null : defaultSettings.getName()) : room.getName();
 		roomNameEl = uifactory.addTextElement("roomname", "room.name", 255, name == null ? "" : name, formLayout);
@@ -199,7 +200,11 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		if(room == null) {
 			room = new OpenMeetingsRoom();
 		}
-		room.setComment(commentEl.getValue());
+		String comment = commentEl.getValue();
+		if (!StringHelper.containsNonWhitespace(comment)) {
+			comment = null;
+		}
+		room.setComment(comment);
 		room.setModerated(moderationModeEl.isOneSelected() && moderationModeEl.isSelected(0));
 		room.setName(roomNameEl.getValue());
 		room.setRecordingAllowed(recordingEl.isAtLeastSelected(1));

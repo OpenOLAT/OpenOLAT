@@ -111,7 +111,7 @@ public class OpenMeetingsRunController extends BasicController {
 				mainVC.put("room.members", membersLink);
 			}
 			if(admin) {
-				editLink = LinkFactory.createButton("edit", mainVC, this);
+				editLink = LinkFactory.createButton("edit.room", mainVC, this);
 				mainVC.put("edit", editLink);
 			}
 			

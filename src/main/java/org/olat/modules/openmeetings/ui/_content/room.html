@@ -5,37 +5,50 @@
 #else
 	<h4>$roomName</h4>
 	#if($roomComment)
-		<p>$roomComment</p>
+		<div class="b_note">$roomComment</div>
 	#end
 	
+	
+	<p>
+		$r.translate("start.hint")
+	</p>
 	#if($roomClosed)
-		<p>$r.translate("room.closed.explanation")</p>
+		<p class="b_important">$r.translate("room.closed.explanation")</p>
 	#end
 
-	#if($r.available("open.room"))
-		$r.render("open.room")
-		$r.render("close.room")
+	#if($r.available("start.room.guest"))
+		$r.render("start.room.guest")
+		## Component to render dialog with guest nickname
+		#if($r.available("openCmd"))
+			$r.render("openCmd")
+		#end
+	#else
+		$r.render("start.room")
 	#end
 
 	#if($r.available("open.recordings"))
 		$r.render("open.recordings")
 	#end
 	
-	#if($r.available("room.members"))
-		$r.render("room.members")
-	#end
+	#if($r.available("open.room") || $r.available("room.members") || $r.available("edit"))
+		<p />
+		<hr />
+		$r.contextHelpWithWrapper("org.olat.modules.openmeetings.ui","room_admin.html","help.hover.openmeetings.room_admin")
+		<h5>$r.translate("administration.title")</h5>
+		#if($r.available("open.room"))
+			$r.render("open.room")
+			$r.render("close.room")
+		#end
 	
-	#if($r.available("edit"))
-		$r.render("edit")
+		
+		#if($r.available("room.members"))
+			$r.render("room.members")
+		#end
+		
+		#if($r.available("edit"))
+			$r.render("edit")
+		#end
 	#end
 
-	#if($r.available("start.room.guest"))
-		$r.render("start.room.guest")
-	#else
-		$r.render("start.room")
-	#end
 #end
 
-#if($r.available("openCmd"))
-	$r.render("openCmd")
-#end
