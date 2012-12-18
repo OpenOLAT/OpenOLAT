@@ -24,21 +24,18 @@ import java.util.Comparator;
 import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaTitleComparator;
 import org.olat.core.util.vfs.VFSItem;
 
 /**
- * Compare the title or the filename
+ * Compare the title, the filename and the last modification date
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class TitleComparator implements Comparator<VFSItem> {
 	private final Collator collator;
-	private final MetaTitleComparator comparator;
 
 	public TitleComparator(Collator collator) {
 		this.collator = collator;
-		comparator = new MetaTitleComparator(collator);
 	}
 
 	public TitleComparator(Locale locale) {
@@ -46,14 +43,32 @@ public class TitleComparator implements Comparator<VFSItem> {
 	}
 
 	public int compare(VFSItem i1, VFSItem i2) {
+		int result = 0;
 		if(i1 instanceof MetaTagged && i2 instanceof MetaTagged) {
 			MetaInfo m1 = ((MetaTagged)i1).getMetaInfo();
 			MetaInfo m2 = ((MetaTagged)i2).getMetaInfo();
-			return comparator.compare(m1, m2);
+			if(m1 != null && m2 != null) {
+				String t1 = m1.getTitle();
+				String t2 = m2.getTitle();
+				if(t1 != null && t2 != null) {
+					result = collator.compare(t1, t2);
+				}
+			}
 		}
 		
-		String t1 = i1.getName();
-		String t2 = i2.getName();
-		return collator.compare(t1, t2);
+		if(result == 0) {
+			String n1 = i1.getName();
+			String n2 = i2.getName();
+			if(n1 != null && n2 != null) {
+				result = collator.compare(n1, n2);
+			}
+		}
+		
+		if(result == 0) {
+			long l1 = i1.getLastModified();
+			long l2 = i2.getLastModified();
+			result = l1<l2 ? -1 : (l1==l2 ? 0 : 1);
+		}
+		return result;
 	}
 }
