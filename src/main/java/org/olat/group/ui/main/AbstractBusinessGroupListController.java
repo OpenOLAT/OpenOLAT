@@ -829,7 +829,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			
 			BusinessGroupMembership membership =  memberships.get(group.getKey());
 			Boolean allowLeave =  membership != null;
-			Boolean allowDelete = admin ? Boolean.TRUE : null;
+			Boolean allowDelete = admin ? Boolean.TRUE : (membership == null ? null : new Boolean(membership.isOwner()));
 			boolean marked = markedResources.contains(group.getResource().getResourceableId());
 			BGTableItem tableItem = new BGTableItem(group, marked, membership, allowLeave, allowDelete, accessMethods);
 			tableItem.setUnfilteredRelations(resources);
