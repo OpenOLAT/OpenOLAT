@@ -70,6 +70,7 @@
 		<jackson.version>1.9.2</jackson.version>
 		<org.mysql.version>5.1.21</org.mysql.version>
 		<org.postgresql.version>9.1-901.jdbc4</org.postgresql.version>
+		<org.infinispan.version>5.1.6.FINAL</org.infinispan.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -190,7 +191,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-ehcache</artifactId>
+					<artifactId>hibernate-infinispan</artifactId>
 					<version>${org.hibernate.version}</version>
 				</dependency>
 				<dependency>
@@ -202,6 +203,34 @@
 						<exclusion>
 							<artifactId>c3p0</artifactId>
 							<groupId>c3p0</groupId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				
+				<dependency>
+					<groupId>org.infinispan</groupId>
+					<artifactId>infinispan-core</artifactId>
+					<version>${org.infinispan.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.jboss.spec.javax.transaction</groupId>
+							<artifactId>jboss-transaction-api_1.1_spec</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.jboss.logging</groupId>
+							<artifactId>jboss-logging</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.codehaus.woodstox</groupId>
+							<artifactId>woodstox-core-asl</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.codehaus.woodstox</groupId>
+							<artifactId>stax2-api</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.rhq.helpers</groupId>
+							<artifactId>rhq-pluginAnnotations</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -333,7 +362,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-ehcache</artifactId>
+					<artifactId>hibernate-infinispan</artifactId>
 					<version>${org.hibernate.version}</version>
 				</dependency>
 				<dependency>
@@ -898,41 +927,7 @@
 			</dependency>
 		</dependencies>
 	</profile>
-    
 
-		<!-- Retain the dependency for cluster -->
-		<profile>
-			<id>cluster</id>
-			<activation>
-				<property>
-					<name>cluster</name>
-				</property>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.jboss</groupId>
-					<artifactId>jboss-common-core</artifactId>
-					<version>2.2.8.GA</version>
-				</dependency>
-				<dependency>
-					<groupId>org.jboss.logging</groupId>
-					<artifactId>jboss-logging-spi</artifactId>
-					<version>2.0.5.GA</version>
-				</dependency>
-				<dependency>
-					<groupId>org.jboss.cache</groupId>
-					<artifactId>jbosscache-core</artifactId>
-					<version>3.2.2.GA</version>
-				</dependency>
-				<dependency>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-jbosscache2</artifactId>
-					<version>3.3.2.GA</version>
-					<scope>runtime</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-    
 	    <profile>
 	    	<id>arquillian</id>
 	    	<properties>
@@ -1006,7 +1001,7 @@
 		<repository>
 			<id>jboss-public-repository-group</id>
 			<name>JBoss Public Maven Repository Group</name>
-			<url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
 			<layout>default</layout>
 			<releases>
 				<enabled>true</enabled>
@@ -1743,9 +1738,32 @@
 			<version>1.0.3</version>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache-core</artifactId>
-			<version>2.4.3</version>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-core</artifactId>
+			<version>${org.infinispan.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jboss.spec.javax.transaction</groupId>
+					<artifactId>jboss-transaction-api_1.1_spec</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.woodstox</groupId>
+					<artifactId>woodstox-core-asl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.woodstox</groupId>
+					<artifactId>stax2-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.rhq.helpers</groupId>
+					<artifactId>rhq-pluginAnnotations</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -1767,7 +1785,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-ehcache</artifactId>
+			<artifactId>hibernate-infinispan</artifactId>
 			<version>${org.hibernate.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -35,6 +35,7 @@ import javax.servlet.http.HttpSession;
 
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
@@ -51,6 +52,7 @@ import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.prefs.Preferences;
@@ -89,9 +91,12 @@ public class UserSessionManager implements GenericEventListener {
 	@Autowired
 	private HistoryManager historyManager;
 	
+	private CacheWrapper<Long> userSessionCache;
+	
 	@PostConstruct
 	public void initBean() {
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, ORES_USERSESSION);
+		userSessionCache = coordinator.getCoordinator().getCacher().getOrCreateCache(UserSessionManager.class, "usersession");
 	}
 
 	/**
@@ -204,7 +209,7 @@ public class UserSessionManager implements GenericEventListener {
 	 */
 	public int getUserSessionWebCounter() {
 		// clusterNOK ?? return only number of locale sessions ?
-		return sessionCountWeb.get();
+		return userSessionCache.size();
 	}
 	
 	/**
@@ -267,12 +272,14 @@ public class UserSessionManager implements GenericEventListener {
 			log.audit("Logged on [via webdav]: " + sessionInfo.toString());
 		} else {
 		
-			if(isDebug) log.debug("signOn() authUsersNamesOtherNodes.contains "+identity.getName()+": "+authUsersNamesOtherNodes.contains(identity.getKey()));
+			if(isDebug) {
+				log.debug("signOn() authUsersNamesOtherNodes.contains "+identity.getName() + ": " + authUsersNamesOtherNodes.contains(identity.getKey()));
+			}
 		
 			UserSession invalidatedSession = null;
 			synchronized (authUserSessions) {  //o_clusterOK by:fj
 		    // check if already a session exist for this user
-		    if ( (userNameToIdentity.contains(identity.getKey()) || authUsersNamesOtherNodes.contains(identity.getKey()) ) 
+		    if ( (userNameToIdentity.contains(identity.getKey()) || userSessionCache.containsKey(identity.getKey()) ) 
 		         && !sessionInfo.isWebDAV() && !sessionInfo.isREST() && !usess.getRoles().isGuestOnly()) {
 		        log.info("Loggin-process II: User has already a session => signOffAndClear existing session");
 		        
@@ -290,6 +297,7 @@ public class UserSessionManager implements GenericEventListener {
 				// characters -> map stores values as such
 				if(isDebug) log.debug("signOn() adding to userNameToIdentity: "+identity.getName().toLowerCase());
 				userNameToIdentity.add(identity.getKey());
+				userSessionCache.put(identity.getKey(), new Integer(Settings.getNodeId()));
 			}
 		
 			//reload user prefs
@@ -436,6 +444,7 @@ public class UserSessionManager implements GenericEventListener {
 				if (previousSignedOn != null) {
 					if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: "+previousSignedOn.getName().toLowerCase());
 					userNameToIdentity.remove(previousSignedOn.getKey());
+					userSessionCache.remove(previousSignedOn.getKey());
 				}
 			} else if (isDebug) {
 				log.info("UserSession already removed! for ["+ident+"]");			
@@ -482,7 +491,7 @@ public class UserSessionManager implements GenericEventListener {
 					if(debug) log.debug("event() adding to authUsersNamesOtherNodes: "+se.getIdentityKey());
 					authUsersNamesOtherNodes.add(se.getIdentityKey());
 					UserSession usess = getUserSessionForGui(se.getIdentityKey());
-					if (usess.getSessionInfo() != null && se.getIdentityKey().equals(usess.getSessionInfo().getLogin())
+					if (usess != null && usess.getSessionInfo() != null && se.getIdentityKey().equals(usess.getSessionInfo().getIdentityKey())
 							&& !usess.getSessionInfo().isWebDAV() && !usess.getRoles().isGuestOnly()) {
 						
 						// if this listening UserSession instance is from the same user

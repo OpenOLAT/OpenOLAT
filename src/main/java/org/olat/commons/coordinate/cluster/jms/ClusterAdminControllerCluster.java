@@ -255,15 +255,13 @@ public class ClusterAdminControllerCluster extends BasicController {
 			double avgmilis = avg / 1000000;
 			getWindowControl().setInfo("sending "+cnt+" messages took "+inmilis+" ms, avg per messages was "+avg+" ns = "+avgmilis+" ms");
 		} else if (source == testCachePut) {
-			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
-				getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest");
 			// we explicitly use put and not putSilent to show that a put invalidates (and thus removes) this key of this cache in all other cluster nodes. 
 			cw.update("akey", "hello");
 			updateCacheInfo();
 		} else if (source == testCachePut2) {
 			// we explicitly use put and not putSilent to show that a put invalidates (and thus removes) this key of this cache in all other cluster nodes.
-			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
-				getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest");
 			cw.update("akey", "world");
 			updateCacheInfo();
 		} else if (source == testSFUPerf) {
@@ -357,8 +355,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 	}
 	
 	void updateCacheInfo() {
-		CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
-		getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+		CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest");
 		Object val = cw.get("akey");
 		cachetest.contextPut("cacheval", val==null? "-null-": val);
 		// org.olat.commons.coordinate.cluster.jms.ClusterAdminController:cachetest::0@subcachetypetest::123

@@ -5,8 +5,6 @@
 
 <hibernate-mapping>
     <class name="org.olat.group.context.BGContext2Resource" table="o_gp_bgcontextresource_rel" lazy="false">
-    		
-		<cache usage="read-write" />
 
         <id name="key"
         	type="long"

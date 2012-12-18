@@ -9,5 +9,10 @@
 			<module name="org.codehaus.jackson.jackson-core-asl" />
 			<module name="org.codehaus.jackson.jackson-mapper-asl" />
 		</dependencies>
+		<exclusions>
+			<module name="org.apache.log4j" />
+			<module name="org.slf4j" />
+			<module name="org.apache.commons.logging" />
+		</exclusions>
 	</deployment>
 </jboss-deployment-structure>

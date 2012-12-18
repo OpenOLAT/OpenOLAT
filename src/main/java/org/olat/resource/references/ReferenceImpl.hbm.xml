@@ -6,7 +6,7 @@
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.resource.references.ReferenceImpl" table="o_references">
 
-	<cache usage="read-write" />
+	<cache usage="transactional" />
   		
 	<id name="key" type="long" column="reference_id"	unsaved-value="null">
 		<generator class="hilo"/>

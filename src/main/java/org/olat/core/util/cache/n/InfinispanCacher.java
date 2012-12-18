@@ -23,12 +23,11 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */ 
-package org.olat.core.util.cache.n.impl.svm;
+package org.olat.core.util.cache.n;
 
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.cache.n.CacheConfig;
-import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.Cacher;
 import org.olat.core.util.resource.OresHelper;
 
@@ -40,22 +39,29 @@ import org.olat.core.util.resource.OresHelper;
  * Initial Date:  16.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class SingleVMCacher implements Cacher {
-	private CacheWrapperImpl rootCacheWrapperImpl;
+public class InfinispanCacher implements Cacher {
+	
+	private InfinispanCacheWrapper rootCacheWrapperImpl;
+	private EmbeddedCacheManager cacheManager;
 	private CacheConfig rootConfig;
 	
-	public SingleVMCacher() {
-		// needed for spring
+	public InfinispanCacher(EmbeddedCacheManager cacheManager) {
+		this.cacheManager = cacheManager;
 	}
 	
 	public void init() {
 		if (rootConfig == null) {
 			throw new AssertException("rootConfig property must not be null!");
 		}
-		rootCacheWrapperImpl = new CacheWrapperImpl(this.getClass().getName(), rootConfig);	
+		rootCacheWrapperImpl = new InfinispanCacheWrapper(this.getClass().getSimpleName(), rootConfig, cacheManager);	
 	}
 	
-	public CacheWrapper getOrCreateCache(Class ownerClass, String name) {
+	@Override
+	public EmbeddedCacheManager getCacheContainer() {
+		return cacheManager;
+	}
+
+	public CacheWrapper getOrCreateCache(Class<?> ownerClass, String name) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(CacheConfig.getCacheName(ownerClass, name), new Long(0));
 		return rootCacheWrapperImpl.getOrCreateChildCacheWrapper(ores);
 	}

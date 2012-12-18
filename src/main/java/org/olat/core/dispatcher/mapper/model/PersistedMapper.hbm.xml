@@ -5,7 +5,7 @@
 
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.core.dispatcher.mapper.model.PersistedMapper" table="o_mapper">
-	<cache usage="read-write" />
+	<cache usage="transactional" />
 
     <id name="key" column="id" type="long" unsaved-value="null">
       <generator class="hilo"/>

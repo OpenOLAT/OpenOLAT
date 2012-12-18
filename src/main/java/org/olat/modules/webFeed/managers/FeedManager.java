@@ -110,7 +110,7 @@ public abstract class FeedManager extends BasicManager {
 	 * @param item
 	 * @param feed
 	 */
-	public abstract void addItem(Item item, FileElement file, Feed feed);
+	public abstract Feed addItem(Item item, FileElement file, Feed feed);
 
 	/**
 	 * Removes the given <code>Item</code> from the <code>Feed</code>. Its content
@@ -119,13 +119,13 @@ public abstract class FeedManager extends BasicManager {
 	 * @param item
 	 * @param feed
 	 */
-	public abstract void remove(Item item, Feed feed);
+	public abstract Feed remove(Item item, Feed feed);
 
 	/**
 	 * @param modifiedItem
 	 * @param feed
 	 */
-	public abstract void updateItem(Item modifiedItem, FileElement file, Feed feed);
+	public abstract Feed updateItem(Item modifiedItem, FileElement file, Feed feed);
 
 	/**
 	 * Update the feed source mode

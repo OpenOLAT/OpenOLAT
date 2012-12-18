@@ -33,94 +33,46 @@
 				<lookup-method name="getPersistentLockManager" bean="persistentLockManager"/>
 			</bean>
 		</property>
-		
 		<property name="clusterConfig" ref="org.olat.commons.coordinate.cluster.ClusterConfig" />
 		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer" />
 		<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
-		
-		<property name="cacher">
-			<!-- cache config, please note that settings can also stem from the file ehcache.xml (deprecated) -->
-			<bean class="org.olat.core.util.cache.n.impl.cluster.ClusterCacher" init-method="init">
-				<property name="clusterConfig" ref="org.olat.commons.coordinate.cluster.ClusterConfig" />
-				<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
-				<property name="rootConfig">
-					<bean class="org.olat.core.util.cache.n.CacheConfig">
-						<property name="childrenConfig">
-							<map>
-								<entry key="org.olat.login.LoginModule_blockafterfailedattempts" value-ref="org.olat.login.LoginModule_blockafterfailedattempts" />
-								<entry key="org.olat.commons.servlets.RSSServlet_rssdocs" value-ref="org.olat.commons.servlets.RSSServlet_rssdocs"/>
-								<entry key="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"  value-ref="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"/>
-								<entry key="org.olat.modules.wiki.WikiManager_wiki" value-ref="org.olat.modules.wiki.WikiManager_wiki"/>
-								<entry key="org.olat.commons.calendar.ICalFileCalendarManager_calendar" value-ref="org.olat.commons.calendar.ICalFileCalendarManager_calendar" />
-								<entry key="org.olat.course.CourseFactory_courses" value-ref="org.olat.course.CourseFactory_courses" />
-								<entry key="org.olat.collaboration.CollaborationToolsFactory_tools" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
-								<entry key="org.olat.course.assessment.NewCachePersistingAssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
-								<entry key="org.olat.core.util.UserSession" value-ref="org.olat.core.util.UserSession" />
-								<entry key="org.olat.core.modules.glossary.GlossaryItemManager_glossary" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
-								<entry key="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
-								<entry key="org.olat.commons.servlets.WebDAVManagerImpl_webdav" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
-							
-								
-								<!-- 
-									for the cache-test of the cluster admin controller  .
-									this is also a sample how cache parameters can be assigned to a specific resource only.
-								 	// org.olat.commons.coordinate.cluster.jms.ClusterAdminController:cachetest::0@subcachetypetest::123
-								-->
-								<entry key="org.olat.commons.coordinate.cluster.jms.ClusterAdminController_cachetest">
-									<bean class="org.olat.core.util.cache.n.CacheConfig">
-										<!-- no cache needed on this level here, but configure children -->
-										<property name="childrenConfig">
-											<map>
-												<entry key="subcachetypetest::123">
-													<bean class="org.olat.core.util.cache.n.CacheConfig">
-														<!-- for demo reason, let the values expire after 30 seconds -->													
-														<property name="timeToLive" value="30" />
-														<property name="timeToIdle" value="0" />
-														<property name="maxElementsInMemory" value="1" />	
-													</bean>													
-												</entry>
-											</map>
-										</property>							
-									</bean>
-								</entry>
-							</map>
-						</property>
-					</bean>
-				</property>
-			</bean>
-		</property>
+		<property name="cacher" ref="infinispanCacher"/>
 </bean>
 
 <bean id="org.olat.core.util.coordinate.SingleVMCoordinator" class="org.olat.commons.coordinate.singlevm.SingleVMCoordinator" lazy-init="true">
-		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer"/>
-  		<property name="eventBus" ref="org.olat.commons.coordinate.singlevm.SingleVMEventBus"/>
-		<property name="locker" ref="org.olat.commons.coordinate.singlevm.SingleVMLocker"/>
+	<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer"/>
+  <property name="eventBus" ref="org.olat.commons.coordinate.singlevm.SingleVMEventBus"/>
+	<property name="locker" ref="org.olat.commons.coordinate.singlevm.SingleVMLocker"/>
+	<property name="cacher" ref="infinispanCacher"/>
+</bean>
 
-	<property name="cacher">
-			<!-- cache config, please note that settings can also stem from the file ehcache.xml (deprecated) -->
-			<bean class="org.olat.core.util.cache.n.impl.svm.SingleVMCacher" init-method="init">
-				<property name="rootConfig">
-					<bean class="org.olat.core.util.cache.n.CacheConfig">
-						<property name="childrenConfig">
-							<map>
-								<entry key="org.olat.login.LoginModule_blockafterfailedattempts" value-ref="org.olat.login.LoginModule_blockafterfailedattempts" />
-								<entry key="org.olat.commons.servlets.RSSServlet_rssdocs" value-ref="org.olat.commons.servlets.RSSServlet_rssdocs"/>
-								<entry key="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"  value-ref="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"/>
-								<entry key="org.olat.modules.wiki.WikiManager_wiki" value-ref="org.olat.modules.wiki.WikiManager_wiki"/>
-								<entry key="org.olat.commons.calendar.ICalFileCalendarManager_calendar" value-ref="org.olat.commons.calendar.ICalFileCalendarManager_calendar" />
-								<entry key="org.olat.course.CourseFactory_courses" value-ref="org.olat.course.CourseFactory_courses" />
-								<entry key="org.olat.collaboration.CollaborationToolsFactory_tools" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
-								<entry key="org.olat.course.assessment.NewCachePersistingAssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
-								<entry key="org.olat.core.util.UserSession" value-ref="org.olat.core.util.UserSession" />
-								<entry key="org.olat.core.modules.glossary.GlossaryItemManager_glossary" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
-								<entry key="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
-								<entry key="org.olat.commons.servlets.WebDAVManagerImpl_webdav" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
-							</map>
-						</property>
-					</bean>
-				</property>
-			</bean>
-		</property>
+<bean id="infinispanCacheManager" class="org.olat.core.util.cache.n.InfinispanCacheManager">
+	<property name="configuration" value="infinispan-config.xml"/>
+	<property name="jndiName" value="${infinispan.jndi}"/>
+</bean>
+
+<bean id="infinispanCacher" class="org.olat.core.util.cache.n.InfinispanCacher" init-method="init">
+	<constructor-arg index="0" ref="infinispanCacheManager"/>
+	<property name="rootConfig">
+		<bean class="org.olat.core.util.cache.n.CacheConfig">
+			<property name="childrenConfig">
+				<map>
+					<entry key="org.olat.login.LoginModule_blockafterfailedattempts" value-ref="org.olat.login.LoginModule_blockafterfailedattempts" />
+					<entry key="org.olat.commons.servlets.RSSServlet_rssdocs" value-ref="org.olat.commons.servlets.RSSServlet_rssdocs"/>
+					<entry key="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"  value-ref="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"/>
+					<entry key="org.olat.modules.wiki.WikiManager_wiki" value-ref="org.olat.modules.wiki.WikiManager_wiki"/>
+					<entry key="org.olat.commons.calendar.ICalFileCalendarManager_calendar" value-ref="org.olat.commons.calendar.ICalFileCalendarManager_calendar" />
+					<entry key="org.olat.course.CourseFactory_courses" value-ref="org.olat.course.CourseFactory_courses" />
+					<entry key="org.olat.collaboration.CollaborationToolsFactory_tools" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
+					<entry key="org.olat.course.assessment.NewCachePersistingAssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
+					<entry key="org.olat.core.util.UserSession" value-ref="org.olat.core.util.UserSession" />
+					<entry key="org.olat.core.modules.glossary.GlossaryItemManager_glossary" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
+					<entry key="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
+					<entry key="org.olat.commons.servlets.WebDAVManagerImpl_webdav" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
+				</map>
+			</property>
+		</bean>
+	</property>
 </bean>
 	
 	

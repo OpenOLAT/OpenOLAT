@@ -156,6 +156,8 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * @return
 	 */
 	private List<Property> loadPropertiesFor(List<Identity> identities) {
+		if(identities == null || identities.isEmpty()) return Collections.emptyList();
+		
 		ICourse course = CourseFactory.loadCourse(ores);
 		StringBuilder sb = new StringBuilder();
 		sb.append("from org.olat.properties.Property as p")

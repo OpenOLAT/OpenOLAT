@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.mapper.manager.MapperDAO;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
@@ -183,7 +184,7 @@ public class MapperServiceTest extends OlatTestCase {
 	private UserSession createUserSession() {
 		HttpSession httpSession = new MockHttpSession();
 		UserSession userSession = sessionManager.getUserSession(httpSession);
-		SessionInfo infos = new SessionInfo(UUID.randomUUID().toString(), httpSession);
+		SessionInfo infos = new SessionInfo(CodeHelper.getRAMUniqueID(), UUID.randomUUID().toString(), httpSession);
 		userSession.setSessionInfo(infos);
 		//check if our mocked HTTP session makes what we want
 		Assert.assertNotNull(userSession.getSessionInfo());

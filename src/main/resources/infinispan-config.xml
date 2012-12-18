@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="urn:infinispan:config:5.1"
+            xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd">
+   <global>
+      <globalJmxStatistics allowDuplicateDomains="true" />
+   </global>
+
+   <default>
+      <!-- Used to register JMX statistics in any available MBean server -->
+      <jmxStatistics enabled="true"/>
+      
+   </default>
+   
+	<namedCache name="InfinispanCacher@org.olat.core.dispatcher.mapper.MapperService_mapper__0">
+		<eviction maxEntries="1000" strategy="LRU"/>
+		<expiration maxIdle="300000" wakeUpInterval="5000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+   
+	<namedCache name="InfinispanCacher@org.olat.modules.openmeetings.manager.OpenMeetingsManager_session__0">
+		<eviction maxEntries="1000" strategy="LRU"/>
+		<expiration maxIdle="900000" wakeUpInterval="5000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+   
+	<namedCache name="InfinispanCacher@org.olat.commons.servlets.RSSServlet_rssdocs__0">
+		<eviction maxEntries="1000" strategy="LRU"/>
+		<expiration maxIdle="900000" wakeUpInterval="5000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
+	<namedCache name="InfinispanCacher@org.olat.core.util.session.UserSessionManager_usersession__0">
+		<eviction strategy="NONE"/>
+		<expiration lifespan="-1" maxIdle="-1"/>
+		<transaction transactionMode="TRANSACTIONAL" />
+	</namedCache>
+	
+	<!-- 
+	Hibernate cache
+	 -->
+
+   <!-- Default configuration is appropriate for entity/collection caching. -->
+   <namedCache name="entity">
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <!-- Eviction configuration.  WakeupInterval defines how often the eviction thread runs, in milliseconds.  
+           0 means the eviction thread will never run.  A separate executor is used for eviction in each cache. -->
+      <eviction maxEntries="10000" strategy="LRU"/>
+      <expiration maxIdle="100000" wakeUpInterval="5000"/>
+      <transaction transactionMode="NON_TRANSACTIONAL" />
+   </namedCache>
+
+   <!-- Default configuration is appropriate for entity/collection caching. -->
+   <namedCache name="entity-repeatable">
+      <locking isolationLevel="REPEATABLE_READ" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <!-- Eviction configuration.  WakeupInterval defines how often the eviction thread runs, in milliseconds.  
+           0 means the eviction thread will never run.  A separate executor is used for eviction in each cache. -->
+      <eviction maxEntries="10000" strategy="LRU"/>
+      <expiration maxIdle="100000" wakeUpInterval="5000"/>
+      <transaction transactionMode="NON_TRANSACTIONAL"/>
+   </namedCache>
+
+   <!-- A config appropriate for query caching. Does not replicate queries. -->
+   <namedCache name="local-query">
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000"
+               lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <!--Eviction configuration.  WakeupInterval defines how often the eviction thread runs, in milliseconds.  0 means
+         the eviction thread will never run.  A separate executor is used for eviction in each cache. -->
+      <eviction maxEntries="10000" strategy="LRU"/>
+      <expiration maxIdle="100000" wakeUpInterval="5000"/>
+      <transaction transactionMode="NON_TRANSACTIONAL" />
+   </namedCache>
+
+   <!-- Optimized for timestamp caching. A clustered timestamp cache
+        is required if query caching is used, even if the query cache
+        itself is configured with CacheMode=LOCAL. -->
+   <namedCache name="timestamps">
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <lazyDeserialization enabled="true"/>
+      <!--  Don't ever evict modification timestamps -->
+      <eviction strategy="NONE"/>
+      <expiration wakeUpInterval="0"/>
+      <!-- Explicitly non transactional -->
+      <transaction transactionMode="NON_TRANSACTIONAL"/>
+   </namedCache>
+
+</infinispan>

@@ -7,7 +7,7 @@
 
   <class name="org.olat.catalog.CatalogEntryImpl" table="o_catentry">
     
-	<cache usage="read-write" />
+	<cache usage="transactional" />
 
     <id name="key" column="id" type="long" unsaved-value="null">
       <generator class="hilo"/>

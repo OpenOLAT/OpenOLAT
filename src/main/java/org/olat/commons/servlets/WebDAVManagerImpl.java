@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -191,7 +190,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 					//usess.getIdentityEnvironment().setAuthProvider(OLATAuthenticationController.PROVIDER_OLAT);
 				
 					// set session info
-					SessionInfo sinfo = new SessionInfo(identity.getName(), request.getSession());
+					SessionInfo sinfo = new SessionInfo(identity.getKey(), identity.getName(), request.getSession());
 					User usr = identity.getUser();
 					sinfo.setFirstname(usr.getProperty(UserConstants.FIRSTNAME, null));
 					sinfo.setLastname(usr.getProperty(UserConstants.LASTNAME, null));

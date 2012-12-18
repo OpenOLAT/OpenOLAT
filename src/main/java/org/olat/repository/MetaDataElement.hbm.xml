@@ -3,7 +3,7 @@
 <hibernate-mapping default-lazy="false">
 	<class name="org.olat.repository.MetaDataElement" table="o_repositorymetadata">
 	
-		<cache usage="read-write" />
+		<cache usage="transactional" />
 
 		<id name="key" column="metadataelement_id" type="long" unsaved-value="null">
 			<generator class="hilo"/>

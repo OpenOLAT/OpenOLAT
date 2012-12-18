@@ -9,7 +9,7 @@
 	<!-- IMPORTANT : DO NOT CHANGE SEQUENCE OF XML TYPES BECAUSE VALIDATION MAY FAIL  -->
 	<!-- Please check before checkin http://www.xmlvalidation.com/index.php           -->
 	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  -->
-
+	<distributable/>
 	<display-name>OLAT Online Learning and Training</display-name>
 	<description>
      Online Learning and Training Application (OLAT) is a Learning Management Platform.

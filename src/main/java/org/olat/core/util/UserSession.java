@@ -74,18 +74,18 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private static final long serialVersionUID = 1975177605776990868L;
 
 	// the environment (identity, locale, ..) of the identity
-	private IdentityEnvironment identityEnvironment;
-	private SessionInfo sessionInfo;
-	private Map<String,Object> store;
+	private transient IdentityEnvironment identityEnvironment;
+	private transient SessionInfo sessionInfo;
+	private transient Map<String,Object> store;
 	/**
 	 * things to put into that should not be clear when signing on (e.g. remember url for a direct jump)
 	 */
-	private Map<String,Object> nonClearedStore = new HashMap<String,Object>();
+	private transient Map<String,Object> nonClearedStore = new HashMap<String,Object>();
 	private boolean authenticated = false;
-	private Preferences guiPreferences;
-	private EventBus singleUserSystemBus;
+	private transient  Preferences guiPreferences;
+	private transient  EventBus singleUserSystemBus;
 	private List<String> chats;
-	private Stack<HistoryPoint> history = new Stack<HistoryPoint>();
+	private transient Stack<HistoryPoint> history = new Stack<HistoryPoint>();
 
 	public UserSession() {
 		init();

@@ -40,7 +40,10 @@ import org.olat.core.id.OLATResourceable;
  * Initial Date:  03.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public interface CacheWrapper {
+public interface CacheWrapper<U> {
+	
+	
+	public boolean containsKey(U key);
 
 	/**
 	 * 
@@ -48,7 +51,7 @@ public interface CacheWrapper {
 	 * @return the cache entry or null when the element has expired, never been put into yet, or removed due to max-size, 
 	 * 	or a put in a different cluster node which led to an invalidate message
 	 */
-	public Serializable get(String key);
+	public Serializable get(U key);
 	
 	/**
 	 * o_clusterREVIEW :pb  review references
@@ -61,7 +64,7 @@ public interface CacheWrapper {
 	 * @param key
 	 * @param value
 	 */
-	public void update(String key, Serializable value);	
+	public void update(U key, Serializable value);	
 	
 	/**
 	 * use this put whenever you just fill up a cache from data which is already on the db or the filesystem. e.g. use it when you simply load some properties again into cache.
@@ -85,21 +88,15 @@ public interface CacheWrapper {
 	 * @param value
 	 *
 	 */
-	public void put(String key, Serializable value);
-	
-	/**
-	 * puts several values at once into the cache. same as repeatably
-	 * calling put(key, value), but more efficient. please use in favor of put if applicable.
-	 * @param keys the array of keys
-	 * @param values the array of values
-	 */
-	public void updateMulti(String[] keys, Serializable[] values);
+	public void put(U key, Serializable value);
 	
 	/**
 	 * removes a value from the cache. this method is thread-safe
 	 * @param key
 	 */
-	public void remove(String key);
+	public void remove(U key);
+	
+	public int size();
 	
 	/**
 	 * this method is thread safe.

@@ -38,6 +38,8 @@ import java.io.Serializable;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class ClusterConfig implements Serializable {
+
+	private static final long serialVersionUID = 2413005126081334743L;
 	private Integer nodeId;
 	private long startupTime;
 

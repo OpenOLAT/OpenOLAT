@@ -578,12 +578,12 @@ public class FeedManagerImpl extends FeedManager {
 	 *      org.olat.modules.webFeed.models.Feed)
 	 */
 	@Override
-	public void remove(final Item item,  final Feed feed) {		
+	public Feed remove(final Item item,  final Feed feed) {		
 		// synchronize all feed item CUD operations on this feed to prevend
 		// overwriting of changes
 		// o_clusterOK by:fg
-		coordinator.getSyncer().doInSync(feed, new SyncerCallback<Object>() {
-			public VFSLeaf execute() {
+		return coordinator.getSyncer().doInSync(feed, new SyncerCallback<Feed>() {
+			public Feed execute() {
 				// reload feed to prevent stale feed overwriting
 				@SuppressWarnings("synthetic-access")
 				Feed reloadedFeed = getFeed(feed, false);
@@ -613,7 +613,7 @@ public class FeedManagerImpl extends FeedManager {
 					commentAndRatingService.deleteAll();
 				}
 				// 
-				return null;
+				return reloadedFeed;
 			}
 		});
 	}
@@ -624,14 +624,14 @@ public class FeedManagerImpl extends FeedManager {
 	 *      org.olat.modules.webFeed.models.Feed)
 	 */
 	@Override
-	public void addItem(final Item item, final FileElement file, final Feed feed) {
+	public Feed addItem(final Item item, final FileElement file, final Feed feed) {
 		if (feed.isInternal()) {
 			// synchronize all feed item CUD operations on this feed to prevent
 			// overwriting of changes
 			// o_clusterOK by:fg
-			coordinator.getSyncer().doInSync(feed, new SyncerCallback<Object>() {
+			return coordinator.getSyncer().doInSync(feed, new SyncerCallback<Feed>() {
 				@SuppressWarnings("synthetic-access")
-				public VFSLeaf execute() {
+				public Feed execute() {
 					// reload feed to prevent stale feed overwriting
 					Feed reloadedFeed = getFeed(feed, false);
 					// Set the current date as published date.
@@ -651,10 +651,11 @@ public class FeedManagerImpl extends FeedManager {
 
 					// Save the feed (needed because of itemIds list)
 					update(reloadedFeed, false);
-					return null;
+					return reloadedFeed;
 				}
 			});
 		}
+		return null;
 	}
 
 	/**
@@ -919,14 +920,14 @@ public class FeedManagerImpl extends FeedManager {
 	 *      org.olat.modules.webFeed.models.Feed)
 	 */
 	@Override
-	public void updateItem(final Item item, final FileElement file, final Feed feed) {
+	public Feed updateItem(final Item item, final FileElement file, final Feed feed) {
 		if (feed.isInternal()) {
 			// synchronize all feed item CUD operations on this feed to prevent
 			// overwriting of changes
 			// o_clusterOK by:fg
-			coordinator.getSyncer().doInSync(feed, new SyncerCallback<Object>() {
+			return coordinator.getSyncer().doInSync(feed, new SyncerCallback<Feed>() {
 				@SuppressWarnings("synthetic-access")
-				public VFSLeaf execute() {
+				public Feed execute() {
 					// reload feed to prevent stale feed overwriting
 					Feed reloadedFeed = getFeed(feed, false);
 					if (reloadedFeed.getItemIds().contains(item.getGuid())) {
@@ -938,10 +939,11 @@ public class FeedManagerImpl extends FeedManager {
 					} else {
 						// do nothing, item was deleted by someone in the meantime
 					}
-					return null;
+					return reloadedFeed;
 				}
 			});			
 		}
+		return null;
 	}
 
 	/**

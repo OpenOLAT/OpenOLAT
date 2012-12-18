@@ -27,9 +27,6 @@ package org.olat.core.util.cache.n;
 
 import java.util.Map;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
-
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 
@@ -48,7 +45,7 @@ import org.olat.core.util.resource.OresHelper;
 public class CacheConfig {
 	
 	private int maxElementsInMemory = 10000;
-	private MemoryStoreEvictionPolicy memoryStoreEvictionPolicy = MemoryStoreEvictionPolicy.LRU;
+	//private MemoryStoreEvictionPolicy memoryStoreEvictionPolicy = MemoryStoreEvictionPolicy.LRU;
 	private boolean overflowToDisk = false;
 	private boolean diskPersistent = false;
 	private String diskStorePath;
@@ -68,7 +65,7 @@ public class CacheConfig {
 	 */
 	private CacheConfig(CacheConfig config) {
 		this.maxElementsInMemory = config.maxElementsInMemory;
-		this.memoryStoreEvictionPolicy = config.memoryStoreEvictionPolicy;
+		//this.memoryStoreEvictionPolicy = config.memoryStoreEvictionPolicy;
 		this.overflowToDisk = config.overflowToDisk;
 		this.diskPersistent = config.diskPersistent;
 		this.diskStorePath = config.diskStorePath;
@@ -95,9 +92,9 @@ public class CacheConfig {
 	 * constants defined in EHCache's MemoryStoreEvictionPolicy class.
 	 * Default is "LRU".
 	 */
-	public void setMemoryStoreEvictionPolicy(MemoryStoreEvictionPolicy memoryStoreEvictionPolicy) {
+	/*public void setMemoryStoreEvictionPolicy(MemoryStoreEvictionPolicy memoryStoreEvictionPolicy) {
 		this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
-	}
+	}*/
 
 	/**
 	 * Set whether elements can overflow to disk when the in-memory cache
@@ -164,13 +161,6 @@ public class CacheConfig {
 	public void setChildrenConfig(Map<String, CacheConfig> childrenConfig) {
 		this.childrenConfig = childrenConfig;
 	}
-
-	private Cache doCreateCache(String cacheName) {
-		return new Cache(
-				cacheName, this.maxElementsInMemory, this.memoryStoreEvictionPolicy,
-				this.overflowToDisk, this.diskStorePath, this.eternal, this.timeToLive, this.timeToIdle,
-				this.diskPersistent, this.diskExpiryThreadIntervalSeconds, null);
-	}
 	
 	public CacheConfig createConfigFor(OLATResourceable ores) {
 		// we will first try to use the type together with the key for the lookup. if that fails, we lookup the config for the type.
@@ -192,15 +182,6 @@ public class CacheConfig {
 		// clone the config, so that it is independent.
 		return new CacheConfig(cc);
 	}
-	
-	/**
-	 * creates a cache with this cache config (does not register it with the ehcache cachemanager). changing the config later does not affect already created caches, only cache created afterwards.
-	 * @param cacheName
-	 * @return
-	 */
-	public Cache createCache(String cacheName) {
-		return doCreateCache(cacheName);
-	}
 
 	/**
 	 * Return Cache-name for given class and name
@@ -208,7 +189,7 @@ public class CacheConfig {
 	 * @param name        Cache-name 
 	 * @return
 	 */
-	public static String getCacheName(Class ownerClass, String name) {
+	public static String getCacheName(Class<?> ownerClass, String name) {
 		String cacheName = ownerClass.getName();
 		if (name != null) {
 			cacheName = cacheName +"_"+name;
