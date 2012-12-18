@@ -82,6 +82,12 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		// no update to default config necessary
 	}
+	
+	@Override
+	protected String getDefaultTitleOption() {
+		// default is to only display content because the room has its own room title
+		return CourseNode.DISPLAY_OPTS_CONTENT;
+	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
