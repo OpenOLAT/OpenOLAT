@@ -19,6 +19,7 @@
  */
 package org.olat.admin.sysinfo;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.olat.admin.AdminModule;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
@@ -137,14 +138,22 @@ public class UserSessionConfigAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == saveLink) {
+			// make sure the value is really an integer, user current value as default
+			sessionTimeoutEl.setIntValue(NumberUtils.toInt(sessionTimeoutEl.getValue(), sessionModule.getSessionTimeout())); 
 			int sessionTimeout = sessionTimeoutEl.getIntValue();
 			sessionModule.setSessionTimeout(sessionTimeout);
+			// make sure the value is really an integer, user current value as default
+			sessionTimeoutAuthEl.setIntValue(NumberUtils.toInt(sessionTimeoutAuthEl.getValue(), sessionModule.getSessionTimeoutAuthenticated())); 
 			int sessionTimeoutAuth = sessionTimeoutAuthEl.getIntValue();
 			sessionModule.setSessionTimeoutAuthenticated(sessionTimeoutAuth);
+			// make sure the value is really an integer, user 0 as default to indicate no limitation
+			maxSessionsEl.setIntValue(NumberUtils.toInt(maxSessionsEl.getValue(), 0)); 
 			int maxSessions = maxSessionsEl.getIntValue();
 			adminModule.setMaxSessions(maxSessions);
 			sessionManager.setGlobalSessionTimeout(sessionTimeoutAuth);
 		} else if(source == invalidateOldSessionLink) {
+			// make sure the value is really an integer, user 0 as default
+			nbrSessionsEl.setIntValue(NumberUtils.toInt(nbrSessionsEl.getValue(), 0)); 
 			int nbrSessions = nbrSessionsEl.getIntValue();
 			int nbrOfInvalidatedSessions = sessionManager.invalidateOldestSessions(nbrSessions);
 			showInfo("invalidate.session.done", Integer.toString(nbrOfInvalidatedSessions));
