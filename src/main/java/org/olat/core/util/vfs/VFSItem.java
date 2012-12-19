@@ -72,12 +72,21 @@ public interface VFSItem {
 	public VFSStatus rename(String newname);
 	
 	/**
-	 * deltes the item. if the item is a container, all children will be deleted recursively
+	 * Deletes the item. If the item is a container, all children will be deleted recursively
 	 * @return status
 	 */
 	public VFSStatus delete();
-
 	
+	/**
+	 * Delete the items and by pass versioning if enabled
+	 * @return
+	 */
+	public VFSStatus deleteSilently();
+
+	/**
+	 * @return True if the file exists
+	 */
+	public boolean exists();
 	
 	/**
 	 * @return if can write

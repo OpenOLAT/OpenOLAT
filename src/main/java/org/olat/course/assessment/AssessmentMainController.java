@@ -195,8 +195,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 		this.stackPanel = stackPanel;
 		this.ores = ores;
 		this.callback = assessmentCallback;
-		localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>();
-		initialLaunchDates = new HashMap<Long,Date>();
+		localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>(10000);
+		initialLaunchDates = new HashMap<Long,Date>(10000);
 		
     //use the PropertyHandlerTranslator	as tableCtr translator
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
@@ -442,7 +442,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 					// cast should be save, only assessable nodes are selectable
 					if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
 						identitiesList = getAllAssessableIdentities();
-						doUserChooseWithData(ureq, this.identitiesList, null, currentCourseNode);
+						doUserChooseWithData(ureq, identitiesList, null, currentCourseNode);
 					} else {
 						doGroupChoose(ureq);
 					}
@@ -581,7 +581,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		List<Identity> usersList = secMgr.getIdentitiesOfSecurityGroups(secGroups);
 
-		if(callback.mayViewAllUsersAssessments()) {
+		if(callback.mayViewAllUsersAssessments() && usersList.size() < 500) {
 			ICourse course = CourseFactory.loadCourse(ores);
 			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 			List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(usersList);
@@ -705,6 +705,12 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 					localUserCourseEnvironmentCache, initialLaunchDates, course, courseNode);
 			wrappedIdentities.add(aiw);
 		}
+		
+		if(userListCtr == null) {
+			//takes too long -> controller disposed
+			return;
+		}
+		
 		// Add the wrapped identities to the table data model
 		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, ureq.getLocale(), isAdministrativeUser, mode == MODE_USERFOCUS);
 		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS);
@@ -1107,9 +1113,10 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 			ICourse course = CourseFactory.loadCourse(ores);
 			// 1) preload assessment cache with database properties
 			long start = 0;
-			boolean logDebug = log.isDebug();
+			boolean logDebug = true || log.isDebug();
 			if(logDebug) start = System.currentTimeMillis();
 			List<Identity> identities = getAllAssessableIdentities();
+			course.getCourseEnvironment().getAssessmentManager().preloadCache(identities);
 
 			UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 			initialLaunchDates.putAll(mgr.getInitialLaunchDates(course.getResourceableId(), identities));
@@ -1119,7 +1126,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 				if (Thread.interrupted()) break;
 			}
 			if (logDebug) {
-				log.debug("Preloading of user course environment cache for course::" + course.getResourceableId() + " for "
+				log.info("Preloading of user course environment cache for course::" + course.getResourceableId() + " for "
 						+ localUserCourseEnvironmentCache.size() + " user course environments. Loading time::" + (System.currentTimeMillis() - start)
 						+ "ms");
 			}

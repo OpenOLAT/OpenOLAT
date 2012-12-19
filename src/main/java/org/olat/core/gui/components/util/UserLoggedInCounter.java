@@ -21,10 +21,11 @@
 
 package org.olat.core.gui.components.util;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * <h3>Description:</h3>
@@ -45,7 +46,7 @@ public class UserLoggedInCounter extends Component {
 	 */
 	public UserLoggedInCounter() {
 		super("UserCounter");
-		this.currentCount = UserSession.getUserSessionWebCounter();
+		this.currentCount = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionWebCounter();
 		this.setSpanAsDomReplaceable(true);
 	}
 	
@@ -55,7 +56,7 @@ public class UserLoggedInCounter extends Component {
 	@Override
 	public boolean isDirty() {
 		int lastCount = currentCount;
-		currentCount = UserSession.getUserSessionWebCounter();
+		currentCount = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionWebCounter();
 		return (currentCount != lastCount);
 	}
 

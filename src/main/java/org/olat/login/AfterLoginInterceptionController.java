@@ -35,8 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.WizardInfoController;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -56,7 +55,7 @@ import org.olat.properties.PropertyManager;
  */
 public class AfterLoginInterceptionController extends BasicController {
 
-	private CloseableModalWindowWrapperController cmc;
+	private CloseableModalController cmc;
 	private WizardInfoController wiz;
 	private VelocityContainer vC;
 	private Panel actualPanel;
@@ -71,8 +70,7 @@ public class AfterLoginInterceptionController extends BasicController {
 	private static final String CONTROLLER = "controller-instance";
 	private static final String FORCEUSER_KEY = "forceUser";
 	private static final String REDOTIMEOUT_KEY = "redoTimeout";
-	private static final String I18NINTRO_KEY = "i18nIntro";
-	private static final String SIZE_KEY = "size"; 
+	private static final String I18NINTRO_KEY = "i18nIntro"; 
 	protected static final String ORDER_KEY = "order";
 	
 	private static final String PROPERTY_CAT = "afterLogin";
@@ -155,11 +153,8 @@ public class AfterLoginInterceptionController extends BasicController {
 		putControllerToPanel(ureq, wControl, 0);
 		vC.put("actualPanel", actualPanel);
 
-		cmc = new CloseableModalWindowWrapperController(ureq, getWindowControl(), translate("runonce.title"), vC, "interceptionPopup");
-		cmc.setCloseable(false);
-		cmc.setIgnoreCookie(true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), vC, true, translate("runonce.title"), false);	
 		cmc.activate();
-		setPopupSizeForCtr(0);
 		listenTo(cmc);
 		// if controller could not be created, go to the next one ore close the wizzard 
 		if (actCtrl == null) activateNextOrCloseModal(ureq); 
@@ -177,21 +172,6 @@ public class AfterLoginInterceptionController extends BasicController {
 			if (prop.getName().equals(ctrlName)) { return Boolean.parseBoolean(prop.getStringValue()); }
 		}
 		return false;
-	}
-	
-	/**
-	 * 
-	 */
-	private void setPopupSizeForCtr(int ctrNr){
-		if (cmc != null){
-			Map<String, Object> mapEntry = aftctrls.get(ctrNr);
-			if (mapEntry.containsKey(SIZE_KEY)) {
-				String[] size = mapEntry.get(SIZE_KEY).toString().split("x");
-				cmc.resizeWindow(Integer.parseInt(size[0]), Integer.parseInt(size[1]));
-			}else{
-				cmc.setInitialWindowSize(300,	 400);
-			}
-		}
 	}
 	
 	private void saveOrUpdatePropertyForController(UserRequest ureq, String ctrlName) {
@@ -236,7 +216,6 @@ public class AfterLoginInterceptionController extends BasicController {
 			vC.contextPut("introPkg", introComb[0]);
 			vC.contextPut("introKey", introComb[1]);
 		}
-		setPopupSizeForCtr(ctrNr);
 		actualPanel.setContent(actCtrl.getInitialComponent());
 	}
 
@@ -256,7 +235,6 @@ public class AfterLoginInterceptionController extends BasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Component source, Event event) {
 	// no such events
 	}
@@ -267,7 +245,7 @@ public class AfterLoginInterceptionController extends BasicController {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == cmc && event == CloseableModalWindowController.CLOSE_WINDOW_EVENT && actualForceUser) {
+		if (source == cmc && event == CloseableModalController.CLOSE_MODAL_EVENT && actualForceUser) {
 			// show warning if this is a task, where user is forced to do it
 			showWarning("runonce.forced");
 			cmc.activate();
@@ -287,8 +265,9 @@ public class AfterLoginInterceptionController extends BasicController {
 		}
 	}
 	
-	
-	// fxdiff: failsafe continueing
+	/**
+	 * failsafe continuing
+	 */
 	private void activateNextOrCloseModal(UserRequest ureq){
 		if ((actualCtrNr + 1) < aftctrls.size()) {
 			putControllerToPanel(ureq, getWindowControl(), actualCtrNr + 1);
@@ -298,5 +277,4 @@ public class AfterLoginInterceptionController extends BasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
-
 }

@@ -54,6 +54,7 @@ import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -762,8 +763,8 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 
 		if (dropboxDir.exists() || solutionDir.exists() || returnboxDir.exists() || hasTask.booleanValue()){
 			// Create Temp Dir for zipping
-			String tmpDirPath = FolderConfig.getCanonicalTmpDir() + course.getCourseEnvironment().getCourseBaseContainer().getRelPath();
-			File tmpDir = new File( tmpDirPath );
+			String tmpDirPath = WebappHelper.getTmpDir() + course.getCourseEnvironment().getCourseBaseContainer().getRelPath();
+			File tmpDir = new File(tmpDirPath);
 			
 			if (!tmpDir.exists()) {
 			  tmpDir.mkdirs();
@@ -866,13 +867,11 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 				  fDropBoxArchiveDir.mkdir();
 			  }
 			  File archiveDir = new File(fDropBoxArchiveDir, zipName);
-	
-			
 			  // zip
 			  dataFound &= ZipUtil.zip(fileList, tmpDir, archiveDir, true);
 			  // Delete all temp files
-			  FileUtils.deleteDirsAndFiles( tmpDir, true, true);
 			}
+		  FileUtils.deleteDirsAndFiles( tmpDir, true, true);
 		}	
   	return dataFound;
 	}

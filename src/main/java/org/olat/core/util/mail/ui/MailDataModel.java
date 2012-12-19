@@ -44,7 +44,7 @@ import org.olat.core.util.mail.model.DBMailRecipient;
  * Initial Date:  28 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MailDataModel implements TableDataModelWithMarkableRows {
+public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
 	
 	private boolean outbox;
 	private List<DBMail> mails;
@@ -154,7 +154,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows {
 	}
 
 	@Override
-	public void setObjects(List objects) {
+	public void setObjects(List<DBMail> objects) {
 		mails = objects;
 		filteredMails = null;
 	}

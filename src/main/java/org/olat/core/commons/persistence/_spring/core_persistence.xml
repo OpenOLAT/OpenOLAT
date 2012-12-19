@@ -52,6 +52,7 @@
 		<mapping-file>org/olat/modules/fo/ForumImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/fo/MessageImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/fo/ReadMessage.hbm.xml</mapping-file>
+		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 		<mapping-file>org/olat/catalog/CatalogEntryImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/bookmark/BookmarkImpl.hbm.xml</mapping-file>

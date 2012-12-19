@@ -65,9 +65,8 @@ public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 	
 	@Override
 	public boolean isEnabled() {
-		ViteroModule viteroModule = (ViteroModule) CoreSpringFactory.getBean("viteroModule");
-		if (!viteroModule.isEnabled()) return false;
-		else return super.isEnabled();
+		ViteroModule viteroModule = CoreSpringFactory.getImpl(ViteroModule.class);
+		return viteroModule.isEnabled();
 	}
 
 	public String getName() {

@@ -27,9 +27,10 @@ package org.olat.admin.jmx.datasources;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.control.DefaultController;
-import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * Description:<br>
@@ -51,7 +52,7 @@ public class ThreadAndControllerInfo {
 	}
 		
 	public int getAuthenticatedNodeUsersCount() {
-		return UserSession.getAuthenticatedUserSessions().size();
+		return CoreSpringFactory.getImpl(UserSessionManager.class).getNumberOfAuthenticatedUserSessions();
 	}
 		
 	public long getMemoryHeapUsageKB() {

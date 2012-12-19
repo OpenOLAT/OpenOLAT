@@ -53,7 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InfoManagerTest extends OlatTestCase {
 	
-	private static Identity id1, id2;
+	private static Identity id1;
 	
 	
 	@Autowired
@@ -70,7 +70,7 @@ public class InfoManagerTest extends OlatTestCase {
 	public void setUp() throws Exception {
 		if(id1 == null) {
 			id1 = JunitTestHelper.createAndPersistIdentityAsUser("info-msg-1");
-			id2 = JunitTestHelper.createAndPersistIdentityAsUser("info-msg-2");
+			JunitTestHelper.createAndPersistIdentityAsUser("info-msg-2");
 		}
 	}
 	

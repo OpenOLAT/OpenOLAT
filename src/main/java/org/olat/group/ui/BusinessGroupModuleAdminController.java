@@ -19,60 +19,233 @@
  */
 package org.olat.group.ui;
 
+import java.util.Set;
+
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.progressbar.ProgressController;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.async.ProgressDelegate;
 import org.olat.group.BusinessGroupModule;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.ui.main.DedupMembersConfirmationController;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupModuleAdminController extends FormBasicController {
+public class BusinessGroupModuleAdminController extends FormBasicController implements ProgressDelegate {
 	
+	private FormLink dedupLink, optionLink, privacyLink;
 	private MultipleSelectionElement allowEl;
+	private MultipleSelectionElement enrolmentEl;
+	private MultipleSelectionElement membershipEl;
+
+	private Panel mainPopPanel;
+	private CloseableModalController cmc;
+	private ProgressController progressCtrl;
+	private DedupMembersConfirmationController dedupCtrl;
 	
 	private final BusinessGroupModule module;
+	private final BusinessGroupService businessGroupService;
 	private String[] onKeys = new String[]{"user","author"};
+	private String[] enrollmentKeys = new String[]{
+			"users","authors", "usermanagers", "groupmanagers", "administrators"
+	};
 	
 	public BusinessGroupModuleAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, "bg_admin");
 		module = CoreSpringFactory.getImpl(BusinessGroupModule.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("module.admin.title");
-		setFormDescription("module.admin.desc");
-		
+		FormLayoutContainer optionsContainer = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
+		formLayout.add(optionsContainer);
 		String[] values = new String[]{
 				translate("user.allow.create"),
 				translate("author.allow.create")
 		};
-		allowEl = uifactory.addCheckboxesVertical("module.admin.allow.create", formLayout, onKeys, values, null, 1);
+		allowEl = uifactory.addCheckboxesVertical("module.admin.allow.create", optionsContainer, onKeys, values, null, 1);
 		allowEl.select("user", module.isUserAllowedCreate());
 		allowEl.select("author", module.isAuthorAllowedCreate());
 		
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("module.buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
-		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("ok", "ok", formLayout);
+		optionsContainer.add(buttonsContainer);
+		optionLink = uifactory.addFormLink("ok", "ok", null, buttonsContainer, Link.BUTTON);
+		
+		FormLayoutContainer privacyOptionsContainer = FormLayoutContainer.createDefaultFormLayout("privacy_options", getTranslator());
+		formLayout.add(privacyOptionsContainer);
+		String[] enrollmentValues = new String[]{
+				translate("enrolment.email.users"),
+				translate("enrolment.email.authors"),
+				translate("enrolment.email.usermanagers"),
+				translate("enrolment.email.groupmanagers"),
+				translate("enrolment.email.administrators")
+		};
+		enrolmentEl = uifactory.addCheckboxesVertical("mandatory.enrolment", privacyOptionsContainer, enrollmentKeys, enrollmentValues, null, 1);
+		enrolmentEl.select("users", "true".equals(module.getMandatoryEnrolmentEmailForUsers()));
+		enrolmentEl.select("authors", "true".equals(module.getMandatoryEnrolmentEmailForAuthors()));
+		enrolmentEl.select("usermanagers", "true".equals(module.getMandatoryEnrolmentEmailForUsermanagers()));
+		enrolmentEl.select("groupmanagers", "true".equals(module.getMandatoryEnrolmentEmailForGroupmanagers()));
+		enrolmentEl.select("administrators", "true".equals(module.getMandatoryEnrolmentEmailForAdministrators()));
+		
+		String[] membershipValues = new String[]{
+				translate("enrolment.email.users"),
+				translate("enrolment.email.authors"),
+				translate("enrolment.email.usermanagers"),
+				translate("enrolment.email.groupmanagers"),
+				translate("enrolment.email.administrators")
+		};
+		membershipEl = uifactory.addCheckboxesVertical("mandatory.membership", privacyOptionsContainer, enrollmentKeys, membershipValues, null, 1);
+		membershipEl.select("users", "true".equals(module.getAcceptMembershipForUsers()));
+		membershipEl.select("authors", "true".equals(module.getAcceptMembershipForAuthors()));
+		membershipEl.select("usermanagers", "true".equals(module.getAcceptMembershipForUsermanagers()));
+		membershipEl.select("groupmanagers", "true".equals(module.getAcceptMembershipForGroupmanagers()));
+		membershipEl.select("administrators", "true".equals(module.getAcceptMembershipForAdministrators()));
+		
+		FormLayoutContainer buttonsPrivacyContainer = FormLayoutContainer.createButtonLayout("module.buttons.privacy", getTranslator());
+		buttonsPrivacyContainer.setRootForm(mainForm);
+		privacyOptionsContainer.add(buttonsPrivacyContainer);
+		privacyLink = uifactory.addFormLink("ok", "ok", "", buttonsPrivacyContainer, Link.BUTTON);
+		
+
+		FormLayoutContainer dedupCont = FormLayoutContainer.createDefaultFormLayout("dedup", getTranslator());
+		formLayout.add(dedupCont);
+		dedupLink = uifactory.addFormLink("dedup.members", dedupCont, Link.BUTTON);
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == dedupCtrl) {
+			boolean coaches = dedupCtrl.isDedupCoaches();
+			boolean participants = dedupCtrl.isDedupParticipants();
+			if(event == Event.DONE_EVENT) {
+				dedupMembers(ureq, coaches, participants);
+			} else {
+				cmc.deactivate();
+				cleanUp();
+			}
+		} else if(source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(dedupCtrl);
+		removeAsListenerAndDispose(progressCtrl);
+		removeAsListenerAndDispose(cmc);
+		progressCtrl = null;
+		dedupCtrl = null;
+		cmc = null;
+	}
+	
+	
+
+	@Override
+	public void setMax(float max) {
+		if(progressCtrl != null) {
+			progressCtrl.setMax(max);
+		}
+	}
+
+	@Override
+	public void setActual(float value) {
+		if(progressCtrl != null) {
+			progressCtrl.setActual(value);
+		}
+	}
+
+	@Override
+	public void setInfo(String message) {
+		if(progressCtrl != null) {
+			progressCtrl.setInfo(message);
+		}
+	}
+
+	@Override
+	public void finished() {
+		cmc.deactivate();
+		cleanUp();
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == dedupLink) {
+			doDedupMembers(ureq);
+		} else if(source == optionLink) {
+			module.setUserAllowedCreate(allowEl.isSelected(0));
+			module.setAuthorAllowedCreate(allowEl.isSelected(1));
+		} else if(source == privacyLink) {
+			Set<String> membershipSelectedKeys = membershipEl.getSelectedKeys();
+			module.setAcceptMembershipForUsers(membershipSelectedKeys.contains("users") ? "true" : "false");
+			module.setAcceptMembershipForAuthors(membershipSelectedKeys.contains("authors") ? "true" : "false");
+			module.setAcceptMembershipForUsermanagers(membershipSelectedKeys.contains("usermanagers") ? "true" : "false");
+			module.setAcceptMembershipForGroupmanagers(membershipSelectedKeys.contains("groupmanagers") ? "true" : "false");
+			module.setAcceptMembershipForAdministrators(membershipSelectedKeys.contains("administrators") ? "true" : "false");
+
+			Set<String> enrolmentSelectedKeys = enrolmentEl.getSelectedKeys();
+			module.setMandatoryEnrolmentEmailForUsers(enrolmentSelectedKeys.contains("users") ? "true" : "false");
+			module.setMandatoryEnrolmentEmailForAuthors(enrolmentSelectedKeys.contains("authors") ? "true" : "false");
+			module.setMandatoryEnrolmentEmailForUsermanagers(enrolmentSelectedKeys.contains("usermanagers") ? "true" : "false");
+			module.setMandatoryEnrolmentEmailForGroupmanagers(enrolmentSelectedKeys.contains("groupmanagers") ? "true" : "false");
+			module.setMandatoryEnrolmentEmailForAdministrators(enrolmentSelectedKeys.contains("administrators") ? "true" : "false");
+		} else {
+			super.formInnerEvent(ureq, source, event);
+		}
+	}
+	
+	protected void doDedupMembers(UserRequest ureq) {
+		dedupCtrl = new DedupMembersConfirmationController(ureq, getWindowControl());
+		listenTo(dedupCtrl);
+		
+		mainPopPanel = new Panel("dedup");
+		mainPopPanel.setContent(dedupCtrl.getInitialComponent());
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainPopPanel, true, translate("dedup.members"), false);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	protected void dedupMembers(UserRequest ureq, final boolean coaches, final boolean participants) {
+		progressCtrl = new ProgressController(ureq, getWindowControl());
+		progressCtrl.setMessage(translate("dedup.running"));
+		mainPopPanel.setContent(progressCtrl.getInitialComponent());
+		listenTo(progressCtrl);
+		
+		Runnable worker = new Runnable() {
+			@Override
+			public void run() {
+				businessGroupService.dedupMembers(getIdentity(), coaches, participants, BusinessGroupModuleAdminController.this);
+			}
+		};
+		TaskExecutorManager.getInstance().runTask(worker);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		module.setUserAllowedCreate(allowEl.isSelected(0));
-		module.setAuthorAllowedCreate(allowEl.isSelected(1));
+		//
 	}
 }

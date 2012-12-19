@@ -16,7 +16,7 @@
 				<property name="mailConfig">
 					<map>
 						<entry key="mailhost" value="${smtp.host}"/>
-						<entry key="mailTimeout" value="5000"/> <!-- timeout in milliseconds -->
+						<entry key="mailTimeout" value="8000"/> <!-- timeout in milliseconds -->
 						<entry key="smtpUser" value="${smtp.user}"/>
 						<entry key="smtpPwd" value="${smtp.pwd}"/>
 						<entry key="sslEnabled" value="${smtp.sslEnabled}"/>

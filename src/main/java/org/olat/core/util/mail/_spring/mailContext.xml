@@ -54,6 +54,10 @@
 		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
 	</bean> 
 	
+	<bean id="mailerWithTemplate" class="org.olat.core.util.mail.MailerWithTemplate" init-method="init">
+	
+	</bean>
+	
 	<bean id="mailManager" class="org.olat.core.util.mail.manager.MailManager" init-method="init">
 		<constructor-arg index="0" ref="mailModule" />
 		<property name="dbInstance" ref="database"/>

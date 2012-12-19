@@ -115,6 +115,11 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 		throw new RuntimeException("unsupported");
 	}
 
+	@Override
+	public VFSStatus deleteSilently() {
+		throw new RuntimeException("unsupported");
+	}
+
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#createChildContainer(java.lang.String)
 	 */

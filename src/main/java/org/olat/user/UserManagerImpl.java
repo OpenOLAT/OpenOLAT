@@ -42,6 +42,7 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3>
@@ -56,6 +57,9 @@ public class UserManagerImpl extends UserManager {
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
   private UserDisplayNameCreator userDisplayNameCreator;
+  
+  @Autowired
+  private DB dbInstance;
   
 	/**
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
@@ -92,7 +96,7 @@ public class UserManagerImpl extends UserManager {
 	 */
 	public User createAndPersistUser(String firstName, String lastName, String email) {
 		User user = new UserImpl(firstName, lastName, email);
-		DBFactory.getInstance().saveObject(user);
+		dbInstance.getCurrentEntityManager().persist(user);
 		return user;
 	}
 	
@@ -266,20 +270,13 @@ public class UserManagerImpl extends UserManager {
 	public void updateUser(User usr) {
 		if (usr == null) throw new AssertException("User object is null!");
 		DBFactory.getInstance().updateObject(usr);
-		}
-
-	/**
-	 * @see org.olat.user.UserManager#saveUser(org.olat.core.id.User)
-	 */
-	public void saveUser(User user) {
-		DBFactory.getInstance().saveObject(user);
 	}
 
 	/**
 	 * @see org.olat.user.UserManager#updateUserFromIdentity(org.olat.core.id.Identity)
 	 */
 	public boolean updateUserFromIdentity(Identity identity) {
-		this.updateUser(identity.getUser());
+		updateUser(identity.getUser());
 		return true;
 	}
 

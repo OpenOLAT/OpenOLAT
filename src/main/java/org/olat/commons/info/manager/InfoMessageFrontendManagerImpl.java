@@ -127,7 +127,7 @@ public class InfoMessageFrontendManagerImpl extends InfoMessageFrontendManager {
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(mailFormatter.getBusinessPath());
-				send = mailer.sendEmail(context, contacts, subject, body);
+				send = mailer.sendEmail(context, contacts, subject, body, null);
 			} catch (AddressException e) {
 				logError("Cannot send info messages", e);
 			} catch (MessagingException e) {

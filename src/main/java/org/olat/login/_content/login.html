@@ -23,6 +23,11 @@
 			</div>
 		</div>
 	#end
+	#if($loginBlocked)
+		<div class="b_warning">
+			$r.translate("login.blocked.forAll")
+		</div>
+	#end
 	#if($browserWarningOn)
 		<div class="b_warning">
 			$r.translate("login.browserswitch")

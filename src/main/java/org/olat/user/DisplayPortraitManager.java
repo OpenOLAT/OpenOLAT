@@ -174,7 +174,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	 */
 	public File getPortraitDir(Identity identity){
 		String portraitPath = FolderConfig.getCanonicalRoot() + 
-		FolderConfig.getUserHomePage(identity.getName()) + "/portrait"; 
+				FolderConfig.getUserHomePage(identity.getName()) + "/portrait"; 
 		File portraitDir = new File(portraitPath);
 		portraitDir.mkdirs();
 		return portraitDir;

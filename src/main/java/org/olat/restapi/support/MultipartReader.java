@@ -37,6 +37,8 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 
 /**
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -78,7 +80,7 @@ public class MultipartReader {
 					} else {
 						filename = "upload-" + UUID.randomUUID().toString().replace("-", "");
 					}
-					file = new File(System.getProperty("java.io.tmpdir"), filename);
+					file = new File(WebappHelper.getTmpDir(), filename);
 					try {
 						save(itemStream, file);
 					} catch (Exception e) {
@@ -107,12 +109,30 @@ public class MultipartReader {
 		String value = fields.get(key);
 		return value;
 	}
+	
+	public String getValue(String key, String defaultValue) {
+		String value = fields.get(key);
+		if(StringHelper.containsNonWhitespace(key)) {
+			return value;
+		}
+		return defaultValue;
+	}
 
 	public Long getLongValue(String key) {
 		String value = fields.get(key);
 		if (value == null) { return null; }
 		try {
 			return Long.parseLong(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+	
+	public Integer getIntegerValue(String key) {
+		String value = fields.get(key);
+		if (value == null) { return null; }
+		try {
+			return Integer.parseInt(value);
 		} catch (NumberFormatException e) {
 			return null;
 		}
@@ -145,5 +165,14 @@ public class MultipartReader {
 		}
 		fields.clear();
 	}
-
+	
+	public static void closeQuietly(MultipartReader reader) {
+		if(reader != null) {
+			try {
+				reader.close();
+			} catch (Exception e) {
+				//quietly
+			}
+		}
+	}
 }

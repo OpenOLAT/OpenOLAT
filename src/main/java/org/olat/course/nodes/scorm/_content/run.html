@@ -12,6 +12,7 @@
 					</td>
 				</tr>
 	#if ($attempts >0)
+		#if ($score)
 				<tr>
 					<td>			
 						$r.translate("score.yourscore"): 
@@ -20,6 +21,7 @@
 						$score
 					</td>
 				</tr>
+		#end
 				<tr>
 					<td>			
 						$r.translate("passed.yourpassed"): 

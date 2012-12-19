@@ -85,7 +85,6 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.ims.qti.QTIChangeLogMessage;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;

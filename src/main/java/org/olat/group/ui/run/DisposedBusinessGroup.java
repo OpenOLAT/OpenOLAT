@@ -33,7 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for DisposedBusinessGroup
+ * Empty controller for deleted groups
  * 
  * <P>
  * Initial Date:  28.04.2008 <br>
@@ -52,8 +52,7 @@ class DisposedBusinessGroup extends BasicController {
 	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	/**
@@ -61,8 +60,6 @@ class DisposedBusinessGroup extends BasicController {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-	// TODO Auto-generated method stub
-
+		//
 	}
-
 }

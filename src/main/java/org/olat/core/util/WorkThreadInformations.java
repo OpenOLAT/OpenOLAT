@@ -75,7 +75,7 @@ public class WorkThreadInformations {
 	
 	public static void setInfoFiles(String filePath, VFSLeaf leaf) {
 		try {
-			File file = new File(FolderConfig.getCanonicalTmpDir(), "threadInfos");
+			File file = new File(WebappHelper.getUserDataRoot(), "threadInfos");
 			if(!file.exists()) {
 				file.mkdirs();
 			}

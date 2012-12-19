@@ -58,7 +58,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
@@ -1314,12 +1313,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * HELPER METHODS AFTER HERE
 	 */
 	private Condition cloneCondition(Condition orig) {
-		try {
-			return (Condition) orig.clone();
-		} catch (CloneNotSupportedException e) {
-			throw new AssertException("could not clone condition " + orig, e);
-			//
-		}
+		return orig.clone();
 	}
 
 	public Condition getCondition() {

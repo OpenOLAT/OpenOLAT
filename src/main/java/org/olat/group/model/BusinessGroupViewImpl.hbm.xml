@@ -23,6 +23,7 @@
 		<!--  statistics informations -->
   		<property name="numOfOwners" column="num_of_owners" type="long" />
   		<property name="numOfParticipants" column="num_of_participants" type="long" />
+  		<property name="numOfPendings" column="num_of_pendings" type="long" />
   		<property name="numOfRelations" column="num_of_relations" type="long" />
   		<property name="numOfOffers" column="num_of_offers" type="long" />
   		<property name="numOfValidOffers" column="num_of_valid_offers" type="long" />

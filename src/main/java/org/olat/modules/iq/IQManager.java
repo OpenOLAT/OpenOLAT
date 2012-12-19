@@ -78,6 +78,7 @@ import org.olat.ims.qti.container.ItemContext;
 import org.olat.ims.qti.container.ItemInput;
 import org.olat.ims.qti.container.ItemsInput;
 import org.olat.ims.qti.container.SectionContext;
+import org.olat.ims.qti.navigator.NavigatorDelegate;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.process.Resolver;
@@ -121,7 +122,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	 *  
 	 */
 	public Controller createIQDisplayController(ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq,
-			WindowControl wControl, long callingResId, String callingResDetail) {
+			WindowControl wControl, long callingResId, String callingResDetail, NavigatorDelegate delegate) {
 		
 		//two cases:
 		// -- VERY RARE CASE -- 1) qti is open in an editor session right now on the screen (or session on the way to timeout)
@@ -136,7 +137,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 					translator.translate("status.currently.locked", new String[] {lockResult.getOwner().getName()}));
 		}else{
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(re, OlatResourceableType.iq));
-			return new IQDisplayController(moduleConfiguration, secCallback, ureq, wControl, callingResId, callingResDetail);
+			return new IQDisplayController(moduleConfiguration, secCallback, ureq, wControl, callingResId, callingResDetail, delegate);
 		}
 	}
 

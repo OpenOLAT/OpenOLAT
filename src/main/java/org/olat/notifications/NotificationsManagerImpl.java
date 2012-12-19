@@ -464,6 +464,10 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	}
 	
 	protected void updateSubscriberLatestEmail(List<Subscriber> subscribersToUpdate) {
+		if(subscribersToUpdate == null || subscribersToUpdate.isEmpty()) {
+			return;//nothing to do
+		}
+		
 		StringBuilder q = new StringBuilder();	
 		q.append("select sub from ").append(SubscriberImpl.class.getName()).append(" sub ")
 		 .append(" inner join fetch sub.publisher where sub.key in (:aKey)");

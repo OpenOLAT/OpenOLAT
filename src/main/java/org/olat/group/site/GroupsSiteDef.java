@@ -39,18 +39,8 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  */
 public class GroupsSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	/**
-	 * 
-	 */
 	public GroupsSiteDef() {
 		super();
-	}
-
-	/**
-	 * @see org.olat.core.extensions.OLATExtension#getName()
-	 */
-	public String getName() {
-		return "groupssite";
 	}
 
 	/**

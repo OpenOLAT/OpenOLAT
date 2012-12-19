@@ -25,12 +25,14 @@
 
 package org.olat.modules.scorm.manager;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
 import org.jdom.Element;
+import org.jdom.input.JDOMParseException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.manager.BasicManager;
 import org.olat.modules.scorm.ISettingsHandler;
@@ -137,7 +139,8 @@ public class ScormManager extends BasicManager {
 	 * @param credit_mode
 	 */
 
-	public ScormManager(String packagePath, boolean showTreeWidget, boolean showNavigation, boolean autoProgression, ISettingsHandler settings) {
+	public ScormManager(String packagePath, boolean showTreeWidget, boolean showNavigation, boolean autoProgression, ISettingsHandler settings)
+	throws IOException {
 		this.scormSettingsHandler = settings;
 		_error_found = false;
 		PACKAGE_NAME = packagePath;
@@ -150,11 +153,15 @@ public class ScormManager extends BasicManager {
 	/**
 	 * 
 	 */
-	private void init() {
+	private void init() throws IOException {
 		// Make sure its there
 		if (scormSettingsHandler.getManifestFile().exists()) {
 			try {
 				_navViewer = new NavigationViewer(scormSettingsHandler);
+			} catch(IOException e) {
+				throw e;
+			} catch(JDOMParseException e) {
+				throw new IOException("Parse exception", e);
 			} catch (Exception ex) {
 				throw new OLATRuntimeException(ScormManager.class, "Could not load manifest",ex);
 			}
@@ -263,6 +270,14 @@ public class ScormManager extends BasicManager {
 		String[] javascriptStrings = new String[v.size()];
 		v.copyInto(javascriptStrings);
 		return javascriptStrings;
+	}
+	
+	public String[] getAllScoIdentifiers() {
+		return _navViewer.getAllScoIdentifiers();
+	}
+	
+	public int getNumOfSCOs() {
+		return _navViewer.getAllScoIdentifiers().length;
 	}
 
 	protected void createNavLinksForAllOranizations(Vector javascriptStrings, String menuParent, boolean useRelativePaths) {

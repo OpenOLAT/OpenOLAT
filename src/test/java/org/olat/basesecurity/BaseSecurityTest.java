@@ -73,7 +73,7 @@ public class BaseSecurityTest extends OlatTestCase {
 			Identity ident = getOrCreateIdentity("anIdentity");
 			Identity ident2 = getOrCreateTestIdentity("extremegroovy");
 			Identity deletedIdent = getOrCreateTestIdentity("delete");
-			baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
+			deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
 
 			SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
 			baseSecurityManager.addIdentityToSecurityGroup(deletedIdent, admins);
@@ -179,8 +179,8 @@ public class BaseSecurityTest extends OlatTestCase {
 			Identity ident2 = getOrCreateTestIdentity("extremegroovy");
 
 			// add some stats
-			baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV);
-			baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV);
+			ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV);
+			ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV);
 			
 			// check on those four default groups
 			SecurityGroup admins, authors, anonymous;

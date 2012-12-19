@@ -36,6 +36,7 @@ import java.net.URLConnection;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.WebappHelper;
 
 /**
  * Description:<br>
@@ -138,7 +139,7 @@ public class DeployableCourseExport {
 			if (offset != contentLength) { throw new IOException("Only read " + offset + " bytes; Expected " + contentLength + " bytes"); }
 			
 			String filename = url.getFile().substring(url.getFile().lastIndexOf('/') + 1);
-			filename = System.getProperty("java.io.tmpdir")+"/"+filename;
+			filename = WebappHelper.getTmpDir() + "/" + filename;
 			FileOutputStream out = new FileOutputStream(filename);
 			out.write(data);
 			out.flush();

@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.MapperDispatcher;
 import org.olat.core.logging.OLog;
@@ -334,9 +333,16 @@ public class DispatcherAction implements Dispatcher {
 	}
 
 
+	/**
+	 * Sent to standard 503 if not available
+	 * @param response
+	 */
 	public static void redirectToServiceNotAvailable(HttpServletResponse response) {
-		String pathStaticDir = StaticMediaDispatcher.getStaticMapperPath(); 
-		redirectTo(response, WebappHelper.getServletContextPath() + pathStaticDir + "msg/en/service_not_available.html");
+		try {
+			response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+		} catch (IOException e) {
+			log.error("Send 503 failed", e);
+		}
 	}
 	
 }

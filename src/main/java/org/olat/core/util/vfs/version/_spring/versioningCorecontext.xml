@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-  http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-<context:annotation-config />
+	<bean id="versionsManager" class="org.olat.core.util.vfs.version.VersionsFileManager" init-method="init"/>
 
-<bean id="versionsManager" class="org.olat.core.util.vfs.version.VersionsFileManager" init-method="init"/>
-
-
-<!--
-		***********************************************
-		*** Define the Version Manager Configurator ***
-		***********************************************
--->
-	
-	<bean id="versioningConfigurator" class="org.olat.core.util.vfs.version.SimpleVersionConfig" depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
+	<bean id="versioningConfigurator" class="org.olat.core.util.vfs.version.SimpleVersionConfig"
+		depends-on="coordinatorManager,org.olat.core.util.WebappHelper,folderModule">
 		<property name="coordinator" ref="coordinatorManager" />
 		<property name="persistedProperties">
 			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy"
@@ -32,6 +21,6 @@
 				</property>
 			</bean>
 		</property>
-  </bean>
+	</bean>
 
 </beans>

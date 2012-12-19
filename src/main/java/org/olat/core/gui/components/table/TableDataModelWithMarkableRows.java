@@ -31,7 +31,7 @@ package org.olat.core.gui.components.table;
  * 
  * @author gnaegi
  */
-public interface TableDataModelWithMarkableRows extends TableDataModel {
+public interface TableDataModelWithMarkableRows<U> extends TableDataModel<U> {
 
 	/**
 	 * Get an optional CSS class name to mark this row

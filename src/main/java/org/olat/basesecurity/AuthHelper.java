@@ -38,6 +38,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 
 import org.olat.commons.rss.RSSUtil;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
@@ -71,6 +72,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
 import org.olat.user.UserManager;
@@ -306,22 +308,23 @@ public class AuthHelper {
 			log.audit("was denied login");
 			return LOGIN_DENIED;			
 		}
+		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		// if the user sending the cookie did not log out and we are logging in
 		// again, then we need to make sure everything is cleaned up. we cleanup in all cases.
 		UserSession usess = ureq.getUserSession();
 		// prepare for a new user: clear all the instance vars of the userSession
 		// note: does not invalidate the session, since it is reused
-		usess.signOffAndClear();
+		sessionManager.signOffAndClear(usess);
 		// init the UserSession for the new User
 		// we can set the identity and finish the log in process
 		usess.setIdentity(identity);
 		setRolesFor(identity, usess);
-		
+
 		// check if loginDenied or maxSession (only for non-admin)
 		if ( (loginBlocked && !usess.getRoles().isOLATAdmin())
-				|| ( ((maxSessions != MAX_SESSION_NO_LIMIT) && (UserSession.getUserSessionsCnt() >= maxSessions)) && !usess.getRoles().isOLATAdmin() ) ) {
-			log.audit("Login was blocked for username=" + usess.getIdentity().getName() + ", loginBlocked=" + loginBlocked + " NbrOfSessions=" + UserSession.getUserSessionsCnt());
-			usess.signOffAndClear();
+				|| ( ((maxSessions != MAX_SESSION_NO_LIMIT) && (sessionManager.getUserSessionsCnt() >= maxSessions)) && !usess.getRoles().isOLATAdmin() ) ) {
+			log.audit("Login was blocked for username=" + usess.getIdentity().getName() + ", loginBlocked=" + loginBlocked + " NbrOfSessions=" + sessionManager.getUserSessionsCnt());
+			sessionManager.signOffAndClear(usess);
 			return LOGIN_NOTAVAILABLE;
 		}
 		
@@ -337,11 +340,11 @@ public class AuthHelper {
 		// calculate session info and attach it to the user session
 		setSessionInfoFor(identity, authProvider, ureq, rest);
 		//confirm signedOn
-		usess.signOn();
+		sessionManager.signOn(usess);
 		// set users web delivery mode
 		setAjaxModeFor(ureq);
 		// update web delivery mode in session info
-		ureq.getUserSession().getSessionInfo().setWebModeFromUreq(ureq);
+		usess.getSessionInfo().setWebModeFromUreq(ureq);
 		return LOGIN_OK;
 	}
 

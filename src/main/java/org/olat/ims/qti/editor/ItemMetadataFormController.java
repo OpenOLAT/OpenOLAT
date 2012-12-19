@@ -269,7 +269,7 @@ public class ItemMetadataFormController extends FormBasicController {
 			solution = uifactory.addRichTextElementForStringData("solution", "form.imd.correctsolution", item.getQuestion().getSolutionText(), 8,
 					-1, false, true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
 			// set upload dir to the media dir
-			hint.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+			solution.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			if (itemControl.isSolution()) {
 				showSolution.select("y", true);
 			} else {

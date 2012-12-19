@@ -258,34 +258,12 @@ init-method="springInit" destroy-method="stop" lazy-init="true">
 
 <bean id="org.olat.commons.coordinate.singlevm.SingleVMEventBus" class="org.olat.commons.coordinate.singlevm.SingleVMEventBus" lazy-init="true"/>
 
-<bean id="org.olat.commons.coordinate.singlevm.SingleVMLocker" class="org.olat.commons.coordinate.singlevm.SingleVMLocker" init-method="init" lazy-init="true">
+	<bean id="org.olat.commons.coordinate.singlevm.SingleVMLocker" class="org.olat.commons.coordinate.singlevm.SingleVMLocker" init-method="init" lazy-init="true">
 		<property name="eventBus" ref="org.olat.commons.coordinate.singlevm.SingleVMEventBus"/>
 		<lookup-method name="getPersistentLockManager" bean="persistentLockManager"/>
 	</bean>
 
-<bean id="sysbus.topic" class="org.apache.activemq.command.ActiveMQTopic">
-	<constructor-arg value="olat/${instance.id}/sysbus" />
-</bean>
-
-<bean id="jmsConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" >
-	<property name="brokerURL" value="${jms.broker.url}" /> <!-- e.g.: tcp://localhost:61616 -->
-</bean>
-
-
-
-	
-	
-	<!--
-		for security, you should use at least a username/pwd authentication, see below
-		
-		TODO: provide a sample configuration for the activemq broker with simple user/pwd configured
-		 
-	<bean id="connectionFactory" class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter">
-		<property name="targetConnectionFactory" ref="myTargetConnectionFactory"/>
-		<property name="username" value="myusername"/>
-		<property name="password" value="mypassword"/>
-	</bean>
-	-->
+	<import resource="classpath:/serviceconfig/org/olat/core/_spring/olatcorejms_${jms.provider}.xml"/>
 	
 	
 <!-- JMX -->
@@ -315,10 +293,6 @@ init-method="springInit" destroy-method="stop" lazy-init="true">
 	</bean>
 -->
 
-<bean id="org.olat.core.util.codepoint.CodepointServer" class="org.olat.testutils.codepoints.server.impl.JMSCodepointServer" destroy-method="close" init-method="springInit">
-	<constructor-arg value="${codepoint_server.enabled}" type="boolean" index="0"/> 	<!--  whether or not the codepoint server is enabled -->
-	<property name="brokerUrl" value="${codepoint.jms.broker.url}"/>								<!-- e.g.: tcp://localhost:61616 -->
-	<property name="uniqueNodeId" value="${instance.id}-${node.id}"/>					<!--  the unique id of the codepoint server -->
-</bean>
+
 
 </beans>	

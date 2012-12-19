@@ -40,6 +40,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.control.Controller;
@@ -51,6 +52,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * Default implementation of the IUserActivityLogger which logs into
@@ -195,7 +197,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			throw new IllegalArgumentException("hReq must not be null");
 		}
 
-		session_ = UserSession.getUserSessionIfAlreadySet(hReq);
+		session_ = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(hReq);
 		if (session_!=null) {
 			identity_ = session_.getIdentity();
 		}

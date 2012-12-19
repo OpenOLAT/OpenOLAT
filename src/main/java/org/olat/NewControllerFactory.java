@@ -48,6 +48,7 @@ import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.TabContext;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogDelegator;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -163,7 +164,8 @@ public class NewControllerFactory extends LogDelegator {
 		}
 
 		// was brasato:: DTabs dts = wControl.getDTabs();
-		Window window = Windows.getWindows(ureq.getUserSession()).getWindow(ureq);
+		UserSession usess = ureq.getUserSession();
+		Window window = Windows.getWindows(usess).getWindow(ureq);
 
 		if (window == null) {
 			logDebug("Found no window for jumpin => take WindowBackOffice", null);
@@ -230,7 +232,7 @@ public class NewControllerFactory extends LogDelegator {
 				return false;
 			} else {
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dt.getWindowControl());
-				ureq.getUserSession().addToHistory(ureq, bc);
+				usess.addToHistory(ureq, bc);
 				Controller launchC = typeHandler.createController(mainCe, ureq, bwControl);
 				if (launchC == null) {
 					throw new AssertException("ControllerFactory could not create a controller to be launched. Please validate businesspath " 

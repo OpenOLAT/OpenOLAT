@@ -409,8 +409,16 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	protected void postImportCondition(Condition condition, CourseEnvironmentMapper envMapper) {
 		if(condition == null) return;
 		
-		boolean easy = StringHelper.containsNonWhitespace(condition.getConditionFromEasyModeConfiguration());
-		if(easy) {
+		if(condition.isExpertMode()) {
+			String expression = condition.getConditionExpression();
+			if(StringHelper.containsNonWhitespace(expression)) {
+				String processExpression = convertExpressionNameToKey(expression, envMapper);
+				processExpression = convertExpressionKeyToKey(processExpression, envMapper);
+				if(!expression.equals(processExpression)) {
+					condition.setConditionExpression(processExpression);
+				}
+			}
+		} else if(StringHelper.containsNonWhitespace(condition.getConditionFromEasyModeConfiguration())) {
 			List<Long> groupKeys = condition.getEasyModeGroupAccessIdList();
 			if(groupKeys == null || groupKeys.isEmpty()) {
 				//this is an old course -> get group keys from original names
@@ -433,15 +441,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			
 			String condString = condition.getConditionFromEasyModeConfiguration();
 			condition.setConditionExpression(condString);
-		} else if(condition.isExpertMode()) {
-			String expression = condition.getConditionExpression();
-			if(StringHelper.containsNonWhitespace(expression)) {
-				String processExpression = convertExpressionNameToKey(expression, envMapper);
-				processExpression = convertExpressionKeyToKey(expression, envMapper);
-				if(!expression.equals(processExpression)) {
-					condition.setConditionExpression(processExpression);
-				}
-			}
 		}
 	}
 
@@ -555,6 +554,22 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			copyInstance.setShortTitle(newTitle);
 		}
 		return copyInstance;
+	}
+
+	@Override
+	public void copyConfigurationTo(CourseNode courseNode) {
+		if(courseNode instanceof GenericCourseNode) {
+			GenericCourseNode newNode = (GenericCourseNode)courseNode;
+			newNode.setDisplayOption(getDisplayOption());
+			newNode.setLearningObjectives(getLearningObjectives());
+			newNode.setLongTitle(getLongTitle());
+			newNode.setNoAccessExplanation(getNoAccessExplanation());
+			newNode.setShortTitle(getShortTitle());
+			
+			if(preConditionVisibility != null) {
+				newNode.setPreConditionVisibility(preConditionVisibility.clone());
+			}
+		}
 	}
 
 	/**

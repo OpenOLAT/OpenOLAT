@@ -48,8 +48,11 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
@@ -167,6 +170,16 @@ protected void event(UserRequest ureq, Component source, Event event) {
 				} else {
 					showError("login.error", ldapError.get());
 					return;
+				}
+			} else {
+				try {
+					String language = authenticatedIdentity.getUser().getPreferences().getLanguage();
+					UserSession usess = ureq.getUserSession();
+					if(StringHelper.containsNonWhitespace(language)) {
+						usess.setLocale(I18nManager.getInstance().getLocaleOrDefault(language));
+					}
+				} catch (Exception e) {
+					logError("Cannot set the user language", e);
 				}
 			}
 

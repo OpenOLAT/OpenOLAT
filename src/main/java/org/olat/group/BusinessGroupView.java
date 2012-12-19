@@ -56,6 +56,12 @@ public interface BusinessGroupView extends BusinessGroupShort, Persistable, Crea
 	
 	public long getNumOfParticipants();
 	
+	/**
+	 * Number of pending reservations
+	 * @return
+	 */
+	public long getNumOfPendings();
+	
 	public long getNumWaiting();
 	
 	public long getNumOfOffers();

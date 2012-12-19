@@ -25,8 +25,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
@@ -301,6 +303,8 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 	@Override
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate) {
 
+		final int maxResourcesEntries = 100;//quicker to filter in java, numerous keys in "in" are slow
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, resource, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
@@ -308,11 +312,13 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 			.append(" inner join offer.resource oResource")
 			.append(" where access.valid=").append(valid).append(" and offer.valid=").append(valid);
 		if(resourceKeys != null && !resourceKeys.isEmpty()) {
-			sb.append(" and resource.key in (:resourceKeys) and oResource.key=resource.key");
+			if(resourceKeys.size() < maxResourcesEntries) {
+				sb.append(" and resource.key in (:resourceKeys) ");
+			}
+			sb.append(" and oResource.key=resource.key");
 		}
 		if(StringHelper.containsNonWhitespace(resourceType)) {
 			sb.append(" and oResource.resName =:resourceType and oResource.key=resource.key");
-			
 		}
 			
 		if(atDate != null) {
@@ -324,9 +330,14 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		if(atDate != null) {
 			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
-		
+
+		Set<Long> resourceKeysSet = null;
 		if(resourceKeys != null && !resourceKeys.isEmpty()) {
-			query.setParameter("resourceKeys", resourceKeys);
+			if(resourceKeys.size() < maxResourcesEntries) {
+				query.setParameter("resourceKeys", resourceKeys);
+			} else {
+				resourceKeysSet = new HashSet<Long>(resourceKeys);
+			}
 		}
 		if(StringHelper.containsNonWhitespace(resourceType)) {
 			query.setParameter("resourceType", resourceType);
@@ -338,6 +349,10 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
 			OLATResource resource = (OLATResource)rawResult[1];
+			if(resourceKeysSet != null && !resourceKeysSet.contains(resource.getKey())) {
+				continue;
+			}
+			
 			Price price = (Price)rawResult[2];
 			if(rawResultsMap.containsKey(resource.getKey())) {
 				rawResultsMap.get(resource.getKey()).addBundle(price, method);

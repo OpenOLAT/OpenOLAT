@@ -55,8 +55,8 @@ public class SequentialItemNavigator extends DefaultNavigator implements Navigat
 	/**
 	 * @param assessmentInstance
 	 */
-	public SequentialItemNavigator(AssessmentInstance assessmentInstance) {
-		super(assessmentInstance);
+	public SequentialItemNavigator(AssessmentInstance assessmentInstance, NavigatorDelegate delegate) {
+		super(assessmentInstance, delegate);
 	}
 
 	/**

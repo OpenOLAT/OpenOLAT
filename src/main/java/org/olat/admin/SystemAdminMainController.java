@@ -49,7 +49,10 @@ public class SystemAdminMainController extends GenericMainController implements 
 
 	public SystemAdminMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+
 		init(ureq);
+		//getMenuTree().setRootVisible(false);
+		addCssClassToMain("o_sysadmin");
 	}
 
 	/**

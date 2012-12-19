@@ -33,8 +33,11 @@ public class ResourceReservationImpl  extends PersistentObject implements Resour
 
 	private static final long serialVersionUID = 2200260145344478778L;
 	private Date lastModified;
+	private Date expirationDate;
+	
 	private Identity identity;
 	private OLATResource resource;
+	private String type;
 	
 	
 	@Override
@@ -47,6 +50,16 @@ public class ResourceReservationImpl  extends PersistentObject implements Resour
 		this.lastModified = lastModified;
 	}
 
+	@Override
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
+	}
+
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -54,7 +67,8 @@ public class ResourceReservationImpl  extends PersistentObject implements Resour
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
 	}
-	
+
+	@Override
 	public OLATResource getResource() {
 		return resource;
 	}
@@ -62,7 +76,16 @@ public class ResourceReservationImpl  extends PersistentObject implements Resour
 	public void setResource(OLATResource resource) {
 		this.resource = resource;
 	}
-	
+
+	@Override
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 82674590 : getKey().hashCode();

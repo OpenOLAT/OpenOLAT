@@ -8,7 +8,6 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
   
-<context:annotation-config />
 <context:component-scan base-package="org.olat.upgrade" />
 
  	<bean id="olatUpgradeManager.enabled" class="org.olat.upgrade.UpgradeManagerImpl" lazy-init="true"  init-method="init" depends-on="folderModule">
@@ -39,6 +38,7 @@
 				</bean>
 				<bean id="upgrade_8_1_0" class="org.olat.upgrade.OLATUpgrade_8_1_0"/>
 				<bean id="upgrade_8_2_0" class="org.olat.upgrade.OLATUpgrade_8_2_0"/>
+				<bean id="upgrade_8_3_0" class="org.olat.upgrade.OLATUpgrade_8_3_0"/>
 			</list>
 		</property>
 	</bean>

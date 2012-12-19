@@ -62,7 +62,7 @@ public class PwChangeForm extends FormBasicController {
 		
 		boolean newIsValid = UserManager.getInstance().syntaxCheckOlatPassword(newpass1.getValue());
 		if (!newIsValid) {
-			newpass1.setErrorKey("error.password.characters", null);
+			newpass1.setErrorKey("form.checkPassword", null);
 		}
 		// validate that both passwords are the same
 		boolean newDoesMatch = newpass1.getValue().equals(newpass2.getValue());

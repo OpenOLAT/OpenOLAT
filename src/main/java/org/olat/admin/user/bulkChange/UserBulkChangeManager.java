@@ -19,7 +19,6 @@
  */
 package org.olat.admin.user.bulkChange;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,13 +50,9 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
-import org.olat.group.BusinessGroup;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
-import org.olat.group.ui.BGMailHelper;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -196,8 +191,7 @@ public class UserBulkChangeManager extends BasicManager {
 			// set status
 			if (roleChangeMap.containsKey("Status")) {
 				Integer status = Integer.parseInt(roleChangeMap.get("Status"));
-				secMgr.saveIdentityStatus(identity, status);
-				identity = (Identity) db.loadObject(identity);
+				identity = secMgr.saveIdentityStatus(identity, status);
 			}
 
 			// persist changes:
@@ -236,23 +230,9 @@ public class UserBulkChangeManager extends BasicManager {
 			}
 
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-			bgs.updateMemberships(addingIdentity, changes);
+			MailPackage mailing = new MailPackage();
+			bgs.updateMemberships(addingIdentity, changes, mailing);
 			DBFactory.getInstance().commit();
-			
-			if(mailGroups != null && !mailGroups.isEmpty()) {
-				List<BusinessGroup> notifGroups = bgs.loadBusinessGroups(mailGroups);
-				for (BusinessGroup group : notifGroups) {
-					for(Identity selIdentity:selIdentities) {
-						MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, addingIdentity);
-						MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-						MailerResult mailerResult = mailer.sendMail(null, selIdentity, null, null, mailTemplate, null);
-						if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
-							logDebug("Problems sending Group invitation mail for identity: " + selIdentity.getName() + " and group: " 
-									+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -273,7 +253,7 @@ public class UserBulkChangeManager extends BasicManager {
 			log.error("evaluating of values in BulkChange Field not possible!");
 			e.printStackTrace();
 			return "ERROR";
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("evaluating of values in BulkChange Field not possible!");
 			e.printStackTrace();
 			return "ERROR";

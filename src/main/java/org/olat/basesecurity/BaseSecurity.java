@@ -573,7 +573,14 @@ public interface BaseSecurity {
 	/** Save an identity
 	 * @param identity  Save this identity
 	 */
-	public void saveIdentityStatus(Identity identity, Integer status);
+	public Identity saveIdentityStatus(Identity identity, Integer status);
+	
+	/**
+	 * Set the date of the last login
+	 * @param identity
+	 * @return
+	 */
+	public Identity setIdentityLastLogin(Identity identity);
 	
 	/**
 	 * Check if identity is visible. Deleted or login-denied users are not visible.

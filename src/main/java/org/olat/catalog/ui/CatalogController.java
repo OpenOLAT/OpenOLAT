@@ -508,7 +508,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				boolean keepAtLeastOne = currentCatalogEntryLevel == 0;
 				
 				removeAsListenerAndDispose(groupController);
-				groupController = new GroupController(ureq, getWindowControl(), true, keepAtLeastOne, false, false, false, secGroup);
+				groupController = new GroupController(ureq, getWindowControl(), true, keepAtLeastOne, false, false, false, false, secGroup);
 				listenTo(groupController);
 				
 				// open form in dialog

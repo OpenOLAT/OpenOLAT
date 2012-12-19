@@ -62,7 +62,7 @@ import org.olat.core.logging.Tracing;
  */
 public class AllCachesController extends BasicController {
 	
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(AllCachesController.class);
 	
 	private VelocityContainer myContent;
 	private TableController tableCtr;
@@ -84,6 +84,7 @@ public class AllCachesController extends BasicController {
 		myContent = createVelocityContainer("index");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
+		tableConfig.setDownloadOffered(true);
 		
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());		
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.name", 0, null, ureq.getLocale()));

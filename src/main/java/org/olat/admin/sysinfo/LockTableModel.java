@@ -38,7 +38,7 @@ import org.olat.core.util.coordinate.LockEntry;
  * @author Christian Guretzki
  */
 
-public class LockTableModel extends DefaultTableDataModel {
+public class LockTableModel extends DefaultTableDataModel<LockEntry> {
 	
 	/**
 	 * @param list of locks
@@ -58,7 +58,7 @@ public class LockTableModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		LockEntry lock = (LockEntry)getObject(row); 
+		LockEntry lock = getObject(row); 
 		switch (col) {
 			case 0: return lock.getKey();
 			case 1: return lock.getOwner().getName() + ", " + lock.getOwner().getUser().getProperty(UserConstants.FIRSTNAME, null)

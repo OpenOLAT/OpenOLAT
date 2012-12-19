@@ -50,6 +50,7 @@ import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;

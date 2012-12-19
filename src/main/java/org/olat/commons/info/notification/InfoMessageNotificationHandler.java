@@ -105,7 +105,8 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale);
-		return translator.translate("notification.title");
+		String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(subscriber.getPublisher().getResId());
+		return translator.translate("notification.title", new String[]{displayName});
 	}
 	
 	@Override

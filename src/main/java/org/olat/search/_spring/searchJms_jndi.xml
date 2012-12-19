@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- JMS Stuff -->
+	<bean id="searchConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+        <property name="jndiName"><value>${jms.broker.jndi}</value></property>
+    </bean>
+    <bean id="searchQueue" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName"><value>${search.broker.jndi}</value></property>
+	</bean>
+</beans>

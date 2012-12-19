@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -40,6 +41,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.instantMessaging.ClientHelper;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.ImPrefsManager;
@@ -56,7 +58,7 @@ import org.olat.instantMessaging.syncservice.InstantMessagingSessionItems;
  */
 public class ConnectedUsersLocal implements InstantMessagingSessionItems {
 	
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(ConnectedUsersLocal.class);
 	private CacheWrapper sessionItemsCache;
 	private ImPrefsManager imPrefsManager;
 	
@@ -85,10 +87,12 @@ public class ConnectedUsersLocal implements InstantMessagingSessionItems {
 			}
 		}
 		
+		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		
 		List<ConnectedUsersListEntry> entries = new ArrayList<ConnectedUsersListEntry>();
 		Map<String, Long> lastActivity = new HashMap<String, Long>();
 		Set<String> usernames = InstantMessagingModule.getAdapter().getUsernamesFromConnectedUsers();
-		Set<UserSession> authSessions = UserSession.getAuthenticatedUserSessions();
+		Set<UserSession> authSessions = sessionManager.getAuthenticatedUserSessions();
 		for (Iterator<UserSession> iter = authSessions.iterator(); iter.hasNext();) {
 			UserSession userSession = iter.next();
 			long lastAccTime = 0;
@@ -113,7 +117,7 @@ public class ConnectedUsersLocal implements InstantMessagingSessionItems {
 			
 			} else {
 				//item not in cache
-				if (UserSession.isSignedOnIdentity(olatusername)) {
+				if (sessionManager.isSignedOnIdentity(olatusername)) {
 					Identity identity = (Identity)BaseSecurityManager.getInstance().findIdentityByName(olatusername);
 					try {
 						ImPreferences imPrefs = imPrefsManager.loadOrCreatePropertiesFor(identity);

@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
 	
 
@@ -34,28 +34,7 @@
 		If you changing the identifier there will be a new course deployed and the old one will stay.
 	-->
 	<property name="courseExportFiles">
-		<list>
-			<bean class="org.olat.course.DeployableCourseExport">
-			
-				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots/org/openolat/course/Demo-Kurs/7.1-SNAPSHOT/Demo-Kurs-7.1-SNAPSHOT.zip" />
-				<property name="identifier" value="Demo Kurs" />
-				<property name="version" value="7.1" />
-			</bean>
-			<!-- this one is the help course which will server as the online help, helpAsser flag is TRUE! -->
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat/org/openolat/help/OpenOLAT-Help/8.1/OpenOLAT-Help-8.1.zip" />
-				<property name="identifier" value="OLAT::help-course_de.zip" />
-				<property name="access" value="4" />
-				<property name="version" value="8.1" />
-				<property name="redeploy" value="true" />
-				<!-- 
-					Url to the course which should be used as help course. The specified course will be used 
-					in all languages.
-					To disable the help course feature, leave the helpCourseFile configuration empty.
-					Have also a look at the ContextHelpModule configuration.
-				--> 
-			</bean>
-		</list>
+		<ref bean="deployedCourseList"/>
 	</property>
 	
 	
@@ -119,5 +98,34 @@
 		</value>
 	</property>
 </bean>
+
+	<bean id="deployedCourseList" class="java.util.ArrayList">
+	    <constructor-arg>
+	        <list>
+	            <ref bean="deployedCourse_Demo" />
+	            <ref bean="deployedCourse_OpenOLATHelp" />
+	        </list>
+	    </constructor-arg>
+	</bean>
+	
+	<bean id="deployedCourse_Demo" class="org.olat.course.DeployableCourseExport">
+		<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots/org/openolat/course/Demo-Kurs/7.1-SNAPSHOT/Demo-Kurs-7.1-SNAPSHOT.zip" />
+		<property name="identifier" value="Demo Kurs" />
+		<property name="version" value="7.1" />
+	</bean>
+	<!-- this one is the help course which will server as the online help, helpAsser flag is TRUE! -->
+	<bean id="deployedCourse_OpenOLATHelp" class="org.olat.course.DeployableCourseExport">
+		<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat/org/openolat/help/OpenOLAT-Help/8.1/OpenOLAT-Help-8.1.zip" />
+		<property name="identifier" value="OLAT::help-course_de.zip" />
+		<property name="access" value="4" />
+		<property name="version" value="8.1" />
+		<property name="redeploy" value="true" />
+		<!-- 
+			Url to the course which should be used as help course. The specified course will be used 
+			in all languages.
+			To disable the help course feature, leave the helpCourseFile configuration empty.
+			Have also a look at the ContextHelpModule configuration.
+		--> 
+	</bean>
 
 </beans>

@@ -140,11 +140,6 @@ public abstract class UserManager extends BasicManager {
 	public abstract void updateUser(User usr);
 
 	/**
-	 * @param user The user to be saved
-	 */
-	public abstract void saveUser(User user);
-
-	/**
 	 * Updates the user object for a given identity
 	 * 
 	 * @param identity

@@ -46,17 +46,17 @@ public class GroupMembersDisplayController extends BasicController {
 		content = createVelocityContainer("groupmembersdisplay");
 
 		if(members.isOwnersPublic()) {
-			GroupController groupOwnersController = new GroupController(ureq, wControl, false, true, false, false, false, businessGroup.getOwnerGroup());
+			GroupController groupOwnersController = new GroupController(ureq, wControl, false, true, false, false, false, false, businessGroup.getOwnerGroup());
 			content.put("owners", groupOwnersController.getInitialComponent());
 			listenTo(groupOwnersController);
 		}
 		if(members.isParticipantsPublic()) {
-			GroupController groupParticipantsController = new GroupController(ureq, wControl, false, true, false, false, false, businessGroup.getPartipiciantGroup());
+			GroupController groupParticipantsController = new GroupController(ureq, wControl, false, true, false, false, false, false, businessGroup.getPartipiciantGroup());
 			content.put("participants", groupParticipantsController.getInitialComponent());
 			listenTo(groupParticipantsController);
 		}
 		if(members.isWaitingListPublic()) {
-			GroupController groupWaitingListController = new GroupController(ureq, wControl, false, true, false, false, false, businessGroup.getWaitingGroup());
+			GroupController groupWaitingListController = new GroupController(ureq, wControl, false, true, false, false, false, false, businessGroup.getWaitingGroup());
 			content.put("waitingList", groupWaitingListController.getInitialComponent());
 			listenTo(groupWaitingListController);
 		}

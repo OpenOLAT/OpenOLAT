@@ -150,7 +150,7 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 								+ ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, null)
 				}));
 		if(mailNotificationCtr != null) mailNotificationCtr.dispose();
-		mailNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false);
+		mailNotificationCtr = new MailNotificationEditController(getWindowControl(), ureq, mailTempl, false, false);
 		mailNotificationCtr.addControllerListener(this);
 		sendNotificationVC = createVelocityContainer("sendnotification");
 		sendNotificationVC.put("notificationForm", mailNotificationCtr.getInitialComponent());
@@ -201,7 +201,7 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 				}
 				//fxdiff VCRP-16: intern mail system
 				MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, ownerList, ccIdentities, null,
+				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, ownerList, ccIdentities,
 						mailNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				StringBuilder errorMessage = new StringBuilder();
 				StringBuilder warningMessage = new StringBuilder();
@@ -263,10 +263,10 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 					businessGroupService.removeOwners(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupOwner), bGroup);
 				}
 				if(secGroupPartipiciant != null) {
-					businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), bGroup);
+					businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), bGroup, null);
 				}
 				if(secGroupWaiting != null) {
-					businessGroupService.removeFromWaitingList(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), bGroup);
+					businessGroupService.removeFromWaitingList(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), bGroup, null);
 				}
 			}
 			

@@ -41,4 +41,5 @@ public interface Navigator {
 	public void goToSection(int sectionPos);
 
 	public Info getInfo();
+	public void setDelegate(NavigatorDelegate delegate);
 }

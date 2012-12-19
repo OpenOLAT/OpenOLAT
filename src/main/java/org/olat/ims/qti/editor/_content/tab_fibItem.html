@@ -141,15 +141,15 @@
 					<option value="multi" 
 					#if(!$question.isSingleCorrect())
 						selected
-						#set ($readonly = "readonly=\"readonly\"")
+						#set ($readonly = 'readonly=\"readonly\"')
 						#set ($css = "b_disabled")
 					#end
 					>$r.translate("valuation_method_multi")</option>
 					<option value="single" 
 					#if($question.isSingleCorrect())
 						selected
-						#set ($readonly = "")
 						#set ($css = "")
+						#set ($readonly = "")
 					#end
 					>$r.translate("valuation_method_single")</option>
 					</select>

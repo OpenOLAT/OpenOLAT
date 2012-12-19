@@ -67,8 +67,6 @@ public class FileSystemTestController extends BasicController implements Generic
 	private final static String STATUS_FILE_WRITTEN = "Written test dirs/files";
 	private final static String STATUS_CHECKING     = "Checking test dirs/files...";
 	private final static String STATUS_FILE_CHECKED = "File checked";
-	private final static String STATUS_WAIT_CHECK   = "Waiting for check-result...";
-	private final static String STATUS_FINISHED     = "Finished"; 
 	private String testStatus = STATUS_STOPPED;
 	
 	private int loops = 1;
@@ -313,7 +311,7 @@ public class FileSystemTestController extends BasicController implements Generic
 		int loopCounter = 1;
 		while (checkWithRetriesEnabled && loopCounter++ < maxRetries) {
 			try {
-				Thread.currentThread().sleep(loopCounter * 100);
+				Thread.sleep(loopCounter * 100);
 			} catch (InterruptedException e) {
 				log.error("Exception in checkFileExists, " + e);
 			}

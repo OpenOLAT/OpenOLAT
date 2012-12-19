@@ -83,7 +83,7 @@ public class FunctionalCourseTest {
 	public final static String EDITOR_COURSE_OVERVIEW_FILE = "/org/olat/course/overview_comprehensive_guide_to_c_programming.html";
 
 	public final static int LARGE_COURSE_FILE_COUNT = 20;
-	public final static long LARGE_COURSE_FILE_SIZE = 5000000;
+	public final static long LARGE_COURSE_FILE_SIZE = 50000;
 	public final static int LARGE_COURSE_TEST_COUNT = 20;
 	public final static int LARGE_COURSE_GROUP_COUNT = 15;
 	public final static String LARGE_COURSE_IQ_TEST_SHORT_TITLE = "QTI";
@@ -317,5 +317,12 @@ public class FunctionalCourseTest {
 		long courseId = repoEntryVO.getOlatResourceId();
 		
 		functionalVOUtil.addGroupToCourse(deploymentUrl, courseId, group);
+		
+		/* login */
+		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
+		
+		//TODO:JK: copy course
+
+		functionalUtil.logout(browser);
 	}
 }

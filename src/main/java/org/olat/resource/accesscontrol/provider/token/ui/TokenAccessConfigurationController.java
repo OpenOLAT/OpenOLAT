@@ -60,14 +60,17 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_accesscontrol_token_form");
 		
 		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, null, formLayout);
+		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		
 		String token = "";
 		if(link.getOffer() instanceof OfferImpl) {
 			token = ((OfferImpl)link.getOffer()).getToken();
 		}
 		tokenEl = uifactory.addTextElement("token", "accesscontrol.token", 255, token, formLayout);
+		tokenEl.setElementCssClass("o_sel_accesscontrol_token");
 		
 		super.initForm(formLayout, listener, ureq);
 	}

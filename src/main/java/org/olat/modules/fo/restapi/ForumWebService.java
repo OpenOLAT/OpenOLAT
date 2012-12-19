@@ -25,6 +25,8 @@ import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -75,6 +77,7 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.restapi.support.MediaTypeVariants;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 
@@ -476,13 +479,13 @@ public class ForumWebService {
 	}
 	
 	/**
-	 * Upload the attachment of a message
+	 * Upload the attachment of a message, as parameter:<br/>
+	 * filename The name of the attachment<br/>
+	 * file The attachment.
 	 * @response.representation.200.mediaType application/json, application/xml
 	 * @response.representation.200.doc Ok
 	 * @response.representation.404.doc The identity or the portrait not found
 	 * @param messageKey The key of the message
-	 * @param filename The name of the attachment
-	 * @file file The attachment
 	 * @param request The HTTP request
 	 * @return Ok
 	 */
@@ -490,9 +493,22 @@ public class ForumWebService {
 	@Path("posts/{messageKey}/attachments")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response replyToPostAttachment(@PathParam("messageKey") Long messageKey, @FormParam("filename") String filename,
-			@FormParam("file") InputStream file, @Context HttpServletRequest request) {
-		return attachToPost(messageKey, filename, file, request);
+	public Response replyToPostAttachment(@PathParam("messageKey") Long messageKey, @Context HttpServletRequest request) {
+		InputStream in = null;
+		MultipartReader partsReader = null;	
+		try {
+			partsReader = new MultipartReader(request);
+			File tmpFile = partsReader.getFile();
+			in = new FileInputStream(tmpFile);
+			String filename = partsReader.getValue("filename");
+			return attachToPost(messageKey, filename, in, request);
+		} catch (FileNotFoundException e) {
+			log.error("", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			MultipartReader.closeQuietly(partsReader);
+			IOUtils.closeQuietly(in);
+		}
 	}
 	
 	/**

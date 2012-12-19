@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.configuration.AbstractConfigOnOff;
@@ -34,11 +36,11 @@ import org.olat.core.configuration.AbstractConfigOnOff;
  * Common class for all CourseNodeConfigratiuon classes. 
  * @author guretzki
  */
-public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOff {
+public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOff implements CourseNodeConfiguration {
 	
 	private int order = 0;
-	private String name;
-	private List<String> alias;
+
+	private List<String> alternatives;
 	
 	public AbstractCourseNodeConfiguration() {
 		super();
@@ -47,8 +49,25 @@ public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOf
 	public void setOrder(int order) {
 		this.order = order;
 	}
+	
+	@Override
 	public int getOrder() {
 		return order;
 	}
-
+	
+	@Override
+	public List<String> getAlternativeCourseNodes() {
+		if(alternatives == null) {
+			return Collections.emptyList();
+		}
+		return alternatives;
+	}
+	
+	public void setAlternativeCourseNodes(List<String> alternatives) {
+		if(alternatives == null || alternatives.isEmpty()) {
+			this.alternatives = null;
+		} else {
+			this.alternatives = new ArrayList<String>(alternatives);
+		}
+	}
 }

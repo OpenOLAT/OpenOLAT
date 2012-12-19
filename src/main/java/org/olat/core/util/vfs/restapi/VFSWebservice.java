@@ -20,6 +20,10 @@
 package org.olat.core.util.vfs.restapi;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.Normalizer;
@@ -27,6 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -47,7 +52,9 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.codec.binary.Base64;
-import org.olat.core.util.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSConstants;
@@ -55,12 +62,15 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 
 public class VFSWebservice {
 
 	private static final String VERSION  = "1.0";
+	
+	private static final OLog log = Tracing.createLoggerFor(VFSWebservice.class);
 	
 	public static CacheControl cc = new CacheControl();
 	static {
@@ -131,9 +141,8 @@ public class VFSWebservice {
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response postFileToRoot(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
-			@FormParam("file") InputStream file, @Context UriInfo uriInfo) {
-		return putFile(foldername, filename, file, uriInfo, Collections.<PathSegment>emptyList());
+	public Response postFileToRoot(@Context UriInfo uriInfo, @Context HttpServletRequest request) {
+		return addFileToFolder(uriInfo, Collections.<PathSegment>emptyList(), request);
 	}
 	
 	/**
@@ -172,9 +181,9 @@ public class VFSWebservice {
 	@Path("{path:.*}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response postFileToFolder(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
-			@FormParam("file") InputStream file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
-		return putFile(foldername, filename, file, uriInfo, path);
+	public Response postFileToFolder(@Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path,
+			@Context HttpServletRequest request) {
+			return addFileToFolder(uriInfo, path, request);
 	}
 	
 	/**
@@ -212,9 +221,8 @@ public class VFSWebservice {
 	@PUT
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response putFileToRoot(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
-			@FormParam("file") InputStream file, @Context UriInfo uriInfo) {
-		return putFile(foldername, filename, file, uriInfo, Collections.<PathSegment>emptyList());
+	public Response putFileToRoot(@Context UriInfo uriInfo, @Context HttpServletRequest request) {
+		return addFileToFolder(uriInfo, Collections.<PathSegment>emptyList(), request);
 	}
 	
 	/**
@@ -251,9 +259,31 @@ public class VFSWebservice {
 	@Path("{path:.*}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response putFileToFolder(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
-			@FormParam("file") InputStream file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
-		return putFile(foldername, filename, file, uriInfo, path);
+	public Response putFileToFolder(@Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path,
+			@Context HttpServletRequest request) {
+		return addFileToFolder(uriInfo, path, request);
+	}
+	
+	private Response addFileToFolder(UriInfo uriInfo, List<PathSegment> path,
+			 HttpServletRequest request) {
+		InputStream in = null;
+		MultipartReader partsReader = null;
+		try {
+			partsReader = new MultipartReader(request);
+			File tmpFile = partsReader.getFile();
+			if(tmpFile != null) {
+				in = new FileInputStream(tmpFile);
+			}
+			String filename = partsReader.getValue("filename");
+			String foldername = partsReader.getValue("foldername");
+			return putFile(foldername, filename, in, uriInfo, path);
+		} catch (FileNotFoundException e) {
+			log.error("", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			MultipartReader.closeQuietly(partsReader);
+			IOUtils.closeQuietly(in);
+		}
 	}
 	
 	/**
@@ -361,12 +391,15 @@ public class VFSWebservice {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		OutputStream out = newFile.getOutputStream(false);
-		FileUtils.copy(file, out);
-		FileUtils.closeSafely(out);
-		FileUtils.closeSafely(file);
-
-		return Response.ok(createFileVO(newFile, uriInfo)).build();
+		try {
+			OutputStream out = newFile.getOutputStream(false);
+			IOUtils.copy(file, out);
+			IOUtils.closeQuietly(out);
+			IOUtils.closeQuietly(file);
+			return Response.ok(createFileVO(newFile, uriInfo)).build();
+		} catch (IOException e) {
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
 	protected Response get(List<PathSegment> path, UriInfo uriInfo, Request request) {

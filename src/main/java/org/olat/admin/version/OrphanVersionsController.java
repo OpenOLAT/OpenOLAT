@@ -135,7 +135,7 @@ public class OrphanVersionsController extends BasicController {
 		}
 	}
 
-	private class OrphanTableModel implements TableDataModel {
+	private class OrphanTableModel implements TableDataModel<OrphanVersion> {
 		
 		private List<OrphanVersion> orphanList;
 		
@@ -186,7 +186,7 @@ public class OrphanVersionsController extends BasicController {
 		}
 
 		@Override
-		public void setObjects(List objects) {
+		public void setObjects(List<OrphanVersion> objects) {
 			orphanList = objects;
 		}
 

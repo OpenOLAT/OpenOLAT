@@ -85,5 +85,16 @@ public class MailerResult {
 	public void setReturnCode(int returnCode) {
 		this.returnCode = returnCode;
 	}
-
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("mailerResult[");
+		if(returnCode == 0) {
+			sb.append("OK");
+		} else {
+			sb.append("Problems");
+		}
+		return sb.append("]").toString();
+	}
 }

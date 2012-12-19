@@ -26,6 +26,7 @@
 package org.olat.modules.scorm;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -58,6 +60,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.CourseModule;
@@ -104,7 +107,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback,
 			File cpRoot, String resourceId, String courseIdNodeId, String lesson_mode, String credit_mode,
-			boolean previewMode, boolean assessable, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
+			boolean previewMode, String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -124,9 +127,17 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		myContent.put("apiadapter", jsAdapter);
 		
 		// init SCORM adapter
-		scormAdapter = new OLATApiAdapter();	
-		scormAdapter.addAPIListener(apiCallback);
-		scormAdapter.init(cpRoot, resourceId, courseIdNodeId, FolderConfig.getCanonicalRoot(), this.username, ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, loc)+", "+ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, loc), lesson_mode, credit_mode, this.hashCode());
+		try {
+			scormAdapter = new OLATApiAdapter();	
+			scormAdapter.addAPIListener(apiCallback);
+			scormAdapter.init(cpRoot, resourceId, courseIdNodeId, FolderConfig.getCanonicalRoot(), this.username, ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, loc)+", "+ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, loc), lesson_mode, credit_mode, this.hashCode());
+		} catch (IOException e) {
+			showError("error.manifest.corrupted");
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, new Panel("empty"), "scorm" + resourceId);
+			columnLayoutCtr = ctr;
+			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			return;
+		}
 
 		// at this point we know the filelocation for our xstream-sco-score file (FIXME:fj: do better
 		
@@ -217,7 +228,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		listenTo(columnLayoutCtr);
 		
 		//scrom API calls get handled by this mapper
-		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessable, cpRoot, scormAdapter, attemptsIncremented);
+		Mapper mapper = new ScormAPIMapper(ureq.getIdentity(), resourceId, courseIdNodeId, assessableType, cpRoot, scormAdapter, attemptsIncremented);
 		String scormCallbackUri = registerMapper(ureq, mapper);
 		myContent.contextPut("scormCallbackUri", scormCallbackUri+"/");
 	}
@@ -362,7 +373,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private void cleanUpCollectedScoData() {
 		if(scorm_lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE) ||
 			 scorm_lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW)){
-			String path = FolderConfig.getCanonicalRoot()+"/tmp/"+this.hashCode();
+			String path = WebappHelper.getTmpDir() + "/tmpscorm/" + hashCode();
 			FileUtils.deleteDirsAndFiles( new File(path),true, true);
 		}
 	}
@@ -420,11 +431,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private void updateMenuTreeIconsAndMessages() {
 		menuTree.setDirty(true);
 		Map<String,String> itemsStat = scormAdapter.getScoItemsStatus();
-		Map idToNode = treeModel.getScormIdToNodeRelation();
+		Map<String,GenericTreeNode> idToNode = treeModel.getScormIdToNodeRelation();
 		
 		for (Iterator<String> it = itemsStat.keySet().iterator(); it.hasNext();) {
 			String itemId = it.next();
-			GenericTreeNode tn = (GenericTreeNode) idToNode.get(itemId);
+			GenericTreeNode tn = idToNode.get(itemId);
 			// change icon decorator
 			tn.setIconDecorator1CssClass("o_scorm_" + (String) itemsStat.get(itemId));
 		}

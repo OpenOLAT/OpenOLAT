@@ -54,6 +54,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 	"classpath:/org/olat/core/util/_spring/utilCorecontext.xml",
 	"classpath:/org/olat/core/util/i18n/devtools/_spring/devtoolsCorecontext.xml",
 	"classpath:/org/olat/core/util/event/_spring/frameworkStartedEventCorecontext.xml",
+	"classpath:/org/olat/core/id/context/_spring/historyCorecontext.xml",
 
 	"classpath:/org/olat/core/commons/persistence/_spring/databaseCorecontext.xml",
 	"classpath:/org/olat/core/commons/taskExecutor/_spring/taskExecutorCorecontext.xml",

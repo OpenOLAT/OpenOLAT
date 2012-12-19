@@ -52,6 +52,11 @@ public class VFSMediaFilesContainer extends AbstractVirtualContainer implements 
 	}
 	
 	@Override
+	public boolean exists() {
+		return rootContainer != null && rootContainer.exists();
+	}
+
+	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		return this == vfsItem || rootContainer.isSame(vfsItem);
 	}

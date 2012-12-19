@@ -406,11 +406,13 @@ public class FilterForUserController extends BasicController {
 		MarkResourceStat stat = stats.get(subPath);
 		MarkingService markingService = (MarkingService)CoreSpringFactory.getBean(MarkingService.class);
 		
-		String businessPath = currentMark == null ?
-				getWindowControl().getBusinessControl().getAsString() + "[Message:" + m.getKey() + "]"
-				: currentMark.getBusinessPath();
-		Controller markCtrl = markingService.getMarkController(ureq, getWindowControl(), currentMark, stat, forumOres, subPath, businessPath);
-		vcThreadView.put("mark_"+msgCount, markCtrl.getInitialComponent());
+		if(!ureq.getUserSession().getRoles().isGuestOnly()) {
+			String businessPath = currentMark == null ?
+					getWindowControl().getBusinessControl().getAsString() + "[Message:" + m.getKey() + "]"
+					: currentMark.getBusinessPath();
+			Controller markCtrl = markingService.getMarkController(ureq, getWindowControl(), currentMark, stat, forumOres, subPath, businessPath);
+			vcThreadView.put("mark_"+msgCount, markCtrl.getInitialComponent());
+		}
 		
 		map.put("modified", dateFormat.format(m.getLastModified()));
 		// message attachments

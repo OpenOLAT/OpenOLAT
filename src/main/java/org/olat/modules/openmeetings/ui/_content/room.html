@@ -1,0 +1,54 @@
+#if($disabled)
+ <div class="b_warning">$r.translate("openmeetings.disabled.error")</div>
+#elseif($noroom)
+ <div class="b_warning">$r.translate("room.notfound.error")</div>
+#else
+	<h3 class="b_with_small_icon_left o_openmeetings_icon">$roomName</h3>
+	#if($roomComment)
+		<div class="b_note">$roomComment</div>
+	#end
+	
+	
+	<p>
+		$r.translate("start.hint")
+	</p>
+	#if($roomClosed)
+		<p class="b_important">$r.translate("room.closed.explanation")</p>
+	#end
+
+	#if($r.available("start.room.guest"))
+		$r.render("start.room.guest")
+		## Component to render dialog with guest nickname
+		#if($r.available("openCmd"))
+			$r.render("openCmd")
+		#end
+	#else
+		$r.render("start.room")
+	#end
+
+	#if($r.available("open.recordings"))
+		$r.render("open.recordings")
+	#end
+	
+	#if($r.available("open.room") || $r.available("room.members") || $r.available("edit"))
+		<p />
+		<hr />
+		$r.contextHelpWithWrapper("org.olat.modules.openmeetings.ui","room_admin.html","help.hover.openmeetings.room_admin")
+		<h4>$r.translate("administration.title")</h4>
+		#if($r.available("open.room"))
+			$r.render("open.room")
+			$r.render("close.room")
+		#end
+	
+		
+		#if($r.available("room.members"))
+			$r.render("room.members")
+		#end
+		
+		#if($r.available("edit"))
+			$r.render("edit")
+		#end
+	#end
+
+#end
+

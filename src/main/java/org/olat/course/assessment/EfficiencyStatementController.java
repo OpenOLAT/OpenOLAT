@@ -151,7 +151,7 @@ public class EfficiencyStatementController extends BasicController {
 		
 		if(courseRepoKey != null && links) {
 			courseLink = LinkFactory.createButton("course.link", userDataVC, this);
-			courseLink.setCustomEnabledLinkCSS("b_link_course");
+			courseLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_course");
 			userDataVC.put("course.link", courseLink);
 		}
 		
@@ -165,11 +165,11 @@ public class EfficiencyStatementController extends BasicController {
 
 		if(!getIdentity().equals(statementOwner) && links) {
 			homeLink = LinkFactory.createButton("home.link", userDataVC, this);
-			homeLink.setCustomEnabledLinkCSS("b_link_to_home");
+			homeLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_to_home");
 			userDataVC.put("home.link", homeLink);
 			
 			contactLink = LinkFactory.createButton("contact.link", userDataVC, this);
-			contactLink.setCustomEnabledLinkCSS("b_link_mail");
+			contactLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_mail");
 			userDataVC.put("contact.link", contactLink);
 		}
 
@@ -177,7 +177,7 @@ public class EfficiencyStatementController extends BasicController {
 			userDataVC.contextPut("groupName", group.getName());
 			if(links) {
 				groupLink = LinkFactory.createButton("group.link", userDataVC, this);
-				groupLink.setCustomEnabledLinkCSS("b_link_group");
+				groupLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_group");
 				userDataVC.put("group.link", groupLink);
 			}
 		}

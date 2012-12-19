@@ -264,6 +264,11 @@ public class ImportGlossaryReferencesController extends BasicController {
 			}
 		}
 	}
+	
+	protected void importWithoutAsking (UserRequest ureq) {
+        event (ureq, importButton, Event.DONE_EVENT);
+        fireEvent(ureq, Event.DONE_EVENT);
+	}
 
 	protected void doDispose() {
 		// Controllers autodisposed by basic controller

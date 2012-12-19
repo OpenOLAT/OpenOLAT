@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- JMS Stuff for ActiveMQ -->
+	<bean id="searchConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
+		<property name="brokerURL" value="${search.broker.url}" /> 
+	</bean>
+
+	<bean id="searchQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
+		<constructor-arg value="olat/searchQueue" />
+	</bean>
+</beans>

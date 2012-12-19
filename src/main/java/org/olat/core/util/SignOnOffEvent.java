@@ -35,6 +35,8 @@ import org.olat.core.util.event.MultiUserEvent;
  */
 public class SignOnOffEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = 5721212429245547948L;
+	
 	private String identityName;
 	private boolean signOn;
 	/**

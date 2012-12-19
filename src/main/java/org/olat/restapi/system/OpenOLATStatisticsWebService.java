@@ -31,28 +31,26 @@ import javax.ws.rs.core.Response;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.SearchServiceStatus;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.restapi.system.vo.IndexerStatisticsVO;
 import org.olat.restapi.system.vo.OpenOLATStatisticsVO;
 import org.olat.restapi.system.vo.RepositoryStatisticsVO;
 import org.olat.restapi.system.vo.SessionsVO;
 import org.olat.restapi.system.vo.UserStatisticsVO;
-import org.olat.search.service.SearchServiceFactory;
-import org.olat.search.service.SearchServiceStatusImpl;
-import org.olat.search.service.indexer.FullIndexerStatus;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OpenOLATStatisticsWebService {
+	
+	private final IndexerWebService indexerWebService = new IndexerWebService();
 	
 	/**
 	 * Return the statistics about OpenOLAT, users count, courses count... 
@@ -71,7 +69,7 @@ public class OpenOLATStatisticsWebService {
 		stats.setSessions(getSessionsVO());
 		stats.setUserStatistics(getUserStatistics());
 		stats.setRepositoryStatistics(getRepositoryStatistics());
-		stats.setIndexerStatistics(getIndexerStatistics());
+		stats.setIndexerStatistics(indexerWebService.getIndexerStatistics());
 		return Response.ok(stats).build();
 	}
 	
@@ -121,12 +119,9 @@ public class OpenOLATStatisticsWebService {
    * @param request The HTTP request
 	 * @return The statistics about the indexer
 	 */
-	@GET
 	@Path("indexer")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getIndexerStatistics(@Context HttpServletRequest request) {
-		IndexerStatisticsVO stats = getIndexerStatistics();
-		return Response.ok(stats).build();
+	public IndexerWebService getIndexerStatistics(@Context HttpServletRequest request) {
+		return indexerWebService;
 	}
 
 	/**
@@ -170,33 +165,13 @@ public class OpenOLATStatisticsWebService {
 		return stats;
 	}
 	
-	private IndexerStatisticsVO getIndexerStatistics() {
-		IndexerStatisticsVO stats = new IndexerStatisticsVO();
-
-		SearchServiceStatus status = SearchServiceFactory.getService().getStatus();
-		if(status instanceof SearchServiceStatusImpl) {
-			SearchServiceStatusImpl statusImpl = (SearchServiceStatusImpl)status;
-			FullIndexerStatus fStatus = statusImpl.getFullIndexerStatus();
-			stats.setIndexedDocumentCount(fStatus.getDocumentCount());
-			stats.setExcludedDocumentCount(fStatus.getExcludedDocumentCount());
-			stats.setIndexSize(fStatus.getIndexSize());
-			stats.setIndexingTime(fStatus.getIndexingTime());
-			stats.setFullIndexStartedAt(fStatus.getFullIndexStartedAt());
-			stats.setDocumentQueueSize(fStatus.getDocumentQueueSize());
-			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer());
-			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer());
-			stats.setLastFullIndexTime(fStatus.getLastFullIndexTime());
-		}
-		stats.setStatus(status.getStatus());
-
-		return stats;
-	}
-	
 	private SessionsVO getSessionsVO() {
 		SessionsVO vo = new SessionsVO();
-		vo.setCount(UserSession.getUserSessionsCnt());
 
-		Set<UserSession> userSessions = UserSession.getAuthenticatedUserSessions();
+		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		vo.setCount(sessionManager.getUserSessionsCnt());
+
+		Set<UserSession> userSessions = sessionManager.getAuthenticatedUserSessions();
 		int webdavcount = 0;
 		int secureWebdavCount = 0;
 		int authenticatedcount = 0;

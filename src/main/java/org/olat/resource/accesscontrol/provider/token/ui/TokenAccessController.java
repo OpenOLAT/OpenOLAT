@@ -82,6 +82,7 @@ public class TokenAccessController extends FormBasicController implements FormCo
 		}
 			
 		tokenEl = uifactory.addTextElement("token", "accesscontrol.token", 255, "", formLayout);
+		tokenEl.setElementCssClass("o_sel_accesscontrol_token_entry");
 			
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

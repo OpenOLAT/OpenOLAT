@@ -137,6 +137,7 @@ public class FunctionalUtil {
 	public final static String TREE_NODE_ANCHOR_CSS = "x-tree-node-anchor";
 	public final static String TREE_NODE_CSS = "x-tree-node";
 	public final static String TREE_NODE_LOADING_CSS = "x-tree-node-loading";
+	public final static String TREE_LEVEL0_CSS = "b_tree_l0";
 	public final static String TREE_LEVEL1_CSS = "b_tree_l1";
 	public final static String TREE_LEVEL2_CSS = "b_tree_l2";
 	public final static String TREE_LEVEL_OPEN_CSS = "b_tree_level_open";
@@ -201,6 +202,7 @@ public class FunctionalUtil {
 	private String treeNodeAnchorCss;
 	private String treeNodeCss;
 	private String treeNodeLoadingCss;
+	private String treeLevel0Css;
 	private String treeLevel1Css;
 	private String treeLevel2Css;
 	private String treeLevelOpenCss;
@@ -282,6 +284,7 @@ public class FunctionalUtil {
 		treeNodeAnchorCss = TREE_NODE_ANCHOR_CSS;
 		treeNodeCss = TREE_NODE_CSS;
 		treeNodeLoadingCss = TREE_NODE_LOADING_CSS;
+		treeLevel0Css = TREE_LEVEL0_CSS;
 		treeLevel1Css = TREE_LEVEL1_CSS;
 		treeLevel2Css = TREE_LEVEL2_CSS;
 		treeLevelOpenCss = TREE_LEVEL_OPEN_CSS;
@@ -470,8 +473,8 @@ public class FunctionalUtil {
 			}
 			
 			if((content == null && source == null) || 
-					(flags != null && source != null && !ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && content.equals(source)) ||
-					source.contains(content)){
+					(flags != null && content != null && ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && content.equals(source)) ||
+					(source != null && !ArrayUtils.contains(flags, WaitForContentFlag.EQUALS) && source.contains(content))){
 				log.info("found content after " + (currentTime - startTime) + "ms");
 				
 				/* go back to toplevel */
@@ -956,13 +959,13 @@ public class FunctionalUtil {
 		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[contains(@class, '")
+		selectorBuffer.append("xpath=(//div[contains(@class, '")
 		.append(getContentSegmentContainerCss())
-		.append("')]//ul//(li[contains(@class, '")
+		.append("')]//ul//li[contains(@class, '")
 		.append(getContentSegmentCss())
 		.append("')])[")
-		.append(segmentIndex)
-		.append("]");
+		.append(segmentIndex + 1)
+		.append("]//a");
 		
 		waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
@@ -1008,6 +1011,38 @@ public class FunctionalUtil {
 	}
 	
 	/**
+	 * Clicks the checkbox at position checkboxIndex from the selection at position checkboxGroupIndex.
+	 * 
+	 * @param browser
+	 * @param formIndex
+	 * @param checkboxGroupIndex
+	 * @param checkboxIndex
+	 * @return true on success
+	 */
+	@Deprecated
+	public boolean clickCheckbox(Selenium browser, int formIndex, int checkboxGroupIndex, int checkboxIndex){
+		idle(browser);
+	
+		StringBuffer selectorBuffer = new StringBuffer();
+	
+		selectorBuffer.append("xpath=//form[")
+		.append(formIndex)
+		.append("]")
+		.append("//div[contains(@class, 'b_form_selection_vertical') or contains(@class, 'b_form_selection_horizontal')][")
+		.append(checkboxGroupIndex + 1)
+		.append("]")
+		.append("//input[@type='checkbox'][")
+		.append(checkboxIndex + 1)
+		.append("]");
+		
+		waitForPageToLoadElement(browser, selectorBuffer.toString());
+		
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
 	 * Clicks the radio button with specific value attribute in groupCss container.
 	 * 
 	 * @param browser
@@ -1021,7 +1056,7 @@ public class FunctionalUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form")
-		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal']")
+		.append("//div[contains(@class, 'b_form_selection_vertical') or contains(@class, 'b_form_selection_horizontal')]")
 		.append("//input[@type='checkbox' and @value='")
 		.append(value)
 		.append("']");
@@ -1050,7 +1085,7 @@ public class FunctionalUtil {
 		selectorBuffer.append("xpath=//form[")
 		.append(formIndex)
 		.append("]")
-		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal'][")
+		.append("//div[contains(@class, 'b_form_selection_vertical') or contains(@class, 'b_form_selection_horizontal')][")
 		.append(radioGroupIndex)
 		.append("]")
 		.append("//input[@type='radio'][")
@@ -1078,7 +1113,7 @@ public class FunctionalUtil {
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("//form")
-		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal']")
+		.append("//div[contains(@class, 'b_form_selection_vertical') or contains(@class, 'b_form_selection_horizontal')]")
 		.append("//input[@type='radio' and @value='")
 		.append(value)
 		.append("']");
@@ -1706,6 +1741,14 @@ public class FunctionalUtil {
 
 	public void setTreeNodeLoadingCss(String treeNodeLoadingCss) {
 		this.treeNodeLoadingCss = treeNodeLoadingCss;
+	}
+
+	public String getTreeLevel0Css() {
+		return treeLevel0Css;
+	}
+
+	public void setTreeLevel0Css(String treeLevel0Css) {
+		this.treeLevel0Css = treeLevel0Css;
 	}
 
 	public String getTreeLevel1Css() {

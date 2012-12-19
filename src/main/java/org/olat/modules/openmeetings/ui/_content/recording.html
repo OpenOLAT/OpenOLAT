@@ -1,0 +1,22 @@
+<p id="o_sel_om_recording" name="o_sel_om_recording">
+	<span id="olatFlashMovieViewer0" class="olatFlashMovieViewer" style="display: block; border: solid 1px #000; width:${width}px; height:${height}px;">
+	<script src='$r.staticLink("movie/player.js")'></script>
+	<script>// <![CDATA[
+		var width = $width;
+		var height = $height;
+		try {
+			var recordingp = document.getElementById("o_sel_om_recording");
+			var curr_width = recordingp.offsetWidth - 3;
+			if(width > curr_width) {
+				var ratio = width / curr_width;
+				width = curr_width;
+				height = height/ ratio;
+			}	
+		} catch(e) {
+			//
+		}                
+		BPlayer.insertPlayer("$recordingUrl","olatFlashMovieViewer0",width,height,"00:00:00.000",0,"video",undefined,false,false,true);//
+	// ]]></script>
+	</span>
+</p>
+$r.render("download")

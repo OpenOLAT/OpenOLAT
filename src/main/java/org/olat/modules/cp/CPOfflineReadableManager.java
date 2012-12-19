@@ -187,7 +187,7 @@ public class CPOfflineReadableManager {
 			boolean evalResult = velocityEngine.evaluate(ctx, sw, "cpexport", template);
 			if (!evalResult)
 				log.error("Could not evaluate velocity template for CP Export");
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("Error while evaluating velovity template for CP Export",e);
 		}
 		

@@ -27,6 +27,7 @@ package org.olat.repository;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -68,6 +69,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.image.Size;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -83,13 +86,17 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryMember;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
+import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.repository.model.RepositoryEntryStrictMember;
 import org.olat.repository.model.RepositoryEntryStrictParticipant;
 import org.olat.repository.model.RepositoryEntryStrictTutor;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -106,12 +113,38 @@ public class RepositoryManager extends BasicManager {
 	
 	private final int PICTUREWIDTH = 570;
 
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
 	private ImageHelper imageHelper;
+	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
+	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
+	private ACReservationDAO reservationDao;
+	@Autowired
+	private MailerWithTemplate mailer;
 
 	
+	/**
+	 * [used by Spring]
+	 * @param repositoryModule
+	 */
+	public void setRepositoryModule(RepositoryModule repositoryModule) {
+		this.repositoryModule = repositoryModule;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param reservationDao
+	 */
+	public void setReservationDao(ACReservationDAO reservationDao) {
+		this.reservationDao = reservationDao;
+	}
+
 	/**
 	 * [used by Spring]
 	 * @param securityManager
@@ -265,43 +298,6 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
-	 * 
-	 * @param addedEntry
-	 */
-	public void deleteRepositoryEntryAndBasesecurity(RepositoryEntry entry) {
-		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
-		//delete all policies
-		BaseSecurityManager.getInstance().deletePolicies(entry.getOlatResource());
-		DBFactory.getInstance().deleteObject(entry);
-		OLATResourceManager.getInstance().deleteOLATResourceable(entry);
-		SecurityGroup ownerGroup = entry.getOwnerGroup();
-		if (ownerGroup != null) {
-			// delete secGroup
-			Tracing.logDebug("deleteRepositoryEntry deleteSecurityGroup ownerGroup=" + ownerGroup, this.getClass());
-			BaseSecurityManager.getInstance().deleteSecurityGroup(ownerGroup);
-			OLATResourceManager.getInstance().deleteOLATResourceable(ownerGroup);
-		}
-		SecurityGroup participantGroup = entry.getParticipantGroup();
-		if (participantGroup != null) {
-			// delete secGroup
-			logDebug("deleteRepositoryEntry deleteSecurityGroup participantGroup=" + participantGroup);
-			BaseSecurityManager.getInstance().deleteSecurityGroup(participantGroup);
-			OLATResourceManager.getInstance().deleteOLATResourceable(participantGroup);
-		}
-		SecurityGroup tutorGroup = entry.getTutorGroup();
-		if (tutorGroup != null) {
-			// delete secGroup
-			logDebug("deleteRepositoryEntry deleteSecurityGroup tutorGroup=" + tutorGroup);
-			BaseSecurityManager.getInstance().deleteSecurityGroup(tutorGroup);
-			OLATResourceManager.getInstance().deleteOLATResourceable(tutorGroup);
-		}
-		
-		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
-		//instead of a controller.
-		deleteImage(entry);
-	}
-	
-	/**
 	 * Copy the repo entry image from the source to the target repository entry.
 	 * If the source repo entry does not exists, nothing will happen
 	 * 
@@ -380,11 +376,11 @@ public class RepositoryManager extends BasicManager {
 		logDebug("deleteRepositoryEntry after load entry=" + entry);
 		logDebug("deleteRepositoryEntry after load entry.getOwnerGroup()=" + entry.getOwnerGroup());
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
-		OLATResource ores = entry.getOlatResource();
+		OLATResource resource = entry.getOlatResource();
 		//delete old context
-		deleteBGcontext(ores);
+		deleteBGcontext(resource);
 		
-		if (!handler.readyToDelete(ores, ureq, wControl)) {
+		if (!handler.readyToDelete(resource, ureq, wControl)) {
 			return false;
 		}
 
@@ -397,18 +393,52 @@ public class RepositoryManager extends BasicManager {
 		BookmarkManager.getInstance().deleteAllBookmarksFor(entry);
 		// delete all catalog entries referencing deleted entry
 		CatalogManager.getInstance().resourceableDeleted(entry);
-		// delete the entry
-		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
-		
-		// inform handler to do any cleanup work... handler must delete the
-		// referenced resourceable aswell.
-		handler.cleanupOnDelete(entry.getOlatResource());
-		
+
 		logDebug("deleteRepositoryEntry after reload entry=" + entry);
 		deleteRepositoryEntryAndBasesecurity(entry);
+		//delete all policies
+		securityManager.deletePolicies(resource);
+		
+		// inform handler to do any cleanup work... handler must delete the
+		// referenced resourceable a swell.
+		handler.cleanupOnDelete(resource);
 
 		logDebug("deleteRepositoryEntry Done");
 		return true;
+	}
+	
+	/**
+	 * 
+	 * @param addedEntry
+	 */
+	public void deleteRepositoryEntryAndBasesecurity(RepositoryEntry entry) {
+		RepositoryEntry reloadedEntry = (RepositoryEntry)DBFactory.getInstance().loadObject(entry, true);
+		dbInstance.getCurrentEntityManager().remove(reloadedEntry);
+		SecurityGroup ownerGroup = reloadedEntry.getOwnerGroup();
+		if (ownerGroup != null) {
+			// delete secGroup
+			logDebug("deleteRepositoryEntry deleteSecurityGroup ownerGroup=" + ownerGroup);
+			securityManager.deleteSecurityGroup(ownerGroup);
+			OLATResourceManager.getInstance().deleteOLATResourceable(ownerGroup);
+		}
+		SecurityGroup participantGroup = reloadedEntry.getParticipantGroup();
+		if (participantGroup != null) {
+			// delete secGroup
+			logDebug("deleteRepositoryEntry deleteSecurityGroup participantGroup=" + participantGroup);
+			securityManager.deleteSecurityGroup(participantGroup);
+			OLATResourceManager.getInstance().deleteOLATResourceable(participantGroup);
+		}
+		SecurityGroup tutorGroup = reloadedEntry.getTutorGroup();
+		if (tutorGroup != null) {
+			// delete secGroup
+			logDebug("deleteRepositoryEntry deleteSecurityGroup tutorGroup=" + tutorGroup);
+			securityManager.deleteSecurityGroup(tutorGroup);
+			OLATResourceManager.getInstance().deleteOLATResourceable(tutorGroup);
+		}
+		
+		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
+		//instead of a controller.
+		deleteImage(entry);
 	}
 	
 	private void deleteBGcontext(OLATResource resource) {
@@ -615,6 +645,39 @@ public class RepositoryManager extends BasicManager {
 		if (displaynames.size() > 1) throw new AssertException("Repository lookup returned zero or more than one result: " + displaynames.size());
 		else if (displaynames.isEmpty()) return null;
 		return displaynames.get(0);
+	}
+	
+	/**
+	 * Load a list of repository entry without all the security groups ...
+	 * @param resources
+	 * @return
+	 */
+	public List<RepositoryEntryShort> loadRepositoryEntryShorts(List<OLATResource> resources) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntryShortImpl.class.getName()).append(" v ")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" where ores.key in (:resKeys)");
+		
+		List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
+		List<RepositoryEntryShort> shorties = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryShort.class)
+				.setParameter("resKeys", resourceKeys)
+				.getResultList();
+		return shorties;
+	}
+	
+	/**
+	 * Load a list of repository entry without all the security groups ...
+	 * @param resources
+	 * @return
+	 */
+	public List<RepositoryEntryShortImpl> loadRepositoryEntryShortsByResource(Collection<Long> resIds, String resourceType) {
+		List<RepositoryEntryShortImpl> shorties = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntryShortsByResourceableIds", RepositoryEntryShortImpl.class)
+				.setParameter("resIds", resIds)
+				.setParameter("resName", resourceType)
+				.getResultList();
+		return shorties;
 	}
 	
 	/**
@@ -1570,6 +1633,22 @@ public class RepositoryManager extends BasicManager {
     }
 	}
 	
+	public void acceptPendingParticipation(Identity ureqIdentity, Identity identityToAdd, OLATResource resource, ResourceReservation reservation) {
+		RepositoryEntry re = lookupRepositoryEntry(resource, false);
+		if(re != null) {
+			if("repo_participant".equals(reservation.getType())) {
+				IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+				//roles is not needed as I add myself as participant
+				addParticipants(ureqIdentity, null, iae, re, null);
+			} else if("repo_tutors".equals(reservation.getType())) {
+				IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+				//roles is not needed as I add myself as tutor
+				addTutors(ureqIdentity, null, iae, re, null);
+			}
+			reservationDao.deleteReservation(reservation);
+		}
+	}
+	
 	/**
 	 * add provided list of identities as tutor to the repo entry. silently ignore
 	 * if some identities were already tutor before.
@@ -1578,26 +1657,63 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param userActivityLogger
 	 */
-	public void addTutors(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re) {
+	public void addTutors(Identity ureqIdentity, Roles ureqRoles, IdentitiesAddEvent iae, RepositoryEntry re, MailPackage mailing) {
 		List<Identity> addIdentities = iae.getAddIdentities();
 		List<Identity> reallyAddedId = new ArrayList<Identity>();
-		for (Identity identity : addIdentities) {
-			if (!securityManager.isIdentityInSecurityGroup(identity, re.getTutorGroup())) {
-				securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
-				reallyAddedId.add(identity);
-				ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-				ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-				try{
-					ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
-							LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-				} finally {
-					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		for (Identity identityToAdd : addIdentities) {
+			if (!securityManager.isIdentityInSecurityGroup(identityToAdd, re.getTutorGroup())) {
+				
+				boolean mustAccept = true;
+				if(ureqIdentity != null && ureqIdentity.equals(identityToAdd)) {
+					mustAccept = false;//adding itself, we hope that he knows what he makes
+				} else if(ureqRoles == null || ureqIdentity == null) {
+					mustAccept = false;//administrative task
+				} else {
+					mustAccept = repositoryModule.isAcceptMembership(ureqRoles);
 				}
-				logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
-						+ "' to securitygroup with key " + re.getTutorGroup().getKey());
+				
+				if(mustAccept) {
+					ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, re.getOlatResource());
+					if(olderReservation == null) {
+						Calendar cal = Calendar.getInstance();
+						cal.add(Calendar.MONTH, 6);
+						Date expiration = cal.getTime();
+						ResourceReservation reservation =
+								reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, re.getOlatResource());
+						if(reservation != null) {
+							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing, mailer);
+						}
+					}
+				} else {
+					addInternalTutors(ureqIdentity, identityToAdd, re, reallyAddedId);
+					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing, mailer);
+				}
+
 			}//else silently ignore already owner identities
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);
+	}
+	
+	/**
+	 * Internal method to add tutors, it makes no check.
+	 * @param ureqIdentity
+	 * @param identity
+	 * @param re
+	 * @param reallyAddedId
+	 */
+	private void addInternalTutors(Identity ureqIdentity, Identity identity, RepositoryEntry re, List<Identity> reallyAddedId) {
+		securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
+		reallyAddedId.add(identity);
+		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+		try{
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+		} finally {
+			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		}
+		logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+				+ "' to securitygroup with key " + re.getTutorGroup().getKey());
 	}
 	
 	/**
@@ -1632,26 +1748,62 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param userActivityLogger
 	 */
-	public void addParticipants(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re) {
+	public void addParticipants(Identity ureqIdentity, Roles ureqRoles, IdentitiesAddEvent iae, RepositoryEntry re, MailPackage mailing) {
 		List<Identity> addIdentities = iae.getAddIdentities();
 		List<Identity> reallyAddedId = new ArrayList<Identity>();
-		for (Identity identity : addIdentities) {
-			if (!securityManager.isIdentityInSecurityGroup(identity, re.getParticipantGroup())) {
-				securityManager.addIdentityToSecurityGroup(identity, re.getParticipantGroup());
-				reallyAddedId.add(identity);
-				ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-				ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-				try{
-					ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
-							LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-				} finally {
-					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		for (Identity identityToAdd : addIdentities) {
+			if (!securityManager.isIdentityInSecurityGroup(identityToAdd, re.getParticipantGroup())) {
+				
+				boolean mustAccept = true;
+				if(ureqIdentity != null && ureqIdentity.equals(identityToAdd)) {
+					mustAccept = false;//adding itself, we hope that he knows what he makes
+				} else if(ureqRoles == null || ureqIdentity == null) {
+					mustAccept = false;//administrative task
+				} else {
+					mustAccept = repositoryModule.isAcceptMembership(ureqRoles);
 				}
-				logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
-						+ "' to securitygroup with key " + re.getParticipantGroup().getKey());
-			}//else silently ignore already owner identities
+				
+				if(mustAccept) {
+					ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, re.getOlatResource());
+					if(olderReservation == null) {
+						Calendar cal = Calendar.getInstance();
+						cal.add(Calendar.MONTH, 6);
+						Date expiration = cal.getTime();
+						ResourceReservation reservation =
+								reservationDao.createReservation(identityToAdd, "repo_participant", expiration, re.getOlatResource());
+						if(reservation != null) {
+							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing, mailer);
+						}
+					}
+				} else {
+					addInternalParticipant(ureqIdentity, identityToAdd, re);
+					reallyAddedId.add(identityToAdd);
+					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing, mailer);
+				}
+			}
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);
+	}
+	
+	/**
+	 * This is for internal usage only. The method dosn't make any check.
+	 * @param ureqIdentity
+	 * @param identity
+	 * @param re
+	 */
+	private void addInternalParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
+		securityManager.addIdentityToSecurityGroup(identity, re.getParticipantGroup());
+		
+		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+		try{
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+		} finally {
+			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		}
+		logAudit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+				+ "' to securitygroup with key " + re.getParticipantGroup().getKey());
 	}
 	
 	/**
@@ -1661,9 +1813,11 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param logger
 	 */
-	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
+	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing){
 		for (Identity identity : removeIdentities) {
     	securityManager.removeIdentityFromSecurityGroup(identity, re.getParticipantGroup());
+    	
+    	RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
 
 			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -1675,6 +1829,8 @@ public class RepositoryManager extends BasicManager {
 			}
 			logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
 					+ "' from securitygroup with key " + re.getParticipantGroup().getKey());
+			
+			
     }
 	}
 	
@@ -1705,6 +1861,13 @@ public class RepositoryManager extends BasicManager {
 						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
 			} finally {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+			}
+		}
+		
+		List<ResourceReservation> reservations = reservationDao.loadReservations(Collections.singletonList(re.getOlatResource()));
+		for(ResourceReservation reservation:reservations) {
+			if(members.contains(reservation.getIdentity())) {
+				reservationDao.deleteReservation(reservation);
 			}
 		}
 		
@@ -1863,7 +2026,8 @@ public class RepositoryManager extends BasicManager {
 		return entries;
 	}
 	
-	public void updateRepositoryEntryMembership(Identity ureqIdentity, RepositoryEntry re, List<RepositoryEntryPermissionChangeEvent> changes) {
+	public void updateRepositoryEntryMembership(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re,
+			List<RepositoryEntryPermissionChangeEvent> changes, MailPackage mailing) {
 		for(RepositoryEntryPermissionChangeEvent e:changes) {
 			if(e.getRepoOwner() != null) {
 				if(e.getRepoOwner().booleanValue()) {
@@ -1875,7 +2039,7 @@ public class RepositoryManager extends BasicManager {
 			
 			if(e.getRepoTutor() != null) {
 				if(e.getRepoTutor().booleanValue()) {
-					addTutors(ureqIdentity, new IdentitiesAddEvent(e.getMember()), re);
+					addTutors(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re, mailing);
 				} else {
 					removeTutors(ureqIdentity, Collections.singletonList(e.getMember()), re);
 				}
@@ -1883,9 +2047,9 @@ public class RepositoryManager extends BasicManager {
 			
 			if(e.getRepoParticipant() != null) {
 				if(e.getRepoParticipant().booleanValue()) {
-					addParticipants(ureqIdentity, new IdentitiesAddEvent(e.getMember()), re);
+					addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re, mailing);
 				} else {
-					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re);
+					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re, mailing);
 				}
 			}
 		}

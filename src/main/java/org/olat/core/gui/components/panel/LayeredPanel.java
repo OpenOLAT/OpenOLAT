@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.panel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
@@ -73,7 +74,9 @@ public class LayeredPanel extends Panel {
 	 * @return The list of layers in this panel
 	 */
 	List<Component> getLayers() {
-		return super.stackList;
+		synchronized(stackList) {
+			return new ArrayList<Component>(stackList);
+		}
 	}
 
 	/**

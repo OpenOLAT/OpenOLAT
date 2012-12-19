@@ -320,7 +320,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 		} else if (source == glossaryImportController) {
 				if (event == Event.DONE_EVENT) {
 					//getWindowControl().pushAsModalDialog(translator.translate("import.suc.title"), finishedMessage);
-					// save the editor tree model, to persist any changes made during import.					
+					// save the editor tree model, to persist any changes made during import.
 					CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 					callback.finished(ureq);
 				} else if (event == Event.CANCELLED_EVENT) {
@@ -345,7 +345,11 @@ public class ImportCourseController extends BasicController implements IAddContr
 			sharedFolderImportController = new ImportSharedfolderReferencesController(sfImportExport, course, ureq, getWindowControl());
 			listenTo(sharedFolderImportController);
 			
-			myPanel.setContent(sharedFolderImportController.getInitialComponent());
+			if (importYesMode) {
+				sharedFolderImportController.importWithoutAsking(ureq);
+			} else {
+				myPanel.setContent(sharedFolderImportController.getInitialComponent());
+			}
 		}
 	}
 
@@ -358,7 +362,11 @@ public class ImportCourseController extends BasicController implements IAddContr
 			glossaryImportController = new ImportGlossaryReferencesController(sfImportExport, course, ureq, getWindowControl());
 			listenTo(glossaryImportController);
 			
-			myPanel.setContent(glossaryImportController.getInitialComponent());
+			if (importYesMode) {
+				glossaryImportController.importWithoutAsking(ureq);
+			} else {
+				myPanel.setContent(glossaryImportController.getInitialComponent());
+			}
 		}
 	}
 	
@@ -416,8 +424,18 @@ public class ImportCourseController extends BasicController implements IAddContr
 					break;
 				}
 				
+				if (nodeListPos == nodeList.size() ) {
+					return true;
+				}
+				
 				myPanel.setContent(activeImportController.getInitialComponent());
 				return false;
+				
+			} else {
+				
+				if (nodeListPos == nodeList.size() ) {
+					return true;
+				}
 			}
 		}
 		return true;

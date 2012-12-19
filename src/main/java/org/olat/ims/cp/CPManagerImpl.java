@@ -303,7 +303,7 @@ public class CPManagerImpl extends CPManager {
 		// delete old archive and create new one
 		VFSItem oldArchive = oresRoot.resolve(zipFileName);
 		if (oldArchive != null) {
-			oldArchive.delete();
+			oldArchive.deleteSilently();//don't versioned the zip
 		}
 		ZipUtil.zip(cpRoot.getItems(), oresRoot.createChildLeaf(zipFileName), true);
 		VFSLeaf zip = (VFSLeaf) oresRoot.resolve(zipFileName);

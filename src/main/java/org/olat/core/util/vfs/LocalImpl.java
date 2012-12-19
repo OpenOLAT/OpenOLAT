@@ -104,7 +104,12 @@ public abstract class LocalImpl implements VFSItem {
 	public VFSStatus canWrite() {
 		return VFSConstants.NO;
 	}
-	
+
+	@Override
+	public boolean exists() {
+		return basefile != null && basefile.exists();
+	}
+
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#getName()
 	 */

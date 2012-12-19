@@ -218,6 +218,10 @@ public class EPFrontendManager extends BasicManager {
 		return structureManager.moveArtefactFromStructToStruct(artefact, oldParStruct, newParStruct);
 	}
 	
+	public boolean moveArtefactInStruct(AbstractArtefact artefact, PortfolioStructure parStruct, int position) {
+		return structureManager.moveArtefactInStruct(artefact, parStruct, position);
+	}
+	
 	
 	/**
 	 * move a structure to a new parent-structure and removes old link

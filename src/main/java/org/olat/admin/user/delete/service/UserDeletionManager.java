@@ -30,6 +30,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +70,7 @@ import org.olat.repository.delete.service.DeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -100,6 +102,9 @@ public class UserDeletionManager extends BasicManager {
 	private boolean managersInitialized = false;
 	private DeletionModule deletionModule;
 	private CoordinatorManager coordinatorManager;
+	
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * [used by spring]
@@ -145,7 +150,8 @@ public class UserDeletionManager extends BasicManager {
 				} else {
 					ccIdentities = null;	
 				}
-				MailerResult mailerResult = mailer.sendMailUsingTemplateContext(identity, ccIdentities, null, template, sender);
+				MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), ccIdentities, template, sender);
+				
 				if (mailerResult.getReturnCode() != MailerResult.OK) {
 					buf.append(pT.translate("email.error.send.failed", new String[] {identity.getUser().getProperty(UserConstants.EMAIL, null), identity.getName()} )).append("\n");
 				}
@@ -164,9 +170,7 @@ public class UserDeletionManager extends BasicManager {
 	}
 	
 	private void markSendEmailEvent(Identity identity) {
-		identity = (Identity)DBFactory.getInstance().loadObject(identity);
 		LifeCycleManager.createInstanceFor(identity).markTimestampFor(SEND_DELETE_EMAIL_ACTION);
-		DBFactory.getInstance().updateObject(identity);
 	}
 	
 	/**
@@ -295,7 +299,7 @@ public class UserDeletionManager extends BasicManager {
 		logInfo("deleteUserProperties user=" + identity.getUser());
 		UserManager.getInstance().deleteUserProperties(identity.getUser());
 		// Delete all authentications for certain identity
-		List<Authentication> authentications = BaseSecurityManager.getInstance().getAuthentications(identity);
+		List<Authentication> authentications = securityManager.getAuthentications(identity);
 		for (Iterator<Authentication> iter = authentications.iterator(); iter.hasNext();) {
 			Authentication auth = iter.next();
 			logInfo("deleteAuthentication auth=" + auth);
@@ -304,10 +308,9 @@ public class UserDeletionManager extends BasicManager {
 		}
 		
 		//remove identity from its security groups
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		List<SecurityGroup> securityGroups = BaseSecurityManager.getInstance().getSecurityGroupsForIdentity(identity);
+		List<SecurityGroup> securityGroups = securityManager.getSecurityGroupsForIdentity(identity);
 		for (SecurityGroup secGroup : securityGroups) {
-			secMgr.removeIdentityFromSecurityGroup(identity, secGroup);
+			securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
 			logInfo("Removing user=" + identity + " from security group="  + secGroup.toString());
 		}
 		
@@ -319,47 +322,39 @@ public class UserDeletionManager extends BasicManager {
 			rm.deleteTemporaryKey(tempKey);
 		}		
 		
-		// can be used, if there is once the possibility to delete identities without db-constraints...
-		//if neither email nor login should be kept, REALLY DELETE Identity
-		/*if (!keepUserEmailAfterDeletion & !keepUserLoginAfterDeletion){
-			identity = (Identity)DBFactory.getInstance().loadObject(identity);
-			DBFactory.getInstance().deleteObject(identity.getUser());
-			DBFactory.getInstance().deleteObject(identity);
-		}
-		else { */
-			identity = (Identity)DBFactory.getInstance().loadObject(identity);
-			//keep login-name only -> change email
-			if (!keepUserEmailAfterDeletion){
-				List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor("org.olat.admin.user.UsermanagerUserSearchForm", true);
-				User persistedUser = identity.getUser();
-				String actualProperty;
-				for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-					actualProperty = userPropertyHandler.getName(); 
-					if (actualProperty.equals(UserConstants.EMAIL)){
-						String oldEmail = userPropertyHandler.getUserProperty(persistedUser, null);
-						String newEmail = "";
-						if (StringHelper.containsNonWhitespace(oldEmail)){ 
-							newEmail = getBackupStringWithDate(oldEmail);
-						}
-						logInfo("Update user-property user=" + persistedUser);
-						userPropertyHandler.setUserProperty(persistedUser, newEmail);
+
+		identity = securityManager.loadIdentityByKey(identity.getKey());
+		//keep login-name only -> change email
+		if (!keepUserEmailAfterDeletion){
+			List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor("org.olat.admin.user.UsermanagerUserSearchForm", true);
+			User persistedUser = identity.getUser();
+			String actualProperty;
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				actualProperty = userPropertyHandler.getName(); 
+				if (actualProperty.equals(UserConstants.EMAIL)){
+					String oldEmail = userPropertyHandler.getUserProperty(persistedUser, null);
+					String newEmail = "";
+					if (StringHelper.containsNonWhitespace(oldEmail)){ 
+						newEmail = getBackupStringWithDate(oldEmail);
 					}
+					logInfo("Update user-property user=" + persistedUser);
+					userPropertyHandler.setUserProperty(persistedUser, newEmail);
 				}
 			}
-			
-			//keep email only -> change login-name
-			if (!keepUserLoginAfterDeletion){
-				identity.setName(newName);
-			}
-			
-			//keep everything, change identity.status to deleted
-			logInfo("Change stater identity=" + identity);
-			identity.setStatus(Identity.STATUS_DELETED);
-			DBFactory.getInstance().updateObject(identity);
-			LifeCycleManager.createInstanceFor(identity).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
-			LifeCycleManager.createInstanceFor(identity).markTimestampFor(USER_DELETED_ACTION, createLifeCycleLogDataFor(identity));
-		// } 
+		}
 		
+		//keep email only -> change login-name
+		if (!keepUserLoginAfterDeletion){
+			identity.setName(newName);
+		}
+		
+		//keep everything, change identity.status to deleted
+		logInfo("Change stater identity=" + identity);
+		identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_DELETED);
+		
+		LifeCycleManager.createInstanceFor(identity).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
+		LifeCycleManager.createInstanceFor(identity).markTimestampFor(USER_DELETED_ACTION, createLifeCycleLogDataFor(identity));
+
 		// TODO: chg: ev. logAudit at another place
 		logAudit("User-Deletion: Delete all userdata for identity=" + identity);
 	}
@@ -385,24 +380,22 @@ public class UserDeletionManager extends BasicManager {
 	 * Re-activate an identity, lastLogin = now, reset deleteemaildate = null.
 	 * @param identity
 	 */
-	public void setIdentityAsActiv(final Identity anIdentity) {
+	public Identity setIdentityAsActiv(final Identity anIdentity) {
+		final Identity reloadedIdentity = securityManager.setIdentityLastLogin(anIdentity);
+
 		coordinatorManager.getCoordinator().getSyncer().doInSync(OresHelper.createOLATResourceableInstance(anIdentity.getClass(), anIdentity.getKey()) , 
 			new SyncerExecutor(){
 				public void execute() {
 					 //o_clusterOK by:fj : must be fast
-					Identity identity = (Identity)DBFactory.getInstance().loadObject(anIdentity, true);
-					if (isLogDebugEnabled()) logDebug("setIdentityAsActiv beginSingleTransaction identity=" + identity);
-					identity.setLastLogin(new Date());
-					LifeCycleManager lifeCycleManagerForIdenitiy = LifeCycleManager.createInstanceFor(identity);
+					LifeCycleManager lifeCycleManagerForIdenitiy = LifeCycleManager.createInstanceFor(reloadedIdentity);
 					if (lifeCycleManagerForIdenitiy.lookupLifeCycleEntry(SEND_DELETE_EMAIL_ACTION) != null) {
-						logAudit("User-Deletion: Remove from delete-list identity=" + identity);
+						logAudit("User-Deletion: Remove from delete-list identity=" + reloadedIdentity);
 						lifeCycleManagerForIdenitiy.deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 					}
-					if (isLogDebugEnabled()) logDebug("setIdentityAsActiv updateObject identity=" + identity);
-					DBFactory.getInstance().updateObject(identity);
-					if (isLogDebugEnabled()) logDebug("setIdentityAsActiv committed identity=" + identity);
 				}
 		});
+		
+		return reloadedIdentity;
 	}
 
 	/**

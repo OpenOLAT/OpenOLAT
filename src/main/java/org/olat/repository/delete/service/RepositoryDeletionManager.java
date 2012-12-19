@@ -28,6 +28,7 @@ package org.olat.repository.delete.service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -246,7 +247,7 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 		} else {
 			ccIdentities = null;	
 		}
-		MailerResult mailerResult = mailer.sendMailUsingTemplateContext(identity, ccIdentities, null, template, sender);
+		MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), ccIdentities, template, sender);
 		if (mailerResult.getReturnCode() == MailerResult.OK) {
 			// Email sended ok => set deleteEmailDate
 			for (Iterator repoIterator = ((List)identityRepositoryList.get(identity)).iterator(); repoIterator.hasNext();) {

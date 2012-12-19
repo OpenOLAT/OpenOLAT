@@ -235,6 +235,7 @@ public class ListRenderer {
 		// asume full access unless security callback tells us something different.
 		boolean canWrite = child.getParentContainer().canWrite() == VFSConstants.YES;
 		boolean canDelete = child.getParentContainer().canDelete() == VFSConstants.YES;
+		boolean canMail = fc.isCanMail();
 		boolean isAbstract = (child instanceof AbstractVirtualContainer);
 
 		Versions versions = null;
@@ -273,8 +274,8 @@ public class ListRenderer {
 		if (bgFlag) { sb.append(" class=\"b_table_odd\""); }
 		sb.append("><td class=\"b_first_child\">");
 
-		// add checkbox for actions if user can write or delete to this directory
-		if (canWrite || canDelete) {
+		// add checkbox for actions if user can write, delete or email this directory
+		if (canWrite || canDelete || canMail) {
 			sb.append("<input type=\"checkbox\" class=\"b_checkbox\" name=\"");
 			sb.append(FileSelection.FORM_ID);
 			sb.append("\" value=\"");

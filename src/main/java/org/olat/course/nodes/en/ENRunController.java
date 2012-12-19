@@ -186,7 +186,7 @@ public class ENRunController extends BasicController implements GenericEventList
 				
 				if (actionid.equals(CMD_ENROLL_IN_GROUP)) {
 					log.debug("CMD_ENROLL_IN_GROUP ureq.getComponentID()=" + ureq.getComponentID() + "  ureq.getComponentTimestamp()=" + ureq.getComponentTimestamp());
-					EnrollStatus enrollStatus = enrollmentManager.doEnroll(ureq.getIdentity(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator(),
+					EnrollStatus enrollStatus = enrollmentManager.doEnroll(ureq.getIdentity(), ureq.getUserSession().getRoles(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator(),
 							                                                   enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
 					if (enrollStatus.isEnrolled() ) {
 						enrolledGroup = choosenGroup;

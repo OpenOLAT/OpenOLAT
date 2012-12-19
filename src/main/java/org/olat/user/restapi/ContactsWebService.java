@@ -35,6 +35,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -68,6 +69,9 @@ public class ContactsWebService {
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		
 		Identity identity = getIdentity(httpRequest);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
 		
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		List<Identity> contacts = bgs.findContacts(identity, start, limit);

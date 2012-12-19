@@ -46,6 +46,7 @@ public class ProgressBar extends Component {
 	private boolean isNoMax = false;
 	private String unitLabel;
 	private boolean percentagesEnabled = true; // default
+	private String info;
 
 	/**
 	 * @param name
@@ -82,6 +83,11 @@ public class ProgressBar extends Component {
 	public void setActual(float i) {
 		setDirty(true);
 		actual = i;
+	}
+	
+	public void setInfo(String info) {
+		this.info = info;
+		setDirty(true);
 	}
 
 	/**
@@ -124,6 +130,10 @@ public class ProgressBar extends Component {
 	 */
 	float getActual() {
 		return actual;
+	}
+	
+	String getInfo() {
+		return info;
 	}
 
 	/**

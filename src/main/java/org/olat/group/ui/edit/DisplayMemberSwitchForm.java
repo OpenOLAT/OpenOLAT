@@ -83,13 +83,13 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 	}
 	
 	public void setDisplayMembers(DisplayMembers displayMembers) {
-		showOwners.select("xx", displayMembers.isShowOwners());
-		showPartips.select("xx", displayMembers.isShowParticipants());
-		showWaitingList.select("xx", displayMembers.isShowWaitingList());
-		openOwners.select("xx", displayMembers.isOwnersPublic());
-		openPartips.select("xx", displayMembers.isParticipantsPublic());
-		openWaitingList.select("xx", displayMembers.isWaitingListPublic());
-		downloadList.select("xx", displayMembers.isDownloadLists());
+		showOwners.select("show_owners", displayMembers.isShowOwners());
+		showPartips.select("show_participants", displayMembers.isShowParticipants());
+		showWaitingList.select("show_waiting_list", displayMembers.isShowWaitingList());
+		openOwners.select("open_owners", displayMembers.isOwnersPublic());
+		openPartips.select("open_participants", displayMembers.isParticipantsPublic());
+		openWaitingList.select("open_waiting_list", displayMembers.isWaitingListPublic());
+		downloadList.select("download_list", displayMembers.isDownloadLists());
 	}
 	
 	public void setWaitingListReadOnly(boolean b) {
@@ -115,21 +115,21 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		showOwners = uifactory.addCheckboxesVertical("ShowOwners", "chkBox.show.owners", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		showOwners = uifactory.addCheckboxesVertical("ShowOwners", "chkBox.show.owners", formLayout, new String[]{"show_owners"}, new String[]{""}, null, 1);
 		showOwners.setVisible(hasOwners);
-		showPartips = uifactory.addCheckboxesVertical("ShowPartips", "chkBox.show.partips", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		showPartips = uifactory.addCheckboxesVertical("ShowPartips", "chkBox.show.partips", formLayout, new String[]{"show_participants"}, new String[]{""}, null, 1);
 		showPartips.setVisible(hasPartips);
-		showWaitingList = uifactory.addCheckboxesVertical("ShowWaitingList", "chkBox.show.waitingList", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		showWaitingList = uifactory.addCheckboxesVertical("ShowWaitingList", "chkBox.show.waitingList", formLayout, new String[]{"show_waiting_list"}, new String[]{""}, null, 1);
 		showWaitingList.setVisible(hasWaitingList);
 
-		openOwners = uifactory.addCheckboxesVertical("OpenOwners", "chkBox.open.owners", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		openOwners = uifactory.addCheckboxesVertical("OpenOwners", "chkBox.open.owners", formLayout, new String[]{"open_owners"}, new String[]{""}, null, 1);
 		openOwners.setVisible(hasOwners);
-		openPartips = uifactory.addCheckboxesVertical("OpenPartips", "chkBox.open.partips", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		openPartips = uifactory.addCheckboxesVertical("OpenPartips", "chkBox.open.partips", formLayout, new String[]{"open_participants"}, new String[]{""}, null, 1);
 		openPartips.setVisible(hasPartips);
-		openWaitingList = uifactory.addCheckboxesVertical("OpenWaitingList", "chkBox.open.waitingList", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		openWaitingList = uifactory.addCheckboxesVertical("OpenWaitingList", "chkBox.open.waitingList", formLayout, new String[]{"open_waiting_list"}, new String[]{""}, null, 1);
 		openWaitingList.setVisible(hasWaitingList);
 
-		downloadList = uifactory.addCheckboxesVertical("DownloadList", "chkBox.open.downloadList", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+		downloadList = uifactory.addCheckboxesVertical("DownloadList", "chkBox.open.downloadList", formLayout, new String[]{"download_list"}, new String[]{""}, null, 1);
 
 		showOwners.addActionListener(this, FormEvent.ONCLICK);
 		showPartips.addActionListener(this, FormEvent.ONCLICK);

@@ -64,10 +64,10 @@ public class ScormMainManager extends BasicManager {
 	//fxdiff FXOLAT-116: SCORM improvements
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback, 
 			File cpRoot, String resourceId, String courseId, String lesson_mode, String credit_mode,
-			boolean previewMode, boolean assessable, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
+			boolean previewMode, String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
 		
 		return new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot, resourceId, courseId, lesson_mode, credit_mode,
-				previewMode, assessable, activate, fullWindow, attemptsIncremented);
+				previewMode, assessableType, activate, fullWindow, attemptsIncremented);
 	}
 	
 }

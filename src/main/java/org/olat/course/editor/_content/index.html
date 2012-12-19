@@ -91,7 +91,8 @@
 	$r.render("tabbedNodeConfig")
 #end
 #if($courseNodeDisabled) 
-	$r.translate("course.building.block.disabled")
+	$r.translate("course.building.block.disabled")<br/><br/>
+	$r.render("alternative")
 #end
 <div class="o_courseeditor_legend b_small">
 	<strong>$r.translate("legend.title")</strong>
