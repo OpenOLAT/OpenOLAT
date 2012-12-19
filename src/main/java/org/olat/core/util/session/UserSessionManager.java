@@ -52,7 +52,7 @@ import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.prefs.Preferences;
@@ -91,7 +91,7 @@ public class UserSessionManager implements GenericEventListener {
 	@Autowired
 	private HistoryManager historyManager;
 	
-	private CacheWrapper<Long> userSessionCache;
+	private CacheWrapper<Long,Integer> userSessionCache;
 	
 	@PostConstruct
 	public void initBean() {

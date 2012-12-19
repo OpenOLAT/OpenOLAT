@@ -23,10 +23,11 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */ 
-package org.olat.core.util.cache.n;
+package org.olat.core.util.cache.infinispan;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -40,6 +41,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.cache.CacheConfig;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.resource.OresHelper;
 
 /**
@@ -50,7 +53,7 @@ import org.olat.core.util.resource.OresHelper;
  * Initial Date:  03.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class InfinispanCacheWrapper implements CacheWrapper<Object> {
+public class InfinispanCacheWrapper implements CacheWrapper<Object,Serializable> {
 	private static final OLog log = Tracing.createLoggerFor(InfinispanCacheWrapper.class);
 	
 	private final String cacheName;	// the fully qualified name of the cache
@@ -58,7 +61,7 @@ public class InfinispanCacheWrapper implements CacheWrapper<Object> {
 	private final EmbeddedCacheManager cachemanager;
 	
 	private Cache<Object,Serializable> cache;
-	private Map<String, CacheWrapper<Object>> children = null;
+	private Map<String, CacheWrapper<Object, Serializable>> children = null;
 	
 	
 	/**
@@ -96,7 +99,7 @@ public class InfinispanCacheWrapper implements CacheWrapper<Object> {
 	 * @param config
 	 * @return
 	 */
-	protected CacheWrapper<Object> createChildCacheWrapper(String childName, CacheConfig aconfig) {
+	protected CacheWrapper<Object,Serializable> createChildCacheWrapper(String childName, CacheConfig aconfig) {
 		return new InfinispanCacheWrapper(childName, aconfig, cachemanager);
 	}
 
@@ -104,7 +107,7 @@ public class InfinispanCacheWrapper implements CacheWrapper<Object> {
 	 * 
 	 * @return the map with the children or null
 	 */
-	protected Map<String, CacheWrapper<Object>> getChildren() {
+	protected Map<String, CacheWrapper<Object,Serializable>> getChildren() {
 		return children;
 	}
 	
@@ -114,7 +117,7 @@ public class InfinispanCacheWrapper implements CacheWrapper<Object> {
 		synchronized(this) {//cluster_ok by definition of this class as used in single vm
 			CacheWrapper cwChild = null;
 			if (children == null) {
-				children = new HashMap<String, CacheWrapper<Object>>();
+				children = new HashMap<String, CacheWrapper<Object,Serializable>>();
 			} else {
 				cwChild = children.get(childName);
 			}
@@ -152,31 +155,35 @@ public class InfinispanCacheWrapper implements CacheWrapper<Object> {
 		return (Serializable)elem;
 	}
 
+	@Override
 	public void remove(Object key) {
 		synchronized (cache) {//cluster_ok by definition of this class as used in single vm
 			cache.remove(key);
 		}
 	}
 	
-	public void update(Object key, Serializable value) {
-		// update is the same as put for the singlevm mode
-		synchronized (cache) {//cluster_ok by definition of this class as used in single vm
+	@Override
+	public Serializable update(Object key, Serializable value) {
+		Serializable reloaded;
+		synchronized (cache) {
 			if(cache.containsKey(key)) {
-				cache.replace(key, value);
+				reloaded = cache.replace(key, value);
 			} else {
-				cache.put(key, value);
+				reloaded = cache.put(key, value);
 			}
 		}	
+		return reloaded;
 	}
 
-	public void put(Object key, Serializable value) {
-		// put is the same as update for the singlevm mode
-		synchronized (cache) {//cluster_ok by definition of this class as used in single vm
-			cache.put(key, value);
+	@Override
+	public Serializable put(Object key, Serializable value) {
+		Serializable reloaded;
+		synchronized (cache) {
+			reloaded = cache.put(key, value);
 		}
+		return reloaded;
 	}
 
-	
 	protected String getCacheName() {
 		return cacheName;
 	}

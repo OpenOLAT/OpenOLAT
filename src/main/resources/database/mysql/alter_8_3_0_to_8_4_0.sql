@@ -26,6 +26,20 @@ alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_
 alter table o_im_notification add constraint idx_im_not_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_chat_res_idx on o_im_notification (chat_resid,chat_resname);
 
+create table if not exists o_im_roster_entry (
+   id bigint not null,
+   creationdate datetime,
+   r_resname varchar(50) not null,
+   r_resid bigint not null,
+   r_nickname varchar(255),
+   r_fullname varchar(255),
+   r_anonym bit default 0,
+   fk_identity_id bigint not null,
+   primary key (id)
+);
+alter table o_im_roster_entry add constraint idx_im_rost_to_id foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_im_rost_res_idx on o_im_roster_entry (r_resid,r_resname);
+
 create table if not exists o_im_preferences (
    id bigint not null,
    creationdate datetime,

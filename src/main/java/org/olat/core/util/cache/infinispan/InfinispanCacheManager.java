@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.cache.n;
+package org.olat.core.util.cache.infinispan;
 
 import javax.naming.InitialContext;
 

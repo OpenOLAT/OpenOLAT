@@ -83,7 +83,7 @@ public class ChatManagerController extends BasicController {
 				container.remove(c);
 				
 				ChatController chatCtr = (ChatController)source;
-				imService.unlistenChat(chatCtr.getOlatResourceable(), chatCtr);
+				imService.unlistenChat(getIdentity(), chatCtr.getOlatResourceable(), chatCtr);
 			}
 			//forward event also to main controller
 			fireEvent(ureq, event);

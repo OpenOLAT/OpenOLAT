@@ -23,11 +23,13 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */ 
-package org.olat.core.util.cache.n;
+package org.olat.core.util.cache.infinispan;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.cache.CacheConfig;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.Cacher;
 import org.olat.core.util.resource.OresHelper;
 

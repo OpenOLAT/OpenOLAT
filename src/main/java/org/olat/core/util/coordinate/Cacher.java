@@ -26,7 +26,7 @@
 package org.olat.core.util.coordinate;
 
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 
 /**
  * Description:<br>

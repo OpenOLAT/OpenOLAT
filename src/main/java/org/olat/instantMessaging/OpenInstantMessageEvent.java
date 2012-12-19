@@ -55,7 +55,7 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 	}
 	
 	public OpenInstantMessageEvent(UserRequest ureq, RosterEntry entry) {
-		this(ureq, new Buddy(entry.getIdentityKey(), entry.getName()));
+		this(ureq, new Buddy(entry.getIdentityKey(), entry.getFullName(), entry.getNickName()));
 	}
 	
 	public OpenInstantMessageEvent(UserRequest ureq, OLATResourceable ores, String roomName) {

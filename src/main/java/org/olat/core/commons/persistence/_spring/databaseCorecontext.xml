@@ -159,7 +159,7 @@
 				<prop key="hibernate.cache.use_query_cache">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
 				<prop key="hibernate.cache.region.factory_class">org.olat.core.commons.persistence.JpaInfinispanRegionFactory</prop>
-				<prop key="hibernate.cache.infinispan.cfg">infinispan-SingleVM.xml</prop>
+				<prop key="hibernate.cache.infinispan.cfg">infinispan-config.xml</prop>
 				<prop key="hibernate.cache.region.jbc2.query.localonly">true</prop>
 				<prop key="hibernate.cache.region_prefix">openolat</prop>
 			</props>

@@ -43,7 +43,7 @@ import org.olat.core.servlets.SecureWebdavServlet;
 import org.olat.core.servlets.WebDAVManager;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.auth.WebDAVAuthManager;

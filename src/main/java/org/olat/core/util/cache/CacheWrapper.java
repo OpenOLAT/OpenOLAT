@@ -23,9 +23,10 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */ 
-package org.olat.core.util.cache.n;
+package org.olat.core.util.cache;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.olat.core.id.OLATResourceable;
 
@@ -40,7 +41,7 @@ import org.olat.core.id.OLATResourceable;
  * Initial Date:  03.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public interface CacheWrapper<U> {
+public interface CacheWrapper<U, V extends Serializable> {
 	
 	
 	public boolean containsKey(U key);
@@ -51,7 +52,7 @@ public interface CacheWrapper<U> {
 	 * @return the cache entry or null when the element has expired, never been put into yet, or removed due to max-size, 
 	 * 	or a put in a different cluster node which led to an invalidate message
 	 */
-	public Serializable get(U key);
+	public V get(U key);
 	
 	/**
 	 * o_clusterREVIEW :pb  review references
@@ -64,7 +65,7 @@ public interface CacheWrapper<U> {
 	 * @param key
 	 * @param value
 	 */
-	public void update(U key, Serializable value);	
+	public V update(U key, V value);	
 	
 	/**
 	 * use this put whenever you just fill up a cache from data which is already on the db or the filesystem. e.g. use it when you simply load some properties again into cache.
@@ -88,7 +89,7 @@ public interface CacheWrapper<U> {
 	 * @param value
 	 *
 	 */
-	public void put(U key, Serializable value);
+	public V put(U key, V value);
 	
 	/**
 	 * removes a value from the cache. this method is thread-safe

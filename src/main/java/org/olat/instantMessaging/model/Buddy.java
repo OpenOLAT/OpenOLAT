@@ -31,10 +31,12 @@ public class Buddy implements OLATResourceable, Comparable<Buddy> {
 
 	private final Long identityKey;
 	private final String fullname;
+	private final String nickName;
 	
-	public Buddy(Long identityKey, String fullname) {
+	public Buddy(Long identityKey, String fullname, String nickName) {
 		this.identityKey = identityKey;
 		this.fullname = fullname;
+		this.nickName = nickName;
 	}
 	
 	public String getStatus() {
@@ -45,6 +47,9 @@ public class Buddy implements OLATResourceable, Comparable<Buddy> {
 		return identityKey;
 	}
 
+	public String getNickName() {
+		return nickName;
+	}
 
 	public String getFullname() {
 		return fullname;

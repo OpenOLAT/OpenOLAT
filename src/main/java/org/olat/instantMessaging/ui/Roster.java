@@ -68,6 +68,8 @@ public class Roster {
 			for(Buddy buddy:buddies) {
 				if(identityKey != null && identityKey.equals(buddy.getIdentityKey())) {
 					//continue
+				} else if(buddy.getIdentityKey() == null) {
+					//do nothing
 				} else if(contains(buddy.getIdentityKey())) {
 					//update status
 					get(buddy.getIdentityKey()).setStatus(buddy.getStatus());

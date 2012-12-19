@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */ 
-package org.olat.core.util.cache.n;
+package org.olat.core.util.cache;
 
 import java.util.Map;
 

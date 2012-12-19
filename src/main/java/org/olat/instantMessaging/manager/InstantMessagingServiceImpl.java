@@ -22,7 +22,6 @@ package org.olat.instantMessaging.manager;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
@@ -43,6 +42,7 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyStats;
 import org.olat.instantMessaging.model.InstantMessageImpl;
+import org.olat.instantMessaging.model.RosterEntryImpl;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +56,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class InstantMessagingServiceImpl extends BasicManager implements InstantMessagingService {
 	
+	@Autowired
+	private RosterDAO rosterDao;
 	@Autowired
 	private InstantMessageDAO imDao;
 	@Autowired
@@ -73,7 +75,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Autowired
 	private BaseSecurity securityManager;
 
-	
 	@Override
 	public String getStatus(Long identityKey) {
 		return "available";
@@ -182,7 +183,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	public Buddy getBuddyById(Long identityKey) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
 		String fullname = userManager.getUserDisplayName(identity);
-		return new Buddy(identity.getKey(), fullname);
+		return new Buddy(identity.getKey(), fullname, null);
 	}
 
 	@Override
@@ -191,7 +192,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
 		for(Identity contact:contacts) {
 			String fullname = userManager.getUserDisplayName(contact.getUser());
-			buddies.add(new Buddy(contact.getKey(), fullname));
+			buddies.add(new Buddy(contact.getKey(), fullname, null));
 		}
 		return buddies;
 	}
@@ -203,12 +204,10 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
 		for(Identity contact:contacts) {
 			String fullname = userManager.getUserDisplayName(contact.getUser());
-			buddies.add(new Buddy(contact.getKey(), fullname));
+			buddies.add(new Buddy(contact.getKey(), fullname, null));
 		}
 		return buddies;
 	}
-	
-	
 
 	@Override
 	public BuddyStats getBuddyStats(Identity me) {
@@ -223,24 +222,26 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 
 	@Override
 	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource) {
-		Set<String> names = coordinator.getCoordinator().getEventBus().getListeningIdentityNamesFor(chatResource);
-		List<Identity> identities = securityManager.findIdentitiesByName(names);
+		List<RosterEntryImpl> roster = rosterDao.getRoster(chatResource, 0, -1);
 		List<Buddy> buddies = new ArrayList<Buddy>();
-		for(Identity identity:identities) {
-			String fullname = userManager.getUserDisplayName(identity.getUser());
-			buddies.add(new Buddy(identity.getKey(), fullname));
+		if(roster != null) {
+			for(RosterEntryImpl entry:roster) {
+				buddies.add(new Buddy(entry.getIdentityKey(), entry.getFullName(), entry.getNickName()));
+			}
 		}
 		return buddies;
-		
 	}
 
 	@Override
 	public void listenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener) {
+		String fullName = userManager.getUserDisplayName(identity.getUser());
+		rosterDao.createRosterEntry(chatResource, identity, fullName, null, false);
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);
 	}
 
 	@Override
-	public void unlistenChat(OLATResourceable chatResource, GenericEventListener listener) {
+	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener) {
+		rosterDao.deleteEntry(identity, chatResource);
 		coordinator.getCoordinator().getEventBus().deregisterFor(listener, chatResource);
 	}
 
@@ -253,10 +254,4 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	public void enableChat(Identity identity) {
 		//
 	}
-	
-	
-
-	
-
-
 }

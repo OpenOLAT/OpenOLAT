@@ -163,7 +163,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	 */
 	@Override
 	protected void doDispose() {
-		imService.unlistenChat(getPrivatListenToResourceable(), this);
+		imService.unlistenChat(getIdentity(), getPrivatListenToResourceable(), this);
 		singleUserEventCenter.deregisterFor(this, InstantMessagingService.ASSESSMENT_EVENT_ORES);
 		singleUserEventCenter.deregisterFor(this, InstantMessagingService.TOWER_EVENT_ORES);
 	}

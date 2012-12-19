@@ -22,6 +22,7 @@ package org.olat.core.id.context;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
@@ -74,13 +75,7 @@ public class HistoryManager extends BasicManager {
 		try {
 			String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName());
 			File resumeXml = new File(pathHomePage, "resume.xml");
-			if(resumeXml.exists()) {
-				FileInputStream in = new FileInputStream(resumeXml);
-				HistoryPoint point = (HistoryPoint)historyStream.fromXML(in);
-				FileUtils.closeSafely(in);
-				return point;
-			}
-			return null;
+			return readHistory(resumeXml);
 		} catch (Exception e) {
 			logError("Cannot read resume file: ", e);
 			return null;
@@ -98,8 +93,14 @@ public class HistoryManager extends BasicManager {
 			logError("Can not delete history file", e);
 		}
 	}
-
 	
-	
-
+	protected HistoryPoint readHistory(File resumeXml) throws IOException {
+		if(resumeXml.exists()) {
+			FileInputStream in = new FileInputStream(resumeXml);
+			HistoryPoint point = (HistoryPoint)historyStream.fromXML(in);
+			FileUtils.closeSafely(in);
+			return point;
+		}
+		return null;
+	}
 }

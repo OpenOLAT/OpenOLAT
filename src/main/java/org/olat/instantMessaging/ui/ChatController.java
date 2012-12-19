@@ -165,6 +165,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		refresh.setTitle("im.refresh");
 
 		putInitialPanel(chatPanelCtr.getInitialComponent());
+		doSendPresence(toggleAnonymousForm.getNickName(), toggleAnonymousForm.isUseNickName());
 	}
 	
 	public OLATResourceable getOlatResourceable() {
@@ -174,7 +175,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	@Override
 	protected void doDispose() {
 		allChats.remove(Integer.toString(hashCode()));
-		imService.unlistenChat(getOlatResourceable(), this);
+		imService.unlistenChat(getIdentity(), getOlatResourceable(), this);
 	}
 
 	@Override

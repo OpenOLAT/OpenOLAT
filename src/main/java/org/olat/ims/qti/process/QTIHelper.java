@@ -38,7 +38,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ObjectCloner;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;

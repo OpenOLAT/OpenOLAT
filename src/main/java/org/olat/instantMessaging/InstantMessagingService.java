@@ -77,7 +77,7 @@ public interface InstantMessagingService {
 	 * @param chatResource
 	 * @param listener
 	 */
-	public void unlistenChat(OLATResourceable chatResource, GenericEventListener listener);
+	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener);
 	
 	/**
 	 * Factory method to build the OLATResourceable for privat chat
