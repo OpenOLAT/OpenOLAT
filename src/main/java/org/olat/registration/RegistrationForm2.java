@@ -238,7 +238,7 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		
 		if (!UserManager.getInstance().syntaxCheckOlatPassword(newpass1.getValue())) {
-			newpass1.setErrorKey("error.password.characters", null);
+			newpass1.setErrorKey("form.checkPassword", null);
 			return false;
 		}
 		if (!newpass1.getValue().equals(newpass2.getValue())) {

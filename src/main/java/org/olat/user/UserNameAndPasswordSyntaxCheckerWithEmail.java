@@ -75,7 +75,7 @@ public class UserNameAndPasswordSyntaxCheckerWithEmail extends UserNameAndPasswo
 	public boolean syntaxCheckOlatLogin(String login) {
 		// Allow only alphanumeric login names 
 		// @ is allowed also (will be replaced for Jabber)		
-		return login.matches("[0-9a-z\\.\\-_@]{6,64}");
+		return login.matches("[0-9a-z\\.\\-_]{4,64}") || login.matches("[0-9a-z\\.\\-_@]{6,64}");
 	}
 
 }

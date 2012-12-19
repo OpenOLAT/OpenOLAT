@@ -139,7 +139,7 @@ public class WebDAVPasswordController extends FormBasicController {
 			if(StringHelper.containsNonWhitespace(password) && valid) {
 				passwordEl.clearError();
 			} else if (!valid){
-				passwordEl.setErrorKey("error.password.characters", null);
+				passwordEl.setErrorKey("form.checkPassword", null);
 				allOk = false;
 			} else {
 				passwordEl.setErrorKey("error.password.empty", null);
