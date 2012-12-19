@@ -798,13 +798,14 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		}
 		return rootVersionsContainer;
 	}
-	
-	
 
 	@Override
 	public int countDirectories() {
 		VFSContainer versionsContainer = getRootVersionsContainer();
-		return countDirectories(versionsContainer);
+		if(versionsContainer.exists()) {
+			return countDirectories(versionsContainer);
+		}
+		return 0;
 	}
 	
 	private int countDirectories(VFSContainer container) {
@@ -821,6 +822,9 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	@Override
 	public void pruneHistory(long maxHistoryLength, ProgressDelegate progress) {
 		VFSContainer versionsContainer = getRootVersionsContainer();
+		if(!versionsContainer.exists()) {
+			return;
+		}
 		//delete folder without versioning first
 		
 		int count = 0;

@@ -182,9 +182,13 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 			}
 		});
 
-		cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, null, false);
-		cmc.activate();
-		listenTo(cmc);
+		synchronized(this) {
+			if(progressCtrl != null) {
+				cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, null, false);
+				cmc.activate();
+				listenTo(cmc);
+			}
+		}
 	}
 	
 	private void doPruneHistory(UserRequest ureq) {
@@ -194,7 +198,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		progressCtrl.setUnitLabel("");
 		progressCtrl.setMax(versionsManager.countDirectories());
 		listenTo(progressCtrl);
-		
+
 		TaskExecutorManager.getInstance().runTask(new Runnable() {
 			public void run() {
 				Long numOfVersions = getNumOfVersions();
@@ -202,9 +206,13 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 			}
 		});
 
-		cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, null, false);
-		cmc.activate();
-		listenTo(cmc);
+		synchronized(this) {
+			if(progressCtrl != null) {
+				cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, null, false);
+				cmc.activate();
+				listenTo(cmc);
+			}
+		}
 	}
 	
 	public Long getNumOfVersions() {
@@ -260,10 +268,10 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 	}
 
 	@Override
-	public void finished() {
+	public synchronized void finished() {
 		if(cmc != null && !cmc.isDisposed()) {
 			cmc.deactivate();
-			cleanup();
 		}
+		cleanup();
 	}
 }
