@@ -111,8 +111,6 @@ public interface ACService {
 	public boolean denyAccesToResource(Identity identity, Offer offer);
 	
 	
-	public void removeReservation(ResourceReservation reservation);
-	
 	/**
 	 * Get the reservation form an identity on a resource
 	 * @param identity
@@ -149,6 +147,13 @@ public interface ACService {
 	 * @param reservation
 	 */
 	public void acceptReservationToResource(Identity identity, ResourceReservation reservation);
+	
+	/**
+	 * Cancel a reservation
+	 * @param identity
+	 * @param reservation
+	 */
+	public void removeReservation(Identity ureqIdentity, Identity identity, ResourceReservation reservation);
 	
 	public int countReservations(OLATResource resource);
 	

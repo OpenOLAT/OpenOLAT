@@ -133,7 +133,7 @@ public class QTIEditorPackage {
 		section.setItems(itemList);
 		// initialize package
 		packageSubDir = CodeHelper.getGlobalForeverUniqueID();
-		packageDir = new File(getTmpBaseDir(), packageSubDir);
+		packageDir = new File(getQTIEditorBaseDir(), packageSubDir);
 		packageDir.mkdirs();
 		getMediaBaseDir().mkdirs();
 		getChangelogBaseDir().mkdirs();
@@ -153,7 +153,7 @@ public class QTIEditorPackage {
 	
 	private void init() {
 		packageSubDir = getPackageSubDir(identity, fileResource);
-		packageDir = new File(getTmpBaseDir(), packageSubDir);
+		packageDir = new File(getQTIEditorBaseDir(), packageSubDir);
 		packageDir.mkdirs();
 		getMediaBaseDir().mkdirs();
 		getChangelogBaseDir().mkdirs();
@@ -172,8 +172,8 @@ public class QTIEditorPackage {
 	 * Get the temporary root dir where all packages are located.
 	 * @return The editor's package temp base directory.
 	 */
-	public static File getTmpBaseDir() {
-		return new File(WebappHelper.getUserDataRoot()	+ "/tmp/qtieditor/");
+	public static File getQTIEditorBaseDir() {
+		return new File(WebappHelper.getUserDataRoot()	+ "/qtieditor/");
 	}
 
 	/**
@@ -249,7 +249,7 @@ public class QTIEditorPackage {
 	 */
 	public boolean savePackageToRepository() {
 		FileResourceManager frm = FileResourceManager.getInstance();
-		File tmpZipFile = new File(FolderConfig.getCanonicalTmpDir() + "/" + CodeHelper.getRAMUniqueID() + ".zip");
+		File tmpZipFile = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID() + ".zip");
 		// first save complete ZIP package to repository
 		if (!savePackageTo(tmpZipFile)) return false;
 		// move file from temp to repository root and rename

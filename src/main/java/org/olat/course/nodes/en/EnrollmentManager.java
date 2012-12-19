@@ -93,7 +93,7 @@ public class EnrollmentManager extends BasicManager {
 			// and: why can't we just have a group here and a max participants count and an identity to enrol?
 			// the group was chosen, so why do we need the groupNames and areaNames here???
 
-			EnrollState state =businessGroupService.enroll(identity, roles, identity, group, null);//TODO memail
+			EnrollState state =businessGroupService.enroll(identity, roles, identity, group, null);
 			if(state.isFailed()) {
 				enrollStatus.setErrorMessage(trans.translate(state.getI18nErrorMessage()));
 			} else {
@@ -116,7 +116,7 @@ public class EnrollmentManager extends BasicManager {
 		// 1. Remove group membership, fire events, do loggin etc.
 		// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
 		// and move the users accordingly
-		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, null);//TODO memail
+		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, null);
 		logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
 
 		logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());

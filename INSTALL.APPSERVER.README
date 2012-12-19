@@ -3,35 +3,77 @@ EXPERIMENTAL: Setting up latest OpenOLAT version on Eclipse With an Application 
 --------------------------------------------------------------------------------------
 
 OpenOLAT supports only Tomcat officially, but it can also run on other application
-servers like JBoss AS or Glassfish.
+servers like JBoss AS or Glassfish. This README is intended for people who have
+some minimal experience with these servers and can install a JDBC driver, set some
+JMS resources...
 
 The beginning of the installation is the same as Tomcat, it's described in INSTALL.README.
 To create your eclipse project, use these commands instead of the default one:
 
 for JBoss AS:
-  mvn eclipse:clean eclipse:eclipse -P-tomcat,jbossas
+  mvn eclipse:clean eclipse:eclipse -P-tomcat,jbossas7
   
 and for Glassfish
   mvn eclipse:clean eclipse:eclipse -P-tomcat,gae
-  
+ 
+ 
+Configuration JBoss AS 7.1
+--------------------------
 
-I use a JBoss AS 7.1 with Hibernate upgraded to the latest version and Glassfish 3.1.2.2
-community version. I created in them a JDBC connection Pool, a JMS connection factory
-(which already exists in JBoss) and a topic for the sysbus and a queue for the search.
+1. I use a JBoss AS 7.1.1 with Hibernate upgraded to the latest version.
+2. Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
+     java:jboss/datasources/OpenOLATDS and set this JNDI name
+   in olat.local.properties set the following properties:
+     db.source=jndi
+     db.jndi=java:jboss/datasources/OpenOLATDS
+     hibernate.cache=disabled
+3. Create a queue with a jndi-name like:
+     java:jboss/exported/jms/queue/searchQueue
+   and a topic:
+     java:jboss/exported/jms/topic/sysbus
+   in olat.local.properties set the following properties:
+     jms.provider=jndi
+     jms.broker.jndi=java:/ConnectionFactory
+     sysbus.broker.jndi=java:jboss/exported/jms/topic/sysbus
+     search.broker.jndi=java:jboss/exported/jms/queue/searchQueue
 
 
-With this setup, OpenOLAT use the JDBC connection pool of your application server, the JMS
-server and its JAX-RS implementation. JBoss delivers Hibernate too.
+Configuration Glassfish 3.1
+---------------------------
+
+1. I use the community edition of Glassfish version 3.1.2.2.
+2. In the administration console, create a JDBC Resource with a JNDI name like:
+     jdbc/OpenOLATDS
+   and drop the driver.jar at the right place.
+   In olat.local.properties, set the following properties:
+     db.source=jndi
+     db.jndi=jdbc/OpenOLATDS
+3. In the administration console, create in JMS Resources > Connection factories:
+   -A resource of type javax.jms.ConnectionFactory with a JNDI name like:
+     OpenOLATConnectionFactory
+   In JMS Resources > Destination factories:
+   -A queue of type javax.jms.Queue and a JNDI name like;
+     queue/searchQueue
+   -A topic of type javax.jms.Topic and a JNDI name like;
+     topic/sysbus
+   in olat.local.properties set the following properties:
+     jms.provider=jndi
+     jms.broker.jndi=OpenOLATConnectionFactory
+     sysbus.broker.jndi=topic/sysbus
+     search.broker.jndi=queue/searchQueue
 
 
-Features located on the application server:
-OK JDBC Connections
-OK JMS
-OK JAX-RS (restapi)
-x  JAX-WS (onyx, vitero)
-x  Mail
-x  LDAP Connection
--- Hibernate/JPA (only JBoss because we depend on Hibernate)
-x  Infinispan for caching
+Features located on the application server
+------------------------------------------
+State              Feature
+------------------------------------------
+OK                 JDBC Connections
+OK                 JMS
+OK                 JAX-RS (restapi)
+x                  JAX-WS (onyx, vitero)
+x                  Mail
+x                  LDAP Connection
+OK (only JBoss)    Hibernate/JPA (only JBoss AS, we depend on Hibernate)
+x                  Caching (for JPA second level cache for example)
 
 

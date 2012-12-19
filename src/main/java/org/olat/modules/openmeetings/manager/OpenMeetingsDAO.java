@@ -67,8 +67,10 @@ public class OpenMeetingsDAO {
 		ref.setRoomId(room.getRoomId());
 		ref.setConfig(serialized);
 		ref.setGroup(group);
-		ref.setResourceTypeName(courseResource.getResourceableTypeName());
-		ref.setResourceTypeId(courseResource.getResourceableId());
+		if(courseResource != null) {
+			ref.setResourceTypeName(courseResource.getResourceableTypeName());
+			ref.setResourceTypeId(courseResource.getResourceableId());
+		}
 		ref.setSubIdentifier(subIdentifier);
 		dbInstance.getCurrentEntityManager().persist(ref);
 		return ref;
@@ -87,7 +89,7 @@ public class OpenMeetingsDAO {
 		boolean where = false;
 		if(group != null) {
 			where = and(sb, where);
-			sb.append(" ref.group=:groupKey");
+			sb.append(" ref.group.key=:groupKey");
 		}
 		if(courseResource != null) {
 			where = and(sb, where);

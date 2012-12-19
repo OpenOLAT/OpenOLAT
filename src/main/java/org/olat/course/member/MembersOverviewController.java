@@ -210,6 +210,14 @@ public class MembersOverviewController extends BasicController implements Activa
 					}
 				}
 			}
+		} else if(source == dedupCtrl) {
+			if(event == Event.DONE_EVENT) {
+				dedupMembers(ureq, dedupCtrl.isDedupCoaches(), dedupCtrl.isDedupParticipants());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == cmc) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}

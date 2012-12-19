@@ -457,9 +457,9 @@ public class FolderRunController extends BasicController implements Activateable
 	 * @return The action triggered by the user.
 	 */
 	private String getFormAction(UserRequest ureq) {
-		Enumeration params = ureq.getHttpReq().getParameterNames();
+		Enumeration<String> params = ureq.getHttpReq().getParameterNames();
 		while (params.hasMoreElements()) {
-			String key = (String) params.nextElement();
+			String key = params.nextElement();
 			if (key.startsWith(ACTION_PRE)) {
 				return key.substring(ACTION_PRE.length());
 			}

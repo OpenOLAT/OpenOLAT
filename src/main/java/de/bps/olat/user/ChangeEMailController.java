@@ -52,7 +52,7 @@ public class ChangeEMailController extends DefaultController {
 	protected static final String PACKAGE = ProfileAndHomePageEditController.class.getPackage().getName();
 	protected static final String CHANGE_EMAIL_ENTRY = "change.email.login";
 	
-	public static int TIME_OUT = 3;
+	public static int TIME_OUT = 30;
 	
 	protected Translator pT;
 	protected String emKey;

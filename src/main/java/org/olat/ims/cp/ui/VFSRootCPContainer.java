@@ -87,7 +87,12 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 		}
 		return null;
 	}
-	
+
+	@Override
+	public boolean exists() {
+		return rootContainer != null && rootContainer.exists();
+	}
+
 	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		if(this == vfsItem) {

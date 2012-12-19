@@ -62,6 +62,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.FormatterTest.class,
 	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
+	org.olat.core.id.IdentityEnvironmentTest.class,
 	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.note.NoteTest.class,//ok
 	org.olat.user.UserPropertiesPerformanceTest.class,//ok
@@ -173,7 +174,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACOrderManagerTest.class,
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
-	org.olat.core.util.vfs.VersionManagerTest.class,
+	org.olat.core.util.vfs.version.VersionManagerTest.class,
 	/**
 	 * Pure JUnit test without need of framework
 	 */

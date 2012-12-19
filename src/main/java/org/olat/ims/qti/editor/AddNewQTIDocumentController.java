@@ -28,7 +28,6 @@ package org.olat.ims.qti.editor;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -40,6 +39,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.AddingResourceException;
 import org.olat.fileresource.types.FileResource;
@@ -101,7 +101,7 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 	 * @see org.olat.repository.controllers.IAddController#transactionFinishBeforeCreate()
 	 */
 	public boolean transactionFinishBeforeCreate() {
-		File fTempQTI = new File(FolderConfig.getCanonicalTmpDir() + "/" + CodeHelper.getGlobalForeverUniqueID() + ".zip");
+		File fTempQTI = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID() + ".zip");
 		tmpPackage = new QTIEditorPackage(DUMMY_TITLE, type, locale);
 		// we need to save the package in order to be able to create a file resource entry.
 		// package will be created again after changing title.

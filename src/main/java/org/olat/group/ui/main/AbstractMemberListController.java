@@ -322,7 +322,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes, null);
 		}
 
-		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), null);//TODO memail
+		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), null);
 		//make sure all is committed before loading the model again (I see issues without)
 		DBFactory.getInstance().commitAndCloseSession();
 		
@@ -343,7 +343,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
-		businessGroupService.updateMemberships(getIdentity(), allModifications, null);//TODO memail
+		businessGroupService.updateMemberships(getIdentity(), allModifications, null);
 		DBFactory.getInstance().commitAndCloseSession();
 		
 		if(allModifications != null && !allModifications.isEmpty()) {
@@ -357,7 +357,6 @@ public abstract class AbstractMemberListController extends BasicController imple
 		reloadModel();
 	}
 	
-	//TODO memail
 	protected void sendMailAfterChangePermission(BusinessGroupMembershipChange mod) {
 		MailTemplate template = null;
 		if(mod.getParticipant() != null) {
@@ -419,11 +418,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 			List<Long> identityKeys = getMemberKeys(members);
 			List<Identity> identitiesToGraduate = securityManager.loadIdentityByKeys(identityKeys);
 			businessGroupService.moveIdentityFromWaitingListToParticipant(getIdentity(), identitiesToGraduate,
-					businessGroup, null);//TODO memail
-		} else {
-			//TODO memail do something
+					businessGroup, null);
 		}
-		
 		reloadModel();
 	}
 	

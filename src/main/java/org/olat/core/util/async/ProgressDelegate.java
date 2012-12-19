@@ -27,7 +27,11 @@ package org.olat.core.util.async;
  */
 public interface ProgressDelegate {
 	
+	public void setMax(float max);
+	
 	public void setActual(float value);
+	
+	public void setInfo(String message);
 	
 	public void finished();
 

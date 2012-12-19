@@ -33,6 +33,7 @@ import java.io.Serializable;
 * @author Felix Jost
 */
 public class Roles implements Serializable {
+	private static final long serialVersionUID = 4726449291059674346L;
 	private boolean isOLATAdmin;
 	private boolean isUserManager;
 	private boolean isGroupManager;
@@ -111,8 +112,45 @@ public class Roles implements Serializable {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		return "admin:"+isOLATAdmin+", usermanager:"+isUserManager+", groupmanager:"+isGroupManager+", author:"+isAuthor+", guestonly:"+isGuestOnly+", isInstitutionalResourceManager:"+isInstitutionalResourceManager+", isInvitee:"+isInvitee+", "+super.toString();
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (isAuthor ? 1231 : 1237);
+		result = prime * result + (isGroupManager ? 1231 : 1237);
+		result = prime * result + (isGuestOnly ? 1231 : 1237);
+		result = prime * result + (isInstitutionalResourceManager ? 1231 : 1237);
+		result = prime * result + (isInvitee ? 1231 : 1237);
+		result = prime * result + (isOLATAdmin ? 1231 : 1237);
+		result = prime * result + (isUserManager ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		
+		Roles other = (Roles) obj;
+		if (isAuthor != other.isAuthor) return false;
+		if (isGroupManager != other.isGroupManager) return false;
+		if (isGuestOnly != other.isGuestOnly) return false;
+		if (isInstitutionalResourceManager != other.isInstitutionalResourceManager) return false;
+		if (isInvitee != other.isInvitee) return false;
+		if (isOLATAdmin != other.isOLATAdmin) return false;
+		if (isUserManager != other.isUserManager) return false;
+		return true;
+	}
 }

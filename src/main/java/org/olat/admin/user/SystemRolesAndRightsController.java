@@ -179,8 +179,7 @@ public class SystemRolesAndRightsController extends BasicController {
 			updateSecurityGroup(myIdentity, secMgr, adminGroup, hasBeenAdmin, isAdmin);		
 		}
 		if (iAmOlatAdmin &&  !myIdentity.getStatus().equals(form.getStatus()) ) {
-			secMgr.saveIdentityStatus(myIdentity, form.getStatus());
-			identity.setStatus(form.getStatus());
+			identity = secMgr.saveIdentityStatus(myIdentity, form.getStatus());
 		}
 	}
 

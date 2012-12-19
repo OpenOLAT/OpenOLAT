@@ -298,7 +298,7 @@ public class RepositoryEntryResource {
 
 			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addTutors(ureq.getIdentity(), iae, repoEntry);
+			repositoryManager.addTutors(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to add a coach to a repository entry", e);

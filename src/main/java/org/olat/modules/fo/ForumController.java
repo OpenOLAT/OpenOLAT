@@ -1181,15 +1181,17 @@ public class ForumController extends BasicController implements GenericEventList
 		MarkResourceStat stat = stats.get(subPath);
 		MarkingService markingService = (MarkingService)CoreSpringFactory.getBean(MarkingService.class);
 		
-		String businessPath = currentMark == null ?
-				getWindowControl().getBusinessControl().getAsString() + "[Message:" + m.getKey() + "]"
-				: currentMark.getBusinessPath();
-		Controller markCtrl = markingService.getMarkController(ureq, getWindowControl(), currentMark, stat, forumOres, subPath, businessPath);
-		vcThreadView.put("mark_"+msgCount, markCtrl.getInitialComponent());
+		if(!ureq.getUserSession().getRoles().isGuestOnly()) {
+			String businessPath = currentMark == null ?
+					getWindowControl().getBusinessControl().getAsString() + "[Message:" + m.getKey() + "]"
+					: currentMark.getBusinessPath();
+			Controller markCtrl = markingService.getMarkController(ureq, getWindowControl(), currentMark, stat, forumOres, subPath, businessPath);
+			vcThreadView.put("mark_"+msgCount, markCtrl.getInitialComponent());
+		}
 		
-		businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl()) + "[Message:" + m.getKey() + "]";
 		if (uIsMsgC) {
 			OLATResourceable messageOres = OresHelper.createOLATResourceableInstance("Forum", m.getKey());
+			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl()) + "[Message:" + m.getKey() + "]";
 			Controller ePFCollCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(), messageOres,
 					businessPath);
 			if (ePFCollCtrl != null) {

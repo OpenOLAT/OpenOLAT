@@ -25,11 +25,15 @@
 package org.olat.search.service.indexer;
 
 import org.olat.core.commons.scheduler.JobWithDB;
+import org.olat.core.commons.services.search.SearchService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.search.service.SearchServiceFactory;
+import org.olat.search.service.SearchServiceImpl;
+import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.UnableToInterruptJobException;
 
 /**
  * Description:<br>
@@ -39,7 +43,7 @@ import org.quartz.JobExecutionException;
  * Initial Date:  09.09.2008 <br>
  * @author Christian Guretzki
  */
-public class SearchIndexingJob extends JobWithDB {
+public class SearchIndexingJob extends JobWithDB implements InterruptableJob {
 	private OLog log = Tracing.createLoggerFor(SearchIndexingJob.class);
 	
 	/**
@@ -49,7 +53,18 @@ public class SearchIndexingJob extends JobWithDB {
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		log.info("Search indexer started via cronjob.");
-		SearchServiceFactory.getService().startIndexing();
+		SearchService searchService = SearchServiceFactory.getService();
+		if(searchService instanceof SearchServiceImpl) {	
+			((SearchServiceImpl)searchService).getInternalIndexer().startFullIndex();
+		}
 	}
 
+	@Override
+	public void interrupt() throws UnableToInterruptJobException {
+		log.info("Interrupt indexer via quartz.");
+		SearchService searchService = SearchServiceFactory.getService();
+		if(searchService instanceof SearchServiceImpl) {	
+			((SearchServiceImpl)searchService).getInternalIndexer().stopFullIndex();
+		}
+	}
 }

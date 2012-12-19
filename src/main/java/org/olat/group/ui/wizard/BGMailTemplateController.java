@@ -105,7 +105,9 @@ public class BGMailTemplateController extends FormBasicController {
 		if(bodyElem != null) {
 			template.setBodyTemplate(bodyElem.getValue());
 		}
-		template.setCpfrom(ccSender.isSelected(0));
+		if(ccSender != null) {
+			template.setCpfrom(ccSender.isSelected(0));
+		}
 	}
 
 	@Override
@@ -157,7 +159,7 @@ public class BGMailTemplateController extends FormBasicController {
 		}
 		
 		defaultTemplate = uifactory.addCheckboxesVertical("deftemplate", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.defaultTemplate")}, null, 1);
-		if(!customizingAvailable || !StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
+		if(!customizingAvailable && StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
 			defaultTemplate.select("xx", true);
 		}
 		

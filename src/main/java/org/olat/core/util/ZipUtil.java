@@ -59,7 +59,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.version.Versionable;
-import org.olat.core.util.vfs.version.VersionsFileManager;
 
 /**
  * Initial Date:  04.12.2002
@@ -73,7 +72,7 @@ public class ZipUtil {
 
 	private static final String DIR_NAME__MACOSX = "__MACOSX/";
 	
-	private static final OLog log = Tracing.createLoggerFor(VersionsFileManager.class);
+	private static final OLog log = Tracing.createLoggerFor(ZipUtil.class);
 	
 	/**
 	 * Constructor for ZipUtil.

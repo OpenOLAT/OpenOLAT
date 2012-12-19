@@ -27,7 +27,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -35,6 +37,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
 
 /**
  * 
@@ -42,10 +45,19 @@ import org.olat.core.util.mail.MailerWithTemplate;
  */
 public class RepositoryMailing {
 	
+	public static Type getDefaultTemplateType(MemberPermissionChangeEvent event) {
+		if(event.size() == 1) {
+			if(event.getRepoTutor() != null && event.getRepoTutor().booleanValue()) {
+				return Type.addTutor;
+			} else if(event.getRepoParticipant() != null && event.getRepoParticipant().booleanValue()) {
+				return Type.addParticipant;
+			}
+		}
+		return null;
+	}
+	
 	/**
-	 * The mail template when adding users to a group. The method chooses
-	 * automatically the right translator for the given group type to customize
-	 * the template text
+	 * The mail template when adding users to a group.
 	 * 
 	 * @param re
 	 * @param actor
@@ -58,9 +70,20 @@ public class RepositoryMailing {
 	}
 	
 	/**
-	 * The mail template when removing users from a repository entry. The method chooses
-	 * automatically the right translator for the given group type to customize
-	 * the template text
+	 * The mail template when adding tutors to a group.
+	 * 
+	 * @param re
+	 * @param actor
+	 * @return the generated MailTemplate
+	 */
+	public static MailTemplate createAddTutorMailTemplate(RepositoryEntry re, Identity actor) {
+		String subjectKey = "notification.mail.added.subject";
+		String bodyKey = "notification.mail.added.body";
+		return createMailTemplate(re, actor, subjectKey, bodyKey);
+	}
+	
+	/**
+	 * The mail template when removing users from a repository entry.
 	 * 
 	 * @param re
 	 * @param actor
@@ -80,6 +103,8 @@ public class RepositoryMailing {
 				return createAddParticipantMailTemplate(re, ureqIdentity);
 			case removeParticipant:
 				return createRemoveParticipantMailTemplate(re, ureqIdentity);
+			case addTutor:
+				return createAddTutorMailTemplate(re, ureqIdentity);
 		}
 		return null;
 	}
@@ -100,8 +125,6 @@ public class RepositoryMailing {
 		if(context == null) {
 			context = new MailContextImpl(null, null, "[RepositoryEntry:" + re.getKey() + "]");
 		}
-		
-		System.out.println("***************************** Send mail");
 
 		MailerResult result = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, null);
 		if(mailing != null) {
@@ -112,12 +135,13 @@ public class RepositoryMailing {
 	public enum Type {
 		addParticipant,
 		removeParticipant,
+		addTutor,
 	}
 	
 	private static MailTemplate createMailTemplate(RepositoryEntry re, Identity actor, String subjectKey, String bodyKey) {
 		// build learning resources as list of url as string
 		final String reName = re.getDisplayname();
-		final String redescription = re.getDescription(); 
+		final String redescription = (StringHelper.containsNonWhitespace(re.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(re.getDescription()) : ""); 
 
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] {
@@ -151,5 +175,4 @@ public class RepositoryMailing {
 		};
 		return mailTempl;
 	}
-
 }

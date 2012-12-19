@@ -61,6 +61,11 @@ public class MergeSource extends AbstractVirtualContainer {
 		this.mergedContainersChildren = new ArrayList<VFSContainer>();
 	}
 
+	@Override
+	public boolean exists() {
+		return true;
+	}
+
 	/**
 	 * Add container to this merge source. container will show up as its name as a childe of MergeSource.
 	 * 

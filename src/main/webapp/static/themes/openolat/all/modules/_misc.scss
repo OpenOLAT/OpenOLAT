@@ -33,26 +33,52 @@ div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31
 /* Resume reservations */
 div.o_reservation {
 	position:relative;
-	padding-bottom: 15px;
+	margin-top: 2em;
+	padding: 1em;
+	background: #F7F7F7;
+	border:1px solid #eee; 
+	@include o-border-radius(4px);	
 	
 	span.o_reservation_name {
-		 padding-left: 20px;
+		font-weight: bold;
+		line-height: 2em;
+	}
+	span.o_reservation_role_coach {
+		margin-left: 1em;
 	}
 	span.o_reservation_accepted {
-		background: transparent url(../openolat/images/tick.png) top left no-repeat;
+		margin-left: 2em;
+		background: transparent url(../openolat/images/tick.png) 0 50% no-repeat;
+		color: $okcolor;
+		padding-left: 20px;
+	 	font-style: italic;
+		line-height: 2em;
 	}
 	span.o_reservation_refused {
-		background: transparent url(../openolat/images/cross.png) top left no-repeat;
+		margin-left: 2em;
+		background: transparent url(../openolat/images/cross.png) 0 50% no-repeat;
+		color: $nokcolor;
+		padding-left: 20px;
+	 	font-style: italic;
+		line-height: 2em;
+	}
+	
+	a.o_reservation_details_link {
+		padding: 0 1em;
 	}
 	
 	div.o_reservation_details {
-		 padding: 5px 0 0 20px;
+		 padding: 1em 0 0 0;
 	}
 	
 	ul {
 		list-style:none;
+		padding:0;
+		margin:0;
 		li {
 			background-repeat: no-repeat;
+			padding:0;
+			margin:0;
 		}
 	}
 }
@@ -216,11 +242,11 @@ div.o_notifications_news_url { }
 		span.o_search_highlight { padding-left: 2em;}
 } 
 #o_search_results_header.o_search_did_you_mean,
-#o_search_results_header.o_search_no_results { background-image: url(../openolat/images/exclamation.png); color: #990000; }
+#o_search_results_header.o_search_no_results { background-image: url(../openolat/images/exclamation.png); color: $nokcolor; }
 #o_search_results_header.o_search_did_you_mean span.o_search_did_you_mean_words{ color: #000; font-weight: bold;}
 #o_search_results_header #o_search_pageing { padding-left: 2em; display: inline; }
 #o_search_pageing_bottom { text-align: center; background: #F8F8F8; border-bottom: 1px solid #eee; padding: 3px;}
-#o_search_results_toomany { background: url(../openolat/images/exclamation.png) no-repeat center left #F8F8F8; color: #990000; padding: 5px 0 3px 20px; position: relative; top: -5px; margin-bottom: 5px;} 
+#o_search_results_toomany { background: url(../openolat/images/exclamation.png) no-repeat center left #F8F8F8; color: $nokcolor; padding: 5px 0 3px 20px; position: relative; top: -5px; margin-bottom: 5px;} 
 div.o_search_result {margin: 0 0 1em 0; padding: 1em 0 0 0; }
 div.o_search_result_title a {font-weight: bold; } 
 div.o_search_result_title a.o_search_result_details_link { margin-left: 1em; font-weight: normal; font-size: 90%; vertical-align: bottom;}

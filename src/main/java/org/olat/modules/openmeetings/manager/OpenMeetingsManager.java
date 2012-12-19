@@ -121,6 +121,13 @@ public interface OpenMeetingsManager {
 	throws OpenMeetingsException;
 	
 	/**
+	 * Delete a recording
+	 * @param recording
+	 * @return
+	 */
+	boolean deleteRecording(OpenMeetingsRecording recording);
+
+	/**
 	 * A UUID mapped to the identity is saved in a cache
 	 * @param token
 	 * @return

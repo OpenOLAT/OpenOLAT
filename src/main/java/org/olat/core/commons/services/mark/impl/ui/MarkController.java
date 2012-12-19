@@ -103,6 +103,7 @@ public class MarkController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		markLink = uifactory.addFormLink("mark", " ", " ", formLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
 		markLink.setCustomEnabledLinkCSS(marked ? "b_mark_set" : "b_mark_not_set");
+		markLink.setEnabled(!ureq.getUserSession().getRoles().isGuestOnly());
 
 		String tooltip;
 		if(stat == null) {

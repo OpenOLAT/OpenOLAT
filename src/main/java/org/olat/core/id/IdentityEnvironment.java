@@ -100,7 +100,9 @@ public class IdentityEnvironment extends LogDelegator implements Serializable {
 	 * @param roles
 	 */
 	public void setRoles(Roles roles) {
-		if (this.roles != null) throw new AssertException("can only set Roles once");
+		if (this.roles != null && !this.roles.equals(roles)) {
+			throw new AssertException("can only set Roles once");
+		}
 		this.roles = roles;
 	}
 

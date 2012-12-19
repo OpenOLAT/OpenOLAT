@@ -249,6 +249,25 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		boolean del = getBasefile().delete();
 		return del ? VFSConstants.YES : VFSConstants.NO;
 	}
+	
+	
+
+	@Override
+	public VFSStatus deleteSilently() {
+		if(!getBasefile().exists()){
+			return VFSConstants.YES;  // already non-existent
+		}
+		// we must empty the folders and subfolders first
+		for (Iterator<VFSItem> it_chd = getItems().iterator(); it_chd.hasNext();) {
+			it_chd.next().deleteSilently(); // TODO status
+		}
+		
+		VersionsManager.getInstance().delete(this, true);
+
+		// now delete the directory itself
+		boolean del = getBasefile().delete();
+		return del ? VFSConstants.YES : VFSConstants.NO;
+	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#resolveFile(java.lang.String)

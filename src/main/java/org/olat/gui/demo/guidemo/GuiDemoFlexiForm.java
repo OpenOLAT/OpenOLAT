@@ -112,7 +112,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		personData.setReadOnly(true);
 
 		// get file and store it in temporary location
-		tmpFile = new File(WebappHelper.getUserDataRoot() + "/tmp/" + fileElement.getUploadFileName());
+		tmpFile = new File(WebappHelper.getTmpDir() + "/" + fileElement.getUploadFileName());
 		fileElement.moveUploadFileTo(tmpFile);
 		personData.setFile(tmpFile);
 		

@@ -707,8 +707,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			
 			java.util.Calendar recurStartCal = java.util.Calendar.getInstance();
 			recurStartCal.clear();
-			recurStartCal.setTimeInMillis(date.getTime());
-
+			recurStartCal.setTimeInMillis(date.getTime()-tz.getOffset(date.getTime()));
 			long duration = kEvent.getEnd().getTime() - kEvent.getBegin().getTime();
 
 			java.util.Calendar beginCal = java.util.Calendar.getInstance();

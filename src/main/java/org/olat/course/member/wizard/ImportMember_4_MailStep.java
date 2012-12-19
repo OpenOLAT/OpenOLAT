@@ -26,15 +26,19 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ImportMember_4_MailStep extends BasicStep {
+
+	private final RepositoryEntry repoEntry;
 	
-	public ImportMember_4_MailStep(UserRequest ureq) {
+	public ImportMember_4_MailStep(UserRequest ureq, RepositoryEntry repoEntry) {
 		super(ureq);
+		this.repoEntry = repoEntry;
 		setNextStep(NOSTEP);
 		setI18nTitleAndDescr("import.mail.title", "import.mail.title");
 	}
@@ -46,7 +50,7 @@ public class ImportMember_4_MailStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		ImportMemberMailController controller = new ImportMemberMailController(ureq, wControl, form, runContext);
+		ImportMemberMailController controller = new ImportMemberMailController(ureq, wControl, repoEntry, form, runContext);
 		return controller;
 	}
 }

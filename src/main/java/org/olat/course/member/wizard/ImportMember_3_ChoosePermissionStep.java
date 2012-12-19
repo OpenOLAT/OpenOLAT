@@ -43,7 +43,7 @@ public class ImportMember_3_ChoosePermissionStep extends BasicStep {
 		super(ureq);
 		this.group = group;
 		this.repoEntry = repoEntry;
-		setNextStep(new ImportMember_4_MailStep(ureq));
+		setNextStep(new ImportMember_4_MailStep(ureq, repoEntry));
 		setI18nTitleAndDescr("import.permission.title", "import.permission.title");
 	}
 

@@ -77,6 +77,9 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		this.courseNode = courseNode;
 		this.courseTitle = courseTitle;
 		this.defaultSettings = defaultSettings;
+		if(defaultSettings != null) {
+			defaultSettings.setName(courseNode.getShortTitle());
+		}
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
 		try {
@@ -91,7 +94,10 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("pane.tab.vcconfig");
 		setFormDescription("create.room.desc");
+		setFormContextHelp(OpenMeetingsRoomEditController.class.getPackage().getName(), "room.html", "help.hover.openmeetings.room");
+		
 		if(serverDown) {
 			setFormWarning(errorKey);
 		}
@@ -121,7 +127,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		roomNameEl.setValue(hasRoom ? room.getName() : "");
 		roomNameEl.setVisible(hasRoom);
 		if(hasRoom) {
-			String typeStr = translate(RoomType.values()[(int)room.getType()].i18nKey());
+			String typeStr = translate(RoomType.getType(room.getType()).i18nKey());
 			roomTypeEl.setValue(typeStr);
 		} else {
 			roomTypeEl.setValue("");

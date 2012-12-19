@@ -166,7 +166,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 					writableRootContainer = folderComponent.getCurrentContainer(); 
 				}
 				if (relFilePath.endsWith(".html") || relFilePath.endsWith(".htm")) {
-					editorCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true);				
+					editorCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true, true);				
 					((HTMLEditorController)editorCtr).setNewFile(true);
 				}
 				else {

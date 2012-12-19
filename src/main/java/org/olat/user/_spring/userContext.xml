@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
 
 <bean id="userModule" class="org.olat.user.UserModule" 
@@ -169,16 +169,16 @@
 			<value>[\.\-_].*</value>
 			<value>[\.\-_]*</value>
 		</list>
-</property>
-<!--  
-<property name="afterLoginConfig">
--->
-	<!-- enable Controllers or add others if you want them presented right after the Login of a user in an overlay. -->
+</property> 
+	<property name="afterLoginConfig">
+		<ref bean="org.olat.user.AfterLoginConfig"/>
+	</property>
 
-	<!-- <bean id="org.olat.user.AfterLoginConfig" class="org.olat.login.AfterLoginConfig" scope="prototype">	
+</bean>
+
+	<bean id="org.olat.user.AfterLoginConfig" class="org.olat.login.AfterLoginConfig" scope="prototype">	
 		<property name="afterLoginControllerList">
 			<list>
-			-->
 			<!-- Configuration to force users to regularly check and update the user profile, redoTimeout sets the interval	(seconds)		
 				<map>
 					<entry key="controller">
@@ -233,13 +233,9 @@
 					<entry key="i18nIntro"><value>org.olat.user:runonce.intro</value></entry>		
 				</map> 
 			--> 
-	<!-- </list> 
+			</list> 
 		</property>
-	</bean> -->		
-<!--  
-</property>
--->
-</bean>
+	</bean>
 
 <bean id="triggerUserModuleInit" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
     <property name="targetObject" ref="userModule" />
@@ -260,17 +256,7 @@
                 <ref bean="org.olat.user.UserPropertiesConfig" />
         </property>
         <property name="userNameAndPasswordSyntaxChecker">
-                <!--  a) enable to use standard username and password checker -->
-                <bean name="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxChecker" />
-                <!--  b) enable to use email-adresses as usernames (allowing @ in username) -->
-                <!--<bean name="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxCheckerWithEmail" />-->
-                <!--  c) enable to use a generic regexp based email  and password checker. Make sure you adjusted also the corresponding i18n keys -->
-                <!--
-                <bean name="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexp">
-                        <property name="usernameRegExp" value="[0-9a-z\\.\\-_@]{3,32}" />
-                        <property name="passwordRegExp"><value><![CDATA[^[\\p{Graph}[^'\\"]]{4,128}$]]></value></property>
-                </bean>
-                -->
+        	<ref bean="org.olat.user.UserNameAndPasswordSyntaxChecker"/>
         </property>
 		<property name="userDisplayNameCreator">
 				<!-- Implementation to display "firstname lastname" 
@@ -280,6 +266,9 @@
                 <bean id="org.olat.user.UserDisplayNameCreator" class="org.olat.user.UserDisplayNameCreatorLastnameFirst" />
         </property>
 </bean>
+
+	<!-- enable to use a generic regexp based email  and password checker. Make sure you adjusted also the corresponding i18n keys -->
+	<bean id="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxCheckerWithEmail" />
 
 <bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager">
 	<constructor-arg ref="userDeletionManager"></constructor-arg>

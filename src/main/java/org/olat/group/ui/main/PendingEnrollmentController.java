@@ -124,8 +124,10 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		for(ReservationWrapper reservation:reservations) {
 			FormLink acceptLink = uifactory.addFormLink("accept_" + reservation.getKey(), "accept", null, formLayout, Link.BUTTON);
 			acceptLink.setUserObject(reservation);
+			acceptLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_ok");
 			FormLink rejectLink = uifactory.addFormLink("reject_" + reservation.getKey(), "reject", null, formLayout, Link.BUTTON);
 			rejectLink.setUserObject(reservation);
+			rejectLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_nok");
 			formLayout.add(acceptLink.getName(), acceptLink);
 			formLayout.add(rejectLink.getName(), rejectLink);
 		}
@@ -167,7 +169,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 				if(reservation.getAccept().booleanValue()) {
 					acService.acceptReservationToResource(getIdentity(), reservation.getReservation());
 				} else {
-					acService.removeReservation(reservation.getReservation());
+					acService.removeReservation(getIdentity(), getIdentity(), reservation.getReservation());
 				}
 			}
 		}
@@ -194,6 +196,10 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		public Long getKey() {
 			return reservation.getKey();
 		}
+		
+		public boolean isCoach() {
+			return "group_coach".equals(reservation.getType()) || "repo_tutors".equals(reservation.getType());
+		}
 
 		public String getName() {
 			return name == null ? "" : name;
@@ -211,6 +217,16 @@ public class PendingEnrollmentController extends FormBasicController implements 
 			this.description = description;
 		}
 
+		public boolean isGroupReservation() {
+			// group participants and coaches
+			return reservation.getType().startsWith("group_");
+		}
+		
+		public boolean isRepositoryEntryReservation() {
+			// repo participants and coaches
+			return reservation.getType().startsWith("repo_");
+		}
+		
 		public List<String> getCourses() {
 			if(courses == null) {
 				courses = new ArrayList<String>(1);

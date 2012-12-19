@@ -60,6 +60,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.CourseModule;
@@ -372,7 +373,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private void cleanUpCollectedScoData() {
 		if(scorm_lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE) ||
 			 scorm_lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW)){
-			String path = FolderConfig.getCanonicalRoot()+"/tmp/"+this.hashCode();
+			String path = WebappHelper.getTmpDir() + "/tmpscorm/" + hashCode();
 			FileUtils.deleteDirsAndFiles( new File(path),true, true);
 		}
 	}

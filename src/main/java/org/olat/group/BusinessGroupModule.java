@@ -279,8 +279,8 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		return mandatoryEnrolmentEmailForGroupmanagers;
 	}
 
-	public void setMandatoryEnrolmentEmailForGroupmanagers(boolean mandatory) {
-		setStringProperty(MANDATORY_ENROLMENT_EMAIL_GROUPMANAGERS, Boolean.toString(mandatory), true);
+	public void setMandatoryEnrolmentEmailForGroupmanagers(String mandatory) {
+		setStringProperty(MANDATORY_ENROLMENT_EMAIL_GROUPMANAGERS, mandatory, true);
 	}
 
 	public String getMandatoryEnrolmentEmailForAdministrators() {
@@ -347,7 +347,7 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		return acceptMembershipForAdministrators;
 	}
 
-	public void setAcceptMembershipForAdministrators(boolean mandatory) {
-		setStringProperty(ACCEPT_MEMBERSHIP_ADMINISTRATORS, Boolean.toString(mandatory), true);
+	public void setAcceptMembershipForAdministrators(String mandatory) {
+		setStringProperty(ACCEPT_MEMBERSHIP_ADMINISTRATORS, mandatory, true);
 	}
 }

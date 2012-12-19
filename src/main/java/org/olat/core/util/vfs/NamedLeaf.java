@@ -48,6 +48,11 @@ public class NamedLeaf implements VFSLeaf {
 		this.delegate = delegate;
 	}
 	
+	@Override
+	public boolean exists() {
+		return delegate != null && delegate.exists();
+	}
+
 	//fxdiff FXOLAT-125: virtual file system for CP
 	public VFSLeaf getDelegate() {
 		return delegate;
@@ -107,7 +112,12 @@ public class NamedLeaf implements VFSLeaf {
 	 * @see org.olat.core.util.vfs.VFSItem#delete()
 	 */
 	public VFSStatus delete() {
-		return delegate.canDelete();
+		return delegate.delete();
+	}
+
+	@Override
+	public VFSStatus deleteSilently() {
+		return delegate.deleteSilently();
 	}
 
 	/**

@@ -46,7 +46,9 @@ public class BusinessGroupMailing {
 			List<BusinessGroupMembershipChange> changes = event.getGroupChanges();
 			if(changes.size() == 1) {
 				BusinessGroupMembershipChange change = changes.get(0);
-				if(change.getParticipant() != null) {
+				if(change.getTutor() != null) {
+					return MailType.addCoach;
+				} else if(change.getParticipant() != null) {
 					return MailType.addParticipant;
 				} else if (change.getWaitingList() != null) {
 					return MailType.addToWaitingList;
@@ -63,7 +65,7 @@ public class BusinessGroupMailing {
 
 		if(total == 1) {
 			if(mod.getAddOwners().size() == 1) {
-				return null;//no template for owner
+				return MailType.addCoach;
 			} else if(mod.getAddParticipants().size() == 1) {
 				return MailType.addParticipant;
 			} else if(mod.getAddToWaitingList().size() == 1) {
@@ -80,6 +82,10 @@ public class BusinessGroupMailing {
 			case addParticipant:
 				return BGMailHelper.createAddParticipantMailTemplate(group, ureqIdentity);
 			case removeParticipant:
+				return BGMailHelper.createRemoveParticipantMailTemplate(group, ureqIdentity);
+			case addCoach:
+				return BGMailHelper.createAddParticipantMailTemplate(group, ureqIdentity);
+			case removeCoach:
 				return BGMailHelper.createRemoveParticipantMailTemplate(group, ureqIdentity);
 			case addToWaitingList:
 				return BGMailHelper.createAddWaitinglistMailTemplate(group, ureqIdentity);
@@ -117,6 +123,8 @@ public class BusinessGroupMailing {
 	public enum MailType {
 		addParticipant,
 		removeParticipant,
+		addCoach,
+		removeCoach,
 		addToWaitingList,
 		removeToWaitingList,
 		graduateFromWaitingListToParticpant,

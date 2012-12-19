@@ -28,8 +28,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -52,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -213,10 +212,9 @@ class I18nConfigSubNewLangController extends FormBasicController {
 		User currUser = ureq.getIdentity().getUser();
 		// direct DB calls have to be made here because the 
 		// user manager is not available in the core
-		DB db = DBFactory.getInstance();
-		currUser = (User) db.loadObject(currUser);
+		currUser = UserManager.getInstance().loadUserByKey(currUser.getKey());
 		currUser.getPreferences().setLanguage(localeKey);
-		db.saveObject(currUser);
+		UserManager.getInstance().updateUser(currUser);
 		DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
 	}
 

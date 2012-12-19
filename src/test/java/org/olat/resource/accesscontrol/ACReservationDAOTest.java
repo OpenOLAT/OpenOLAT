@@ -26,10 +26,9 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
-import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -38,6 +37,8 @@ import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,17 +50,18 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	private final OLog log = Tracing.createLoggerFor(ACReservationDAOTest.class);
 	
 	@Autowired
+	private Scheduler scheduler;
+	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private ACReservationDAO acReservationDao;
 
-	@After
-	public void tearDown() throws Exception {
+	@Before
+	public void interruptReservationJob() {	
 		try {
-			DBFactory.getInstance().commitAndCloseSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			throw e;
+			scheduler.pauseJob("acReservationCleanupJobDetail", Scheduler.DEFAULT_GROUP);
+		} catch (SchedulerException e) {
+			log.error("Cannot intterupt the reservation job.", e);
 		}
 	}
 	
@@ -156,7 +158,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		cal.add(Calendar.SECOND, -2);
 		Date date = cal.getTime();
 		List<ResourceReservation> oldReservations = acReservationDao.loadExpiredReservation(date);
-		Assert.assertNotNull(oldReservations);
+		Assert.assertNotNull("Old reservations cannot be null", oldReservations);
 		Assert.assertFalse(oldReservations.isEmpty());
 		Assert.assertTrue(oldReservations.contains(reservation1));
 		Assert.assertTrue(oldReservations.contains(reservation2));

@@ -54,6 +54,11 @@ public class VFSJavaIOFile implements VFSLeaf {
 	}
 
 	@Override
+	public boolean exists() {
+		return file != null && file.exists();
+	}
+
+	@Override
 	public VFSItem resolve(String path) {
 		return null;
 	}
@@ -75,6 +80,11 @@ public class VFSJavaIOFile implements VFSLeaf {
 
 	@Override
 	public VFSStatus delete() {
+		return VFSConstants.NO;
+	}
+
+	@Override
+	public VFSStatus deleteSilently() {
 		return VFSConstants.NO;
 	}
 
