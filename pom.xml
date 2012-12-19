@@ -64,8 +64,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.6</targetJdk>
-		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>
-		<org.hibernate.version>4.1.8.Final</org.hibernate.version>
+		<org.springframework.version>3.2.0.RELEASE</org.springframework.version>
+		<org.hibernate.version>4.1.9.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.15</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
 		<org.mysql.version>5.1.21</org.mysql.version>
@@ -1457,15 +1457,10 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<!-- Used by SCORM implementation -->
 			<groupId>org.beanshell</groupId>
 			<artifactId>bsh-core</artifactId>
 			<version>2.0b4</version>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<version>2.2</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
