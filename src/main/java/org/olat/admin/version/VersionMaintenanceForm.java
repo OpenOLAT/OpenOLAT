@@ -178,6 +178,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		
 		TaskExecutorManager.getInstance().runTask(new Runnable() {
 			public void run() {
+				waitASecond();
 				versionsManager.deleteOrphans(VersionMaintenanceForm.this);
 			}
 		});
@@ -201,6 +202,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 
 		TaskExecutorManager.getInstance().runTask(new Runnable() {
 			public void run() {
+				waitASecond();
 				Long numOfVersions = getNumOfVersions();
 				versionsManager.pruneHistory(numOfVersions.longValue(), VersionMaintenanceForm.this);
 			}
@@ -212,6 +214,14 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 				cmc.activate();
 				listenTo(cmc);
 			}
+		}
+	}
+	
+	private final void waitASecond() {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			logError("Can't wait", e);
 		}
 	}
 	
