@@ -24,14 +24,9 @@
 */
 package org.olat.commons.coordinate.cluster;
 
-import org.olat.commons.coordinate.cluster.jms.ClusterAdminControllerCluster;
 import org.olat.commons.coordinate.cluster.jms.ClusterEventBus;
 import org.olat.commons.coordinate.singlevm.SingleVMEventBus;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.util.cache.n.impl.cluster.ClusterConfig;
+import org.olat.core.util.cluster.ClusterConfig;
 import org.olat.core.util.coordinate.Cacher;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.Locker;

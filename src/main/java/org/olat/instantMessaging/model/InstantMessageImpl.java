@@ -25,14 +25,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
@@ -60,9 +57,8 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	
-	@OneToOne(targetEntity=IdentityImpl.class, cascade={})
-	@JoinColumn(name="fk_from_identity_id", nullable=false, insertable=true, updatable=false)
-	private Identity from;
+	@Column(name="fk_from_identity_id", nullable=false, insertable=true, updatable=false)
+	private Long fromKey;
 	
 	@Column(name="msg_resname", nullable=false, insertable=true, updatable=false)
 	private String resourceTypeName;
@@ -97,12 +93,18 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 		this.creationDate = creationDate;
 	}
 
-	public Identity getFrom() {
-		return from;
+	public Long getFromKey() {
+		return fromKey;
 	}
 
-	public void setFrom(Identity from) {
-		this.from = from;
+	public void setFromKey(Long fromKey) {
+		this.fromKey = fromKey;
+	}
+
+	@Override
+	public boolean isFromMe(Identity me) {
+		if(me == null || fromKey == null) return false;
+		return fromKey.equals(me.getKey());
 	}
 
 	public String getResourceTypeName() {

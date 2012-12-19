@@ -374,7 +374,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		Link link = LinkFactory.createCustomLink(buddy.getIdentityKey().toString(), ACTION_MSG, "", Link.NONTRANSLATED, newMsgIcon, this);
 		link.registerForMousePositionEvent(true);
 		link.setCustomEnabledLinkCSS("b_small_icon o_instantmessaging_new_msg_icon");
-		link.setTooltip(translate("im.new.message", new String[]{ buddy.getFullname() }), false);
+		link.setTooltip(translate("im.new.message", new String[]{ buddy.getName() }), false);
 		link.setUserObject(buddy);
 		newMsgIcon.put(buddy.getIdentityKey().toString(), link);
 		return link;

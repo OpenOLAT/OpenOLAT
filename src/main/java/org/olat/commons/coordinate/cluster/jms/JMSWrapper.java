@@ -40,7 +40,7 @@ import org.olat.core.util.event.MultiUserEvent;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class JMSWrapper implements Serializable {
-	
+	private static final long serialVersionUID = -7442707114788506896L;
 	private final Long resId;
 	private final String resType;
 	private final MultiUserEvent event;

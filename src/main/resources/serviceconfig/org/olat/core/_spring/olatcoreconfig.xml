@@ -12,7 +12,7 @@
 		
 	-->
 
-<bean id="org.olat.commons.coordinate.cluster.ClusterConfig" class="org.olat.core.util.cache.n.impl.cluster.ClusterConfig">
+<bean id="org.olat.commons.coordinate.cluster.ClusterConfig" class="org.olat.core.util.cluster.ClusterConfig">
 		<!-- nodeId must be a cluster-wide unique integer between 1 and 63 -->
 		<property name="nodeId" value="${node.id}" />
 </bean>
@@ -139,24 +139,6 @@
 	<property name="childrenConfig">
 		<map>
 			<entry key="CourseModule">
-				<bean class="org.olat.core.util.cache.CacheConfig">													
-					<property name="childrenConfig">
-						<map>
-							<entry key="Identity">
-								<bean class="org.olat.core.util.cache.CacheConfig">
-									<property name="timeToLive" value="0" />
-									<property name="timeToIdle" value="60" />
-									<property name="maxElementsInMemory" value="1000" />
-								</bean>
-							</entry>
-						</map>
-					</property>
-				</bean>													
-			</entry>
-			<!-- a sample how special cache parameters can be assigned to a specific resource:
-				here: a course (e.g. when a course has either tons of visitors, or tons of (assessable) nodes.
-			 -->
-			<entry key="CourseModule_dfdsf">
 				<bean class="org.olat.core.util.cache.CacheConfig">													
 					<property name="childrenConfig">
 						<map>

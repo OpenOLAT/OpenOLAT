@@ -48,7 +48,7 @@ public class InstantMessageDAO {
 	public InstantMessage createMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
 		InstantMessageImpl msg = new InstantMessageImpl();
 		msg.setBody(body);
-		msg.setFrom(from);
+		msg.setFromKey(from.getKey());
 		msg.setFromNickName(fromNickName);
 		msg.setAnonym(anonym);
 		msg.setResourceTypeName(chatResource.getResourceableTypeName());
@@ -83,8 +83,7 @@ public class InstantMessageDAO {
 		TypedQuery<InstantMessage> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), InstantMessage.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
-				.setFirstResult(firstResult)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE);
+				.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}

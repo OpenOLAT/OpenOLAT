@@ -26,7 +26,6 @@
 package org.olat.core.util.cache;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.olat.core.id.OLATResourceable;
 
@@ -105,6 +104,6 @@ public interface CacheWrapper<U, V extends Serializable> {
 	 * @param ores the olat resourceable
 	 * @return the cachewrapper
 	 */
-	public CacheWrapper getOrCreateChildCacheWrapper(OLATResourceable ores);
+	public <W, X extends Serializable> CacheWrapper<W, Serializable> getOrCreateChildCacheWrapper(OLATResourceable ores);
 	
 }

@@ -173,6 +173,27 @@
 			</property>
 	</bean>
 	
+	<!-- System / cluster -->
+	<bean class="org.olat.commons.coordinate.cluster.jms.ClusterActionExtension"  init-method="initExtensionPoints">
+			<property name="clusterMode" value="${cluster.mode}"/>
+			<property name="order" value="7180" />
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.commons.coordinate.cluster.jms.ClusterAdminControllerCluster"/>
+				</bean>
+			</property>
+			<property name="navigationKey" value="clusters" />
+			<property name="parentTreeNodeIdentifier" value="systemParent" /> 
+			<property name="translationPackage" value="org.olat.admin"/>
+			<property name="i18nActionKey" value="menu.cluster"/>
+			<property name="i18nDescriptionKey" value="menu.cluster.alt"/>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.admin.SystemAdminMainController</value>		
+				</list>
+			</property>
+	</bean>
+	
 	
 	<!-- The devel menu point -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

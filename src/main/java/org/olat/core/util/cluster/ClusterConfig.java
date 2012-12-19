@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */ 
-package org.olat.core.util.cache.n.impl.cluster;
+package org.olat.core.util.cluster;
 
 import java.io.Serializable;
 

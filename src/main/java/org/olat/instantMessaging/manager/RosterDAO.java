@@ -22,6 +22,7 @@ package org.olat.instantMessaging.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -55,6 +56,36 @@ public class RosterDAO {
 		return entry;
 	}
 
+	public void updateRosterEntry(OLATResourceable chatResource, Identity identity, String fullName, String nickName, boolean anonym) {
+		RosterEntryImpl entry = loadForUpdate(chatResource, identity);
+		if(entry == null) {
+			createRosterEntry(chatResource, identity, fullName, nickName, anonym);
+		} else {
+			entry.setFullName(fullName);
+			entry.setNickName(nickName);
+			entry.setAnonym(anonym);
+			dbInstance.getCurrentEntityManager().merge(entry);
+		}
+	}
+	
+	private RosterEntryImpl loadForUpdate(OLATResourceable ores, Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select entry from ").append(RosterEntryImpl.class.getName()).append(" entry ")
+	  .append(" where entry.identityKey=:identityKey")
+	  .append(" and entry.resourceId=:resid and entry.resourceTypeName=:resname");
+		
+		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RosterEntryImpl.class)
+				.setParameter("resid", ores.getResourceableId())
+				.setParameter("resname", ores.getResourceableTypeName())
+				.setParameter("identityKey", identity.getKey())
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+		List<RosterEntryImpl> entries = query.getResultList();
+		if(entries.size() > 0) {
+			return entries.get(0);
+		}
+		return null;
+	}
+	
 	public List<RosterEntryImpl> getRoster(OLATResourceable ores, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select entry from ").append(RosterEntryImpl.class.getName()).append(" entry ")
@@ -63,11 +94,18 @@ public class RosterDAO {
 		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RosterEntryImpl.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
-				.setFirstResult(firstResult);
+				.setFirstResult(firstResult)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
 		return query.getResultList();
+	}
+	
+	protected void clear() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(RosterEntryImpl.class.getName()).append(" entry ");
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString()).executeUpdate();
 	}
 	
 	public void deleteEntry(Identity identity, OLATResourceable ores) {

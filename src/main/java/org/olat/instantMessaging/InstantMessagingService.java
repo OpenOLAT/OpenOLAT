@@ -163,7 +163,4 @@ public interface InstantMessagingService {
 	 * @param identity
 	 */
 	public void disableChat(Identity identity);
-	
-	public int getNumOfconnectedUsers();
-
 }

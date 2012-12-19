@@ -202,13 +202,9 @@ public class UserSessionManager implements GenericEventListener {
 	
 	/**
 	 * @return The number of users currently logged in using the web interface
-	 *         (guests and authenticated users). Note that currently this only
-	 *         returns the users from this VM as the synchronization of user
-	 *         between cluster node is not correctly. In the long run we return
-	 *         all users here.
+	 *         (guests and authenticated users).
 	 */
 	public int getUserSessionWebCounter() {
-		// clusterNOK ?? return only number of locale sessions ?
 		return userSessionCache.size();
 	}
 	

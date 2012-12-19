@@ -43,7 +43,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.floatingresizabledialog.FloatingResizableDialogController;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -154,7 +153,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		chatMsgFieldContent.contextPut("chatMessages", "");
 		List<InstantMessage> lastMessages = imService.getMessages(getIdentity(), getOlatResourceable(), 0, 10, true);
 		for(int i=lastMessages.size(); i-->0; ) {
-			appendToMessageHistory(lastMessages.get(i));
+			appendToMessageHistory(lastMessages.get(i), false);
 		}
 		
 		chatMsgFieldContent.contextPut("id", hashCode());
@@ -187,7 +186,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		} else if (source == sendMessageForm) {
 			if(StringHelper.containsNonWhitespace(sendMessageForm.getMessage())) {
 				InstantMessage message = doSendMessage(sendMessageForm.getMessage());
-				appendToMessageHistory(message);
+				appendToMessageHistory(message, true);
 				sendMessageForm.resetTextField();
 			} else {
 				//ignore empty manObjectessage entry and refocus on entry field
@@ -242,7 +241,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			if(!getIdentity().getKey().equals(from)) {
 				Long messageId = event.getMessageId();
 				InstantMessage message = imService.getMessageById(getIdentity(), messageId, true);
-				appendToMessageHistory(message);
+				appendToMessageHistory(message, false);
 			}
 		} else if ("participant".equals(event.getCommand())) {
 			if (event.getFromId() != null) {
@@ -259,17 +258,15 @@ public class ChatController extends BasicController implements GenericEventListe
 		chatPanelCtr.executeCloseCommand();
 	}
 
-	private void appendToMessageHistory(InstantMessage message) {
-		String uname = userManager.getUserDisplayName(message.getFrom().getUser());
+	private void appendToMessageHistory(InstantMessage message, boolean focus) {
 		String m = message.getBody().replaceAll("<br/>\n", "\r\n");
-		
 		StringBuilder sb = new StringBuilder();
 		sb.append("<div><span style=\"color:");
-		sb.append(colorize(message.getFrom()));
+		sb.append(message.isFromMe(getIdentity()) ? "blue" : "red");
 		sb.append("\">[");
 		sb.append(formatter.formatTime(message.getCreationDate()));
 		sb.append("] ");
-		sb.append(uname);
+		sb.append(message.getFromNickName());
 		sb.append(": </span>");
 		sb.append(prepareMsgBody(m.replaceAll("<", "&lt;").replaceAll(">", "&gt;")).replaceAll("\r\n", "<br/>\n"));
 		sb.append("</div>");
@@ -279,7 +276,7 @@ public class ChatController extends BasicController implements GenericEventListe
 
 		StringBuilder fh = new StringBuilder(messageHistory);
 		fh.append(jsTweakCmd);
-		if (uname.equals(getIdentity().getName())) {
+		if (focus) {
 			fh.append(jsFocusCmd);
 		}
 		chatMsgFieldContent.contextPut("chatMessages", fh.toString());
@@ -299,12 +296,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		return body;
 	}
 
-	private String colorize(Identity from) {
-		if (from.equals(getIdentity())) return "blue";
-		else if (from.equals("info@localhost")) return "green";
-		else return "red";
-	}
-
 	protected String getMessageHistory() {
 		synchronized (messageHistory) {
 			return messageHistory.toString();
@@ -320,17 +311,16 @@ public class ChatController extends BasicController implements GenericEventListe
 	
 	private void updateRosterList(Long identityKey, String name, boolean anonym) {
 		if(buddyList != null) {
-			RosterEntry entry;
+			Buddy entry;
 			if(buddyList.contains(identityKey)) {
 				entry = buddyList.get(identityKey);
 			} else {
-				Buddy buddy = imService.getBuddyById(identityKey);
-				entry = new RosterEntry(buddy);
+				entry = imService.getBuddyById(identityKey);
 				buddyList.add(entry);
 			}
 			entry.setAnonym(anonym);
 			if(StringHelper.containsNonWhitespace(name)) {
-				entry.setNickName(name);
+				entry.setName(name);
 			}
 			rosterVC.setDirty(true);
 		}

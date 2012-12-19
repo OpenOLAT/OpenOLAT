@@ -17,28 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.instantMessaging;
+package org.olat.commons.coordinate.cluster.jms;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
+import org.olat.core.extensions.action.GenericActionExtension;
 
 /**
+ * This extension is only enabled in cluster mode
  * 
- * Initial date: 04.12.2012<br>
+ * Initial date: 19.12.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface InstantMessage {
-	
-	public Long getKey();
+public class ClusterActionExtension extends GenericActionExtension {
 
-	public String getFromNickName();
+	private String clusterMode;
 	
-	public Date getCreationDate();
-	
-	public String getBody();
-	
-	public boolean isFromMe(Identity me);
+	/**
+	 * [used by Spring]
+	 * @param clusterMode
+	 */
+	public void setClusterMode(String clusterMode) {
+		this.clusterMode = clusterMode;
+	}
 
+	@Override
+	public boolean isEnabled() {
+		return clusterMode != null && "Cluster".equals(clusterMode);
+	}
 }

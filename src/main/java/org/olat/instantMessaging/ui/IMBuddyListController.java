@@ -31,6 +31,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.model.Buddy;
 
 /**
  * 
@@ -112,7 +113,7 @@ public class IMBuddyListController extends BasicController {
 		} else if (source instanceof Link) {
 			Link link = (Link)source;
 			if("cmd.buddy".equals(link.getCommand())) {
-				RosterEntry buddy = (RosterEntry)link.getUserObject();
+				Buddy buddy = (Buddy)link.getUserObject();
 				fireEvent(ureq, new OpenInstantMessageEvent(ureq, buddy));
 			}
 		}
@@ -130,7 +131,7 @@ public class IMBuddyListController extends BasicController {
 			buddyList.addBuddies(imService.getBuddies(getIdentity()));
 		}
 		
-		for(RosterEntry buddy:buddyList.getEntries()) {
+		for(Buddy buddy:buddyList.getEntries()) {
 			String linkId = "buddy_" + buddy.getIdentityKey();
 			if(buddiesListContent.getComponent(linkId) == null) {
 				Link buddyLink = LinkFactory.createCustomLink(linkId, "cmd.buddy", "", Link.NONTRANSLATED, buddiesListContent, this);

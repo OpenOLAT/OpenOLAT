@@ -19,6 +19,8 @@
  */
 package org.olat.instantMessaging.model;
 
+import java.io.Serializable;
+
 import org.olat.core.id.OLATResourceable;
 
 /**
@@ -27,32 +29,47 @@ import org.olat.core.id.OLATResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class Buddy implements OLATResourceable, Comparable<Buddy> {
+public class Buddy implements OLATResourceable, Comparable<Buddy>, Serializable {
 
+	private static final long serialVersionUID = 2256891747103723186L;
+	
 	private final Long identityKey;
-	private final String fullname;
-	private final String nickName;
+	private String name;
+	private boolean anonym;
+	private String status;
 	
-	public Buddy(Long identityKey, String fullname, String nickName) {
+	public Buddy(Long identityKey, String name, boolean anonym) {
 		this.identityKey = identityKey;
-		this.fullname = fullname;
-		this.nickName = nickName;
-	}
-	
-	public String getStatus() {
-		return "available";
+		this.name = name;
+		this.anonym = anonym;
 	}
 
 	public Long getIdentityKey() {
 		return identityKey;
 	}
 
-	public String getNickName() {
-		return nickName;
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public boolean isAnonym() {
+		return anonym;
 	}
 
-	public String getFullname() {
-		return fullname;
+	public void setAnonym(boolean anonym) {
+		this.anonym = anonym;
+	}
+	
+	public String getStatus() {
+		return status == null ? "available" : status;
+	}
+	
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	@Override
@@ -69,8 +86,8 @@ public class Buddy implements OLATResourceable, Comparable<Buddy> {
 	public int compareTo(Buddy o) {
 		if(o == null) return -1;
 		int result = 0;
-		if(fullname != null && o.fullname != null) {
-			result = fullname.compareTo(o.fullname);
+		if(name != null && o.name != null) {
+			result = name.compareTo(o.name);
 		}
 		if(result == 0 && identityKey != null && o.identityKey != null) {
 			result = identityKey.compareTo(o.identityKey);
@@ -97,6 +114,6 @@ public class Buddy implements OLATResourceable, Comparable<Buddy> {
 
 	@Override
 	public String toString() {
-		return "buddy[identityKey=" + identityKey + ":fullname=" + fullname + "]";
+		return "buddy[identityKey=" + identityKey + ":name=" + name + "]";
 	}
 }

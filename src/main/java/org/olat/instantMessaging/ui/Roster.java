@@ -33,20 +33,20 @@ import org.olat.instantMessaging.model.Buddy;
 public class Roster {
 	
 	private final Long identityKey;
-	private final List<RosterEntry> entries;
+	private final List<Buddy> entries;
 	
 	public Roster(Long identityKey) {
 		this.identityKey = identityKey;
-		entries = new ArrayList<RosterEntry>();
+		entries = new ArrayList<Buddy>();
 	}
 	
-	public Roster(List<RosterEntry> entries, Long identityKey) {
+	public Roster(List<Buddy> entries, Long identityKey) {
 		this.identityKey = identityKey;
 		this.entries = entries;
 	}
 	
 	public synchronized boolean contains(Long identityKey) {
-		for(RosterEntry entry:entries) {
+		for(Buddy entry:entries) {
 			if(identityKey.equals(entry.getIdentityKey())) {
 				return true;
 			}
@@ -54,8 +54,8 @@ public class Roster {
 		return false;
 	}
 
-	public synchronized RosterEntry get(Long identityKey) {
-		for(RosterEntry entry:entries) {
+	public synchronized Buddy get(Long identityKey) {
+		for(Buddy entry:entries) {
 			if(identityKey.equals(entry.getIdentityKey())) {
 				return entry;
 			}
@@ -74,13 +74,13 @@ public class Roster {
 					//update status
 					get(buddy.getIdentityKey()).setStatus(buddy.getStatus());
 				} else {
-					entries.add(new RosterEntry(buddy));
+					entries.add(buddy);
 				}	
 			}
 		}
 	}
 	
-	public synchronized void add(RosterEntry entry) {
+	public synchronized void add(Buddy entry) {
 		entries.add(entry);
 	}
 	
@@ -88,11 +88,11 @@ public class Roster {
 		return entries == null ? 0: entries.size();
 	}
 
-	public synchronized List<RosterEntry> getEntries() {
+	public synchronized List<Buddy> getEntries() {
 		return entries;
 	}
 	
-	public synchronized void update(List<RosterEntry> newBuddies) {
+	public synchronized void update(List<Buddy> newBuddies) {
 		//remove duplicates
 		newBuddies.removeAll(entries);
 		//add the new buddies

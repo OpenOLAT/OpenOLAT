@@ -46,6 +46,7 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.OncePanel;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -58,6 +59,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
@@ -109,13 +111,17 @@ public class ClusterAdminControllerCluster extends BasicController {
 	 */
 	public ClusterAdminControllerCluster(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		CoordinatorManager clustercoord = (CoordinatorManager) CoreSpringFactory.getBean("coordinatorManager");
-		ClusterCoordinator cCord = (ClusterCoordinator) clustercoord.getCoordinator();
+		CoordinatorManager clustercoord = CoreSpringFactory.getImpl(CoordinatorManager.class);
+		Coordinator coordinator = clustercoord.getCoordinator();
+		if(!(coordinator instanceof ClusterCoordinator)) {
+			putInitialPanel(new Panel("empty"));
+			return;
+		}
+
+		ClusterCoordinator cCord = (ClusterCoordinator)coordinator; 
 		clusBus = cCord.getClusterEventBus();
-		
 		mainVc = createVelocityContainer("cluster");
-		
-		
+
 		// information about the cluster nodes
 		mainVc.contextPut("own_nodeid", "This node is node: '"+clusBus.clusterConfig.getNodeId()+"'");
 		

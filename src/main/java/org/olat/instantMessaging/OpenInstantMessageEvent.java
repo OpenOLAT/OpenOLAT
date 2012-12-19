@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.instantMessaging.model.Buddy;
-import org.olat.instantMessaging.ui.RosterEntry;
 
 /**
  * 
@@ -52,10 +51,6 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 	public OpenInstantMessageEvent(UserRequest ureq, Buddy buddy) {
 		this(ureq);
 		this.buddy = buddy;
-	}
-	
-	public OpenInstantMessageEvent(UserRequest ureq, RosterEntry entry) {
-		this(ureq, new Buddy(entry.getIdentityKey(), entry.getFullName(), entry.getNickName()));
 	}
 	
 	public OpenInstantMessageEvent(UserRequest ureq, OLATResourceable ores, String roomName) {

@@ -45,7 +45,10 @@ import org.olat.instantMessaging.model.InstantMessageImpl;
 import org.olat.instantMessaging.model.RosterEntryImpl;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 
@@ -54,7 +57,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class InstantMessagingServiceImpl extends BasicManager implements InstantMessagingService {
+public class InstantMessagingServiceImpl extends BasicManager implements InstantMessagingService, ApplicationListener<ContextRefreshedEvent> {
 	
 	@Autowired
 	private RosterDAO rosterDao;
@@ -76,8 +79,14 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	private BaseSecurity securityManager;
 
 	@Override
+	@Transactional
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+		rosterDao.clear();
+	}
+
+	@Override
 	public String getStatus(Long identityKey) {
-		return "available";
+		return prefsDao.getStatus(identityKey);
 	}
 
 	@Override
@@ -93,11 +102,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Override
 	public void updateStatus(Identity identity, String status) {
 		prefsDao.updatePreferences(identity, status);
-	}
-
-	@Override
-	public int getNumOfconnectedUsers() {
-		return 0;
 	}
 
 	@Override
@@ -171,6 +175,8 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		if(StringHelper.containsNonWhitespace(nickName)) {
 			event.setName(nickName);
 		}
+		String fullName = userManager.getUserDisplayName(me.getUser());
+		rosterDao.updateRosterEntry(chatResource, me, fullName, nickName, anonym);
 		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 	}
 	
@@ -183,7 +189,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	public Buddy getBuddyById(Long identityKey) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
 		String fullname = userManager.getUserDisplayName(identity);
-		return new Buddy(identity.getKey(), fullname, null);
+		return new Buddy(identity.getKey(), fullname, false);
 	}
 
 	@Override
@@ -192,7 +198,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
 		for(Identity contact:contacts) {
 			String fullname = userManager.getUserDisplayName(contact.getUser());
-			buddies.add(new Buddy(contact.getKey(), fullname, null));
+			buddies.add(new Buddy(contact.getKey(), fullname, false));
 		}
 		return buddies;
 	}
@@ -200,11 +206,11 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Override
 	public List<Buddy> getOnlineBuddies() {
 		List<Long> ids = sessionManager.getAuthenticatedIdentityKey();
-		List<Identity> contacts = securityManager.loadIdentityByKeys(ids);
+		List<IdentityShort> contacts = securityManager.loadIdentityShortByKeys(ids);
 		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
-		for(Identity contact:contacts) {
-			String fullname = userManager.getUserDisplayName(contact.getUser());
-			buddies.add(new Buddy(contact.getKey(), fullname, null));
+		for(IdentityShort contact:contacts) {
+			String fullname = userManager.getUserDisplayName(contact);
+			buddies.add(new Buddy(contact.getKey(), fullname, false));
 		}
 		return buddies;
 	}
@@ -226,7 +232,8 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		List<Buddy> buddies = new ArrayList<Buddy>();
 		if(roster != null) {
 			for(RosterEntryImpl entry:roster) {
-				buddies.add(new Buddy(entry.getIdentityKey(), entry.getFullName(), entry.getNickName()));
+				String name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
+				buddies.add(new Buddy(entry.getIdentityKey(), name, entry.isAnonym()));
 			}
 		}
 		return buddies;

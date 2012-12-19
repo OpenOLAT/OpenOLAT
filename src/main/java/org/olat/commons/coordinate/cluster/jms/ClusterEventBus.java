@@ -54,7 +54,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
-import org.olat.core.util.cache.n.impl.cluster.ClusterConfig;
+import org.olat.core.util.cluster.ClusterConfig;
 import org.olat.core.util.event.AbstractEventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
@@ -191,10 +191,10 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 						}
 						serveMessage(m, time);
 					} catch(RuntimeException re) {
-						Tracing.logError("RuntimeException enountered by serve-thread:", re, ClusterEventBus.class);
+						log.error("RuntimeException enountered by serve-thread:", re);
 						// continue
 					} catch(Error er) {
-						Tracing.logError("Error enountered by serve-thread:", er, ClusterEventBus.class);
+						log.error("Error enountered by serve-thread:", er);
 						// continue
 					}
 				}
@@ -461,7 +461,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		// try {
 		try {
 			String[] keys = properties.keySet().toArray(new String[0]);
-			OpenType[] itemTypes = new OpenType[keys.length];
+			OpenType<String>[] itemTypes = new OpenType[keys.length];
 			for (int i = 0; i < itemTypes.length; i++) {
 				itemTypes[i] = SimpleType.STRING;
 			}

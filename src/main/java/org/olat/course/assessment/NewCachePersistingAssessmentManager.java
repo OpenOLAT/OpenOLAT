@@ -111,7 +111,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * the key under which a hashmap is stored in a cachewrapper. we only use one key so that either all values of a user are there or none are there.
 	 * (otherwise we cannot know whether a null value means expiration of cache or no-such-property-yet-for-user)
 	 */
-	private static final String FULLUSERSET = "FULLUSERSET";
+	//private static final String FULLUSERSET = "FULLUSERSET";
 	private static final String LAST_MODIFIED = "LAST_MODIFIED";
 	
 	
@@ -239,7 +239,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		CacheWrapper cw = getCacheWrapperFor(identity);
 		synchronized(cw) {  // o_clusterOK by:fj : we sync on the cache to protect access within the monitor "one user in a course".
 			// a user is only active on one node at the same time.
-			Map<String, Serializable> m = (Map<String, Serializable>) cw.get(FULLUSERSET);
+			Map<String, Serializable> m = (Map<String, Serializable>) cw.get(identity.getKey());
 			if (m == null) {
 				// cache entry (=all data of the given identity in this course) has expired or has never been stored yet into the cache.
 				// or has been invalidated (in cluster mode when puts occurred from an other node for the same cache)
@@ -264,14 +264,14 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				// we use a putSilent here (no invalidation notifications to other cluster nodes), since
 				// we did not generate new data, but simply asked to reload it. 
 				if (prepareForNewData) {
-					cw.update(FULLUSERSET, (Serializable) m);
+					cw.update(identity.getKey(), (Serializable) m);
 				} else {
-					cw.put(FULLUSERSET, (Serializable) m);
+					cw.put(identity.getKey(), (Serializable) m);
 				}
 			} else {
 				// still in cache. 
 				if (prepareForNewData) { // but we need to notify that data has changed: we reput the data into the cache - a little hacky yes
-					cw.update(FULLUSERSET, (Serializable) m);
+					cw.update(identity.getKey(), (Serializable) m);
 				}
 			}
 			return m;
@@ -280,9 +280,9 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	
 	private CacheWrapper getCacheWrapperFor(Identity identity) {
 		// the ores is only for within the cache
-		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck("Identity", identity.getKey());
-		CacheWrapper cw = courseCache.getOrCreateChildCacheWrapper(ores);
-		return cw;
+		//OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck("Identity", identity.getKey());
+		//CacheWrapper cw = courseCache.getOrCreateChildCacheWrapper(ores);
+		return courseCache;
 	}
 	
 	

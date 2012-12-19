@@ -27,7 +27,6 @@ package org.olat.core.util.cache.infinispan;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -110,8 +109,9 @@ public class InfinispanCacheWrapper implements CacheWrapper<Object,Serializable>
 	protected Map<String, CacheWrapper<Object,Serializable>> getChildren() {
 		return children;
 	}
-	
-	public CacheWrapper getOrCreateChildCacheWrapper(OLATResourceable ores) {
+
+	@Override
+	public <W, X extends Serializable> CacheWrapper<W, Serializable> getOrCreateChildCacheWrapper(OLATResourceable ores) {
 		String childName = OresHelper.createStringRepresenting(ores).replace(":", "_");
 		String fullcacheName = cacheName + "@" + childName;
 		synchronized(this) {//cluster_ok by definition of this class as used in single vm

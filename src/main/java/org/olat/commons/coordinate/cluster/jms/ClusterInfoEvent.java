@@ -24,7 +24,7 @@
 */
 package org.olat.commons.coordinate.cluster.jms;
 
-import org.olat.core.util.cache.n.impl.cluster.ClusterConfig;
+import org.olat.core.util.cluster.ClusterConfig;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.event.businfo.BusListenerInfo;
 
@@ -38,7 +38,7 @@ import org.olat.core.util.event.businfo.BusListenerInfo;
  *
  */
 public class ClusterInfoEvent extends MultiUserEvent {
-
+	private static final long serialVersionUID = -9192084397019081820L;
 	private long created;
 	private ClusterConfig config;
 	private final BusListenerInfo busListenerInfo;

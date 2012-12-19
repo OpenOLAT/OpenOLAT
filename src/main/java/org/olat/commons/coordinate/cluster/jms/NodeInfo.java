@@ -28,7 +28,7 @@ import java.io.Serializable;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.cache.n.impl.cluster.ClusterConfig;
+import org.olat.core.util.cluster.ClusterConfig;
 
 /**
  * Description:<br>
@@ -40,6 +40,7 @@ import org.olat.core.util.cache.n.impl.cluster.ClusterConfig;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class NodeInfo implements Serializable {
+	private static final long serialVersionUID = 4043790055849121385L;
 	private static OLog log = Tracing.createLoggerFor(NodeInfo.class);
 	
 	// the id of this node

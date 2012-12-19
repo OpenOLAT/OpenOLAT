@@ -52,6 +52,21 @@ public class InstantMessagePreferencesDAO {
 		dbInstance.getCurrentEntityManager().persist(msg);
 		return msg;
 	}
+	
+	public String getStatus(Long identityKey) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select msg.rosterDefaultStatus from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
+		  .append(" where msg.identity.key=:identityKey");
+		
+		List<String> msgs = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identityKey)
+				.getResultList();
+		
+		if(msgs.isEmpty()) {
+			return null;
+		}
+		return msgs.get(0);
+	}
 
 	/**
 	 * Synchronized to prevent
