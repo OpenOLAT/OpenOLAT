@@ -46,10 +46,9 @@ public class IndexerWebService {
 	 * Return the statistics about the indexer
 	 * @response.representation.200.qname {http://www.example.com}releaseVO
    * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The verison of the instance
+   * @response.representation.200.doc Statistics about the indexer
    * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_INDEXERSTATSVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-
 	 * @return The statistics about the indexer
 	 */
 	@GET
@@ -59,6 +58,13 @@ public class IndexerWebService {
 		return Response.ok(stats).build();
 	}
 	
+	/**
+	 * Return the status of the indexer: running, stopped
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The status of the indexer
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @return The status of the indexer
+	 */
 	@GET
 	@Path("status")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -68,6 +74,13 @@ public class IndexerWebService {
 		return Response.ok(new IndexerStatus(status)).build();
 	}
 	
+	/**
+	 * Return the status of the indexer: running, stopped
+   * @response.representation.200.mediaType text/plain
+   * @response.representation.200.doc The status of the indexer
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @return The status of the indexer
+	 */
 	@GET
 	@Path("status")
 	@Produces({MediaType.TEXT_PLAIN})
@@ -76,6 +89,13 @@ public class IndexerWebService {
 		return Response.ok(serviceStatus.getStatus()).build();
 	}
 	
+	/**
+	 * Update the status of the indexer: running, stopped.
+	 * Running start the indexer, stopped, stop it.
+   * @response.representation.200.doc The status has changed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @return The status of the indexer
+	 */
 	@POST
 	@Path("status")
 	public Response setStatus(@FormParam("status") String status, @Context HttpServletRequest request) {
