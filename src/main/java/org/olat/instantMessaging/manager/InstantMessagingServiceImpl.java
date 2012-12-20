@@ -22,7 +22,11 @@ package org.olat.instantMessaging.manager;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
@@ -34,13 +38,17 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
-import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupMemberView;
+import org.olat.group.manager.ContactDAO;
+import org.olat.group.model.BusinessGroupOwnerViewImpl;
+import org.olat.group.model.BusinessGroupParticipantViewImpl;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.BuddyGroup;
 import org.olat.instantMessaging.model.BuddyStats;
 import org.olat.instantMessaging.model.InstantMessageImpl;
 import org.olat.instantMessaging.model.RosterEntryImpl;
@@ -71,7 +79,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
-	private BusinessGroupService businessGroupService;
+	private ContactDAO contactDao;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -194,14 +202,34 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	public List<Buddy> getBuddies(Identity me) {
-		List<Identity> contacts = businessGroupService.findContacts(me, 0, -1);
-		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
-		for(Identity contact:contacts) {
-			String fullname = userManager.getUserDisplayName(contact.getUser());
-			buddies.add(new Buddy(contact.getKey(), fullname, false));
+	public List<BuddyGroup> getBuddyGroups(Identity me) {
+		List<BuddyGroup> groups = new ArrayList<BuddyGroup>(25);
+		Map<Long,BuddyGroup> groupMap = new HashMap<Long,BuddyGroup>();
+		Set<Long> identityKeys = new HashSet<Long>();
+		for(BusinessGroupOwnerViewImpl owner:contactDao.getGroupOwners(me)) {
+			addBuddyToGroupList(owner, groupMap, groups, identityKeys, true);
 		}
-		return buddies;
+		for(BusinessGroupParticipantViewImpl participant:contactDao.getParticipants(me)) {
+			addBuddyToGroupList(participant, groupMap, groups, identityKeys, false);
+		}
+		
+		Map<Long,String> nameMap = userManager.getUserDisplayNames(identityKeys);
+		for(BuddyGroup group:groups) {
+			for(Buddy buddy:group.getBuddy()) {
+				buddy.setName(nameMap.get(buddy.getIdentityKey()));	
+			}
+		}
+		return groups;
+	}
+	private void addBuddyToGroupList(BusinessGroupMemberView member, Map<Long,BuddyGroup> groupMap, List<BuddyGroup> groups, Set<Long> identityKeys, boolean vip) {
+		BuddyGroup group = groupMap.get(member.getGroupKey());
+		if(group == null) {
+			group = new BuddyGroup(member.getGroupKey(), member.getGroupName());
+			groupMap.put(member.getGroupKey(), group);
+			groups.add(group);
+		}
+		identityKeys.add(member.getIdentityKey());
+		group.getBuddy().add(new Buddy(member.getIdentityKey(), null, false, vip));	
 	}
 
 	@Override

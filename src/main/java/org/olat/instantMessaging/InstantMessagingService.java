@@ -27,6 +27,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.BuddyGroup;
 import org.olat.instantMessaging.model.BuddyStats;
 
 /**
@@ -49,7 +50,7 @@ public interface InstantMessagingService {
 	 * @param me
 	 * @return
 	 */
-	public List<Buddy> getBuddies(Identity me);
+	public List<BuddyGroup> getBuddyGroups(Identity me);
 	
 	public Buddy getBuddyById(Long identityKey);
 	

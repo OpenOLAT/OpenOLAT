@@ -128,7 +128,8 @@ public class IMBuddyListController extends BasicController {
 				buddyList.addBuddies(imService.getOnlineBuddies());
 			}
 		} else {
-			buddyList.addBuddies(imService.getBuddies(getIdentity()));
+			buddyList.getGroups().clear();
+			buddyList.getGroups().addAll(imService.getBuddyGroups(getIdentity()));
 		}
 		
 		for(Buddy buddy:buddyList.getEntries()) {

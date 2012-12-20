@@ -862,60 +862,6 @@ public class BusinessGroupDAO {
 		return dbq;
 	}
 	
-	public int countContacts(Identity identity) {
-		List<Long> result = createContactsQuery(identity, Long.class).getResultList();
-		result.remove(identity.getKey());//not always a contact of myself with this query
-		return result.size();
-	}
-
-	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults) {
-		TypedQuery<Identity> query = createContactsQuery(identity, Identity.class);
-		query.setFirstResult(firstResult);
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults + 1);
-		}
-		List<Identity> contacts = query.getResultList();
-		if(!contacts.remove(identity) && maxResults > 0 && contacts.size() > maxResults) {
-			contacts.remove(contacts.size() - 1);
-		}
-		return contacts;
-	}
-	
-	private <T> TypedQuery<T> createContactsQuery(Identity identity, Class<T> resultClass) {
-		StringBuilder query = new StringBuilder();
-		if(Identity.class.equals(resultClass)) {
-			query.append("select distinct identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
-		} else {
-			query.append("select distinct identity.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
-		}
-		query.append(" inner join sgmi.identity as identity ")
-		     .append(" inner join sgmi.securityGroup as secGroup ")
-		     .append(" where ")
-		     .append("  secGroup in (")
-		     .append("    select bg1.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg1,").append(Property.class.getName()).append(" as prop where prop.grp=bg1 and prop.name='displayMembers' and prop.longValue in (1,3,5,7)")
-		     .append("      and bg1.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
-		     .append("  ) or")
-		     .append("  secGroup in (")
-		     .append("    select bg3.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg3,").append(Property.class.getName()).append(" as prop where prop.grp=bg3 and prop.name='displayMembers' and prop.longValue in (1,3,5,7)")
-		     .append("      and bg3.partipiciantGroup in (select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey)")
-		     .append("  ) or")
-		     .append("  secGroup in (")
-		     .append("    select bg2.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg2,").append(Property.class.getName()).append(" as prop where prop.grp=bg2 and prop.name='displayMembers' and prop.longValue in (2,3,6,7)")
-		     .append("      and bg2.partipiciantGroup in (select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey)")
-		     .append("  ) or")
-		     .append("  secGroup in (")
-		     .append("    select bg4.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg4,").append(Property.class.getName()).append(" as prop where prop.grp=bg4 and prop.name='displayMembers' and prop.longValue in (2,3,6,7)")
-		     .append("      and bg4.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
-		     .append("  )");
-		if(Identity.class.equals(resultClass)) {
-			query.append("order by identity.name");
-		}
-
-		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);
-		db.setParameter("identKey", identity.getKey());
-		return db;
-	}
-	
 	private StringBuilder searchLikeUserProperty(StringBuilder sb, String key, String var) {
 		if(dbInstance.getDbVendor().equals("mysql")) {
 			sb.append(" user.properties['").append(key).append("'] like :").append(var);

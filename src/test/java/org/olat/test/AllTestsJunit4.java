@@ -62,6 +62,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.FormatterTest.class,
 	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
+	org.olat.core.id.context.HistoryManagerTest.class,
 	org.olat.core.id.IdentityEnvironmentTest.class,
 	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.note.NoteTest.class,//ok
@@ -82,6 +83,7 @@ import org.junit.runners.Suite;
 	org.olat.group.test.BusinessGroupServiceTest.class,//ok
 	org.olat.group.test.BusinessGroupDAOTest.class,//ok
 	org.olat.group.test.BusinessGroupRelationDAOTest.class,//ok
+	org.olat.group.test.ContactDAOTest.class,//ok
 	org.olat.resource.lock.pessimistic.PLockTest.class,//ok
 	org.olat.resource.references.ReferenceManagerTest.class,//ok
 	org.olat.resource.OLATResourceManagerTest.class,//ok

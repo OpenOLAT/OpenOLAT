@@ -20,11 +20,15 @@
 package org.olat.user;
 
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
@@ -60,6 +64,8 @@ public class UserManagerImpl extends UserManager {
   
   @Autowired
   private DB dbInstance;
+  @Autowired
+  private BaseSecurity securityManager;
   
 	/**
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
@@ -355,6 +361,17 @@ public class UserManagerImpl extends UserManager {
 	public String getUserDisplayName(IdentityShort user) {
 		if (this.userDisplayNameCreator == null) return "";
 		return this.userDisplayNameCreator.getUserDisplayName(user);
+	}
+
+	@Override
+	public Map<Long, String> getUserDisplayNames(Collection<Long> identityKeys) {
+		List<IdentityShort> identities = securityManager.loadIdentityShortByKeys(identityKeys);
+		Map<Long,String> namesMap = new HashMap<Long,String>(identities.size());
+		for(IdentityShort identity:identities) {
+			String displayName = this.getUserDisplayName(identity);
+			namesMap.put(identity.getKey(), displayName);
+		}
+		return namesMap;
 	}
 
 	/**

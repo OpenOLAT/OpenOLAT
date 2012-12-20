@@ -135,6 +135,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private ContactDAO contactDao;
+	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDAO;
 	@Autowired
 	private BusinessGroupImportExport businessGroupImportExport;
@@ -716,13 +718,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	@Transactional(readOnly=true)
 	public int countContacts(Identity identity) {
-		return businessGroupDAO.countContacts(identity);
+		return contactDao.countContacts(identity);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
 	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults) {
-		return businessGroupDAO.findContacts(identity, firstResult, maxResults);
+		return contactDao.findContacts(identity, firstResult, maxResults);
 	}
 
 	@Override

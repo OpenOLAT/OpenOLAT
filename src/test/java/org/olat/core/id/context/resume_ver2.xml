@@ -1,0 +1,12 @@
+<org.olat.core.id.context.HistoryPointImpl>
+  <uuid>8</uuid>
+  <businessPath>[BusinessGroup:1998848]</businessPath>
+  <entries>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.core.util.resource.Resourceable">
+        <resourceableTypeName>BusinessGroup</resourceableTypeName>
+        <resourceableId>1998848</resourceableId>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+  </entries>
+</org.olat.core.id.context.HistoryPointImpl>

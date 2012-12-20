@@ -3,3 +3,19 @@
 		<li>$r.render("buddy_${buddy.identityKey}")</li>
 	#end
 </ul>
+
+<hr />
+
+<ul>
+	#foreach ($group in $buddyList.groups)
+		<li>
+			<strike>$group.groupName</strike>
+			<ul>
+			#foreach ($buddy in $group.buddy)
+				<li>
+				#if(${buddy.vip}) * #end
+				${buddy.name}</li>
+			#end
+		</ul></li>
+	#end
+</ul>

@@ -42,9 +42,28 @@ public class HistoryManagerTest extends OlatTestCase {
 	@Autowired
 	private HistoryManager historyManager;
 	
+	/**
+	 * Test the compatibility for old resume files
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	@Test
-	public void xstreamBackwardsCompatibility() throws IOException, URISyntaxException {
+	public void testRead_v1() throws IOException, URISyntaxException {
 		URL xmlUrl = HistoryManagerTest.class.getResource("resume_ver1.xml");
+		assertNotNull(xmlUrl);
+		File resumeXml = new File(xmlUrl.toURI());
+		HistoryPoint history = historyManager.readHistory(resumeXml);
+		Assert.assertNotNull(history);
+	}
+	
+	/**
+	 * Test the compatibility with current format
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testRead_v2() throws IOException, URISyntaxException {
+		URL xmlUrl = HistoryManagerTest.class.getResource("resume_ver2.xml");
 		assertNotNull(xmlUrl);
 		File resumeXml = new File(xmlUrl.toURI());
 		HistoryPoint history = historyManager.readHistory(resumeXml);

@@ -34,31 +34,39 @@ import org.olat.core.id.OLATResourceable;
 public class Resourceable implements OLATResourceable, Serializable, Cloneable {
 
 	private static final long serialVersionUID = 4493480617698403988L;
-	private String type;
-	private Long key;
+	private String resourceableTypeName;
+	private Long resourceableId;
 	
 	public Resourceable() {
 		//
 	}
 	
 	public Resourceable(String type, Long key) {
-		this.type = type;
-		this.key = key;
+		this.resourceableTypeName = type;
+		this.resourceableId = key;
 	}
 	
 	@Override
 	public String getResourceableTypeName() {
-		return type;
+		return resourceableTypeName;
+	}
+
+	public void setResourceableTypeName(String resourceableTypeName) {
+		this.resourceableTypeName = resourceableTypeName;
 	}
 
 	@Override
 	public Long getResourceableId() {
-		return key;
+		return resourceableId;
+	}
+	
+	public void setResourceableId(Long resourceableId) {
+		this.resourceableId = resourceableId;
 	}
 
 	@Override
 	public int hashCode() {
-		return (key == null ? 2938 : key.hashCode()) + (type == null ? 76678 : type.hashCode());
+		return (resourceableId == null ? 2938 : resourceableId.hashCode()) + (resourceableTypeName == null ? 76678 : resourceableTypeName.hashCode());
 	}
 
 	@Override
@@ -68,19 +76,19 @@ public class Resourceable implements OLATResourceable, Serializable, Cloneable {
 		}
 		if(obj instanceof OLATResourceable) {
 			OLATResourceable ores = (OLATResourceable)obj;
-			return type != null && type.equals(ores.getResourceableTypeName())
-					&& key != null && key.equals(ores.getResourceableId());
+			return resourceableTypeName != null && resourceableTypeName.equals(ores.getResourceableTypeName())
+					&& resourceableId != null && resourceableId.equals(ores.getResourceableId());
 		}
 		return false;
 	}
 
 	@Override
 	public String toString() {
-		return "resourceable[type=" + type + ":id=" + key + "]" + super.toString();
+		return "resourceable[type=" + resourceableTypeName + ":id=" + resourceableId + "]" + super.toString();
 	}
 
 	@Override
 	protected Resourceable clone() {
-		return new Resourceable(type, key);
+		return new Resourceable(resourceableTypeName, resourceableId);
 	}
 }

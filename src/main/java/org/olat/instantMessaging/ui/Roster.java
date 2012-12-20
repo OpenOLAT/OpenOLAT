@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.BuddyGroup;
 
 /**
  * 
@@ -34,17 +35,24 @@ public class Roster {
 	
 	private final Long identityKey;
 	private final List<Buddy> entries;
+	private final List<BuddyGroup> groups;
 	
 	public Roster(Long identityKey) {
 		this.identityKey = identityKey;
 		entries = new ArrayList<Buddy>();
+		groups = new ArrayList<BuddyGroup>();
 	}
 	
 	public Roster(List<Buddy> entries, Long identityKey) {
 		this.identityKey = identityKey;
 		this.entries = entries;
+		groups = new ArrayList<BuddyGroup>();
 	}
 	
+	public List<BuddyGroup> getGroups() {
+		return groups;
+	}
+
 	public synchronized boolean contains(Long identityKey) {
 		for(Buddy entry:entries) {
 			if(identityKey.equals(entry.getIdentityKey())) {
