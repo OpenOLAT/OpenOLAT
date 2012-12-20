@@ -22,8 +22,6 @@ package org.olat.instantMessaging.manager;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.LockModeType;
-
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.instantMessaging.model.ImPreferencesImpl;
@@ -58,7 +56,8 @@ public class InstantMessagePreferencesDAO {
 		sb.append("select msg.rosterDefaultStatus from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
 		  .append(" where msg.identity.key=:identityKey");
 		
-		List<String> msgs = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), String.class)
+		List<String> msgs = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMRosterStatusByIdentity", String.class)
 				.setParameter("identityKey", identityKey)
 				.getResultList();
 		
@@ -78,7 +77,8 @@ public class InstantMessagePreferencesDAO {
 		sb.append("select msg from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
 		  .append(" where msg.identity.key=:identityKey");
 		
-		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ImPreferencesImpl.class)
+		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMPreferencesByIdentity", ImPreferencesImpl.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		
@@ -115,9 +115,9 @@ public class InstantMessagePreferencesDAO {
 		sb.append("select msg from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
 		  .append(" where msg.identity.key=:identityKey");
 		
-		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ImPreferencesImpl.class)
+		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMPreferencesForUpdate", ImPreferencesImpl.class)
 				.setParameter("identityKey", from.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
 		
 		if(msgs.isEmpty()) {

@@ -69,12 +69,8 @@ public class RosterDAO {
 	}
 	
 	private RosterEntryImpl loadForUpdate(OLATResourceable ores, Identity identity) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select entry from ").append(RosterEntryImpl.class.getName()).append(" entry ")
-	  .append(" where entry.identityKey=:identityKey")
-	  .append(" and entry.resourceId=:resid and entry.resourceTypeName=:resname");
-		
-		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RosterEntryImpl.class)
+		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMRosterEntryByIdentityandResource", RosterEntryImpl.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.setParameter("identityKey", identity.getKey())
@@ -87,11 +83,8 @@ public class RosterDAO {
 	}
 	
 	public List<RosterEntryImpl> getRoster(OLATResourceable ores, int firstResult, int maxResults) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select entry from ").append(RosterEntryImpl.class.getName()).append(" entry ")
-		  .append(" where entry.resourceId=:resid and entry.resourceTypeName=:resname");
-		
-		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RosterEntryImpl.class)
+		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMRosterEntryByResource", RosterEntryImpl.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.setFirstResult(firstResult)
@@ -102,19 +95,12 @@ public class RosterDAO {
 		return query.getResultList();
 	}
 	
-	protected void clear() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(RosterEntryImpl.class.getName()).append(" entry ");
-		dbInstance.getCurrentEntityManager().createQuery(sb.toString()).executeUpdate();
+	public void clear() {
+		dbInstance.getCurrentEntityManager().createNamedQuery("clearIMRosterEntry").executeUpdate();
 	}
 	
 	public void deleteEntry(Identity identity, OLATResourceable ores) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(RosterEntryImpl.class.getName()).append(" entry ")
-		  .append(" where entry.identityKey=:identityKey")
-		  .append(" and entry.resourceId=:resid and entry.resourceTypeName=:resname");
-		
-		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+		dbInstance.getCurrentEntityManager().createNamedQuery("deleteIMRosterEntryByIdentityAndResource")
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())

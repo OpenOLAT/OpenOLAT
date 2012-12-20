@@ -25,6 +25,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -42,8 +44,13 @@ import org.olat.instantMessaging.InstantMessageNotification;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity
+@Entity(name="imnotification")
 @Table(name="o_im_notification")
+@NamedQueries({
+		@NamedQuery(name="loadIMNotificationByIdentity", query="select notification from imnotification notification where notification.toIdentityKey=:identityKey order by notification.creationDate desc"),
+		@NamedQuery(name="deleteIMNotificationByResourceAndIdentity", query="delete from imnotification notification where notification.toIdentityKey=:identityKey and notification.resourceId=:resid and notification.resourceTypeName=:resname"),
+
+})
 public class InstantMessageNotificationImpl implements InstantMessageNotification, Persistable, CreateInfo  {
 
 	private static final long serialVersionUID = -1244360269062615091L;

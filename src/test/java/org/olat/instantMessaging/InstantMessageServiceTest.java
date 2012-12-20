@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.instantMessaging.manager.InstantMessageDAO;
 import org.olat.instantMessaging.manager.InstantMessagePreferencesDAO;
+import org.olat.instantMessaging.manager.RosterDAO;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,6 +44,8 @@ public class InstantMessageServiceTest extends OlatTestCase {
 	@Autowired
 	private InstantMessagePreferencesDAO preferencesDao;
 	@Autowired
+	private RosterDAO rosterDao;
+	@Autowired
 	private InstantMessagingService imService;
 
 	@Test
@@ -50,6 +53,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Assert.assertNotNull(dbInstance);
 		Assert.assertNotNull(imDao);
 		Assert.assertNotNull(preferencesDao);
+		Assert.assertNotNull(rosterDao);
 		Assert.assertNotNull(imService);
 	}
 }

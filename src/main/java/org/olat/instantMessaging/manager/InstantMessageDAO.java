@@ -59,12 +59,8 @@ public class InstantMessageDAO {
 	}
 
 	public InstantMessageImpl loadMessageById(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select msg from ").append(InstantMessageImpl.class.getName()).append(" msg ")
-		  .append(" where msg.key=:key");
-		
 		List<InstantMessageImpl> msgs = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), InstantMessageImpl.class)
+				.createNamedQuery("loadIMessageByKey", InstantMessageImpl.class)
 				.setParameter("key", key)
 				.getResultList();
 		
@@ -75,12 +71,8 @@ public class InstantMessageDAO {
 	}
 
 	public List<InstantMessage> getMessages(OLATResourceable ores, int firstResult, int maxResults) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select msg from ").append(InstantMessageImpl.class.getName()).append(" msg ")
-		  .append(" where msg.resourceId=:resid and msg.resourceTypeName=:resname")
-		  .append(" order by msg.creationDate desc");
-		
-		TypedQuery<InstantMessage> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), InstantMessage.class)
+		TypedQuery<InstantMessage> query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMessageByResource", InstantMessage.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.setFirstResult(firstResult);
@@ -108,12 +100,7 @@ public class InstantMessageDAO {
 	}
 	
 	public void deleteNotification(Identity identity, OLATResourceable ores) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(InstantMessageNotificationImpl.class.getName()).append(" notification ")
-		  .append(" where notification.toIdentityKey=:identityKey")
-		  .append(" and notification.resourceId=:resid and notification.resourceTypeName=:resname");
-		
-		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+		dbInstance.getCurrentEntityManager().createNamedQuery("deleteIMNotificationByResourceAndIdentity")
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
@@ -121,13 +108,8 @@ public class InstantMessageDAO {
 	}
 	
 	public List<InstantMessageNotification> getNotifications(Identity identity) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select notification from ").append(InstantMessageNotificationImpl.class.getName()).append(" notification ")
-		  .append(" where notification.toIdentityKey=:identityKey")
-		  .append(" order by notification.creationDate desc");
-		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), InstantMessageNotification.class)
+				.createNamedQuery("loadIMNotificationByIdentity", InstantMessageNotification.class)
 				.setParameter("identityKey", identity.getKey())
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();

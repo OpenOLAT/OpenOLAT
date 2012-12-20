@@ -95,6 +95,7 @@ import org.junit.runners.Suite;
 	org.olat.repository.RepositoryManagerQueryTest.class,//ok
 	org.olat.instantMessaging.InstantMessageDAOTest.class,//ok
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,//ok
+	org.olat.instantMessaging.RosterDAOTest.class,//ok
 	org.olat.instantMessaging.InstantMessageServiceTest.class,//ok
 	org.olat.course.nodes.en.EnrollmentManagerTest.class,//ok
 	org.olat.course.assessment.AssessmentManagerTest.class,//ok

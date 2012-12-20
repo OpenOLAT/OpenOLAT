@@ -25,6 +25,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -39,8 +41,14 @@ import org.olat.core.id.Persistable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity
+@Entity(name="imrosterentry")
 @Table(name="o_im_roster_entry")
+@NamedQueries({
+	@NamedQuery(name="loadIMRosterEntryByIdentityandResource", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
+	@NamedQuery(name="loadIMRosterEntryByResource", query="select entry from imrosterentry entry where entry.resourceId=:resid and entry.resourceTypeName=:resname"),
+	@NamedQuery(name="clearIMRosterEntry", query="delete from imrosterentry entry"),
+	@NamedQuery(name="deleteIMRosterEntryByIdentityAndResource", query="delete from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
+})
 public class RosterEntryImpl implements Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -4265724240924748369L;

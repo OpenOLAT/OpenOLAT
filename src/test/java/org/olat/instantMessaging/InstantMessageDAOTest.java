@@ -61,9 +61,9 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testLoadMessage() {
+	public void testLoadMessage_byId() {
 		//create a message
-		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-2", System.currentTimeMillis());
+		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-2-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-2-" + UUID.randomUUID().toString());
 		InstantMessage msg = imDao.createMessage(id, id.getName(), false, "Hello load by id", chatResources);
 		Assert.assertNotNull(msg);
@@ -77,8 +77,25 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testLoadMessage_byResource() {
+		//create a message
+		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-3-" + UUID.randomUUID().toString(), System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-3-" + UUID.randomUUID().toString());
+		InstantMessage msg = imDao.createMessage(id, id.getName(), false, "Hello load by resource", chatResources);
+		Assert.assertNotNull(msg);
+		dbInstance.commitAndCloseSession();
+		
+		//load the message
+		List<InstantMessage> messageList = imDao.getMessages(chatResources, 0, -1);
+		Assert.assertNotNull(messageList);
+		Assert.assertEquals(1, messageList.size());
+		Assert.assertEquals(msg.getKey(), messageList.get(0).getKey());
+		Assert.assertEquals("Hello load by resource", messageList.get(0).getBody());
+	}
+	
+	@Test
 	public void testCreateNotification() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-3", System.currentTimeMillis());
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-4", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-3-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsAdmin("im-9-" + UUID.randomUUID().toString());
 		InstantMessageNotification notification = imDao.createNotification(id2.getKey(), id.getKey(), chatResource);
@@ -90,7 +107,7 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void testDeleteNotification() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-3", System.currentTimeMillis());
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-5", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-3-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsAdmin("im-7-" + UUID.randomUUID().toString());
 		InstantMessageNotification notification = imDao.createNotification(id2.getKey(), id.getKey(), chatResource);
