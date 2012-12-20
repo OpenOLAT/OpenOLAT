@@ -21,6 +21,7 @@ package org.olat.instantMessaging.manager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -205,7 +206,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 
 	@Override
 	public List<Buddy> getOnlineBuddies() {
-		List<Long> ids = sessionManager.getAuthenticatedIdentityKey();
+		Collection<Long> ids = sessionManager.getUsersOnline();
 		List<IdentityShort> contacts = securityManager.loadIdentityShortByKeys(ids);
 		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
 		for(IdentityShort contact:contacts) {

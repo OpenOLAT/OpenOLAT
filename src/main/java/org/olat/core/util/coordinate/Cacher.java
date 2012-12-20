@@ -25,6 +25,8 @@
 */ 
 package org.olat.core.util.coordinate;
 
+import java.io.Serializable;
+
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.util.cache.CacheWrapper;
 
@@ -63,7 +65,7 @@ public interface Cacher {
 	 * @param name an optional name to be able to create more than one cache for the same coOwnerClass
 	 * @return the CacheWrapper to use for caching and/or for creating subcaches
 	 */
-	public CacheWrapper getOrCreateCache(Class<?> coOwnerClass, String name);
+	public <U, V extends Serializable> CacheWrapper<U, V> getCache(String type, String name);
 	
 	public EmbeddedCacheManager getCacheContainer();
 	

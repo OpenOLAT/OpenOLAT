@@ -238,13 +238,7 @@ public class GlossaryItemManager extends BasicManager {
 	public ArrayList<GlossaryItem> getGlossaryItemListByVFSItem(final VFSContainer glossaryFolder){		
 		final String glossaryKey = ((LocalFolderImpl)glossaryFolder).getBasefile().toString();
 		if (glossaryCache == null) {
-			coordinatorManager.getCoordinator().getSyncer().doInSync(glossaryEventBus, new SyncerExecutor() {
-				public void  execute() {
-					if (glossaryCache == null) {
-						glossaryCache = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(this.getClass(), "glossary");
-					}
-				}
-			});
+			glossaryCache = coordinatorManager.getCoordinator().getCacher().getCache(GlossaryItemManager.class.getSimpleName(), "glossary");
 		}
 		//try to load from cache
 		ArrayList<GlossaryItem> glossaryItemList = (ArrayList<GlossaryItem>) glossaryCache.get(glossaryKey);

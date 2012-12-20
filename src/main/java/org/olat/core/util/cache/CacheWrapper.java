@@ -26,8 +26,7 @@
 package org.olat.core.util.cache;
 
 import java.io.Serializable;
-
-import org.olat.core.id.OLATResourceable;
+import java.util.List;
 
 
 /**
@@ -91,19 +90,24 @@ public interface CacheWrapper<U, V extends Serializable> {
 	public V put(U key, V value);
 	
 	/**
+	 * In the case of distributed cache, the list can be partial and
+	 * you must carefully setup your cache.
+	 * @return
+	 */
+	public List<U> getKeys();
+	
+	/**
 	 * removes a value from the cache. this method is thread-safe
 	 * @param key
 	 */
 	public void remove(U key);
 	
-	public int size();
-	
 	/**
-	 * this method is thread safe.
-	 * creates a child cachewrapper that represents the cachewrapper for the given olatresourceable within this parent cachewrapper(the 'this' object)
-	 * @param ores the olat resourceable
-	 * @return the cachewrapper
+	 * Return the size of the cache, in the case of a distributed
+	 * cache, read carefully the documentation of the implementation
+	 * of the cache.
+	 * @return
 	 */
-	public <W, X extends Serializable> CacheWrapper<W, Serializable> getOrCreateChildCacheWrapper(OLATResourceable ores);
-	
+	public int size();
+
 }

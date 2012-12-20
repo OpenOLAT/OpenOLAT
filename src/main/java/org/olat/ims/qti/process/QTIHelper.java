@@ -78,7 +78,7 @@ public class QTIHelper {
 	// logging
 	private static final Logger log = Logger.getLogger(QTIHelper.class);
 	
-	private static CacheWrapper ehCachLoadedQTIDocs = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(QTIHelper.class, "QTI_xml_Documents");
+	private static CacheWrapper ehCachLoadedQTIDocs = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(QTIHelper.class.getSimpleName(), "QTI_xml_Documents");
 	/**
 	 * 
 	 */

@@ -25,13 +25,18 @@
 */ 
 package org.olat.core.util.cache.infinispan;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.AssertException;
+import org.infinispan.transaction.TransactionMode;
 import org.olat.core.util.cache.CacheConfig;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.Cacher;
-import org.olat.core.util.resource.OresHelper;
 
 /**
  * Description:<br>
@@ -43,19 +48,11 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class InfinispanCacher implements Cacher {
 	
-	private InfinispanCacheWrapper rootCacheWrapperImpl;
 	private EmbeddedCacheManager cacheManager;
-	private CacheConfig rootConfig;
+	private Map<String, CacheConfig> configs;
 	
 	public InfinispanCacher(EmbeddedCacheManager cacheManager) {
 		this.cacheManager = cacheManager;
-	}
-	
-	public void init() {
-		if (rootConfig == null) {
-			throw new AssertException("rootConfig property must not be null!");
-		}
-		rootCacheWrapperImpl = new InfinispanCacheWrapper(this.getClass().getSimpleName(), rootConfig, cacheManager);	
 	}
 	
 	@Override
@@ -63,16 +60,44 @@ public class InfinispanCacher implements Cacher {
 		return cacheManager;
 	}
 
-	public CacheWrapper getOrCreateCache(Class<?> ownerClass, String name) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(CacheConfig.getCacheName(ownerClass, name), new Long(0));
-		return rootCacheWrapperImpl.getOrCreateChildCacheWrapper(ores);
+	@Override
+	public <U, V extends Serializable> CacheWrapper<U, V> getCache(String type, String name) {
+		String cacheName = type + "@" + name;
+		if(!cacheManager.cacheExists(cacheName)) {
+			createInfinispanConfiguration(type, cacheName);
+		}
+		
+		Cache<U, V> cache = cacheManager.getCache(cacheName);
+		return new InfinispanCacheWrapper<U,V>(cache);
+	}
+	
+	private void createInfinispanConfiguration(String type, String cacheName) {
+		Configuration conf = cacheManager.getCacheConfiguration(type);
+		if(conf == null) {
+			int maxEntries = 10000;
+			long maxIdle = 900000l;
+
+			CacheConfig oConfig = configs.get(type);
+			if(oConfig != null) {
+				maxEntries = oConfig.getMaxElementsInMemory();
+				maxIdle = oConfig.getTimeToIdle();
+			}
+			ConfigurationBuilder builder = new ConfigurationBuilder();
+			builder.eviction().strategy(EvictionStrategy.LRU);
+			builder.eviction().maxEntries(maxEntries);
+			builder.expiration().maxIdle(maxIdle);
+			builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
+			builder.dataContainer().storeAsBinary().storeValuesAsBinary(false);
+			Configuration configurationOverride = builder.build();
+			cacheManager.defineConfiguration(cacheName, configurationOverride);
+		}
 	}
 	
 	/**
 	 * [used by spring]
 	 * @param rootConfig
 	 */
-	public void setRootConfig(CacheConfig rootConfig) {
-		this.rootConfig = rootConfig;
+	public void setCacheConfig(Map<String,CacheConfig> configs) {
+		this.configs = configs;
 	}	
 }

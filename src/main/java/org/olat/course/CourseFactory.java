@@ -163,7 +163,7 @@ public class CourseFactory extends BasicManager {
 	 */
 	private CourseFactory(CoordinatorManager coordinatorManager, RepositoryManager repositoryManager, OLATResourceManager olatResourceManager, 
 			BaseSecurity securityManager, ReferenceManager referenceManager, GlossaryManager glossaryManager) {
-		loadedCourses = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(CourseFactory.class, "courses");
+		loadedCourses = coordinatorManager.getCoordinator().getCacher().getCache(CourseFactory.class.getSimpleName(), "courses");
 		CourseFactory.repositoryManager = repositoryManager;
 		CourseFactory.olatResourceManager = olatResourceManager;
 		CourseFactory.securityManager = securityManager;

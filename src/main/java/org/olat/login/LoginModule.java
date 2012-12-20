@@ -231,7 +231,7 @@ public class LoginModule extends AbstractOLATModule {
 		}
 				
 		// configure timed cache default params: refresh 1 minute, timeout according to configuration
-		failedLoginCache = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(this.getClass(), "blockafterfailedattempts");
+		failedLoginCache = coordinatorManager.getCoordinator().getCacher().getCache(LoginModule.class.getSimpleName(), "blockafterfailedattempts");
 		
 	}
 

@@ -51,43 +51,31 @@
 	<property name="jndiName" value="${infinispan.jndi}"/>
 </bean>
 
-<bean id="infinispanCacher" class="org.olat.core.util.cache.infinispan.InfinispanCacher" init-method="init">
+<bean id="infinispanCacher" class="org.olat.core.util.cache.infinispan.InfinispanCacher">
 	<constructor-arg index="0" ref="infinispanCacheManager"/>
-	<property name="rootConfig">
-		<bean class="org.olat.core.util.cache.CacheConfig">
-			<property name="childrenConfig">
-				<map>
-					<entry key="org.olat.login.LoginModule_blockafterfailedattempts" value-ref="org.olat.login.LoginModule_blockafterfailedattempts" />
-					<entry key="org.olat.commons.servlets.RSSServlet_rssdocs" value-ref="org.olat.commons.servlets.RSSServlet_rssdocs"/>
-					<entry key="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"  value-ref="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"/>
-					<entry key="org.olat.modules.wiki.WikiManager_wiki" value-ref="org.olat.modules.wiki.WikiManager_wiki"/>
-					<entry key="org.olat.commons.calendar.ICalFileCalendarManager_calendar" value-ref="org.olat.commons.calendar.ICalFileCalendarManager_calendar" />
-					<entry key="org.olat.course.CourseFactory_courses" value-ref="org.olat.course.CourseFactory_courses" />
-					<entry key="org.olat.collaboration.CollaborationToolsFactory_tools" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
-					<entry key="org.olat.course.assessment.NewCachePersistingAssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
-					<entry key="org.olat.core.util.UserSession" value-ref="org.olat.core.util.UserSession" />
-					<entry key="org.olat.core.modules.glossary.GlossaryItemManager_glossary" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
-					<entry key="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
-					<entry key="org.olat.commons.servlets.WebDAVManagerImpl_webdav" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
-				</map>
-			</property>
-		</bean>
+	<property name="cacheConfig">
+		<map>
+			<entry key="LoginModule" value-ref="org.olat.login.LoginModule_blockafterfailedattempts" />
+			<entry key="QTIHelper"  value-ref="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"/>
+			<entry key="WikiManager" value-ref="org.olat.modules.wiki.WikiManager_wiki"/>
+			<entry key="CalendarManager" value-ref="org.olat.commons.calendar.ICalFileCalendarManager_calendar" />
+			<entry key="CourseFactory" value-ref="org.olat.course.CourseFactory_courses" />
+			<entry key="CollaborationToolsFactory" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
+			<entry key="AssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
+			<entry key="GlossaryItemManager" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
+			<entry key="ProjectBrokerManager" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
+			<entry key="WebDAVManager" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
+		</map>
 	</property>
 </bean>
 	
 	
 <!-- cache beans -->
-	
+<!-- MapperService, UserSessionManager, OpenMeetingsManager, FeedManager -->
 <bean id="org.olat.login.LoginModule_blockafterfailedattempts" class="org.olat.core.util.cache.CacheConfig" >
 	<property name="timeToLive" value="300" />
 	<property name="timeToIdle" value="0" />
 	<property name="maxElementsInMemory" value="1000" />
-</bean>
-
-<bean id="org.olat.commons.servlets.RSSServlet_rssdocs" class="org.olat.core.util.cache.CacheConfig">
-	<property name="timeToLive" value="190" />
-	<property name="timeToIdle" value="0" />
-	<property name="maxElementsInMemory" value="200" />								
 </bean>
 <bean id="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents" class="org.olat.core.util.cache.CacheConfig">
 	<property name="timeToLive" value="3600" />
@@ -130,37 +118,10 @@
 	<property name="timeToIdle" value="300" />
 	<property name="maxElementsInMemory" value="200" />								
 </bean>
-
-<!--  caching for the olat course. a cache is segemented as follows: first per course, then per identity -->
 <bean id="org.olat.course.assessment.NewCachePersistingAssessmentManager" class="org.olat.core.util.cache.CacheConfig">
-	<property name="timeToLive" value="1" />
-	<property name="timeToIdle" value="1" />
-	<property name="maxElementsInMemory" value="1" />	
-	<property name="childrenConfig">
-		<map>
-			<entry key="CourseModule">
-				<bean class="org.olat.core.util.cache.CacheConfig">													
-					<property name="childrenConfig">
-						<map>
-							<entry key="Identity">
-								<bean class="org.olat.core.util.cache.CacheConfig">
-									<property name="timeToLive" value="0" />
-									<property name="timeToIdle" value="60" />
-									<property name="maxElementsInMemory" value="1000" />
-								</bean>
-							</entry>
-						</map>
-					</property>
-				</bean>													
-			</entry>
-		</map>
-	</property>							
-</bean>
-
-<bean id="org.olat.core.util.UserSession" class="org.olat.core.util.cache.CacheConfig">
-	<property name="timeToLive" value="3600" />
-	<property name="timeToIdle" value="3600" />
-	<property name="maxElementsInMemory" value="2000" />								
+	<property name="timeToLive" value="0" />
+	<property name="timeToIdle" value="60" />
+	<property name="maxElementsInMemory" value="20000" />							
 </bean>
 															
 <!-- end cache beans -->

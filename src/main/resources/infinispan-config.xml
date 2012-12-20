@@ -8,28 +8,22 @@
 
    <default>
       <!-- Used to register JMX statistics in any available MBean server -->
-      <jmxStatistics enabled="false"/>
+      <jmxStatistics enabled="true"/>
    </default>
    
-	<namedCache name="InfinispanCacher@org.olat.core.dispatcher.mapper.MapperService_mapper__0">
+	<namedCache name="MapperService@mapper">
 		<eviction maxEntries="1000" strategy="LRU"/>
 		<expiration maxIdle="300000" wakeUpInterval="5000"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
    
-	<namedCache name="InfinispanCacher@org.olat.modules.openmeetings.manager.OpenMeetingsManager_session__0">
-		<eviction maxEntries="1000" strategy="LRU"/>
-		<expiration maxIdle="900000" wakeUpInterval="5000"/>
-		<transaction transactionMode="NON_TRANSACTIONAL" />
-	</namedCache>
-   
-	<namedCache name="InfinispanCacher@org.olat.commons.servlets.RSSServlet_rssdocs__0">
+	<namedCache name="OpenMeetingsManager@session">
 		<eviction maxEntries="1000" strategy="LRU"/>
 		<expiration maxIdle="900000" wakeUpInterval="5000"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
 	
-	<namedCache name="InfinispanCacher@org.olat.core.util.session.UserSessionManager_usersession__0">
+	<namedCache name="UserSessionManager@usersession">
 		<eviction strategy="NONE"/>
 		<expiration lifespan="-1" maxIdle="-1"/>
 		<transaction transactionMode="TRANSACTIONAL" />

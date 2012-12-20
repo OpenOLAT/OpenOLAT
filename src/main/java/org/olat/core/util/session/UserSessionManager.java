@@ -96,7 +96,7 @@ public class UserSessionManager implements GenericEventListener {
 	@PostConstruct
 	public void initBean() {
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, ORES_USERSESSION);
-		userSessionCache = coordinator.getCoordinator().getCacher().getOrCreateCache(UserSessionManager.class, "usersession");
+		userSessionCache = coordinator.getCoordinator().getCacher().getCache(UserSessionManager.class.getSimpleName(), "usersession");
 	}
 
 	/**
@@ -206,6 +206,10 @@ public class UserSessionManager implements GenericEventListener {
 	 */
 	public int getUserSessionWebCounter() {
 		return userSessionCache.size();
+	}
+	
+	public Collection<Long> getUsersOnline() {
+		return userSessionCache.getKeys();
 	}
 	
 	/**

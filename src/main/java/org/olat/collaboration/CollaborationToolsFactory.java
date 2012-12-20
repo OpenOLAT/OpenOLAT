@@ -82,7 +82,7 @@ public class CollaborationToolsFactory {
 			
 			public CollaborationTools execute() {
 				if (cache == null) {
-					cache = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(CollaborationToolsFactory.class, "tools");
+					cache = coordinatorManager.getCoordinator().getCacher().getCache(CollaborationToolsFactory.class.getSimpleName(), "tools");
 				}
 				CollaborationTools collabTools = (CollaborationTools) cache.get(cacheKey);
 				if (collabTools != null) {

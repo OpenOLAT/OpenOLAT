@@ -20,7 +20,6 @@
 package org.olat.modules.openmeetings.manager;
 
 import java.io.File;
-import java.io.Serializable;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -116,7 +115,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Autowired
 	private RepositoryManager repositoryManager;
 
-	private CacheWrapper sessionCache;
+	private CacheWrapper<String,Long> sessionCache;
 	private OpenMeetingsLanguages languagesMapping;
 	
 	@PostConstruct
@@ -126,7 +125,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		languagesMapping = new OpenMeetingsLanguages();
 		languagesMapping.read();
 
-		sessionCache = coordinator.getCoordinator().getCacher().getOrCreateCache(OpenMeetingsManager.class, "session");
+		sessionCache = coordinator.getCoordinator().getCacher().getCache(OpenMeetingsManager.class.getSimpleName(), "session");
 	}
 
 	@Override
@@ -309,11 +308,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	
 	@Override
 	public Long getIdentityKey(String token) {
-		Serializable obj = sessionCache.get(token);
-		if(obj instanceof Long) {
-			return (Long)obj;
-		}
-		return null;
+		return sessionCache.get(token);
 	}
 	
 	@Override

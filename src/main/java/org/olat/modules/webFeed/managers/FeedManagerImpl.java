@@ -192,7 +192,7 @@ public class FeedManagerImpl extends FeedManager {
 				@SuppressWarnings("synthetic-access")
 				public void execute() {
 					if (feedCache == null) {
-						feedCache = coordinator.getCacher().getOrCreateCache(FeedManagerImpl.class, "feed");
+						feedCache = coordinator.getCacher().getCache(FeedManager.class.getSimpleName(), "feed");
 					}
 				}
 			});

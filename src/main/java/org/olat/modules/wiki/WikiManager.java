@@ -239,14 +239,7 @@ public class WikiManager extends BasicManager {
 		final String wikiKey = OresHelper.createStringRepresenting(ores);
 		//cluster_OK by guido
 		if (wikiCache == null) {
-				
-			  coordinator.getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
-				public void  execute() {
-					if (wikiCache == null) {
-						wikiCache =  coordinator.getCoordinator().getCacher().getOrCreateCache(this.getClass(), "wiki");
-					}
-				}
-			});
+			wikiCache =  coordinator.getCoordinator().getCacher().getCache(WikiManager.class.getSimpleName(), "wiki");
 		}
 		Wiki wiki = (Wiki) wikiCache.get(wikiKey);
 		if (wiki != null) {

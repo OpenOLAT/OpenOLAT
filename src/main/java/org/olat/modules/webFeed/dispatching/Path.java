@@ -54,7 +54,7 @@ import org.olat.repository.RepositoryManager;
  */
 public class Path {
 	// Not private for better performance (apperently)
-	protected static final CacheWrapper validatedUriCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(Path.class,
+	protected static final CacheWrapper<String,Boolean> validatedUriCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(Path.class.getSimpleName(),
 			"feed");
 
 	// Instance variables

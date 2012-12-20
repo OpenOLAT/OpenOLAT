@@ -88,7 +88,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	
 	protected ProjectBrokerManagerImpl() {
 		// cache name should not be too long e.g. 'projectbroker' is too long, use 'pb' instead.
-		projectCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(ProjectBrokerManagerImpl.class, "pb");
+		projectCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(ProjectBrokerManager.class.getSimpleName(), "pb");
 		CoreSpringFactory.getImpl(BusinessGroupService.class).registerDeletableGroupDataListener(this);
 		logDebug("ProjectBrokerManagerImpl created");
 	}

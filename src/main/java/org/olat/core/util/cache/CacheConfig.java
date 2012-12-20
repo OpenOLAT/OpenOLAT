@@ -25,10 +25,6 @@
 */ 
 package org.olat.core.util.cache;
 
-import java.util.Map;
-
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
 
 /**
  * Description:<br>
@@ -53,29 +49,9 @@ public class CacheConfig {
 	private int timeToLive = 120;
 	private int timeToIdle = 120;
 	private int diskExpiryThreadIntervalSeconds = 120;
-	
-	private Map<String, CacheConfig> childrenConfig;
-	
-	public CacheConfig() {
-		// used by spring
-	}
 
-	/*
-	 * for cloning
-	 */
-	private CacheConfig(CacheConfig config) {
-		this.maxElementsInMemory = config.maxElementsInMemory;
-		//this.memoryStoreEvictionPolicy = config.memoryStoreEvictionPolicy;
-		this.overflowToDisk = config.overflowToDisk;
-		this.diskPersistent = config.diskPersistent;
-		this.diskStorePath = config.diskStorePath;
-		this.eternal = config.eternal;
-		this.timeToLive = config.timeToLive;
-		this.timeToIdle = config.timeToIdle;
-		this.diskExpiryThreadIntervalSeconds = config.diskExpiryThreadIntervalSeconds;
-		
-		// no need to deep clone, since read-only config.
-		this.childrenConfig = config.childrenConfig;
+	public int getMaxElementsInMemory() {
+		return maxElementsInMemory;
 	}
 
 	/**
@@ -95,6 +71,10 @@ public class CacheConfig {
 	/*public void setMemoryStoreEvictionPolicy(MemoryStoreEvictionPolicy memoryStoreEvictionPolicy) {
 		this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
 	}*/
+	
+	public boolean isOverflowToDisk() {
+		return overflowToDisk;
+	}
 
 	/**
 	 * Set whether elements can overflow to disk when the in-memory cache
@@ -102,6 +82,10 @@ public class CacheConfig {
 	 */
 	public void setOverflowToDisk(boolean overflowToDisk) {
 		this.overflowToDisk = overflowToDisk;
+	}
+	
+	public String getDiskStorePath() {
+		return diskStorePath;
 	}
 
 	/**
@@ -112,12 +96,24 @@ public class CacheConfig {
 		this.diskStorePath = diskStorePath;
 	}
 
+	public boolean isDiskPersistent() {
+		return diskPersistent;
+	}
+	
+	public boolean isEternal() {
+		return eternal;
+	}
+	
 	/**
 	 * Set whether elements are considered as eternal. If "true", timeouts
 	 * are ignored and the element is never expired. Default is "false".
 	 */
 	public void setEternal(boolean eternal) {
 		this.eternal = eternal;
+	}
+	
+	public int getTimeToLive() {
+		return timeToLive;
 	}
 
 	/**
@@ -127,6 +123,10 @@ public class CacheConfig {
 	 */
 	public void setTimeToLive(int timeToLive) {
 		this.timeToLive = timeToLive;
+	}
+	
+	public int getTimeToIdle() {
+		return timeToIdle;
 	}
 
 	/**
@@ -145,6 +145,10 @@ public class CacheConfig {
 	public void setDiskPersistent(boolean diskPersistent) {
 		this.diskPersistent = diskPersistent;
 	}
+	
+	public int getDiskExpiryThreadIntervalSeconds() {
+		return diskExpiryThreadIntervalSeconds;
+	}
 
 	/**
 	 * Set the number of seconds between runs of the disk expiry thread.
@@ -152,48 +156,5 @@ public class CacheConfig {
 	 */
 	public void setDiskExpiryThreadIntervalSeconds(int diskExpiryThreadIntervalSeconds) {
 		this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
-	}
-
-	/**
-	 * [used by spring]
-	 * @param childrenConfig
-	 */
-	public void setChildrenConfig(Map<String, CacheConfig> childrenConfig) {
-		this.childrenConfig = childrenConfig;
-	}
-	
-	public CacheConfig createConfigFor(OLATResourceable ores) {
-		// we will first try to use the type together with the key for the lookup. if that fails, we lookup the config for the type.
-		// if that fails again (= no entries for that type in the spring .xml file) -> 
-		// we take a current config (child inherit from the parent if no config is set)
-		CacheConfig cc = null;
-		if (childrenConfig == null) {
-			cc = this;
-		} else { // children are configured
-			cc = childrenConfig.get(OresHelper.createStringRepresenting(ores));
-			if (cc == null) {
-				cc = childrenConfig.get(ores.getResourceableTypeName());
-			}
-			// fallback to current config
-			if  (cc == null) {
-				cc = this;
-			}
-		}
-		// clone the config, so that it is independent.
-		return new CacheConfig(cc);
-	}
-
-	/**
-	 * Return Cache-name for given class and name
-	 * @param ownerClass
-	 * @param name        Cache-name 
-	 * @return
-	 */
-	public static String getCacheName(Class<?> ownerClass, String name) {
-		String cacheName = ownerClass.getName();
-		if (name != null) {
-			cacheName = cacheName +"_"+name;
-		}
-		return cacheName;
 	}
 }

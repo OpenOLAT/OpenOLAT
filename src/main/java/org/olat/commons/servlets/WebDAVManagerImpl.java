@@ -108,7 +108,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 		
 		if (timedSessionCache == null) {
 			synchronized (this) {
-				timedSessionCache = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(this.getClass(), "webdav");
+				timedSessionCache = coordinatorManager.getCoordinator().getCacher().getCache(WebDAVManager.class.getSimpleName(), "webdav");
 			}
 		}
 		

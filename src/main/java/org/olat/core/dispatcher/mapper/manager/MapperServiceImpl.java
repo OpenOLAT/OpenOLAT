@@ -54,13 +54,13 @@ public class MapperServiceImpl implements MapperService {
 	private Map<Mapper,String> mapperToMapperId = new HashMap<Mapper, String>();
 	private Map<String,List<String>> sessionIdToMapperIds = new HashMap<String,List<String>>();
 
-	private CacheWrapper mapperCache;
+	private CacheWrapper<String, Serializable> mapperCache;
 	
 	@Autowired
 	private MapperDAO mapperDao;
 	
 
-	private CacheWrapper getMapperCache() {
+	private CacheWrapper<String, Serializable> getMapperCache() {
 		if (mapperCache == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType(Mapper.class);
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
@@ -68,7 +68,7 @@ public class MapperServiceImpl implements MapperService {
 				public void execute() {
 					if (mapperCache == null) {
 						Coordinator coordinator = CoordinatorManager.getInstance().getCoordinator();
-						mapperCache = coordinator.getCacher().getOrCreateCache(MapperService.class, "mapper");
+						mapperCache = coordinator.getCacher().getCache(MapperService.class.getSimpleName(), "mapper");
 					}
 				}
 			});
