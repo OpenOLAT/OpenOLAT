@@ -22,7 +22,6 @@ package org.olat.portfolio;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.collaboration.CollaborationTools;
@@ -44,7 +43,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
-import org.olat.group.DeletableReference;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.ElementType;
@@ -339,12 +337,6 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 			ePFMgr.deletePortfolioStructure(portfolioStructure);
 		}
 		
-	}
-
-	// used for group deletion
-	@Override
-	public DeletableReference checkIfReferenced(BusinessGroup group, Locale locale) {
-		return DeletableReference.createNoDeletableReference(); // dont show special reference info, just delete a linked map
 	}
 
 	// used for group deletion

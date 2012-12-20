@@ -22,28 +22,13 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-
 package org.olat.group;
-
-import java.util.Locale;
-
-
 
 /**
  * 
  * @author ChristianGuretzki
  */
-
 public interface DeletableGroupData {
-
-	/**
-	 * Check if a group is used by deletable-group data element. 
-	 * E.g. projectbroker has references to certain groups
-	 * @param group  Check reference for this group
-	 * @param locale locale can be used to translate element-type. E.g. project-broker to Themenboerse
-	 * @return DeletableReference object, when the group is used, deleteable.Reference.isReferenced return true
-	 */
-	public DeletableReference checkIfReferenced(BusinessGroup group, Locale locale);
 
 	/**
 	 * Delete data for element which are be used by certain group.
@@ -51,7 +36,6 @@ public interface DeletableGroupData {
 	 * @return  true: data deleted , false: no data deleted
 	 */
 	public boolean deleteGroupDataFor(BusinessGroup group);
-	
 }
 
 

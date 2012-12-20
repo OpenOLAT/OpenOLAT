@@ -58,8 +58,6 @@ public interface BusinessGroupService {
 	 */
 	public void registerDeletableGroupDataListener(DeletableGroupData listener);
 
-	public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale);
-
 	/**
 	 * Create a persistent BusinessGroup with the provided
 	 * parameters. The BusinessGroup can have a waiting-list.
