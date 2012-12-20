@@ -760,6 +760,30 @@ public class EPStructureManager extends BasicManager {
 		return allOk;
 	}
 	
+	protected boolean moveArtefactInStruct(AbstractArtefact artefact, PortfolioStructure parStruct, int position) {
+		EPStructureElement structureEl = (EPStructureElement)dbInstance.loadObject((EPStructureElement)parStruct);
+		Identity author = structureEl.getInternalArtefacts().get(0).getAuthor();
+		if (author == null) return false; // old model without author, doesn't work!
+
+		List<EPStructureToArtefactLink> artefactLinks =  structureEl.getInternalArtefacts();
+		int currentIndex = -1;
+		for(EPStructureToArtefactLink link:artefactLinks) {
+			currentIndex++;
+			if(link.getArtefact().equals(artefact)) {
+				break;
+			}
+		}
+		
+		if(currentIndex > -1 && currentIndex < artefactLinks.size()) {
+			EPStructureToArtefactLink link = artefactLinks.remove(currentIndex);
+			if(position > currentIndex) {
+				position--;
+			}
+			artefactLinks.add(position, link);
+		}
+		return true;
+	}
+	
 	/**
 	 * Check the collect restriction against the structure element
 	 * @param structure
@@ -1006,12 +1030,13 @@ public class EPStructureManager extends BasicManager {
 		if(map == null) {
 			return;//nothing to delete
 		}
+
+		//already delete in removeStructureRecursively: deletePortfolioMapTemplateRecursively((EPStructureElement)map);
 		removeStructureRecursively(map);
-		deletePortfolioMapTemplateRecursively((EPStructureElement)map); 
-		dbInstance.deleteObject(map);
+		//already delete in removeStructureRecursively: dbInstance.deleteObject(map);
 	}
 	
-	private void deletePortfolioMapTemplateRecursively(EPStructureElement element) {
+	/*private void deletePortfolioMapTemplateRecursively(EPStructureElement element) {
 		element.getInternalArtefacts().clear();
 		element.setRoot(null);
 		element.setRootMap(null);
@@ -1020,7 +1045,7 @@ public class EPStructureManager extends BasicManager {
 			deletePortfolioMapTemplateRecursively((EPStructureElement)subLink.getChild());
 		}
 		links.clear();
-	}
+	}*/
 	
 	public void removeStructureRecursively(PortfolioStructure struct){
 		List<PortfolioStructure> children = loadStructureChildren(struct); 

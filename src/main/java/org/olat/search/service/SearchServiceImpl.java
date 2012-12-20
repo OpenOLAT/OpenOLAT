@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
@@ -48,6 +47,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.search.AbstractOlatDocument;
 import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.commons.services.search.SearchResults;
@@ -67,7 +67,9 @@ import org.olat.search.service.indexer.MainIndexer;
 import org.olat.search.service.searcher.JmsSearchProvider;
 import org.olat.search.service.searcher.SearchResultsImpl;
 import org.olat.search.service.spell.SearchSpellChecker;
-import org.olat.search.service.update.IndexUpdater;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 /**
  * 
@@ -78,8 +80,8 @@ public class SearchServiceImpl implements SearchService {
 	
 	private Index indexer;	
 	private SearchModule searchModuleConfig;
-	private IndexUpdater indexUpdater;
 	private MainIndexer mainIndexer;
+	private Scheduler scheduler;
 
 	private long maxIndexTime;
 	private Analyzer analyzer;
@@ -101,37 +103,49 @@ public class SearchServiceImpl implements SearchService {
 	/**
 	 * [used by spring]
 	 */
-	private SearchServiceImpl(SearchModule searchModule, MainIndexer mainIndexer, JmsSearchProvider searchProvider) {
+	private SearchServiceImpl(SearchModule searchModule, MainIndexer mainIndexer, JmsSearchProvider searchProvider, Scheduler scheduler) {
 		log.info("Start SearchServiceImpl constructor...");
+		this.scheduler = scheduler;
 		this.searchModuleConfig = searchModule;
 		this.mainIndexer = mainIndexer;
-		analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+		analyzer = new StandardAnalyzer(Version.LUCENE_30);
 		searchProvider.setSearchService(this);
-
-	}
-		
-	public void addToIndex(Document document) {
-		if (indexUpdater==null) throw new AssertException ("Try to call addToIndex() but indexUpdater is null!");
-		log.info("addToIndex document=" + document);
-		indexUpdater.addToIndex(document);
 	}
 	
+	/**
+	 * Start the job indexer
+	 */
 	public void startIndexing() {
 		if (indexer==null) throw new AssertException ("Try to call startIndexing() but indexer is null");
-		indexer.startFullIndex();
-		log.info("startIndexing...");
+		
+		try {
+			Scheduler scheduler = CoreSpringFactory.getImpl(Scheduler.class);
+			JobDetail detail = scheduler.getJobDetail("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
+			scheduler.triggerJob(detail.getName(), detail.getGroup());
+			log.info("startIndexing...");
+		} catch (SchedulerException e) {
+			log.error("Error trigerring the indexer job: ", e);
+		}
 	}
 
+	/**
+	 * Interrupt the job indexer
+	 */
 	public void stopIndexing() {
 		if (indexer==null) throw new AssertException ("Try to call stopIndexing() but indexer is null");
-		indexer.stopFullIndex();
-		log.info("stopIndexing.");
-	}
 
-	public void deleteFromIndex(Document document) {
-		if (indexUpdater==null) throw new AssertException ("Try to call deleteFromIndex() but indexUpdater is null");
-		log.info("deleteFromIndex document=" + document);
-		indexUpdater.deleteFromIndex(document);
+		try {
+			Scheduler scheduler = CoreSpringFactory.getImpl(Scheduler.class);
+			JobDetail detail = scheduler.getJobDetail("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
+			scheduler.interrupt(detail.getName(), detail.getGroup());
+			log.info("stopIndexing.");
+		} catch (SchedulerException e) {
+			log.error("Error interrupting the indexer job: ", e);
+		}
+	}
+	
+	public Index getInternalIndexer() {
+		return indexer;
 	}
 
 	public void init() {
@@ -140,7 +154,6 @@ public class SearchServiceImpl implements SearchService {
 		log.info("Running with indexPath=" + searchModuleConfig.getFullIndexPath());
 		log.info("        tempIndexPath=" + searchModuleConfig.getFullTempIndexPath());
 		log.info("        generateAtStartup=" + searchModuleConfig.getGenerateAtStartup());
-		log.info("        restartInterval=" + searchModuleConfig.getRestartInterval());
 		log.info("        indexInterval=" + searchModuleConfig.getIndexInterval());
 
 		searchSpellChecker = new SearchSpellChecker();
@@ -149,7 +162,6 @@ public class SearchServiceImpl implements SearchService {
 		searchSpellChecker.setSpellCheckEnabled(searchModuleConfig.getSpellCheckEnabled());
 		
 	  indexer = new Index(searchModuleConfig, searchSpellChecker, mainIndexer);
-	  indexUpdater = new IndexUpdater(searchModuleConfig.getFullIndexPath(), searchModuleConfig.getUpdateInterval());
 
 	  indexPath = searchModuleConfig.getFullIndexPath();
 
@@ -160,7 +172,12 @@ public class SearchServiceImpl implements SearchService {
 		}		
 
   	if (startingFullIndexingAllowed()) {
-  		indexer.startFullIndex();
+  		try {
+				JobDetail detail = scheduler.getJobDetail("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
+				scheduler.triggerJob(detail.getName(), detail.getGroup());
+			} catch (SchedulerException e) {
+				log.error("", e);
+			}
   	}
   	log.info("init DONE");
 	}

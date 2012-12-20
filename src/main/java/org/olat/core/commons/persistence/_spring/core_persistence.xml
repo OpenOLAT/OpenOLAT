@@ -52,6 +52,7 @@
 		<mapping-file>org/olat/modules/fo/ForumImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/fo/MessageImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/fo/ReadMessage.hbm.xml</mapping-file>
+		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 		<mapping-file>org/olat/catalog/CatalogEntryImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/BookmarkImpl.hbm.xml</mapping-file>
@@ -74,6 +75,13 @@
 		<mapping-file>org/olat/core/logging/activity/LoggingObject.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/coach/model/EfficiencyStatementStatEntry.hbm.xml</mapping-file>
+		
+		<class>org.olat.group.model.BusinessGroupParticipantViewImpl</class>
+		<class>org.olat.group.model.BusinessGroupOwnerViewImpl</class>
+		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
+		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
+		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>
+		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>

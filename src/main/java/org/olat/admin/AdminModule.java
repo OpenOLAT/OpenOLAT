@@ -40,9 +40,7 @@ import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.User;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.session.UserSessionManager;
-import org.olat.instantMessaging.rosterandchat.ChangePresenceJob;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 
@@ -57,6 +55,7 @@ import org.olat.properties.PropertyManager;
  */
 public class AdminModule extends AbstractOLATModule {
 
+	private static final String CONFIG_LOGIN_BLOCKED = "loginBlocked";
 	/** Category for system properties **/
 	public static String SYSTEM_PROPERTY_CATEGORY = "_o3_";
 	public static final String PROPERTY_MAINTENANCE_MESSAGE    = "maintenanceMessageToken";
@@ -95,22 +94,22 @@ public class AdminModule extends AbstractOLATModule {
 	 * The maintenance message itself is managed by the OLATContext from the brasato core
 	 * @param message
 	 */
-	public static void setMaintenanceMessage(String message) {
-			GlobalStickyMessage.setGlobalStickyMessage(message, true);
+	public void setMaintenanceMessage(String message) {
+		GlobalStickyMessage.setGlobalStickyMessage(message, true);
 	}
 	
-	public static boolean checkMaintenanceMessageToken(HttpServletRequest request, HttpServletResponse response) {
+	public boolean checkMaintenanceMessageToken(HttpServletRequest request, HttpServletResponse response) {
 		return checkToken(request, PROPERTY_MAINTENANCE_MESSAGE);
 	}
 
-	public static boolean checkSessionAdminToken(HttpServletRequest request, HttpServletResponse response) {
+	public boolean checkSessionAdminToken(HttpServletRequest request, HttpServletResponse response) {
 		return checkToken(request, PROPERTY_SESSION_ADMINISTRATION);
 	}
 
-	private static boolean checkToken(HttpServletRequest request, String tokenPropertyName) {
+	private boolean checkToken(HttpServletRequest request, String tokenPropertyName) {
 		String submittedToken = request.getParameter("token");
 		if (submittedToken == null) {
-			Tracing.logAudit("Trying to set maintenance message without using a token. Remote address::" + request.getRemoteAddr(), AdminModule.class);
+			logAudit("Trying to set maintenance message without using a token. Remote address::" + request.getRemoteAddr());
 			return false;
 		}
 		// get token and compare
@@ -120,7 +119,7 @@ public class AdminModule extends AbstractOLATModule {
 		if (token.matches(submittedToken)) { // limit access to token
 			return true;
 		} else {
-			Tracing.logAudit("Trying to set maintenance message using a wrong token. Remote address::" + request.getRemoteAddr(), AdminModule.class);
+			logAudit("Trying to set maintenance message using a wrong token. Remote address::" + request.getRemoteAddr());
 			return false;
 		}
 	}
@@ -129,16 +128,17 @@ public class AdminModule extends AbstractOLATModule {
 	 * Does not allow any further login except administrator-logins.
 	 * @param newLoginBlocked
 	 */
-	public static void setLoginBlocked(boolean newLoginBlocked) {
-		Tracing.logAudit("Session administration: Set login-blocked=" + newLoginBlocked, AdminModule.class);
+	public void setLoginBlocked(boolean newLoginBlocked, boolean persist) {
+		logAudit("Session administration: Set login-blocked=" + newLoginBlocked);
 		AuthHelper.setLoginBlocked(newLoginBlocked);
+		setBooleanProperty(CONFIG_LOGIN_BLOCKED, newLoginBlocked, persist);
 	}
 
 	/**
 	 * Check if login is blocked
 	 * @return  true = login is blocked 
 	 */
-	public static boolean isLoginBlocked() {
+	public boolean isLoginBlocked() {
 		return AuthHelper.isLoginBlocked();
 	}
 
@@ -146,8 +146,8 @@ public class AdminModule extends AbstractOLATModule {
 	 * Set the rejectDMZRequests flag - if true this will reject all requests to dmz to other nodes
 	 * @param rejectDMZRequests
 	 */
-	public static void setRejectDMZRequests(boolean rejectDMZRequests) {
-		Tracing.logAudit("Session administration: Set rejectDMZRequests=" + rejectDMZRequests, AdminModule.class);
+	public void setRejectDMZRequests(boolean rejectDMZRequests) {
+		logAudit("Session administration: Set rejectDMZRequests=" + rejectDMZRequests);
 		AuthHelper.setRejectDMZRequests(rejectDMZRequests);
 	}
 
@@ -155,7 +155,7 @@ public class AdminModule extends AbstractOLATModule {
 	 * Check if requests to DMZ are rejected resulting in clients to go to another node
 	 * @return  true = reject all requests to dmz (to other nodes)
 	 */
-	public static boolean isRejectDMZRequests() {
+	public boolean isRejectDMZRequests() {
 		return AuthHelper.isRejectDMZRequests();
 	}
 
@@ -164,56 +164,25 @@ public class AdminModule extends AbstractOLATModule {
 	 * 0 = unlimited number of sessions
 	 * @param maxSession
 	 */
-	public static void setMaxSessions(int maxSession) {
-		Tracing.logAudit("Session administration: Set maxSession=" + maxSession, AdminModule.class);
+	public void setMaxSessions(int maxSession) {
+		logAudit("Session administration: Set maxSession=" + maxSession);
 		AuthHelper.setMaxSessions(maxSession);
-	}
-	
-	/**
-	 * Invalidated all session except administrator-sessions. 
-	 * @return  Number of invalidated sessions
-	 */
-	public static int invalidateAllSessionsDepr() {
-		Tracing.logAudit("Session administration: Invalidate all sessions.", AdminModule.class);
-		return CoreSpringFactory.getImpl(UserSessionManager.class).invalidateAllSessions();
-	}
-
-	/**
-	 * Invalidate a number of oldest (last-click time) sessions.
-	 * @param nbrSessions
-	 * @return  Number of invalidated sessions
-	 */
-	public static int invalidateOldestSessionsDepr(int nbrSessions) {
-		Tracing.logAudit("Session administration: Invalidate oldest sessions Nbr-Sessions=" + nbrSessions, AdminModule.class);
-		return  CoreSpringFactory.getImpl(UserSessionManager.class).invalidateOldestSessions(nbrSessions);
 	}
 
 	/**
 	 * Set global session timeout in msec.
 	 * @param sessionTimeout
 	 */
-	public static void setSessionTimeoutDepr(int sessionTimeout) {
-		Tracing.logAudit("Session administration: Set session-timeout=" + sessionTimeout, AdminModule.class);
+	public void setSessionTimeoutDepr(int sessionTimeout) {
+		logAudit("Session administration: Set session-timeout=" + sessionTimeout);
 		//in seconds
-
 		CoreSpringFactory.getImpl(UserSessionManager.class).setGlobalSessionTimeout(sessionTimeout);
-		//in milliseconds for presence job
-		ChangePresenceJob.setAutoLogOutCutTimeValue(sessionTimeout*1000);
-	}
-
-	/**
-	 * @return  Current session timeout in msec.
-	 */
-	public static int getSessionTimeout() {
-		//changepresencejob holds the session timeout so far in milliseconds
-		int sessionTimeoutSeconds = Math.round((ChangePresenceJob.getAutoLogOutCutTimeValue() / 1000));
-		return sessionTimeoutSeconds;
 	}
 
 	/**
 	 * @return  Current session-limit.
 	 */
-	public static int getMaxSessions() {
+	public int getMaxSessions() {
 		return AuthHelper.getMaxSessions();
 	}
 
@@ -233,6 +202,11 @@ public class AdminModule extends AbstractOLATModule {
 		initializeSystemTokenProperty(PROPERTY_MAINTENANCE_MESSAGE);
 		initializeSystemTokenProperty(PROPERTY_SESSION_ADMINISTRATION);
 		
+		boolean loginBlocked = getBooleanPropertyValue(CONFIG_LOGIN_BLOCKED);
+		if(loginBlocked) {
+			AuthHelper.setLoginBlocked(loginBlocked);
+		}
+		
 		// Add controller factory extension point to launch groups
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(User.class.getSimpleName(),
 				new UserAdminContextEntryControllerCreator());
@@ -251,14 +225,11 @@ public class AdminModule extends AbstractOLATModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		//nothin to do
 	}
 
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
-		
 	}
-	
 }

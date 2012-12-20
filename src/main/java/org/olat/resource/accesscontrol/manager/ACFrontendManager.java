@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
@@ -76,6 +76,8 @@ import org.springframework.stereotype.Service;
 @Service("acService")
 public class ACFrontendManager extends BasicManager implements ACService {
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -304,8 +306,6 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		return new AccessResult(false);
 	}
 	
-	
-	
 	@Override
 	public void acceptReservationToResource(Identity identity, ResourceReservation reservation) {
 		OLATResource resource = reservation.getResource();
@@ -313,19 +313,18 @@ public class ACFrontendManager extends BasicManager implements ACService {
 			//it's a reservation for a group
 			businessGroupService.acceptPendingParticipation(identity, identity, resource);
 		} else {
-			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
-			if(re != null) {
-				IdentitiesAddEvent iae = new IdentitiesAddEvent(identity);
-				//roles is not needed as I add myself as participant
-				repositoryManager.addParticipants(identity, null, iae, re, null);
-				removeReservation(reservation);
-			}
+			repositoryManager.acceptPendingParticipation(identity, identity, resource, reservation);
 		}
 	}
 
 	@Override
-	public void removeReservation(ResourceReservation reservation) {
+	public void removeReservation(Identity ureqIdentity, Identity identity, ResourceReservation reservation) {
+		OLATResource resource = reservation.getResource();
 		reservationDao.deleteReservation(reservation);
+		if("BusinessGroup".equals(resource.getResourceableTypeName())) {
+			dbInstance.commit();//needed to have the right number of participants to calculate upgrade from waiting list
+			businessGroupService.cancelPendingParticipation(ureqIdentity, reservation);
+		}
 	}
 
 	@Override
@@ -414,7 +413,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		} else if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
-				EnrollState result = businessGroupService.enroll(identity, null, identity, group, null);//TODO memail
+				EnrollState result = businessGroupService.enroll(identity, null, identity, group, null);
 				return result.isFailed() ? Boolean.FALSE : Boolean.TRUE;
 			}
 		}

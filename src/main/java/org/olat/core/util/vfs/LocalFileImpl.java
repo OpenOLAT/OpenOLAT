@@ -154,6 +154,11 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 		}
 		return getBasefile().delete() ? VFSConstants.YES : VFSConstants.NO;
 	}
+	
+	@Override
+	public VFSStatus deleteSilently() {
+		return getBasefile().delete() ? VFSConstants.YES : VFSConstants.NO;
+	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#resolveFile(java.lang.String)

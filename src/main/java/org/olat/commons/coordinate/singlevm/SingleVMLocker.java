@@ -190,7 +190,7 @@ public abstract class SingleVMLocker implements Locker, GenericEventListener {
 	public void event(Event event) {
 		SignOnOffEvent se = (SignOnOffEvent) event;
 		if (!se.isSignOn()) { // it is a "logout" event - we are only interested in logout events
-			String name = se.getIdentityName();
+			Long name = se.getIdentityKey();
 			// release all locks hold by the identity that has just logged out.
 			synchronized (locks) { //o_clusterOK by:fj, by definition we are in singleVM mode
 				for (Iterator<Entry<String, LockEntry>> iter = locks.entrySet().iterator(); iter.hasNext();) {

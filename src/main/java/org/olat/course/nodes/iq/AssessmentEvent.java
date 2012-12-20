@@ -25,10 +25,12 @@
 
 package org.olat.course.nodes.iq;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.Windows;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.instantMessaging.InstantMessagingService;
 
 /**
  * 
@@ -66,8 +68,8 @@ public class AssessmentEvent extends MultiUserEvent {
 			//increment assessmentCounter
 			counter++;		
 		  Windows.getWindows(userSession).setAttribute(ASSESSMENT_STARTED_KEY, counter);
-		  if (InstantMessagingModule.isEnabled()) {
-				InstantMessagingModule.getAdapter().disableChat(userSession.getIdentity().getName(), "Working on test (IM disabled)");
+		  if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
+				CoreSpringFactory.getImpl(InstantMessagingService.class).disableChat(userSession.getIdentity());
 		  }
 		} else if(TYPE.STOPPED.equals(type)) {
 			Integer assessmentCounter = (Integer)Windows.getWindows(userSession).getAttribute(ASSESSMENT_STARTED_KEY);
@@ -75,8 +77,8 @@ public class AssessmentEvent extends MultiUserEvent {
 		  //decrement assessmentCounter
 			counter--;			
 			Windows.getWindows(userSession).setAttribute(ASSESSMENT_STARTED_KEY, counter);
-			if (InstantMessagingModule.isEnabled() && counter==0) {
-				InstantMessagingModule.getAdapter().enableChat(userSession.getIdentity().getName());
+			if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() && counter==0) {
+				CoreSpringFactory.getImpl(InstantMessagingService.class).enableChat(userSession.getIdentity());
 			}
 		}
 	}

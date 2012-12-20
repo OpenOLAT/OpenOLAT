@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openmeetings.model;
 
-import org.olat.properties.Property;
 
 
 /**
@@ -38,7 +37,7 @@ public class OpenMeetingsRoom {
 	private boolean recordingAllowed;
 	private boolean closed;
 	
-	private transient Property property;
+	private transient OpenMeetingsRoomReference reference;
 	private transient int numOfUsers;
 	private transient String resourceName;
 	
@@ -46,8 +45,8 @@ public class OpenMeetingsRoom {
 		//
 	}
 	
-	public OpenMeetingsRoom(Property property) {
-		this.property = property;
+	public OpenMeetingsRoom(OpenMeetingsRoomReference reference) {
+		this.reference = reference;
 	}
 	
 	public long getRoomId() {
@@ -106,12 +105,12 @@ public class OpenMeetingsRoom {
 		this.recordingAllowed = recordingAllowed;
 	}
 
-	public Property getProperty() {
-		return property;
+	public OpenMeetingsRoomReference getReference() {
+		return reference;
 	}
 
-	public void setProperty(Property property) {
-		this.property = property;
+	public void setReference(OpenMeetingsRoomReference reference) {
+		this.reference = reference;
 	}
 
 	public int getNumOfUsers() {

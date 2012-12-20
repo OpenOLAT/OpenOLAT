@@ -54,7 +54,6 @@ public class SearchModule extends AbstractOLATModule {
 	public final static String CONF_TEMP_INDEX_PATH = "tempIndexPath";
 	public final static String CONF_TEMP_SPELL_CHECK_PATH = "tempSpellCheckPath";
 	public final static String CONF_GENERATE_AT_STARTUP = "generateIndexAtStartup";
-	private static final String CONF_RESTART_INTERVAL = "restartInterval";
 	private static final String CONF_INDEX_INTERVAL = "indexInterval";
 	private static final String CONF_MAX_HITS = "maxHits";
 	private static final String CONF_MAX_RESULTS = "maxResults";
@@ -77,7 +76,6 @@ public class SearchModule extends AbstractOLATModule {
 	private static final String CONF_FILE_BLACK_LIST = "fileBlackList";
 	
 	// Default values
-	private static final int    DEFAULT_RESTART_INTERVAL = 0;
 	private static final int    DEFAULT_INDEX_INTERVAL = 0;
 	private static final int    DEFAULT_MAX_HITS = 1000;
 	private static final int    DEFAULT_MAX_RESULTS = 100;
@@ -94,7 +92,6 @@ public class SearchModule extends AbstractOLATModule {
 	private String fullTempIndexPath;
 	private String fullTempSpellCheckPath;
 	private long indexInterval;
-	private long restartInterval;
 	private boolean generateAtStartup;
 	private int maxHits;
 	private int maxResults;
@@ -113,7 +110,7 @@ public class SearchModule extends AbstractOLATModule {
 	private boolean pdfFileEnabled;
 	private boolean pdfTextBuffering;
 	private boolean isSpellCheckEnabled;
-	private String fullTempPdfTextBufferPath;
+	private String fullPdfTextBufferPath;
 	private List<String> fileSizeSuffixes;
 
 	private long maxFileSize;
@@ -163,13 +160,13 @@ public class SearchModule extends AbstractOLATModule {
 		String tempIndexPath = getStringConfigParameter(CONF_TEMP_INDEX_PATH, "/tmp", false);
 		String tempSpellCheckPath = getStringConfigParameter(CONF_TEMP_SPELL_CHECK_PATH, "/tmp",false);
 		String tempPdfTextBufferPath = getStringConfigParameter(CONF_TEMP_PDF_TEXT_BUF_PATH, "/tmp", false);
-    fullIndexPath = FolderConfig.getCanonicalTmpDir() + File.separator + indexPath;
-    fullTempIndexPath = FolderConfig.getCanonicalTmpDir() + File.separator + tempIndexPath;
-    fullTempSpellCheckPath = FolderConfig.getCanonicalTmpDir() + File.separator + tempSpellCheckPath;
-    fullTempPdfTextBufferPath = FolderConfig.getCanonicalTmpDir() + File.separator + tempPdfTextBufferPath;
+    
+		fullIndexPath = buildPath(indexPath);
+    fullTempIndexPath = buildPath(tempIndexPath);
+    fullTempSpellCheckPath = buildPath(tempSpellCheckPath);
+    fullPdfTextBufferPath = buildPath(tempPdfTextBufferPath);
 
     generateAtStartup = getBooleanConfigParameter(CONF_GENERATE_AT_STARTUP, true);
-    restartInterval = getIntConfigParameter(CONF_RESTART_INTERVAL, DEFAULT_RESTART_INTERVAL);
     indexInterval = getIntConfigParameter(CONF_INDEX_INTERVAL, DEFAULT_INDEX_INTERVAL);
     maxHits = getIntConfigParameter(CONF_MAX_HITS, DEFAULT_MAX_HITS);
     maxResults = getIntConfigParameter(CONF_MAX_RESULTS, DEFAULT_MAX_RESULTS);
@@ -188,6 +185,14 @@ public class SearchModule extends AbstractOLATModule {
     maxFileSize = Integer.parseInt(getStringConfigParameter(CONF_MAX_FILE_SIZE, "0", false));
     ramBufferSizeMB = Double.parseDouble(getStringConfigParameter(CONF_RAM_BUFFER_SIZE_MB, DEFAULT_RAM_BUFFER_SIZE_MB, false));
     useCompoundFile = getBooleanConfigParameter(CONF_USE_COMPOUND_FILE, false);
+	}
+	
+	private String buildPath(String path) {
+		File f = new File(path);
+		if(f.isAbsolute() && (f.exists() || f.mkdirs())) {
+			return path;
+		}
+		return FolderConfig.getCanonicalTmpDir() + File.separator + path;
 	}
 	
 	@Override
@@ -269,13 +274,6 @@ public class SearchModule extends AbstractOLATModule {
 	 */
 	public boolean getGenerateAtStartup() {
 		return generateAtStartup;
-	}
-
-	/**
-	 * @return Time in millisecond between restart generation of a full-index.
-	 */
-	public long getRestartInterval() {
-		return restartInterval;
 	}
 
 	/**
@@ -414,7 +412,7 @@ public class SearchModule extends AbstractOLATModule {
 	}
 
 	public String getPdfTextBufferPath() {
-		return fullTempPdfTextBufferPath;
+		return fullPdfTextBufferPath;
 	}
 
 	public List<String> getFileSizeSuffixes() {

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -166,10 +167,26 @@ public abstract class VersionsManager extends BasicManager {
 	 */
 	public abstract boolean rename(VFSItem item, String newname);
 	
-	//fxdiff FXOLAT-127: file versions maintenance tool
+	/**
+	 * @return The list of orphans
+	 */
 	public abstract List<OrphanVersion> orphans();
 	
-	//fxdiff FXOLAT-127: file versions maintenance tool
+	/**
+	 * @param orphan
+	 * @return
+	 */
 	public abstract boolean delete(OrphanVersion orphan);
+	
+	/**
+	 * Delete the orphans
+	 * @return
+	 */
+	public abstract boolean deleteOrphans(ProgressDelegate progress);
+	
+	
+	public abstract void pruneHistory(long historyLength, ProgressDelegate progress);
 
+	
+	public abstract int countDirectories();
 }

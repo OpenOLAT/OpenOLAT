@@ -574,7 +574,7 @@ public class LearningGroupWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			bgs.addOwners(ureq.getIdentity(), Collections.singletonList(identity), group);
+			bgs.addOwners(ureq.getIdentity(), ureq.getUserSession().getRoles(), Collections.singletonList(identity), group, null);
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to add an owner to a group", e);
@@ -642,7 +642,7 @@ public class LearningGroupWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			BusinessGroupAddResponse state = bgs.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), Collections.singletonList(identity), group, null);//TODO memail
+			BusinessGroupAddResponse state = bgs.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), Collections.singletonList(identity), group, null);
 			if(state.getAddedIdentities().contains(identity)) {
 				return Response.ok().build();
 			} else if(state.getIdentitiesAlreadyInGroup().contains(identity)) {

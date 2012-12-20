@@ -108,7 +108,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 			// with a
 			// temporary form item scope. The file must be moved later using the
 			// moveUploadFileTo() method to the final destination.
-			tempUploadFile = new File(WebappHelper.getUserDataRoot() + "/tmp/" + CodeHelper.getGlobalForeverUniqueID());
+			tempUploadFile = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
 			File tmpRequestFile = getRootForm().getRequestMultipartFile(component.getFormDispatchId());
 			// Move file to internal temp location
 			boolean success = tmpRequestFile.renameTo(tempUploadFile);

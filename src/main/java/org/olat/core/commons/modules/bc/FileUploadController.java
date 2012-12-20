@@ -77,7 +77,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
-import org.olat.core.util.vfs.version.VersionsManager;
 
 /**
  * <h3>Description</h3>
@@ -539,8 +538,7 @@ public class FileUploadController extends FormBasicController {
 				} else if (buttonClickedEvent.getPosition() == 2) { // cancel
 					// Cancel. Remove the new file since it has already been uploaded. Note that we don't have to explicitly close the
 					// dialog box since it closes itself whenever something gets clicked.
-					newFile.delete();
-					VersionsManager.getInstance().delete(newFile, true);//force delete the auto-versioning of this temp. file
+					newFile.deleteSilently();
 				} else {
 					throw new RuntimeException("Unknown button number " + buttonClickedEvent.getPosition());
 				}
@@ -558,8 +556,7 @@ public class FileUploadController extends FormBasicController {
 						break;
 					}
 					case 1: {//cancel
-						newFile.delete();
-						VersionsManager.getInstance().delete(newFile, true);//force delete the auto-versioning of this temp. file
+						newFile.deleteSilently();
 						fireEvent(ureq, Event.CANCELLED_EVENT);
 						break;
 					}
@@ -586,8 +583,7 @@ public class FileUploadController extends FormBasicController {
 			Versionable existingVersionableItem = (Versionable)existingVFSItem;
 			boolean ok = existingVersionableItem.getVersions().addVersion(ureq.getIdentity(), comment, newFile.getInputStream());
 			if(ok) {
-				newFile.delete();
-				VersionsManager.getInstance().delete(newFile, true);
+				newFile.deleteSilently();
 				//what can i do if existingVFSItem is a container
 				if(existingVFSItem instanceof VFSLeaf) {
 					newFile = (VFSLeaf)existingVFSItem;
@@ -619,8 +615,7 @@ public class FileUploadController extends FormBasicController {
 			revisionListDialogBox = null;
 			
 			//remove the file
-			newFile.delete();
-			VersionsManager.getInstance().delete(newFile, true);
+			newFile.deleteSilently();
 		} else if (source == revisionListCtr) {
 			if(FolderCommandStatus.STATUS_CANCELED == revisionListCtr.getStatus()) {
 
@@ -630,8 +625,7 @@ public class FileUploadController extends FormBasicController {
 
 				//don't want to delete revisions, clean the temporary file
 				if(newFile != null) {
-					newFile.delete();
-					VersionsManager.getInstance().delete(newFile, true);
+					newFile.deleteSilently();
 				}
 			} else {
 				if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {

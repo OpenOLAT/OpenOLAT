@@ -31,7 +31,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.modules.webFeed.managers.FeedManager;
@@ -54,7 +54,7 @@ import org.olat.repository.RepositoryManager;
  */
 public class Path {
 	// Not private for better performance (apperently)
-	protected static final CacheWrapper validatedUriCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(Path.class,
+	protected static final CacheWrapper<String,Boolean> validatedUriCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(Path.class.getSimpleName(),
 			"feed");
 
 	// Instance variables

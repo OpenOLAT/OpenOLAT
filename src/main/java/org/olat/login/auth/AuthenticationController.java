@@ -56,7 +56,7 @@ public abstract class AuthenticationController extends BasicController {
 	 * @param identity
 	 */
 	public void authenticated(UserRequest ureq, Identity identity) {
-		UserDeletionManager.getInstance().setIdentityAsActiv(identity);
+		identity = UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 		fireEvent(ureq, new AuthenticationEvent(identity));
 	}
 	

@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.WebappHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -163,7 +164,7 @@ public class CreateNewCourseController extends BasicController implements IAddCo
 		CourseGroupManager sourceCgm = sourceCourse.getCourseEnvironment().getCourseGroupManager();
 		CourseEnvironmentMapper env = PersistingCourseGroupManager.getInstance(sourceCourse).getBusinessGroupEnvironment();
 		
-		File fExportDir = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
+		File fExportDir = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());
 		fExportDir.mkdirs();
 		sourceCgm.exportCourseBusinessGroups(fExportDir, env, false);
 

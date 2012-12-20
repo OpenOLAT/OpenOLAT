@@ -110,23 +110,11 @@
 				<entry key="org.olat.core.commons.modules.bc:name=FilesInfoMBean" >
 					<ref bean="org.olat.core.commons.modules.bc.FilesInfoMBean"/>
 				</entry>
-      			<entry key="bean:name=changePresence" value-ref="changePresenceJob"/>
 			</map>
 		</property>
 		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>
 	</bean>
-	<!-- CacheInitMBean register ehcache jmx components at mbean-server -->
-	<!--<bean class="org.olat.admin.jmx.CacheInitMBean">
-		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>
-	</bean>
-	 --> 
-	<bean id="org.olat.core.commons.modules.bc.FilesInfoMBean" class="org.olat.core.commons.modules.bc.FilesInfoMBean" />
-	<!-- JBossTreeCacheJmxRegistrationManager register JBoss Tree Cache jmx components at mbean-server -->
-<!-- DISABLE JBoss Tree Cache JMX Registration, already done by starting tree cache ???
-	<bean id="org.olat.admin.jmx.JBossTreeCacheJmxRegistrationManager" class="org.olat.admin.jmx.JBossTreeCacheJmxRegistrationManager" >
 
-		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>
-    </bean>
--->
+	<bean id="org.olat.core.commons.modules.bc.FilesInfoMBean" class="org.olat.core.commons.modules.bc.FilesInfoMBean" />
     
 </beans>

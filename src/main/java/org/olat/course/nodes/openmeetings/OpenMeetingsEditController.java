@@ -38,7 +38,6 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.OpenMeetingsCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 
 /**
@@ -79,15 +78,12 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 		listenTo(accessibilityCondContr);
 		
 		editVc = createVelocityContainer("edit");
-		try {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
-			OpenMeetingsRoom defaultSettings = getDefaultValues();
-			editForm = new OpenMeetingsEditFormController(ureq, getWindowControl(), ores, courseNode, course.getCourseTitle(), defaultSettings);
-			listenTo(editForm);
-			editVc.put("editRooms", editForm.getInitialComponent());
-		} catch (OpenMeetingsException e) {
-			editVc.contextPut("error", e.i18nKey());
-		}
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
+		OpenMeetingsRoom defaultSettings = getDefaultValues();
+		editForm = new OpenMeetingsEditFormController(ureq, getWindowControl(), ores, courseNode, course.getCourseTitle(), defaultSettings);
+		listenTo(editForm);
+		editVc.put("editRooms", editForm.getInitialComponent());
 	}
 
 	@Override

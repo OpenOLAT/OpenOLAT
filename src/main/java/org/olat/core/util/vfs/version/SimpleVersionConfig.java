@@ -20,11 +20,14 @@
 package org.olat.core.util.vfs.version;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.configuration.PersistedPropertiesChangedEvent;
 import org.olat.core.gui.control.Event;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -60,13 +63,12 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 	private PersistedProperties persistedProperties;
 
 	private String courseRoot;
+	private List<String> excludedRoots;
 
-	
 	/**
 	 * [used by spring]
 	 */
 	private SimpleVersionConfig() {
-		//
 	}
 
 	public void event(Event event) {
@@ -128,10 +130,23 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 	}
 
 	public int versionAllowed(String relPath) {
+		if(StringHelper.containsNonWhitespace(relPath)) {
+			if(relPath.startsWith("/tmp/")//no versioning in tmp
+					|| relPath.startsWith("/scorm/")//there is already a versioning in assessment tool
+					|| relPath.startsWith("/portfolio/")//portfolio is not a folder
+					|| relPath.startsWith("/forum/")) {//forum is not a folder
+				return 0;
+			}
+		}
 		return getVersionAllowed() ;
 	}
 
 	public boolean versionEnabled(VFSContainer container) {
+		int versionsAllowed = getVersionAllowed();
+		if(versionsAllowed == 0) {
+			return false;
+		}
+
 		if (container instanceof NamedContainerImpl) {
 			container = ((NamedContainerImpl) container).getDelegate();
 		}
@@ -143,6 +158,13 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 			try {
 				LocalFolderImpl folderImpl = (LocalFolderImpl)container;
 				String path = folderImpl.getBasefile().getCanonicalPath();
+				List<String> excludedRoots = getExcludedRoots();
+				for(String excludedRoot:excludedRoots) {
+					if(path.startsWith(excludedRoot)) {
+						return false;
+					}
+				}
+
 				String root = getCourseRoot();
 				if (path.startsWith(root)) {
 					for(String exclusion:EXCLUSIONS_IN_COURSE_PATH) {
@@ -185,5 +207,17 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 			courseRoot += COURSE_PATH;
 		}
 		return courseRoot;
+	}
+	
+	private List<String> getExcludedRoots() {
+		if(excludedRoots == null) {
+			excludedRoots = new ArrayList<String>();
+			excludedRoots.add(FolderConfig.getCanonicalTmpDir());
+			String bcroot = FolderConfig.getCanonicalRoot();
+			excludedRoots.add(bcroot + "/forum");
+			excludedRoots.add(bcroot + "/portfolio");
+			excludedRoots.add(bcroot + "/scorm");
+		}
+		return excludedRoots;
 	}
 }

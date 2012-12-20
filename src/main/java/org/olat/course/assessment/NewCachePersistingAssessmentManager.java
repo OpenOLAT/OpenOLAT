@@ -26,14 +26,18 @@
 package org.olat.course.assessment;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -44,7 +48,7 @@ import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -107,19 +111,16 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * the key under which a hashmap is stored in a cachewrapper. we only use one key so that either all values of a user are there or none are there.
 	 * (otherwise we cannot know whether a null value means expiration of cache or no-such-property-yet-for-user)
 	 */
-	private static final String FULLUSERSET = "FULLUSERSET";
+	//private static final String FULLUSERSET = "FULLUSERSET";
 	private static final String LAST_MODIFIED = "LAST_MODIFIED";
 	
 	
 	// Float and Integer are immutable objects, we can reuse them.
 	private static final Float FLOAT_ZERO = new Float(0);
 	private static final Integer INTEGER_ZERO = new Integer(0);
-	
-	// one cache entry point to generate subcaches for all assessmentmanager instances
-	private static CacheWrapper assessmentMainCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(NewCachePersistingAssessmentManager.class, null);
 
 	// the cache per assessment manager instance (=per course)
-	private CacheWrapper courseCache;
+	private CacheWrapper<Long,HashMap<String, Serializable>> courseCache;
 	private OLATResourceable ores;
 	
 	// we cannot store the ref to cpm here, since at the time where the assessmentManager is initialized, the given course is not fully initialized yet.
@@ -143,7 +144,9 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 */
 	private NewCachePersistingAssessmentManager(ICourse course) {
 		this.ores = course;
-		courseCache = assessmentMainCache.getOrCreateChildCacheWrapper(course);
+		String cacheName = "Course@" + course.getResourceableId();
+		courseCache = CoordinatorManager.getInstance().getCoordinator().getCacher()
+				.getCache(AssessmentManager.class.getSimpleName(), cacheName);
 	}
 	/**
 	 * @param identity the identity for which to properties are to be loaded. 
@@ -151,39 +154,73 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * are loaded.
 	 * @return
 	 */
-	private List<Property> loadPropertiesFor(Identity identity) {
+	private List<Property> loadPropertiesFor(List<Identity> identities) {
+		if(identities == null || identities.isEmpty()) return Collections.emptyList();
+		
 		ICourse course = CourseFactory.loadCourse(ores);
 		StringBuilder sb = new StringBuilder();
-		sb.append("from org.olat.properties.Property as p");
-		sb.append(" inner join fetch p.identity as ident where");
-		sb.append(" p.resourceTypeName = :restypename");
-		sb.append(" and p.resourceTypeId = :restypeid");
-		sb.append(" and ( p.name = '").append(ATTEMPTS);
-		sb.append("' or p.name = '").append(SCORE);
-		sb.append("' or p.name = '").append(PASSED);
-		sb.append("' or p.name = '").append(ASSESSMENT_ID);
-		sb.append("' or p.name = '").append(COMMENT);
-		sb.append("' or p.name = '").append(COACH_COMMENT);
-		sb.append("' )");
-		if (identity != null) {
-			sb.append(" and p.identity = :id");
+		sb.append("from org.olat.properties.Property as p")
+		  .append(" inner join fetch p.identity as ident ")
+		  .append(" inner join fetch ident.user as user ")
+		  .append(" where p.resourceTypeId = :restypeid and p.resourceTypeName = :restypename")
+		  .append(" and p.name in ('")
+		  .append(ATTEMPTS).append("','")
+		  .append(SCORE).append("','")
+		  .append(PASSED).append("','")
+		  .append(ASSESSMENT_ID).append("','")
+		  .append(COMMENT).append("','")
+		  .append(COACH_COMMENT)
+		  .append("')");
+		if (identities != null) {
+			sb.append(" and p.identity.key in (:id)");
 		}
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setString("restypename", course.getResourceableTypeName());
-		query.setLong("restypeid", course.getResourceableId().longValue());
-		if (identity != null) {
-			query.setEntity("id", identity);
+		TypedQuery<Property> query = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Property.class)
+				.setParameter("restypename", course.getResourceableTypeName())
+				.setParameter("restypeid", course.getResourceableId());
+		if (identities != null) {
+			query.setParameter("id", PersistenceHelper.toKeys(identities));
 		}
-		List<Property> properties = query.list();
-		return properties;		
+		return query.getResultList();	
 	}
 	
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#preloadCache(org.olat.core.id.Identity)
 	 */
+	@Override
 	public void preloadCache(Identity identity) {
 		// triggers loading of data of the given user.
-		getOrLoadScorePassedAttemptsMap(identity, false);
+		getOrLoadScorePassedAttemptsMap(identity, null, false);
+	}
+
+	@Override
+	public void preloadCache(List<Identity> identities) {
+		int count = 0;
+		int batch = 200;
+
+		Map<Identity, List<Property>> map = new HashMap<Identity, List<Property>>(201); 
+		do {
+			int toIndex = Math.min(count + batch, identities.size());
+			List<Identity> toLoad = identities.subList(count, toIndex);
+			List<Property> allProperties = loadPropertiesFor(toLoad);
+			
+			map.clear();
+			for(Property prop:allProperties) {
+				if(!map.containsKey(prop.getIdentity())) {
+					map.put(prop.getIdentity(), new ArrayList<Property>());
+				}
+				map.get(prop.getIdentity()).add(prop);
+			}
+			
+			for(Identity id:toLoad) {
+				List<Property> props = map.get(id);
+				if(props == null) {
+					props = new ArrayList<Property>(1);
+				}
+				getOrLoadScorePassedAttemptsMap(id, props, false);
+			}
+			count += batch;
+		} while(count < identities.size());
 	}
 	
 	/**
@@ -197,44 +234,48 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * @param notify if true, then the
 	 * @return a Map containing nodeident+"_"+ e.g. PASSED as key, Boolean (for PASSED), Float (for SCORE), or Integer (for ATTEMPTS) as values
 	 */
-	private Map<String, Serializable> getOrLoadScorePassedAttemptsMap(Identity identity, boolean prepareForNewData) {
-		CacheWrapper cw = getCacheWrapperFor(identity);
-		synchronized(cw) {  // o_clusterOK by:fj : we sync on the cache to protect access within the monitor "one user in a course".
+	private Map<String, Serializable> getOrLoadScorePassedAttemptsMap(Identity identity, List<Property> properties, boolean prepareForNewData) {
+
+		synchronized(courseCache) {  // o_clusterOK by:fj : we sync on the cache to protect access within the monitor "one user in a course".
 			// a user is only active on one node at the same time.
-			Map<String, Serializable> m = (Map<String, Serializable>) cw.get(FULLUSERSET);
+			HashMap<String, Serializable> m = courseCache.get(identity.getKey());
 			if (m == null) {
 				// cache entry (=all data of the given identity in this course) has expired or has never been stored yet into the cache.
 				// or has been invalidated (in cluster mode when puts occurred from an other node for the same cache)
 				m = new HashMap<String, Serializable>();
 				// load data
-				List<Property> properties = loadPropertiesFor(identity);
-				for (Property property:properties) {
+				List<Property> loadedProperties = properties == null ? loadPropertiesFor(Collections.singletonList(identity)) : properties;
+				for (Property property:loadedProperties) {
 					addPropertyToCache(m, property);
 				}
+				
+				//If property not found, prefill with default value.
+				if(!m.containsKey(ATTEMPTS)) {
+					m.put(ATTEMPTS, INTEGER_ZERO);
+				}
+				if(!m.containsKey(SCORE)) {
+					m.put(SCORE, FLOAT_ZERO);
+				}
+				if(!m.containsKey(LAST_MODIFIED)) {
+					m.put(LAST_MODIFIED, null);
+				}
+				
 				// we use a putSilent here (no invalidation notifications to other cluster nodes), since
 				// we did not generate new data, but simply asked to reload it. 
 				if (prepareForNewData) {
-					cw.update(FULLUSERSET, (Serializable) m);
+					courseCache.update(identity.getKey(), m);
 				} else {
-					cw.put(FULLUSERSET, (Serializable) m);
+					courseCache.put(identity.getKey(), m);
 				}
 			} else {
 				// still in cache. 
 				if (prepareForNewData) { // but we need to notify that data has changed: we reput the data into the cache - a little hacky yes
-					cw.update(FULLUSERSET, (Serializable) m);
+					courseCache.update(identity.getKey(), m);
 				}
 			}
 			return m;
 		}
 	}
-	
-	private CacheWrapper getCacheWrapperFor(Identity identity) {
-		// the ores is only for within the cache
-		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck("Identity", identity.getKey());
-		CacheWrapper cw = courseCache.getOrCreateChildCacheWrapper(ores);
-		return cw;
-	}
-	
 	
 	// package local for perf. reasons, threadsafe.
 	/**
@@ -246,7 +287,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 */
 	void putPropertyIntoCache(Identity identity, Property property) { 
 		// load the data, and indicate it to reput into the cache so that the cache knows it is something new.
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, true);
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, true);
 		addPropertyToCache(m, property);		
 	}
 	
@@ -257,7 +298,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 */
 	void removePropertyFromCache(Identity identity, Property property) { 
 		// load the data, and indicate it to reput into the cache so that the cache knows it is something new.
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, true);
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, true);
 		this.removePropertyFromCache(m, property);
 	}
 
@@ -573,7 +614,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}
 		
 		String cacheKey = getCacheKey(courseNode, SCORE);
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, false);		
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, false);		
 		synchronized(m) {//o_clusterOK by:fj is per vm only
 			Float result = (Float) m.get(cacheKey);
 			return result;
@@ -591,7 +632,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}
 		
 		String cacheKey = getCacheKey(courseNode, PASSED);
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, false);		
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, false);		
 		synchronized(m) {//o_clusterOK by:fj is per vm only
 			Boolean result = (Boolean) m.get(cacheKey);
 			return result;
@@ -609,7 +650,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}
 		
 		String cacheKey = getCacheKey(courseNode, ATTEMPTS);
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, false);		
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, false);		
 		synchronized(m) {//o_clusterOK by:fj is per vm only
 			Integer result = (Integer) m.get(cacheKey);
 			// see javadoc of org.olat.course.assessment.AssessmentManager#getNodeAttempts
@@ -627,7 +668,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}
 				
 		String cacheKey = getCacheKey(courseNode, COMMENT);
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, false);		
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, false);		
 		synchronized(m) {//o_clusterOK by:fj is per vm only
 			String result = (String) m.get(cacheKey);			
 			return result;
@@ -644,7 +685,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}
 				
 		String cacheKey = getCacheKey(courseNode, COACH_COMMENT);
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, false);		
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, false);		
 		synchronized(m) {//o_clusterOK by:fj is per vm only
 			String result = (String) m.get(cacheKey);			
 			return result;
@@ -761,7 +802,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}
 				
 		String cacheKey = getCacheKey(courseNode, ASSESSMENT_ID);
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, false);		
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, false);		
 		synchronized(m) {//o_clusterOK by:fj is per vm only
 			Long result = (Long) m.get(cacheKey);			
 			return result;
@@ -775,7 +816,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}
 		
 		String cacheKey = getCacheKey(courseNode, LAST_MODIFIED);
-		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, false);		
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, null, false);		
 		synchronized(m) {//o_clusterOK by:fj is per vm only
 			Long lastModified = (Long) m.get(cacheKey);
 			if(lastModified != null) {

@@ -32,13 +32,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.LucenePackage;
 import org.apache.lucene.util.Version;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.search.OlatDocument;
@@ -51,14 +51,14 @@ import org.olat.search.service.SearchResourceContext;
  * Controls the hole generation of a full-index. Runs in own thread.
  * @author Christian Guretzki
  */
-public class OlatFullIndexer implements Runnable {
+public class OlatFullIndexer {
 	
 	private OLog log = Tracing.createLoggerFor(OlatFullIndexer.class);
 	
 	/* TODO:chg: define merge-factor in olat-config.*/
 	private static final int INDEX_MERGE_FACTOR = 1000;
 
-	private static final int MAX_SIZE_QUEUE = 10000;
+	private static final int MAX_SIZE_QUEUE = 500;
 	private int numberIndexWriter = 5;
 
 	private String  tempIndexPath;
@@ -67,17 +67,10 @@ public class OlatFullIndexer implements Runnable {
 	 * Reference to indexer for done callback.
 	 */
 	private Index index;
-	
-	private Thread indexingThread = null;
-	
 	private IndexWriter indexWriter = null;
 	
 	/** Flag to stop indexing. */
 	private boolean stopIndexing;
-
-
-  /** When restartIndexingWhenFinished is true, the restart interval in ms can be set. */
-	private long restartInterval;
   /** When restartIndexingWhenFinished is true, the restart interval in ms can be set. */
 	private long indexInterval = 500;
 	
@@ -116,7 +109,6 @@ public class OlatFullIndexer implements Runnable {
     this.index = index;
     this.mainIndexer = mainIndexer;
     tempIndexPath        = searchModuleConfig.getFullTempIndexPath();
-    restartInterval      = searchModuleConfig.getRestartInterval();
     indexInterval        = searchModuleConfig.getIndexInterval();
     numberIndexWriter    = searchModuleConfig.getNumberIndexWriter();
     documentsPerInterval = searchModuleConfig.getDocumentsPerInterval();
@@ -133,19 +125,11 @@ public class OlatFullIndexer implements Runnable {
 	 */
 	public void startIndexing() {
     //	 Start updateThread
-		if ( (indexingThread == null) || !indexingThread.isAlive()) {
-			if (stopIndexing) {
-				log.info("start full indexing thread...");
-				indexingThread = new Thread(this, "FullIndexer");
-				stopIndexing = false;
-				resetDocumentCounters();
-		    // Set to lowest priority
-		    indexingThread.setPriority(Thread.MIN_PRIORITY);
-		    indexingThread.setDaemon(true);
-				indexingThread.start();
-			}
-		} else {
-			log.debug("indexing allready running");
+		if (stopIndexing) {
+			log.info("start full indexing thread...");
+			stopIndexing = false;
+			resetDocumentCounters();
+			run();
 		}
 	}
 
@@ -153,11 +137,8 @@ public class OlatFullIndexer implements Runnable {
 	 * Stop full indexer thread asynchron.
 	 */
 	public void stopIndexing() {
-		if ( (indexingThread != null) && indexingThread.isAlive()) {
-			stopIndexing = true;
-			indexingThread.interrupt();
-			if (log.isDebug()) log.debug("stop current indexing when");
-		}
+		stopIndexing = true;
+		if (log.isDebug()) log.debug("stop current indexing when");
 	}
 
 	/**
@@ -262,41 +243,30 @@ public class OlatFullIndexer implements Runnable {
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
-		boolean runAgain = true;
 		try {
 		  //TODO: Workround : does not start immediately
 			Thread.sleep(10000);
-			while (runAgain && !this.stopIndexing) {
-				log.info("full indexing starts... Lucene-version:" + LucenePackage.get().getImplementationVersion());
-				fullIndexerStatus.indexingStarted();
-				doIndex();
-				index.indexingIsDone();
-				fullIndexerStatus.indexingFinished();
-				log.info("full indexing done in " + fullIndexerStatus.getIndexingTime() + "ms");
-				
-				//OLAT-5630 - dump more infos about the indexer run - for analysis later
-				FullIndexerStatus status = getStatus();
-				log.info("full indexing summary: started:           "+status.getFullIndexStartedAt());
-				log.info("full indexing summary: counter:           "+status.getDocumentCount());
-				log.info("full indexing summary: index.per.minute:  "+status.getIndexPerMinute());
-				log.info("full indexing summary: finished:          "+status.getLastFullIndexTime());
-				log.info("full indexing summary: time:              "+status.getIndexingTime()+" ms");
-				log.info("full indexing summary: size:              "+status.getIndexSize());
-				
-				log.info("full indexing summary: document counters: "+status.getDocumentCounters());
-				log.info("full indexing summary: file type counters:"+status.getFileTypeCounters());
-				log.info("full indexing summary: excluded counter:  "+status.getExcludedDocumentCount());
 
-				if (restartInterval == 0) {
-					log.debug("do not run again");
-					runAgain = false;
-				} else {
-					if (log.isDebug()) log.debug("Indexing sleep=" + restartInterval + "ms");
-					fullIndexerStatus.setStatus(FullIndexerStatus.STATUS_SLEEPING);
-					Thread.sleep(restartInterval);
-					if (log.isDebug()) log.debug("Restart indexing");
-				}
-			}
+			log.info("full indexing starts... Lucene-version:" + LucenePackage.get().getImplementationVersion());
+			fullIndexerStatus.indexingStarted();
+			doIndex();
+			index.indexingIsDone();
+			fullIndexerStatus.indexingFinished();
+			log.info("full indexing done in " + fullIndexerStatus.getIndexingTime() + "ms");
+			
+			//OLAT-5630 - dump more infos about the indexer run - for analysis later
+			FullIndexerStatus status = getStatus();
+			log.info("full indexing summary: started:           "+status.getFullIndexStartedAt());
+			log.info("full indexing summary: counter:           "+status.getDocumentCount());
+			log.info("full indexing summary: index.per.minute:  "+status.getIndexPerMinute());
+			log.info("full indexing summary: finished:          "+status.getLastFullIndexTime());
+			log.info("full indexing summary: time:              "+status.getIndexingTime()+" ms");
+			log.info("full indexing summary: size:              "+status.getIndexSize());
+			
+			log.info("full indexing summary: document counters: "+status.getDocumentCounters());
+			log.info("full indexing summary: file type counters:"+status.getFileTypeCounters());
+			log.info("full indexing summary: excluded counter:  "+status.getExcludedDocumentCount());
+
 		} catch(InterruptedException iex) {
 			log.info("FullIndexer was interrupted ;" + iex.getMessage());
 		} catch(Throwable ex) {
@@ -308,13 +278,11 @@ public class OlatFullIndexer implements Runnable {
 		}
 		fullIndexerStatus.setStatus(FullIndexerStatus.STATUS_STOPPED);
 		stopIndexing = true;
-		indexingThread = null;
 		try {
 			log.info("quit indexing run.");
 		} catch (NullPointerException nex) {
 			// no logging available (shut down)=> do nothing
 		}
-		
 	}
 	
 	/**
@@ -331,7 +299,7 @@ public class OlatFullIndexer implements Runnable {
 				Thread.sleep(indexInterval);
 			} else {
 				// do not sleep, check for stopping indexing
-				if (this.stopIndexing) {
+				if (stopIndexing) {
 					throw new InterruptedException("Do stop indexing at element=" + indexWriter.maxDoc());
 				}
 			}
@@ -349,7 +317,7 @@ public class OlatFullIndexer implements Runnable {
 				countIndexPerMinute();
 				if (log.isDebug()) log.debug("documentQueue.add size=" + documentQueue.size());
 	      // check for stopping indexing
-				if (this.stopIndexing) {
+				if (stopIndexing) {
 					throw new InterruptedException("Do stop indexing at element=" + indexWriter.maxDoc());
 				}
 			}

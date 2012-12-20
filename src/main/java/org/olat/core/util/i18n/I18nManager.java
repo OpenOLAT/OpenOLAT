@@ -1988,7 +1988,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public File createLanguageJarFile(Set<String> languageKeys, String fileName) {
 		// Create file olatdata temporary directory
-		File file = new File(WebappHelper.getUserDataRoot() + "/tmp/" + fileName);
+		File file = new File(WebappHelper.getTmpDir() + "/" + fileName);
 		file.getParentFile().mkdirs();
 
 		FileOutputStream stream = null;

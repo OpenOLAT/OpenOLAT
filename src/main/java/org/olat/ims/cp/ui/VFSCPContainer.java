@@ -71,7 +71,12 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 		cpMgm = (CPManagerImpl) CPManager.getInstance();
 		treeModel = cpMgm.getTreeDataModel(cp);
 	}
-	
+
+	@Override
+	public boolean exists() {
+		return true;
+	}
+
 	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		if(this == vfsItem) {

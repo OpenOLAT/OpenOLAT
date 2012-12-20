@@ -26,11 +26,12 @@
 package org.olat.admin.cache;
 
 import java.util.List;
+import java.util.Set;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheException;
-import net.sf.ehcache.CacheManager;
-
+import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.stats.Stats;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -47,9 +48,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.Cacher;
+import org.olat.core.util.coordinate.CoordinatorManager;
 
 /**
  * Description:<BR/>
@@ -67,11 +69,8 @@ public class AllCachesController extends BasicController {
 	private VelocityContainer myContent;
 	private TableController tableCtr;
 	private TableDataModel<String> tdm;
-	private CacheManager cm;
-	private final String[] cnames;
+	private EmbeddedCacheManager cm;
 	private DialogBoxController dc;
-	
-	
 	
 	/**
 	 * @param ureq
@@ -87,35 +86,41 @@ public class AllCachesController extends BasicController {
 		tableConfig.setDownloadOffered(true);
 		
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());		
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.name", 0, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.disk", 1, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.hitcnt", 2, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.mcexp", 3, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.mcnotfound", 4, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.quickcount", 5, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.tti", 6, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.ttl", 7, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.maxElements", 8, null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.name", 0, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.disk", 1, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.hitcnt", 2, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.mcexp", 3, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.mcnotfound", 4, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.quickcount", 5, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.tti", 6, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.ttl", 7, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.maxElements", 8, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.clustered", 9, null, getLocale()));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("empty", "cache.empty", translate("action.choose")));
 		listenTo(tableCtr);
 		myContent.contextPut("title", translate("caches.title"));
 		
 		// eh cache
+		String[] cnames;
 		try {
-			cm = CacheManager.getInstance();
-		} catch (CacheException e) {
-			throw new AssertException("could not get cache", e);
+			CoordinatorManager coordinator = CoreSpringFactory.getImpl(CoordinatorManager.class);
+			Cacher cacher = coordinator.getCoordinator().getCacher();
+			
+			cm = cacher.getCacheContainer();
+			Set<String> cacheNameSet = cm.getCacheNames();	
+			cnames = cacheNameSet.toArray(new String[cacheNameSet.size()]);		
+		} catch (Exception e) {
+			log.error("", e);
+			cnames = new String[0];
 		}
-		cnames = cm.getCacheNames();		
-		tdm = new AllCachesTableDataModel(cnames);
+		
+		tdm = new AllCachesTableDataModel(cnames, cm);
 		tableCtr.setTableDataModel(tdm);
 		myContent.put("cachetable", tableCtr.getInitialComponent());
 				
 		//returned panel is not needed here, because this controller only shows content with the index.html velocity page
 		putInitialPanel(myContent);
-		
 	}
-
 	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
@@ -130,34 +135,24 @@ public class AllCachesController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				if (actionid.equals("empty")) {
-					int rowid = te.getRowId();
-					String cname = cnames[rowid];
-					Cache toEmpty = cm.getCache(cname);
-					
-					//provide dc as argument, this ensures that dc is disposed before newly created
+					Object cname = tableCtr.getTableDataModel().getObject(te.getRowId());
 					dc = activateYesNoDialog(ureq, null, translate("confirm.emptycache"), dc);
-					//remember Cache to be emptied if yes is chosen
-					dc.setUserObject(toEmpty);
-					//activateYesNoDialog means that this controller listens to it, and dialog is shown on screen.
-					//nothing further to do here!
-					return;
+					dc.setUserObject(cname);
 				}
 			}
-		}
-		else if (source == dc) {
+		} else if (source == dc) {
 			//the dialogbox is already removed from the gui stack - do not use getWindowControl().pop(); to remove dialogbox
 			if (DialogBoxUIFactory.isYesEvent(event)) { // ok
 				String cacheName = null;
 				try {
 					// delete cache
-					Cache c = (Cache)dc.getUserObject();
-					cacheName = c.getName();
-					c.removeAll();
+					cacheName = (String)dc.getUserObject();
+					cm.getCache(cacheName).clear();
 				} catch (IllegalStateException e) {
 					// ignore
 					log.error("Cannot remove Cache:"+cacheName, e);
 				}
-				// update tablemodel
+				
 			}//else no was clicked or dialog box was cancelled (close icon clicked)
 		}
 	}
@@ -166,58 +161,58 @@ public class AllCachesController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		//tableCtr is registerd with listenTo and gets disposed in BasicController
-		//dialogbox dc gets disposed by BasicController
+		//
 	}
 
-}
-
-class AllCachesTableDataModel implements TableDataModel<String> {
-  private String[] cnames;
-	private CacheManager cacheManager;
-  
-  protected AllCachesTableDataModel(String[] cnames) {
-  	this.cnames = cnames;
-  	this.cacheManager = CacheManager.getInstance();
-  }
+	private static class AllCachesTableDataModel implements TableDataModel<String> {
+	  private String[] cnames;
+		private EmbeddedCacheManager cacheManager;
+	  
+	  protected AllCachesTableDataModel(String[] cnames, EmbeddedCacheManager cacheManager) {
+	  	this.cnames = cnames;
+	  	this.cacheManager = cacheManager;
+	  }
+		
+		@Override
+		public String getObject(int row) {
+			return cnames[row];
+		}
 	
-	@Override
-	public String getObject(int row) {
-		return cnames[row];
-	}
-
-	@Override
-	public void setObjects(List<String> objects) {
-		cnames = objects.toArray(cnames);
-	}
-
-	@Override
-	public AllCachesTableDataModel createCopyWithEmptyList() {
-		return new AllCachesTableDataModel(new String[0]);
-	}
-
-	public int getColumnCount() {
-		return 9;
-	}
-
-	public int getRowCount() {
-		return cnames.length;
-	}
-
-	public Object getValueAt(int row, int col) {
-		String cname = cnames[row];
-		Cache c = cacheManager.getCache(cname);
-		switch(col) {
-			case 0: return cname;
-			case 1: return c.getCacheConfiguration().isDiskPersistent()? Boolean.TRUE:Boolean.FALSE;
-			case 2: return new Long(c.getLiveCacheStatistics().getCacheHitCount());
-			case 3: return new Long(c.getLiveCacheStatistics().getCacheMissCountExpired());
-			case 4: return new Long(c.getLiveCacheStatistics().getCacheMissCount());
-			case 5: return new Long(c.getKeysNoDuplicateCheck().size());
-			case 6: return new Long(c.getCacheConfiguration().getTimeToIdleSeconds());
-			case 7: return new Long(c.getCacheConfiguration().getTimeToLiveSeconds());
-			case 8: return new Long(c.getCacheConfiguration().getMaxElementsInMemory());
-			default: throw new AssertException("nonexisting column:"+col);
+		@Override
+		public void setObjects(List<String> objects) {
+			cnames = objects.toArray(cnames);
+		}
+	
+		@Override
+		public AllCachesTableDataModel createCopyWithEmptyList() {
+			return new AllCachesTableDataModel(new String[0], cacheManager);
+		}
+	
+		public int getColumnCount() {
+			return 9;
+		}
+	
+		public int getRowCount() {
+			return cnames.length;
+		}
+	
+		public Object getValueAt(int row, int col) {
+			String cname = cnames[row];
+			Cache<?,?> c = cacheManager.getCache(cname);
+			Stats stats = c.getAdvancedCache().getStats();
+			switch(col) {
+				case 0: return cname;
+				case 1: return c.getCacheConfiguration().storeAsBinary().enabled() ? Boolean.TRUE:Boolean.FALSE;
+				case 2: return new Long(stats.getHits());
+				case 3: return new Long(stats.getMisses());
+				case 4: return "???";
+				case 5: return new Long(stats.getTotalNumberOfEntries());
+				case 6: return new Long(c.getCacheConfiguration().expiration().maxIdle());
+				case 7: return new Long(c.getCacheConfiguration().expiration().lifespan());
+				case 8: return new Integer(c.getCacheConfiguration().eviction().maxEntries());
+				case 9: return c.getCacheConfiguration().clustering().cacheModeString();
+				default: return "";
+			}
 		}
 	}
 }

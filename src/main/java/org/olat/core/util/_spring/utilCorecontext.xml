@@ -41,6 +41,7 @@
 		<property name="arguments">
 			<value>
 				session.timeout=${session.timeout}
+				session.timeout.authenticated=${session.timeout.authenticated}
 			</value>
 		</property>
 	</bean>

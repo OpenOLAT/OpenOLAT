@@ -19,6 +19,7 @@
  */
 package org.olat.instantMessaging;
 
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
 
 /**
@@ -35,7 +36,33 @@ public class CloseInstantMessagingEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = -2290953538061783875L;
 
+	private Long chatId;
+	private OLATResourceable ores;
+	
 	public CloseInstantMessagingEvent() {
 		super("closeim");
+	}
+	
+	public CloseInstantMessagingEvent(Long chatId) {
+		super("closeim");
+		this.chatId = chatId;
+	}
+	
+	public CloseInstantMessagingEvent(OLATResourceable ores) {
+		super("closeim");
+		this.ores = ores;
+		this.chatId = ores.getResourceableId();
+	}
+
+	public Long getChatId() {
+		return chatId;
+	}
+
+	public void setChatId(Long chatId) {
+		this.chatId = chatId;
+	}
+	
+	public OLATResourceable getOres() {
+		return ores;
 	}
 }

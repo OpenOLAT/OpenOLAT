@@ -85,6 +85,8 @@ public interface OpenMeetingsManager {
 	public OpenMeetingsRoom getRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier)
 	throws OpenMeetingsException;
 	
+	public OpenMeetingsRoom getLocalRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier);
+	
 	public OpenMeetingsRoom addRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room);
 	
 	public OpenMeetingsRoom updateRoom(BusinessGroup group, OLATResourceable ores, String subIdentifier, OpenMeetingsRoom room);
@@ -118,6 +120,13 @@ public interface OpenMeetingsManager {
 	public String getRecordingURL(OpenMeetingsRecording recording)
 	throws OpenMeetingsException;
 	
+	/**
+	 * Delete a recording
+	 * @param recording
+	 * @return
+	 */
+	boolean deleteRecording(OpenMeetingsRecording recording);
+
 	/**
 	 * A UUID mapped to the identity is saved in a cache
 	 * @param token

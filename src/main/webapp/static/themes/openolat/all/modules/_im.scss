@@ -29,17 +29,14 @@
 
 div.o_groupchat_roster {
 		margin: 0;
-		ul { list-style-type: disc;margin: 0; padding: 0;}
+		ul { list-style-type: none;margin: 0; padding: 0;}
 		li { font-size: 95%}
 }
 
 /* im icons */
 .o_instantmessaging_available_icon { background-image: url(../openolat/images/im/gstar.png); }
-.o_instantmessaging_chat_icon {	background-image: url(../openolat/images/im/gstar_chat.png); }
-.o_instantmessaging_away_icon {	background-image: url(../openolat/images/im/gstar_clock.png); }
 .o_instantmessaging_dnd_icon { background-image: url(../openolat/images/im/gstar_cross.png); }
 .o_instantmessaging_unavailable_icon { background-image: url(../openolat/images/im/grstar.png); }
-.o_instantmessaging_xa_icon { background-image: url(../openolat/images/im/grstar_clock.png); }
 .o_instantmessaging_offline_icon { background-image: url(../openolat/images/im/grstar.png);}
 .o_instantmessaging_new_msg_icon { background-image: url(../openolat/images/im/new_message.png);}
 .o_instantmessaging_error_icon { background-image: url(../openolat/images/cross.png);}	

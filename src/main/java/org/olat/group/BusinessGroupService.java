@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
@@ -40,6 +41,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 
 /**
  * 
@@ -332,7 +334,8 @@ public interface BusinessGroupService {
 	 * @param flags
 	 * @return
 	 */
-	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group);
+	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, Roles ureqRoles, List<Identity> addIdentities,
+			BusinessGroup group, MailPackage mailing);
 	
 	/**
 	 * Remove a list of users from a group as owner and does all the magic that needs to be
@@ -378,10 +381,13 @@ public interface BusinessGroupService {
 	
 	/**
 	 * 
-	 * @param identity
+	 * @param ureqIdentity
+	 * @param reservationOwner
 	 * @param resource
 	 */
-	public void acceptPendingParticipation(Identity ureqIdentity, Identity identity, OLATResource resource);
+	public void acceptPendingParticipation(Identity ureqIdentity, Identity reservationOwner, OLATResource resource);
+	
+	public void cancelPendingParticipation(Identity ureqIdentity, ResourceReservation reservation);
 	
 	/**
 	 * Remove a list of users from a group as participant and does all the magic that needs
@@ -459,6 +465,29 @@ public interface BusinessGroupService {
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
 	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
+	
+	/**
+	 * Count the duplicates
+	 * @param entry
+	 * @param coaches
+	 * @param participants
+	 */
+	public int countDuplicateMembers(RepositoryEntry entry, boolean coaches, boolean participants);
+	
+	/**
+	 * Remove the members of the repository entry which are already in a business group
+	 * linked to it.
+	 */
+	public void dedupMembers(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants);
+	
+	/**
+	 * Deduplicate all the courses in the repository
+	 * @param ureqIdentity
+	 * @param coaches
+	 * @param participants
+	 * @param progressDelegate
+	 */
+	public void dedupMembers(Identity ureqIdentity, boolean coaches, boolean participants, ProgressDelegate progressDelegate);
 
 	
 	//security

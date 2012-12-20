@@ -31,7 +31,7 @@ import org.olat.core.util.event.MultiUserEvent;
  * @author Christian Guretzki
  */
 public class FileSystemTestEvent extends MultiUserEvent {
-	
+	private static final long serialVersionUID = -2883321872261399010L;
 	protected static final String COMMAND_FILE_WRITTEN = "cmd_file_written";
 	protected static final String COMMAND_FILE_CHECKED = "cmd_file_checked";
 	
@@ -82,18 +82,11 @@ public class FileSystemTestEvent extends MultiUserEvent {
 		return fileCheckOk;
 	}
 
-
 	public long getDuration() {
 		return duration;
 	}
 
-
 	public boolean isCheckWithRetriesEnabled() {
 		return isCheckWithRetriesEnabled;
 	}
-
-	
-	
-
-	
 }

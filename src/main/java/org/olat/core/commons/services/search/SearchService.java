@@ -28,7 +28,6 @@ package org.olat.core.commons.services.search;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.ParseException;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -77,18 +76,6 @@ public interface SearchService {
 	 * @return
 	 */
 	public SearchServiceStatus getStatus();
-
-	/**
-	 * Add a document to existing index.
-	 * @param document  New document.
-	 */
-	public void addToIndex(Document document);
-
-	/**
-	 * Delete a document in existing index.
-	 * @param document  Delete this document. 
-	 */
-	public void deleteFromIndex(Document document);
 	
 	/**
 	 * Get index-interval of running system

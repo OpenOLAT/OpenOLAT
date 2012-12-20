@@ -40,6 +40,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -71,6 +72,7 @@ public class RestApiLoginFilter implements Filter {
 	private static final String BASIC_AUTH_REALM = "OLAT Rest API";
 	
 	private static List<String> openUrls;
+	private static List<String> alwaysEnabledUrls;
 	private static String LOGIN_URL;
 	
 	/**
@@ -98,8 +100,9 @@ public class RestApiLoginFilter implements Filter {
 				HttpServletRequest httpRequest = (HttpServletRequest)request;
 				HttpServletResponse httpResponse = (HttpServletResponse)response;
 				
+				String requestURI = httpRequest.getRequestURI();
 				RestModule restModule = (RestModule)CoreSpringFactory.getBean("restModule");
-				if(!restModule.isEnabled()) {
+				if(!restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
 					httpResponse.sendError(403);
 					return;
 				}
@@ -114,7 +117,6 @@ public class RestApiLoginFilter implements Filter {
 					//use the available session
 					followSession(httpRequest, httpResponse, chain);
 				} else {
-					String requestURI = httpRequest.getRequestURI();
 					if(requestURI.startsWith(getLoginUrl())) {
 						followForAuthentication(requestURI, uress, httpRequest, httpResponse, chain);
 					} else if(isRequestURIInOpenSpace(requestURI)) {
@@ -166,7 +168,7 @@ public class RestApiLoginFilter implements Filter {
 						UserRequest ureq = null;
 						try{
 							//upon creation URL is checked for
-							ureq = new UserRequest(requestURI, request, response);
+							ureq = new UserRequestImpl(requestURI, request, response);
 						} catch(NumberFormatException nfe) {
 							return false;
 						}
@@ -209,6 +211,15 @@ public class RestApiLoginFilter implements Filter {
 		return false;
 	}
 	
+	private boolean isRequestURIAlwaysEnabled(String requestURI) {
+		for(String openURI : getAlwaysEnabledURIs()) {
+			if(requestURI.startsWith(openURI)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private void followForAuthentication(String requestURI, UserSession uress, HttpServletRequest request, HttpServletResponse response, FilterChain chain) 
 	throws IOException, ServletException {
 	//create a session for login without security check
@@ -218,7 +229,7 @@ public class RestApiLoginFilter implements Filter {
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for 
-			ureq = new UserRequest(requestURI, request, response);
+			ureq = new UserRequestImpl(requestURI, request, response);
 		} catch(NumberFormatException nfe) {
 			response.sendError(401);
 			return;
@@ -249,7 +260,7 @@ public class RestApiLoginFilter implements Filter {
 		try{
 			//upon creation URL is checked for
 			String requestURI = request.getRequestURI();
-			ureq = new UserRequest(requestURI, request, response);
+			ureq = new UserRequestImpl(requestURI, request, response);
 		} catch(NumberFormatException nfe) {
 			response.sendError(401);
 			return;
@@ -270,7 +281,7 @@ public class RestApiLoginFilter implements Filter {
 			try{
 				//upon creation URL is checked for
 				String requestURI = request.getRequestURI();
-				ureq = new UserRequest(requestURI, request, response);
+				ureq = new UserRequestImpl(requestURI, request, response);
 			} catch(Exception e) {
 				response.sendError(500);
 				return;
@@ -297,7 +308,7 @@ public class RestApiLoginFilter implements Filter {
 			try{
 				//upon creation URL is checked for
 				String requestURI = request.getRequestURI();
-				ureq = new UserRequest(requestURI, request, response);
+				ureq = new UserRequestImpl(requestURI, request, response);
 			} catch(NumberFormatException nfe) {
 				response.sendError(401);
 				return;
@@ -317,6 +328,19 @@ public class RestApiLoginFilter implements Filter {
 			LOGIN_URL = context + "/auth";
 		}
 		return LOGIN_URL;
+	}
+	
+	private List<String> getAlwaysEnabledURIs() {
+		if(alwaysEnabledUrls == null) {
+			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
+			alwaysEnabledUrls = new ArrayList<String>();
+			alwaysEnabledUrls.add(context + "/i18n");
+			alwaysEnabledUrls.add(context + "/api");
+			alwaysEnabledUrls.add(context + "/ping");
+			alwaysEnabledUrls.add(context + "/openmeetings");
+			alwaysEnabledUrls.add(context + "/system");
+		}
+		return alwaysEnabledUrls;
 	}
 	
 	private List<String> getOpenURIs() {

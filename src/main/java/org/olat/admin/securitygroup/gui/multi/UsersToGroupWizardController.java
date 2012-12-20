@@ -34,7 +34,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
-import org.olat.core.commons.persistence.SyncHelper;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -173,13 +173,13 @@ public class UsersToGroupWizardController extends WizardController {
 							isanonymous.add(username);
 						} else {
 							// check if already in group
-							boolean inGroup = SyncHelper.containsPersistable(existIdents, ident);
+							boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
 							if (inGroup) {
 								// added to warning: already in group
 								alreadyin.add(ident.getName());
 							} else {
 								// ok to add -> preview (but filter duplicate entries)
-								if (!SyncHelper.containsPersistable(oks, ident)) {
+								if (!PersistenceHelper.containsPersistable(oks, ident)) {
 									oks.add(ident);
 								}
 							}

@@ -263,7 +263,6 @@ public class EPTOCController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
@@ -361,6 +360,13 @@ public class EPTOCController extends BasicController {
 					} else {
 						moveEvent.setResult(false, translate("move.error.title"), translate("move.artefact.error.move"));	
 					}						
+				} else if(oldParent.equals(newParent)) {
+					int position = moveEvent.getPosition();
+					reorder(nodeId, newParent, position);
+					moveEvent.setResult(true, null, null);
+					// refresh the view
+					EPMoveEvent movedEvent = new EPMoveEvent(newParent, nodeId);
+					fireEvent(ureq, movedEvent);
 				} else {
 					moveEvent.setResult(false, translate("move.error.title"), translate("move.artefact.error.target"));
 				}
@@ -448,6 +454,27 @@ public class EPTOCController extends BasicController {
 			return false;
 		}
 		return ePFMgr.moveArtefactFromStructToStruct(artefact, oldParStruct, newParStruct);
+	}
+	
+	// really do the move!
+	private boolean reorder(String artefactId, String parentId, int position){
+		PortfolioStructure parStruct;
+		AbstractArtefact artefact;
+		try {
+			artefact = ePFMgr.loadArtefactByKey(new Long(artefactId));
+			parStruct = ePFMgr.loadPortfolioStructureByKey(new Long(parentId));
+			
+			//translate in the position in the list of artefacts
+			int numOfChildren = ePFMgr.countStructureChildren(parStruct);
+			position = position - numOfChildren;
+			if(position < 0) {
+				position = 0;
+			}
+		} catch (Exception e) {
+			logError("could not load artefact, old and new parent", e);
+			return false;
+		}
+		return ePFMgr.moveArtefactInStruct(artefact, parStruct, position);
 	}
 	
 	/**

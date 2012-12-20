@@ -4,8 +4,6 @@
 	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.resource.lock.pessimistic.PLockImpl" table="o_plock">
-  		
-	<!-- <cache usage="read-write" />-->
 
 	<id name="key" type="long" column="plock_id" unsaved-value="null">
 		<generator class="hilo"/>

@@ -1088,6 +1088,8 @@ create table o_ac_reservation (
    creationdate date,
    lastmodified date,
    version number(20) not null,
+   expirationdate date,
+   reservationtype varchar(32),
    fk_identity number(20) not null,
    fk_resource number(20) not null,
    primary key (reservation_id)
@@ -1273,6 +1275,24 @@ create table o_mark (
   businesspath varchar(2048 char),
   creator_id number(20) not null,
   primary key (mark_id)
+);
+
+--
+-- Table: o_om_room_reference
+--;
+
+create table o_om_room_reference (
+   id number(20) not null,
+   version number(20) not null,
+   lastmodified date,
+   creationdate date,
+   businessgroup number(20),
+   resourcetypename varchar(50),
+   resourcetypeid number(20),
+   ressubpath varchar(255),
+   roomId number(20),
+   config clob,
+   primary key (id)
 );
 
 --
@@ -1581,6 +1601,7 @@ create or replace view o_gp_business_v  as (
       gp.waitinglist_enabled as waitinglist_enabled,
       gp.autocloseranks_enabled as autocloseranks_enabled,
       (select count(part.id) from o_bs_membership part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
+      (select count(pending.reservation_id) from o_ac_reservation pending where pending.fk_resource = gp.fk_resource) as num_of_pendings,
       (select count(own.id) from o_bs_membership own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
       (case when gp.waitinglist_enabled = 1
          then 
@@ -1591,8 +1612,8 @@ create or replace view o_gp_business_v  as (
       (select count(offer.offer_id) from o_ac_offer offer 
          where offer.fk_resource_id = gp.fk_resource
          and offer.is_valid=1
-         and (offer.validfrom is null or offer.validfrom >= current_date)
-         and (offer.validto is null or offer.validto <= current_date)
+         and (offer.validfrom is null or offer.validfrom <= current_date)
+         and (offer.validto is null or offer.validto >= current_date)
       ) as num_of_valid_offers,
       (select count(offer.offer_id) from o_ac_offer offer 
          where offer.fk_resource_id = gp.fk_resource
@@ -1931,10 +1952,16 @@ create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
 alter table o_as_user_course_infos add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_user_course_infos add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 
+alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
+
 create index o_co_db_course_idx on o_co_db_entry (courseid);
 create index o_co_db_cat_idx on o_co_db_entry (category);
 create index o_co_db_name_idx on o_co_db_entry (name);
 alter table o_co_db_entry add constraint FKB60B1BA5F7E870XY foreign key (identity) references o_bs_identity;
+
+alter table o_om_room_reference  add constraint idx_omroom_to_bgroup foreign key (businessgroup) references o_gp_business (group_id);
+create index idx_omroom_residname on o_om_room_reference (resourcetypename,resourcetypeid);
 
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 

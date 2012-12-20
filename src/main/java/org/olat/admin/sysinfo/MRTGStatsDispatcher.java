@@ -203,16 +203,16 @@ public class MRTGStatsDispatcher implements Dispatcher {
 			result.append("\n0\n");
 			result.append(instanceId);
 		} else if (command.equals("imstats")) { // get Jabber info
-			if (InstantMessagingModule.isEnabled()) {
-				result.append(InstantMessagingModule.getAdapter().countConnectedUsers());
+			if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
+				result.append("0");
 				result.append("\n");
 				//result.append(InstantMessagingModule.getAdapter().countUsersRunningFlashClient());
 				result.append(0);
 				result.append("\n0\n");
-				result.append(instanceId);
+				result.append("-");
 			} else {
 				result.append("0\n0\n0\n");
-				result.append(instanceId);
+				result.append("-");
 			}
 		} else if (command.equals("debug")) { // get debug stats
 			// IMPORTANT: do not call too often, since .size() of a weakhashmap may be an expensive operation.

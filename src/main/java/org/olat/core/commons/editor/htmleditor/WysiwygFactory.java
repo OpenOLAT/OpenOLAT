@@ -29,7 +29,6 @@ package org.olat.core.commons.editor.htmleditor;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.activity.IUserActivityLogger;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -66,9 +65,9 @@ public class WysiwygFactory {
 	 */
 	public static HTMLEditorController createWysiwygController(
 			UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
-			String filePath, boolean editorCheckEnabled) {
+			String filePath, boolean editorCheckEnabled, boolean versions) {
 		return new HTMLEditorController(ureq, wControl, rootDir, filePath,
-				null, editorCheckEnabled);
+				null, editorCheckEnabled, versions);
 	}
 
 	/**
@@ -100,7 +99,7 @@ public class WysiwygFactory {
 			String relFilePath, boolean editorCheckEnabled,
 			CustomLinkTreeModel customLinkTreeModel) {
 		return new HTMLEditorController(ureq, wControl, baseContainer, relFilePath,
-				customLinkTreeModel, editorCheckEnabled);
+				customLinkTreeModel, editorCheckEnabled, true);
 	}
 
 	/**

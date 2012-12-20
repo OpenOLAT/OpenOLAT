@@ -58,7 +58,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.ui.BGControllerFactory;
-import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -280,13 +279,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent
 						.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, currBusinessGroup, null);
-				// rename the group also in the IM servers group list
-
-				if (InstantMessagingModule.isEnabled()) {
-					String groupID = InstantMessagingModule.getAdapter().createChatRoomString(currBusinessGroup);
-					InstantMessagingModule.getAdapter().renameRosterGroup(groupID, currBusinessGroup.getName());
-				}
-
 				// do logging
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
 			}

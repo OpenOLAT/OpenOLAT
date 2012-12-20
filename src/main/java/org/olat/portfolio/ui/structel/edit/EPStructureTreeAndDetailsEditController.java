@@ -85,7 +85,6 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		List<String> allStyles = portfolioModule.getAvailableMapStyles();

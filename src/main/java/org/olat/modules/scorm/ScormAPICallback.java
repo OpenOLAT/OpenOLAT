@@ -45,14 +45,14 @@ public interface ScormAPICallback {
 	 * @param olatSahsId
 	 * @param scoScores properties with key: scoId, value = rawscore 
 	 */
-	void lmsCommit(String olatSahsId, Properties scoScores);
+	void lmsCommit(String olatSahsId, Properties scoScores, Properties scoLessonStatus);
 	
 	// <OLATCE-289>
 	/**
 	 * @param olatSahsId
 	 * @param scoScores properties with key: scoId, value = rawscore 
 	 */
-	void lmsFinish(String olatSahsId, Properties scoProps);
+	void lmsFinish(String olatSahsId, Properties scoProps, Properties scoLessonStatus);
 	// </OLATCE-289>
 
 }

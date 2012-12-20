@@ -44,7 +44,7 @@ import org.olat.core.servlets.SecureWebdavServlet;
 import org.olat.core.servlets.WebDAVManager;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.auth.WebDAVAuthManager;
@@ -109,7 +109,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 		
 		if (timedSessionCache == null) {
 			synchronized (this) {
-				timedSessionCache = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(this.getClass(), "webdav");
+				timedSessionCache = coordinatorManager.getCoordinator().getCacher().getCache(WebDAVManager.class.getSimpleName(), "webdav");
 			}
 		}
 		
@@ -191,7 +191,7 @@ public class WebDAVManagerImpl extends WebDAVManager {
 					//usess.getIdentityEnvironment().setAuthProvider(OLATAuthenticationController.PROVIDER_OLAT);
 				
 					// set session info
-					SessionInfo sinfo = new SessionInfo(identity.getName(), request.getSession());
+					SessionInfo sinfo = new SessionInfo(identity.getKey(), identity.getName(), request.getSession());
 					User usr = identity.getUser();
 					sinfo.setFirstname(usr.getProperty(UserConstants.FIRSTNAME, null));
 					sinfo.setLastname(usr.getProperty(UserConstants.LASTNAME, null));

@@ -42,10 +42,10 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
+import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
-import org.olat.properties.Property;
+import org.olat.modules.openmeetings.model.OpenMeetingsRoomReference;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -87,8 +87,8 @@ public class OpenMeetingsAdminRoomsController extends BasicController {
 		
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("room.resource", OpenMeetingsRoomsDataModel.Column.resource.ordinal(), "resource", getLocale()));
 
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("infos", "table.action", translate("room.infos")));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.action", translate("delete")));
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("infos", "room.infos", translate("room.infos")));
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "delete", translate("delete")));
 		
 		tableCtr.setSortColumn(0, false);
 
@@ -139,18 +139,18 @@ public class OpenMeetingsAdminRoomsController extends BasicController {
 	}
 	
 	protected void openResource(UserRequest ureq, OpenMeetingsRoom room) {
-		Property prop = room.getProperty();
+		OpenMeetingsRoomReference prop = room.getReference();
 		if(prop != null) {
 			String url;
-			if(prop.getGrp() != null) {
-				url = "[BusinessGroup:" + prop.getGrp().getKey() + "]";
+			if(prop.getGroup() != null) {
+				url = "[BusinessGroup:" + prop.getGroup().getKey() + "]";
 			} else {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(prop.getResourceTypeName(), prop.getResourceTypeId());
 				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
 				if(re != null) {
 					url = "[RepositoryEntry:" + re.getKey() + "]";
-					if(StringHelper.containsNonWhitespace(prop.getName()) && "CourseModule".equals(ores.getResourceableTypeName())) {
-						url += "[CourseNode:" + prop.getName() + "]";
+					if(StringHelper.containsNonWhitespace(prop.getSubIdentifier()) && "CourseModule".equals(ores.getResourceableTypeName())) {
+						url += "[CourseNode:" + prop.getSubIdentifier() + "]";
 					}	
 				} else {
 					showWarning("resource.dont.exist");

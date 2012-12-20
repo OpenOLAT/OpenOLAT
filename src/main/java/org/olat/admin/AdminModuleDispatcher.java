@@ -66,12 +66,13 @@ public class AdminModuleDispatcher implements Dispatcher {
 	/** 
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, @SuppressWarnings("unused") String uriPrefix) {
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
 		String cmd = request.getParameter(PARAMETER_CMD);
 		if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE) || cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)) {
 			handleSetMaintenanceOrInfoMessage(request, response, cmd);
 		} else {
-			if (AdminModule.checkSessionAdminToken(request, response)) {
+			if (CoreSpringFactory.getImpl(AdminModule.class).checkSessionAdminToken(request, response)) {
 				handleSessionsCommand(request, response, cmd);
 			} else {
 				DispatcherAction.sendForbidden(request.getPathInfo(), response);
@@ -85,10 +86,10 @@ public class AdminModuleDispatcher implements Dispatcher {
 	 */
 	private void handleSessionsCommand(HttpServletRequest request, HttpServletResponse response, String cmd) {
 		if (cmd.equalsIgnoreCase(CMD_SET_LOGIN_BLOCKED)) {
-			AdminModule.setLoginBlocked(true);
+			CoreSpringFactory.getImpl(AdminModule.class).setLoginBlocked(true, false);
 			ServletUtil.serveStringResource(request, response, "Ok, login blocked");
 		} else if (cmd.equalsIgnoreCase(CMD_SET_LOGIN_NOT_BLOCKED)) {
-			AdminModule.setLoginBlocked(false);
+			CoreSpringFactory.getImpl(AdminModule.class).setLoginBlocked(false, false);
 			ServletUtil.serveStringResource(request, response, "Ok, login no more blocked");
 		}else if (cmd.equalsIgnoreCase(CMD_SET_MAX_SESSIONS)) {
 			handleSetMaxSessions(request, response);
@@ -116,7 +117,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 		} else {
 			try {
 				int maxSessions = Integer.parseInt(maxSessionsString);
-				AdminModule.setMaxSessions(maxSessions);
+				CoreSpringFactory.getImpl(AdminModule.class).setMaxSessions(maxSessions);
 				ServletUtil.serveStringResource(request, response, "Ok, max-session=" + maxSessions);
 			} catch (NumberFormatException nbrException) {
 				ServletUtil.serveStringResource(request, response, "NOT_OK, parameter " + PARAMETER_MAX_MESSAGE + " must be a number");
@@ -166,14 +167,15 @@ public class AdminModuleDispatcher implements Dispatcher {
 	 * @param response
 	 */
 	private void handleSetMaintenanceOrInfoMessage(HttpServletRequest request, HttpServletResponse response, String cmd) {
-		if (AdminModule.checkMaintenanceMessageToken(request, response)) {
+		AdminModule adminModule = CoreSpringFactory.getImpl(AdminModule.class);
+		if (adminModule.checkMaintenanceMessageToken(request, response)) {
 			String message = request.getParameter(PARAMETER_MSG);
 			if (cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)){
 				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
 				mrg.setInfoMessage(message);
 				ServletUtil.serveStringResource(request, response, "Ok, new infoMessage is::" + message);
 			} else if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE)){
-				AdminModule.setMaintenanceMessage(message);
+				adminModule.setMaintenanceMessage(message);
 				ServletUtil.serveStringResource(request, response, "Ok, new maintenanceMessage is::" + message);
 			}
 		} else {

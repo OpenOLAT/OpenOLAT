@@ -52,7 +52,12 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 		super(name);
 		this.delegate = delegate;
 	}
-	
+
+	@Override
+	public boolean exists() {
+		return delegate != null && delegate.exists();
+	}
+
 	public VFSContainer getDelegate() {
 		return delegate;
 	}

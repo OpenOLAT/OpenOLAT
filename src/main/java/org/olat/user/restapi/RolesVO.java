@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * 12.10.2011 by frentix GmbH, http://www.frentix.com
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
 package org.olat.user.restapi;

@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.hibernate.type.StandardBasicTypes;
@@ -69,6 +70,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.user.ChangePasswordController;
 import org.olat.user.PersonalSettingsController;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3>
@@ -86,6 +88,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	private static String GUEST_USERNAME_PREFIX = "guest_";
 	public static final OLATResourceable IDENTITY_EVENT_CHANNEL = OresHelper.lookupType(Identity.class);
 
+	@Autowired
+	private DB dbInstance;
+	
 	/**
 	 * [used by spring]
 	 */
@@ -331,42 +336,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				.setParameter("resname", oresName)
 				.getSingleResult();
 		return count.longValue() > 0;
-		
-		
-		
-/*
-		String queryString;
-		if (checkTypeRight) {
-			queryString = 
-				"select count(poi) from" 
-			+ " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi,"
-			+ " org.olat.basesecurity.PolicyImpl as poi," 
-			+ " org.olat.resource.OLATResourceImpl as ori"
-			+ " where sgmsi.identity = :identitykey and sgmsi.securityGroup =  poi.securityGroup"
-			+ " and poi.permission = :permission and poi.olatResource = ori"
-			+ " and (ori.resId = :resid or ori.resId = 0) and ori.resName = :resname";
-		} else {
-			queryString = 
-				"select count(poi) from" 
-			+ " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi,"
-			+ " org.olat.basesecurity.PolicyImpl as poi," 
-			+ " org.olat.resource.OLATResourceImpl as ori"
-			+ " where sgmsi.identity = :identitykey and sgmsi.securityGroup =  poi.securityGroup"
-			+ " and poi.permission = :permission and poi.olatResource = ori"
-			+ " and (ori.resId = :resid) and ori.resName = :resname";
-		}
-		
-		DBQuery query = DBFactory.getInstance().createQuery(queryString);
-		query.setLong("identitykey", iimpl.getKey());
-		query.setString("permission", permission);		
-		query.setLong("resid", oresid);
-		query.setString("resname", oresName);
-		query.setCacheable(true);
-		List res = query.list();
-		Long cntL = (Long) res.get(0);
-		return (cntL.longValue() > 0); // can be > 1 if identity is in more the one group having
-		// the permission on the olatresourceable
-		*/
 	}
 
 	/**
@@ -893,7 +862,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String credential) {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
-		DBFactory.getInstance().saveObject(iimpl);
+		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthentication(iimpl, provider, authusername, credential);
 		}
@@ -912,9 +881,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @return Identity
 	 */
 	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername, String credential) {
-		DBFactory.getInstance().saveObject(user);
+		dbInstance.getCurrentEntityManager().persist(user);
 		IdentityImpl iimpl = new IdentityImpl(username, user);
-		DBFactory.getInstance().saveObject(iimpl);
+		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthentication(iimpl, provider, authusername, credential);
 		}
@@ -953,23 +922,25 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select sgmsi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		sb.append("select identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+	   .append(" inner join sgmsi.identity identity ")
+	   .append(" inner join fetch  identity.user user ")
 			.append(" where sgmsi.securityGroup=:secGroup");
 
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setEntity("secGroup", secGroup);
+		TypedQuery<Identity> query = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("secGroup", secGroup);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		List<Identity> idents = query.list();
-		return idents;
+		return query.getResultList();
 	}
 
 	/**
-	 * Return a list of unique identites which are in the list of security groups
+	 * Return a list of unique identities which are in the list of security groups
 	 * @see org.olat.basesecurity.BaseSecurity#getIdentitiesOfSecurityGroups(java.util.List)
 	 */
 	@Override
@@ -979,13 +950,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(sgmsi.identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		sb.append("select distinct(identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		  .append(" inner join sgmsi.identity identity ")
+		  .append(" inner join fetch  identity.user user ")
 			.append(" where sgmsi.securityGroup in (:secGroups)");
 		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setParameterList("secGroups", secGroups);
-		List<Identity> idents = query.list();
-		return idents;
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("secGroups", secGroups)
+				.getResultList();
 	}
 	
 	@Override
@@ -1219,13 +1192,28 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		sb.append("select identity from ").append(IdentityShort.class.getName()).append(" as identity ")
 			.append(" where identity.key=:identityKey");
 		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setLong("identityKey", identityKey);
-		List<IdentityShort> idents = query.list();
+		List<IdentityShort> idents = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), IdentityShort.class)
+				.setParameter("identityKey", identityKey)
+				.getResultList();
 		if(idents.isEmpty()) {
 			return null;
 		}
 		return idents.get(0);
+	}
+	
+	@Override
+	public List<IdentityShort> loadIdentityShortByKeys(Collection<Long> identityKeys) {
+		if (identityKeys == null || identityKeys.isEmpty()) {
+			return Collections.emptyList();
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.key in (:keys)");
+		
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), IdentityShort.class)
+				.setParameter("keys", identityKeys)
+				.getResultList();
 	}
 
 	/**
@@ -1256,7 +1244,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	public Authentication createAndPersistAuthentication(Identity ident, String provider, String authUserName, String credential) {
 		AuthenticationImpl authImpl = new AuthenticationImpl(ident, provider, authUserName, credential);
-		DBFactory.getInstance().saveObject(authImpl);
+		dbInstance.getCurrentEntityManager().persist(authImpl);
 		return authImpl;
 	}
 
@@ -1733,11 +1721,36 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#saveIdentityStatus(org.olat.core.id.Identity)
 	 */
-	public void saveIdentityStatus(Identity identity, Integer status) {
-		//FIXME: cg: would be nice if the updated identity is returned. no loading required afterwards.
-		identity = (Identity)DBFactory.getInstance().loadObject(identity.getClass(), identity.getKey());
-		identity.setStatus(status);
-		DBFactory.getInstance().updateObject(identity);
+	@Override
+	public Identity saveIdentityStatus(Identity identity, Integer status) {
+		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
+		reloadedIdentity.setStatus(status);
+		return dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+	}
+	
+	@Override
+	public Identity setIdentityLastLogin(Identity identity) {
+		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
+		reloadedIdentity.setLastLogin(new Date());
+		return dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+	}
+	
+	private IdentityImpl loadForUpdate(Long identityKey) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select id from ").append(IdentityImpl.class.getName()).append(" as id")
+		  .append(" inner join fetch id.user user ")
+		  .append(" where id.key=:identityKey");
+		
+		List<IdentityImpl> identity = dbInstance.getCurrentEntityManager()
+	  		.createQuery(sb.toString(), IdentityImpl.class)
+	  		.setParameter("identityKey", identityKey)
+	  		.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+	  		.getResultList();
+		
+		if(identity.isEmpty()) {
+			return null;
+		}
+		return identity.get(0);
 	}
 
 	@Override
@@ -1770,15 +1783,12 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUser, null, null, null);
 			SecurityGroup anonymousGroup = findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 			addIdentityToSecurityGroup(guestIdentity, anonymousGroup);
-			return guestIdentity;
-		} else {
-			// Check if guest name has been updated in the i18n tool
-			if ( ! guestIdentity.getUser().getProperty(UserConstants.FIRSTNAME, locale).equals(trans.translate("user.guest"))) {
-				guestIdentity.getUser().setProperty(UserConstants.FIRSTNAME, trans.translate("user.guest"));
-				DBFactory.getInstance().updateObject(guestIdentity);
-			}
-			return guestIdentity;
+		} else if (!guestIdentity.getUser().getProperty(UserConstants.FIRSTNAME, locale).equals(trans.translate("user.guest"))) {
+			//Check if guest name has been updated in the i18n tool
+			guestIdentity.getUser().setProperty(UserConstants.FIRSTNAME, trans.translate("user.guest"));
+			guestIdentity = dbInstance.getCurrentEntityManager().merge(guestIdentity);
 		}
+		return guestIdentity;
 	}
 
 

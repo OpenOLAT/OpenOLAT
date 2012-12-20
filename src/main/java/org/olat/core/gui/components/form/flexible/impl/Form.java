@@ -59,6 +59,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.component.FormComponentTraverser;
 import org.olat.core.util.component.FormComponentVisitor;
 
@@ -350,7 +351,7 @@ public class Form extends LogDelegator {
 						slashpos = fileName.lastIndexOf("\\");
 						if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
 
-						File tmpFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "upload-" + CodeHelper.getGlobalForeverUniqueID());
+						File tmpFile = new File(WebappHelper.getTmpDir() + File.separator + "upload-" + CodeHelper.getGlobalForeverUniqueID());
 						
 						try {
 							FileUtils.save(itemStream, tmpFile);
@@ -678,7 +679,7 @@ public class Form extends LogDelegator {
 	}
 	
 
-	private class FormDependencyRulesInitComponentVisitor implements FormComponentVisitor {
+	private static class FormDependencyRulesInitComponentVisitor implements FormComponentVisitor {
 
 		public boolean visit(FormItem comp, UserRequest ureq) {
 			if (comp instanceof FormItemContainer) {
@@ -697,18 +698,8 @@ public class Form extends LogDelegator {
 		
 	}
 	
-	
-	/**
-	 * Description:<br>
-	 * TODO: patrickb Class Description for ValidatingFormComponentVisitor
-	 * <P>
-	 * Initial Date: 07.12.2006 <br>
-	 * 
-	 * @author patrickb
-	 */
-	private class ValidatingFormComponentVisitor implements FormComponentVisitor {
-
-		List tmp = new ArrayList();
+	private static class ValidatingFormComponentVisitor implements FormComponentVisitor {
+		final List<ValidationStatus> tmp = new ArrayList<ValidationStatus>();
 
 		public ValidationStatus[] getStatus() {
 			return ValidationStatusHelper.sort(tmp);
@@ -722,15 +713,8 @@ public class Form extends LogDelegator {
 			return true;
 		}
 	}
-	/**
-	 * Description:<br>
-	 * TODO: patrickb Class Description for ValidatingFormComponentVisitor
-	 * <P>
-	 * Initial Date: 07.12.2006 <br>
-	 * 
-	 * @author patrickb
-	 */
-	private class ResettingFormComponentVisitor implements FormComponentVisitor {
+
+	private static class ResettingFormComponentVisitor implements FormComponentVisitor {
 
 		public boolean visit(FormItem comp, UserRequest ureq) {
 			//reset all fields including also non visible and disabled form items!

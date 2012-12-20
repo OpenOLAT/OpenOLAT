@@ -75,7 +75,7 @@ public class FeedManagerImplTest extends OlatTestCase {
 		Item item = new Item();
 		item.setTitle("My Test Item");
 		feed = feedManager.updateFeedMode(Boolean.FALSE, feed);
-		feedManager.addItem(item, null, feed);
+		feed = feedManager.addItem(item, null, feed);
 	}
 
 	/**

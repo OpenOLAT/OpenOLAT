@@ -475,6 +475,10 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 		Settings.applicationName = applicationName;
 	}
 	
+	public static int getNodeId() {
+		return nodeId;
+	}
+	
 	public void setNodeId(int nodeId) {
 		Settings.nodeId = nodeId;
 	}

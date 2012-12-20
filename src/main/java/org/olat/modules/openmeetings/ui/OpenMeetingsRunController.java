@@ -33,6 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
@@ -111,7 +112,7 @@ public class OpenMeetingsRunController extends BasicController {
 				mainVC.put("room.members", membersLink);
 			}
 			if(admin) {
-				editLink = LinkFactory.createButton("edit", mainVC, this);
+				editLink = LinkFactory.createButton("edit.room", mainVC, this);
 				mainVC.put("edit", editLink);
 			}
 			
@@ -147,7 +148,11 @@ public class OpenMeetingsRunController extends BasicController {
 			}
 			
 			mainVC.contextPut("roomName", room.getName());
-			mainVC.contextPut("roomComment", room.getComment());
+			if (StringHelper.containsNonWhitespace(room.getComment())) {
+				mainVC.contextPut("roomComment", room.getComment());
+			} else {
+				mainVC.contextRemove("roomComment");
+			}
 			mainVC.contextPut("roomClosed", new Boolean(closed));
 		}
 	}
@@ -239,7 +244,7 @@ public class OpenMeetingsRunController extends BasicController {
 	
 	private void doOpenRecordings(UserRequest ureq) {
 		cleanupPopups();
-		recordingsController = new OpenMeetingsRecordingsController(ureq, getWindowControl(), room.getRoomId());
+		recordingsController = new OpenMeetingsRecordingsController(ureq, getWindowControl(), room.getRoomId(), admin || moderator);
 		listenTo(recordingsController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), recordingsController.getInitialComponent(), true, translate("recordings"));
@@ -267,7 +272,8 @@ public class OpenMeetingsRunController extends BasicController {
 		editController = new OpenMeetingsRoomEditController(ureq, getWindowControl(), group, ores, subIdentifier, "", null, true);
 		listenTo(editController);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), true, translate("edit"));
+		String edit = translate("edit.room");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), true, edit);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -25,7 +25,9 @@
 
 package org.olat.user;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.gui.translator.Translator;
@@ -140,11 +142,6 @@ public abstract class UserManager extends BasicManager {
 	public abstract void updateUser(User usr);
 
 	/**
-	 * @param user The user to be saved
-	 */
-	public abstract void saveUser(User user);
-
-	/**
 	 * Updates the user object for a given identity
 	 * 
 	 * @param identity
@@ -249,6 +246,13 @@ public abstract class UserManager extends BasicManager {
 	 * @return
 	 */
 	public abstract String getUserDisplayName(User user);
+	
+	/**
+	 * 
+	 * @param identityKeys
+	 * @return
+	 */
+	public abstract Map<Long,String> getUserDisplayNames(Collection<Long> identityKeys);
 	
 	/**
 	 * Returns the users displayable name, e.g. "Firstname Lastname"

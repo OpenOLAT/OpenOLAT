@@ -52,6 +52,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -707,7 +708,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 
 		if (dropboxDir.exists() || returnboxDir.exists() ){
 			// Create Temp Dir for zipping
-			String tmpDirPath = FolderConfig.getCanonicalTmpDir() + course.getCourseEnvironment().getCourseBaseContainer().getRelPath();
+			String tmpDirPath = WebappHelper.getTmpDir() + course.getCourseEnvironment().getCourseBaseContainer().getRelPath();
 			File tmpDir = new File( tmpDirPath );
 			if (!tmpDir.exists()) {
 			  tmpDir.mkdirs();
@@ -731,7 +732,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 			ExportUtil.writeContentToFile(tableExportFileName, projectBrokerTableExport, tmpDir, charset);
 
 			// prepare zipping the node directory and the course results overview table
-			Set fileList = new HashSet();
+			Set<String> fileList = new HashSet<String>();
 			// move xls file to tmp dir
 // TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0
 //			fileList.add(fileName);
@@ -799,8 +800,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 			  // zip
 			  dataFound &= ZipUtil.zip(fileList, tmpDir, archiveDir, true);
 			  // Delete all temp files
-			  FileUtils.deleteDirsAndFiles( tmpDir, true, true);
 			}
+		  FileUtils.deleteDirsAndFiles( tmpDir, true, true);
 		}	
   	return dataFound;
 	}

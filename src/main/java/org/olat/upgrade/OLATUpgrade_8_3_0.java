@@ -19,18 +19,14 @@
  */
 package org.olat.upgrade;
 
-import java.util.List;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.mark.MarkManager;
-import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResourceManager;
-import org.olat.upgrade.model.BookmarkImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.io.FileUtils;
+import org.olat.core.util.WebappHelper;
 
 /**
  * Description:<br>
@@ -45,20 +41,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OLATUpgrade_8_3_0 extends OLATUpgrade {
 
-	private static final String TASK_BOOKMARKS = "Upgrade bookmarks";
-	private static final int BATCH_SIZE = 20;
+	private static final String TASK_MOVE_QTI_EDITOR_TMP = "Move qtieditor tmp";
 	private static final String VERSION = "OLAT_8.3.0";
-	
-	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
-	private OLATResourceManager resourceManager;
-	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
-	private MarkManager markManager;
+
 
 	public OLATUpgrade_8_3_0() {
 		super();
@@ -86,8 +71,7 @@ public class OLATUpgrade_8_3_0 extends OLATUpgrade {
 			}
 		}
 		
-		boolean allOk = upgradeBookmarks(upgradeManager, uhd);
-
+		boolean allOk = moveQTIEditorTmp(upgradeManager, uhd);
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
@@ -98,46 +82,56 @@ public class OLATUpgrade_8_3_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private boolean upgradeBookmarks(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
-		if (!uhd.getBooleanDataValue(TASK_BOOKMARKS)) {
-			int counter = 0;
-			List<BookmarkImpl> bookmarks;
-			do {
-				bookmarks = findBookmarks(counter, BATCH_SIZE);
-				for(BookmarkImpl bookmark:bookmarks) {
-					processBookmarks(bookmark);
+	private boolean moveQTIEditorTmp(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(TASK_MOVE_QTI_EDITOR_TMP)) {
+			try {
+				File current = new File(WebappHelper.getUserDataRoot()	+ "/tmp/qtieditor/");
+				if(current.exists()) {
+					File destDir = new File(WebappHelper.getUserDataRoot()	+ "/qtieditor/");
+					destDir.mkdirs();
+					FileUtils.copyDirectory(current, destDir);
+					allOk = compareRecursive(current, destDir);
+					if(allOk) {
+						FileUtils.deleteDirectory(current);
+					}
 				}
-				counter += bookmarks.size();
-				log.audit("Processed context: " + bookmarks.size());
-				dbInstance.intermediateCommit();
-			} while(bookmarks.size() == BATCH_SIZE);
-			
-			uhd.setBooleanDataValue(TASK_BOOKMARKS, false);
-			upgradeManager.setUpgradesHistory(uhd, VERSION);
+				uhd.setBooleanDataValue(TASK_MOVE_QTI_EDITOR_TMP, allOk);
+				upgradeManager.setUpgradesHistory(uhd, VERSION);
+			} catch (IOException e) {
+				log.error("", e);
+				return false;
+			}
+		}
+		return allOk;
+	}
+	
+	private boolean compareRecursive(File tmp, File qtieditor) {
+		File[] tmpFiles = tmp.listFiles(new SystemFilenameFilter());
+		String[] editorFiles = tmp.list(new SystemFilenameFilter());
+		
+		Set<String> editorFileSet = new HashSet<String>();
+		for(String editorFile:editorFiles) {
+			editorFileSet.add(editorFile);
+		}
+		
+		for(File tmpFile:tmpFiles) {
+			String tmpName = tmpFile.getName();
+			if(!editorFileSet.contains(tmpName)) {
+				return false;
+			}
+			if(tmpFile.isDirectory()) {
+				compareRecursive(tmpFile, new File(qtieditor, tmpName));
+			}
 		}
 		return true;
 	}
 	
-	private void processBookmarks(BookmarkImpl bookmark) {
-		String resName = bookmark.getOlatrestype();
-		Long resId = bookmark.getOlatreskey();
-		Identity owner = bookmark.getOwner();
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
-		String businessPath = null;
-		if("RepositoryEntry".equals(resName) || "CatalogEntry".equals(resName)) {
-			businessPath = "[" + resName + ":" + resId + "]";
+	private static class SystemFilenameFilter implements FilenameFilter {
+		@Override
+		public boolean accept(File dir, String name) {
+			return name != null && !name.startsWith(".");
 		}
-		markManager.setMark(ores, owner, null, businessPath);
-	}
-	
-	private List<BookmarkImpl> findBookmarks(int counter, int batchSize) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select bookmark from ").append(BookmarkImpl.class.getName()).append(" as bookmark")
-		  .append(" inner join fetch bookmark.owner as identity")
-		  .append(" inner join fetch identity.user as user");
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BookmarkImpl.class)
-				.setFirstResult(counter)
-				.setMaxResults(batchSize)
-				.getResultList();
 	}
 }

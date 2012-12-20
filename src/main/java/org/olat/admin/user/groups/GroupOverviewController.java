@@ -267,22 +267,9 @@ public class GroupOverviewController extends BasicController {
 			}
 		}
 		
-		MailPackage mailing = new MailPackage();//TODO memail
+		MailPackage mailing = new MailPackage();
 		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
 		DBFactory.getInstance().commit();
-		
-		/*if(e.getMailForGroupsList() != null && !e.getMailForGroupsList().isEmpty()) {
-			List<BusinessGroup> notifGroups = businessGroupService.loadBusinessGroups(e.getMailForGroupsList());
-			for (BusinessGroup group : notifGroups) {
-				MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, getIdentity());
-				MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-				MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), null, mailTemplate, null);
-				if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
-					logDebug("Problems sending Group invitation mail for identity: " + identity.getName() + " and group: " 
-							+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
-				}
-			}
-		}*/
 	}
 	
 	private void doLeave(UserRequest ureq, List<BusinessGroup> groupsToLeave) {

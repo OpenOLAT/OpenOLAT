@@ -43,6 +43,7 @@ import org.olat.core.util.resource.OresHelper;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class BusListenerInfo implements Serializable {
+	private static final long serialVersionUID = 5144991028203688442L;
 	private Map<String, Integer> listenersCnt = new HashMap<String, Integer>();
 	
 	public BusListenerInfo() {

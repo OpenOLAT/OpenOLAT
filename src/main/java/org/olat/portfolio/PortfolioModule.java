@@ -37,7 +37,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
@@ -107,7 +110,28 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 		this.isReflexionStepEnabled = getBooleanPropertyValue("wizard.step.reflexion");
 		this.isCopyrightStepEnabled = getBooleanPropertyValue("wizard.step.copyright");
 		
+		cleanPortfolioTmpDir();
 		logInfo("ePortfolio is enabled: " + Boolean.toString(enabled));
+	}
+	
+	/**
+	 * removes the portfolio temp directory if it exists
+	 * FXOLAT-386
+	 * 
+	 */
+	private void cleanPortfolioTmpDir(){
+		logInfo("beginning to delete ePortfolio temp directory...");
+		VFSContainer artRoot = new OlatRootFolderImpl(File.separator + "tmp", null);
+		VFSItem tmpI = artRoot.resolve("portfolio");
+		if (tmpI instanceof VFSContainer) {
+			VFSContainer tmpContainer = (VFSContainer) tmpI;
+			if(tmpContainer.canDelete() == VFSConstants.YES){
+				tmpContainer.delete();
+				logInfo("deleted ePortfolio temp directory : "+tmpContainer.getName()+"    "+((tmpContainer instanceof LocalFolderImpl)?((LocalFolderImpl)tmpContainer).getBasefile().getAbsolutePath():""));
+			}
+		}else{
+			logInfo("no ePortfolio temp dir found...");
+		}
 	}
 	
 	private void enableExtensions(boolean enabled){

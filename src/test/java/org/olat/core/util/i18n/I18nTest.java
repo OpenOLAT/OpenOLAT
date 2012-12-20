@@ -51,11 +51,11 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.test.OlatcoreTestWithMocking;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.devtools.TranslationDevManager;
 import org.olat.core.util.i18n.ui.InlineTranslationInterceptHandlerController;
+import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,7 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 
 
-public class I18nTest extends OlatcoreTestWithMocking { 
+public class I18nTest extends OlatTestCase { 
 	
 	private OLog log = Tracing.createLoggerFor(I18nTest.class);
 	

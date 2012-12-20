@@ -94,7 +94,7 @@ import org.olat.core.manager.BasicManager;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.prefs.Preferences;
@@ -140,7 +140,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		//made in module System.setProperty("ical4j.unfolding.relaxed", "true");
 		// initialize tiemzone
 		tz = ((CalendarModule)CoreSpringFactory.getBean("calendarModule")).getDefaultTimeZone();
-		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "calendar");
+		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
 		UserDeletionManager.getInstance().registerDeletableUserData(this);
 	}
 	
@@ -707,8 +707,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			
 			java.util.Calendar recurStartCal = java.util.Calendar.getInstance();
 			recurStartCal.clear();
-			recurStartCal.setTimeInMillis(date.getTime());
-
+			recurStartCal.setTimeInMillis(date.getTime()-tz.getOffset(date.getTime()));
 			long duration = kEvent.getEnd().getTime() - kEvent.getBegin().getTime();
 
 			java.util.Calendar beginCal = java.util.Calendar.getInstance();

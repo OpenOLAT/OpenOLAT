@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openmeetings.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -34,7 +35,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
@@ -51,11 +55,19 @@ public class OpenMeetingsRecordingsController extends BasicController {
 	private TableController tableCtr;
 	private CloseableModalController cmc;
 	private OpenMeetingsRecordingController recordingController;
+	private DialogBoxController confirmRemoveRecording;
 
 	private final long roomId;
 	private final OpenMeetingsManager openMeetingsManager;
 	
-	public OpenMeetingsRecordingsController(UserRequest ureq, WindowControl wControl, long roomId) {
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param roomId The room id
+	 * @param admin True the user can delete recordings
+	 */
+	public OpenMeetingsRecordingsController(UserRequest ureq, WindowControl wControl, long roomId, boolean admin) {
 		super(ureq, wControl);
 
 		this.roomId = roomId;
@@ -70,6 +82,9 @@ public class OpenMeetingsRecordingsController extends BasicController {
 		
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("room.name", OpenMeetingsRecordingsDataModel.Col.name.ordinal(), null, getLocale()));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("view", "view", translate("view")));
+		if(admin) {
+			tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "delete", translate("delete")));
+		}
 		tableCtr.setTableDataModel(new OpenMeetingsRecordingsDataModel());
 		loadModel();
 		
@@ -79,7 +94,13 @@ public class OpenMeetingsRecordingsController extends BasicController {
 	private void loadModel() {
 		try {
 			List<OpenMeetingsRecording> recordings = openMeetingsManager.getRecordings(roomId);
-			((OpenMeetingsRecordingsDataModel)tableCtr.getTableDataModel()).setObjects(recordings);
+			List<OpenMeetingsRecording> readyRecordings = new ArrayList<OpenMeetingsRecording>(recordings.size());
+			for (OpenMeetingsRecording recording : recordings) {
+				if (StringHelper.containsNonWhitespace(recording.getDownloadName())) {
+					readyRecordings.add(recording);
+				}
+			}
+			((OpenMeetingsRecordingsDataModel)tableCtr.getTableDataModel()).setObjects(readyRecordings);
 			tableCtr.modelChanged();
 		} catch (OpenMeetingsException e) {
 			showError(e.i18nKey());
@@ -105,7 +126,16 @@ public class OpenMeetingsRecordingsController extends BasicController {
 				OpenMeetingsRecording recording = (OpenMeetingsRecording)tableCtr.getTableDataModel().getObject(row);
 				if("view".equals(e.getActionId())) {
 					doView(ureq, recording);
+				} else if("delete".equals(e.getActionId())) {
+					String text = getTranslator().translate("recording.remove", new String[]{ recording.getFilename() });
+					confirmRemoveRecording = activateYesNoDialog(ureq, null, text, confirmRemoveRecording);
+					confirmRemoveRecording.setUserObject(recording);
 				}
+			}
+		} else if (source == confirmRemoveRecording) {
+			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
+				OpenMeetingsRecording recording = (OpenMeetingsRecording)confirmRemoveRecording.getUserObject();
+				doDelete(ureq, recording);
 			}
 		}
 	}
@@ -121,5 +151,10 @@ public class OpenMeetingsRecordingsController extends BasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), recordingController.getInitialComponent(), true, name);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private void doDelete(UserRequest ureq, OpenMeetingsRecording recording) {
+		openMeetingsManager.deleteRecording(recording);
+		loadModel();
 	}
 }

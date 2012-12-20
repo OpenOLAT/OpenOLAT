@@ -100,17 +100,19 @@ public class SearchAdminController extends BasicController {
 		putInitialPanel(main);
 	}
 
+	protected void doDispose() {		
+		//
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startIndexingButton) {
-			SearchServiceFactory.getService().startIndexing();
-			logInfo("Indexing started via Admin", SearchAdminController.class.getName());
+			doStartIndexer();
 			myContent.setDirty(true);
 		} else if (source == stopIndexingButton) {
-			SearchServiceFactory.getService().stopIndexing();
-			logInfo("Indexing stopped via Admin", SearchAdminController.class.getName());
+			doStopIndexer();
 			myContent.setDirty(true);
 		}
 	}
@@ -133,11 +135,13 @@ public class SearchAdminController extends BasicController {
 		}
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {		
-		//
+	private void doStartIndexer() {
+		SearchServiceFactory.getService().startIndexing();
+		logInfo("Indexing started via Admin", SearchAdminController.class.getName());
+	}
+	
+	private void doStopIndexer() {
+		SearchServiceFactory.getService().stopIndexing();
+		logInfo("Indexing started via Admin", SearchAdminController.class.getName());
 	}
 }

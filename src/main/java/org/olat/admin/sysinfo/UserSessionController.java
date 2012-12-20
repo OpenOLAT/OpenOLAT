@@ -36,6 +36,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -51,6 +52,9 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.UserManager;
 
 /**
@@ -69,8 +73,10 @@ public class UserSessionController extends BasicController implements StackedCon
 	private Link backLink, sessKillButton;
 
 	private Panel myPanel;
-	private final UserSessionManager sessionManager;
 	private StackedController stackController;
+
+	private final UserSessionManager sessionManager;
+	private final InstantMessagingService imService;
 	
 	/**
 	 * Timeframe in minutes is needed to calculate the last klicks from users in OLAT. 
@@ -85,7 +91,8 @@ public class UserSessionController extends BasicController implements StackedCon
 	 */
 	public UserSessionController(UserRequest ureq, WindowControl wControl) { 
 		super(ureq, wControl);
-
+		
+		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		
 		//f = Formatter.getInstance(ureq.getLocale());
@@ -105,7 +112,9 @@ public class UserSessionController extends BasicController implements StackedCon
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.access", 5, null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.duration", 6, null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("sess.mode", 7, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("sess.details", "table.action", translate("sess.details")));
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("sess.details", "sess.details", translate("sess.details")));
+		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("sess.chat", 8, "sess.chat", translate("sess.chat"), null));
+
 		listenTo(tableCtr);
 		reset();
 		myContent.put("sessiontable", tableCtr.getInitialComponent());
@@ -122,7 +131,7 @@ public class UserSessionController extends BasicController implements StackedCon
 	 */
 	public void reset() {
 		List<UserSession> authUserSessions = new ArrayList<UserSession>(sessionManager.getAuthenticatedUserSessions());
-		usessTableModel = new UserSessionTableModel(authUserSessions);
+		usessTableModel = new UserSessionTableModel(authUserSessions, getIdentity().getKey());
 		tableCtr.setTableDataModel(usessTableModel);
 		// view number of user - lastKlick <= LAST_KLICK_TIMEFRAME min
 		long now = System.currentTimeMillis();
@@ -179,13 +188,19 @@ public class UserSessionController extends BasicController implements StackedCon
 				int selRow = te.getRowId();
 				// session info (we only have authenticated sessions here
 				UserSession usess = (UserSession) tableCtr.getTableDataModel().getObject(selRow);
-				UserSessionDetailsController detailsCtrl = new UserSessionDetailsController(ureq, getWindowControl(), usess);
-				listenTo(detailsCtrl);
-				
-				String username = usess.getIdentity() == null ? "-"
-						: UserManager.getInstance().getUserDisplayName(usess.getIdentity().getUser());
-				stackController.pushController(username, detailsCtrl);
-				
+				if("sess.chat".equals(te.getActionId())) {
+					Buddy buddy = imService.getBuddyById(usess.getIdentity().getKey());
+					OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+					ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
+				} else if("sess.details".equals(te.getActionId())) {
+					UserSessionDetailsController detailsCtrl = new UserSessionDetailsController(ureq, getWindowControl(), usess);
+					listenTo(detailsCtrl);
+					
+					String username = usess.getIdentity() == null ? "-"
+							: UserManager.getInstance().getUserDisplayName(usess.getIdentity().getUser());
+					stackController.pushController(username, detailsCtrl);
+				}
+
 				
 				//if (!usess.isAuthenticated()) throw new AssertException("usersession was not authenticated!?");
 				

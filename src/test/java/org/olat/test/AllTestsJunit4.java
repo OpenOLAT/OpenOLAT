@@ -60,8 +60,11 @@ import org.junit.runners.Suite;
 	org.olat.core.util.coordinate.LockEntryTest.class,
 	org.olat.core.util.StringHelperTest.class,
 	org.olat.core.util.FormatterTest.class,
+	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
-
+	org.olat.core.id.context.HistoryManagerTest.class,
+	org.olat.core.id.IdentityEnvironmentTest.class,
+	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.note.NoteTest.class,//ok
 	org.olat.user.UserPropertiesPerformanceTest.class,//ok
 	org.olat.user.EmailCheckPerformanceTest.class,//fail
@@ -80,6 +83,7 @@ import org.junit.runners.Suite;
 	org.olat.group.test.BusinessGroupServiceTest.class,//ok
 	org.olat.group.test.BusinessGroupDAOTest.class,//ok
 	org.olat.group.test.BusinessGroupRelationDAOTest.class,//ok
+	org.olat.group.test.ContactDAOTest.class,//ok
 	org.olat.resource.lock.pessimistic.PLockTest.class,//ok
 	org.olat.resource.references.ReferenceManagerTest.class,//ok
 	org.olat.resource.OLATResourceManagerTest.class,//ok
@@ -89,8 +93,10 @@ import org.junit.runners.Suite;
 	org.olat.repository.RepositoryManagerTest.class,//ok
 	org.olat.repository.RepositoryManagerConcurrentTest.class,//ok
 	org.olat.repository.RepositoryManagerQueryTest.class,//ok
-	org.olat.instantMessaging.IMUnitTest.class,//ok
-	org.olat.instantMessaging.IMPrefsUnitTest.class,//ok
+	org.olat.instantMessaging.InstantMessageDAOTest.class,//ok
+	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,//ok
+	org.olat.instantMessaging.RosterDAOTest.class,//ok
+	org.olat.instantMessaging.InstantMessageServiceTest.class,//ok
 	org.olat.course.nodes.en.EnrollmentManagerTest.class,//ok
 	org.olat.course.assessment.AssessmentManagerTest.class,//ok
 	org.olat.course.config.CourseConfigManagerImplTest.class,//ok
@@ -130,6 +136,7 @@ import org.junit.runners.Suite;
 	org.olat.portfolio.EPStructureToArtefactTest.class,
 	org.olat.portfolio.EPImportTest.class,
 	org.olat.modules.openmeetings.OpenMeetingsTest.class,
+	org.olat.modules.openmeetings.manager.OpenMeetingsDAOTest.class,
 	org.olat.commons.info.InfoManagerTest.class,
 	org.olat.core.commons.service.tagging.SimpleTagProposalManagerTest.class,
 	org.olat.commons.coordinate.singlevm.SingleVMLockerTest.class,
@@ -170,7 +177,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACOrderManagerTest.class,
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
-	org.olat.core.util.vfs.VersionManagerTest.class,
+	org.olat.core.util.vfs.version.VersionManagerTest.class,
 	/**
 	 * Pure JUnit test without need of framework
 	 */
@@ -187,7 +194,6 @@ import org.junit.runners.Suite;
 	 * tree is not available
 	 */
 	org.olat.core.commons.scheduler.SchedulerTest.class,
-	org.olat.instantMessaging.IMUnitTestWithoutOLAT.class,
 	org.olat.course.TestDeployableRepositoryExport.class,
 	org.olat.upgrade.UpgradeDefinitionTest.class
 })

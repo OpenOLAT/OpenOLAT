@@ -326,7 +326,13 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
 	 */
 	public boolean hasScoreConfigured() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
+		boolean assessable = getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
+		if(assessable) {
+			String type = getModuleConfiguration().getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
+					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
+			return ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(type);
+		}
+		return false;
 	}
 
 	/**

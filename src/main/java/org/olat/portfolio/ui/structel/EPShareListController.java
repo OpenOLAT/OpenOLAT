@@ -74,6 +74,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.portfolio.manager.EPMapPolicy.Type;
+import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.user.UserManager;
@@ -112,6 +113,11 @@ public class EPShareListController extends FormBasicController {
 		for(int i=targetKeys.length; i-->0; ) {
 			targetValues[i] = translate("map.share.to." + targetKeys[i]);
 		}
+		
+		if(map instanceof EPStructuredMap && ((EPStructuredMap)map).getTargetResource() != null) {
+			policyWrappers.add(new TutorPolicyWrapper());
+		}
+
 		for(EPMapPolicy policy:ePFMgr.getMapPolicies(map)) {
 			policyWrappers.add(new PolicyWrapper(policy));
 		}
@@ -147,6 +153,10 @@ public class EPShareListController extends FormBasicController {
 		
 		for (PolicyWrapper policyWrapper : policyWrappers) {
 			Type type = policyWrapper.getType();
+			if(type == null) {
+				continue;//tutor implicit rule
+			}
+			
 			TextElement mailEl = policyWrapper.getMailEl();
 			if (mailEl != null) {
 				String mail = mailEl.getValue();
@@ -179,7 +189,8 @@ public class EPShareListController extends FormBasicController {
 					allOk &= false;
 				}
 			} 
-			if (policyWrapper.getFromChooser().hasError() || policyWrapper.getToChooser().hasError()){
+			if ((policyWrapper.getFromChooser() != null && policyWrapper.getFromChooser().hasError())
+					|| (policyWrapper.getToChooser() != null && policyWrapper.getToChooser().hasError())){
 				genericError = translate("map.share.date.invalid");
 				allOk &= false;
 			}
@@ -194,7 +205,9 @@ public class EPShareListController extends FormBasicController {
 			FormLayoutContainer cmp = (FormLayoutContainer) flc.getFormComponent(policyWrapper.getComponentName());
 			String errorCompName = policyWrapper.calc("errorpanel");
 			StaticTextElement errTextEl = (StaticTextElement) cmp.getFormComponent(errorCompName);
-			if (genericError != null) errTextEl.setValue(genericError);
+			if (genericError != null && errTextEl != null) {
+				errTextEl.setValue(genericError);
+			}
 		}
 
 		return allOk && super.validateFormLogic(ureq);
@@ -207,6 +220,8 @@ public class EPShareListController extends FormBasicController {
 		
 		List<EPMapPolicy> mapPolicies = new ArrayList<EPMapPolicy>();
 		for(PolicyWrapper wrapper:policyWrappers) {
+			if(wrapper.getType() == null) continue;
+			
 			mapPolicies.add(wrapper.getMapPolicy());
 			if (wrapper.getType().equals(EPMapPolicy.Type.invitation)){
 				// always send an invitation mail for invited-non-olat users
@@ -381,8 +396,12 @@ public class EPShareListController extends FormBasicController {
 			if(mailEl != null) {
 				policyWrapper.getInvitation().setMail(mailEl.getValue());
 			}
-			policyWrapper.setFrom(policyWrapper.getFromChooser().getDate());
-			policyWrapper.setTo(policyWrapper.getToChooser().getDate());
+			if(policyWrapper.getFromChooser() != null) {
+				policyWrapper.setFrom(policyWrapper.getFromChooser().getDate());
+			}
+			if(policyWrapper.getToChooser() != null) {
+				policyWrapper.setTo(policyWrapper.getToChooser().getDate());
+			}
 		}
 	}
 
@@ -407,10 +426,10 @@ public class EPShareListController extends FormBasicController {
 			container.contextPut("wrapper", policyWrapper);
 			container.setRootForm(mainForm);
 
-			SingleSelection type = uifactory.addDropdownSingleselect("map.share.target." + cmpName, "map.share.target", container, targetKeys, targetValues, null);
-			type.addActionListener(this, FormEvent.ONCHANGE);
-			type.setUserObject(policyWrapper);
 			if(policyWrapper.getType() != null) {
+				SingleSelection type = uifactory.addDropdownSingleselect("map.share.target." + cmpName, "map.share.target", container, targetKeys, targetValues, null);
+				type.addActionListener(this, FormEvent.ONCHANGE);
+				type.setUserObject(policyWrapper);
 				type.select(policyWrapper.getType().name(), true);
 				switch(policyWrapper.getType()) {
 					case user:
@@ -483,26 +502,31 @@ public class EPShareListController extends FormBasicController {
 				}
 			}
 			
-			DateChooser fromChooser = uifactory.addDateChooser("map.share.from." + cmpName, "map.share.from", "", container);
-			fromChooser.setDate(policyWrapper.getFrom());
-			fromChooser.setValidDateCheck("map.share.date.invalid");
-			policyWrapper.setFromChooser(fromChooser);
-			DateChooser toChooser = uifactory.addDateChooser("map.share.to." + cmpName, "map.share.to", "", container);
-			toChooser.setDate(policyWrapper.getTo());
-			toChooser.setValidDateCheck("map.share.date.invalid");
-			policyWrapper.setToChooser(toChooser);
-
-			FormLink addLink = uifactory.addFormLink("map.share.policy.add." + cmpName, "map.share.policy.add", null, container, Link.BUTTON_SMALL);
-			addLink.setUserObject(policyWrapper);
-			FormLink removeLink = uifactory.addFormLink("map.share.policy.delete." + cmpName, "map.share.policy.delete", null, container, Link.BUTTON_SMALL);
-			removeLink.setUserObject(policyWrapper);
-			if (!policyWrapper.getType().equals(EPMapPolicy.Type.allusers)){
-				FormLink inviteLink = uifactory.addFormLink("map.share.policy.invite." + cmpName, "map.share.policy.invite", null, container, Link.BUTTON_XSMALL);
-				inviteLink.setUserObject(policyWrapper);
-				inviteLink.setEnabled(!policyWrapper.isInvitationSend());
+			if(policyWrapper instanceof TutorPolicyWrapper) {
+				String text = translate("map.share.with.tutor");
+				uifactory.addStaticTextElement("map.share.text." + cmpName, text, container);
+			} else {
+				DateChooser fromChooser = uifactory.addDateChooser("map.share.from." + cmpName, "map.share.from", "", container);
+				fromChooser.setDate(policyWrapper.getFrom());
+				fromChooser.setValidDateCheck("map.share.date.invalid");
+				policyWrapper.setFromChooser(fromChooser);
+				DateChooser toChooser = uifactory.addDateChooser("map.share.to." + cmpName, "map.share.to", "", container);
+				toChooser.setDate(policyWrapper.getTo());
+				toChooser.setValidDateCheck("map.share.date.invalid");
+				policyWrapper.setToChooser(toChooser);
+	
+				FormLink addLink = uifactory.addFormLink("map.share.policy.add." + cmpName, "map.share.policy.add", null, container, Link.BUTTON_SMALL);
+				addLink.setUserObject(policyWrapper);
+				FormLink removeLink = uifactory.addFormLink("map.share.policy.delete." + cmpName, "map.share.policy.delete", null, container, Link.BUTTON_SMALL);
+				removeLink.setUserObject(policyWrapper);
+				if (!policyWrapper.getType().equals(EPMapPolicy.Type.allusers)){
+					FormLink inviteLink = uifactory.addFormLink("map.share.policy.invite." + cmpName, "map.share.policy.invite", null, container, Link.BUTTON_XSMALL);
+					inviteLink.setUserObject(policyWrapper);
+					inviteLink.setEnabled(!policyWrapper.isInvitationSend());
+				}
+				StaticTextElement genErrorPanel = uifactory.addStaticTextElement("errorpanel." + cmpName, "", container);
+				genErrorPanel.setUserObject(policyWrapper);
 			}
-			StaticTextElement genErrorPanel = uifactory.addStaticTextElement("errorpanel." + cmpName, "", container);
-			genErrorPanel.setUserObject(policyWrapper);
 			
 			policyWrapper.setComponentName(cmpName);
 			
@@ -617,11 +641,37 @@ public class EPShareListController extends FormBasicController {
 			if (StringHelper.containsNonWhitespace(searchValue)) {
 				String searchValueLower = searchValue.toLowerCase();
 				for(BusinessGroup group:groupList) {
-					if(group.getName().toLowerCase().indexOf(searchValueLower) >= 0) {
+					if(group.getName() != null && group.getName().toLowerCase().indexOf(searchValueLower) >= 0) {
 						resMap.put(group.getName(), group.getKey().toString());
 					}
 				}
 			}
+		}
+	}
+	
+	public class TutorPolicyWrapper extends PolicyWrapper {
+
+		@Override
+		public Type getType() {
+			return null;
+		}
+
+		@Override
+		public Date getTo() {
+			return null;
+		}
+
+		@Override
+		public DateChooser getFromChooser() {
+			return null;
+		}
+
+		@Override
+		public String calc(String cmpName) {
+			if("map.share.target".equals(cmpName) || "map.share.with".equals(cmpName) ) {
+				return "xxx";
+			}
+			return super.calc(cmpName);
 		}
 	}
 	

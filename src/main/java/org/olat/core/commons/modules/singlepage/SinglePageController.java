@@ -354,7 +354,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 				
 				removeAsListenerAndDispose(htmlEditorController);
 				if (customLinkTreeModel == null) {
-					htmlEditorController = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), g_new_rootContainer, g_curURI, true);
+					htmlEditorController = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), g_new_rootContainer, g_curURI, true, true);
 				} else {
 					htmlEditorController = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(), g_new_rootContainer,
 							g_curURI, true, customLinkTreeModel);

@@ -404,13 +404,15 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Assert.assertFalse(owners.contains(owner));
 	}
 	
+	private static final Roles ADMIN_ROLES = new Roles(true, false, false, false, false, false, false);
+	
 	@Test
 	public void testGetCoaches() throws IOException, URISyntaxException {
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-1-" + UUID.randomUUID().toString());
 		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-2-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.addTutors(coach1, new IdentitiesAddEvent(coach1), re);
-		repositoryManager.addTutors(coach1, new IdentitiesAddEvent(coach2), re);
+		repositoryManager.addTutors(coach1, ADMIN_ROLES, new IdentitiesAddEvent(coach1), re, null);
+		repositoryManager.addTutors(coach1, ADMIN_ROLES, new IdentitiesAddEvent(coach2), re, null);
 		dbInstance.commitAndCloseSession();
 
 		//get the coaches
@@ -470,7 +472,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	public void testRemoveCoach() throws IOException, URISyntaxException {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-4-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.addTutors(coach, new IdentitiesAddEvent(coach), re);
+		repositoryManager.addTutors(coach, ADMIN_ROLES, new IdentitiesAddEvent(coach), re, null);
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner

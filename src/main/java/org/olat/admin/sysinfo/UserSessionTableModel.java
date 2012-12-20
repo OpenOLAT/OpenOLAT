@@ -39,12 +39,15 @@ import org.olat.core.util.UserSession;
  */
 
 public class UserSessionTableModel extends DefaultTableDataModel<UserSession> {
+	
+	private final Long myIdentityKey;
 
 	/**
 	 * @param userSessions
 	 */
-	public UserSessionTableModel(List<UserSession> userSessions) {
+	public UserSessionTableModel(List<UserSession> userSessions, Long myIdentityKey) {
 		super(userSessions);
+		this.myIdentityKey = myIdentityKey;
 	}
 	
 	/**
@@ -87,6 +90,11 @@ public class UserSessionTableModel extends DefaultTableDataModel<UserSession> {
 					} else {
 						return sessInfo.getWebMode();						
 					}
+				case 8: {
+					//can chat?
+					return myIdentityKey.equals(usess.getIdentity().getKey())
+							? Boolean.FALSE : Boolean.TRUE;
+				}
 				default: return "Error";
 			}
 		} else { // not signed on

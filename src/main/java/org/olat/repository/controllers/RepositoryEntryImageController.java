@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
@@ -101,7 +102,7 @@ public class RepositoryEntryImageController extends BasicController {
 		mimeTypes.add("image/jpg");
 		mimeTypes.add("image/jpeg");
 		mimeTypes.add("image/png");
-		File uploadDir = new File(FolderConfig.getCanonicalTmpDir());
+		File uploadDir = new File(WebappHelper.getTmpDir());
 		VFSContainer uploadContainer = new LocalFolderImpl(uploadDir);
 		uploadCtr = new FileUploadController(getWindowControl(), uploadContainer, ureq, limitKB, Quota.UNLIMITED, mimeTypes, false, false, false, true);
 		uploadCtr.hideTitleAndFieldset();
@@ -135,7 +136,8 @@ public class RepositoryEntryImageController extends BasicController {
 			if (event instanceof FolderEvent && event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {
 				FolderEvent folderEvent = (FolderEvent) event;
 				// Get file from temp folder location
-				VFSContainer tmpHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalTmpDir()));
+
+				VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 				VFSItem newFile = tmpHome.resolve(folderEvent.getFilename());
 				if (newFile instanceof VFSLeaf) {
 					boolean ok = repositoryManager.setImage((VFSLeaf)newFile, repositoryEntry);

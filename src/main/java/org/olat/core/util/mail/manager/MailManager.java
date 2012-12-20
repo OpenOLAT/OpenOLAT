@@ -527,7 +527,7 @@ public class MailManager extends BasicManager {
 				result = new MailerResult();
 			}
 			
-			boolean makeRealMail = makeRealMail(toId, ccLists, bccLists);
+			boolean makeRealMail = makeRealMail(toId, cc, ccLists, bccLists);
 			Address fromAddress = null;
 			List<Address> toAddress = new ArrayList<Address>();
 			List<Address> ccAddress = new ArrayList<Address>();
@@ -758,14 +758,18 @@ public class MailManager extends BasicManager {
 		}
 	}
 	
-	private boolean makeRealMail(Identity toId, List<ContactList> ccLists, List<ContactList> bccLists) {
+	private boolean makeRealMail(Identity toId, Identity cc, List<ContactList> ccLists, List<ContactList> bccLists) {
 		//need real mail to???
 		boolean makeRealMail = false;
 		// can occur on self-registration
-		if (toId == null && ccLists == null && bccLists == null) return true;
+		if (toId == null && cc == null && ccLists == null && bccLists == null) return true;
 		
 		if(toId != null) {
 			makeRealMail |= wantRealMailToo(toId);
+		}
+		
+		if(cc != null) {
+			makeRealMail |= wantRealMailToo(cc);
 		}
 		
 		//add bcc recipients
@@ -1122,7 +1126,10 @@ public class MailManager extends BasicManager {
 	}
 	
 	// converts an address "bla bli <bla@bli.ch>" => "bla@bli.ch"
-	private InternetAddress getRawEmailFromAddress(Address address) throws AddressException{
+	private InternetAddress getRawEmailFromAddress(Address address) throws AddressException {
+		if(address == null) {
+			throw new AddressException("Address cannot be null");
+		}
 		InternetAddress fromAddress = new InternetAddress(address.toString());
 		String fromPlainAddress = fromAddress.getAddress();
 		return new InternetAddress(fromPlainAddress);
@@ -1186,6 +1193,10 @@ public class MailManager extends BasicManager {
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 			return msg;
+		} catch (AddressException e) {
+			result.setReturnCode(MailerResult.SENDER_ADDRESS_ERROR);
+			logError("", e);
+			return null;
 		} catch (MessagingException e) {
 			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
 			logError("", e);

@@ -5,8 +5,6 @@
 
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.upgrade.model.BookmarkImpl" table="o_bookmark">  
-  
-		<cache usage="read-write" />
 
     <id name="key" column="bookmark_id" type="long" unsaved-value="null">
       <generator class="hilo"/>

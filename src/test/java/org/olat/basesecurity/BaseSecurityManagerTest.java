@@ -474,6 +474,53 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(authorList.isEmpty());
 	}
 	
+	@Test
+	public void testGetIdentitiesOfSecurityGroup() {
+		//create 3 identities and 2 security groups
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-2-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-3-" + UUID.randomUUID().toString());
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		securityManager.addIdentityToSecurityGroup(id1, secGroup);
+		securityManager.addIdentityToSecurityGroup(id2, secGroup);
+		securityManager.addIdentityToSecurityGroup(id3, secGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve them
+		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(secGroup, 0, -1);
+		Assert.assertNotNull(identities);
+		Assert.assertEquals(3, identities.size());
+		Assert.assertTrue(identities.contains(id1));
+		Assert.assertTrue(identities.contains(id2));
+		Assert.assertTrue(identities.contains(id3));
+	}
+	
+	@Test
+	public void testGetIdentitiesOfSecurityGroups() {
+		//create 3 identities and 2 security groups
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-2-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-3-" + UUID.randomUUID().toString());
+		SecurityGroup secGroup1 = securityManager.createAndPersistSecurityGroup();
+		SecurityGroup secGroup2 = securityManager.createAndPersistSecurityGroup();
+		securityManager.addIdentityToSecurityGroup(id1, secGroup1);
+		securityManager.addIdentityToSecurityGroup(id2, secGroup1);
+		securityManager.addIdentityToSecurityGroup(id2, secGroup2);
+		securityManager.addIdentityToSecurityGroup(id3, secGroup2);
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve them
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		secGroups.add(secGroup1);
+		secGroups.add(secGroup2);
+		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		Assert.assertNotNull(identities);
+		Assert.assertEquals(3, identities.size());
+		Assert.assertTrue(identities.contains(id1));
+		Assert.assertTrue(identities.contains(id2));
+		Assert.assertTrue(identities.contains(id3));
+	}
+	
 
 	@Test
 	public void testGetPoliciesOfSecurityGroup() {

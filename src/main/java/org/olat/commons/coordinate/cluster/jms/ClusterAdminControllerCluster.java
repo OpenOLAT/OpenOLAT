@@ -46,6 +46,7 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.OncePanel;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -57,7 +58,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
@@ -109,13 +111,17 @@ public class ClusterAdminControllerCluster extends BasicController {
 	 */
 	public ClusterAdminControllerCluster(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		CoordinatorManager clustercoord = (CoordinatorManager) CoreSpringFactory.getBean("coordinatorManager");
-		ClusterCoordinator cCord = (ClusterCoordinator) clustercoord.getCoordinator();
+		CoordinatorManager clustercoord = CoreSpringFactory.getImpl(CoordinatorManager.class);
+		Coordinator coordinator = clustercoord.getCoordinator();
+		if(!(coordinator instanceof ClusterCoordinator)) {
+			putInitialPanel(new Panel("empty"));
+			return;
+		}
+
+		ClusterCoordinator cCord = (ClusterCoordinator)coordinator; 
 		clusBus = cCord.getClusterEventBus();
-		
 		mainVc = createVelocityContainer("cluster");
-		
-		
+
 		// information about the cluster nodes
 		mainVc.contextPut("own_nodeid", "This node is node: '"+clusBus.clusterConfig.getNodeId()+"'");
 		
@@ -255,15 +261,13 @@ public class ClusterAdminControllerCluster extends BasicController {
 			double avgmilis = avg / 1000000;
 			getWindowControl().setInfo("sending "+cnt+" messages took "+inmilis+" ms, avg per messages was "+avg+" ns = "+avgmilis+" ms");
 		} else if (source == testCachePut) {
-			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
-				getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
 			// we explicitly use put and not putSilent to show that a put invalidates (and thus removes) this key of this cache in all other cluster nodes. 
 			cw.update("akey", "hello");
 			updateCacheInfo();
 		} else if (source == testCachePut2) {
 			// we explicitly use put and not putSilent to show that a put invalidates (and thus removes) this key of this cache in all other cluster nodes.
-			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
-				getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
 			cw.update("akey", "world");
 			updateCacheInfo();
 		} else if (source == testSFUPerf) {
@@ -342,7 +346,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 				// we configured usc to either cancel or to only accept single user selection.
 				SingleIdentityChosenEvent sce = (SingleIdentityChosenEvent)event;
 				Identity ident = sce.getChosenIdentity();
-				ClusterLockManager.getInstance().releaseAllLocksFor(ident.getName());
+				ClusterLockManager.getInstance().releaseAllLocksFor(ident.getKey());
 				showInfo("locks.released", ident.getName());
 			}
 		}
@@ -357,8 +361,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 	}
 	
 	void updateCacheInfo() {
-		CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
-		getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+		CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
 		Object val = cw.get("akey");
 		cachetest.contextPut("cacheval", val==null? "-null-": val);
 		// org.olat.commons.coordinate.cluster.jms.ClusterAdminController:cachetest::0@subcachetypetest::123

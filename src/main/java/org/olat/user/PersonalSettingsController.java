@@ -49,7 +49,7 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.servlets.WebDAVManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.ui.ChangeIMSettingsController;
+import org.olat.instantMessaging.ui.IMPreferenceController;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.registration.DisclaimerController;
@@ -110,8 +110,8 @@ public class PersonalSettingsController extends BasicController implements Activ
 				listenTo(pwdav);
 			}
 			
-			if(InstantMessagingModule.isEnabled()){
-				cimsc = new ChangeIMSettingsController(ureq, getWindowControl(), (Identity)DBFactory.getInstance().loadObject(ureq.getIdentity()));
+			if(CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()){
+				cimsc = new IMPreferenceController(ureq, getWindowControl(), (Identity)DBFactory.getInstance().loadObject(ureq.getIdentity()));
 				listenTo(cimsc);
 				userConfig.addTab(translate("tab.im"), cimsc.getInitialComponent());
 			}

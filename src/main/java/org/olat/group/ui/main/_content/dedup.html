@@ -1,0 +1,10 @@
+<p>$r.translate("dedup.members.info1")</p>
+<ul>
+	<li><p>$r.translate("dedup.members.info2")</p></li>
+	#if($numOfDuplicates)
+		<li><p>$r.translate("dedup.members.info3", $numOfDuplicates)</p></li>
+	#end
+	<li><p>$r.translate("dedup.members.info4")</p></li>
+</ul>
+$r.render("options")
+$r.render("buttons")

@@ -23,7 +23,8 @@ package org.olat.modules.scorm.contentpackaging;
 
 
 import java.io.IOException;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -299,6 +300,17 @@ public class NavigationViewer extends XMLDocument {
 	public boolean doesNavFileExist() {
 		return (settings.getScoItemSequenceFile().exists());
 	}
+	
+	public int getNumOfSCOs() {
+		int count = 0;
+		Element[] element = _scormCore.getElementsInManifest(getRootElement(), SCORM12_Core.ITEM, getRootElement().getNamespace());
+		for (int i = 0; i < element.length; i++) {
+			if (findScoType(element[i]).equals(SCORM12_Core.SCO)) {
+				count++;
+			}
+		}
+		return count;
+	}
 
 	/**
 	 * Method to return all of the identifiers for scos found in a package
@@ -306,16 +318,13 @@ public class NavigationViewer extends XMLDocument {
 	 * @return String[]
 	 */
 	public String[] getAllScoIdentifiers() {
-		Vector v = new Vector();
+		List<String> v = new ArrayList<String>();
 		Element[] element = _scormCore.getElementsInManifest(this.getRootElement(), SCORM12_Core.ITEM, getRootElement().getNamespace());
 		for (int i = 0; i < element.length; i++) {
 			if (findScoType(element[i]).equals(SCORM12_Core.SCO)) {
 				v.add(element[i].getAttributeValue(SCORM12_Core.IDENTIFIER));
 			}
 		}
-		String[] ids = new String[v.size()];
-		v.copyInto(ids);
-		return ids;
+		return v.toArray(new String[v.size()]);
 	}
-
 }

@@ -98,7 +98,33 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
 		tableCtr.addColumnDescriptor(new RepositoryEntryTypeColumnDescriptor("table.header.typeimg", 1, null, 
 				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.displayname", 2, enableDirectLaunch ? TABLE_ACTION_SELECT_ENTRY : null, translator.getLocale()));
+		
+		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", 2, enableDirectLaunch ? TABLE_ACTION_SELECT_ENTRY : null, translator.getLocale()) {
+			@Override
+			public int compareTo(int rowa, int rowb) {
+				Object o1 =table.getTableDataModel().getValueAt(rowa, 1);
+				Object o2 = table.getTableDataModel().getValueAt(rowb, 1);
+				
+				if(o1 == null || !(o1 instanceof RepositoryEntry)) return -1;
+				if(o2 == null || !(o2 instanceof RepositoryEntry)) return 1;
+				RepositoryEntry re1 = (RepositoryEntry)o1;
+				RepositoryEntry re2 = (RepositoryEntry)o2;
+				boolean c1 = RepositoryManager.getInstance().createRepositoryEntryStatus(re1.getStatusCode()).isClosed();
+				boolean c2 = RepositoryManager.getInstance().createRepositoryEntryStatus(re2.getStatusCode()).isClosed();
+				int result = (c2 == c1 ? 0 : (c1 ? 1 : -1));//same as Boolean compare
+				if(result == 0) {
+					Object a = table.getTableDataModel().getValueAt(rowa, dataColumn);
+					Object b = table.getTableDataModel().getValueAt(rowb, dataColumn);
+					if(a == null || !(a instanceof String)) return -1;
+					if(b == null || !(b instanceof String)) return 1;
+					String s1 = (String)a;
+					String s2 = (String)b;
+					result = compareString(s1, s2);
+				}
+				return result;
+			}
+		};
+		tableCtr.addColumnDescriptor(nameColDesc);
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.author", 3, null, translator.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.access", 4, null, translator.getLocale()));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.date", 5, null, translator.getLocale()));

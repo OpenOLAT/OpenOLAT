@@ -26,6 +26,7 @@
 package org.olat.course.assessment;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -63,6 +64,7 @@ public interface AssessmentManager {
 	 * @param identity Restrict preloading to a certain identity or null to preload assessment data from all users
 	 */
 	public void preloadCache(Identity identity);
+	public void preloadCache(List<Identity> identities);
 
 	
 	/**

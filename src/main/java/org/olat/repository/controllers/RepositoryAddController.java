@@ -34,7 +34,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -353,6 +352,10 @@ public class RepositoryAddController extends BasicController {
 	}
 
 	protected void addFinished(UserRequest ureq) {
+		if(addedEntry != null) {
+			return;
+		}
+		
 		try {
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Exception e) {

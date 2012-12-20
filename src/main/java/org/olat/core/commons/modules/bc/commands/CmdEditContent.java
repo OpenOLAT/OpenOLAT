@@ -140,7 +140,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 				editorc = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(), writableRootContainer, relFilePath, true, customLinkTreeModel);
 				((HTMLEditorController)editorc).setNewFile(false);				
 			} else {				
-				editorc = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true);
+				editorc = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true, true);
 				((HTMLEditorController)editorc).setNewFile(false);				
 			}
 		}

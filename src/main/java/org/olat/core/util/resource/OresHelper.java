@@ -52,26 +52,20 @@ public class OresHelper {
 	public static OLATResourceable createOLATResourceableInstance(final String type, final Long key) {
 		if (key == null) throw new AssertException("key may not be null; type = "+type);
 		if (type.length() > ORES_TYPE_LENGTH) throw new AssertException("Olatresource type may not exceed 50 chars: type="+type);
-		return new OLATResourceable() {
-			public String getResourceableTypeName() {
-				return type;
-			}
-			public Long getResourceableId() {
-				return key;
-			}
-		};
+		return new Resourceable(type, key);
 	}
 
 	public static OLATResourceable createOLATResourceableType(final String type) {
 		return createOLATResourceableInstance(type, new Long(0));
 	}
 	
-	public static OLATResourceable createOLATResourceableType(Class clazz) {
+	public static OLATResourceable createOLATResourceableType(Class<?> clazz) {
 		return createOLATResourceableType(clazz.getName());
 	}
 	
-
-	
+	public static OLATResourceable clone(OLATResourceable original) {
+		return new Resourceable(original.getResourceableTypeName(), original.getResourceableId());
+	}
 
 	/**
 	 * Use only when you need to create a new olatresourceable instance.
@@ -81,7 +75,7 @@ public class OresHelper {
 	 * @param key the key; may not be null!
 	 * @return OLATResourceable instance
 	 */
-	public static OLATResourceable createOLATResourceableInstance(Class aClass, final Long key) {
+	public static OLATResourceable createOLATResourceableInstance(Class<?> aClass, final Long key) {
 		String type = calculateTypeName(aClass);
 		return createOLATResourceableInstance(type, key);
 	}
@@ -163,7 +157,7 @@ public class OresHelper {
 	 * @param aClass the class representing the type: NOTE: aClass.getName() may not exceed 50 chars
 	 * @return OLATResourceable
 	 */
-	public static OLATResourceable lookupType(Class aClass) {
+	public static OLATResourceable lookupType(Class<?> aClass) {
 		return lookupType(aClass, null);
 	}
 	
@@ -172,7 +166,7 @@ public class OresHelper {
 	 * @param aClass
 	 * @return Calculated type name
 	 */
-	public static String calculateTypeName(Class aClass) {
+	public static String calculateTypeName(Class<?> aClass) {
 		return calculateTypeName(aClass, null);
 	}
 	
@@ -182,7 +176,7 @@ public class OresHelper {
 	 * @param subType May not exceed 15 characters
 	 * @return Calculated type name
 	 */
-	public static String calculateTypeName(Class aClass, String subType) {
+	public static String calculateTypeName(Class<?> aClass, String subType) {
 		String comp = aClass.getName();
 		int pos = comp.lastIndexOf(".");
 		if (pos == -1) throw new AssertException("class name without package!! (contains no dot):"+comp);
@@ -201,7 +195,7 @@ public class OresHelper {
 	 * @param aClass
 	 * @return True if ores is of type aClass
 	 */
-	public static boolean isOfType(OLATResourceable ores, Class aClass) {
+	public static boolean isOfType(OLATResourceable ores, Class<?> aClass) {
 		String type = ores.getResourceableTypeName();
 		String calcName = calculateTypeName(aClass, null);
 		boolean ok = (type.equals(calcName));
@@ -226,12 +220,9 @@ public class OresHelper {
 	 * @param subType may only contain a..z and 0..9; and may only be 15 chars long
 	 * @return OLATResourceable
 	 */
-	public static OLATResourceable lookupType(Class aClass, String subType) {
+	public static OLATResourceable lookupType(Class<?> aClass, String subType) {
 		final String type = calculateTypeName(aClass, subType); 
-		OLATResourceable ores = new OLATResourceable() {
-			public String getResourceableTypeName() { return type;	}
-			public Long getResourceableId() { return null;	}};
-		return ores;
+		return new Resourceable(type, null);
 	}
 	
 	/**
@@ -265,14 +256,6 @@ public class OresHelper {
 
 	public static OLATResourceable createOLATResourceableInstanceWithoutCheck(final String type,final Long key) {
 		if (key == null) throw new AssertException("key may not be null; type = "+type);
-		return new OLATResourceable() {
-			public String getResourceableTypeName() {
-				return type;
-			}
-			public Long getResourceableId() {
-				return key;
-			}
-		};
+		return new Resourceable(type,key);
 	}
-	
 }

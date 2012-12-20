@@ -8,137 +8,46 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-<context:component-scan base-package="org.olat.instantMessaging" />
+	<context:component-scan base-package="org.olat.instantMessaging" />
 	
-	<bean id="instantMessagingModule" class="org.olat.instantMessaging.InstantMessagingModule" 
-		init-method="init" destroy-method="destroy" />
-	
-	<bean id="org.olat.instantMessaging.InstantMessaging" 
-		class="org.olat.instantMessaging.SmackInstantMessagingImpl">
-		
-		<!-- creating instance depending on config in olat.properties -->
-		<property name="sessionCountService" ref="org.olat.im.IMSessionCount${cluster.mode}"/>
-		<property name="buddyGroupService" ref="org.olat.im.IMBuddyGroupService" />
-		<property name="businessGroupService" ref="businessGroupService" />
-		
-		<!-- creating instance depending on config in olat.properties -->
-		<property name="sessionItemsService" ref="org.olat.im.IMSessionItemsService${cluster.mode}" />
-		<property name="accountService" ref="org.olat.im.IMAccountService" />
-		<property name="clientManager" ref="org.olat.im.ClienManager"/>
-		<property name="config" ref="org.olat.im.IMConfig"/>
-		<property name="nameHelper" ref="org.olat.im.NameHelper" />
-		<property name="adminConnection" ref="org.olat.im.AdminConnection" />
-		<property name="serverPluginVersion" ref="org.olat.im.IMPluginVersionService" />
-		<!-- plugin on IM server has to be the same version as on the olat client side -->
-		<property name="clientVersion" value="1.1" />
-		<property name="actionController">
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.instantMessaging.groupchat.GroupChatManagerController"/>
-			</bean>
+	<bean id="instantMessagingModule" class="org.olat.instantMessaging.InstantMessagingModule">
+		<property name="persistedProperties">
+	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
+	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
+	    	<constructor-arg index="0" ref="coordinatorManager"/>
+	    	<constructor-arg index="1" ref="instantMessagingModule" />
+	  	</bean>
 		</property>
 	</bean>
 	
-	<!-- Cluster version of Session Count -->
-	<bean id="org.olat.im.IMSessionCountCluster" 
-		class="org.olat.instantMessaging.syncservice.RemoteSessionCountOverXMPP" lazy-init="true">
-	 <property name="connection" ref="org.olat.im.AdminConnection" />
+	<!-- default configuration -->
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="instantMessagingModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				im.enabled=${instantMessaging.enable}
+			</value>
+		</property>
 	</bean>
 	
-	<!-- Local version of Session Count -->
-	<bean id="org.olat.im.IMSessionCountSingleVM" 
-		class="org.olat.instantMessaging.syncservice.SessionCountLocal"  lazy-init="true">
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7210" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.instantMessaging.ui.InstantMessagingAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="im" />
+		<property name="i18nActionKey" value="menu.imadmin"/>
+		<property name="i18nDescriptionKey" value="menu.imadmin.alt"/>
+		<property name="translationPackage" value="org.olat.admin"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="enabled" value="${instantMessaging.enable}"/>
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 	</bean>
-	
-	<bean id="org.olat.im.IMBuddyGroupService" 
-		class="org.olat.instantMessaging.syncservice.RemoteGroupCreationOverXMPP" >
-	 <property name="connection" ref="org.olat.im.AdminConnection" />
-	</bean>
-	
-	<!-- Cluster version of Session Items list -->
-	<bean id="org.olat.im.IMSessionItemsServiceCluster" 
-		class="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP"  lazy-init="true">
-		<constructor-arg ref="IMPrefsManager" />
-	 <property name="connection" ref="org.olat.im.AdminConnection" />
-	</bean>
-	
-	<!-- Local version of Session Items list -->
-	<bean id="org.olat.im.IMSessionItemsServiceSingleVM" 
-		class="org.olat.instantMessaging.ui.ConnectedUsersLocal"  lazy-init="true">
-		<constructor-arg ref="IMPrefsManager" />
-	</bean>
-	
-	<bean id="org.olat.im.IMAccountService" 
-		class="org.olat.instantMessaging.syncservice.RemoteAccountCreationOverXMPP" >
-	 <property name="connection" ref="org.olat.im.AdminConnection" />
-	</bean>
-	
-	<bean id="org.olat.im.IMPluginVersionService" 
-		class="org.olat.instantMessaging.syncservice.RemotePluginVersionOverXMPP" >
-	 <property name="connection" ref="org.olat.im.AdminConnection" />
-	</bean>
-		
-	<bean id="org.olat.im.ClienManager" 
-		class="org.olat.instantMessaging.ClientManagerImpl"/>
-		
-	<bean id="org.olat.im.AdminConnection" 
-	class="org.olat.instantMessaging.AdminUserConnection" destroy-method="dispose">
-		<constructor-arg ref="org.olat.im.IMConfig" />
-	</bean>
-		
-	<bean id="org.olat.im.IMConfig" class="org.olat.instantMessaging.IMConfig">
-		<property name="enabled" value="${instantMessaging.enable}" />
-		<property name="servername" value="${instantMessaging.server.name}" />
-		<property name="nodeId" value="${node.id}" />		
-		<property name="multipleInstances" value="${instantMessaging.multipleInstances}"/>
-		<property name="adminName" value="${instantMessaging.admin.username}" />		
-		<property name="adminPassword" value="${instantMessaging.admin.password}" />
-		<property name="replaceStringForEmailAt" value="${instantMessaging.replaceStringForEmailAt}" />
-		<!--  fxdiff: FXOLAT-46 -->
-		<property name="hideExternalClientInfo" value="${instantMessaging.hideExternalClientInfo}" />
-		
-		<!-- adjust for you needs-->
-		
-		<!-- polling intervall when not chatting -->
-		<property name="idlePolltime" value="5000" />
-		<!-- polling intervall while chatting -->
-		<property name="chatPolltime" value="2000" />
-		<!-- synchonisation of groups on IM server. -->
-		<property name="syncGroups" value="${instantMessaging.sync.groups}" />
-		<property name="packetReplyTimeout" value="${instantMessaging.packetReplyTimeout}" />
-	</bean>
-	
-	<bean id="org.olat.im.NameHelper" class="org.olat.instantMessaging.IMNameHelper">
-		<constructor-arg index="0" ref="org.olat.im.IMConfig" />
-		<constructor-arg index="1" value="${instance.id}" />
-	</bean>
-	
-	<bean id="IMPrefsManager" class="org.olat.instantMessaging.ImPrefsManager">
-		<property name="awarenessVisible" value="${instantMessaging.awarenessVisible}" />
-	</bean>
-	
-	<!-- fxdiff FXOLAT-219 decrease the load on openfire while synching -->
-	<bean id="instantMessagingSyncTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-	    <property name="jobDetail" ref="org.olat.instantMessaging.sync.learning.groups" />
-    	<!-- repeat every 10 seconds -->
-    	<property name="repeatInterval" value="10000" />
-    	<!-- never repeat -->
-    	<property name="repeatCount" value="0"/>
-			<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
-	    <property name="startDelay" value="${instantMessaging.sync.learning.groups.start.delay}" />
-	</bean>
-	
-	<bean id="countUserOnlineTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="countUserOnlineJob" />
-		<property name="cronExpression" value="*/30 * * * * ?" />
-		<property name="startDelay" value="40000" />
-	</bean>
-	
-	<bean id="countUserOnlineJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-		<property name="jobClass" value="org.olat.instantMessaging.CountSessionsOnServerJob" />
-	</bean>
-	
-	<bean id="org.olat.instantMessaging.sync.learning.groups" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
-	  <property name="jobClass" value="org.olat.instantMessaging.InstantMessagingJob"/>
-	</bean>
-
 </beans>

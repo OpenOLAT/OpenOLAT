@@ -85,8 +85,9 @@ import org.olat.group.model.DisplayMembers;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.groupchat.InstantMessagingGroupChatController;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.wiki.WikiManager;
@@ -179,7 +180,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private LayoutMain3ColsController columnLayoutCtr;
 
 	private Controller collabToolCtr;
-	private Controller chatCtr;
 	
 	private BusinessGroupEditController bgEditCntrllr;
 	//fxdiff VCRP-1,2: access control of resources
@@ -209,6 +209,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private Controller accessController;
 	
 	private boolean needActivation;
+	private final boolean chatAvailable;
 
 	/**
 	 * Do not use this constructor! Use the BGControllerFactory instead!
@@ -238,17 +239,23 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, vc, "grouprun");
 			listenTo(columnLayoutCtr); // cleanup on dispose
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			chatAvailable = false;
 			return;
 		}
 
 		List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(Collections.singletonList(bGroup.getKey()), getIdentity());
 		if(isOnWaitinglist(memberships)) {
 			putInitialPanel(getOnWaitingListMessage(ureq, bGroup));
+			chatAvailable = false;
 			return;
 		}
 
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
+		
+		chatAvailable = CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() &&
+				CoreSpringFactory.getImpl(InstantMessagingModule.class).isGroupEnabled() && 
+				CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).isToolEnabled(CollaborationTools.TOOL_CHAT);
 
 		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin()
 				|| ureq.getUserSession().getRoles().isGroupManager()
@@ -290,12 +297,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		setDisposedMsgController(disposedController);
 
 		// add as listener to BusinessGroup so we are being notified about changes.
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), businessGroup);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), businessGroup);
 
 		// show disabled message when collaboration is disabled (e.g. in a test)		
 		if(AssessmentEvent.isAssessmentStarted(ureq.getUserSession())){
 			groupRunDisabled = true;
-			this.showError("grouprun.disabled");				
+			showError("grouprun.disabled");				
 		}
 		
 		Object wildcard = ureq.getUserSession().getEntry("wild_card_" + businessGroup.getKey());
@@ -581,15 +588,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private void handleTreeActions(UserRequest ureq, String cmd) {
 		// release edit lock if available
 		removeAsListenerAndDispose(bgEditCntrllr);
+		removeAsListenerAndDispose(collabToolCtr);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		
-		// dispose current tool controller if available except for IM which should be available even while changing collabtool
-		if (collabToolCtr instanceof InstantMessagingGroupChatController) {
-			//
-		} else {
-			removeAsListenerAndDispose(collabToolCtr);
-		}
+
 		// init new controller according to user click
 		if (ACTIVITY_MENUSELECT_OVERVIEW.equals(cmd)) {
 			// root node clicked display overview
@@ -607,13 +609,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
 		} else if (ACTIVITY_MENUSELECT_CHAT.equals(cmd)) {
-			
-			if (chatCtr != null) {
-				collabToolCtr = chatCtr;
-			} else {
-				collabToolCtr = collabTools.createChatController(ureq, getWindowControl(), this.businessGroup);
-				chatCtr = collabToolCtr;
-			}
+			collabToolCtr = collabTools.createChatController(ureq, getWindowControl(), businessGroup, isAdmin);
 			if(collabToolCtr == null) {
 				showWarning("groupchat.not.available");
 				mainPanel.setContent(new Panel("empty"));
@@ -779,15 +775,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	protected void doDispose() {
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CLOSED, getClass());
 		
-		if (chatCtr instanceof InstantMessagingGroupChatController) {
-			InstantMessagingGroupChatController chat = (InstantMessagingGroupChatController) chatCtr;
-			if (chat.isChatWindowOpen()) {
-				chat.close();
-				getWindowControl().getWindowBackOffice().sendCommandTo(chat.getCloseCommand());
-			}
-			removeAsListenerAndDispose(chatCtr);
+		if (chatAvailable) {
+			CloseInstantMessagingEvent e = new CloseInstantMessagingEvent(businessGroup);
+			singleUserEventBus.fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 		}
-		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, businessGroup);
 		if(singleUserEventBus != null) {
 			singleUserEventBus.deregisterFor(this, assessmentEventOres);
@@ -1073,10 +1064,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 
 		
-		if (InstantMessagingModule.isEnabled() && 
-				collabTools.isToolEnabled(CollaborationTools.TOOL_CHAT) && 
-				InstantMessagingModule.isSyncGroups() // whether LearningGroups can have chat or not)
-				) {
+		if (chatAvailable) {
 			gtnChild = new GenericTreeNode();
 			gtnChild.setTitle(translate("menutree.chat"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CHAT);

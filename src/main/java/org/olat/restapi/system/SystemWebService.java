@@ -118,6 +118,22 @@ public class SystemWebService {
 		return new MonitoringWebService();
 	}
 	
+	@Path("indexer")
+	public IndexerWebService getIndexer(@Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return null;
+		}
+		return new IndexerWebService();
+	}
+	
+	@Path("notifications")
+	public NotificationsAdminWebService getNotifications(@Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return null;
+		}
+		return new NotificationsAdminWebService();
+	}
+	
 	private boolean isMonitoringEnabled() {
 		MonitoringModule module = CoreSpringFactory.getImpl(MonitoringModule.class);
 		return module.isEnabled();

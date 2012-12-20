@@ -558,6 +558,9 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		if (qtistatus.isSurvey()) {
 			// Send also finished event in case of survey
 			fireEvent(ureq, new IQSubmittedEvent());
+		} else {
+			// for test and self-assessment, generate detailed results
+			generateDetailsResults(ureq, ai);
 		}
 	}
 	

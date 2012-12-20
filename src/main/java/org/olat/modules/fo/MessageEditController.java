@@ -54,6 +54,9 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
@@ -96,7 +99,7 @@ public class MessageEditController extends FormBasicController {
 	private DisplayPortraitController portraitCtr;
 	private ForumManager fm;
 	private DialogBoxController delAttCtr;
-	private OlatRootFolderImpl tempUploadFolder;
+	private VFSContainer tempUploadFolder;
 	private boolean userIsMsgCreator;
 	private boolean msgHasChildren;
 	private VFSItemExcludePrefixFilter exclFilter;
@@ -117,7 +120,7 @@ public class MessageEditController extends FormBasicController {
 		this.message = message;
 		this.fm = ForumManager.getInstance();
 
-		tempUploadFolder = new OlatRootFolderImpl(File.separator + "tmp/" + CodeHelper.getGlobalForeverUniqueID() + "/", null);
+		tempUploadFolder = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
 		// nfs creates .nfs12345 - files during deletion, those shouldn't be displayed / copied after save
 		// See OLAT-4182 and OLAT-4219
 		exclFilter = new VFSItemExcludePrefixFilter(ATTACHMENT_EXCLUDE_PREFIXES);
@@ -344,7 +347,7 @@ public class MessageEditController extends FormBasicController {
 					} else {
 						// files got stored in an extra tempFolder, to use the same
 						// fileUploader multiple times
-						fileUpload.moveUploadFileTo(tempUploadFolder.getBasefile());
+						fileUpload.moveUploadFileTo(tempUploadFolder);
 						fileUpload.showError(false);
 						fileUpload.reset();
 

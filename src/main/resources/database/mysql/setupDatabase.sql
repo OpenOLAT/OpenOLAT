@@ -938,6 +938,8 @@ create table  if not exists o_ac_reservation (
    creationdate datetime,
    lastmodified datetime,
    version mediumint unsigned not null,
+   expirationdate datetime,
+   reservationtype varchar(32),
    fk_identity bigint not null,
    fk_resource bigint not null,
    primary key (reservation_id)
@@ -974,6 +976,21 @@ create table if not exists o_ac_paypal_transaction (
    primary key (transaction_id)
 );
 
+-- openmeetings
+create table if not exists o_om_room_reference (
+   id bigint not null,
+   version mediumint unsigned not null,
+   lastmodified datetime,
+   creationdate datetime,
+   businessgroup bigint,
+   resourcetypename varchar(50),
+   resourcetypeid bigint,
+   ressubpath varchar(255),
+   roomId bigint,
+   config longtext,
+   primary key (id)
+);
+
 -- assessment tables
 -- efficiency statments
 create table if not exists o_as_eff_statement (
@@ -1007,6 +1024,38 @@ create table o_as_user_course_infos (
    timespend bigint,
    fk_identity bigint,
    fk_resource_id bigint,
+   primary key (id)
+);
+
+-- instant messaging
+create table if not exists o_im_message (
+   id bigint not null,
+   creationdate datetime,
+   msg_resname varchar(50) not null,
+   msg_resid bigint not null,
+   msg_anonym bit default 0,
+   msg_from varchar(255) not null,
+   msg_body longtext,
+   fk_from_identity_id bigint not null,
+   primary key (id)
+);
+
+create table if not exists o_im_notification (
+   id bigint not null,
+   creationdate datetime,
+   chat_resname varchar(50) not null,
+   chat_resid bigint not null,
+   fk_to_identity_id bigint not null,
+   fk_from_identity_id bigint not null,
+   primary key (id)
+);
+
+create table if not exists o_im_preferences (
+   id bigint not null,
+   creationdate datetime,
+   visible_to_others bit default 0,
+   roster_def_status varchar(12),
+   fk_from_identity_id bigint not null,
    primary key (id)
 );
 
@@ -1167,6 +1216,7 @@ create or replace view o_gp_business_v  as (
       gp.waitinglist_enabled as waitinglist_enabled,
       gp.autocloseranks_enabled as autocloseranks_enabled,
       (select count(part.id) from o_bs_membership as part where part.secgroup_id = gp.fk_partipiciantgroup) as num_of_participants,
+      (select count(pending.reservation_id) from o_ac_reservation as pending where pending.fk_resource = gp.fk_resource) as num_of_pendings,
       (select count(own.id) from o_bs_membership as own where own.secgroup_id = gp.fk_ownergroup) as num_of_owners,
       (case when gp.waitinglist_enabled = 1
          then 
@@ -1438,18 +1488,21 @@ create index  projectbroker_project_broker_idx on o_projectbroker_project (proje
 create index  projectbroker_project_id_idx on o_projectbroker_project (project_id);
 create index  o_projectbroker_customfields_idx on o_projectbroker_customfields (fk_project_id);
 
+alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_identity foreign key (fk_identity) references o_bs_identity (id);
+
 alter table o_checkpoint_results add constraint FK9E30F4B661159ZZY foreign key (checkpoint_fk) references o_checkpoint (checkpoint_id) ;
 alter table o_checkpoint_results add constraint FK9E30F4B661159ZZX foreign key (identity_fk) references o_bs_identity (id);
 alter table o_checkpoint add constraint FK9E30F4B661159ZZZ foreign key (checklist_fk) references o_checklist (checklist_id);
 
 create index cmt_id_idx on o_usercomment (resid);
 create index cmt_name_idx on o_usercomment (resname);
-create index cmt_subpath_idx on o_usercomment (ressubpath);
+create index cmt_subpath_idx on o_usercomment (ressubpath(255));
 alter table o_usercomment add index FK92B6864A18251F0 (parent_key), add constraint FK92B6864A18251F0 foreign key (parent_key) references o_usercomment (comment_id);
 alter table o_usercomment add index FKF26C8375236F20A (creator_id), add constraint FKF26C8375236F20A foreign key (creator_id) references o_bs_identity (id);
 create index rtn_id_idx on o_userrating (resid);
 create index rtn_name_idx on o_userrating (resname);
-create index rtn_subpath_idx on o_userrating (ressubpath);
+create index rtn_subpath_idx on o_userrating (ressubpath(255));
 create index rtn_rating_idx on o_userrating (rating);
 alter table o_userrating add index FKF26C8375236F20X (creator_id), add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
 
@@ -1457,8 +1510,8 @@ create index usr_notification_interval_idx on o_user (notification_interval);
 
 create index mark_id_idx on o_mark(resid);
 create index mark_name_idx on o_mark(resname);
-create index mark_subpath_idx on o_mark(ressubpath);
-create index mark_businesspath_idx on o_mark(businesspath);
+create index mark_subpath_idx on o_mark(ressubpath(255));
+create index mark_businesspath_idx on o_mark(businesspath(255));
 create index FKF26C8375236F21X on o_mark(creator_id);
 alter table o_mark add constraint FKF26C8375236F21X foreign key (creator_id) references o_bs_identity (id);
 
@@ -1473,6 +1526,8 @@ create index o_co_db_cat_idx on o_co_db_entry (category);
 create index o_co_db_name_idx on o_co_db_entry (name);
 alter table o_co_db_entry add constraint FK_DB_ENTRY_TO_IDENT foreign key (identity) references o_bs_identity (id);
 
+alter table o_om_room_reference  add constraint idx_omroom_to_bgroup foreign key (businessgroup) references o_gp_business (group_id);
+create index idx_omroom_residname on o_om_room_reference (resourcetypename,resourcetypeid);
 
 alter table o_ep_artefact add constraint FKF26C8375236F28X foreign key (fk_artefact_auth_id) references o_bs_identity (id);
 alter table o_ep_struct_el add constraint FKF26C8375236F26X foreign key (fk_olatresource) references o_olatresource (resource_id);
@@ -1508,6 +1563,12 @@ create index paypal_pay_key_idx on o_ac_paypal_transaction (pay_key);
 create index paypal_pay_trx_id_idx on o_ac_paypal_transaction (ipn_transaction_id);
 create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_transaction_id);
 
+alter table o_im_message add constraint idx_im_msg_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
+create index idx_im_msg_res_idx on o_im_message (msg_resid,msg_resname);
+alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_to_identity_id) references o_bs_identity (id);
+alter table o_im_notification add constraint idx_im_not_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
+create index idx_im_chat_res_idx on o_im_notification (chat_resid,chat_resname);
+alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_from_identity_id) references o_bs_identity (id);
 
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
 

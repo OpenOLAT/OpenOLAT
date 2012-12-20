@@ -210,25 +210,30 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		contentBorn.contextPut("locale", ureq.getLocale());
 
 		// prepare info message
-		InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
+		InfoMessageManager mrg = CoreSpringFactory.getImpl(InfoMessageManager.class);
 		String infomsg = mrg.getInfoMessage();
-		if (infomsg != null && infomsg.length() > 0)
+		if (infomsg != null && infomsg.length() > 0) {
 			contentBorn.contextPut("infomsg", infomsg);
+		}
 		
 		String infomsgNode = mrg.getInfoMessageNodeOnly();
-		if (infomsgNode != null && infomsgNode.length() > 0)
+		if (infomsgNode != null && infomsgNode.length() > 0) {
 			contentBorn.contextPut("infomsgNode", infomsgNode);
-		
+		}
 		
 		// add additional login intro message for custom content
 		String customMsg = translate("login.custommsg");
-		if(!StringUtils.isBlank(customMsg))
+		if(!StringUtils.isBlank(customMsg)) {
 			contentBorn.contextPut("logincustommsg",customMsg);
+		}
+		
+		//login is blocked?
+		if(AuthHelper.isLoginBlocked()) {
+			contentBorn.contextPut("loginBlocked", Boolean.TRUE);
+		}
 		
 		return contentBorn;
 	}
-
-	
 	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
@@ -341,7 +346,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		}
 	}
 
-	
 	private TreeModel buildTreeModel() {
 		GenericTreeNode root, gtn;
 		
@@ -387,9 +391,4 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 		return gtm;
 	}
-	
-	
-	
-	
-	
 }

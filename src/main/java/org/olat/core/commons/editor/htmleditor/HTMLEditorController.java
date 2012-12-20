@@ -108,6 +108,7 @@ public class HTMLEditorController extends FormBasicController {
 	private boolean editable = true;
 	private boolean newFile = true;
 	private boolean editorCheckEnabled = true; // default
+	private boolean versions = true;
 	private String fileToLargeError = null;
 
 	/**
@@ -132,11 +133,12 @@ public class HTMLEditorController extends FormBasicController {
 	 * @return Controller with internal-link selector
 	 */
 	protected HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
-			CustomLinkTreeModel customLinkTreeModel, boolean editorCheckEnabled) {
+			CustomLinkTreeModel customLinkTreeModel, boolean editorCheckEnabled, boolean versions) {
 		super(ureq, wControl, "htmleditor");
 		// set some basic variables
 		this.baseContainer = baseContainer;
 		this.fileRelPath = relFilePath;
+		this.versions = versions;
 		this.customLinkTreeModel = customLinkTreeModel;
 		this.editorCheckEnabled = editorCheckEnabled;
 		// make sure the filename doesn't start with a slash
@@ -390,7 +392,7 @@ public class HTMLEditorController extends FormBasicController {
 		}
 		
 		// save the file
-		if(fileLeaf instanceof Versionable && ((Versionable)fileLeaf).getVersions().isVersioned()) {
+		if(versions && fileLeaf instanceof Versionable && ((Versionable)fileLeaf).getVersions().isVersioned()) {
 			InputStream inStream = FileUtils.getInputStream(fileContent.toString(), charSet);
 			((Versionable)fileLeaf).getVersions().addVersion(getIdentity(), "", inStream);
 		} else {

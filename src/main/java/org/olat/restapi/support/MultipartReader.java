@@ -38,6 +38,7 @@ import org.apache.commons.fileupload.util.Streams;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 
 /**
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -79,7 +80,7 @@ public class MultipartReader {
 					} else {
 						filename = "upload-" + UUID.randomUUID().toString().replace("-", "");
 					}
-					file = new File(System.getProperty("java.io.tmpdir"), filename);
+					file = new File(WebappHelper.getTmpDir(), filename);
 					try {
 						save(itemStream, file);
 					} catch (Exception e) {
