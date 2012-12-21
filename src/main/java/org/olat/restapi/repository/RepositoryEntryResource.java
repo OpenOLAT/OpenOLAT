@@ -430,7 +430,7 @@ public class RepositoryEntryResource {
 			}
 
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			repositoryManager.removeParticipants(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry, null);
+			repositoryManager.removeParticipants(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry, null, false);
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to remove a participant from a repository entry", e);
