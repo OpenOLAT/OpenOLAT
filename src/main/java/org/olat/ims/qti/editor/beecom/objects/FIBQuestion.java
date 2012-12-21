@@ -371,7 +371,7 @@ public class FIBQuestion extends Question implements QTIObject {
 		QTIEditHelper.addFeedbackSolution(respcondition_fail);
 		
 		// remove whole respcondition if empty
-		if (or.element("varequal") == null)
+		if (or.element("not") == null)
 			resprocessingXML.remove(respcondition_fail);
 	}
 
