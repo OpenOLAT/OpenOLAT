@@ -139,7 +139,9 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		return super.resolve(path);
 	}
 	
-	private void init() {
+	@Override
+	protected void init() {
+		super.init();
 	// collect buddy groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 

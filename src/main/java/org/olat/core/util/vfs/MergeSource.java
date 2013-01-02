@@ -46,8 +46,8 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 public class MergeSource extends AbstractVirtualContainer {
 
 	private VFSContainer parentContainer;
-	private final List<VFSContainer> mergedContainers;
-	private final List<VFSContainer> mergedContainersChildren;
+	private transient List<VFSContainer> mergedContainers;
+	private transient List<VFSContainer> mergedContainersChildren;
 	private VFSContainer rootWriteContainer;
 	private VFSSecurityCallback securityCallback;
 
@@ -57,8 +57,17 @@ public class MergeSource extends AbstractVirtualContainer {
 	public MergeSource(VFSContainer parentContainer, String name) {
 		super(name);
 		this.parentContainer = parentContainer;
-		this.mergedContainers = new ArrayList<VFSContainer>();
-		this.mergedContainersChildren = new ArrayList<VFSContainer>();
+		mergedContainers = new ArrayList<VFSContainer>();
+		mergedContainersChildren = new ArrayList<VFSContainer>();
+	}
+	
+	protected void init() {
+		if(mergedContainers == null) {
+			mergedContainers = new ArrayList<VFSContainer>();
+		}
+		if(mergedContainersChildren == null) {
+			mergedContainersChildren = new ArrayList<VFSContainer>(2);
+		}
 	}
 
 	@Override
