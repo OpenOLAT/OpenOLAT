@@ -146,10 +146,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private static final String ACTION_CALENDAR = "cal";
 	private static final String ACTION_BOOKMARK = "bm";
 	private static final String ACTION_CHAT = "chat";
-	private static final String ACTION_CHAT_LOG = "chatlog";
 	private static final String TOOL_BOOKMARK = "b";
 	private static final String TOOL_CHAT = "chat";
-	private static final String TOOL_CHAT_LOG = "chatlog";
 	
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
 	private final OLATResourceable courseRunOres; //course run ores for course run channel 
@@ -432,8 +430,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		String selNodeId = nclr.getSelectedNodeId();
 		luTree.setSelectedNodeId(selNodeId);
 		luTree.setOpenNodeIds(nclr.getOpenNodeIds());
-		CourseNode courseNode = nclr.getCalledCourseNode();
-		updateState(courseNode);
 
 		// get new run controller.
 		currentNodeController = nclr.getRunController();
@@ -453,12 +449,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// enableCustomCourseCSS(ureq);
 		
 		return true;
-	}
-
-	private void updateState(CourseNode courseNode) {
-		// TODO: fj : describe when the course node can be null
-		if (courseNode == null) return;
-		
 	}
 
 	/**
@@ -510,7 +500,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				luTree.setSelectedNodeId(nodeId);
 				luTree.setOpenNodeIds(nclr.getOpenNodeIds());
 				currentCourseNode = nclr.getCalledCourseNode();
-				updateState(currentCourseNode);
 
 				// get new run controller. Dispose only if not already disposed in navHandler.evaluateJumpToTreeNode()
 				if (currentNodeController != null && !currentNodeController.isDisposed()) currentNodeController.dispose();
@@ -712,10 +701,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else if (cmd.equals(TOOL_CHAT)) {
 			OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
-		} else if (cmd.equals(TOOL_CHAT_LOG)) {
-			ChatLogHelper helper = CoreSpringFactory.getImpl(ChatLogHelper.class);
-			MediaResource download = helper.logMediaResource(course, getLocale());
-			ureq.getDispatchResult().setResultingMediaResource(download);
 		} else if (cmd.equals("customDb")) {
 			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
 				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
@@ -1120,9 +1105,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				&& CourseModule.isCourseChatEnabled() && cc.isChatEnabled();
 		if(chatIsEnabled) {
 			myTool.addLink(ACTION_CHAT, translate("command.coursechat"), TOOL_CHAT, null);
-			if(isGroupAdmin) {
-				myTool.addLink(ACTION_CHAT_LOG, translate("command.coursechatlog"), TOOL_CHAT_LOG, null);
-			}
 		}
 		
 		if (CourseModule.displayParticipantsCount() && !isGuest) {
@@ -1211,14 +1193,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			currentNodeController = null;
 		}
 
-		// instant messaging: send presence like "leaving course: Biology I" as
-		// awareness info.
-		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()&& CourseModule.isCourseChatEnabled() && !isGuest) {
-			//TODO im
-			/*if (courseChatManagerCtr != null) {
-				courseChatManagerCtr.removeChat(course);
-			}*/
-		}
 		// log to Statistical and User log
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_LEAVING, getClass());
 		

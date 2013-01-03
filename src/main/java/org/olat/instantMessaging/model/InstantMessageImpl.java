@@ -47,7 +47,8 @@ import org.olat.instantMessaging.InstantMessage;
 @Table(name="o_im_message")
 @NamedQueries({
 	@NamedQuery(name="loadIMessageByKey",query="select msg from instantmessage msg  where msg.key=:key"),
-	@NamedQuery(name="loadIMessageByResource", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname order by msg.creationDate desc")
+	@NamedQuery(name="loadIMessageByResource", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname order by msg.creationDate desc"),
+	@NamedQuery(name="loadIMessageByResourceAndDate", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname and msg.creationDate>=:from order by msg.creationDate desc"),
 		
 })
 public class InstantMessageImpl implements InstantMessage, Persistable, CreateInfo {

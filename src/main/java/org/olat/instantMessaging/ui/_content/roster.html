@@ -1,7 +1,10 @@
 <div class="o_groupchat_roster">
 	<ul>
 	#foreach($entry in $rosterList.entries)
-		<li>#if($entry.anonym) anon #end ${entry.name}</li>			
+		<li>#if($entry.anonym) anon #end
+			${entry.name}
+			
+		</li>			
 	#end
 	</ul>
 </div>

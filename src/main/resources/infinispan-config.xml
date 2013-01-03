@@ -25,7 +25,7 @@
 	
 	<namedCache name="UserSessionManager@usersession">
 		<eviction strategy="NONE"/>
-		<expiration lifespan="-1" maxIdle="-1"/>
+		<expiration lifespan="-1" maxIdle="-1" wakeUpInterval="0"/>
 		<transaction transactionMode="TRANSACTIONAL" />
 	</namedCache>
 	

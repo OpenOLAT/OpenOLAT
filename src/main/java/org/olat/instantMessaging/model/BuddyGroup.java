@@ -35,16 +35,20 @@ public class BuddyGroup implements Serializable {
 	private static final long serialVersionUID = 4744899346855880769L;
 	private Long groupKey;
 	private String groupName;
-	private List<Buddy> buddy;
+	private List<Buddy> buddyList;
 	
 	public BuddyGroup() {
-		buddy = new ArrayList<Buddy>();
+		buddyList = new ArrayList<Buddy>();
 	}
 	
 	public BuddyGroup(Long groupKey, String groupName) {
 		this.groupKey = groupKey;
 		this.groupName = groupName;
-		buddy = new ArrayList<Buddy>();
+		buddyList = new ArrayList<Buddy>();
+	}
+	
+	public int size() {
+		return buddyList.size();
 	}
 		
 	public Long getGroupKey() {
@@ -63,11 +67,19 @@ public class BuddyGroup implements Serializable {
 		this.groupName = groupName;
 	}
 	
-	public List<Buddy> getBuddy() {
-		return buddy;
+	public void addBuddy(Buddy buddy) {
+		for(Buddy current:buddyList) { 
+			if(current.getIdentityKey().equals(buddy.getIdentityKey())) {
+				if(!current.isVip() && buddy.isVip()) {
+					current.setVip(true);
+				}
+				return;
+			}
+		}
+		buddyList.add(buddy);
 	}
 	
-	public void setBuddy(List<Buddy> buddy) {
-		this.buddy = buddy;
+	public List<Buddy> getBuddy() {
+		return buddyList;
 	}
 }

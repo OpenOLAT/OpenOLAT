@@ -26,6 +26,8 @@
 package org.olat.instantMessaging.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -151,7 +153,9 @@ public class ChatController extends BasicController implements GenericEventListe
 		jsFocusCmd = "<script>Ext.onReady(function(){try{focus_"+pn+"();}catch(e){}});</script>";
 
 		chatMsgFieldContent.contextPut("chatMessages", "");
-		List<InstantMessage> lastMessages = imService.getMessages(getIdentity(), getOlatResourceable(), 0, 10, true);
+
+		Date yesterday = getYesterday();
+		List<InstantMessage> lastMessages = imService.getMessages(getIdentity(), getOlatResourceable(), yesterday, 0, 50, true);
 		for(int i=lastMessages.size(); i-->0; ) {
 			appendToMessageHistory(lastMessages.get(i), false);
 		}
@@ -164,7 +168,15 @@ public class ChatController extends BasicController implements GenericEventListe
 		refresh.setTitle("im.refresh");
 
 		putInitialPanel(chatPanelCtr.getInitialComponent());
-		doSendPresence(toggleAnonymousForm.getNickName(), toggleAnonymousForm.isUseNickName());
+		if(toggleAnonymousForm != null) {
+			doSendPresence(toggleAnonymousForm.getNickName(), toggleAnonymousForm.isUseNickName());
+		}
+	}
+	
+	private Date getYesterday() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -1);
+		return cal.getTime();
 	}
 	
 	public OLATResourceable getOlatResourceable() {

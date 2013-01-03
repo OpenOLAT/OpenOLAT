@@ -19,7 +19,9 @@
  */
 package org.olat.instantMessaging;
 
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -35,9 +37,11 @@ public class InstantMessagingEvent extends MultiUserEvent {
 	private Long fromId;
 	private String name;
 	private boolean anonym;
+	private OLATResourceable chatResource;
 	
-	public InstantMessagingEvent(String command) {
+	public InstantMessagingEvent(String command, OLATResourceable chatResource) {
 		super(command);
+		this.chatResource = chatResource;
 	}
 
 	public Long getMessageId() {
@@ -54,6 +58,14 @@ public class InstantMessagingEvent extends MultiUserEvent {
 
 	public void setFromId(Long fromId) {
 		this.fromId = fromId;
+	}
+
+	public OLATResourceable getChatResource() {
+		return chatResource;
+	}
+
+	public void setChatResource(OLATResourceable chatResource) {
+		this.chatResource = OresHelper.clone(chatResource);
 	}
 
 	public String getName() {

@@ -150,7 +150,7 @@ public class ChatManagerController extends BasicController {
 	 * @param jabberId
 	 * @return
 	 */
-	public boolean hasRunningChat(Long chatId) {
-		return chats.containsKey(chatId);
+	public boolean hasRunningChat(OLATResourceable chatResource) {
+		return chats.containsKey(chatResource.getResourceableId());
 	}
 }

@@ -71,8 +71,8 @@ public class InfinispanCacher implements Cacher {
 		return new InfinispanCacheWrapper<U,V>(cache);
 	}
 	
-	private void createInfinispanConfiguration(String type, String cacheName) {
-		Configuration conf = cacheManager.getCacheConfiguration(type);
+	private void createInfinispanConfiguration(String type, String cacheName) {	
+		Configuration conf = cacheManager.getCacheConfiguration(cacheName);
 		if(conf == null) {
 			int maxEntries = 10000;
 			long maxIdle = 900000l;

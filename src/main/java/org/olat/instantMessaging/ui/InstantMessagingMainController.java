@@ -350,7 +350,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		if (imEvent.getCommand().equals("message")) {
 			//user receives messages from an other user
 			Long fromId = imEvent.getFromId();
-			if(!chatMgrCtrl.hasRunningChat(fromId)) {
+			if(!chatMgrCtrl.hasRunningChat(imEvent.getChatResource())) {
 				//only show icon if no chat running or msg from other user
 				//add follow up message to info holder
 				if (!showNewMessageHolder.contains(fromId)) {
