@@ -267,7 +267,12 @@
         </property>
 </bean>
 
-	<!-- enable to use a generic regexp based email  and password checker. Make sure you adjusted also the corresponding i18n keys -->
+	<!-- Generic regexp based email  and password checker. 
+	     If you customize this, make sure you adjusted the i18n keys                            
+	 	form.checkUsername
+		form.checkPassword
+	     of the package org.olat.user
+	-->
 	<bean id="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxCheckerWithEmail" />
 
 <bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager">

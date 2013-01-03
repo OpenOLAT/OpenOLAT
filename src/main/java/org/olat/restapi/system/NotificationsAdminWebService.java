@@ -48,6 +48,13 @@ public class NotificationsAdminWebService {
 	
 	private static final OLog log = Tracing.createLoggerFor(NotificationsAdminWebService.class);
 	
+	/**
+	 * Return the status of the notifications job: running, stopped
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The status of the notifications job
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @return The status of the notifications job
+	 */
 	@GET
 	@Path("status")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -55,6 +62,13 @@ public class NotificationsAdminWebService {
 		return Response.ok(new NotificationsStatus(getJobStatus())).build();
 	}
 	
+	/**
+	 * Return the status of the notifications job: running, stopped
+   * @response.representation.200.mediaType text/plain
+   * @response.representation.200.doc The status of the notifications job
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @return The status of the notifications job
+	 */
 	@GET
 	@Path("status")
 	@Produces({MediaType.TEXT_PLAIN})
@@ -79,6 +93,13 @@ public class NotificationsAdminWebService {
 		}
 	}
 	
+	/**
+	 * Update the status of the notifications job: running, stopped.
+	 * Running start the indexer, stopped, stop it.
+   * @response.representation.200.doc The status has changed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @return The status of the notification
+	 */
 	@POST
 	@Path("status")
 	public Response setStatus(@FormParam("status") String status, @Context HttpServletRequest request) {

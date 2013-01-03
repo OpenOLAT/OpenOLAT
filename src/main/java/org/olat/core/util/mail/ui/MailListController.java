@@ -208,7 +208,7 @@ public class MailListController extends BasicController implements Activateable2
 			if(StringHelper.containsNonWhitespace(metaId)) {
 				mails = MailManager.getInstance().getEmailsByMetaId(metaId);
 			} else {
-				mails = MailManager.getInstance().getOutbox(getIdentity(), 0, 0);
+				mails = MailManager.getInstance().getOutbox(getIdentity(), 0, -1);
 			}
 			
 			//strip meta emails
@@ -224,7 +224,7 @@ public class MailListController extends BasicController implements Activateable2
 				}
 			}
 		} else {
-			mails = MailManager.getInstance().getInbox(getIdentity(), null, Boolean.TRUE, null, 0, 0);
+			mails = MailManager.getInstance().getInbox(getIdentity(), null, Boolean.TRUE, null, 0, -1);
 		}
 		
 		//extract contexts

@@ -121,7 +121,9 @@ class CoursefolderWebDAVMergeSource extends MergeSource {
 		return super.resolve(path);
 	}
 	
-	private void init() {
+	@Override
+	protected void init() {
+		super.init();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<RepositoryEntry> courseEntries = rm.queryByEditor(identity, CourseModule.getCourseTypeName());
 		// Add all found repo entries to merge source

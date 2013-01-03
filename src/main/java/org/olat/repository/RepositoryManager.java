@@ -1813,11 +1813,13 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param logger
 	 */
-	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing){
+	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing, boolean sendMail) {
 		for (Identity identity : removeIdentities) {
     	securityManager.removeIdentityFromSecurityGroup(identity, re.getParticipantGroup());
-    	
-    	RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
+
+    	if(sendMail) {
+    		RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
+    	}
 
 			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -2049,7 +2051,7 @@ public class RepositoryManager extends BasicManager {
 				if(e.getRepoParticipant().booleanValue()) {
 					addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re, mailing);
 				} else {
-					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re, mailing);
+					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re, mailing, true);
 				}
 			}
 		}

@@ -45,6 +45,8 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.DeletableGroupData;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.model.OpenMeetingsRecording;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
@@ -100,7 +102,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephae.rosse@frentix.com
  */
 @Service
-public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDeletable {
+public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDeletable, DeletableGroupData {
 	
 	private final static OLog log = Tracing.createLoggerFor(OpenMeetingsManagerImpl.class);
 	
@@ -114,6 +116,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	private CoordinatorManager coordinator;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	private CacheWrapper<String,Long> sessionCache;
 	private OpenMeetingsLanguages languagesMapping;
@@ -121,6 +125,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@PostConstruct
 	public void init() {
 		userDeletionManager.registerDeletableUserData(this);
+		businessGroupService.registerDeletableGroupDataListener(this);
 		
 		languagesMapping = new OpenMeetingsLanguages();
 		languagesMapping.read();
@@ -817,6 +822,16 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		//
+	}
+
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		boolean allOk = true;
+		OpenMeetingsRoom room = getLocalRoom(group, null, null);
+		if(room != null) {
+			allOk &= deleteRoom(room);
+		}
+		return allOk;
 	}
 
 	private final RoomServiceStub getRoomWebService()

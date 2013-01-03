@@ -71,7 +71,7 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	public boolean validateFormLogic (UserRequest ureq) {
 		
 		boolean newIsValid = UserManager.getInstance().syntaxCheckOlatPassword(pass1.getValue());
-		if (!newIsValid) pass1.setErrorKey("error.password.characters", null);
+		if (!newIsValid) pass1.setErrorKey("form.checkPassword", null);
 		
 		boolean newDoesMatch = pass1.getValue().equals(pass2.getValue());
 		if(!newDoesMatch) pass1.setErrorKey("error.password.nomatch", null);
