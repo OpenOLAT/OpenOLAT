@@ -56,21 +56,21 @@ public class MailPackage {
 	}
 	
 	public MailPackage(MailTemplate template, String businessPath, boolean sendMail) {
-		this.sendEmail = true;
+		this.sendEmail = sendMail;
 		this.template = template;
 		this.context = new MailContextImpl(null, null, businessPath);
 		this.result = new MailerResult();
 	}
 	
 	public MailPackage(MailerResult result, String businessPath, boolean sendMail) {
-		this.sendEmail = true;
+		this.sendEmail = sendMail;
 		this.template = null;
 		this.context = new MailContextImpl(null, null, businessPath);
 		this.result = result;
 	}
 	
 	public MailPackage(MailTemplate template, MailerResult result, String businessPath, boolean sendMail) {
-		this.sendEmail = true;
+		this.sendEmail = sendMail;
 		this.template = template;
 		this.context = new MailContextImpl(null, null, businessPath);
 		this.result = result;

@@ -135,16 +135,4 @@ public class ImportMemberMailController extends StepFormBasicController {
 		}
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-
-	private static class TestMailTemplate extends MailTemplate {
-		public TestMailTemplate() {
-			super("", "", null);
-		}
-		
-		
-		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-			//
-		}
-	}
 }
