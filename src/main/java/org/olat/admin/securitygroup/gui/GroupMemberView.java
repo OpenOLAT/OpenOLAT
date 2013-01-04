@@ -17,23 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group;
+package org.olat.admin.securitygroup.gui;
+
+import java.util.Date;
+
+import org.olat.core.id.Identity;
 
 /**
  * 
- * A utility view
- * 
- * Initial date: 20.12.2012<br>
+ * Initial date: 04.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface BusinessGroupMemberView {
+public class GroupMemberView {
 	
-	public Long getGroupKey();
-
-	public String getGroupName();
-
-	public Long getIdentityKey();
+	private final Date addedAt;
+	private final Identity identity;
+	private final String onlineStatus;
 	
-	public String getUsername();
+	public GroupMemberView(Identity identity, Date addedAt, String onlineStatus) {
+		this.identity = identity;
+		this.addedAt = addedAt;
+		this.onlineStatus = onlineStatus;
+	}
+	
+	public Date getAddedAt() {
+		return addedAt;
+	}
+
+	public Identity getIdentity() {
+		return identity;
+	}
+	
+	public String getOnlineStatus() {
+		return onlineStatus;
+	}
 }

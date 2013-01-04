@@ -34,7 +34,7 @@ public class RosterDAOTest extends OlatTestCase {
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-1-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-1-" + UUID.randomUUID().toString());
 		
-		RosterEntryImpl entry = rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false);
+		RosterEntryImpl entry = rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false, false);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(entry);
@@ -51,7 +51,7 @@ public class RosterDAOTest extends OlatTestCase {
 	public void testLoadRosterEntries() {
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-2-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-2-" + UUID.randomUUID().toString());
-		rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false);
+		rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false, true);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entries
@@ -74,11 +74,11 @@ public class RosterDAOTest extends OlatTestCase {
 	public void testUpdateRosterEntry() {
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-7-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-7-" + UUID.randomUUID().toString());
-		rosterDao.createRosterEntry(chatResource, id, "My name", "Nick", false);
+		rosterDao.createRosterEntry(chatResource, id, "My name", "Nick", false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entry
-		rosterDao.updateRosterEntry(chatResource, id, "My updated full name", "My updated nick name", true);
+		rosterDao.updateRosterEntry(chatResource, id, "My updated full name", "My updated nick name", true, false);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entry
@@ -107,7 +107,7 @@ public class RosterDAOTest extends OlatTestCase {
 		//create an entry
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-3-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-3-" + UUID.randomUUID().toString());
-		rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false);
+		rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//check the presence of the entry
@@ -132,7 +132,7 @@ public class RosterDAOTest extends OlatTestCase {
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-4-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		for(int i=0; i<10; i++) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-roster-4-" + UUID.randomUUID().toString());
-			rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false);
+			rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false, false);
 		}
 		dbInstance.commitAndCloseSession();
 		

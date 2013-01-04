@@ -53,6 +53,8 @@ public class BusinessGroupParticipantViewImpl implements BusinessGroupMemberView
 	private String groupName;
 	@Column(name="bg_part_member_id", nullable=false, insertable=true, updatable=false)
 	private Long identityKey;
+	@Column(name="bg_part_member_name", nullable=false, insertable=true, updatable=false)
+	private String username;
 	@Column(name="bg_owner_sec_id", nullable=false, insertable=true, updatable=false)
 	private Long ownerSecGroupKey;
 	@Column(name="bg_part_sec_id", nullable=false, insertable=true, updatable=false)
@@ -90,6 +92,14 @@ public class BusinessGroupParticipantViewImpl implements BusinessGroupMemberView
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public Long getOwnerSecGroupKey() {

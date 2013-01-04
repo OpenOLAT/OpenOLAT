@@ -82,12 +82,12 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return singleton;
 	}
 
-	public MediaResource getSmallPortraitResource(Identity identity) {
-		return getPortraitResource(identity, PORTRAIT_SMALL_FILENAME);
+	public MediaResource getSmallPortraitResource(String username) {
+		return getPortraitResource(username, PORTRAIT_SMALL_FILENAME);
 	}
 	
-	public MediaResource getBigPortraitResource(Identity identity) {
-		return getPortraitResource(identity, PORTRAIT_BIG_FILENAME);
+	public MediaResource getBigPortraitResource(String username) {
+		return getPortraitResource(username, PORTRAIT_BIG_FILENAME);
 	}
 	
 	/**
@@ -95,25 +95,25 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	 * @param identity
 	 * @return imageResource portrait
 	 */
-	private MediaResource getPortraitResource(Identity identity, String portraitName) {
+	private MediaResource getPortraitResource(String username, String portraitName) {
 		MediaResource imageResource = null;
-		File imgFile = getPortraitFile(identity, portraitName);
+		File imgFile = getPortraitFile(username, portraitName);
 		if (imgFile != null && imgFile.exists()){
 			imageResource = new FileMediaResource(imgFile);	
 		}
 		return imageResource;
 	}
 	
-	public File getSmallPortrait(Identity identity) {
-		return getPortraitFile(identity, PORTRAIT_SMALL_FILENAME);
+	public File getSmallPortrait(String username) {
+		return getPortraitFile(username, PORTRAIT_SMALL_FILENAME);
 	}
 	
-	public File getBigPortrait(Identity identity) {
-		return getPortraitFile(identity, PORTRAIT_BIG_FILENAME);
+	public File getBigPortrait(String username) {
+		return getPortraitFile(username, PORTRAIT_BIG_FILENAME);
 	}
 
-	private File getPortraitFile(Identity identity, String prefix) {
-		File portraitDir = getPortraitDir(identity);
+	private File getPortraitFile(String username, String prefix) {
+		File portraitDir = getPortraitDir(username);
 		if(portraitDir != null) {
 			for(File file:portraitDir.listFiles()) {
 				if(file.getName().startsWith(prefix)) {
@@ -124,9 +124,9 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return null;
 	}
 	
-	public void setPortrait(File file, Identity identity) {
+	public void setPortrait(File file, String username) {
 		//first remove old ones
-		File portraitDir = getPortraitDir(identity);
+		File portraitDir = getPortraitDir(username);
 		if(portraitDir != null) {
 			for(File currentPortrait:portraitDir.listFiles()) {
 				if(currentPortrait.equals(file)) {
@@ -150,7 +150,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	}
 	
 	public void deletePortrait(Identity identity) {
-		FileUtils.deleteDirsAndFiles(getPortraitDir(identity), true, true);
+		FileUtils.deleteDirsAndFiles(getPortraitDir(identity.getName()), true, true);
 	}
 	
 	/**
@@ -172,9 +172,9 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	 * @param identity
 	 * @return
 	 */
-	public File getPortraitDir(Identity identity){
+	public File getPortraitDir(String identityName){
 		String portraitPath = FolderConfig.getCanonicalRoot() + 
-				FolderConfig.getUserHomePage(identity.getName()) + "/portrait"; 
+				FolderConfig.getUserHomePage(identityName) + "/portrait"; 
 		File portraitDir = new File(portraitPath);
 		portraitDir.mkdirs();
 		return portraitDir;

@@ -68,6 +68,14 @@ public class Roster {
 				return entry;
 			}
 		}
+		
+		for(BuddyGroup group:groups) {
+			for(Buddy entry:group.getBuddy()) {
+				if(identityKey.equals(entry.getIdentityKey())) {
+					return entry;
+				}
+			}
+		}
 		return null;
 	}
 	

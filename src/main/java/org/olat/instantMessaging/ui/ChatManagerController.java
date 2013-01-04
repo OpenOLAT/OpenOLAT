@@ -117,29 +117,29 @@ public class ChatManagerController extends BasicController {
 	}
 	
 	public void createChat(UserRequest ureq, Buddy buddy) {	
-		if (buddy == null || chats.containsKey(buddy.getIdentityKey())) {
-			return; // chat  with this person is already ongoing
-		}
-		
+		if (buddy == null) return;
 		OLATResourceable ores = imService.getPrivateChatResource(getIdentity().getKey(), buddy.getIdentityKey());
-		
+		if(chats.containsKey(ores.getResourceableId())) {
+			return;
+		}
+
 		int offsetX = 100 + (chats.size() * 10);
 		int offsetY = 100 + (chats.size() * 5);
 		String roomName = translate("im.chat.with") + ": " + buddy.getName();
-		ChatController chat = new ChatController(ureq, getWindowControl(), ores, roomName, buddy.getIdentityKey(), 400, 300, offsetX, offsetY);
+		ChatController chat = new ChatController(ureq, getWindowControl(), ores, roomName, buddy.getIdentityKey(), false, 400, 300, offsetX, offsetY);
 		listenTo(chat);
 		container.put(chat.getOlatResourceable().getResourceableId().toString(), chat.getInitialComponent());
 		chats.put(chat.getOlatResourceable().getResourceableId(), chat);
 	}
 
-	public void createGroupChat(UserRequest ureq, OLATResourceable ores, String roomName) {
+	public void createGroupChat(UserRequest ureq, OLATResourceable ores, String roomName, boolean vip) {
 		if (ores == null || chats.containsKey(ores.getResourceableId())) {
 			return; // chat with this resource is already ongoing
 		}
 		
 		int offsetX = 100 + (chats.size() * 10);
 		int offsetY = 100 + (chats.size() * 5);
-		ChatController chat = new ChatController(ureq, getWindowControl(), ores, roomName, null, 550, 320, offsetX, offsetY);
+		ChatController chat = new ChatController(ureq, getWindowControl(), ores, roomName, null, vip, 550, 320, offsetX, offsetY);
 		listenTo(chat);
 		container.put(chat.getOlatResourceable().getResourceableId().toString(), chat.getInitialComponent());
 		chats.put(chat.getOlatResourceable().getResourceableId(), chat);

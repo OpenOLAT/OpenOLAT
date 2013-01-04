@@ -28,6 +28,8 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.model.InstantMessageImpl;
@@ -42,6 +44,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class InstantMessageDAO {
+	
+	private static final OLog log = Tracing.createLoggerFor(InstantMessageDAO.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -89,10 +93,14 @@ public class InstantMessageDAO {
 	
 	public int deleteMessages(OLATResourceable ores) {
 		String sb = "delete from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname";
-		return dbInstance.getCurrentEntityManager().createQuery(sb)
+		int count = dbInstance.getCurrentEntityManager().createQuery(sb)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.executeUpdate();
+		if(count > 0) {
+			log.audit(count + " IM messages delete for resource: " + ores);
+		}
+		return count;
 	}
 	
 	public InstantMessageNotification createNotification(Long fromIdentityKey, Long toIdentityKey, OLATResourceable chatResource) {

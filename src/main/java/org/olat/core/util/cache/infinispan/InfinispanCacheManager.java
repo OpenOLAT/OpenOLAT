@@ -52,6 +52,12 @@ public class InfinispanCacheManager implements FactoryBean<EmbeddedCacheManager>
 	public void setJndiName(String jndiName) {
 		this.jndiName = jndiName;
 	}
+	
+	public void stop() {
+		if(!StringHelper.containsNonWhitespace(jndiName)) {
+			cacheManager.stop();
+		}
+	}
 
 	@Override
 	public EmbeddedCacheManager getObject() throws Exception {

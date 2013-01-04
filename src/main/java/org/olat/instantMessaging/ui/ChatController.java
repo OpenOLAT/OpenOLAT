@@ -28,23 +28,30 @@ package org.olat.instantMessaging.ui;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.floatingresizabledialog.FloatingResizableDialogController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -54,6 +61,7 @@ import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 
 /**
@@ -66,42 +74,45 @@ import org.olat.user.UserManager;
  */
 public class ChatController extends BasicController implements GenericEventListener{
 
+	private RosterForm rosterCtrl;
 	private SendMessageForm sendMessageForm;
-	private ToggleAnonymousForm toggleAnonymousForm;
-	private VelocityContainer rosterVC;
 	private final VelocityContainer mainVC;
 	private final VelocityContainer chatMsgFieldContent;
-	private final Panel chatMsgFieldPanel;
 
-	private StringBuilder messageHistory = new StringBuilder();
+	private Map<Long,String> usernameCache = new HashMap<Long,String>();
+	private List<ChatMessage> messageHistory = new ArrayList<ChatMessage>();
 
-	private Link refresh;
+	private Link refresh, todayLink, lastWeek, lastMonth;
 	private JSAndCSSComponent jsc;
 	private FloatingResizableDialogController chatPanelCtr;
-	
-	private final String jsTweakCmd;
-	private final String jsFocusCmd;
 	
 	private List<String> allChats;
 	private final Formatter formatter;
 	private static final Pattern mailPattern = Pattern.compile("((mailto\\:|(news|(ht|f)tp(s?))\\://){1}\\S+)");
 
+	private final boolean vip;
 	private final OLATResourceable ores;
 	private final Roster buddyList;
 	private final Long privateReceiverKey;
 	
 	private final UserManager userManager;
 	private final InstantMessagingService imService;
+	private final DisplayPortraitManager portraitManager;
+	
+	private final String avatarBaseURL;
 
 	protected ChatController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String roomName,
-			Long privateReceiverKey, int width, int height, int offsetX, int offsetY) {
+			Long privateReceiverKey, boolean vip, int width, int height, int offsetX, int offsetY) {
 		super(ureq, wControl);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
+		portraitManager = DisplayPortraitManager.getInstance();
 		formatter = Formatter.getInstance(getLocale());
 		this.ores = ores;
 		this.privateReceiverKey = privateReceiverKey;
+		this.vip = vip;
 
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new AvatarMapper());
 		
 		//allChats = ureq.getUserSession().getChats();
 		allChats = new ArrayList<String>();
@@ -114,68 +125,75 @@ public class ChatController extends BasicController implements GenericEventListe
 		mainVC.contextPut("isAjaxMode", Boolean.valueOf(ajaxOn));
 		
 		//	checks with the given intervall if dirty components are available to rerender
-		jsc = new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 5000);
+		jsc = new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 2500);
 		mainVC.put("updatecontrol", jsc);
-		
-		imService.listenChat(getIdentity(), getOlatResourceable(), this);
 
-		sendMessageForm = new SendMessageForm(ureq, getWindowControl());
-		listenTo(sendMessageForm);
-		sendMessageForm.resetTextField();
-		mainVC.put("sendMessageForm", sendMessageForm.getInitialComponent());
+		boolean anonym = "CourseModule".equals(ores.getResourceableTypeName());
+		imService.listenChat(getIdentity(), getOlatResourceable(), anonym, vip, this);
 
-		chatMsgFieldPanel = new Panel("chatMsgField");
-		chatMsgFieldPanel.setContent(chatMsgFieldContent);
+
 		
 		if(privateReceiverKey == null) {
 			buddyList = new Roster(getIdentity().getKey());
-			rosterVC = createVelocityContainer("roster");
-			rosterVC.contextPut("rosterList", buddyList);
-			updateRosterList();
-			toggleAnonymousForm = new ToggleAnonymousForm(ureq, getWindowControl());
-			listenTo(toggleAnonymousForm);
-			mainVC.put("toggleSwitch", toggleAnonymousForm.getInitialComponent());
+			List<Buddy> buddies = imService.getBuddiesListenTo(getOlatResourceable());
+			buddyList.addBuddies(buddies);
+			//course started as anonym
+			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, anonym);
+			listenTo(rosterCtrl);
 		} else {
-			rosterVC = null;
 			buddyList = null;
 		}
 
 		chatPanelCtr = new FloatingResizableDialogController(ureq, getWindowControl(), mainVC,
-				roomName , width, height, offsetX, offsetY, rosterVC, translate("groupchat.roster"),
-				true, false, true, String.valueOf(hashCode()));
+				roomName , width, height, offsetX, offsetY, rosterCtrl == null ? null : rosterCtrl.getInitialComponent(),
+				translate("groupchat.roster"), true, false, true, String.valueOf(hashCode()));
 		listenTo(chatPanelCtr);
 		
 		String pn = chatPanelCtr.getPanelName();
+		
+		sendMessageForm = new SendMessageForm(ureq, getWindowControl(), pn);
+		listenTo(sendMessageForm);
+		sendMessageForm.resetTextField();
+		mainVC.put("sendMessageForm", sendMessageForm.getInitialComponent());
 		mainVC.contextPut("panelName", pn);
-		
-		//due to limitations in flexi form, we have to tweak focus handling manually
-		jsTweakCmd = "<script>Ext.onReady(function(){try{tweak_"+pn+"();}catch(e){}});</script>";
-		jsFocusCmd = "<script>Ext.onReady(function(){try{focus_"+pn+"();}catch(e){}});</script>";
 
-		chatMsgFieldContent.contextPut("chatMessages", "");
-
-		Date yesterday = getYesterday();
-		List<InstantMessage> lastMessages = imService.getMessages(getIdentity(), getOlatResourceable(), yesterday, 0, 50, true);
-		for(int i=lastMessages.size(); i-->0; ) {
-			appendToMessageHistory(lastMessages.get(i), false);
-		}
-		
+		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
+		chatMsgFieldContent.contextPut("panelName", pn);
+		chatMsgFieldContent.contextPut("avatarBaseURL", avatarBaseURL);
+		chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
+		loadModel(getYesterday(), 50);
 		chatMsgFieldContent.contextPut("id", hashCode());
-		mainVC.put("chatMsgFieldPanel", chatMsgFieldPanel);
+		mainVC.put("chatMsgFieldPanel", chatMsgFieldContent);
 		
 		refresh = LinkFactory.createCustomLink("refresh", "cmd.refresh", "", Link.NONTRANSLATED, mainVC, this);
 		refresh.setCustomEnabledLinkCSS("b_small_icoureq.getUserSession().getSingleUserEventCenter().n sendMessageFormo_instantmessaging_refresh_icon");
 		refresh.setTitle("im.refresh");
+		
+		todayLink = LinkFactory.createLink("im.today", mainVC, this);
+		lastWeek = LinkFactory.createLink("im.lastweek", mainVC, this);
+		lastMonth = LinkFactory.createLink("im.lastmonth", mainVC, this);
 
 		putInitialPanel(chatPanelCtr.getInitialComponent());
-		if(toggleAnonymousForm != null) {
-			doSendPresence(toggleAnonymousForm.getNickName(), toggleAnonymousForm.isUseNickName());
+		if(rosterCtrl != null) {
+			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
 		}
 	}
 	
 	private Date getYesterday() {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -1);
+		return cal.getTime();
+	}
+	
+	private Date getLastWeek() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -7);
+		return cal.getTime();
+	}
+	
+	private Date getLastMonth() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.MONTH, -1);
 		return cal.getTime();
 	}
 	
@@ -202,16 +220,31 @@ public class ChatController extends BasicController implements GenericEventListe
 				sendMessageForm.resetTextField();
 			} else {
 				//ignore empty manObjectessage entry and refocus on entry field
-				chatMsgFieldContent.contextPut("chatMessages", messageHistory.toString() + jsFocusCmd);
+				chatMsgFieldContent.contextPut("chatMessages", messageHistory);
+				chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
 			}
-		} else if (source == toggleAnonymousForm) {
-			doSendPresence(toggleAnonymousForm.getNickName(), toggleAnonymousForm.isUseNickName());
+		} else if (source == rosterCtrl) {
+			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
 		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(todayLink == source) {
+			loadModel(getYesterday(), -1);
+		} else if(lastWeek == source) {
+			loadModel(getLastWeek(), -1);
+		} else if(lastMonth == source) {
+			loadModel(getLastMonth(), -1);
+		}
+	}
+	
+	private void loadModel(Date from, int maxResults) {
+		messageHistory.clear();
+		List<InstantMessage> lastMessages = imService.getMessages(getIdentity(), getOlatResourceable(), from, 0, maxResults, true);
+		for(int i=lastMessages.size(); i-->0; ) {
+			appendToMessageHistory(lastMessages.get(i), false);
+		}
 	}
 	
 	/**
@@ -225,15 +258,15 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private void doSendPresence(String nickName, boolean anonym) {
-		imService.sendPresence(getIdentity(), nickName, anonym, getOlatResourceable());	
+		imService.sendPresence(getIdentity(), nickName, anonym, vip, getOlatResourceable());	
 	}
 	
 	private InstantMessage doSendMessage(String text) {
 		boolean anonym;
 		String fromName;
-		if(toggleAnonymousForm != null) {
-			anonym = toggleAnonymousForm.isUseNickName();
-			fromName = toggleAnonymousForm.getNickName();
+		if(rosterCtrl != null) {
+			anonym = rosterCtrl.isUseNickName();
+			fromName = rosterCtrl.getNickName();
 		} else {
 			anonym = false;
 			fromName = userManager.getUserDisplayName(getIdentity().getUser());
@@ -257,7 +290,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			}
 		} else if ("participant".equals(event.getCommand())) {
 			if (event.getFromId() != null) {
-				updateRosterList(event.getFromId(), event.getName(), event.isAnonym());
+				updateRosterList(event.getFromId(), event.getName(), event.isAnonym(), event.isVip());
 			}
 		}
 	}
@@ -269,30 +302,50 @@ public class ChatController extends BasicController implements GenericEventListe
 		allChats.remove(Integer.toString(hashCode()));
 		chatPanelCtr.executeCloseCommand();
 	}
-
+	
 	private void appendToMessageHistory(InstantMessage message, boolean focus) {
 		String m = message.getBody().replaceAll("<br/>\n", "\r\n");
-		StringBuilder sb = new StringBuilder();
-		sb.append("<div><span style=\"color:");
-		sb.append(message.isFromMe(getIdentity()) ? "blue" : "red");
-		sb.append("\">[");
-		sb.append(formatter.formatTime(message.getCreationDate()));
-		sb.append("] ");
-		sb.append(message.getFromNickName());
-		sb.append(": </span>");
-		sb.append(prepareMsgBody(m.replaceAll("<", "&lt;").replaceAll(">", "&gt;")).replaceAll("\r\n", "<br/>\n"));
-		sb.append("</div>");
+		m = prepareMsgBody(m.replaceAll("<", "&lt;").replaceAll(">", "&gt;")).replaceAll("\r\n", "<br/>\n");
+		String creationDate = formatter.formatTime(message.getCreationDate());
+		String from = message.getFromNickName();
+		
 		synchronized (messageHistory) {
-			messageHistory.append(sb);
-		}
+			boolean first = true;
+			if(!messageHistory.isEmpty()) {
+				ChatMessage last = messageHistory.get(messageHistory.size() - 1);
+				if(from.equals(last.getFrom())) {
+					first = false;
+				}
+			}
 
-		StringBuilder fh = new StringBuilder(messageHistory);
-		fh.append(jsTweakCmd);
-		if (focus) {
-			fh.append(jsFocusCmd);
+			boolean anonym = message.isAnonym();
+			ChatMessage msg = new ChatMessage(creationDate, from, m, first, anonym);
+			if(!anonym ) {
+				msg.setAvatarKey(getAvatarKey(message.getFromKey()));
+			}
+			messageHistory.add(msg);
 		}
-		chatMsgFieldContent.contextPut("chatMessages", fh.toString());
-		chatMsgFieldContent.contextPut("id", hashCode());
+		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
+		chatMsgFieldContent.contextPut("focus", new Boolean(focus));
+	}
+	
+	private String getAvatarKey(Long identityKey) {
+		String username = usernameCache.get(identityKey);
+		if(username == null && buddyList != null) {
+			Buddy buddy = buddyList.get(identityKey);
+			if(buddy != null) {
+				username = buddy.getUsername();
+				usernameCache.put(identityKey, username);
+			}
+		}
+		if(username == null) {
+			IdentityShort id = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+			if(id != null) {
+				username = id.getName();
+				usernameCache.put(identityKey, username);
+			}
+		}
+		return username;
 	}
 	
 	private String prepareMsgBody(String body) {
@@ -307,22 +360,9 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 		return body;
 	}
-
-	protected String getMessageHistory() {
-		synchronized (messageHistory) {
-			return messageHistory.toString();
-		}
-	}
 	
-	protected void setMessageHistory(String m) {
-		synchronized (messageHistory) {
-			messageHistory.insert(0, m);
-		}
-		chatMsgFieldContent.contextPut("chatMessages", messageHistory.toString());
-	}
-	
-	private void updateRosterList(Long identityKey, String name, boolean anonym) {
-		if(buddyList != null) {
+	private void updateRosterList(Long identityKey, String name, boolean anonym, boolean vip) {
+		if(buddyList != null && rosterCtrl != null) {
 			Buddy entry;
 			if(buddyList.contains(identityKey)) {
 				entry = buddyList.get(identityKey);
@@ -330,18 +370,30 @@ public class ChatController extends BasicController implements GenericEventListe
 				entry = imService.getBuddyById(identityKey);
 				buddyList.add(entry);
 			}
+			entry.setVip(vip);
 			entry.setAnonym(anonym);
 			if(StringHelper.containsNonWhitespace(name)) {
 				entry.setName(name);
 			}
-			rosterVC.setDirty(true);
+			rosterCtrl.updateModel();
 		}
 	}
 	
-	private void updateRosterList() {
-		if(buddyList != null) {
-			List<Buddy> buddies = imService.getBuddiesListenTo(getOlatResourceable());
-			buddyList.addBuddies(buddies);
+	public class AvatarMapper implements Mapper {
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			if(relPath != null && relPath.endsWith("/avatar.jpg")) {
+				if(relPath.startsWith("/")) {
+					relPath = relPath.substring(1, relPath.length());
+				}
+				
+				int endKeyIndex = relPath.indexOf('/');
+				if(endKeyIndex > 0) {
+					String username = relPath.substring(0, endKeyIndex);
+					return portraitManager.getSmallPortraitResource(username);
+				}
+			}
+			return null;
 		}
 	}
 }

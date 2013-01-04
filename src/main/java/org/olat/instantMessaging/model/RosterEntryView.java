@@ -21,6 +21,7 @@ package org.olat.instantMessaging.model;
 
 import java.util.Date;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -37,46 +38,46 @@ import org.olat.core.id.Persistable;
 
 /**
  * 
- * Initial date: 20.12.2012<br>
+ * Initial date: 04.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="imrosterentry")
-@Table(name="o_im_roster_entry")
+@Entity(name="imrosterentryview") @Cacheable(false)
+@Table(name="o_im_roster_entry_v")
 @NamedQueries({
-	@NamedQuery(name="loadIMRosterEntryByIdentityandResource", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
-	@NamedQuery(name="loadIMRosterEntryByResource", query="select entry from imrosterentry entry where entry.resourceId=:resid and entry.resourceTypeName=:resname"),
-	@NamedQuery(name="clearIMRosterEntry", query="delete from imrosterentry entry"),
-	@NamedQuery(name="deleteIMRosterEntryByIdentityAndResource", query="delete from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
+	@NamedQuery(name="loadIMRosterEntryViewByResource", query="select entry from imrosterentryview entry where entry.resourceId=:resid and entry.resourceTypeName=:resname"),
 })
-public class RosterEntryImpl implements Persistable, CreateInfo {
+public class RosterEntryView implements Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -4265724240924748369L;
 
 	@Id
   @GeneratedValue(generator = "system-uuid")
   @GenericGenerator(name = "system-uuid", strategy = "hilo")
-	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	@Column(name="re_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	@Column(name="re_creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 
-	@Column(name="fk_identity_id", nullable=false, insertable=true, updatable=false)
+	@Column(name="ident_id", nullable=false, insertable=true, updatable=false)
 	private Long identityKey;
-	@Column(name="r_nickname", nullable=true, insertable=true, updatable=true)
+	@Column(name="ident_name", nullable=false, insertable=true, updatable=false)
+	private String username;
+	
+	@Column(name="re_nickname", nullable=true, insertable=true, updatable=true)
 	private String nickName;
-	@Column(name="r_fullname", nullable=true, insertable=true, updatable=true)
+	@Column(name="re_fullname", nullable=true, insertable=true, updatable=true)
 	private String fullName;
-	@Column(name="r_anonym", nullable=true, insertable=true, updatable=true)
+	@Column(name="re_anonym", nullable=true, insertable=true, updatable=true)
 	private boolean anonym;
-	@Column(name="r_vip", nullable=true, insertable=true, updatable=false)
+	@Column(name="re_vip", nullable=true, insertable=true, updatable=false)
 	private boolean vip;
 	
-	@Column(name="r_resname", nullable=false, insertable=true, updatable=false)
+	@Column(name="re_resname", nullable=false, insertable=true, updatable=false)
 	private String resourceTypeName;
-	@Column(name="r_resid", nullable=false, insertable=true, updatable=false)
+	@Column(name="re_resid", nullable=false, insertable=true, updatable=false)
 	private Long resourceId;
 	
 	@Override
@@ -103,6 +104,14 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public String getNickName() {
@@ -163,8 +172,8 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof RosterEntryImpl) {
-			RosterEntryImpl entry = (RosterEntryImpl)obj;
+		if(obj instanceof RosterEntryView) {
+			RosterEntryView entry = (RosterEntryView)obj;
 			return key != null && key.equals(entry.key);
 		}
 		return false;

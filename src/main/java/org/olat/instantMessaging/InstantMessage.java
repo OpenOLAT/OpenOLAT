@@ -33,7 +33,11 @@ public interface InstantMessage {
 	
 	public Long getKey();
 
+	public Long getFromKey();
+	
 	public String getFromNickName();
+	
+	public boolean isAnonym();
 	
 	public Date getCreationDate();
 	

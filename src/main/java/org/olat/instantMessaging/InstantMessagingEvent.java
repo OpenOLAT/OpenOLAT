@@ -36,6 +36,7 @@ public class InstantMessagingEvent extends MultiUserEvent {
 	private Long messageId;
 	private Long fromId;
 	private String name;
+	private boolean vip;
 	private boolean anonym;
 	private OLATResourceable chatResource;
 	
@@ -82,5 +83,13 @@ public class InstantMessagingEvent extends MultiUserEvent {
 
 	public void setAnonym(boolean anonym) {
 		this.anonym = anonym;
+	}
+
+	public boolean isVip() {
+		return vip;
+	}
+
+	public void setVip(boolean vip) {
+		this.vip = vip;
 	}
 }

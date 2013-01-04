@@ -103,7 +103,7 @@ public class UserVOFactory {
 		userVO.setEmail(user.getProperty(UserConstants.EMAIL, null));
 		
 		if(withPortrait) {
-			File portrait = DisplayPortraitManager.getInstance().getSmallPortrait(identity);
+			File portrait = DisplayPortraitManager.getInstance().getSmallPortrait(identity.getName());
 			if(portrait != null && portrait.exists()) {
 				try {
 					InputStream input = new FileInputStream(portrait);

@@ -27,7 +27,6 @@ package org.olat.admin.securitygroup.gui;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -43,7 +42,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author Felix Jost, Florian Gnaegi
  */
 
-public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
+public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<GroupMemberView> {
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private boolean isAdministrativeUser;
 
@@ -51,7 +50,7 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	/**
 	 * @param combo a List of Object[] with the array[0] = Identity, array[1] = addedToGroupTimestamp
 	 */
-	public IdentitiesOfGroupTableDataModel(List<Object[]> combo, Locale locale, List<UserPropertyHandler> userPropertyHandlers, boolean isAdministrativeUser) {
+	public IdentitiesOfGroupTableDataModel(List<GroupMemberView> combo, Locale locale, List<UserPropertyHandler> userPropertyHandlers, boolean isAdministrativeUser) {
 		super(combo);
 		setLocale(locale);		
 		this.userPropertyHandlers = userPropertyHandlers;
@@ -62,28 +61,17 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public final Object getValueAt(int row, int col) {
-		Object[] co = (Object[])getObject(row);
-		Identity identity = (Identity) co[0];
-
-		// special case: user name only for administrative users
-		if (col == 0 && isAdministrativeUser) {
-			return identity.getName();						
-		}
-
-		User user = identity.getUser();
-		if (col - (isAdministrativeUser ? 1 : 0) < userPropertyHandlers.size()) {
-			// get user property for this column
-			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - (isAdministrativeUser ? 1 : 0));
-			String value = userPropertyHandler.getUserProperty(user, getLocale());
-			return (value == null ? "n/a" : value);
-			
-		} else if (col == userPropertyHandlers.size() + (isAdministrativeUser ? 1 : 0)) {
-			// one item more than available handlers is the added date
-			Date addedTo = (Date) co[1];
-			return addedTo;
-
-		} else {
-			return "error";			
+		GroupMemberView co = getObject(row);
+		switch(col) {
+			case 0: return co.getIdentity().getName();
+			case 1: return co.getOnlineStatus();
+			case 2: return co.getAddedAt();
+			default: {
+				User user = co.getIdentity().getUser();
+				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 3);
+				String value = userPropertyHandler.getUserProperty(user, getLocale());
+				return (value == null ? "n/a" : value);
+			}
 		}
 	}
 	
@@ -94,16 +82,6 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 		// + loginname + adddate or just + loginname
 		return userPropertyHandlers.size() + (isAdministrativeUser ? 2 : 1);
 	}
-	
-	/**
-	 * @param rowid
-	 * @return The identity at the given position in the dable
-	 */
-	public Identity getIdentityAt(int rowid) {
-		Object[] co = (Object[])getObject(rowid);
-		Identity ident = (Identity) co[0];
-		return ident;
-	}
 
 	/**
 	 * Return a list of identites for this bitset
@@ -113,8 +91,8 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	public List<Identity> getIdentities(BitSet objectMarkers) {
 		List<Identity> results = new ArrayList<Identity>();
 		for(int i=objectMarkers.nextSetBit(0); i >= 0; i=objectMarkers.nextSetBit(i+1)) {
-			Object[] elem = (Object[]) getObject(i);
-			results.add((Identity)elem[0]);
+			GroupMemberView elem = getObject(i);
+			results.add(elem.getIdentity());
 		}
 		return results;
 	}
@@ -134,10 +112,10 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	 * @param ident
 	 */
 	private void remove(Identity ident) {
-		for (Iterator<Object[]> it_obj = getObjects().iterator(); it_obj.hasNext();) {
-			Object[] obj = it_obj.next();
-			Identity aIdent = (Identity) obj[0];
-			if (aIdent == ident) {
+		for (Iterator<GroupMemberView> it_obj = getObjects().iterator(); it_obj.hasNext();) {
+			GroupMemberView obj = it_obj.next();
+			Identity aIdent = obj.getIdentity();
+			if (aIdent.equals(ident)) {
 				it_obj.remove();
 				return;
 			}
@@ -148,8 +126,8 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	 * Add identities to table-model.
 	 * @param addedIdentities  Add this list of identities.
 	 */
-	public void add(List<Identity> addedIdentities) {
-		for (Identity identity : addedIdentities) {
+	public void add(List<GroupMemberView> addedIdentities) {
+		for (GroupMemberView identity : addedIdentities) {
 			add(identity);
 		}
 	}
@@ -158,8 +136,7 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 	 * Add an identity to table-model.
 	 * @param ident
 	 */
-	private void add(Identity identity) {
-		getObjects().add(new Object[] { identity, new Date() });
+	private void add(GroupMemberView identity) {
+		getObjects().add(identity);
 	}
-
 }

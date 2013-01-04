@@ -43,12 +43,14 @@ public class ChatToolController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final BusinessGroup resource;
+	private final boolean isAdmin;
 	private final Link openChatLink;
 	private Link logLink;
 
 	public ChatToolController(UserRequest ureq, WindowControl wControl, BusinessGroup resource, boolean isAdmin) {
 		super(ureq, wControl);
 		this.resource = resource;
+		this.isAdmin = isAdmin;
 		
 		mainVC = createVelocityContainer("summary");
 		mainVC.contextPut("isInAssessment", Boolean.FALSE);
@@ -68,7 +70,7 @@ public class ChatToolController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(openChatLink == source) {
-			OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, resource, resource.getName());
+			OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, resource, resource.getName(), isAdmin);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 		} else if(logLink == source) {
 			downloadChatLog(ureq);

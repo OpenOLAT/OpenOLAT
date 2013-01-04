@@ -1,16 +1,13 @@
-	#if ($r.available("collapsibleContent"))
+#if ($r.available("collapsibleContent"))
 	<div id="${panelName}-east" class="x-layout-inactive-content x-hidden" style="padding:5px;">
 		$r.render("collapsibleContent")
 	</div>
-	#end
-	<div id="${panelName}-center" class="x-layout-inactive-content x-hidden" style="padding:5px;height:95%;width:95%">
-		$r.render("panelContent")
-	</div>
-	
-	<script type="text/javascript">
-	/* <![CDATA[ */ 
-	
-
+#end
+<div id="${panelName}-center" class="x-layout-inactive-content x-hidden" style="padding:5px;">
+	$r.render("panelContent")
+</div>
+<script type="text/javascript">
+/* <![CDATA[ */
 	Ext.onReady(function(){
 		var winPosition = null;
 		var winHeight = 0;
@@ -25,66 +22,88 @@
 			${panelName}win.close();
 		} else {
 			winWidth = ${width};
-		  	winHeight = ${height};
+		  winHeight = ${height};
 		}
-		if( Ext.getCmp('${panelName}') == null) {
-	        // Panel for the content
-	        var content = new Ext.Panel({
-	        	contentEl:'${panelName}-center',
-	            region: 'center',
-	            split: true,
-	            width: 150,
-			    minSize: 100,
-		        maxSize: 250,
-	            collapsible: false,
-	            autoScroll:$scroll,
-	            margins:'3 0 3 3',
-	            cmargins:'3 3 3 3'
-	        });
-	
-	        // Panel for the east
-	        #if ($r.available("collapsibleContent"))
-	        var east = new Ext.Panel({
-	        	contentEl:'${panelName}-east',
-	            title: '${collabsibleContentPanelTitel}',
-	            region: 'east',
-	            split: true,
-	            width: 150,
-	            minSize: 100,
-		        maxSize: 250,
-	            collapsible: true,
-	            autoScroll:$scroll,
-	            margins:'2 0 2 2',
-	            cmargins:'2 2 2 2'
-	        });
-	        #end
-	        
-			//the window
-	        var ${panelName} = new Ext.Window({
-		        id: '${panelName}',
-	            title: '$title',
-	            closable:true,
-	            collapsible:true,
-	            constrain: ${constrain},
-	            resizable: ${resizable},
-	            width: winWidth,
-		        height: winHeight,
-		        minWidth:100,
-		        minHeight:100,
-		        plain:true,
-		        layout: 'border',
-		        #if ($r.available("collapsibleContent"))
-			        items: [content, east]
-				#else
-					items: [content]
-				#end
-	        });
+		if(Ext.getCmp('${panelName}') == null) {
 			
-	        ${panelName}.on('minimize', function(win){
+			#if($r.available("collapsibleContent"))
+				//Panel for the content
+				var content = new Ext.Panel({
+					contentEl:'${panelName}-center',
+					region: 'center',
+					split: true,
+					width: 150,
+					minSize: 100,
+					maxSize: 250,
+					collapsible: false,
+					autoScroll:$scroll,
+				});
+		
+		    // Panel for the east
+		    var east = new Ext.Panel({
+					contentEl:'${panelName}-east',
+					title: '${collabsibleContentPanelTitel}',
+					region: 'east',
+					split: true,
+					width: 150,
+					minSize: 100,
+					maxSize: 250,
+					collapsible: true,
+					autoScroll:$scroll
+		   	});
+				
+		    var ${panelName} = new Ext.Window({
+					id: '${panelName}',
+					title: '$title',
+					border:false,
+					bodyBorder:false,
+					closable:true,
+					collapsible:true,
+					constrain: ${constrain},
+					resizable: ${resizable},
+					width: winWidth,
+					height: winHeight,
+					minWidth:100,
+					minHeight:100,
+					layout: 'border',
+					items: [content, east]
+				});
+
+			#else
+				// Panel for the content
+				var content = new Ext.Panel({
+					contentEl:'${panelName}-center',
+					width: 150,
+					minSize: 100,
+					maxSize: 250,
+					autoScroll:$scroll,
+				});
+	  
+				//the window
+				var ${panelName} = new Ext.Window({
+					id: '${panelName}',
+					title: '$title',
+					border:false,
+					bodyBorder:false,
+					closable:true,
+					collapsible:true,
+					constrain: ${constrain},
+					resizable: ${resizable},
+					width: winWidth,
+					height: winHeight,
+					minWidth:100,
+					minHeight:100,
+					plain:true,
+					layout: 'fit',
+					items: [content]
+				});
+			#end
+			
+			${panelName}.on('minimize', function(win){
 			    win.toggleCollapse();
 			});
 	    	
-	        ${panelName}.on('close', function(win){
+			${panelName}.on('close', function(win){
 				win.purgeListeners();
 				win.close();
 				win.destroy();
@@ -109,7 +128,6 @@
 				} catch (Exception) {
 					//
 				}
-				
 			});
 				
 			${panelName}.on('move', function(win, x, y){
@@ -137,7 +155,5 @@
 		}
 	//delay is needed for IE to solve timing problem
 	},{delay:1000});
-	
-	/* ]]> */
-	</script>
-	
+/* ]]> */
+</script>

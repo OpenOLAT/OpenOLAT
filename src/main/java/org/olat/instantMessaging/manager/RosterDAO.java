@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.instantMessaging.model.RosterEntryImpl;
+import org.olat.instantMessaging.model.RosterEntryView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,12 +44,15 @@ public class RosterDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public RosterEntryImpl createRosterEntry(OLATResourceable chatResource, Identity from, String fullName, String nickName, boolean anonym) {
+	public RosterEntryImpl createRosterEntry(OLATResourceable chatResource, Identity from, String fullName, String nickName,
+			boolean anonym, boolean vip) {
+		
 		RosterEntryImpl entry = new RosterEntryImpl();
 		entry.setIdentityKey(from.getKey());
 		entry.setNickName(nickName);
 		entry.setFullName(fullName);
 		entry.setAnonym(anonym);
+		entry.setVip(vip);
 		entry.setResourceTypeName(chatResource.getResourceableTypeName());
 		entry.setResourceId(chatResource.getResourceableId());
 		entry.setCreationDate(new Date());
@@ -56,10 +60,11 @@ public class RosterDAO {
 		return entry;
 	}
 
-	public void updateRosterEntry(OLATResourceable chatResource, Identity identity, String fullName, String nickName, boolean anonym) {
+	public void updateRosterEntry(OLATResourceable chatResource, Identity identity, String fullName, String nickName,
+			boolean anonym, boolean vip) {
 		RosterEntryImpl entry = loadForUpdate(chatResource, identity);
 		if(entry == null) {
-			createRosterEntry(chatResource, identity, fullName, nickName, anonym);
+			createRosterEntry(chatResource, identity, fullName, nickName, anonym, vip);
 		} else {
 			entry.setFullName(fullName);
 			entry.setNickName(nickName);
@@ -85,6 +90,19 @@ public class RosterDAO {
 	public List<RosterEntryImpl> getRoster(OLATResourceable ores, int firstResult, int maxResults) {
 		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadIMRosterEntryByResource", RosterEntryImpl.class)
+				.setParameter("resid", ores.getResourceableId())
+				.setParameter("resname", ores.getResourceableTypeName())
+				.setFirstResult(firstResult)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
+	}
+	
+	public List<RosterEntryView> getRosterView(OLATResourceable ores, int firstResult, int maxResults) {
+		TypedQuery<RosterEntryView> query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMRosterEntryViewByResource", RosterEntryView.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.setFirstResult(firstResult)

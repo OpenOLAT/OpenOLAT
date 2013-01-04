@@ -47,9 +47,11 @@ public class SendMessageForm extends FormBasicController {
 
 	private TextElement msg;
 	private FormLink submit;
+	private final String panelId;
 
-	public SendMessageForm(UserRequest ureq, WindowControl wControl) {
+	public SendMessageForm(UserRequest ureq, WindowControl wControl, String panelId) {
 		super(ureq, wControl, "sendMessageForm");
+		this.panelId = panelId;
 		initForm(ureq);
 	}
 
@@ -74,7 +76,7 @@ public class SendMessageForm extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		msg = uifactory.addTextElement("msg", null, 1024, null, formLayout);
+		msg = uifactory.addTextElement("input_" + panelId, "msg", null, 1024, null, formLayout);
 		msg.setFocus(true);//always focus to the message field
 		msg.setDisplaySize(40);
 		submit = uifactory.addFormLink("subm", "msg.send", "msg.send", formLayout, Link.BUTTON);

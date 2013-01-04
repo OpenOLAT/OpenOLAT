@@ -24,8 +24,9 @@
 		li.o_instantmessaging_groupname {padding: 0 0 0 20px; background: url(../openolat/images/users.png) no-repeat 0 0;}
 		a.o_instantmessaging_vip span { font-weight:bold; }
 		li a { padding: 2px 0 2px 20px; background-repeat: no-repeat; background-position: 0 0; }
-		a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/users_conf.png) no-repeat 0 0;} 
-		a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/grstar.png) no-repeat 0 0;} 
+		a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/users_conf.png) no-repeat 0 0;}
+		a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/grstar.png) no-repeat 0 0;}
+		a.o_instantmessaging_hideofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/gstar.png) no-repeat 0 0;}
 }
 
 #o_instantmessages_buddy a { padding: 2px 0 2px 20px; background-repeat: no-repeat; background-position: 0 0; }
@@ -35,6 +36,9 @@ div.o_groupchat_roster {
 		ul { list-style-type: none;margin: 0; padding: 0;}
 		li { font-size: 95%}
 }
+
+li.o_instantmessaging_vip span { font-weight:bold; }
+li.o_instantmessaging_anonymous span { text-decoration:line-through; }
 
 /* im icons */
 .o_instantmessaging_available_icon { background-image: url(../openolat/images/im/gstar.png); }

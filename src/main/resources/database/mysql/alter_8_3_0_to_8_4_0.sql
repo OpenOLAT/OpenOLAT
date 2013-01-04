@@ -34,11 +34,28 @@ create table if not exists o_im_roster_entry (
    r_nickname varchar(255),
    r_fullname varchar(255),
    r_anonym bit default 0,
+   r_vip bit default 0,
    fk_identity_id bigint not null,
    primary key (id)
 );
 alter table o_im_roster_entry add constraint idx_im_rost_to_id foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_im_rost_res_idx on o_im_roster_entry (r_resid,r_resname);
+
+create or replace view o_im_roster_entry_v as (
+   select
+     roster_entry.id as re_id,
+     roster_entry.creationdate as re_creationdate,
+     roster_entry.r_resname as re_resname,
+     roster_entry.r_resid as re_resid,
+     roster_entry.r_nickname as re_nickname,
+     roster_entry.r_fullname as re_fullname,
+     roster_entry.r_anonym as re_anonym,
+     roster_entry.r_vip as re_vip,
+     roster_entry.fk_identity_id as ident_id,
+     ident.name as ident_name
+   from o_im_roster_entry as roster_entry
+   inner join o_bs_identity as ident on (roster_entry.fk_identity_id = ident.id)
+ );
 
 create table if not exists o_im_preferences (
    id bigint not null,
@@ -58,10 +75,12 @@ create or replace view o_gp_visible_participant_v as (
       bgroup.groupname as bg_name,
       bgroup.fk_partipiciantgroup as bg_part_sec_id,
       bgroup.fk_ownergroup as bg_owner_sec_id,
-      bg_part_member.identity_id as bg_part_member_id
+      bg_part_member.identity_id as bg_part_member_id,
+      ident.name as bg_part_member_name 
    from o_gp_business as bgroup
    inner join o_property as bconfig on (bconfig.grp = bgroup.group_id and bconfig.name = 'displayMembers' and bconfig.category = 'config')
    inner join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup and bconfig.longValue in (2,3,6,7))
+   inner join o_bs_identity as ident on (bg_part_member.identity_id = ident.id)
  );
    
 create or replace view o_gp_visible_owner_v as ( 
@@ -71,10 +90,12 @@ create or replace view o_gp_visible_owner_v as (
       bgroup.groupname as bg_name,
       bgroup.fk_partipiciantgroup as bg_part_sec_id,
       bgroup.fk_ownergroup as bg_owner_sec_id,
-      bg_owner_member.identity_id as bg_owner_member_id
+      bg_owner_member.identity_id as bg_owner_member_id,
+      ident.name as bg_owner_member_name
    from o_gp_business as bgroup
    inner join o_property as bconfig on (bconfig.grp = bgroup.group_id and bconfig.name = 'displayMembers' and bconfig.category = 'config')
    inner join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup and bconfig.longValue in (1,3,5,7))
+   inner join o_bs_identity as ident on (bg_owner_member.identity_id = ident.id)
 );
 
 

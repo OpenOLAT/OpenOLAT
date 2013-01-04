@@ -1,7 +1,27 @@
 <div class="o_instantmessaging_chat_history" id="$id">
-	$chatMessages
+	#foreach($message in $chatMessages)
+		<div class="b_clearfix">
+			#if($message.first)
+				#if($message.anonym)
+					<img src='$r.staticLink("themes/openolat/images/dummy.png")' width="50" height="50"/>
+				#elseif($message.avatarKey)
+					<img src='${avatarBaseURL}/${message.avatarKey}/avatar.jpg' />
+				#else
+					<img src='$r.staticLink("themes/openolat/images/dummy.png")' width="50" height="50"/>
+				#end
+				${message.from}
+			#end
+			
+			${message.creationDate}
+			${message.body}
+		</div>
+	#end
 </div>
-
+#if($focus)
+	<script>Ext.onReady(function(){try{focus_${panelName}();}catch(e){}});</script>
+#else
+	<script>Ext.onReady(function(){try{tweak_${panelName}();}catch(e){}});</script>
+#end
 <script type="text/javascript">
 /* <![CDATA[ */
 	//setTimeout used because otherwise it would not work the first time the chatwindow is displayed

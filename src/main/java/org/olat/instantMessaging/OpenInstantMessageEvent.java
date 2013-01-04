@@ -22,6 +22,7 @@ package org.olat.instantMessaging;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.model.Buddy;
 
 /**
@@ -40,8 +41,9 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 	
 	private final UserRequest ureq;
 	private Buddy buddy;
-	private OLATResourceable ores;
+	private boolean vip;
 	private String roomName;
+	private OLATResourceable ores;
 
 	public OpenInstantMessageEvent(UserRequest ureq) {
 		super("openim");
@@ -53,10 +55,11 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 		this.buddy = buddy;
 	}
 	
-	public OpenInstantMessageEvent(UserRequest ureq, OLATResourceable ores, String roomName) {
+	public OpenInstantMessageEvent(UserRequest ureq, OLATResourceable ores, String roomName, boolean vip) {
 		this(ureq);
-		this.ores = ores;
+		this.ores = OresHelper.clone(ores);
 		this.roomName = roomName;
+		this.vip = vip;
 	}
 
 	public Buddy getBuddy() {
@@ -73,5 +76,9 @@ public class OpenInstantMessageEvent extends MultiUserEvent {
 	
 	public String getRoomName() {
 		return roomName;
+	}
+	
+	public boolean isVip() {
+		return vip;
 	}
 }

@@ -17,23 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group;
+package org.olat.group.ui.main;
+
+import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.instantMessaging.model.Presence;
 
 /**
  * 
- * A utility view
- * 
- * Initial date: 20.12.2012<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
  */
-public interface BusinessGroupMemberView {
-	
-	public Long getGroupKey();
+public class OnlineIconRenderer extends CustomCssCellRenderer {
 
-	public String getGroupName();
+	@Override
+	protected String getCssClass(Object val) {
+		if(Presence.available.name().equals(val)) {
+			return "b_small_icon o_instantmessaging_available_icon";
+		} else if ("me".equals(val)) {
+			return "";
+		} else {
+			return "b_small_icon o_instantmessaging_unavailable_icon";
+		}
+	}
 
-	public Long getIdentityKey();
-	
-	public String getUsername();
+	@Override
+	protected String getCellValue(Object val) {
+		return "";
+	}
+
+	@Override
+	protected String getHoverText(Object val) {
+		return null;
+	}
 }

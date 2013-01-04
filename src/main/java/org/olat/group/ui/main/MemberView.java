@@ -37,7 +37,7 @@ public class MemberView {
 	private Date lastTime;
 	private final CourseMembership membership = new CourseMembership();
 	private List<BusinessGroupShort> groups;
-	
+	private String onlineStatus;
 	
 	public MemberView(Identity identity) {
 		this.identity = identity;
@@ -51,12 +51,19 @@ public class MemberView {
 		return identity;
 	}
 
+	public String getOnlineStatus() {
+		return onlineStatus;
+	}
+
+	public void setOnlineStatus(String onlineStatus) {
+		this.onlineStatus = onlineStatus;
+	}
+
 	public CourseMembership getMembership() {
 		return membership;
 	}
 
 	public List<BusinessGroupShort> getGroups() {
-		
 		return groups;
 	}
 

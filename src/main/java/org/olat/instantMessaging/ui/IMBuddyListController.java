@@ -42,7 +42,7 @@ import org.olat.instantMessaging.model.BuddyGroup;
  */
 public class IMBuddyListController extends BasicController {
 	
-	private Link toggleOffline, toggleGroups; 
+	private Link toggleOffline; 
 	private final VelocityContainer mainVC;
 	private final VelocityContainer buddiesListContent;
 
@@ -63,14 +63,9 @@ public class IMBuddyListController extends BasicController {
 
 		if(imModule.isGroupEnabled()) {
 			toggleOffline = LinkFactory.createCustomLink("toggleOnline", "cmd.online", "", Link.NONTRANSLATED, mainVC, this);
-			toggleOffline.setCustomDisplayText(translate("im.show.online.buddies"));
+			toggleOffline.setCustomDisplayText(translate("im.show.offline.buddies"));
 			toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_showofflineswitch");
-			viewMode = ViewMode.offlineUsers;
-			
-			toggleGroups = LinkFactory.createCustomLink("toggleGroups", "cmd.groups", "", Link.NONTRANSLATED, mainVC, this);
-			toggleGroups.setCustomDisplayText(getTranslator().translate("im.show.groups"));
-			toggleGroups.setCustomEnabledLinkCSS("o_instantmessaging_showgroupswitch");
-			viewMode = ViewMode.groups;
+			viewMode = ViewMode.onlineUsers;
 		}
 
 		buddyList = new Roster(getIdentity().getKey());
@@ -99,21 +94,15 @@ public class IMBuddyListController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {	
 		//buddies list
 		if (source == toggleOffline) {
-			if (viewMode == ViewMode.groups) {
+			if (viewMode == ViewMode.onlineUsers) {
 				toggleOffline.setCustomDisplayText(translate("im.hide.offline.buddies"));
+				toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_hideofflineswitch");
 				loadRoster(ViewMode.offlineUsers);
 			} else {
 				toggleOffline.setCustomDisplayText(translate("im.show.offline.buddies"));
-				loadRoster(ViewMode.groups);
+				toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_showofflineswitch");
+				loadRoster(ViewMode.onlineUsers);
 			}
-		} else if (source == toggleGroups) {
-			if (viewMode == ViewMode.offlineUsers) {
-				toggleGroups.setCustomDisplayText(translate("im.hide.groups"));
-				loadRoster(ViewMode.groups);
-			} else {
-				toggleGroups.setCustomDisplayText(translate("im.show.groups"));
-				loadRoster(ViewMode.offlineUsers);
-			}	
 		} else if (source instanceof Link) {
 			Link link = (Link)source;
 			if("cmd.buddy".equals(link.getCommand())) {
@@ -131,9 +120,6 @@ public class IMBuddyListController extends BasicController {
 		boolean offlineUsers = (viewMode == ViewMode.offlineUsers);
 		buddyList.getGroups().addAll(imService.getBuddyGroups(getIdentity(), offlineUsers));
 		
-		for(Buddy buddy:buddyList.getEntries()) {
-			forgeBuddyLink(buddy);
-		}
 		for(BuddyGroup group:buddyList.getGroups()) {
 			for(Buddy buddy:group.getBuddy()) {
 				forgeBuddyLink(group, buddy);
@@ -152,18 +138,8 @@ public class IMBuddyListController extends BasicController {
 		}
 	}
 	
-	private void forgeBuddyLink(Buddy buddy) {
-		String linkId = "buddy_" + buddy.getIdentityKey();
-		if(buddiesListContent.getComponent(linkId) == null) {
-			Link buddyLink = LinkFactory.createCustomLink(linkId, "cmd.buddy", "", Link.NONTRANSLATED, buddiesListContent, this);
-			buddyLink.setCustomDisplayText(buddy.getName());
-			buddyLink.setCustomEnabledLinkCSS(getStatusCss(buddy));
-			buddyLink.setUserObject(buddy);
-		}
-	}
-	
 	private enum ViewMode {
+		onlineUsers,
 		offlineUsers,
-		groups,
 	}
 }

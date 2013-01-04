@@ -72,7 +72,7 @@ public interface InstantMessagingService {
 	 * @param chatResource
 	 * @param listener
 	 */
-	public void listenChat(Identity identity, OLATResourceable chatResource,  GenericEventListener listener);
+	public void listenChat(Identity identity, OLATResourceable chatResource, boolean anonym, boolean asVip, GenericEventListener listener);
 	
 	/**
 	 * Go away
@@ -122,7 +122,7 @@ public interface InstantMessagingService {
 	 */
 	public void deleteMessages(OLATResourceable ores);
 	
-	public void sendPresence(Identity me, String nickName, boolean anonym, OLATResourceable chatResource);
+	public void sendPresence(Identity me, String nickName, boolean anonym, boolean vip, OLATResourceable chatResource);
 	
 	/**
 	 * Get the notifications of message waiting to be read
