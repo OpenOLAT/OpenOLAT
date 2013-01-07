@@ -19,9 +19,12 @@
  */
 package org.olat.course.member.wizard;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.olat.admin.user.UserSearchFlexiController;
+import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 
 
 /**
@@ -44,7 +48,7 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 	public ImportMemberBySearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
 
-		searchController = new UserSearchFlexiController(ureq, wControl, false, rootForm);
+		searchController = new UserSearchFlexiController(ureq, wControl, true, true, rootForm);
 		listenTo(searchController);
 		
 		initForm (ureq);
@@ -56,6 +60,14 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 			SingleIdentityChosenEvent e = (SingleIdentityChosenEvent)event;
 			String key = e.getChosenIdentity().getKey().toString();
 			addToRunContext("keys", Collections.singletonList(key));
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		} else if(event instanceof MultiIdentityChosenEvent) {
+			MultiIdentityChosenEvent e = (MultiIdentityChosenEvent)event;
+			Collection<String> keys = new ArrayList<String>();
+			for(Identity identity: e.getChosenIdentities()) {
+				keys.add(identity.getKey().toString());
+			}
+			addToRunContext("keys", keys);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			super.event(ureq, source, event);

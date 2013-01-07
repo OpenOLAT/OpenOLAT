@@ -100,6 +100,7 @@ public class UserSearchFlexiController extends FormBasicController {
 	private UserTableDataModel tdm;
 	private List<Identity> foundIdentities = new ArrayList<Identity>();
 	private boolean useMultiSelect = false;
+	private boolean useSelect;
 	private Object userObject;
 	
 	private FlexiAutoCompleterController autocompleterC;
@@ -119,8 +120,9 @@ public class UserSearchFlexiController extends FormBasicController {
 	 * @param userMultiSelect
 	 * @param statusEnabled
 	 */
-	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, boolean userMultiSelect, Form rootForm) {
+	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, boolean userMultiSelect, boolean useSelect, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearch", rootForm);
+		this.useSelect = useSelect;
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
@@ -272,7 +274,8 @@ public class UserSearchFlexiController extends FormBasicController {
 					if (useMultiSelect) {
 						// add multiselect action
 						tableCtr.addMultiSelectAction(actionKeyChoose, ACTION_MULTISELECT_CHOOSE);
-					} else {
+					}
+					if (useSelect) {
 						// add single column selec action
 						tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", translate("action.choose")));
 					}
