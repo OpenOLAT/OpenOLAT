@@ -13,7 +13,20 @@
 	border: 1px solid #ACAAAA; overflow: scroll; margin: 0 0 1em 0; overflow-x:auto; height:170px;
 	@include o-gradient-white();
 }
-.o_instantmessaging_chat_history div, .o_groupchat_history div { border-top: 1px solid #eee; padding: 0.3em 0;}	
+.o_instantmessaging_chat_history div, .o_groupchat_history div { border-top: 1px solid #eee;}
+.o_instantmessaging_chat_history {
+	div.o_instantmessaging_avatar {
+		float:left;
+		padding: 3px;
+		border: 1px solid #333;
+		margin: 3px;
+	}
+	span.o_instantmessaging_from { text-align:left; color:#999; }
+	span.o_instantmessaging_from:hover { color:#000; }
+	span.o_instantmessaging_date { text-align:right; color:#999; }
+	span.o_instantmessaging_date:hover { color:#000; }
+	p-o_instantmessaging_body { background-color:red; }
+}
 .o_instantmessaging_chat_form input, .o_groupchat_chat_form input { width: 99%}
 .o_instantmessaging_chat_form div.b_button_group, .o_groupchat_chat_form div.b_button_group {margin-top: 1em;}
 #o_instantmessages_buddieslist {

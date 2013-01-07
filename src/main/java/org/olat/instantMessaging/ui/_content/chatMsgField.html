@@ -2,18 +2,20 @@
 	#foreach($message in $chatMessages)
 		<div class="b_clearfix">
 			#if($message.first)
-				#if($message.anonym)
-					<img src='$r.staticLink("themes/openolat/images/dummy.png")' width="50" height="50"/>
-				#elseif($message.avatarKey)
-					<img src='${avatarBaseURL}/${message.avatarKey}/avatar.jpg' />
-				#else
-					<img src='$r.staticLink("themes/openolat/images/dummy.png")' width="50" height="50"/>
-				#end
-				${message.from}
+				<div class="o_instantmessaging_avatar">
+					#if($message.anonym)
+						<img src='$r.staticLink("themes/openolat/images/dummy.png")' width="50" height="50"/>
+					#elseif($message.avatarKey)
+						<img src='${avatarBaseURL}/${message.avatarKey}/avatar.jpg' />
+					#else
+						<img src='$r.staticLink("themes/openolat/images/dummy.png")' width="50" height="50"/>
+					#end
+				</div>
+				<span class="o_instantmessaging_from b_float_left b_small">${message.from}</span>
 			#end
-			
-			${message.creationDate}
-			${message.body}
+			<p class="o_instantmessaging_body">
+			<span class="o_instantmessaging_date b_float_right b_small">${message.creationDate}</span><br/>
+			${message.body}</p>
 		</div>
 	#end
 </div>
