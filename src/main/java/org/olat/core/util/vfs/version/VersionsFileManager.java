@@ -924,6 +924,10 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	}
 	
 	private void crawlForOrphans(VFSContainer container, List<OrphanVersion> orphans) {
+		if(!container.exists()) {
+			return;
+		}
+		
 		List<VFSItem> children = container.getItems();
 		for(VFSItem child:children) {
 			if(child instanceof VFSContainer) {
