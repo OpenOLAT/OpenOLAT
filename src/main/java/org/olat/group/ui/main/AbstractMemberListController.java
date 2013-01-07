@@ -467,15 +467,21 @@ public abstract class AbstractMemberListController extends BasicController imple
 		for(BusinessGroupMembership membership:memberships) {
 			identityKeys.add(membership.getIdentityKey());
 		}
-		SearchIdentityParams idParams = new SearchIdentityParams();
-		idParams.setIdentityKeys(identityKeys);
-		if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
-			idParams.setUserProperties(params.getUserPropertiesSearch());
+		
+		List<Identity> identities;
+		if(identityKeys.isEmpty()) {
+			identities = new ArrayList<Identity>(0);
+		} else {
+			SearchIdentityParams idParams = new SearchIdentityParams();
+			idParams.setIdentityKeys(identityKeys);
+			if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
+				idParams.setUserProperties(params.getUserPropertiesSearch());
+			}
+			if(StringHelper.containsNonWhitespace(params.getLogin())) {
+				idParams.setLogin(params.getLogin());
+			}
+			identities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
 		}
-		if(StringHelper.containsNonWhitespace(params.getLogin())) {
-			idParams.setLogin(params.getLogin());
-		}
-		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
 
 		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
 		List<MemberView> memberList = new ArrayList<MemberView>();
