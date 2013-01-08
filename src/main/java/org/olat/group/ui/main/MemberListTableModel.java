@@ -62,7 +62,12 @@ public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 			}
 		}
 	}
-	
+
+	@Override
+	public Object createCopyWithEmptyList() {
+		return new MemberListTableModel(userPropertyHandlers);
+	}
+
 	public enum Cols {
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),

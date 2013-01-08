@@ -76,7 +76,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
 import org.olat.group.DeletableGroupData;
-import org.olat.group.DeletableReference;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
@@ -169,18 +168,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public void registerDeletableGroupDataListener(DeletableGroupData listener) {
 		this.deleteListeners.add(listener);
-	}
-
-	@Override
-	public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale) {
-		List<String> deletableList = new ArrayList<String>();
-		for (DeletableGroupData deleteListener : deleteListeners) {
-			DeletableReference deletableReference = deleteListener.checkIfReferenced(currentGroup, locale);
-			if (deletableReference.isReferenced()) {
-				deletableList.add(deletableReference.getName());
-			}
-		}
-		return deletableList;
 	}
 	
 	@Override
@@ -1616,7 +1603,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				List<Identity> participantList = securityManager.getIdentitiesOfSecurityGroups(participantSecGroups);
 				repoParticipantList.retainAll(participantList);
 				if(!dryRun) {
-					repositoryManager.removeParticipants(ureqIdentity, repoParticipantList, entry, null);
+					repositoryManager.removeParticipants(ureqIdentity, repoParticipantList, entry, null, false);
 				}
 				count += repoParticipantList.size();
 			}

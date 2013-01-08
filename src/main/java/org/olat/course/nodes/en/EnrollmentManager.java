@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.en;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -224,7 +225,7 @@ public class EnrollmentManager extends BasicManager {
 	 *         well by different than loadGroupsFromNames().size()
 	 */
 	protected List<BusinessGroup> loadGroupsFromNames(List<Long> groupKeys, List<Long> areaKeys, CourseGroupManager cgm) {
-		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>(businessGroupService.loadBusinessGroups(groupKeys));
 		List<BusinessGroup> areaGroups = areaManager.findBusinessGroupsOfAreaKeys(areaKeys);
 		// add groups from areas
 		for (BusinessGroup areaGroup:areaGroups) {

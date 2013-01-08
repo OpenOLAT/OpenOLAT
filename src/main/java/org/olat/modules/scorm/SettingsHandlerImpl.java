@@ -165,12 +165,10 @@ public class SettingsHandlerImpl implements ISettingsHandler {
 			if(courseId == null) courseId = "";
 			if(repoId == null) repoId = "";
 			StringBuilder tempPath = new StringBuilder();
-			tempPath.append(WebappHelper.getTmpDir());
-			tempPath.append("/tmpscorm/");
-			tempPath.append(controllerHashCode);
-			tempPath.append("/");
-			tempPath.append(userid);
-			tempPath.append("/");
+			tempPath.append(WebappHelper.getTmpDir())
+			  .append("/tmp").append(WebappHelper.getInstanceId()).append("scorm/")
+			  .append(controllerHashCode).append("/")
+			  .append(userid).append("/");
 			if(courseId != null) tempPath.append(courseId);
 			if(repoId != null) tempPath.append(repoId);
 			filePath =  tempPath.toString();

@@ -1000,7 +1000,8 @@ public class CatalogController extends BasicController implements Activateable2 
 			}
 		}
 		
-		List<OLATResourceAccess> resourcesWithOffer = acService.getAccessMethodForResources(resourceKeys, null, true, new Date());
+		List<OLATResourceAccess> resourcesWithOffer = resourceKeys.isEmpty() ? Collections.<OLATResourceAccess>emptyList()
+				: acService.getAccessMethodForResources(resourceKeys, null, true, new Date());
 		for ( CatalogEntry entry : childCe ) {
 			if(entry.getType() == CatalogEntry.TYPE_NODE) continue;
 			//fxdiff VCRP-1,2: access control of resources
@@ -1276,7 +1277,7 @@ public class CatalogController extends BasicController implements Activateable2 
 		jumpToNode(ureq, jumpToNode);
 	}
 	
-	public class PriceMethod {
+	public static class PriceMethod {
 		private String price;
 		private String type;
 		

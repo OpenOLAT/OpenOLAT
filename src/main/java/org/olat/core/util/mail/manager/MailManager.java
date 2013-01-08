@@ -49,10 +49,11 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -166,13 +167,12 @@ public class MailManager extends BasicManager {
 			.append(" left join fetch mail.recipients recipients")
 			.append(" where mail.key=:mailKey");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("mailKey", key);
-		
-		List<DBMailImpl> mails = query.list();
+		List<DBMail> mails = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBMail.class)
+				.setParameter("mailKey", key)
+				.getResultList();
 		if(mails.isEmpty()) return null;
-		DBMailImpl mail = mails.get(0);
-		return mail;
+		return mails.get(0);
 	}
 	
 	public List<DBMailAttachment> getAttachments(DBMail mail) {
@@ -181,11 +181,10 @@ public class MailManager extends BasicManager {
 			.append(" inner join attachment.mail mail")
 			.append(" where mail.key=:mailKey");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("mailKey", mail.getKey());
-		
-		List<DBMailAttachment> attachments = query.list();
-		return attachments;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBMailAttachment.class)
+				.setParameter("mailKey", mail.getKey())
+				.getResultList();
 	}
 	
 	public DBMailAttachmentData getAttachmentWithData(Long key) {
@@ -193,10 +192,10 @@ public class MailManager extends BasicManager {
 		sb.append("select attachment from ").append(DBMailAttachmentData.class.getName()).append(" attachment")
 			.append(" where attachment.key=:attachmentKey");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("attachmentKey", key);
-		
-		List<DBMailAttachmentData> mails = query.list();
+		List<DBMailAttachmentData> mails = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBMailAttachmentData.class)
+				.setParameter("attachmentKey", key)
+				.getResultList();
 		if(mails.isEmpty()) return null;
 		return mails.get(0);
 	}
@@ -208,12 +207,10 @@ public class MailManager extends BasicManager {
 			.append(" inner join recipient.recipient recipientIdentity")
 			.append(" where recipientIdentity.key=:recipientKey and recipient.read=false and recipient.deleted=false");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("recipientKey", identity.getKey());
-
-		List<Number> mails = query.list();
-		if(mails.isEmpty()) return false;
-		return mails.get(0).intValue() > 0;
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("recipientKey", identity.getKey())
+				.getSingleResult();
+		return count.intValue() > 0;
 	}
 	
 	/**
@@ -376,16 +373,15 @@ public class MailManager extends BasicManager {
 			.append(" where fromRecipientIdentity.key=:fromKey and fromRecipient.deleted=false and recipientIdentity.key!=:fromKey")
 			.append(" order by mail.creationDate desc");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<DBMail> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMail.class)
+				.setParameter("fromKey", from.getKey());
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		if(firstResult >= 0) {
+		if(firstResult > 0) {
 			query.setFirstResult(firstResult);
 		}
-		query.setLong("fromKey", from.getKey());
-
-		List<DBMail> mails = query.list();
+		List<DBMail> mails = query.getResultList();
 		return mails;
 	}
 	
@@ -398,10 +394,9 @@ public class MailManager extends BasicManager {
 			.append(" inner join fromRecipient.recipient fromRecipientIdentity")
 			.append(" where mail.metaId=:metaId");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("metaId", metaId);
-		List<DBMail> mails = query.list();
-		return mails;
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMail.class)
+				.setParameter("metaId", metaId)
+				.getResultList();
 	}
 	
 	/**
@@ -428,22 +423,21 @@ public class MailManager extends BasicManager {
 		if(from != null) {
 			sb.append(" and mail.creationDate>=:from");
 		}
-		
 		sb.append(" order by mail.creationDate desc");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<DBMail> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMail.class)
+				.setParameter("recipientKey", identity.getKey());
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		if(firstResult >= 0) {
+		if(firstResult > 0) {
 			query.setFirstResult(firstResult);
 		}
-		query.setLong("recipientKey", identity.getKey());
 		if(from != null) {
-			query.setDate("from", from);
+			query.setParameter("from", from, TemporalType.TIMESTAMP);
 		}
 
-		List<DBMail> mails = query.list();
+		List<DBMail> mails = query.getResultList();
 		return mails;
 	}
 	

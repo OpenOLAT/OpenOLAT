@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.Serializable;
 
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
@@ -38,21 +37,16 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
-import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.MergeSource;
-import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
-import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.config.CourseConfig;
@@ -60,7 +54,6 @@ import org.olat.course.config.CourseConfigManager;
 import org.olat.course.config.CourseConfigManagerImpl;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
-import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.environment.CourseEnvironmentImpl;
@@ -169,59 +162,10 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 */
 	public VFSContainer getCourseFolderContainer() {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
-		MergeSource courseFolderContainer = new MergeSource(null, getCourseTitle());
-		courseFolderContainer.addContainersChildren(getIsolatedCourseFolder(), true);
-		
-		// grab any shared folder that is configured
-		OlatRootFolderImpl sharedFolder = null;
-		String sfSoftkey = getCourseConfig().getSharedFolderSoftkey();
-		if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
-			RepositoryManager rm = RepositoryManager.getInstance();
-			RepositoryEntry re = rm.lookupRepositoryEntryBySoftkey(sfSoftkey, false);
-			if (re != null) {
-				sharedFolder = SharedFolderManager.getInstance().getSharedFolder(re.getOlatResource());
-				if (sharedFolder != null){
-					sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
-					//add local course folder's children as read/write source and any sharedfolder as subfolder
-					courseFolderContainer.addContainer(new NamedContainerImpl("_sharedfolder", sharedFolder));
-				}
-			}
-		}
-		
-		// add all course building blocks of type BC to a virtual folder
-		MergeSource BCNodesContainer = new MergeSource(null, "_courseelementdata");
-		addFolderBuildingBlocks(BCNodesContainer, getRunStructure().getRootNode());
-		if (BCNodesContainer.getItems().size() > 0) {
-			courseFolderContainer.addContainer(BCNodesContainer);
-		}
-		
+		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle());
+		courseFolderContainer.init();
 		return courseFolderContainer;
 	}
-
-	/**
-	 * internal method to recursively add all course building blocks of type
-	 * BC to a given VFS container. This should only be used for an author view,
-	 * it does not test for security.
-	 * @param BCNodesContainer
-	 * @param courseNode
-	 */
-	private void addFolderBuildingBlocks(MergeSource BCNodesContainer, CourseNode courseNode) {
-		for (int i = 0; i < courseNode.getChildCount(); i++) {
-			CourseNode child = (CourseNode) courseNode.getChildAt(i);
-			if (child instanceof BCCourseNode) {
-				BCCourseNode bcNode = (BCCourseNode) child;
-				// add folder not to merge source. Use name and node id to have unique name
-				String path = BCCourseNode.getFoldernodePathRelToFolderBase(getCourseEnvironment(), bcNode);
-				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
-				String folderName = bcNode.getShortTitle() + " (" + bcNode.getIdent() + ")";
-				OlatNamedContainerImpl BCFolder = new OlatNamedContainerImpl(folderName, rootFolder);
-				BCNodesContainer.addContainer(BCFolder);				
-			}
-			// recursion for all childrenØ
-			addFolderBuildingBlocks(BCNodesContainer, child);
-		}
-	}
-
 	
 	/**
 	 * @see org.olat.course.ICourse#getCourseEnvironment()
@@ -481,8 +425,13 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
 			throw new CorruptedCourseException("Cannot resolve file: " + fileName + " course=" + toString());
 		}
-		XStream xstream = CourseXStreamAliases.getReadCourseXStream();
-		return XStreamHelper.readObject(xstream, ((VFSLeaf)vfsItem).getInputStream());
+		try {
+			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
+			return XStreamHelper.readObject(xstream, ((VFSLeaf)vfsItem).getInputStream());
+		} catch (Exception e) {
+			log.error("Cannot read course tree file: " + fileName);
+			throw new CorruptedCourseException("Cannot resolve file: " + fileName + " course=" + toString(), e);
+		}
 	}
 
 	/**

@@ -165,7 +165,9 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 		}
 	}
 	
-	private void init() {
+	@Override
+	protected void init() {
+		super.init();
 		SharedFolderManager sfm = SharedFolderManager.getInstance();
 		RepositoryManager repoManager = RepositoryManager.getInstance();
 		List<RepositoryEntry> ownerEntries = (List<RepositoryEntry>) repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);

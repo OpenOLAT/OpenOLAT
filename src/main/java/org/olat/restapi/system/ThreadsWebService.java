@@ -83,6 +83,9 @@ public class ThreadsWebService implements Sampler {
 	
   @Override
 	public synchronized void takeSample() {
-  	CoreSpringFactory.getImpl(ThreadInfosManager.class).takeSample();
+  	ThreadInfosManager manager = CoreSpringFactory.getImpl(ThreadInfosManager.class);
+		if(manager != null) {//check if the manager is loaded
+			manager.takeSample();
+		}
 	}
 }
