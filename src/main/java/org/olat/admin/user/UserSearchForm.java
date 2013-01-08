@@ -74,6 +74,10 @@ public class UserSearchForm extends FormBasicController {
 	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean cancelButton) {
 		super(ureq, wControl);
 		
+		UserManager um = UserManager.getInstance();
+		Translator decoratedTranslator = um.getPropertyHandlerTranslator(this.getTranslator());
+		setTranslator(decoratedTranslator);
+		
 		this.isAdmin = isAdmin;
 		this.cancelButton = cancelButton;
 	
@@ -82,6 +86,10 @@ public class UserSearchForm extends FormBasicController {
 	
 	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean cancelButton, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		
+		UserManager um = UserManager.getInstance();
+		Translator decoratedTranslator = um.getPropertyHandlerTranslator(this.getTranslator());
+		setTranslator(decoratedTranslator);
 		
 		this.isAdmin = isAdmin;
 		this.cancelButton = cancelButton;
