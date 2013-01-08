@@ -30,10 +30,15 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
@@ -48,10 +53,16 @@ import org.olat.core.util.coordinate.LockEntry;
  */
 public class UserSessionDetailsController extends BasicController {
 	
+	private final Link sessKillButton;
 	private final VelocityContainer sesDetails;
+	private DialogBoxController dialogController;
+	
+	private final UserSession usess;
 	
 	public UserSessionDetailsController(UserRequest ureq, WindowControl wControl, UserSession usess) {
 		super(ureq, wControl);
+		
+		this.usess = usess;
 		
 		sesDetails = createVelocityContainer("sessionDetails");
 		sesDetails.contextPut("us", usess);
@@ -110,9 +121,9 @@ public class UserSessionDetailsController extends BasicController {
 			sb.append("<br />");
 			sesDetails.contextPut("guistats", sb.toString());
 		}
-		//TODO sesDetails.put("sess.kill", sessKillButton);
-		
-		
+		sessKillButton = LinkFactory.createButton("sess.kill", sesDetails, this);
+		sesDetails.put("sess.kill", sessKillButton);
+		putInitialPanel(sesDetails);
 	}
 	
 	@Override
@@ -122,12 +133,28 @@ public class UserSessionDetailsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == sessKillButton){
+			dialogController = activateYesNoDialog(ureq, null, translate("sess.kill.sure"), dialogController);
+		}
 	}
-
-
 	
-	
-
-
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if (source == dialogController) {
+			if (DialogBoxUIFactory.isYesEvent(event)) { 
+				SessionInfo sessInfo = usess.getSessionInfo();
+				if (usess.isAuthenticated()) {
+					HttpSession session = sessInfo.getSession();
+					if (session!=null) {
+						try{
+							session.invalidate();
+						} catch(IllegalStateException ise) {
+							// thrown when session already invalidated. fine. ignore.
+						}
+					}
+					showInfo("sess.kill.done", sessInfo.getLogin() );
+				}
+			}
+		}
+	}
 }

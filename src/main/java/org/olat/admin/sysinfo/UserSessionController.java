@@ -31,9 +31,6 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -47,8 +44,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.user.UserManager;
@@ -64,11 +59,7 @@ public class UserSessionController extends BasicController implements StackedCon
 	private TableController tableCtr;
 	//private Formatter f;
 	private UserSessionTableModel usessTableModel;
-	private DialogBoxController dialogController;
-	//private int selRow;
-	private Link backLink, sessKillButton;
 
-	private Panel myPanel;
 	private final UserSessionManager sessionManager;
 	private StackedController stackController;
 	
@@ -88,12 +79,7 @@ public class UserSessionController extends BasicController implements StackedCon
 
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		
-		//f = Formatter.getInstance(ureq.getLocale());
-
 		myContent = createVelocityContainer("sessions");
-		
-		backLink = LinkFactory.createLinkBack(myContent, this);
-		sessKillButton = LinkFactory.createButton("sess.kill", myContent, this);
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
@@ -109,7 +95,7 @@ public class UserSessionController extends BasicController implements StackedCon
 		listenTo(tableCtr);
 		reset();
 		myContent.put("sessiontable", tableCtr.getInitialComponent());
-		myPanel = putInitialPanel(myContent);
+		putInitialPanel(myContent);
 	}
 
 	@Override
@@ -142,12 +128,7 @@ public class UserSessionController extends BasicController implements StackedCon
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink){
-			myPanel.popContent();
-			reset();
-		} else if (source == sessKillButton){
-			dialogController = activateYesNoDialog(ureq, null, translate("sess.kill.sure"), dialogController);
-		}
+		//
 	}
 
 	/**
@@ -155,25 +136,7 @@ public class UserSessionController extends BasicController implements StackedCon
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == dialogController) {
-			if (DialogBoxUIFactory.isYesEvent(event)) { 
-				/*UserSession usess = (UserSession) usessTableModel.getObject(selRow);
-				SessionInfo sessInfo = usess.getSessionInfo();
-				if (usess.isAuthenticated()) {
-					HttpSession session = sessInfo.getSession();
-					if (session!=null) {
-						try{
-							session.invalidate();
-						} catch(IllegalStateException ise) {
-							// thrown when session already invalidated. fine. ignore.
-						}
-					}
-					showInfo("sess.kill.done", sessInfo.getLogin() );
-				}*/
-				reset();
-			}
-		}
-		else if (source == tableCtr) {
+		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent)event;
 				int selRow = te.getRowId();
@@ -185,79 +148,6 @@ public class UserSessionController extends BasicController implements StackedCon
 				String username = usess.getIdentity() == null ? "-"
 						: UserManager.getInstance().getUserDisplayName(usess.getIdentity().getUser());
 				stackController.pushController(username, detailsCtrl);
-				
-				
-				//if (!usess.isAuthenticated()) throw new AssertException("usersession was not authenticated!?");
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				/*VelocityContainer sesDetails = createVelocityContainer("sessionDetails");
-				sesDetails.contextPut("us", usess);
-				SessionInfo sessInfo = usess.getSessionInfo();
-				sesDetails.contextPut("si", sessInfo);
-				boolean isAuth = usess.isAuthenticated();
-				sesDetails.contextPut("isauth", isAuth? "yes" : "-- NOT AUTHENTICATED!");
-
-				long creatTime = -1;
-				long lastAccessTime = -1; 
-				
-				boolean success = false;
-				if (isAuth) {
-					try {
-						HttpSession se = sessInfo.getSession();
-						creatTime = se.getCreationTime();
-						lastAccessTime = se.getLastAccessedTime();
-						success = true;
-					} catch (Exception ise) {
-						// nothing to do
-					}
-				}
-				
-				if (success) {
-					sesDetails.contextPut("created", f.formatDateAndTime(new Date(creatTime)));
-					sesDetails.contextPut("lastaccess", f.formatDateAndTime(new Date(lastAccessTime)));
-				} else {
-					sesDetails.contextPut("created", " -- this session has been invalidated --");
-					sesDetails.contextPut("lastaccess", " -- this session has been invalidated --");
-				}
-				
-				if (success) {
-					// lock information
-					String username = sessInfo.getLogin();
-					List<String> lockList = new ArrayList<String>();
-					List<LockEntry> locks = CoordinatorManager.getInstance().getCoordinator().getLocker().adminOnlyGetLockEntries();
-					Formatter f = Formatter.getInstance(ureq.getLocale());
-					for (LockEntry entry : locks) {
-						if (entry.getOwner().getName().equals(username)) {
-							lockList.add(entry.getKey()+" "+f.formatDateAndTime(new Date(entry.getLockAquiredTime())));
-						}
-					}					
-					sesDetails.contextPut("locklist", lockList);
-	
-					// user environment
-					sesDetails.contextPut("env", usess.getIdentityEnvironment());
-	
-					// GUI statistics
-					Windows ws = Windows.getWindows(usess);
-					StringBuilder sb = new StringBuilder();
-					for (Iterator<Window> iterator = ws.getWindowIterator(); iterator.hasNext();) {
-						Window window = iterator.next();
-						sb.append("- Window ").append(window.getDispatchID()).append(" dispatch info: ").append(window.getLatestDispatchComponentInfo()).append("<br />");
-					}
-					sb.append("<br />");
-					sesDetails.contextPut("guistats", sb.toString());
-				}
-				sesDetails.put("backLink", backLink);
-				sesDetails.put("sess.kill", sessKillButton);
-				
-				myPanel.pushContent(sesDetails);
-				*/
 			}
 		}
 	}

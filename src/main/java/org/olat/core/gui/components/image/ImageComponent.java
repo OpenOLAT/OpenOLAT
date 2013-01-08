@@ -152,9 +152,6 @@ public class ImageComponent extends Component {
 			Size size = null;
 			if(StringHelper.containsNonWhitespace(suffix)) {
 				size = getImageSize(suffix);
-				if(size != null) {
-					System.out.println(size);
-				}
 			}
 			if(size == null) {
 				size = getImageSizeFallback();
