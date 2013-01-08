@@ -117,6 +117,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private final BusinessGroupService businessGroupService;
 	private final ACService acService;
 	
+	private static final CourseMembershipComparator MEMBERSHIP_COMPARATOR = new CourseMembershipComparator();
+	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, String page) {
 		this(ureq, wControl, repoEntry, null, page);
 	}
@@ -166,6 +168,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		//
 	}
 	
+	
 	protected void initColumns() {
 		int offset = Cols.values().length;
 		int i=0;
@@ -178,7 +181,18 @@ public abstract class AbstractMemberListController extends BasicController imple
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
 		CustomCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
-		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
+		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer) {
+			@Override
+			public int compareTo(final int rowa, final int rowb) {
+				Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+				Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+				if(a instanceof CourseMembership && b instanceof CourseMembership) {
+					return MEMBERSHIP_COMPARATOR.compare((CourseMembership)a, (CourseMembership)b);
+				} else {
+					return super.compareTo(rowa, rowb);
+				}
+			}
+		});
 		if(repoEntry != null) {
 			CustomCellRenderer groupRenderer = new GroupCellRenderer();
 			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
