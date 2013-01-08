@@ -19,6 +19,11 @@
  */
 package org.olat.core.util.image;
 
+/**
+ * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix
+ *
+ */
 public class Size {
 	private final int width;
 	private final int height;
@@ -46,5 +51,15 @@ public class Size {
 	
 	public boolean isChanged() {
 		return changed;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Size[width=").append(width)
+			.append(":height=").append(height)
+			.append(":changed=").append(changed)
+			.append("]").append(super.toString());
+		return sb.toString();
 	}
 }
