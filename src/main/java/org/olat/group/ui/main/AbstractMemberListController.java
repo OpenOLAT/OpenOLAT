@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -109,10 +110,12 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 	private final RepositoryEntry repoEntry;
 	private final BusinessGroup businessGroup;
+	private final boolean isAdministrativeUser;
 	
 	private final UserManager userManager;
 	
 	private final BaseSecurity securityManager;
+	private final BaseSecurityModule securityModule;
 	private final RepositoryManager repositoryManager;
 	private final BusinessGroupService businessGroupService;
 	private final ACService acService;
@@ -135,10 +138,12 @@ public abstract class AbstractMemberListController extends BasicController imple
 		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
-		
+
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer(page);
 
 		//table
@@ -168,8 +173,11 @@ public abstract class AbstractMemberListController extends BasicController imple
 		//
 	}
 	
-	
 	protected void initColumns() {
+		if(isAdministrativeUser) {
+			memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.username.i18n(), Cols.username.ordinal(), null, getLocale()));
+		}
+		
 		int offset = Cols.values().length;
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
