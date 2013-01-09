@@ -137,7 +137,7 @@ public class ChoiceItemController extends DefaultController implements Controlle
 				// people understand the meaning of this value
 				choices.add(newChoice);
 			} else if (cmd.equals("del")) {
-				delYesNoCtrl = DialogController.createYesNoDialogController(ureq.getLocale(), trnsltr.translate("confirm.delete.element"), this,
+				delYesNoCtrl = DialogController.createYesNoDialogController(getWindowControl(), ureq.getLocale(), trnsltr.translate("confirm.delete.element"), this,
 						new Integer(posid));
 				getWindowControl().pushAsModalDialog( delYesNoCtrl.getInitialComponent());
 			} else if (cmd.equals("ssc")) { // submit sc

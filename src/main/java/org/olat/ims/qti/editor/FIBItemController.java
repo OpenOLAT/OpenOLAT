@@ -143,7 +143,7 @@ public class FIBItemController extends DefaultController implements ControllerEv
 				response.setPoints(1f); // default value
 				fib.getResponses().add(response);
 			} else if (cmd.equals("del")) {
-				delYesNoCtrl = DialogController.createYesNoDialogController(ureq.getLocale(), trnsltr.translate("confirm.delete.element"), this,
+				delYesNoCtrl = DialogController.createYesNoDialogController(getWindowControl(), ureq.getLocale(), trnsltr.translate("confirm.delete.element"), this,
 						new Integer(posid));
 				getWindowControl().pushAsModalDialog( delYesNoCtrl.getInitialComponent());
 			} else if (cmd.equals("sfib")) { // submit fib
