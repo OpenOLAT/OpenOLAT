@@ -257,7 +257,14 @@ public class FIBItemController extends DefaultController implements ControllerEv
 		} else if (controller == delYesNoCtrl) {
 			getWindowControl().pop();
 			if (event == DialogController.EVENT_FIRSTBUTTON) {
-				item.getQuestion().getResponses().remove(((Integer) delYesNoCtrl.getUserObject()).intValue());
+				Object position = delYesNoCtrl.getUserObject();
+				if(position instanceof Integer) {
+					int pos = ((Integer)position).intValue();
+					List responses = item.getQuestion().getResponses();
+					if(!responses.isEmpty() && pos < responses.size()) {
+						responses.remove(pos);
+					}
+				}
 				main.setDirty(true);//repaint
 			}
 		}
