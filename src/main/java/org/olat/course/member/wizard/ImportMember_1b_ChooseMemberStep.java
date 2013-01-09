@@ -43,7 +43,7 @@ public class ImportMember_1b_ChooseMemberStep extends BasicStep {
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, false, false);
+		return new PrevNextFinishConfig(false, true, false);
 	}
 
 	@Override

@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * @author Christian Guretzki
@@ -39,6 +40,11 @@ class FlexiTableComponent extends FormBaseComponentImpl {
 
 	public FlexiTableComponent(FlexiTableElementImpl element) {
 		super(element.getName());
+		this.element = element;
+	}
+	
+	public FlexiTableComponent(FlexiTableElementImpl element, Translator translator) {
+		super(element.getName(), translator);
 		this.element = element;
 	}
 	

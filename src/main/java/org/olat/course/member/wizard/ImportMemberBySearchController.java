@@ -22,6 +22,7 @@ package org.olat.course.member.wizard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.olat.admin.user.UserSearchFlexiController;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
@@ -48,7 +49,7 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 	public ImportMemberBySearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
 
-		searchController = new UserSearchFlexiController(ureq, wControl, true, true, rootForm);
+		searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
 		listenTo(searchController);
 		
 		initForm (ureq);
@@ -76,7 +77,13 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//do nothing, it's import as it receive event from the UserSearchFlexiController
+		List<Identity> identities = searchController.getSelectedIdentities();
+		Collection<String> keys = new ArrayList<String>();
+		for(Identity identity: identities) {
+			keys.add(identity.getKey().toString());
+		}
+		addToRunContext("keys", keys);
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
 	@Override
