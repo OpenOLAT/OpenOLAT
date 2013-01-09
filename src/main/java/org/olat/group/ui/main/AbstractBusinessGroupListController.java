@@ -793,7 +793,6 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			}
 		}
 		List<BGRepositoryEntryRelation> resources = businessGroupService.findRelationToRepositoryEntries(groupKeysWithRelations, 0, -1);
-		
 		//find offers
 		List<Long> groupWithOfferKeys = new ArrayList<Long>(groups.size());
 		for(BusinessGroupView view:groups) {
@@ -802,7 +801,9 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			}
 		}
 		List<OLATResourceAccess> resourcesWithAC;
-		if(groupWithOfferKeys.size() > 50) {
+		if(groupWithOfferKeys.isEmpty()) {
+			resourcesWithAC = Collections.emptyList();
+		} else if(groupWithOfferKeys.size() > 50) {
 			resourcesWithAC	= acService.getAccessMethodForResources(null, "BusinessGroup", true, new Date());
 		} else {
 			resourcesWithAC	= acService.getAccessMethodForResources(groupWithOfferKeys, "BusinessGroup", true, new Date());

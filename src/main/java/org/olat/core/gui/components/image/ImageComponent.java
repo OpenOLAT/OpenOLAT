@@ -29,9 +29,14 @@ package org.olat.core.gui.components.image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -39,6 +44,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.image.Size;
 
 /**
  * Description: <br>
@@ -137,17 +144,25 @@ public class ImageComponent extends Component {
 		if (mediaResource == null || mediaResource.getInputStream() == null) {
 			throw new AssertException("Set media resource to a valid value befor calling scaleToFit::" + mediaResource);
 		}
-		BufferedInputStream fileStrean = null;
-		BufferedImage imageSrc = null;
+
 		try {
-			fileStrean = new BufferedInputStream(mediaResource.getInputStream());
-			imageSrc = ImageIO.read(fileStrean);
-			if (imageSrc == null) {
-				// happens with faulty Java implementation, e.g. on MacOSX
+			String type = mediaResource.getContentType();
+			String suffix = getSuffix(type);
+
+			Size size = null;
+			if(StringHelper.containsNonWhitespace(suffix)) {
+				size = getImageSize(suffix);
+			}
+			if(size == null) {
+				size = getImageSizeFallback();
+			}
+			if(size == null) {
 				return;
 			}
-			double realWidth = imageSrc.getWidth();
-			double realHeight = imageSrc.getHeight();
+
+			double realWidth = size.getWidth();
+			double realHeight = size.getHeight();
+			
 			// calculate scaling factor
 			double scalingFactor = 1;
 			if (realWidth > maxWidth) {
@@ -160,21 +175,70 @@ public class ImageComponent extends Component {
 			}
 			setHeight(new Long( Math.round(realHeight * scalingFactor)));
 			setWidth(new Long( Math.round(realWidth * scalingFactor)));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// log error, don't do anything else
 			log.error("Problem while setting image size to fit " + maxWidth + "x" + maxHeight + " for resource::" + mediaResource, e);
-		} finally {
-			// release all resources
-			if (fileStrean != null) {
-				try {
-					fileStrean.close();
-				} catch (IOException e) {
-					log.error("Problem while closing file stream for resource::" + mediaResource, e);
-				}
+		} 
+	}
+	
+	private String getSuffix(String contentType) {
+		contentType = contentType.toLowerCase();
+		if(contentType.indexOf("jpg") >= 0 || contentType.indexOf("jpeg") >= 0) {
+			return "jpg";
+		}
+		if(contentType.indexOf("gif") >= 0) {
+			return "gif";
+		}
+		if(contentType.indexOf("png") >= 0) {
+			return "png";
+		}
+		return null;
+	}
+	
+	private Size getImageSizeFallback() {
+		BufferedInputStream fileStrean = null;
+		BufferedImage imageSrc = null;
+		try {
+			fileStrean = new BufferedInputStream(mediaResource.getInputStream());
+			imageSrc = ImageIO.read(fileStrean);
+			if (imageSrc == null) {
+				// happens with faulty Java implementation, e.g. on MacOSX
+				return null;
 			}
+			double realWidth = imageSrc.getWidth();
+			double realHeight = imageSrc.getHeight();
+			return new Size((int)realWidth, (int)realHeight, false);
+		} catch (IOException e) {
+			// log error, don't do anything else
+			log.error("Problem while setting image size to fit for resource::" + mediaResource, e);
+			return null;
+		} finally {
+			IOUtils.closeQuietly(fileStrean);
 			if (imageSrc != null) {
 				imageSrc.flush();
 			}
 		}
+	}
+	
+	private Size getImageSize(String suffix) {
+		Size result = null;
+    Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+    if (iter.hasNext()) {
+        ImageReader reader = iter.next();
+        try {
+            ImageInputStream stream = new MemoryCacheImageInputStream(mediaResource.getInputStream());
+            reader.setInput(stream);
+            int width = reader.getWidth(reader.getMinIndex());
+            int height = reader.getHeight(reader.getMinIndex());
+            result = new Size(width, height, false);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        } finally {
+            reader.dispose();
+        }
+    } else {
+        log.error("No reader found for given format: " + suffix);
+    }
+    return result;
 	}
 }

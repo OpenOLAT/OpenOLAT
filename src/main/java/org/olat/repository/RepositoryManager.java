@@ -486,8 +486,11 @@ public class RepositoryManager extends BasicManager {
 			   .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.key = :repoKey");
 		
-		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
-				.setParameter("repoKey", key).getResultList();
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", key)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
 		if(entries.isEmpty()) {
 			return null;
 		}

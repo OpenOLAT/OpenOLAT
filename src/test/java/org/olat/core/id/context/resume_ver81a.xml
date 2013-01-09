@@ -1,0 +1,54 @@
+<org.olat.core.id.context.HistoryPointImpl>
+  <uuid>2316</uuid>
+  <businessPath>[BusinessGroup:14516225][toolresources:0]</businessPath>
+  <entries>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.group.BusinessGroupImpl">
+        <key>14516225</key>
+        <version>9</version>
+        <creationDate class="sql-timestamp">2012-11-15 17:09:12.0</creationDate>
+        <description></description>
+        <name>2012.11.15_Grundlagen Umweltmanagement</name>
+        <type>LearningGroup</type>
+        <ownerGroup class="org.olat.basesecurity.SecurityGroupImpl">
+          <key>14483474</key>
+          <version>0</version>
+          <creationDate class="sql-timestamp">2012-11-15 17:09:12.0</creationDate>
+        </ownerGroup>
+        <partipiciantGroup class="org.olat.basesecurity.SecurityGroupImpl">
+          <key>14483475</key>
+          <version>0</version>
+          <creationDate class="sql-timestamp">2012-11-15 17:09:12.0</creationDate>
+        </partipiciantGroup>
+        <waitingGroup class="org.olat.basesecurity.SecurityGroupImpl">
+          <key>14483476</key>
+          <version>0</version>
+          <creationDate class="sql-timestamp">2012-11-15 17:09:12.0</creationDate>
+        </waitingGroup>
+        <lastUsage>2012-11-20 07:05:15.83 UTC</lastUsage>
+        <groupContext class="org.olat.group.context.BGContextImpl">
+          <key>14811136</key>
+          <version>0</version>
+          <creationDate class="sql-timestamp">2012-11-15 17:00:20.0</creationDate>
+          <name>default::learninggroups::86572168582334</name>
+          <groupType>LearningGroup</groupType>
+          <ownerGroup class="org.olat.basesecurity.SecurityGroupImpl">
+            <key>14483471</key>
+            <version>0</version>
+            <creationDate class="sql-timestamp">2012-11-15 17:00:20.0</creationDate>
+          </ownerGroup>
+          <defaultContext>true</defaultContext>
+        </groupContext>
+        <waitingListEnabled>false</waitingListEnabled>
+        <autoCloseRanksEnabled>false</autoCloseRanksEnabled>
+        <lastModified>2012-11-20 07:05:15.84 UTC</lastModified>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.core.util.resource.OresHelper$1">
+        <val_-type>toolresources</val_-type>
+        <val_-key>0</val_-key>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+  </entries>
+</org.olat.core.id.context.HistoryPointImpl>

@@ -927,6 +927,12 @@ public class FormUIFactory {
 		return fte;
 	}
 	
+	public FlexiTableElment addTableElement(String name, FlexiTableDataModel tableModel, Translator translator,  FormItemContainer formLayout) {
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(name, translator, tableModel);
+		formLayout.add(fte);
+		return fte;
+	}
+	
 	/**
 	 * creates a form link with the given name which acts also as command, i18n
 	 * and component name. 

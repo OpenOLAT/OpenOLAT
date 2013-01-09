@@ -36,6 +36,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -76,9 +77,9 @@ public class DialogController extends DefaultController {
 	 * @param userObject
 	 * @return the controller
 	 */
-	public static DialogController createYesNoDialogController(Locale locale, String text, ControllerEventListener cel, Object userObject) {
+	public static DialogController createYesNoDialogController(WindowControl wControl, Locale locale, String text, ControllerEventListener cel, Object userObject) {
 		Translator intTrans = new PackageTranslator(PACKAGE, locale);
-		DialogController dc = new DialogController(locale, intTrans.translate("answer.yes"), intTrans.translate("answer.no"), text, userObject, true, null);
+		DialogController dc = new DialogController(wControl, locale, intTrans.translate("answer.yes"), intTrans.translate("answer.no"), text, userObject, true, null);
 		// when used with basic controller listener has to be set with listenTo()
 		if (cel != null) dc.addControllerListener(cel);
 		return dc;
@@ -90,9 +91,9 @@ public class DialogController extends DefaultController {
 	 * @param cel
 	 * @return the controller
 	 */
-	public static DialogController createOkCancelDialogController(Locale locale, String text, ControllerEventListener cel) {
+	public static DialogController createOkCancelDialogController(WindowControl wControl, Locale locale, String text, ControllerEventListener cel) {
 		Translator intTrans = new PackageTranslator(PACKAGE, locale);
-		DialogController dc = new DialogController(locale, intTrans.translate("answer.ok"), intTrans.translate("answer.cancel"), text);
+		DialogController dc = new DialogController(wControl, locale, intTrans.translate("answer.ok"), intTrans.translate("answer.cancel"), text);
 		// when used with basic controller listener has to be set with listenTo()		
 		if (cel != null) dc.addControllerListener(cel);
 		return dc;
@@ -103,8 +104,8 @@ public class DialogController extends DefaultController {
 	 * @param firstButtonText
 	 * @param text
 	 */
-	public DialogController(Locale locale, String firstButtonText, String text) {
-		this(locale, firstButtonText, null, text, null, true, null);
+	public DialogController(WindowControl wControl, Locale locale, String firstButtonText, String text) {
+		this(wControl, locale, firstButtonText, null, text, null, true, null);
 	}
 
 	/**
@@ -113,8 +114,8 @@ public class DialogController extends DefaultController {
 	 * @param secondButtonText
 	 * @param text
 	 */
-	public DialogController(Locale locale, String firstButtonText, String secondButtonText, String text) {
-		this(locale, firstButtonText, secondButtonText, text, null, true, null);
+	public DialogController(WindowControl wControl, Locale locale, String firstButtonText, String secondButtonText, String text) {
+		this(wControl, locale, firstButtonText, secondButtonText, text, null, true, null);
 	}
 
 	/**
@@ -127,8 +128,8 @@ public class DialogController extends DefaultController {
 	 * @param userObject any UserObject to be retrieved later if the dialog has
 	 *          been answered by the user (convenience)
 	 */
-	public DialogController(Locale locale, String firstButtonText, String secondButtonText, String text, Object userObject, boolean displayCloseIcon, String title) {
-		super(null);
+	public DialogController(WindowControl wControl, Locale locale, String firstButtonText, String secondButtonText, String text, Object userObject, boolean displayCloseIcon, String title) {
+		super(wControl);
 		this.userObject = userObject;
 		myContent = new VelocityContainer("genericdialog", VELOCITY_ROOT + "/index.html", new PackageTranslator(PACKAGE, locale), this);
 		

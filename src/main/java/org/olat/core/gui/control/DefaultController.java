@@ -140,7 +140,9 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * @return the windowcontrol for this controller
 	 */
 	protected WindowControl getWindowControl() {
-		if (newWControl == null) throw new AssertException("no windowcontrol set!");
+		if (newWControl == null) {
+			throw new AssertException("no windowcontrol set!");
+		}
 		return newWControl;
 	}
 	

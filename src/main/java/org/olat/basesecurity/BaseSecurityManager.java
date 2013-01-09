@@ -320,9 +320,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		// if the olatResourceable is not persisted as OLATResource, then the answer
 		// is false,
 		// therefore we can use the query assuming there is an OLATResource
-		
-		
-		
+
 		TypedQuery<Number> query;
 		if(checkTypeRight) {
 			query = DBFactory.getInstance().getCurrentEntityManager().createNamedQuery("isIdentityPermittedOnResourceableCheckType", Number.class);
@@ -334,6 +332,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				.setParameter("permission", permission)
 				.setParameter("resid", oresid)
 				.setParameter("resname", oresName)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getSingleResult();
 		return count.longValue() > 0;
 	}

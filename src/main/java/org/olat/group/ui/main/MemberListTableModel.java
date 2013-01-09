@@ -47,11 +47,12 @@ public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 	public Object getValueAt(int row, int col) {
 		MemberView member = getObject(row);
 		switch(col) {
-			case 0: return member.getFirstTime();
-			case 1: return member.getLastTime();
-			case 2: return member.getMembership();
-			case 3: return member;
-			case 4:return member.getOnlineStatus();
+			case 0:return member.getIdentity().getName();
+			case 1: return member.getFirstTime();
+			case 2: return member.getLastTime();
+			case 3: return member.getMembership();
+			case 4: return member;
+			case 5:return member.getOnlineStatus();
 			default: {
 				int propPos = col - Cols.values().length;
 				if(propPos < userPropertyHandlers.size()) {
@@ -70,6 +71,7 @@ public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 	}
 
 	public enum Cols {
+		username("table.header.login"),
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
 		role("table.header.role"),

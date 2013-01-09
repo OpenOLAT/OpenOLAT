@@ -231,16 +231,20 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				// groups
 				if (!isEmpty(easyGroupList)) {
 					validatedCondition.setEasyModeGroupAccessIdList(getKeys(easyGroupList));
+				} else {
+					validatedCondition.setEasyModeGroupAccess(null);
 				}
-				else validatedCondition.setEasyModeGroupAccess(null);
 				// areas
 				if (!isEmpty(easyAreaList)) {
 					validatedCondition.setEasyModeGroupAreaAccessIdList(getKeys(easyAreaList));
+				} else {
+					validatedCondition.setEasyModeGroupAreaAccess(null);
 				}
-				else validatedCondition.setEasyModeGroupAreaAccess(null);
 			} else {
 				validatedCondition.setEasyModeGroupAccess(null);
+				validatedCondition.setEasyModeGroupAccessIdList(null);
 				validatedCondition.setEasyModeGroupAreaAccess(null);
+				validatedCondition.setEasyModeGroupAreaAccessIdList(null);
 			}
 
 			// 5) assessment switch

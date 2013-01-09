@@ -26,6 +26,7 @@
 package org.olat.course.condition.interpreter;
 
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -37,6 +38,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * Description: A user is course coach if he/she is in at least one owner group of a learning group of the learning group context of the course
  */
 public class IsCourseCoachFunction extends AbstractFunction {
+	private static final OLog log = Tracing.createLoggerFor(IsCourseCoachFunction.class);
 	public static final String name = "isCourseCoach";
 	
 	/**
@@ -62,8 +64,8 @@ public class IsCourseCoachFunction extends AbstractFunction {
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		boolean isCourseCoach = cgm.isIdentityCourseCoach(ident);
-		if (Tracing.isDebugEnabled(IsCourseCoachFunction.class)) {
-			Tracing.logDebug("identity "+ident.getName()+", coursecoach:"+isCourseCoach+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId(), IsCourseCoachFunction.class);
+		if (log.isDebug()) {
+			log.debug("identity "+ident.getName()+", coursecoach:"+isCourseCoach+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}
 		
 		return isCourseCoach ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;

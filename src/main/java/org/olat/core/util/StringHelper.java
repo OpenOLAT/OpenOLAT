@@ -345,6 +345,10 @@ public class StringHelper {
 	}
 	
 	public static String replaceAllCaseInsensitive(String expression, String name, String replacement) {
+		if(!StringHelper.containsNonWhitespace(expression)) {
+			return expression;
+		}
+		
 		String lcExpresion = expression.toLowerCase();
 		String lcName = name.toLowerCase();
 

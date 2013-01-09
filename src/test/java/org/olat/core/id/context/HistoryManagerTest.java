@@ -43,6 +43,20 @@ public class HistoryManagerTest extends OlatTestCase {
 	private HistoryManager historyManager;
 	
 	/**
+	 * Test the compatibility for old resume files with business group
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testRead_groupContext() throws IOException, URISyntaxException {
+		URL xmlUrl = HistoryManagerTest.class.getResource("resume_ver81a.xml");
+		assertNotNull(xmlUrl);
+		File resumeXml = new File(xmlUrl.toURI());
+		HistoryPoint history = historyManager.readHistory(resumeXml);
+		Assert.assertNotNull(history);
+	}
+	
+	/**
 	 * Test the compatibility for old resume files
 	 * @throws IOException
 	 * @throws URISyntaxException
