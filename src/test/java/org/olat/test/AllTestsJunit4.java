@@ -62,6 +62,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.FormatterTest.class,
 	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
+	org.olat.core.id.context.HistoryManagerTest.class,
 	org.olat.core.id.IdentityEnvironmentTest.class,
 	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.note.NoteTest.class,//ok

@@ -22,12 +22,15 @@ package org.olat.core.id.context;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -42,9 +45,13 @@ import com.thoughtworks.xstream.XStream;
 public class HistoryManager extends BasicManager {
 	
 	private static HistoryManager THIS;
-	private static XStream historyStream = XStreamHelper.createXStreamInstance();
+	private static XStream historyReadStream = XStreamHelper.createXStreamInstance();
+	private static XStream historyWriteStream = XStreamHelper.createXStreamInstance();
 	static {
 		//xstream config
+		historyReadStream.omitField(BusinessGroup.class, "groupContext");
+		historyReadStream.omitField(BusinessGroupImpl.class, "groupContext");
+
 	}
 	
 	private HistoryManager() {
@@ -63,7 +70,7 @@ public class HistoryManager extends BasicManager {
 				resumeXml.getParentFile().mkdirs();
 			}
 			FileOutputStream out = new FileOutputStream(resumeXml);
-			historyStream.toXML(historyPoint, out);
+			historyWriteStream.toXML(historyPoint, out);
 			FileUtils.closeSafely(out);
 		} catch (Exception e) {
 			logError("UserSession:::logging off write resume: ", e);
@@ -74,13 +81,7 @@ public class HistoryManager extends BasicManager {
 		try {
 			String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName());
 			File resumeXml = new File(pathHomePage, "resume.xml");
-			if(resumeXml.exists()) {
-				FileInputStream in = new FileInputStream(resumeXml);
-				HistoryPoint point = (HistoryPoint)historyStream.fromXML(in);
-				FileUtils.closeSafely(in);
-				return point;
-			}
-			return null;
+			return readHistory(resumeXml);
 		} catch (Exception e) {
 			logError("Cannot read resume file: ", e);
 			return null;
@@ -98,8 +99,14 @@ public class HistoryManager extends BasicManager {
 			logError("Can not delete history file", e);
 		}
 	}
-
 	
-	
-
+	protected HistoryPoint readHistory(File resumeXml) throws IOException {
+		if(resumeXml.exists()) {
+			FileInputStream in = new FileInputStream(resumeXml);
+			HistoryPoint point = (HistoryPoint)historyReadStream.fromXML(in);
+			FileUtils.closeSafely(in);
+			return point;
+		}
+		return null;
+	}
 }
