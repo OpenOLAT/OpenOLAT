@@ -35,6 +35,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -103,8 +104,19 @@ public class FlexiAutoCompleterController extends FormBasicController {
 			final boolean showDisplayKey, int inputWidth, int minChars, String label) {
 		super(ureq, wControl, "autocomplete");
 		this.gprovider = provider;
+		setupAutoCompleter(ureq, noresults, showDisplayKey, inputWidth, minChars, label);
+	}
+	
+	public FlexiAutoCompleterController(UserRequest ureq, WindowControl wControl, ListProvider provider, String noresults,
+			final boolean showDisplayKey, int inputWidth, int minChars, String label, Form externalMainForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "autocomplete", externalMainForm);
+		this.gprovider = provider;
+		setupAutoCompleter(ureq, noresults, showDisplayKey, inputWidth, minChars, label);
+	}
+	
+	private void setupAutoCompleter(UserRequest ureq, String noresults,
+			final boolean showDisplayKey, int inputWidth, int minChars, String label) {
 		String noResults = (noresults == null ? translate("autocomplete.noresults") : noresults);
-
 		// Configure displaying parameters
 		if (label != null) {
 			flc.contextPut("autocompleter_label", label);
