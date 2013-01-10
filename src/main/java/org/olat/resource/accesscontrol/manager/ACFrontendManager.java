@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -210,13 +211,19 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		if(repoEntries == null || repoEntries.isEmpty()) {
 			return Collections.emptyList();
 		}
+		Set<String> resourceTypes = new HashSet<String>();
 		List<Long> resourceKeys = new ArrayList<Long>();
 		for(RepositoryEntry entry:repoEntries) {
 			OLATResource ores = entry.getOlatResource();
 			resourceKeys.add(ores.getKey());
+			resourceTypes.add(ores.getResourceableTypeName());
 		}
 		
-		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, null, true, new Date());
+		String resourceType = null;
+		if(resourceTypes.size() == 1) {
+			resourceType = resourceTypes.iterator().next();
+		}
+		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
 		return resourceWithOffers;
 	}
 	
@@ -233,8 +240,16 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		return methodManager.getAccessMethodForBusinessGroup(valid, atDate);
 	}
 	
+	/**
+	 * 
+	 * @param resourceKeys This parameter is mandatory and must not be empty!
+	 */
+	@Override
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate) {
-		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, valid, atDate);
+		if(resourceKeys == null || resourceKeys.isEmpty()) {
+			return new ArrayList<OLATResourceAccess>();
+		}
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, null, valid, atDate);
 	}
 
 	/**

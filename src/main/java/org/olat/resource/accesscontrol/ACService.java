@@ -85,6 +85,14 @@ public interface ACService {
 	
 	public List<BusinessGroupAccess> getOfferAccessForBusinessGroup(boolean valid, Date atDate);
 	
+	/**
+	 * 
+	 * @param resourceKeys This parameter is mandatory and must not be empty
+	 * @param resourceType
+	 * @param valid
+	 * @param atDate
+	 * @return
+	 */
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate);
 
 	/**

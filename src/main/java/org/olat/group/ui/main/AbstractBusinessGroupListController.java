@@ -803,8 +803,6 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		List<OLATResourceAccess> resourcesWithAC;
 		if(groupWithOfferKeys.isEmpty()) {
 			resourcesWithAC = Collections.emptyList();
-		} else if(groupWithOfferKeys.size() > 50) {
-			resourcesWithAC	= acService.getAccessMethodForResources(null, "BusinessGroup", true, new Date());
 		} else {
 			resourcesWithAC	= acService.getAccessMethodForResources(groupWithOfferKeys, "BusinessGroup", true, new Date());
 		}

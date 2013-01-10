@@ -301,16 +301,18 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 	}
 	
 	@Override
-	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate) {
+	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys,
+			String resourceType, String excludedResourceType, boolean valid, Date atDate) {
 
-		final int maxResourcesEntries = 100;//quicker to filter in java, numerous keys in "in" are slow
+		final int maxResourcesEntries = 250;//quicker to filter in java, numerous keys in "in" are slow
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, resource, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
 			.append(" inner join access.offer offer")
 			.append(" inner join offer.resource oResource")
-			.append(" where access.valid=").append(valid).append(" and offer.valid=").append(valid);
+			.append(" where access.valid=").append(valid).append(" and offer.valid=").append(valid)
+			.append(" and resource.key=oResource.key");
 		if(resourceKeys != null && !resourceKeys.isEmpty()) {
 			if(resourceKeys.size() < maxResourcesEntries) {
 				sb.append(" and resource.key in (:resourceKeys) ");
@@ -318,7 +320,10 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 			sb.append(" and oResource.key=resource.key");
 		}
 		if(StringHelper.containsNonWhitespace(resourceType)) {
-			sb.append(" and oResource.resName =:resourceType and oResource.key=resource.key");
+			sb.append(" and oResource.resName =:resourceType ");
+		}
+		if(StringHelper.containsNonWhitespace(excludedResourceType)) {
+			sb.append(" and not(oResource.resName=:excludedResourceType)");
 		}
 			
 		if(atDate != null) {
@@ -326,7 +331,7 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
-		Query query = dbInstance.getCurrentEntityManager().createQuery(sb.toString());
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class);
 		if(atDate != null) {
 			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
@@ -342,9 +347,13 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		if(StringHelper.containsNonWhitespace(resourceType)) {
 			query.setParameter("resourceType", resourceType);
 		}
+		if(StringHelper.containsNonWhitespace(excludedResourceType)) {
+			query.setParameter("excludedResourceType", excludedResourceType);
+		}
 		
-		@SuppressWarnings("unchecked")
 		List<Object[]> rawResults = query.getResultList();
+		System.out.println(rawResults.size());
+		
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<Long,OLATResourceAccess>();
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
