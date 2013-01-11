@@ -1283,8 +1283,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				}
 			}
 		} else if("MembersMgmt".equals(type)) {
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			launchMembersManagement(ureq).activate(ureq, subEntries, firstEntry.getTransientState());
+			try {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				launchMembersManagement(ureq).activate(ureq, subEntries, firstEntry.getTransientState());
+			} catch (OLATSecurityException e) {
+				//the wrong link to the wrong person
+			}
 		}
 	}
 
