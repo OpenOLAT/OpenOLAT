@@ -80,7 +80,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	private final BusinessGroupService businessGroupService;
 
 	private PersistingCourseGroupManager(OLATResourceable course) {
-		this(OLATResourceManager.getInstance().findOrPersistResourceable(course));
+		this(OLATResourceManager.getInstance().findResourceable(course));
 	}
 
 	private PersistingCourseGroupManager(OLATResource courseResource) {
