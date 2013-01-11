@@ -64,6 +64,7 @@ import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -1217,38 +1218,57 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#getAuthentications(org.olat.core.id.Identity)
 	 */
+	@Override
 	public List<Authentication> getAuthentications(Identity identity) {
-		return DBFactory.getInstance().find("select auth from  org.olat.basesecurity.AuthenticationImpl as auth " + 
-				"inner join fetch auth.identity as ident where ident.key = ?",
-				new Object[] { identity.getKey() }, new Type[] { StandardBasicTypes.LONG });
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth ")
+		  .append("inner join fetch auth.identity as ident")
+		  .append(" where ident.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 
 	/**
 	 * @see org.olat.basesecurity.Manager#createAndPersistAuthentication(org.olat.core.id.Identity, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public Authentication createAndPersistAuthentication(Identity ident, String provider, String authUserName, String credential) {
-		AuthenticationImpl authImpl = new AuthenticationImpl(ident, provider, authUserName, credential);
-		dbInstance.getCurrentEntityManager().persist(authImpl);
-		return authImpl;
+	@Override
+	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String authUserName, final String credential) {
+		OLATResourceable resourceable = OresHelper.createOLATResourceableInstanceWithoutCheck(provider, ident.getKey());
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resourceable, new SyncerCallback<Authentication>(){
+			public Authentication execute() {
+				Authentication auth = findAuthentication(ident, provider);
+				if(auth == null) {
+					auth = new AuthenticationImpl(ident, provider, authUserName, credential);
+					dbInstance.getCurrentEntityManager().persist(auth);
+				}
+				return auth;
+			}
+		});
 	}
 
 	/**
 	 * @see org.olat.basesecurity.Manager#findAuthentication(org.olat.core.id.Identity, java.lang.String)
 	 */
+	@Override
 	public Authentication findAuthentication(Identity identity, String provider) {
 		if (identity==null) {
 			throw new IllegalArgumentException("identity must not be null");
 		}
-		DB dbInstance = DBFactory.getInstance();
-		if (dbInstance==null) {
-			throw new IllegalStateException("DBFactory.getInstance() returned null");
-		}
-		List results = dbInstance.find(
-				"select auth from org.olat.basesecurity.AuthenticationImpl as auth where auth.identity.key = ? and auth.provider = ?",
-				new Object[] { identity.getKey(), provider }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING });
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName())
+		  .append(" as auth where auth.identity.key=:identityKey and auth.provider=:provider");
+		
+		List<Authentication> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("provider", provider)
+				.getResultList();
 		if (results == null || results.size() == 0) return null;
 		if (results.size() > 1) throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
-		return (Authentication) results.get(0);
+		return results.get(0);
 	}
 	
 	@Override
