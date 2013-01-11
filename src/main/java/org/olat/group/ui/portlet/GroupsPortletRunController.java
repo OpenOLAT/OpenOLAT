@@ -316,6 +316,11 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
   				return "ERROR";
   		}
   	}
+
+		@Override
+		public Object createCopyWithEmptyList() {
+			return new GroupTableDataModel(new ArrayList<PortletEntry<BusinessGroupEntry>>());
+		}
   }
 
   /**
@@ -354,7 +359,12 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 				default:
 					return "error";
 			}
-		}	
+		}
+
+		@Override
+		public GroupsManualSortingTableDataModel createCopyWithEmptyList() {
+			return new GroupsManualSortingTableDataModel(new ArrayList<PortletEntry<BusinessGroupEntry>>());
+		}
 	}
 	
 	private class GroupPortletEntry implements PortletEntry<BusinessGroupEntry> {

@@ -401,8 +401,12 @@ public class GroupSearchController extends StepFormBasicController {
 				default: return option;
 			}
 		}
+
+		@Override
+		public GroupTableDataModel createCopyWithEmptyList() {
+			return new GroupTableDataModel(new ArrayList<GroupWrapper>(), columnModel);
+		}
 	}
-	
 	
 	public static enum Cols {
 		groupName("table.group.name"),

@@ -290,6 +290,11 @@ public class GroupsAndRightsController extends FormBasicController {
 			int rightPos = col - 2;
 			return groupRights.getRightsEl().get(rightPos).getSelection();
 		}
+
+		@Override
+		public Object createCopyWithEmptyList() {
+			return new GroupsAndRightsDataModel(new ArrayList<BGRightsOption>(), columnModel);
+		}
 	}
 	
 	private static class BGRight {

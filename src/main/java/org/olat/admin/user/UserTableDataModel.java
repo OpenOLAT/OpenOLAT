@@ -25,6 +25,7 @@
 
 package org.olat.admin.user;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,6 +51,12 @@ public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
+	
+	private UserTableDataModel(Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
+		super(new ArrayList<Identity>());
+		setLocale(locale);
+		this.userPropertyHandlers = userPropertyHandlers;
+	}
 	
 	/**
 	 * @param objects
@@ -102,6 +109,11 @@ public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 	 */
 	public int getColumnCount() {
 		return userPropertyHandlers.size() + 1;
+	}
+
+	@Override
+	public Object createCopyWithEmptyList() {
+		return new UserTableDataModel(getLocale(), userPropertyHandlers);
 	}
 
 	/**

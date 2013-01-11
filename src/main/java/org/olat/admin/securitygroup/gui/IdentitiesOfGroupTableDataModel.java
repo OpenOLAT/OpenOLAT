@@ -43,7 +43,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author Felix Jost, Florian Gnaegi
  */
 
-public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
+public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Object[]> {
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private boolean isAdministrativeUser;
 
@@ -95,6 +95,11 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel {
 		return userPropertyHandlers.size() + (isAdministrativeUser ? 2 : 1);
 	}
 	
+	@Override
+	public IdentitiesOfGroupTableDataModel createCopyWithEmptyList() {
+		return new IdentitiesOfGroupTableDataModel(new ArrayList<Object[]>(), getLocale(), userPropertyHandlers, isAdministrativeUser);
+	}
+
 	/**
 	 * @param rowid
 	 * @return The identity at the given position in the dable
