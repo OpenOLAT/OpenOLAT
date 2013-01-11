@@ -55,6 +55,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.resource.OLATResource;
 
 /**
  * Description: <br>
@@ -171,8 +172,9 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		} else if (role.equals(PreviewSettingsForm.ROLE_GLOBALAUTHOR)) {
 			isGlobalAuthor = true;
 		}
-
-		final CourseGroupManager cgm = new PreviewCourseGroupManager(groups, new ArrayList<BGArea>(areas), isCoach, isCourseAdmin);
+		
+		final OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		final CourseGroupManager cgm = new PreviewCourseGroupManager(courseResource, new ArrayList<BusinessGroup>(groups), new ArrayList<BGArea>(areas), isCoach, isCourseAdmin);
 		final UserNodeAuditManager auditman = new PreviewAuditManager();
 		final AssessmentManager am = new PreviewAssessmentManager();
 		final CoursePropertyManager cpm = new PreviewCoursePropertyManager();

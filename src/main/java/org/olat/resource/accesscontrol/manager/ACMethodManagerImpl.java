@@ -352,8 +352,6 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		}
 		
 		List<Object[]> rawResults = query.getResultList();
-		System.out.println(rawResults.size());
-		
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<Long,OLATResourceAccess>();
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
