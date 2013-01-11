@@ -126,7 +126,7 @@ public class RepositoryMailing {
 			context = new MailContextImpl(null, null, "[RepositoryEntry:" + re.getKey() + "]");
 		}
 
-		MailerResult result = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, null);
+		MailerResult result = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, ureqIdentity);
 		if(mailing != null) {
 			mailing.appendResult(result);
 		}

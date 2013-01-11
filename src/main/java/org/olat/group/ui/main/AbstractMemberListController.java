@@ -61,6 +61,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
@@ -399,7 +401,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		
 		if(template != null) {	
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(mod.getMember()), null, template, null);
+			MailContext ctx = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(ctx, Collections.singletonList(mod.getMember()), null, template, getIdentity());
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
 		}
 	}
