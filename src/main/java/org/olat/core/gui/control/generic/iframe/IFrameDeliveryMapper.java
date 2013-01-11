@@ -261,14 +261,14 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			return page;
 		}
 		
-		StringOutput sb = new StringOutput();
 		//do not use parser and just check for css and script stuff myself and append just before body and head
 		SimpleHtmlParser parser = new SimpleHtmlParser(page);
 		if (!parser.isValidHtml()) {
 			return page;
 		}
 
-		String docType = parser.getHtmlDocType();		
+		String docType = parser.getHtmlDocType();	
+		StringOutput sb = new StringOutput(page.length() + 1000);
 		if (docType != null) sb.append(docType).append("\n");
 		if (parser.getXhtmlNamespaces() == null) sb.append("<html><head>");
 		else {

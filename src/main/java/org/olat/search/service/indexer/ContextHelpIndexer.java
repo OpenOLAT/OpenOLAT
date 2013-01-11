@@ -122,7 +122,7 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 			};
 			Renderer renderer = Renderer.getInstance(container, pageTranslator, new EmptyURLBuilder(), null, globalSettings);
 			// Add render decorator with helper methods
-			VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, container);			
+			VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, container, null);			
 			ctx.put("r", vrdec);
 			// Add empty static dir url - only used to not generate error messages
 			ctx.put("chelpStaticDirUrl", "");

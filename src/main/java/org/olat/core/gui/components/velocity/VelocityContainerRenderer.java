@@ -73,18 +73,10 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		// the component id of the urlbuilder  will be overwritten by the recursive render call for
 		// subcomponents (see Renderer)
 		Renderer fr = Renderer.getInstance(vc, translator, ubu, renderResult, renderer.getGlobalSettings());
-		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc);			
+		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc, target);			
 		ctx.put("r", vrdec);
 		VelocityHelper vh = VelocityHelper.getInstance();
-		String mm = vh.mergeContent(pagePath, ctx, theme);
-		
-		// experimental!!!
-		// surround with red border if recording mark indicates so.
-		if (vc.markingCommandString != null) {
-			target.append("<table style=\"border:3px solid red; background-color:#E0E0E0; padding:4px; margin:0px;\"><tr><td>").append(mm).append("</td></tr></table>");
-		} else {
-			target.append(mm);
-		}
+		vh.mergeContent(pagePath, ctx, target, theme);
 	}
 
 	/**
@@ -96,9 +88,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		VelocityContainer vc = (VelocityContainer) source;
 		// the velocity container itself needs no headerincludes, but ask the
 		// children also
-		Map comps = vc.getComponents();
-		for (Iterator iter = comps.values().iterator(); iter.hasNext();) {
-			Component child = (Component) iter.next();
+		for (Component child : vc.getComponents().values()) {
 			renderer.renderHeaderIncludes(sb, child, rstate);
 		}
 	}
@@ -111,9 +101,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		VelocityContainer vc = (VelocityContainer) source;
 		// the velocity container itself needs no headerincludes, but ask the
 		// children also
-		Map comps = vc.getComponents();
-		for (Iterator iter = comps.values().iterator(); iter.hasNext();) {
-			Component child = (Component) iter.next();
+		for (Component child : vc.getComponents().values()) {
 			renderer.renderBodyOnLoadJSFunctionCall(sb, child, rstate);
 		}
 	}

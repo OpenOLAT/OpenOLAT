@@ -204,12 +204,18 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 				throw new AssertException("Your label "+labelKey+" for formitem "+getName()+" is not available, please use the addXXX method with labelI18nKey and set it to null.");
 			}
 		}
-		labelC = new SimpleLabelText(labelKey, labelTrsl);
-		errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams));
-		exampleC = new SimpleExampleText(exampleKey, translate(exampleKey, exampleParams));
-		labelPanel.setContent(labelC);
-		errorPanel.setContent(errorComponent);
-		examplePanel.setContent(exampleC);
+		if(labelKey != null) {
+			labelC = new SimpleLabelText(labelKey, labelTrsl);
+			labelPanel.setContent(labelC);
+		}
+		if(errorKey != null) {
+			errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams));
+			errorPanel.setContent(errorComponent);
+		}
+		if(exampleKey != null) {
+			exampleC = new SimpleExampleText(exampleKey, translate(exampleKey, exampleParams));
+			examplePanel.setContent(exampleC);
+		}
 	}
 
 	public Translator getTranslator() {
@@ -237,8 +243,11 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		labelKey = label;
 		labelParams = params;
 		// set label may be called before the translator is available
-		if (getTranslator() != null) {
+		if (getTranslator() != null && labelKey != null) {
 			labelC = new SimpleLabelText(label, getLabelText());
+			labelPanel.setContent(labelC);
+		} else if(label == null) {
+			labelC = null;
 			labelPanel.setContent(labelC);
 		}
 	}
@@ -255,14 +264,13 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 			throw new AssertException("do not clear error by setting null, instead use showLabel(false).");
 		}
 		
-		this.hasLabel = true;
+		hasLabel = true;
 		//initialize root form of form item
 		FormLayoutContainer flc = (FormLayoutContainer)container;//TODO:pb: fix this hierarchy mismatch
 		flc.register(labelComponent);//errorFormItem must be part of the composite chain, that it gets dispatched
 		
 		labelC = labelComponent.getComponent();
 		labelPanel.setContent(labelC);
-		
 		return this;
 	}
 	
@@ -308,6 +316,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		if (getTranslator() != null) {
 			exampleC = new SimpleExampleText(exampleKey, translate(exampleKey, params));
 			examplePanel.setContent(exampleC);
+		} else if(exampleKey == null) {
+			exampleC = null;
+			examplePanel.setContent(exampleC);
 		}
 	}
 
@@ -323,8 +334,8 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 			errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams));		
 			errorPanel.setContent(errorComponent);
 		}
-		this.showError(hasError);
-		this.getRootForm().getInitialComponent().setDirty(true);
+		showError(hasError);
+		getRootForm().getInitialComponent().setDirty(true);
 	}
 
 	/**
@@ -355,9 +366,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		FormLayoutContainer flc = (FormLayoutContainer)container;//TODO:pb: fix this hierarchy mismatch
 		flc.register(errorFormItem);//errorFormItem must be part of the composite chain, that it gets dispatched
 		
-		this.hasError = true;
-		this.errorComponent = errorFormItem.getComponent();
-		errorPanel.setContent(this.errorComponent);
+		hasError = true;
+		errorComponent = errorFormItem.getComponent();
+		errorPanel.setContent(errorComponent);
 	}
 
 	/**
@@ -367,21 +378,20 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		return errorPanel;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getErrorText()
-	 */
-	public String getErrorText() {
-		return translate(errorKey, errorParams);
-	}
-
 	public void setEnabled(boolean isEnabled) {
 		getErrorC().setEnabled(isEnabled);
-		if(errorComponent != null) errorComponent.setEnabled(isEnabled);
+		if(errorComponent != null) {
+			errorComponent.setEnabled(isEnabled);
+		}
 		getExampleC().setEnabled(isEnabled);
-		if(exampleC!=null) exampleC.setEnabled(isEnabled);
+		if(exampleC!=null) {
+			exampleC.setEnabled(isEnabled);
+		}
 		getLabelC().setEnabled(isEnabled);
-		if(labelC!=null) labelC.setEnabled(isEnabled);
-		this.formItemIsEnabled = isEnabled;
+		if(labelC!=null) {
+			labelC.setEnabled(isEnabled);
+		}
+		formItemIsEnabled = isEnabled;
 		if(getComponent()==null) return;
 		getComponent().setEnabled(isEnabled);
 	}

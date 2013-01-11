@@ -261,7 +261,9 @@ public class LinkRenderer implements ComponentRenderer {
 				extJsSb.append("Ext.QuickTips.tips({");
 				extJsSb.append("target: '").append(elementId).append("',");
 				//FIXME:FG:Check component containing single quotes or line breaks
-				String clearedContent = renderer.render(link.tooltipContent).toString().replaceAll("\n", "");
+				StringOutput clearedContentSb = new StringOutput(100);
+				renderer.render(link.tooltipContent, clearedContentSb, null);
+				String clearedContent = clearedContentSb.toString().replaceAll("\n", "");
 				extJsSb.append("text: '").append(clearedContent).append("',");
 				extJsSb.append("autoHide: ").append(String.valueOf(!link.hasStickyTooltip));
 				extJsSb.append("});");

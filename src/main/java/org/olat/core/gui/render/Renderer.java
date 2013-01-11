@@ -190,24 +190,13 @@ public class Renderer {
 	}
 
 	/**
-	 * used by window.java for top rendering or subtree rendering
-	 * @param source
-	 * @return
-	 */
-	public StringOutput render(Component source) {
-		return render(source, null);
-	}
-
-	/**
 	 * used by velocityrenderdecorator and method render(component) above
 	 * @param source
 	 * @param args
 	 * @return
 	 */
-	public StringOutput render(Component source, String[] args) {
-		StringOutput sb = new StringOutput(2048);
+	public void render(Component source, StringOutput sb, String[] args) {
 		render(sb, source, args);
-		return sb;
 	}
 
 	/**

@@ -92,7 +92,7 @@ public class WikiMarkupRenderer implements ComponentRenderer {
     OlatWikiDataHandler dataHandler = new OlatWikiDataHandler(wikiComp.getOres(), wikiComp.getImageBaseUri());
     input.setDataHandler(dataHandler);
     
-    StringOutput out = new StringOutput();
+    StringOutput out = new StringOutput(100);
 		ubu.buildURI(out, null , null, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		String uri = out.toString();
 		
