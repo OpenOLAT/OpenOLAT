@@ -100,7 +100,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	public static final String TABLE_ACTION_REMOVE = "tbl_remove";
 	public static final String TABLE_ACTION_GRADUATE = "tbl_graduate";
 	
-	protected final MemberListTableModel memberListModel;
+	//protected final MemberListTableModel memberListModel;
 	protected final TableController memberListCtr;
 	protected final VelocityContainer mainVC;
 	
@@ -158,7 +158,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
 		initColumns();
-		memberListModel = new MemberListTableModel(userPropertyHandlers);
+		MemberListTableModel memberListModel = new MemberListTableModel(userPropertyHandlers);
 		memberListCtr.setTableDataModel(memberListModel);
 		memberListCtr.setMultiSelect(true);
 		memberListCtr.addMultiSelectAction("table.header.edit", TABLE_ACTION_EDIT);
@@ -230,7 +230,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 
-				MemberView member = memberListModel.getObject(te.getRowId());
+				MemberView member = (MemberView)memberListCtr.getTableDataModel().getObject(te.getRowId());
 				if(TABLE_ACTION_EDIT.equals(actionid)) {
 					openEdit(ureq, member);
 				} else if(TABLE_ACTION_REMOVE.equals(actionid)) {
@@ -240,7 +240,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
-				List<MemberView> selectedItems = memberListModel.getObjects(te.getSelection());
+				List<MemberView> selectedItems = memberListCtr.getObjects(te.getSelection());
 				if(TABLE_ACTION_REMOVE.equals(te.getAction())) {
 					confirmDelete(ureq, selectedItems);
 				} else if(TABLE_ACTION_EDIT.equals(te.getAction())) {
@@ -579,7 +579,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		//the order of the filter is important
 		filterByRoles(memberList, params);
 		filterByOrigin(memberList, params);
-		memberListModel.setObjects(memberList);
+		((MemberListTableModel)memberListCtr.getTableDataModel()).setObjects(memberList);
 		memberListCtr.modelChanged();
 		return memberList;
 	}

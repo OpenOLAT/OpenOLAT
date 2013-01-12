@@ -348,9 +348,11 @@ public class MailListController extends BasicController implements Activateable2
 				MailDataModel dataModel = (MailDataModel)tableCtr.getTableDataModel();
 				MailContextShortName filter = (MailContextShortName)tableCtr.getActiveFilter();
 				dataModel.filter(filter);
+				tableCtr.setTableDataModel(dataModel);
 			} else if (TableController.EVENT_NOFILTER_SELECTED == event) {
 				MailDataModel dataModel = (MailDataModel)tableCtr.getTableDataModel();
 				dataModel.filter(null);
+				tableCtr.setTableDataModel(dataModel);
 			}			
 			
 		} else if (source == mailCtr) {
