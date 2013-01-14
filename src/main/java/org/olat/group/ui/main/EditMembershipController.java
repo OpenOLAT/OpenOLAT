@@ -67,6 +67,7 @@ public class EditMembershipController extends FormBasicController {
 	private EditMemberTableDataModel tableDataModel;
 	private MultipleSelectionElement repoRightsEl;
 	private MemberInfoController infoController;
+	private boolean needMemberInfoController = false;
 	private boolean withButtons;
 	
 	private static final String[] repoRightsKeys = {"owner", "tutor", "participant"};
@@ -96,8 +97,7 @@ public class EditMembershipController extends FormBasicController {
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		memberships = repositoryManager.getRepositoryEntryMembership(repoEntry, member);
-
-		infoController = new MemberInfoController(ureq, wControl, member, repoEntry);
+		needMemberInfoController = true;
 		initForm(ureq);
 		loadModel(member);
 		
@@ -200,7 +200,8 @@ public class EditMembershipController extends FormBasicController {
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			if(infoController != null) {
+			if(needMemberInfoController) {
+				infoController = new MemberInfoController(ureq, getWindowControl(), member, repoEntry, mainForm);
 				layoutCont.put("infos", infoController.getInitialComponent());
 			}
 			
@@ -293,6 +294,11 @@ public class EditMembershipController extends FormBasicController {
 			boolean bgTutor = option.getTutor().isAtLeastSelected(1);
 			change.setTutor(bgPermission.isTutor() == bgTutor ? null : new Boolean(bgTutor));
 			boolean bgParticipant = option.getParticipant().isAtLeastSelected(1);
+			
+			boolean test34 = option.getParticipant().isSelected(0);
+			Set<String> test34Set = option.getParticipant().getSelectedKeys();
+			System.out.println("Test 34: " + test34 + " set size: " + test34Set.size());
+			
 			change.setParticipant(bgPermission.isParticipant() == bgParticipant ? null : new Boolean(bgParticipant));
 			boolean bgWaitingList = option.getWaiting().isEnabled() && option.getWaiting().isAtLeastSelected(1);
 			change.setWaitingList(bgPermission.isWaitingList() == bgWaitingList ? null : new Boolean(bgWaitingList));
