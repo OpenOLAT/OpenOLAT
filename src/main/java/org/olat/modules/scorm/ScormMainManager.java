@@ -66,8 +66,10 @@ public class ScormMainManager extends BasicManager {
 			File cpRoot, String resourceId, String courseId, String lesson_mode, String credit_mode,
 			boolean previewMode, String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented) {
 		
-		return new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot, resourceId, courseId, lesson_mode, credit_mode,
+		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot, resourceId, courseId, lesson_mode, credit_mode,
 				previewMode, assessableType, activate, fullWindow, attemptsIncremented);
+		ctrl.setRawContent(true);
+		return ctrl;
 	}
 	
 }

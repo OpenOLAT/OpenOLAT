@@ -130,7 +130,12 @@ public class BGUserManagementGroupTableDataModel extends DefaultTableDataModel<I
 			}
 		}
 	}
-	
+
+	@Override
+	public Object createCopyWithEmptyList() {
+		return new BGUserManagementGroupTableDataModel(getLocale(), userPropertyHandlers);
+	}
+
 	public void setMembers(List<Identity> owners,  List<Identity> participants, List<Identity> waitingList) {
 		this.owners.clear();
 		this.owners.addAll(owners);

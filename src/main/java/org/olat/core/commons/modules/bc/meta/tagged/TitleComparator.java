@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 
 /**
@@ -41,34 +42,37 @@ public class TitleComparator implements Comparator<VFSItem> {
 	public TitleComparator(Locale locale) {
 		this(Collator.getInstance(locale));
 	}
-
+	
+	@Override
 	public int compare(VFSItem i1, VFSItem i2) {
-		int result = 0;
-		if(i1 instanceof MetaTagged && i2 instanceof MetaTagged) {
-			MetaInfo m1 = ((MetaTagged)i1).getMetaInfo();
-			MetaInfo m2 = ((MetaTagged)i2).getMetaInfo();
-			if(m1 != null && m2 != null) {
-				String t1 = m1.getTitle();
-				String t2 = m2.getTitle();
-				if(t1 != null && t2 != null) {
-					result = collator.compare(t1, t2);
-				}
-			}
-		}
+		String n1 = getName(i1);
+		String n2 = getName(i2);
+		if(n1 == null) return -1;
+		if(n2 == null) return 1;
 		
-		if(result == 0) {
-			String n1 = i1.getName();
-			String n2 = i2.getName();
-			if(n1 != null && n2 != null) {
-				result = collator.compare(n1, n2);
-			}
-		}
-		
+		int result =  collator.compare(n1, n2);
 		if(result == 0) {
 			long l1 = i1.getLastModified();
 			long l2 = i2.getLastModified();
 			result = l1<l2 ? -1 : (l1==l2 ? 0 : 1);
 		}
 		return result;
+	}
+	
+	private String getName(VFSItem item) {
+		if(item == null) return null;
+		
+		String name = null;
+		if(item instanceof MetaTagged) {
+			MetaInfo m = ((MetaTagged)item).getMetaInfo();
+			if(m != null) {
+				name = m.getTitle();
+			}
+		}
+		
+		if(!StringHelper.containsNonWhitespace(name)) {
+			name = item.getName();
+		}
+		return name;
 	}
 }

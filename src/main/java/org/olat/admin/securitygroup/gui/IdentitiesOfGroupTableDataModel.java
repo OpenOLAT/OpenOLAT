@@ -82,7 +82,12 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Group
 		// + loginname + adddate or just + loginname
 		return userPropertyHandlers.size() + (isAdministrativeUser ? 2 : 1);
 	}
-
+	
+	@Override
+	public IdentitiesOfGroupTableDataModel createCopyWithEmptyList() {
+		return new IdentitiesOfGroupTableDataModel(new ArrayList<GroupMemberView>(), getLocale(), userPropertyHandlers, isAdministrativeUser);
+	}
+	
 	/**
 	 * Return a list of identites for this bitset
 	 * @param objectMarkers

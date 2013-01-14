@@ -25,6 +25,7 @@
 
 package org.olat.group.ui.area;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
@@ -37,7 +38,7 @@ import org.olat.group.BusinessGroup;
  * @author gnaegi
  */
 public class GroupsToAreaDataModel extends DefaultTableDataModel<BusinessGroup> {
-	List<BusinessGroup> inAreaGroups;
+	private final List<BusinessGroup> inAreaGroups;
 
 	/**
 	 * Constructor for the GroupsToAreaDataModel
@@ -69,5 +70,10 @@ public class GroupsToAreaDataModel extends DefaultTableDataModel<BusinessGroup> 
 		} else {
 			return "ERROR";
 		}
+	}
+
+	@Override
+	public GroupsToAreaDataModel createCopyWithEmptyList() {
+		return new GroupsToAreaDataModel(new ArrayList<BusinessGroup>(), inAreaGroups);
 	}
 }

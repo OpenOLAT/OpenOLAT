@@ -25,6 +25,7 @@
 
 package org.olat.course.area;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -74,4 +75,11 @@ public class BGAreaTableModel extends DefaultTableDataModel<BGArea> {
 				return "ERROR";
 		}
 	}
+
+	@Override
+	public BGAreaTableModel createCopyWithEmptyList() {
+		return new BGAreaTableModel(new ArrayList<BGArea>());
+	}
+	
+	
 }

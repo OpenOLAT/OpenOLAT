@@ -223,6 +223,10 @@ public class MergeSource extends AbstractVirtualContainer {
 				// Special case: sometimes the path refers to the named containers
 				// delegate container, so try this one as well
 				container = ((NamedContainerImpl) container).getDelegate();
+				if(container == null) {
+					// in case a corrupted course
+					continue;
+				}
 				String name = container.getName();
 				if (name == null) {
 					// FXOLAT-195 The delegate of the named container does not

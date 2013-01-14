@@ -19,6 +19,7 @@
  */
 package org.olat.admin.user.bulkChange;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
@@ -51,5 +52,10 @@ public class OverviewModel extends DefaultTableDataModel<List<String>> {
 		List<String> dataArray = getObject(row);
 		String value = dataArray.get(col);
 		return (value == null ? "n/a" : value);
+	}
+
+	@Override
+	public Object createCopyWithEmptyList() {
+		return new OverviewModel(new ArrayList<List<String>>(), columnCount);
 	}
 }

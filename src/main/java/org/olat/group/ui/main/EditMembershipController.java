@@ -411,6 +411,11 @@ public class EditMembershipController extends FormBasicController {
 				default: return option;
 			}
 		}
+
+		@Override
+		public EditMemberTableDataModel createCopyWithEmptyList() {
+			return new EditMemberTableDataModel(new ArrayList<MemberOption>(), columnModel);
+		}
 	}
 	
 	public static enum Cols {

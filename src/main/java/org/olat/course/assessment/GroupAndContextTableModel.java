@@ -25,6 +25,7 @@
 
 package org.olat.course.assessment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -80,4 +81,9 @@ public class GroupAndContextTableModel extends DefaultTableDataModel<BusinessGro
                 return "ERROR";
         }
     }
+
+		@Override
+		public Object createCopyWithEmptyList() {
+			return new GroupAndContextTableModel(new ArrayList<BusinessGroup>());
+		}
 }

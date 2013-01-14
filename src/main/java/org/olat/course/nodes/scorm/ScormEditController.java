@@ -194,7 +194,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		boolean advanceScore = config.getBooleanSafe(CONFIG_ADVANCESCORE, true);
 		// </OLATCE-289>
 		int cutvalue = config.getIntegerSafe(CONFIG_CUTVALUE, 0);
-		boolean rawContent = config.getBooleanSafe(CONFIG_RAW_CONTENT, false);
+		boolean rawContent = config.getBooleanSafe(CONFIG_RAW_CONTENT, true);
 		String height = (String) config.get(CONFIG_HEIGHT);
 		String encContent = (String) config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
 		String encJS = (String) config.get(NodeEditController.CONFIG_JS_ENCODING);

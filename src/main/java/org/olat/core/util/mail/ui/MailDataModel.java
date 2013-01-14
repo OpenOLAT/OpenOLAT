@@ -185,12 +185,12 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMail> {
 	}
 	
 	public void filter(MailContextShortName filter) {
-		if(filter == null || !StringHelper.containsNonWhitespace(filter.getBusinessPath())) {
+		if(filter == null || filter.getBusinessPaths() == null || filter.getBusinessPaths().isEmpty()) {
 			filteredMails = null;
 		} else {
 			filteredMails = new ArrayList<DBMail>();
 			for(DBMail mail:mails) {
-				if(filter.getBusinessPath().equals(mail.getContext().getBusinessPath())) {
+				if(filter.getBusinessPaths().contains((mail.getContext().getBusinessPath()))) {
 					filteredMails.add(mail);
 				}
 			}

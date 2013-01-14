@@ -19,6 +19,7 @@
  */
 package org.olat.admin.user;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -75,5 +76,10 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<UserResultW
 				return "";
 			}
 		}
+	}
+
+	@Override
+	public UserSearchFlexiTableModel createCopyWithEmptyList() {
+		return new UserSearchFlexiTableModel(new ArrayList<UserResultWrapper>(), userPropertyHandlers, locale, columnModel);
 	}
 }

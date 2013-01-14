@@ -61,6 +61,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
@@ -105,7 +107,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	public static final String TABLE_ACTION_GRADUATE = "tbl_graduate";
 	public static final String TABLE_ACTION_IM = "tbl_im";
 	
-	protected final MemberListTableModel memberListModel;
+	//protected final MemberListTableModel memberListModel;
 	protected final TableController memberListCtr;
 	protected final VelocityContainer mainVC;
 	
@@ -169,7 +171,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
 		initColumns();
-		memberListModel = new MemberListTableModel(userPropertyHandlers);
+		MemberListTableModel memberListModel = new MemberListTableModel(userPropertyHandlers);
 		memberListCtr.setTableDataModel(memberListModel);
 		memberListCtr.setMultiSelect(true);
 		memberListCtr.addMultiSelectAction("table.header.edit", TABLE_ACTION_EDIT);
@@ -244,7 +246,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 
-				MemberView member = memberListModel.getObject(te.getRowId());
+				MemberView member = (MemberView)memberListCtr.getTableDataModel().getObject(te.getRowId());
 				if(TABLE_ACTION_EDIT.equals(actionid)) {
 					openEdit(ureq, member);
 				} else if(TABLE_ACTION_REMOVE.equals(actionid)) {
@@ -256,7 +258,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
-				List<MemberView> selectedItems = memberListModel.getObjects(te.getSelection());
+				List<MemberView> selectedItems = memberListCtr.getObjects(te.getSelection());
 				if(TABLE_ACTION_REMOVE.equals(te.getAction())) {
 					confirmDelete(ureq, selectedItems);
 				} else if(TABLE_ACTION_EDIT.equals(te.getAction())) {
@@ -428,7 +430,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		
 		if(template != null) {	
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(mod.getMember()), null, template, null);
+			MailContext ctx = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(ctx, Collections.singletonList(mod.getMember()), null, template, getIdentity());
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
 		}
 	}
@@ -613,7 +616,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		//the order of the filter is important
 		filterByRoles(memberList, params);
 		filterByOrigin(memberList, params);
-		memberListModel.setObjects(memberList);
+		((MemberListTableModel)memberListCtr.getTableDataModel()).setObjects(memberList);
 		memberListCtr.modelChanged();
 		return memberList;
 	}

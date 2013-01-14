@@ -25,6 +25,7 @@
 
 package org.olat.group.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -77,6 +78,10 @@ public class BusinessGroupTableModel extends DefaultTableDataModel<BusinessGroup
 		}
 	}
 
+	@Override
+	public BusinessGroupTableModel createCopyWithEmptyList() {
+		return new BusinessGroupTableModel(new ArrayList<BusinessGroup>());
+	}
 
 	/**
 	 * @param row
