@@ -300,11 +300,14 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// configure some display options
 		boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 		scormDispC.showNavButtons(showNavButtons);
-		boolean rawContent = config.getBooleanSafe(ScormEditController.CONFIG_RAW_CONTENT, false);
+		boolean rawContent = config.getBooleanSafe(ScormEditController.CONFIG_RAW_CONTENT, true);
 		scormDispC.setRawContent(rawContent);
 		String height = (String) config.get(ScormEditController.CONFIG_HEIGHT);
 		if (!height.equals(ScormEditController.CONFIG_HEIGHT_AUTO)) {
 			scormDispC.setHeightPX(Integer.parseInt(height));
+		} else if(config.getBooleanSafe(ScormEditController.CONFIG_RAW_CONTENT, true)) {
+			//height auto but raw content set -> set default
+			scormDispC.setHeightPX(680);
 		}
 		String contentEncoding = (String) config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
 		if (!contentEncoding.equals(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO)) {
