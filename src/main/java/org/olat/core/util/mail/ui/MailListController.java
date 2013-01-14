@@ -241,12 +241,18 @@ public class MailListController extends BasicController implements Activateable2
 		
 		if(!bpToContexts.isEmpty()) {
 			List<ShortName> filters = new ArrayList<ShortName>();
+			Map<String, MailContextShortName> uniqueNames = new HashMap<String,MailContextShortName>();
 			ShortName allContextFilter = new MailContextShortName("-");
 			filters.add(allContextFilter);
 			for(Map.Entry<String, String> entry:bpToContexts.entrySet()) {
 				String businessPath = entry.getKey();
 				String contextName = entry.getValue();
-				filters.add(new MailContextShortName(contextName, businessPath));
+				if(!uniqueNames.containsKey(contextName)) {
+					MailContextShortName cxt = new MailContextShortName(contextName, new HashSet<String>());
+					filters.add(cxt);
+					uniqueNames.put(contextName, cxt);
+				}
+				uniqueNames.get(contextName).getBusinessPaths().add(businessPath);
 			}
 			tableCtr.setFilters(filters, allContextFilter);
 		}
