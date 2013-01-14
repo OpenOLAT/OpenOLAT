@@ -202,6 +202,7 @@ public class EditMembershipController extends FormBasicController {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			if(needMemberInfoController) {
 				infoController = new MemberInfoController(ureq, getWindowControl(), member, repoEntry, mainForm);
+				listenTo(infoController);
 				layoutCont.put("infos", infoController.getInitialComponent());
 			}
 			
@@ -294,11 +295,6 @@ public class EditMembershipController extends FormBasicController {
 			boolean bgTutor = option.getTutor().isAtLeastSelected(1);
 			change.setTutor(bgPermission.isTutor() == bgTutor ? null : new Boolean(bgTutor));
 			boolean bgParticipant = option.getParticipant().isAtLeastSelected(1);
-			
-			boolean test34 = option.getParticipant().isSelected(0);
-			Set<String> test34Set = option.getParticipant().getSelectedKeys();
-			System.out.println("Test 34: " + test34 + " set size: " + test34Set.size());
-			
 			change.setParticipant(bgPermission.isParticipant() == bgParticipant ? null : new Boolean(bgParticipant));
 			boolean bgWaitingList = option.getWaiting().isEnabled() && option.getWaiting().isAtLeastSelected(1);
 			change.setWaitingList(bgPermission.isWaitingList() == bgWaitingList ? null : new Boolean(bgWaitingList));
