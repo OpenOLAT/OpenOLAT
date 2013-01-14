@@ -1055,6 +1055,7 @@ create table o_im_roster_entry (
    r_resid int8 not null,
    r_nickname varchar(255),
    r_fullname varchar(255),
+   r_vip bool default false,
    r_anonym bool default false,
    fk_identity_id int8 not null,
    primary key (id)
@@ -1336,6 +1337,36 @@ create or replace view o_re_membership_v as (
    left join o_repositoryentry as re_part_member on (membership.secgroup_id = re_part_member.fk_participantgroup)
    left join o_repositoryentry as re_tutor_member on (membership.secgroup_id = re_tutor_member.fk_tutorgroup)
    left join o_repositoryentry as re_owner_member on (membership.secgroup_id = re_owner_member.fk_ownergroup)
+);
+
+create view o_gp_visible_participant_v as (
+   select
+      bg_part_member.id as membership_id,
+      bgroup.group_id as bg_id,
+      bgroup.groupname as bg_name,
+      bgroup.fk_partipiciantgroup as bg_part_sec_id,
+      bgroup.fk_ownergroup as bg_owner_sec_id,
+      bg_part_member.identity_id as bg_part_member_id,
+      ident.name as bg_part_member_name 
+   from o_gp_business as bgroup
+   inner join o_property as bconfig on (bconfig.grp = bgroup.group_id and bconfig.name = 'displayMembers' and bconfig.category = 'config')
+   inner join o_bs_membership as bg_part_member on (bg_part_member.secgroup_id = bgroup.fk_partipiciantgroup and bconfig.longValue in (2,3,6,7))
+   inner join o_bs_identity as ident on (bg_part_member.identity_id = ident.id)
+ );
+   
+create view o_gp_visible_owner_v as ( 
+   select
+      bg_owner_member.id as membership_id,
+      bgroup.group_id as bg_id,
+      bgroup.groupname as bg_name,
+      bgroup.fk_partipiciantgroup as bg_part_sec_id,
+      bgroup.fk_ownergroup as bg_owner_sec_id,
+      bg_owner_member.identity_id as bg_owner_member_id,
+      ident.name as bg_owner_member_name
+   from o_gp_business as bgroup
+   inner join o_property as bconfig on (bconfig.grp = bgroup.group_id and bconfig.name = 'displayMembers' and bconfig.category = 'config')
+   inner join o_bs_membership as bg_owner_member on (bg_owner_member.secgroup_id = bgroup.fk_ownergroup and bconfig.longValue in (1,3,5,7))
+   inner join o_bs_identity as ident on (bg_owner_member.identity_id = ident.id)
 );
 
 create index userrating_id_idx on o_userrating (resid);

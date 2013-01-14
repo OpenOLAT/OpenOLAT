@@ -41,22 +41,6 @@ create table if not exists o_im_roster_entry (
 alter table o_im_roster_entry add constraint idx_im_rost_to_id foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_im_rost_res_idx on o_im_roster_entry (r_resid,r_resname);
 
-create or replace view o_im_roster_entry_v as (
-   select
-     roster_entry.id as re_id,
-     roster_entry.creationdate as re_creationdate,
-     roster_entry.r_resname as re_resname,
-     roster_entry.r_resid as re_resid,
-     roster_entry.r_nickname as re_nickname,
-     roster_entry.r_fullname as re_fullname,
-     roster_entry.r_anonym as re_anonym,
-     roster_entry.r_vip as re_vip,
-     roster_entry.fk_identity_id as ident_id,
-     ident.name as ident_name
-   from o_im_roster_entry as roster_entry
-   inner join o_bs_identity as ident on (roster_entry.fk_identity_id = ident.id)
- );
-
 create table if not exists o_im_preferences (
    id bigint not null,
    creationdate datetime,
