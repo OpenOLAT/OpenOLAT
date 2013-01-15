@@ -71,6 +71,7 @@ import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
@@ -100,14 +101,14 @@ public abstract class AbstractMemberListController extends BasicController imple
 	public static final String TABLE_ACTION_REMOVE = "tbl_remove";
 	public static final String TABLE_ACTION_GRADUATE = "tbl_graduate";
 	
-	//protected final MemberListTableModel memberListModel;
 	protected final TableController memberListCtr;
 	protected final VelocityContainer mainVC;
 	
-	private DialogBoxController leaveDialogBox;
 	protected CloseableModalController cmc;
 	private EditMembershipController editMemberCtrl;
 	private ContactFormController contactCtrl;
+	private MemberLeaveConfirmationController leaveDialogBox;
+	private DialogBoxController confirmSendMailBox;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private final RepositoryEntry repoEntry;
@@ -120,6 +121,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private final BaseSecurityModule securityModule;
 	private final RepositoryManager repositoryManager;
 	private final BusinessGroupService businessGroupService;
+	private final BusinessGroupModule groupModule;
 	private final ACService acService;
 	
 	private static final CourseMembershipComparator MEMBERSHIP_COMPARATOR = new CourseMembershipComparator();
@@ -143,6 +145,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -240,6 +243,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
+				@SuppressWarnings("unchecked")
 				List<MemberView> selectedItems = memberListCtr.getObjects(te.getSelection());
 				if(TABLE_ACTION_REMOVE.equals(te.getAction())) {
 					confirmDelete(ureq, selectedItems);
@@ -252,24 +256,32 @@ public abstract class AbstractMemberListController extends BasicController imple
 				}
 			}
 		} else if (source == leaveDialogBox) {
-			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
-				@SuppressWarnings("unchecked")
-				List<Identity> members = (List<Identity>)leaveDialogBox.getUserObject();
-				doLeave(members);
+			if (Event.DONE_EVENT == event) {
+				List<Identity> members = leaveDialogBox.getIdentities();
+				doLeave(members, leaveDialogBox.isSendMail());
 				reloadModel();
 			}
+			cmc.deactivate();
+			cleanUpPopups();
 		} else if(source == editMemberCtrl) {
+			cmc.deactivate();
 			if(event instanceof MemberPermissionChangeEvent) {
 				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
 				if(e.getMember() != null) {
-					doChangePermission(ureq, e);
+					doConfirmChangePermission(ureq, e, null);
 				} else {
-					doChangePermission(ureq, e, editMemberCtrl.getMembers());
+					doConfirmChangePermission(ureq, e, editMemberCtrl.getMembers());
 				}
 			}
-			
-			cmc.deactivate();
-			cleanUpPopups();
+		} else if(confirmSendMailBox == source) {
+			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
+			MailConfirmation confirmation = (MailConfirmation)confirmSendMailBox.getUserObject();
+			MemberPermissionChangeEvent e =confirmation.getE();
+			if(e.getMember() != null) {
+				doChangePermission(ureq, e, null, sendMail);
+			} else {
+				doChangePermission(ureq, e, confirmation.getMembers(), sendMail);
+			}
 		} else if (source == contactCtrl) {
 			cmc.deactivate();
 			cleanUpPopups();
@@ -305,15 +317,15 @@ public abstract class AbstractMemberListController extends BasicController imple
 				numOfRemovedOwner++;
 			}
 		}
-		if(numOfOwners - numOfRemovedOwner > 0) {
+		if(numOfRemovedOwner == 0 || numOfOwners - numOfRemovedOwner > 0) {
 			List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
-			StringBuilder sb = new StringBuilder();
-			for(Identity id:ids) {
-				if(sb.length() > 0) sb.append(" / ");
-				sb.append(userManager.getUserDisplayName(id.getUser()));
-			}
-			leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", sb.toString()), leaveDialogBox);
-			leaveDialogBox.setUserObject(ids);
+			leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids);
+			listenTo(leaveDialogBox);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
+					true, translate("edit.member"));
+			cmc.activate();
+			listenTo(cmc);
 		} else {
 			showWarning("error.atleastone");
 		}
@@ -340,7 +352,28 @@ public abstract class AbstractMemberListController extends BasicController imple
 		listenTo(cmc);
 	}
 	
-	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e) {
+	protected void doConfirmChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, List<Identity> members) {
+		boolean groupChangesEmpty = e.getGroupChanges() == null || e.getGroupChanges().isEmpty();
+		boolean repoChangesEmpty = e.getRepoOwner() == null && e.getRepoParticipant() == null && e.getRepoTutor() == null;
+		if(groupChangesEmpty && repoChangesEmpty) {
+			//nothing to do
+			return;
+		}
+
+		boolean mailMandatory = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		if(mailMandatory) {
+			if(members == null) {
+				doChangePermission(ureq, e, true);
+			} else {
+				doChangePermission(ureq, e, members, true);
+			}
+		} else {
+			confirmSendMailBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailBox);
+			confirmSendMailBox.setUserObject(new MailConfirmation(e, members));
+		}
+	}
+	
+	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, boolean sendMail) {
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
 			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes, null);
@@ -359,7 +392,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		reloadModel();
 	}
 	
-	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members) {
+	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members, boolean sendMail) {
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
 			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, null);
@@ -407,8 +440,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		}
 	}
 	
-	protected void doLeave(List<Identity> members) {
-		MailPackage mailing = new MailPackage();
+	protected void doLeave(List<Identity> members, boolean sendMail) {
+		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
 			repositoryManager.removeMembers(members, repoEntry);
 			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource(), mailing);
@@ -435,7 +468,6 @@ public abstract class AbstractMemberListController extends BasicController imple
 				true, translate("mail.member"));
 		cmc.activate();
 		listenTo(cmc);
-		
 	}
 	
 	protected void doGraduate(UserRequest ureq, List<MemberView> members) {
@@ -671,5 +703,23 @@ public abstract class AbstractMemberListController extends BasicController imple
 		}
 		
 		memberList.removeAll(members);
+	}
+	
+	private class MailConfirmation {
+		private final List<Identity> members;
+		private final MemberPermissionChangeEvent e;
+		
+		public MailConfirmation(MemberPermissionChangeEvent e, List<Identity> members) {
+			this.e = e;
+			this.members = members;
+		}
+
+		public List<Identity> getMembers() {
+			return members;
+		}
+
+		public MemberPermissionChangeEvent getE() {
+			return e;
+		}
 	}
 }
