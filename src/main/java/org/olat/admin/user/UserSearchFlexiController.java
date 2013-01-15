@@ -135,7 +135,7 @@ public class UserSearchFlexiController extends FormBasicController {
 
 			Roles roles = ureq.getUserSession().getRoles();
 			isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-			searchform = new UserSearchForm(ureq, getWindowControl(), isAdministrativeUser, false, formLayout.getRootForm());
+			searchform = new UserSearchForm(ureq, getWindowControl(), isAdministrativeUser, false, mainForm);
 			listenTo(searchform);
 			
 			searchPanel.setContent(searchform.getInitialComponent());
@@ -175,7 +175,7 @@ public class UserSearchFlexiController extends FormBasicController {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select"));
 			
 			Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
-			userTableModel = new UserSearchFlexiTableModel(Collections.<UserResultWrapper>emptyList(), resultingPropertyHandlers, getLocale(), tableColumnModel);
+			userTableModel = new UserSearchFlexiTableModel(Collections.<UserResultWrapper>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
 			tableEl = uifactory.addTableElement("users", userTableModel, myTrans, formLayout);
 
 			selectAll = uifactory.addFormLink("selectall", formLayout);

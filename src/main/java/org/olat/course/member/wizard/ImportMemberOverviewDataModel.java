@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.admin.user;
+package org.olat.course.member.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,19 +26,20 @@ import java.util.Locale;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.id.Identity;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class UserSearchFlexiTableModel extends DefaultTableDataModel<UserResultWrapper> implements FlexiTableDataModel {
-	private Locale locale;
-	private boolean isAdministrativeUser;
+public class ImportMemberOverviewDataModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel {
+	private final Locale locale;
+	private final boolean isAdministrativeUser;
 	private FlexiTableColumnModel columnModel;
-	private List<UserPropertyHandler> userPropertyHandlers;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	public UserSearchFlexiTableModel(List<UserResultWrapper> identities, List<UserPropertyHandler> userPropertyHandlers,
+	public ImportMemberOverviewDataModel(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers,
 			boolean isAdministrativeUser, Locale locale, FlexiTableColumnModel columnModel) {
 		super(identities);
 		this.locale = locale;
@@ -64,26 +65,21 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<UserResultW
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		UserResultWrapper option = getObject(row);
-		if(col == 0) {
-			return option.getSelectEl();
+		Identity identity = getObject(row);
+		if(col == 0 && isAdministrativeUser) {
+			return identity.getName();
 		}
-		if(col == 1 && isAdministrativeUser) {
-			return option.getIdentity().getName();
-		} 
 
-		int pos = isAdministrativeUser ? col - 2 : col - 1;
+		int pos = isAdministrativeUser ? col - 1 : col;
 		if(pos >= 0 && pos < userPropertyHandlers.size()) {
 			UserPropertyHandler handler = userPropertyHandlers.get(pos);
-			return handler.getUserProperty(option.getIdentity().getUser(), locale);
-		} else if(pos > 0) {
-			return option.getSelectLink();
+			return handler.getUserProperty(identity.getUser(), locale);
 		}
 		return "";
 	}
 
 	@Override
-	public UserSearchFlexiTableModel createCopyWithEmptyList() {
-		return new UserSearchFlexiTableModel(new ArrayList<UserResultWrapper>(), userPropertyHandlers, isAdministrativeUser, locale, columnModel);
+	public ImportMemberOverviewDataModel createCopyWithEmptyList() {
+		return new ImportMemberOverviewDataModel(new ArrayList<Identity>(), userPropertyHandlers, isAdministrativeUser, locale, columnModel);
 	}
 }

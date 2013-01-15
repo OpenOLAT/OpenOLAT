@@ -23,8 +23,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.admin.securitygroup.gui.UserControllerFactory;
+import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
@@ -32,27 +33,39 @@ import org.olat.core.commons.persistence.SyncHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.table.TableController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ImportMemberOverviewIdentitiesController extends StepFormBasicController {
-	private TableController identityTableCtrl;
+	
+	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
+	
 	private List<Identity> oks;
+	private boolean isAdministrativeUser;
+	
+	private final UserManager userManager;
 	private final BaseSecurity securityManager;
+	private final BaseSecurityModule securityModule;
 
 	public ImportMemberOverviewIdentitiesController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "confirm_identities");
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+		userManager = UserManager.getInstance();
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 
 		oks = null;
 		if(containsRunContextKey("logins")) {
@@ -63,12 +76,36 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			List<String> keys = (List<String>)runContext.get("keys");
 			oks = loadModel(keys);
 		}
-		
-		
-		identityTableCtrl = UserControllerFactory.createTableControllerFor(null, oks, ureq, getWindowControl(), null);
-		listenTo(identityTableCtrl);
+
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
 		initForm (ureq);
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		//add the table
+		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(isAdministrativeUser) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login"));
+		}
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<UserPropertyHandler>();
+		// followed by the users fields
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
+			if(visible) {
+				resultingPropertyHandlers.add(userPropertyHandler);
+				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey()));
+			}
+		}
+		
+		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
+		ImportMemberOverviewDataModel userTableModel = new ImportMemberOverviewDataModel(oks, resultingPropertyHandlers,
+				isAdministrativeUser, getLocale(), tableColumnModel);
+		uifactory.addTableElement("users", userTableModel, myTrans, formLayout);
 	}
 	
 	private List<Identity> loadModel(List<String> keys) {
@@ -151,14 +188,6 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	protected void formOK(UserRequest ureq) {
 		addToRunContext("members", oks);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.put("identityList", identityTableCtrl.getInitialComponent());	
-		}
 	}
 
 	@Override
