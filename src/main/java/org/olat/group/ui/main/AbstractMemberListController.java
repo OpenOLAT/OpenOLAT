@@ -159,7 +159,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		memberListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator(), true);
 		listenTo(memberListCtr);
 
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		initColumns();
 		MemberListTableModel memberListModel = new MemberListTableModel(userPropertyHandlers);
 		memberListCtr.setTableDataModel(memberListModel);
