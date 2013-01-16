@@ -25,6 +25,7 @@
 
 package org.olat.admin.user;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.Authentication;
@@ -137,13 +138,12 @@ public class UserAuthenticationsEditorController extends BasicController{
 	/**
 	 * 
 	 */
-	class AuthenticationsTableDataModel extends DefaultTableDataModel {
+	private static class AuthenticationsTableDataModel extends DefaultTableDataModel<Authentication> {
 
-		
 		/**
 		 * @param objects
 		 */
-		public AuthenticationsTableDataModel(List objects) {
+		public AuthenticationsTableDataModel(List<Authentication> objects) {
 			super(objects);
 		}
 
@@ -167,7 +167,10 @@ public class UserAuthenticationsEditorController extends BasicController{
 		public int getColumnCount() {
 			return 3;
 		}
-		
-	}
 
+		@Override
+		public AuthenticationsTableDataModel createCopyWithEmptyList() {
+			return new AuthenticationsTableDataModel(new ArrayList<Authentication>());
+		}
+	}
 }

@@ -26,6 +26,7 @@
 package org.olat.course.condition.interpreter;
 
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -40,6 +41,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author gnaegi
  */
 public class IsCourseAdministratorFunction extends AbstractFunction {
+	private static final OLog log = Tracing.createLoggerFor(IsCourseAdministratorFunction.class);
 	public static final String name = "isCourseAdministrator";
 
 	/**
@@ -66,10 +68,9 @@ public class IsCourseAdministratorFunction extends AbstractFunction {
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		boolean isCourseAdmin = cgm.isIdentityCourseAdministrator(ident);
-		if (Tracing.isDebugEnabled(IsCourseAdministratorFunction.class)) {
-			Tracing.logDebug("identity "+ident.getName()+", courseadministrator:"+isCourseAdmin+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId(), IsCourseAdministratorFunction.class);
+		if(log.isDebug()) {
+			log.debug("identity "+ident.getName()+", courseadministrator:"+isCourseAdmin+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}
-		
 		return isCourseAdmin ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
 

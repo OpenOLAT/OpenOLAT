@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -60,19 +61,28 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.main.MemberListTableModel.Cols;
+import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -96,26 +106,35 @@ public abstract class AbstractMemberListController extends BasicController imple
 	public static final String TABLE_ACTION_MAIL = "tbl_mail";
 	public static final String TABLE_ACTION_REMOVE = "tbl_remove";
 	public static final String TABLE_ACTION_GRADUATE = "tbl_graduate";
+	public static final String TABLE_ACTION_IM = "tbl_im";
 	
-	protected final MemberListTableModel memberListModel;
 	protected final TableController memberListCtr;
 	protected final VelocityContainer mainVC;
 	
-	private DialogBoxController leaveDialogBox;
 	protected CloseableModalController cmc;
 	private EditMembershipController editMemberCtrl;
 	private ContactFormController contactCtrl;
+	private MemberLeaveConfirmationController leaveDialogBox;
+	private DialogBoxController confirmSendMailBox;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private final RepositoryEntry repoEntry;
 	private final BusinessGroup businessGroup;
+	private final boolean isAdministrativeUser;
 	
 	private final UserManager userManager;
 	
 	private final BaseSecurity securityManager;
+	private final BaseSecurityModule securityModule;
 	private final RepositoryManager repositoryManager;
 	private final BusinessGroupService businessGroupService;
+	private final BusinessGroupModule groupModule;
 	private final ACService acService;
+	private final InstantMessagingModule imModule;
+	private final InstantMessagingService imService;
+	private final UserSessionManager sessionManager;
+	
+	private static final CourseMembershipComparator MEMBERSHIP_COMPARATOR = new CourseMembershipComparator();
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, String page) {
 		this(ureq, wControl, repoEntry, null, page);
@@ -133,10 +152,16 @@ public abstract class AbstractMemberListController extends BasicController imple
 		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
-		
+		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
+		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer(page);
 
 		//table
@@ -147,9 +172,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 		memberListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator(), true);
 		listenTo(memberListCtr);
 
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		initColumns();
-		memberListModel = new MemberListTableModel(userPropertyHandlers);
+		MemberListTableModel memberListModel = new MemberListTableModel(userPropertyHandlers);
 		memberListCtr.setTableDataModel(memberListModel);
 		memberListCtr.setMultiSelect(true);
 		memberListCtr.addMultiSelectAction("table.header.edit", TABLE_ACTION_EDIT);
@@ -168,6 +193,13 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	protected void initColumns() {
 		int offset = Cols.values().length;
+		if(imModule.isEnabled() && imModule.isViewOnlineUsersEnabled()) {
+			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.online.i18n(), Cols.online.ordinal(), TABLE_ACTION_IM, getLocale(),
+					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
+		}
+		if(isAdministrativeUser) {
+			memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.username.i18n(), Cols.username.ordinal(), null, getLocale()));
+		}
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
@@ -178,7 +210,18 @@ public abstract class AbstractMemberListController extends BasicController imple
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
 		memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
 		CustomCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
-		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
+		memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer) {
+			@Override
+			public int compareTo(final int rowa, final int rowb) {
+				Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+				Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+				if(a instanceof CourseMembership && b instanceof CourseMembership) {
+					return MEMBERSHIP_COMPARATOR.compare((CourseMembership)a, (CourseMembership)b);
+				} else {
+					return super.compareTo(rowa, rowb);
+				}
+			}
+		});
 		if(repoEntry != null) {
 			CustomCellRenderer groupRenderer = new GroupCellRenderer();
 			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
@@ -206,17 +249,20 @@ public abstract class AbstractMemberListController extends BasicController imple
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 
-				MemberView member = memberListModel.getObject(te.getRowId());
+				MemberView member = (MemberView)memberListCtr.getTableDataModel().getObject(te.getRowId());
 				if(TABLE_ACTION_EDIT.equals(actionid)) {
 					openEdit(ureq, member);
 				} else if(TABLE_ACTION_REMOVE.equals(actionid)) {
 					confirmDelete(ureq, Collections.singletonList(member));
 				} else if(TABLE_ACTION_GRADUATE.equals(actionid)) {
 					doGraduate(ureq, Collections.singletonList(member));
+				} else if(TABLE_ACTION_IM.equals(actionid)) {
+					doIm(ureq, member);
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
-				List<MemberView> selectedItems = memberListModel.getObjects(te.getSelection());
+				@SuppressWarnings("unchecked")
+				List<MemberView> selectedItems = memberListCtr.getObjects(te.getSelection());
 				if(TABLE_ACTION_REMOVE.equals(te.getAction())) {
 					confirmDelete(ureq, selectedItems);
 				} else if(TABLE_ACTION_EDIT.equals(te.getAction())) {
@@ -228,24 +274,32 @@ public abstract class AbstractMemberListController extends BasicController imple
 				}
 			}
 		} else if (source == leaveDialogBox) {
-			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
-				@SuppressWarnings("unchecked")
-				List<Identity> members = (List<Identity>)leaveDialogBox.getUserObject();
-				doLeave(members);
+			if (Event.DONE_EVENT == event) {
+				List<Identity> members = leaveDialogBox.getIdentities();
+				doLeave(members, leaveDialogBox.isSendMail());
 				reloadModel();
 			}
+			cmc.deactivate();
+			cleanUpPopups();
 		} else if(source == editMemberCtrl) {
+			cmc.deactivate();
 			if(event instanceof MemberPermissionChangeEvent) {
 				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
 				if(e.getMember() != null) {
-					doChangePermission(ureq, e);
+					doConfirmChangePermission(ureq, e, null);
 				} else {
-					doChangePermission(ureq, e, editMemberCtrl.getMembers());
+					doConfirmChangePermission(ureq, e, editMemberCtrl.getMembers());
 				}
 			}
-			
-			cmc.deactivate();
-			cleanUpPopups();
+		} else if(confirmSendMailBox == source) {
+			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
+			MailConfirmation confirmation = (MailConfirmation)confirmSendMailBox.getUserObject();
+			MemberPermissionChangeEvent e =confirmation.getE();
+			if(e.getMember() != null) {
+				doChangePermission(ureq, e, null, sendMail);
+			} else {
+				doChangePermission(ureq, e, confirmation.getMembers(), sendMail);
+			}
 		} else if (source == contactCtrl) {
 			cmc.deactivate();
 			cleanUpPopups();
@@ -281,15 +335,15 @@ public abstract class AbstractMemberListController extends BasicController imple
 				numOfRemovedOwner++;
 			}
 		}
-		if(numOfOwners - numOfRemovedOwner > 0) {
+		if(numOfRemovedOwner == 0 || numOfOwners - numOfRemovedOwner > 0) {
 			List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
-			StringBuilder sb = new StringBuilder();
-			for(Identity id:ids) {
-				if(sb.length() > 0) sb.append(" / ");
-				sb.append(userManager.getUserDisplayName(id.getUser()));
-			}
-			leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", sb.toString()), leaveDialogBox);
-			leaveDialogBox.setUserObject(ids);
+			leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids);
+			listenTo(leaveDialogBox);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
+					true, translate("edit.member"));
+			cmc.activate();
+			listenTo(cmc);
 		} else {
 			showWarning("error.atleastone");
 		}
@@ -316,7 +370,39 @@ public abstract class AbstractMemberListController extends BasicController imple
 		listenTo(cmc);
 	}
 	
-	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e) {
+	/**
+	 * Open private chat
+	 * @param ureq
+	 * @param member
+	 */
+	protected void doIm(UserRequest ureq, MemberView member) {
+		Buddy buddy = imService.getBuddyById(member.getIdentityKey());
+		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
+	}
+	
+	protected void doConfirmChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, List<Identity> members) {
+		boolean groupChangesEmpty = e.getGroupChanges() == null || e.getGroupChanges().isEmpty();
+		boolean repoChangesEmpty = e.getRepoOwner() == null && e.getRepoParticipant() == null && e.getRepoTutor() == null;
+		if(groupChangesEmpty && repoChangesEmpty) {
+			//nothing to do
+			return;
+		}
+
+		boolean mailMandatory = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		if(mailMandatory) {
+			if(members == null) {
+				doChangePermission(ureq, e, true);
+			} else {
+				doChangePermission(ureq, e, members, true);
+			}
+		} else {
+			confirmSendMailBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailBox);
+			confirmSendMailBox.setUserObject(new MailConfirmation(e, members));
+		}
+	}
+	
+	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, boolean sendMail) {
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
 			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes, null);
@@ -335,7 +421,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		reloadModel();
 	}
 	
-	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members) {
+	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members, boolean sendMail) {
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
 			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, null);
@@ -377,13 +463,14 @@ public abstract class AbstractMemberListController extends BasicController imple
 		
 		if(template != null) {	
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(mod.getMember()), null, template, null);
+			MailContext ctx = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(ctx, Collections.singletonList(mod.getMember()), null, template, getIdentity());
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
 		}
 	}
 	
-	protected void doLeave(List<Identity> members) {
-		MailPackage mailing = new MailPackage();
+	protected void doLeave(List<Identity> members, boolean sendMail) {
+		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
 			repositoryManager.removeMembers(members, repoEntry);
 			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource(), mailing);
@@ -410,7 +497,6 @@ public abstract class AbstractMemberListController extends BasicController imple
 				true, translate("mail.member"));
 		cmc.activate();
 		listenTo(cmc);
-		
 	}
 	
 	protected void doGraduate(UserRequest ureq, List<MemberView> members) {
@@ -467,15 +553,21 @@ public abstract class AbstractMemberListController extends BasicController imple
 		for(BusinessGroupMembership membership:memberships) {
 			identityKeys.add(membership.getIdentityKey());
 		}
-		SearchIdentityParams idParams = new SearchIdentityParams();
-		idParams.setIdentityKeys(identityKeys);
-		if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
-			idParams.setUserProperties(params.getUserPropertiesSearch());
+		
+		List<Identity> identities;
+		if(identityKeys.isEmpty()) {
+			identities = new ArrayList<Identity>(0);
+		} else {
+			SearchIdentityParams idParams = new SearchIdentityParams();
+			idParams.setIdentityKeys(identityKeys);
+			if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
+				idParams.setUserProperties(params.getUserPropertiesSearch());
+			}
+			if(StringHelper.containsNonWhitespace(params.getLogin())) {
+				idParams.setLogin(params.getLogin());
+			}
+			identities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
 		}
-		if(StringHelper.containsNonWhitespace(params.getLogin())) {
-			idParams.setLogin(params.getLogin());
-		}
-		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
 
 		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
 		List<MemberView> memberList = new ArrayList<MemberView>();
@@ -499,8 +591,16 @@ public abstract class AbstractMemberListController extends BasicController imple
 			}
 		}
 		
+		Long me = getIdentity().getKey();
 		for(Identity identity:identities) {
 			MemberView member = new MemberView(identity);
+			if(identity.getKey().equals(me)) {
+				member.setOnlineStatus("me");
+			} else if(sessionManager.isOnline(identity.getKey())) {
+				member.setOnlineStatus(Presence.available.name());
+			} else {
+				member.setOnlineStatus(Presence.unavailable.name());
+			}
 			memberList.add(member);
 			keyToMemberMap.put(identity.getKey(), member);
 		}
@@ -548,7 +648,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		//the order of the filter is important
 		filterByRoles(memberList, params);
 		filterByOrigin(memberList, params);
-		memberListModel.setObjects(memberList);
+		((MemberListTableModel)memberListCtr.getTableDataModel()).setObjects(memberList);
 		memberListCtr.modelChanged();
 		return memberList;
 	}
@@ -640,5 +740,23 @@ public abstract class AbstractMemberListController extends BasicController imple
 		}
 		
 		memberList.removeAll(members);
+	}
+	
+	private class MailConfirmation {
+		private final List<Identity> members;
+		private final MemberPermissionChangeEvent e;
+		
+		public MailConfirmation(MemberPermissionChangeEvent e, List<Identity> members) {
+			this.e = e;
+			this.members = members;
+		}
+
+		public List<Identity> getMembers() {
+			return members;
+		}
+
+		public MemberPermissionChangeEvent getE() {
+			return e;
+		}
 	}
 }

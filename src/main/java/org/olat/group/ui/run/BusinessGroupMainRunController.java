@@ -734,7 +734,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		boolean downloadAllowed = displayMembers.isDownloadLists();
 		if (displayMembers.isShowOwners()) {
 			removeAsListenerAndDispose(gownersC);
-			gownersC = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, businessGroup.getOwnerGroup());
+			gownersC = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, businessGroup.getOwnerGroup());
 			listenTo(gownersC);
 			membersVc.put("owners", gownersC.getInitialComponent());
 			membersVc.contextPut("showOwnerGroups", Boolean.TRUE);

@@ -47,7 +47,7 @@ import org.olat.core.id.Persistable;
 	@NamedQuery(name="loadIMRosterEntryByIdentityandResource", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
 	@NamedQuery(name="loadIMRosterEntryByResource", query="select entry from imrosterentry entry where entry.resourceId=:resid and entry.resourceTypeName=:resname"),
 	@NamedQuery(name="clearIMRosterEntry", query="delete from imrosterentry entry"),
-	@NamedQuery(name="deleteIMRosterEntryByIdentityAndResource", query="delete from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname"),
+	@NamedQuery(name="deleteIMRosterEntryByIdentityAndResource", query="delete from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname")
 })
 public class RosterEntryImpl implements Persistable, CreateInfo {
 
@@ -71,6 +71,8 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 	private String fullName;
 	@Column(name="r_anonym", nullable=true, insertable=true, updatable=true)
 	private boolean anonym;
+	@Column(name="r_vip", nullable=true, insertable=true, updatable=false)
+	private boolean vip;
 	
 	@Column(name="r_resname", nullable=false, insertable=true, updatable=false)
 	private String resourceTypeName;
@@ -117,6 +119,14 @@ public class RosterEntryImpl implements Persistable, CreateInfo {
 
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
+	}
+
+	public boolean isVip() {
+		return vip;
+	}
+
+	public void setVip(boolean vip) {
+		this.vip = vip;
 	}
 
 	public boolean isAnonym() {

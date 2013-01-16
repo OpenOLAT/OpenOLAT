@@ -19,6 +19,7 @@
  */
 package org.olat.instantMessaging;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -50,7 +51,7 @@ public interface InstantMessagingService {
 	 * @param me
 	 * @return
 	 */
-	public List<BuddyGroup> getBuddyGroups(Identity me);
+	public List<BuddyGroup> getBuddyGroups(Identity me, boolean offlineUsers);
 	
 	public Buddy getBuddyById(Long identityKey);
 	
@@ -71,7 +72,7 @@ public interface InstantMessagingService {
 	 * @param chatResource
 	 * @param listener
 	 */
-	public void listenChat(Identity identity, OLATResourceable chatResource,  GenericEventListener listener);
+	public void listenChat(Identity identity, OLATResourceable chatResource, boolean anonym, boolean asVip, GenericEventListener listener);
 	
 	/**
 	 * Go away
@@ -113,9 +114,15 @@ public interface InstantMessagingService {
 	 * @param markAsRead
 	 * @return
 	 */
-	public List<InstantMessage> getMessages(Identity me, OLATResourceable ores, int firstResult, int maxResults, boolean markAsRead);
+	public List<InstantMessage> getMessages(Identity me, OLATResourceable ores, Date from, int firstResult, int maxResults, boolean markAsRead);
 	
-	public void sendPresence(Identity me, String nickName, boolean anonym, OLATResourceable chatResource);
+	/**
+	 * Delete the chat log
+	 * @param ores
+	 */
+	public void deleteMessages(OLATResourceable ores);
+	
+	public void sendPresence(Identity me, String nickName, boolean anonym, boolean vip, OLATResourceable chatResource);
 	
 	/**
 	 * Get the notifications of message waiting to be read

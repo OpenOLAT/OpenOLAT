@@ -46,7 +46,7 @@
 	<property name="cacher" ref="infinispanCacher"/>
 </bean>
 
-<bean id="infinispanCacheManager" class="org.olat.core.util.cache.infinispan.InfinispanCacheManager">
+<bean id="infinispanCacheManager" class="org.olat.core.util.cache.infinispan.InfinispanCacheManager" destroy-method="stop">
 	<property name="configuration" value="infinispan-config.xml"/>
 	<property name="jndiName" value="${infinispan.jndi}"/>
 </bean>

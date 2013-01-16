@@ -1,14 +1,10 @@
 <div class="o_instantmessaging_chat">
-	#if ($r.available("toggleSwitch") || !$isAjaxMode)
 	<div class="b_clearfix">
-		#if ($r.available("toggleSwitch"))
-			$r.render("toggleSwitch")
-		#end
-		#if(!$isAjaxMode)
+		$r.render("im.today") | $r.render("im.lastweek") | $r.render("im.lastmonth")
+		#if (!$isAjaxMode)
 			<div class="b_float_right">$r.render("refresh")</div>
 		#end
 	</div>
-	#end
 	$r.render("chatMsgFieldPanel")
 	<div class="o_instantmessaging_chat_form">
 		$r.render("sendMessageForm")
@@ -28,13 +24,10 @@ function tweak_${panelName}() {
 }
 function focus_${panelName}() {
 	try {
-		var win = Ext.getCmp('${panelName}');
-		var el = win.body.dom.getElementsByTagName('input');
-		for (var i=0; i<el.length; i++) {
-			if (el[i].type == 'text') {
-				el[i].focus();
-				el[i].focus(); //stupid IE needs an extra focus call to work
-			}
+		var el = document.getElementById('o_fioinput_${panelName}');
+		if(el != null) {
+			el.focus();
+			el.focus(); //stupid IE needs an extra focus call to work
 		}
 	} catch (e) {/**/}
 }

@@ -29,9 +29,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
-import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ImportCalendarManager;
@@ -197,18 +198,25 @@ public class HomeCalendarController extends BasicController implements Activatea
 		return ImportCalendarManager.getImportedCalendarsForIdentity(ureq);
 	}
 	
+	/**
+	 * Append the calendars of a list of groups. The groups must have their calendar tool
+	 * enabled, this routine doesn't check it.
+	 * @param ureq
+	 * @param groups
+	 * @param isOwner
+	 * @param calendars
+	 */
 	private static void addCalendars(UserRequest ureq, List<BusinessGroup> groups, boolean isOwner, List<KalendarRenderWrapper> calendars) {
-		CollaborationToolsFactory collabFactory = CollaborationToolsFactory.getInstance();
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		for (Iterator<BusinessGroup> iter = groups.iterator(); iter.hasNext();) {
-			BusinessGroup bGroup = iter.next();
-			CollaborationTools collabTools = collabFactory.getOrCreateCollaborationTools(bGroup);
-			if (!collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) continue;
+		Map<Long,Long> groupKeyToAccess = CoreSpringFactory.getImpl(CollaborationManager.class).lookupCalendarAccess(groups);
+		for (BusinessGroup bGroup:groups) {
 			KalendarRenderWrapper groupCalendarWrapper = calendarManager.getGroupCalendar(bGroup);
 			// set calendar access
 			int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
-			Long lCalAccess = collabTools.lookupCalendarAccess();
-			if (lCalAccess != null) iCalAccess = lCalAccess.intValue();
+			Long lCalAccess = groupKeyToAccess.get(bGroup.getKey());
+			if (lCalAccess != null) {
+				iCalAccess = lCalAccess.intValue();
+			}
 			if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_OWNERS && !isOwner) {
 				groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 			} else {

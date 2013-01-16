@@ -19,23 +19,31 @@
  */
 package org.olat.collaboration;
 
+import static org.olat.collaboration.CollaborationTools.KEY_CALENDAR_ACCESS;
 import static org.olat.collaboration.CollaborationTools.KEY_FOLDER_ACCESS;
 import static org.olat.collaboration.CollaborationTools.PROP_CAT_BG_COLLABTOOLS;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -43,6 +51,8 @@ import org.olat.properties.Property;
  */
 public class CollaborationManagerImpl extends BasicManager implements CollaborationManager {
 	
+	@Autowired
+	private DB dbInstance;
 	
 	public String getFolderRelPath(OLATResourceable ores) {
 		return "/cts/folders/" + ores.getResourceableTypeName() + "/" + ores.getResourceableId();
@@ -68,6 +78,42 @@ public class CollaborationManagerImpl extends BasicManager implements Collaborat
 		} else {
 			return props.get(0);
 		}
+	}
+	
+	@Override
+	public Map<Long,Long> lookupCalendarAccess(List<BusinessGroup> groups) {
+		if(groups == null || groups.isEmpty()) {
+			return new HashMap<Long,Long>();
+		}
+		
+		StringBuilder query = new StringBuilder();
+		query.append("select prop from ").append(Property.class.getName()).append(" as prop where ")
+		     .append(" prop.category='").append(PROP_CAT_BG_COLLABTOOLS).append("'")
+		     .append(" and prop.resourceTypeName='BusinessGroup'")
+		     .append(" and prop.resourceTypeId in (:groupKeys)")
+		     .append(" and prop.name='").append(KEY_CALENDAR_ACCESS).append("'")
+		     .append(" and prop.identity is null and prop.grp is null");
+		
+		TypedQuery<Property> dbquery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Property.class);
+		Map<Long,Long> groupKeyToAccess = new HashMap<Long,Long>();
+
+		int count = 0;
+		int batch = 200;
+		do {
+			int toIndex = Math.min(count + batch, groups.size());
+			List<BusinessGroup> toLoad = groups.subList(count, toIndex);
+			List<Long> groupKeys = PersistenceHelper.toKeys(toLoad);
+
+			List<Property> props = dbquery.setFirstResult(count)
+				.setMaxResults(batch)
+				.setParameter("groupKeys", groupKeys)
+				.getResultList();
+			for(Property prop:props) {
+				groupKeyToAccess.put(prop.getResourceTypeId(), prop.getLongValue());
+			}
+			count += batch;
+		} while(count < groups.size());
+		return groupKeyToAccess;
 	}
 
 	@Override

@@ -65,7 +65,6 @@ import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -119,7 +118,6 @@ import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
-import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.note.NoteController;
 import org.olat.repository.RepositoryEntry;
@@ -145,10 +143,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private static final String ACTION_CALENDAR = "cal";
 	private static final String ACTION_BOOKMARK = "bm";
 	private static final String ACTION_CHAT = "chat";
-	private static final String ACTION_CHAT_LOG = "chatlog";
 	private static final String TOOL_BOOKMARK = "b";
 	private static final String TOOL_CHAT = "chat";
-	private static final String TOOL_CHAT_LOG = "chatlog";
 	
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
 	private final OLATResourceable courseRunOres; //course run ores for course run channel 
@@ -453,7 +449,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		return true;
 	}
 
-
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component,
@@ -695,12 +690,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				all.pushController(translate("command.openstatistic"), currentToolCtr);
 			} else throw new OLATSecurityException("clicked statistic, but no according right");
 		} else if (cmd.equals(TOOL_CHAT)) {
-			OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle);
+			boolean vip = isCourseCoach || isCourseAdmin;
+			OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle, vip);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
-		} else if (cmd.equals(TOOL_CHAT_LOG)) {
-			ChatLogHelper helper = CoreSpringFactory.getImpl(ChatLogHelper.class);
-			MediaResource download = helper.logMediaResource(course, getLocale());
-			ureq.getDispatchResult().setResultingMediaResource(download);
 		} else if (cmd.equals("customDb")) {
 			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
 				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
@@ -989,15 +981,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		dispose();	
 	}
-	
-	private void reloadToolController(UserRequest ureq) {
-		removeAsListenerAndDispose(toolC);
-		toolC = initToolController(getIdentity(), ureq);
-		listenTo(toolC);
 		
-		Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-		columnLayoutCtr.setCol2(toolComp);
-	}
 
 	/**
 	 * Initializes the course tools according to the users rights (repository
@@ -1014,7 +998,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
 
 		// 1) administrative tools
-		boolean isGroupAdmin = false;
 		if (isCourseAdmin || isCourseCoach || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)
 				|| hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_ARCHIVING)
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
@@ -1026,7 +1009,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 				//fxdiff VCRP-1,2: access control of resources
 				myTool.addLink("unifiedusermngt", translate("command.opensimplegroupmngt"), null, null, "o_sel_course_open_membersmgmt", false);
-				isGroupAdmin = true;
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 				myTool.addLink("archiver", translate("command.openarchiver"));
@@ -1116,9 +1098,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				&& CourseModule.isCourseChatEnabled() && cc.isChatEnabled();
 		if(chatIsEnabled) {
 			myTool.addLink(ACTION_CHAT, translate("command.coursechat"), TOOL_CHAT, null);
-			if(isGroupAdmin) {
-				myTool.addLink(ACTION_CHAT_LOG, translate("command.coursechatlog"), TOOL_CHAT_LOG, null);
-			}
 		}
 		
 		if (CourseModule.displayParticipantsCount() && !isGuest) {
@@ -1207,14 +1186,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			currentNodeController = null;
 		}
 
-		// instant messaging: send presence like "leaving course: Biology I" as
-		// awareness info.
-		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()&& CourseModule.isCourseChatEnabled() && !isGuest) {
-			//TODO im
-			/*if (courseChatManagerCtr != null) {
-				courseChatManagerCtr.removeChat(course);
-			}*/
-		}
 		// log to Statistical and User log
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_LEAVING, getClass());
 		
@@ -1264,8 +1235,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				}
 			}
 		} else if("MembersMgmt".equals(type)) {
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			launchMembersManagement(ureq).activate(ureq, subEntries, firstEntry.getTransientState());
+			try {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				launchMembersManagement(ureq).activate(ureq, subEntries, firstEntry.getTransientState());
+			} catch (OLATSecurityException e) {
+				//the wrong link to the wrong person
+			}
 		}
 	}
 

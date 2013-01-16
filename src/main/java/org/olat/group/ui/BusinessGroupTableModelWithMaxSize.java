@@ -25,6 +25,7 @@
 
 package org.olat.group.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -163,6 +164,11 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 			default:
 				return "ERROR";
 		}
+	}
+
+	@Override
+	public Object createCopyWithEmptyList() {
+		return new BusinessGroupTableModelWithMaxSize(new ArrayList<BusinessGroup>(), members, trans, identity, cancelEnrollEnabled);
 	}
 
 	/**

@@ -86,7 +86,7 @@ public class InstantMessageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load the message
-		List<InstantMessage> messageList = imDao.getMessages(chatResources, 0, -1);
+		List<InstantMessage> messageList = imDao.getMessages(chatResources, null, 0, -1);
 		Assert.assertNotNull(messageList);
 		Assert.assertEquals(1, messageList.size());
 		Assert.assertEquals(msg.getKey(), messageList.get(0).getKey());

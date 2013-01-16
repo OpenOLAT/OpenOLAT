@@ -63,7 +63,6 @@ import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.Contact;
 import net.fortuna.ical4j.model.property.Created;
-import net.fortuna.ical4j.model.property.DtEnd;
 import net.fortuna.ical4j.model.property.Duration;
 import net.fortuna.ical4j.model.property.ExDate;
 import net.fortuna.ical4j.model.property.LastModified;
@@ -108,7 +107,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 
 	private File fStorageBase;
 	// o_clusterOK by:cg 
-	private CacheWrapper calendarCache;
+	private CacheWrapper<String, Kalendar> calendarCache;
 
 	private static final Clazz ICAL_CLASS_PRIVATE = new Clazz("PRIVATE");
 	private static final Clazz ICAL_CLASS_PUBLIC = new Clazz("PUBLIC");
@@ -162,27 +161,30 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		return new Kalendar(calendarID, type);
 	}
 
-	public Kalendar getCalendar(String type, String calendarID) {
-		//o_clusterOK by:cg
-		OLATResourceable calOres = OresHelper.createOLATResourceableType(getKeyFor(type,calendarID));
-		final String callType = type;
-		final String callCalendarID = calendarID;
-		Kalendar cal = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, new SyncerCallback<Kalendar>() {
-			public Kalendar execute() {
-				return getCalendarFromCache(callType, callCalendarID);
-			}
-		});
+	@Override
+	public Kalendar getCalendar(final String type, final String calendarID) {
+		String key = getKeyFor(type, calendarID);
+		Kalendar cal = calendarCache.get(key);
+		if(cal == null) {
+			//o_clusterOK by:cg
+			OLATResourceable calOres = OresHelper.createOLATResourceableType(getKeyFor(type,calendarID));
+			cal = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, new SyncerCallback<Kalendar>() {
+				public Kalendar execute() {
+					return getCalendarFromCache(type, calendarID);
+				}
+			});
+		}
 		return cal;
 	}
 
-	protected Kalendar getCalendarFromCache(final String callType, final String callCalendarID) {
-		OLATResourceable calOres = OresHelper.createOLATResourceableType(getKeyFor(callType,callCalendarID));		
+	private Kalendar getCalendarFromCache(final String callType, final String callCalendarID) {
+		String calKey = getKeyFor(callType,callCalendarID);
+		OLATResourceable calOres = OresHelper.createOLATResourceableType(calKey);		
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(calOres);
-		String key = getKeyFor(callType,callCalendarID);
-		Kalendar cal = (Kalendar)calendarCache.get(key);
+		Kalendar cal = calendarCache.get(calKey);
 		if (cal == null) {
 			cal = loadOrCreateCalendar(callType, callCalendarID);
-			calendarCache.put(key, cal);
+			calendarCache.put(calKey, cal);
 		}
 		return cal;
 	}
@@ -400,10 +402,10 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		}
 		
 		// event links
-		List kalendarEventLinks = kEvent.getKalendarEventLinks();
+		List<KalendarEventLink> kalendarEventLinks = kEvent.getKalendarEventLinks();
 		if ((kalendarEventLinks != null) && !kalendarEventLinks.isEmpty()) {
-			for (Iterator iter = kalendarEventLinks.iterator(); iter.hasNext();) {
-				KalendarEventLink link = (KalendarEventLink) iter.next();
+			for (Iterator<KalendarEventLink> iter = kalendarEventLinks.iterator(); iter.hasNext();) {
+				KalendarEventLink link = iter.next();
 				StringBuilder linkEncoded = new StringBuilder(200);
 				linkEncoded.append(link.getProvider());
 				linkEncoded.append("§");
@@ -547,7 +549,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		
 		// links if any
 		List linkProperties = event.getProperties(ICAL_X_OLAT_LINK);
-		List kalendarEventLinks = new ArrayList();
+		List<KalendarEventLink> kalendarEventLinks = new ArrayList<KalendarEventLink>();
 		for (Iterator iter = linkProperties.iterator(); iter.hasNext();) {
 			XProperty linkProperty = (XProperty) iter.next();
 			if (linkProperty != null) {

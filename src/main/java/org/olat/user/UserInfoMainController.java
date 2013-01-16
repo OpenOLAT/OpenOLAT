@@ -259,7 +259,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
 			HomePageConfig homePageConfig = hpcm.loadConfigFor(userName);
 			removeAsListenerAndDispose(homePageDisplayController);
-			homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), homePageConfig);
+			homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), identity, homePageConfig);
 			listenTo(homePageDisplayController);
 			myContent.put("userinfo", homePageDisplayController.getInitialComponent());
 

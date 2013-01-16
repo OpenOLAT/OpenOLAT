@@ -486,8 +486,11 @@ public class RepositoryManager extends BasicManager {
 			   .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.key = :repoKey");
 		
-		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
-				.setParameter("repoKey", key).getResultList();
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", key)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
 		if(entries.isEmpty()) {
 			return null;
 		}
@@ -1821,11 +1824,13 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param logger
 	 */
-	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing){
+	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing, boolean sendMail) {
 		for (Identity identity : removeIdentities) {
     	securityManager.removeIdentityFromSecurityGroup(identity, re.getParticipantGroup());
-    	
-    	RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
+
+    	if(sendMail) {
+    		RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
+    	}
 
 			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -2073,7 +2078,7 @@ public class RepositoryManager extends BasicManager {
 				if(e.getRepoParticipant().booleanValue()) {
 					addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re, mailing);
 				} else {
-					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re, mailing);
+					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re, mailing, true);
 				}
 			}
 		}

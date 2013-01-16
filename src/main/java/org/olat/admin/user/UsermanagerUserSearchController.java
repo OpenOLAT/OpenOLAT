@@ -624,8 +624,11 @@ class UsermanagerUserSearchForm extends FormBasicController {
 	 */
 	public UsermanagerUserSearchForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
+
 		UserManager um = UserManager.getInstance();
+		Translator decoratedTranslator = um.getPropertyHandlerTranslator(this.getTranslator());
+		setTranslator(decoratedTranslator);
+		
 		userPropertyHandlers = um.getUserPropertyHandlersFor(formIdentifyer, true);
 		
 		items = new HashMap<String,FormItem>(); 

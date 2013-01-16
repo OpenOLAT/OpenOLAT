@@ -24,6 +24,7 @@
 */
 package org.olat.search.service.document;
 
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +32,7 @@ import java.util.regex.Pattern;
 import org.apache.lucene.document.Document;
 import org.apache.velocity.context.Context;
 import org.olat.core.commons.contextHelp.ContextHelpDispatcher;
+import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
@@ -38,7 +40,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.core.commons.services.search.OlatDocument;
 
 /**
  * Description:<br>
@@ -89,7 +90,9 @@ public class ContextHelpDocument extends OlatDocument {
 		
 		try {
 			VelocityHelper vh = VelocityHelper.getInstance();
-			String mergedContent = vh.mergeContent(pagePath, ctx, null);
+			StringWriter wOut = new StringWriter(10000);
+			vh.mergeContent(pagePath, ctx, wOut, null);
+			String mergedContent = wOut.toString();
 			// Remove any HTML stuff from page
 			Matcher m = HTML_TAG_PATTERN.matcher(mergedContent);
 			mergedContent = m.replaceAll(" ");

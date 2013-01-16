@@ -119,6 +119,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.group.BusinessGroup;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
@@ -397,6 +398,8 @@ public class CourseFactory extends BasicManager {
 		// delete course calendar
 		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		calManager.deleteCourseCalendar(res);
+		// delete IM messages
+		CoreSpringFactory.getImpl(InstantMessagingService.class).deleteMessages(res);
 
 		// cleanup cache
 		removeFromCache(res.getResourceableId());

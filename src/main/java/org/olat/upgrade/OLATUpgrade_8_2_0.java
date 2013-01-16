@@ -176,6 +176,8 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 						course.postImport(envMapper);
 					} catch (CorruptedCourseException e) {
 						log.error("Course seems corrupt: " + entry.getOlatResource().getResourceableId());
+					} catch (Exception e) {
+						log.error("Course seems highly corrupt: " + entry.getOlatResource().getResourceableId());
 					}
 				}
 				dbInstance.intermediateCommit();
@@ -183,7 +185,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 				log.audit("Processed repository entries: " + entries.size());
 			} while(entries.size() == REPO_ENTRIES_BATCH_SIZE);
 			
-			uhd.setBooleanDataValue(TASK_CONDITIONS, false);
+			uhd.setBooleanDataValue(TASK_CONDITIONS, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return true;

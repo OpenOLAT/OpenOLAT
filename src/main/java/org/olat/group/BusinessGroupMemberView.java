@@ -34,4 +34,6 @@ public interface BusinessGroupMemberView {
 	public String getGroupName();
 
 	public Long getIdentityKey();
+	
+	public String getUsername();
 }

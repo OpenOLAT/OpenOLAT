@@ -92,9 +92,7 @@ public class OLATServlet extends HttpServlet {
 	 * @see javax.servlet.Servlet#destroy()
 	 */
 	public void destroy() {
-		log.info("*** Destroying OLAT servlet.");
-		log.info("*** Shutting down the logging system - do not use logger after this point!");
-		LogManager.shutdown();
+		//
 	}
 
 	/**

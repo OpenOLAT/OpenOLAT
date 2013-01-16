@@ -19,6 +19,7 @@
  */
 package org.olat.admin.user.bulkChange;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -89,5 +90,10 @@ public class GroupAddOverviewModel extends DefaultTableDataModel<BusinessGroup> 
 			default: 
 				return "error";
 		}
+	}
+
+	@Override
+	public GroupAddOverviewModel createCopyWithEmptyList() {
+		return new GroupAddOverviewModel(new ArrayList<BusinessGroup>(), ownGroupIDs, partGroupIDs, mailGroupIDs, translator);
 	}
 }

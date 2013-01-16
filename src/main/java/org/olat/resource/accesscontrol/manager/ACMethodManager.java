@@ -95,7 +95,8 @@ public interface ACMethodManager {
 	
 	public List<BusinessGroupAccess> getAccessMethodForBusinessGroup(boolean valid, Date atDate);
 	
-	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate);
+	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys,
+			String resourceType, String excludeResourceType, boolean valid, Date atDate);
 	
 	/**
 	 * Create a link between offer and access method. The link is not persisted

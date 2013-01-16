@@ -90,7 +90,7 @@ public class ChatLogHelper {
 			int counter = 0;
 			List<InstantMessage> messages;
 			do {
-				messages = imDao.getMessages(ores, counter, BATCH_SIZE);
+				messages = imDao.getMessages(ores, null, counter, BATCH_SIZE);
 				for(InstantMessage message:messages) {
 					out.writeObject(message);
 				}
@@ -124,7 +124,7 @@ public class ChatLogHelper {
 		addHeader(headerRow, headerCellStyle, "Content", 2);
 		
 		//content
-		List<InstantMessage> messages = imDao.getMessages(ores, 0, -1);
+		List<InstantMessage> messages = imDao.getMessages(ores, null, 0, -1);
 		int count = 1;
 		for(InstantMessage message:messages) {
 			Row dataRow = exportSheet.createRow(count);

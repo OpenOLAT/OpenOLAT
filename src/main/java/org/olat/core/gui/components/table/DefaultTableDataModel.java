@@ -128,5 +128,4 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	public Object createCopyWithEmptyList() {
 		throw new AssertException("createCopyWithEmptyList not implemented!"); 
 	}
-
 }

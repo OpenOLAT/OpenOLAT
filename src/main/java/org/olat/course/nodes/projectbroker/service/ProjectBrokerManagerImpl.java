@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.hibernate.type.StandardBasicTypes;
@@ -58,7 +57,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.ProjectBrokerDropboxController;
-import org.olat.course.nodes.projectbroker.ProjectBrokerNodeConfiguration;
 import org.olat.course.nodes.projectbroker.ProjectBrokerReturnboxController;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.Project.EventType;
@@ -71,7 +69,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
-import org.olat.group.DeletableReference;
 import org.olat.properties.Property;
 import org.olat.testutils.codepoints.server.Codepoint;
 
@@ -579,22 +576,6 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 			logDebug("deleteProjectWith: group=" + group  + " , project=" + project);
 		}
 		return true;
-	}
-
-	@Override
-	public DeletableReference checkIfReferenced(BusinessGroup group, Locale locale) {
-		StringBuilder buf = new StringBuilder();
-		List<Project> projectList = getProjectsWith(group);
-		if (projectList.isEmpty()) {
-			return DeletableReference.createNoDeletableReference();
-		}
-		buf.append(new ProjectBrokerNodeConfiguration().getLinkText(locale));
-		buf.append(":" );
-		
-		for (Project project : projectList) {
-			buf.append(project.getTitle());
-		}
-		return DeletableReference.createDeletableReference(buf.toString());
 	}
 
 	@SuppressWarnings("unchecked")

@@ -21,6 +21,9 @@
 
 package org.olat.core.util.mail.ui;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.olat.core.gui.ShortName;
 
 /**
@@ -32,16 +35,16 @@ import org.olat.core.gui.ShortName;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class MailContextShortName implements ShortName {
-	private String businessPath;
+	private Set<String> businessPaths;
 	private String contextName;
 	
 	public MailContextShortName(String contextName) {
-		this(contextName, null);
+		this(contextName, new HashSet<String>());
 	}
 	
-	public MailContextShortName(String contextName, String businessPath) {
+	public MailContextShortName(String contextName, Set<String> businessPaths) {
 		this.contextName = contextName;
-		this.businessPath = businessPath;
+		this.businessPaths = businessPaths;
 	}
 	
 	@Override
@@ -49,8 +52,8 @@ public class MailContextShortName implements ShortName {
 		return contextName;
 	}
 
-	public String getBusinessPath() {
-		return businessPath;
+	public Set<String> getBusinessPaths() {
+		return businessPaths;
 	}
 	
 	public String getContextName() {

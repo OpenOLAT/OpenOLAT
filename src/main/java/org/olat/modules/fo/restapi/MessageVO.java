@@ -43,6 +43,7 @@ import org.olat.restapi.support.vo.FileVO;
 public class MessageVO {
 	
 	private Long key;
+	private Long threadKey;
 	private Long forumKey;
 	private Long parentKey;
 	private Long authorKey;
@@ -64,6 +65,9 @@ public class MessageVO {
 	
 	public MessageVO(Message message) {
 		key = message.getKey();
+		if(message.getThreadtop() != null) {
+			threadKey = message.getThreadtop().getKey();
+		}
 		Identity auth = message.getCreator();
 		authorKey = auth.getKey();
 		authorName = auth.getName();
@@ -94,6 +98,14 @@ public class MessageVO {
 	
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	public Long getThreadKey() {
+		return threadKey;
+	}
+
+	public void setThreadKey(Long threadKey) {
+		this.threadKey = threadKey;
 	}
 
 	public Long getForumKey() {

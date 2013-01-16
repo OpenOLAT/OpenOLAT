@@ -483,8 +483,7 @@ public class Formatter {
 			// add math wrapper
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
 			String elem = htmlFragment.contains("<div") ? "div" : "span";
-			StringBuffer sb = new StringBuffer();
-			
+			StringBuilder sb = new StringBuilder(htmlFragment.length() + 200);
 			sb.append("<").append(elem).append(" id=\"").append(domid).append("\">");
 			sb.append(htmlFragment);
 			sb.append("</").append(elem).append(">");
@@ -508,7 +507,7 @@ public class Formatter {
 	public static String formatURLsAsLinks(String textFragment) {
 		Matcher matcher = urlPattern.matcher(textFragment); 		
 		
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder(128);
 		int pos = 0;
 		while (matcher.find()) {
 			// Add text since last match and set end of current patch as new end

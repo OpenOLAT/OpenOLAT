@@ -285,7 +285,7 @@ class NewUserForm extends FormBasicController {
 				return false;
 			}
 			if (!UserManager.getInstance().syntaxCheckOlatPassword(pwd)) {					
-				psw1TextElement.setErrorKey("error.password.characters", new String[]{});					
+				psw1TextElement.setErrorKey("form.checkPassword", new String[]{});					
 				return false;
 			}
 			psw1TextElement.clearError();

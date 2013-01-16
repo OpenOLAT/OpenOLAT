@@ -43,6 +43,8 @@ import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.ims.qti.editor.QTIEditorPackage;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserDataDeletable;
 
 
@@ -166,7 +168,14 @@ public class UserFileDeletionManager extends BasicManager implements UserDataDel
 						if (isLogDebugEnabled()) logDebug("currentNodeId=" + currentNodeId);
 						ICourse currentCourse = null;
 						try {
-							currentCourse = CourseFactory.loadCourse(Long.parseLong(currentCourseId));
+							Long resId = Long.parseLong(currentCourseId);
+							//check if the course exists
+							OLATResource resource = OLATResourceManager.getInstance().findResourceable(resId, "CourseModule");
+							if(resource != null) {
+								currentCourse = CourseFactory.loadCourse(resId);
+							} else {
+								logWarn("course with resid=" + currentCourseId + " has a folder but no resource/repository entry", null);
+							}
 						} catch (Exception e) {
 							logError("could not load course with resid="+currentCourseId,e);
 						}

@@ -22,11 +22,14 @@ package org.olat.instantMessaging.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.model.InstantMessageImpl;
@@ -41,6 +44,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class InstantMessageDAO {
+	
+	private static final OLog log = Tracing.createLoggerFor(InstantMessageDAO.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -70,16 +75,32 @@ public class InstantMessageDAO {
 		return msgs.get(0);
 	}
 
-	public List<InstantMessage> getMessages(OLATResourceable ores, int firstResult, int maxResults) {
+	public List<InstantMessage> getMessages(OLATResourceable ores, Date from, int firstResult, int maxResults) {
+		String queryName = (from == null ? "loadIMessageByResource" : "loadIMessageByResourceAndDate");
 		TypedQuery<InstantMessage> query = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadIMessageByResource", InstantMessage.class)
+				.createNamedQuery(queryName, InstantMessage.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
+		if(from != null) {
+			query.setParameter("from", from, TemporalType.TIMESTAMP);
+		}
 		return query.getResultList();
+	}
+	
+	public int deleteMessages(OLATResourceable ores) {
+		String sb = "delete from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname";
+		int count = dbInstance.getCurrentEntityManager().createQuery(sb)
+				.setParameter("resid", ores.getResourceableId())
+				.setParameter("resname", ores.getResourceableTypeName())
+				.executeUpdate();
+		if(count > 0) {
+			log.audit(count + " IM messages delete for resource: " + ores);
+		}
+		return count;
 	}
 	
 	public InstantMessageNotification createNotification(Long fromIdentityKey, Long toIdentityKey, OLATResourceable chatResource) {

@@ -127,14 +127,16 @@ public class BGMailTemplateController extends FormBasicController {
 		if(defaultTemplate.isSelected(0)) {
 			allOk &= true;
 		} else if (mandatoryEmail || sendMail.isSelected(0)) {
-			subjectElem.clearError();
-			if (subjectElem.getValue().trim().length() == 0) {
-				subjectElem.setErrorKey("mailtemplateform.error.emptyfield", null);
-				allOk &= false;
-			}
-			if (subjectElem.getValue().indexOf("#") != -1) {
-				subjectElem.setErrorKey("mailtemplateform.error.velocity", null);
-				allOk &= false;
+			if(subjectElem != null) {
+				subjectElem.clearError();
+				if (subjectElem.getValue().trim().length() == 0) {
+					subjectElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+					allOk &= false;
+				}
+				if (subjectElem.getValue().indexOf("#") != -1) {
+					subjectElem.setErrorKey("mailtemplateform.error.velocity", null);
+					allOk &= false;
+				}
 			}
 			
 			bodyElem.clearError();

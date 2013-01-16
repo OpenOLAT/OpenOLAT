@@ -212,6 +212,10 @@ public class UserSessionManager implements GenericEventListener {
 		return userSessionCache.getKeys();
 	}
 	
+	public boolean isOnline(Long identityKey) {
+		return userSessionCache.containsKey(identityKey);
+	}
+	
 	/**
 	 * @return The number of users currently logged in using a WebDAV client.
 	 *         Note that currently this only returns the users from this VM as

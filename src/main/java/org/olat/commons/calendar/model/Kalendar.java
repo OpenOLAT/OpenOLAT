@@ -32,6 +32,8 @@ import java.util.Map;
 
 public class Kalendar implements Serializable {
 
+	private static final long serialVersionUID = -2179014489859413340L;
+	
 	private String calendarID;
 	private String type;
 	private Map<String, KalendarEvent> events;

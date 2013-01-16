@@ -260,14 +260,12 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 							int ACCESS_VALUE = 4;
 							//fxdiff VCRP-1,2: access control of resources
 							re = RepositoryManager.getInstance().setAccess(re, ACCESS_VALUE, false);
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong access value", ACCESS_VALUE, repositoryEntryT1Reloaded.getAccess());
+							assertEquals("Wrong access value", ACCESS_VALUE, re.getAccess());
 						} else if (i % 10 == 0 ) {
 							int ACCESS_VALUE = 1;
 							//fxdiff VCRP-1,2: access control of resources
 							re = RepositoryManager.getInstance().setAccess(re, ACCESS_VALUE, false);
-							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong access value",ACCESS_VALUE,repositoryEntryT1Reloaded.getAccess());
+							assertEquals("Wrong access value",ACCESS_VALUE,re.getAccess());
 						}
 						DBFactory.getInstance().commitAndCloseSession();
 					}
@@ -298,9 +296,8 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 							String displayName = "DisplayName" + i;
 							String description = "Description" + i;
 							re = RepositoryManager.getInstance().setDescriptionAndName(re, displayName,description);
-							RepositoryEntry reReloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong displayName value", displayName, reReloaded.getDisplayname());
-							assertEquals("Wrong description value", description, reReloaded.getDescription());
+							assertEquals("Wrong displayName value", displayName, re.getDisplayname());
+							assertEquals("Wrong description value", description, re.getDescription());
 						}
 						DBFactory.getInstance().commitAndCloseSession();
 					}
@@ -329,18 +326,16 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 						re = RepositoryManager.getInstance().incrementLaunchCounter(re);
 						if (i % 30 == 0 ) {
 							re = RepositoryManager.getInstance().setProperties(re, true, false, true, false);	
-							RepositoryEntry reT3Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong canCopy value", true, reT3Reloaded.getCanCopy());
-							assertEquals("Wrong getCanReference value",false, reT3Reloaded.getCanReference());
-							assertEquals("Wrong getCanLaunch value", true, reT3Reloaded.getCanLaunch());
-							assertEquals("Wrong getCanDownload value", false, reT3Reloaded.getCanDownload());
+							assertEquals("Wrong canCopy value", true, re.getCanCopy());
+							assertEquals("Wrong getCanReference value",false, re.getCanReference());
+							assertEquals("Wrong getCanLaunch value", true, re.getCanLaunch());
+							assertEquals("Wrong getCanDownload value", false, re.getCanDownload());
 						} else 	if (i % 15 == 0 ) {
 							re = RepositoryManager.getInstance().setProperties(re, false, true, false, true);	
-							RepositoryEntry reT3Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-							assertEquals("Wrong canCopy value", false, reT3Reloaded.getCanCopy());
-							assertEquals("Wrong getCanReference value", true, reT3Reloaded.getCanReference());
-							assertEquals("Wrong getCanLaunch value", false, reT3Reloaded.getCanLaunch() );
-							assertEquals("Wrong getCanDownload value", true, reT3Reloaded.getCanDownload());
+							assertEquals("Wrong canCopy value", false, re.getCanCopy());
+							assertEquals("Wrong getCanReference value", true, re.getCanReference());
+							assertEquals("Wrong getCanLaunch value", false, re.getCanLaunch() );
+							assertEquals("Wrong getCanDownload value", true, re.getCanDownload());
 						}
 						DBFactory.getInstance().commitAndCloseSession();
 					}
@@ -376,7 +371,7 @@ public class RepositoryManagerConcurrentTest extends OlatTestCase {
 		assertEquals("Exceptions", 0, exceptionHolder.size());
 
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-		assertEquals("Worng value of incrementLaunch counter", loop * numberOfThreads, re.getLaunchCounter());
+		assertEquals("Wrong value of incrementLaunch counter", loop * numberOfThreads, re.getLaunchCounter());
 		assertEquals("DisplayName" + loop, re.getDisplayname());//check if the displayname is correct
 		assertEquals("Description" + loop, re.getDescription());
 		System.out.println("testConcurrentIncrementLaunchCounter time=" + (System.currentTimeMillis() - startTime) + " for " + loop + " incrementLaunchCounter calls");

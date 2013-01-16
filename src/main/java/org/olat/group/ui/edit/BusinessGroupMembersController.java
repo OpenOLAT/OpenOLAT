@@ -198,7 +198,7 @@ public class BusinessGroupMembersController extends BasicController {
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		
 		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
-		MailPackage mailing = new MailPackage(template, getWindowControl().getBusinessControl().getAsString(), true);
+		MailPackage mailing = new MailPackage(template, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
 		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), getLocale());
 	}

@@ -190,14 +190,13 @@ public class CourseGlossaryToolLinkController extends BasicController {
 			OpenAuthorProfilEvent uriEvent = (OpenAuthorProfilEvent)event;
 			Long identityKey = uriEvent.getKey();
 			if(identityKey == null) return;
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null) return;
-			
 			final HomePageConfig homePageConfig = HomePageConfigManagerImpl.getInstance().loadConfigFor(identity.getName());
 			
 			ControllerCreator ctrlCreator = new ControllerCreator() {
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					HomePageDisplayController homePageCtrl = new HomePageDisplayController(lureq, lwControl, homePageConfig);
+					HomePageDisplayController homePageCtrl = new HomePageDisplayController(lureq, lwControl, identity, homePageConfig);
 					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, homePageCtrl
 							.getInitialComponent(), null);
 					// dispose glossary on layout dispose

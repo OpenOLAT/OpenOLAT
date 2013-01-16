@@ -129,9 +129,12 @@
 	<listener>
 		<listener-class>org.olat.core.dispatcher.mapper.MapperSessionListener</listener-class>
 	</listener>
+	<listener>
+		<listener-class>org.olat.core.servlets.OLATContextListener</listener-class>
+	</listener>
     
-    <!-- 4. Servlets -->
-    <servlet>
+  <!-- 4. Servlets -->
+  <servlet>
     <servlet-name>log4j-init</servlet-name>
     <servlet-class>org.olat.core.servlets.Log4JInitServlet</servlet-class>
 

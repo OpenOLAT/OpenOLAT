@@ -82,7 +82,9 @@ public class BriefcaseWebDAVMergeSource  extends MergeSource {
 		return super.getLocalSecurityCallback();
 	}
 
-	private void init() {
+	@Override
+	protected void init() {
+		super.init();
 		// mount /public
 		String rootPath = PersonalFolderManager.getInstance().getRootPathFor(identity);
 		OlatRootFolderImpl vfsPublic = new OlatRootFolderImpl(rootPath + "/public", this);

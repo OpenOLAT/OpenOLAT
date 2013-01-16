@@ -149,7 +149,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		newMsgIcon.put("chats", chatMgrCtrl.getInitialComponent());
 		
 		//listen to privat chat messages
-		imService.listenChat(getIdentity(), getPrivatListenToResourceable(), this);
+		imService.listenChat(getIdentity(), getPrivatListenToResourceable(), false, false, this);
 		
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		singleUserEventCenter.registerFor(this, getIdentity(), InstantMessagingService.ASSESSMENT_EVENT_ORES);
@@ -324,8 +324,8 @@ public class InstantMessagingMainController extends BasicController implements G
 			if(event.getBuddy() != null) {
 				chatMgrCtrl.createChat(ureq, event.getBuddy());
 			} else if(event.getOres() != null) {
-				//open a group chat
-				chatMgrCtrl.createGroupChat(ureq, event.getOres(), event.getRoomName());
+				//open a group/course chat
+				chatMgrCtrl.createGroupChat(ureq, event.getOres(), event.getRoomName(), event.isVip());
 			}	
 		}
 	}
@@ -350,7 +350,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		if (imEvent.getCommand().equals("message")) {
 			//user receives messages from an other user
 			Long fromId = imEvent.getFromId();
-			if(!chatMgrCtrl.hasRunningChat(fromId)) {
+			if(!chatMgrCtrl.hasRunningChat(imEvent.getChatResource())) {
 				//only show icon if no chat running or msg from other user
 				//add follow up message to info holder
 				if (!showNewMessageHolder.contains(fromId)) {

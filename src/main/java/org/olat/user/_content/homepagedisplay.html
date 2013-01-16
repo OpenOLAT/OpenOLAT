@@ -12,6 +12,12 @@
 		</div>
 		
 		<table>
+			#if($r.available("im.link"))
+				<tr>
+					<td>Chat</td>
+					<td id="o_instantmessages_buddy">$r.render("im.link")</td>
+				</tr>
+			#end
 			#foreach( $propertyHandler in $userPropertyHandlers )
 				#if($homepageConfig.isEnabled($propertyHandler.getName()))
 			<tr>

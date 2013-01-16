@@ -155,14 +155,14 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == this.previewButton) {
 			if (this.hpDispC != null) removeAsListenerAndDispose(this.hpDispC);
-			this.hpDispC = new HomePageDisplayController(ureq, getWindowControl(), homePageConfig);
+			hpDispC = new HomePageDisplayController(ureq, getWindowControl(), identityToModify, homePageConfig);
 			listenTo(hpDispC);
-			if (this.clc != null) removeAsListenerAndDispose(clc);
-			this.clc = new CloseableModalController(getWindowControl(), this.translator.translate("command.closehp"), this.hpDispC
+			if (clc != null) removeAsListenerAndDispose(clc);
+			clc = new CloseableModalController(getWindowControl(), this.translator.translate("command.closehp"), this.hpDispC
 					.getInitialComponent());
 			listenTo(clc);
-			this.clc.insertHeaderCss();
-			this.clc.activate();
+			clc.insertHeaderCss();
+			clc.activate();
 		}
 	}
 

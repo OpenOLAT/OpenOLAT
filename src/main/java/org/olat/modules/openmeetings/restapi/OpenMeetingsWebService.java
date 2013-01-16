@@ -81,7 +81,7 @@ public class OpenMeetingsWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			
-			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity);
+			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
 			if(portrait == null || !portrait.exists()) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}

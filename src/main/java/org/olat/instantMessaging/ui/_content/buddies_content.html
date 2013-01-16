@@ -1,20 +1,10 @@
 <ul>
-	#foreach ($buddy in $buddyList.entries)
-		<li>$r.render("buddy_${buddy.identityKey}")</li>
-	#end
-</ul>
-
-<hr />
-
-<ul>
 	#foreach ($group in $buddyList.groups)
-		<li>
-			<strike>$group.groupName</strike>
+		<li class="o_instantmessaging_groupname">
+			$group.groupName
 			<ul>
 			#foreach ($buddy in $group.buddy)
-				<li>
-				#if(${buddy.vip}) * #end
-				${buddy.name}</li>
+				<li>$r.render("buddy_${group.groupKey}_${buddy.identityKey}")</li>
 			#end
 		</ul></li>
 	#end

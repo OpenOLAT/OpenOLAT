@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElment;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.translator.Translator;
 
 
 /**
@@ -49,6 +50,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElm
 		component = new FlexiTableComponent(this);
 	}
 	
+	public FlexiTableElementImpl(String name, Translator translator, FlexiTableDataModel tableModel) {
+		super(name);
+		this.tableModel = tableModel;
+		component = new FlexiTableComponent(this, translator);
+	}
 	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
@@ -63,7 +69,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElm
 			component.setDirty(true);
 		}
 	}
-
 
 	@Override
 	@SuppressWarnings("unused")

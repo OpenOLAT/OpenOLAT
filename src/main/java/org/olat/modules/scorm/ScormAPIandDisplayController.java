@@ -373,8 +373,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private void cleanUpCollectedScoData() {
 		if(scorm_lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE) ||
 			 scorm_lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW)){
-			String path = WebappHelper.getTmpDir() + "/tmpscorm/" + hashCode();
-			FileUtils.deleteDirsAndFiles( new File(path),true, true);
+			StringBuilder path = new StringBuilder();
+			path.append(WebappHelper.getTmpDir())
+			  .append("/tmp").append(WebappHelper.getInstanceId()).append("scorm/")
+			  .append(hashCode());
+			FileUtils.deleteDirsAndFiles( new File(path.toString()),true, true);
 		}
 	}
 	/**

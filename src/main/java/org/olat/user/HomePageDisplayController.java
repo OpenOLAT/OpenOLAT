@@ -27,16 +27,22 @@ package org.olat.user;
 
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
+import org.olat.instantMessaging.ImPreferences;
+import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -49,45 +55,67 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class HomePageDisplayController extends BasicController {
 	private static final String usageIdentifyer = HomePageConfig.class.getCanonicalName();
 	
+	private Link imLink;
+	
+
 	/**
 	 * @param ureq
 	 * @param wControl
 	 * @param hpc
 	 */
-	public HomePageDisplayController(UserRequest ureq, WindowControl wControl, HomePageConfig hpc) {
+	public HomePageDisplayController(UserRequest ureq, WindowControl wControl, Identity homeIdentity, HomePageConfig hpc) {
 		super(ureq, wControl);
+
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 
 		// use property handler translator for translating of user fields
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
-		VelocityContainer myContent = createVelocityContainer("homepagedisplay");
-		
-		String userName = hpc.getUserName();
-		UserManager um = UserManager.getInstance();
-		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(userName);
-		User u = identity.getUser();
-		
-		myContent.contextPut("userName", identity.getName());
-		myContent.contextPut("deleted", identity.getStatus().equals(Identity.STATUS_DELETED));
-		myContent.contextPut("user", u);
-		myContent.contextPut("locale", getLocale());
+		VelocityContainer mainVC = createVelocityContainer("homepagedisplay");
+
+		mainVC.contextPut("userName", homeIdentity.getName());
+		mainVC.contextPut("deleted", homeIdentity.getStatus().equals(Identity.STATUS_DELETED));
+		mainVC.contextPut("user", homeIdentity.getUser());
+		mainVC.contextPut("locale", getLocale());
 		
 		// add configured property handlers and the homepage config
 		// do the looping in the velocity context
-		List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(usageIdentifyer, false);
-		myContent.contextPut("userPropertyHandlers", userPropertyHandlers);
-		myContent.contextPut("homepageConfig", hpc);		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
+		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		mainVC.contextPut("homepageConfig", hpc);		
 		
-		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), identity, true, false);
+		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false);
 		listenTo(dpc); // auto dispose
-		myContent.put("image", dpc.getInitialComponent());
-		putInitialPanel(myContent);
+		mainVC.put("image", dpc.getInitialComponent());
+		putInitialPanel(mainVC);
+		
+		if(imModule.isEnabled() && imModule.isViewOnlineUsersEnabled()) {
+			InstantMessagingService imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
+			ImPreferences prefs = imService.getImPreferences(homeIdentity);
+			if(prefs.isVisibleToOthers()) {
+				Buddy buddy = imService.getBuddyById(homeIdentity.getKey());
+				imLink = LinkFactory.createLink("im.link", mainVC, this);
+				imLink.setCustomEnabledLinkCSS(getStatusCss(buddy));
+				imLink.setUserObject(buddy);
+			}
+		}
+	}
+	
+	private String getStatusCss(Buddy buddy) {
+		StringBuilder sb = new StringBuilder(32);
+		sb.append("o_instantmessaging_").append(buddy.getStatus()).append("_icon ");
+		return sb.toString();
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		// nothing to catch
+		if(imLink == source) {
+			Buddy buddy = (Buddy)imLink.getUserObject();
+			OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
+		}
 	}
 
 	/**
@@ -95,7 +123,6 @@ public class HomePageDisplayController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		// child controller sposed by basic controller
+		// child controller disposed by basic controller
 	}
-	
 }

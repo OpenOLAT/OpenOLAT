@@ -21,7 +21,6 @@ package org.olat.course.member.wizard;
 
 import java.util.List;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,7 +30,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupShort;
@@ -134,17 +132,5 @@ public class ImportMemberMailController extends StepFormBasicController {
 			addToRunContext("mailTemplate", null);
 		}
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
-	}
-
-	private static class TestMailTemplate extends MailTemplate {
-		public TestMailTemplate() {
-			super("", "", null);
-		}
-		
-		
-		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-			//
-		}
 	}
 }

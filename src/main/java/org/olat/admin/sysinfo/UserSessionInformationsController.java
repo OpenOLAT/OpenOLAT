@@ -78,7 +78,7 @@ public class UserSessionInformationsController extends BasicController {
 	}
 	
 	private String getUsersSessionAsString(UserRequest ureq) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(50000);
 		int ucCnt = sessionManager.getUserSessionsCnt();
 		Set<UserSession> usesss = sessionManager.getAuthenticatedUserSessions();
 		int contcnt = DefaultController.getControllerCount();

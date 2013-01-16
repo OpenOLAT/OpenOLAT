@@ -45,8 +45,9 @@ import org.olat.resource.OLATResource;
  */
 final class PreviewCourseGroupManager extends BasicManager implements CourseGroupManager {
 
-	private List<BusinessGroup> groups;
 	private List<BGArea> areas;
+	private List<BusinessGroup> groups;
+	private final OLATResource courseResource;
 	private boolean isCoach, isCourseAdmin;
 	
 	/**
@@ -55,7 +56,9 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 * @param isCoach
 	 * @param isCourseAdmin
 	 */
-	public PreviewCourseGroupManager(List<BusinessGroup> groups, List<BGArea> areas, boolean isCoach, boolean isCourseAdmin) {
+	public PreviewCourseGroupManager(OLATResource courseResource, List<BusinessGroup> groups,
+			List<BGArea> areas, boolean isCoach, boolean isCourseAdmin) {
+		this.courseResource = courseResource;
 		this.groups = groups;
 		this.areas = areas;
 		this.isCourseAdmin = isCourseAdmin;
@@ -64,7 +67,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	@Override
 	public OLATResource getCourseResource() {
-		return null;
+		return courseResource;
 	}
 
 	/**
