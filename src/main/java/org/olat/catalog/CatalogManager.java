@@ -33,20 +33,17 @@ import javax.persistence.TypedQuery;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.resource.Resourceable;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -86,6 +83,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	/**
 	 * [spring]
@@ -133,7 +132,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			sb.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
 		}
 
-		TypedQuery<CatalogEntry> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
+		TypedQuery<CatalogEntry> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntry.class)
 				.setParameter("parentKey", ce.getKey())
 				.setFirstResult(0);
@@ -158,7 +157,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			sb.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
 		}
 
-		TypedQuery<CatalogEntryShort> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
+		TypedQuery<CatalogEntryShort> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntryShort.class)
 				.setParameter("parentKey", ce.getKey())
 				.setFirstResult(0);
@@ -176,13 +175,19 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return List of catalog entries of type CatalogEntry.TYPE_NODE
 	 */
 	public List<CatalogEntry> getAllCatalogNodes() {
-		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei "
-		+ " where cei.type= :type ";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
-		dbQuery.setInteger("type", CatalogEntry.TYPE_NODE);
-		// cache this query
-		dbQuery.setCacheable(true);
-		return dbQuery.list();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
+		  .append(" left join fetch cei.repositoryEntry as repositoryEntry")
+		  .append(" left join fetch repositoryEntry.ownerGroup as repoOwnerGroup")
+		  .append(" left join fetch repositoryEntry.tutorGroup as repoTutorGroup")
+		  .append(" left join fetch repositoryEntry.participantGroup as repoParticipantGroup")
+		  .append(" where cei.type= :type");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogEntry.class)
+				.setParameter("type", CatalogEntry.TYPE_NODE)
+				.getResultList();
 	}
 
 	
@@ -211,14 +216,14 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			query.append(" and cei.type=:type");
 		}
 
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
-		dbQuery.setLong("parentKey", ce.getKey());
+		TypedQuery<Number> dbQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Number.class)
+				.setParameter("parentKey", ce.getKey());
 		if(type >= 0) {
-			dbQuery.setInteger("type", type);
+			dbQuery.setParameter("type", type);
 		}
-		// cache this query
-		dbQuery.setCacheable(true);
-		Number totalCount = (Number)dbQuery.uniqueResult();
+
+		Number totalCount = dbQuery.getSingleResult();
 		return totalCount.intValue(); 
 	}
 
@@ -230,8 +235,6 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 */
 	public List<CatalogEntry> filterOwnedLeafs(Identity identity, List<CatalogEntry> catalogEntries) {
 		List<CatalogEntry> ownedEntries = new ArrayList<CatalogEntry>();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-
 		for(CatalogEntry cate:catalogEntries) {
 			if (cate.getType() == CatalogEntry.TYPE_LEAF) {
 				RepositoryEntry repe = cate.getRepositoryEntry();
@@ -251,7 +254,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return reloaded catalog entry
 	 */
 	public CatalogEntry loadCatalogEntry(CatalogEntry catalogEntry) {
-		return (CatalogEntry) DBFactory.getInstance().loadObject(catalogEntry);
+		return dbInstance.getCurrentEntityManager().find(CatalogEntryImpl.class, catalogEntry.getKey());
 	}
 
 	/**
@@ -260,7 +263,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return
 	 */
 	public CatalogEntry loadCatalogEntry(Long catEntryId) {
-		return (CatalogEntry) DBFactory.getInstance().loadObject(CatalogEntryImpl.class, catEntryId);
+		return dbInstance.getCurrentEntityManager().find(CatalogEntryImpl.class, catEntryId);
 	}
 	
 	/**
@@ -269,7 +272,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param ce
 	 */
 	public void saveCatalogEntry(CatalogEntry ce) {
-		DBFactory.getInstance().saveObject(ce);
+		dbInstance.getCurrentEntityManager().persist(ce);
 	}
 
 	/**
@@ -278,35 +281,9 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param ce
 	 */
 	public CatalogEntry updateCatalogEntry(CatalogEntry ce) {
-		DBFactory.getInstance().updateObject(ce);
-		return ce;
+		return dbInstance.getCurrentEntityManager().merge(ce);
 	}
 
-	public List entriesWithOwnerFrom(Identity owner,CatalogEntry ce) {
-		List retVal = new ArrayList();
-		findEntriesOf(owner, ce, retVal);
-		return retVal;
-	}
-	 
-	private void findEntriesOf(Identity owner, CatalogEntry root, List entries) {
-		/*
-		 * check if node is owned by identity
-		 */
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		SecurityGroup owners = root.getOwnerGroup();
-		if(owners!=null && secMgr.isIdentityInSecurityGroup(owner, owners)) {
-			entries.add(root);
-		}
-		/*
-		 * check subtree, by visit children first strategy
-		 */
-		List children = getChildrenOf(root);
-		Iterator iter = children.iterator();
-		while (iter.hasNext()) {
-			CatalogEntry nextCe = (CatalogEntry) iter.next();
-			findEntriesOf(owner, nextCe, entries);
-		}
-	}
 	/**
 	 * delete a catalog entry and a potentially referenced substructure from db.
 	 * Be aware of how to use this deletion, as all the referenced substructure is
@@ -315,18 +292,19 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param ce
 	 */
 	public void deleteCatalogEntry(CatalogEntry ce) {
-		getLogger().debug("deleteCatalogEntry start... ce=" + ce);
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		boolean debug = isLogDebugEnabled();
+		if(debug) logDebug("deleteCatalogEntry start... ce=" + ce);
+		
 		if (ce.getType() == CatalogEntry.TYPE_LEAF) {
 			//delete catalog entry, then delete owner group
 			SecurityGroup owner = ce.getOwnerGroup();
-			DBFactory.getInstance().deleteObject(ce);
+			dbInstance.getCurrentEntityManager().remove(ce);
 			if (owner != null) {
 				getLogger().debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
 				securityManager.deleteSecurityGroup(owner);
 			}
 		} else {
-			List secGroupsToBeDeleted = new ArrayList();
+			List<SecurityGroup> secGroupsToBeDeleted = new ArrayList<SecurityGroup>();
 			//FIXME pb: the transaction must also include the deletion of the security
 			// groups. Why not using this method as a recursion and seperating the 
 			// deletion of the ce and the groups by collecting the groups? IMHO there 
@@ -338,13 +316,13 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			// not a problem, the DB object can handel this.
 			deleteCatalogSubtree(ce,secGroupsToBeDeleted);
 			// after deleting all entries, delete all secGroups corresponding
-			for (Iterator iter = secGroupsToBeDeleted.iterator(); iter.hasNext();) {
+			for (Iterator<SecurityGroup> iter = secGroupsToBeDeleted.iterator(); iter.hasNext();) {
 				SecurityGroup grp = (SecurityGroup) iter.next();
-				getLogger().debug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp=" + grp);
+				if(debug) logDebug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp=" + grp);
 				securityManager.deleteSecurityGroup(grp);
 			}
 		}
-		getLogger().debug("deleteCatalogEntry END");
+		if(debug) logDebug("deleteCatalogEntry END");
 	}
 
 	/**
@@ -352,24 +330,19 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * 
 	 * @param ce
 	 */
-	private void deleteCatalogSubtree(CatalogEntry ce, List secGroupsToBeDeleted) {
-		DB db = DBFactory.getInstance();
-
+	private void deleteCatalogSubtree(CatalogEntry ce, List<SecurityGroup> secGroupsToBeDeleted) {
 		List<CatalogEntry> children = getChildrenOf(ce);
-		Iterator<CatalogEntry> iter = children.iterator();
-		while (iter.hasNext()) {
-			CatalogEntry nextCe = (CatalogEntry) iter.next();
+		for (CatalogEntry nextCe:children) {
 			deleteCatalogSubtree(nextCe,secGroupsToBeDeleted);
 		}
-		ce = (CatalogEntry) db.loadObject(ce);
+		ce = dbInstance.getCurrentEntityManager().find(CatalogEntry.class, ce.getKey());
 		//mark owner group for deletion.
 		SecurityGroup owner = ce.getOwnerGroup();
-		if (owner != null) secGroupsToBeDeleted.add(owner);
-		// delete user bookmarks
-		OLATResourceable ores = createOLATResouceableFor(ce);
-		//TODO bookmark BookmarkManager.getInstance().deleteAllBookmarksFor(ores);
-		// delete catalog entry itself
-		db.deleteObject(ce);
+		if (owner != null) {
+			secGroupsToBeDeleted.add(owner);
+		}
+		//TODO delete marks
+		dbInstance.getCurrentEntityManager().remove(ce);
 	}
 
 	/**
@@ -378,14 +351,14 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param repoEntry
 	 * @return List of catalog entries
 	 */
-	public List getCatalogEntriesReferencing(RepositoryEntry repoEntry) {
+	public List<CatalogEntry> getCatalogEntriesReferencing(RepositoryEntry repoEntry) {
 		String sqlQuery = "select cei from " + " org.olat.catalog.CatalogEntryImpl as cei " + " ,org.olat.repository.RepositoryEntry as re "
 				+ " where cei.repositoryEntry = re AND re.key= :reKey ";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
-		dbQuery.setCacheable(true);
-		dbQuery.setLong("reKey", repoEntry.getKey().longValue());
-		List resSet = dbQuery.list();
-		return resSet;
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sqlQuery, CatalogEntry.class)
+				.setParameter("reKey", repoEntry.getKey())
+				.getResultList();
 	}
 
 	/**
@@ -394,33 +367,18 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param repoEntry
 	 * @return List of catalog entries
 	 */
-	public List getCatalogCategoriesFor(RepositoryEntry repoEntry) {
+	public List<CatalogEntry> getCatalogCategoriesFor(RepositoryEntry repoEntry) {
 		String sqlQuery = "select distinct parent from org.olat.catalog.CatalogEntryImpl as parent "
 			+ ", org.olat.catalog.CatalogEntryImpl as cei "
 			+ ", org.olat.repository.RepositoryEntry as re "
 			+ " where cei.repositoryEntry = re "
 			+ " and re.key= :reKey "
 			+ " and cei.parent = parent ";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
-		dbQuery.setCacheable(true);
-		dbQuery.setLong("reKey", repoEntry.getKey().longValue());
-		List resSet = dbQuery.list();
-		return resSet;
-	}
-
-	/**
-	 * find catalog entries by supplied name
-	 * 
-	 * @param name
-	 * @return List of catalog entries
-	 */
-	public List getCatalogEntriesByName(String name) {
-		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei where cei.name = :name";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
-		dbQuery.setString("name",name);
-		dbQuery.setCacheable(true);
-		return dbQuery.list();
 		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sqlQuery, CatalogEntry.class)
+				.setParameter("reKey", repoEntry.getKey())
+				.getResultList();
 	}
 	
 	public CatalogEntry getCatalogEntryByKey(Long key) {
@@ -429,7 +387,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		  .append(" left join fetch cei.repositoryEntry as entry")
 		  .append(" where cei.key=:key");
 
-		List<CatalogEntry> entries = DBFactory.getInstance().getCurrentEntityManager()
+		List<CatalogEntry> entries = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntry.class)
 				.setParameter("key", key)
 				.getResultList();
@@ -449,14 +407,12 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public List<CatalogEntry> getCatalogEntriesOwnedBy(Identity identity) {
 		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei inner join fetch cei.ownerGroup, " + 
 			" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" +
-			" where " +
-			" cei.ownerGroup = sgmsi.securityGroup and" +
-			" sgmsi.identity = :identity";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
-		dbQuery.setEntity("identity", identity);
-		dbQuery.setCacheable(true);
-		return dbQuery.list();
+			" where cei.ownerGroup = sgmsi.securityGroup and sgmsi.identity.key = :identityKey";
 		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sqlQuery, CatalogEntry.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 	
 	public List<Identity> getOwnersOfParentLine(CatalogEntry entry) {
@@ -489,10 +445,11 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param newEntry
 	 */
 	public void addCatalogEntry(CatalogEntry parent, CatalogEntry newEntry) {
-		getLogger().debug("addCatalogEntry parent=" + parent);
+		boolean debug = isLogDebugEnabled();
+		if(debug) logDebug("addCatalogEntry parent=" + parent);
 		newEntry.setParent(parent);
-		getLogger().debug("addCatalogEntry newEntry=" + newEntry);
-		getLogger().debug("addCatalogEntry newEntry.getOwnerGroup()=" + newEntry.getOwnerGroup());
+		if(debug) logDebug("addCatalogEntry newEntry=" + newEntry);
+		if(debug) logDebug("addCatalogEntry newEntry.getOwnerGroup()=" + newEntry.getOwnerGroup());
 		saveCatalogEntry(newEntry);
 	}
 
@@ -505,29 +462,27 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 */
 	public List<CatalogEntry> getRootCatalogEntries() {
 		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei where cei.parent is null";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
-		dbQuery.setCacheable(true);
-		return dbQuery.list();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sqlQuery, CatalogEntry.class)
+				.getResultList();
 	}
 
 	/**
 	 * init called on module start-up
 	 */
 	public void init() {
-		List roots = getRootCatalogEntries();
+		List<CatalogEntry> roots = getRootCatalogEntries();
 		if (roots.isEmpty()) { // not initialized yet
-		//TODO inject via spring
-			BaseSecurity secMgr = BaseSecurityManager.getInstance();
 			/*
 			 * copy a snapshot of olatAdmins into catalogAdmins do not put
 			 * secMgr.findSecurityGroupByName(Constants.GROUP_ADMIN) directly into a
 			 * CatalogEntry!!
 			 */
-			SecurityGroup olatAdmins = secMgr.findSecurityGroupByName(Constants.GROUP_ADMIN);
-			List olatAdminIdents = secMgr.getIdentitiesOfSecurityGroup(olatAdmins);
-			SecurityGroup catalogAdmins = secMgr.createAndPersistSecurityGroup();
+			SecurityGroup olatAdmins = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
+			List<Identity> olatAdminIdents = securityManager.getIdentitiesOfSecurityGroup(olatAdmins);
+			SecurityGroup catalogAdmins = securityManager.createAndPersistSecurityGroup();
 			for (int i = 0; i < olatAdminIdents.size(); i++) {
-				secMgr.addIdentityToSecurityGroup((Identity) olatAdminIdents.get(i), catalogAdmins);
+				securityManager.addIdentityToSecurityGroup((Identity) olatAdminIdents.get(i), catalogAdmins);
 			}
 			/*
 			 * start with something called CATALOGROOT, you can rename it to whatever
@@ -535,7 +490,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			 */
 			// parent == null -> no parent -> I am a root node.
 			saveCatEntry(CATALOGROOT, null, CatalogEntry.TYPE_NODE, catalogAdmins, null, null);
-			DBFactory.getInstance(false).intermediateCommit();
+			dbInstance.intermediateCommit();
 		}
 	}
 
@@ -559,10 +514,9 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * return true: success; false: failure
 	 */
 	public boolean moveCatalogEntry(CatalogEntry toBeMovedEntry, CatalogEntry newParentEntry) {
-		CatalogManager cm = CatalogManager.getInstance();
 		// reload current item to prevent stale object modification
-		toBeMovedEntry = cm.loadCatalogEntry(toBeMovedEntry);
-		newParentEntry = cm.loadCatalogEntry(newParentEntry);		
+		toBeMovedEntry = loadCatalogEntry(toBeMovedEntry);
+		newParentEntry = loadCatalogEntry(newParentEntry);		
 		// check that the new parent is not a leaf
 		if (newParentEntry.getType() == CatalogEntry.TYPE_LEAF) return false;
 		// check that the new parent is not a child of the to be moved entry
@@ -576,7 +530,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		}
 		// set new parent and save
 		toBeMovedEntry.setParent(newParentEntry);
-		cm.updateCatalogEntry(toBeMovedEntry);
+		updateCatalogEntry(toBeMovedEntry);
 		return true;
 	}
 
@@ -587,11 +541,11 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public void resourceableDeleted(RepositoryEntry repositoryEntry) {
 		// if a repository entry gets deleted, the referencing Catalog Entries gets
 		// retired to
-		getLogger().debug("sourceableDeleted start... repositoryEntry=" + repositoryEntry);
-		List references = getCatalogEntriesReferencing(repositoryEntry);
+		if(isLogDebugEnabled()) logDebug("sourceableDeleted start... repositoryEntry=" + repositoryEntry);
+		List<CatalogEntry> references = getCatalogEntriesReferencing(repositoryEntry);
 		if (references != null && !references.isEmpty()) {
 			for (int i = 0; i < references.size(); i++) {
-				deleteCatalogEntry((CatalogEntry) references.get(i));
+				deleteCatalogEntry(references.get(i));
 			}
 		}
 	}
@@ -604,18 +558,17 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 */
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Remove as owner
-		List catalogEntries = getCatalogEntriesOwnedBy(identity);
-		for (Iterator iter = catalogEntries.iterator(); iter.hasNext();) {
-			CatalogEntry catalogEntry = (CatalogEntry) iter.next();
+		List<CatalogEntry> catalogEntries = getCatalogEntriesOwnedBy(identity);
+		for (CatalogEntry catalogEntry:catalogEntries) {
 			
-			BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, catalogEntry.getOwnerGroup());
-			if (BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(catalogEntry.getOwnerGroup()) == 0 ) {
+			securityManager.removeIdentityFromSecurityGroup(identity, catalogEntry.getOwnerGroup());
+			if (securityManager.countIdentitiesOfSecurityGroup(catalogEntry.getOwnerGroup()) == 0 ) {
 				// This group has no owner anymore => add OLAT-Admin as owner
-				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(UserDeletionManager.getInstance().getAdminIdentity(), catalogEntry.getOwnerGroup());
-				Tracing.logInfo("Delete user-data, add Administrator-identity as owner of catalogEntry=" + catalogEntry.getName(), this.getClass());
+				securityManager.addIdentityToSecurityGroup(UserDeletionManager.getInstance().getAdminIdentity(), catalogEntry.getOwnerGroup());
+				logInfo("Delete user-data, add Administrator-identity as owner of catalogEntry=" + catalogEntry.getName());
 			}
 		}
-		Tracing.logDebug("All owner entries in catalog deleted for identity=" + identity, this.getClass());
+		if(isLogDebugEnabled()) logDebug("All owner entries in catalog deleted for identity=" + identity);
 	}
 
 	/**
@@ -646,15 +599,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 */
 	public OLATResourceable createOLATResouceableFor(final CatalogEntry currentCatalogEntry) {
 		if (currentCatalogEntry == null) return null;
-		return new OLATResourceable() {
-			public Long getResourceableId() {
-				return new Long(currentCatalogEntry.getKey());
-			}
-
-			public String getResourceableTypeName() {
-				return CATALOGENTRY;
-			}
-		};
+		return new Resourceable(CATALOGENTRY, currentCatalogEntry.getKey());
 	}
 
 	/**
@@ -662,10 +607,9 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param re
 	 */
 	public void updateReferencedRepositoryEntry(RepositoryEntry re) {
-		RepositoryEntry reloaded = RepositoryManager.getInstance().setDescriptionAndName(re, re.getDisplayname(), re.getDescription());
+		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, re.getDisplayname(), re.getDescription());
 		// inform anybody interested about this change
     MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, EntryChangedEvent.MODIFIED_DESCRIPTION);
     CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, reloaded);
 	}
-
 }

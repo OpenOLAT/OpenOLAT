@@ -38,6 +38,8 @@ import org.olat.repository.RepositoryEntry;
  * @author Felix Jost
  */
 public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
+
+	private static final long serialVersionUID = 2834235462805397562L;
 	private String name;
 	private String description;
 	private String externalURL;
