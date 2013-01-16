@@ -528,6 +528,7 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 		if (entries == null || entries.isEmpty()) return;
 
 		ContextEntry entry = entries.get(0);
+		TreeNode selectedNode = getMenuTree().getSelectedNode();
 		String node = entry.getOLATResourceable().getResourceableTypeName();
 		if (node != null && node.startsWith(GMCMT)) {
 			activate(ureq, node + ":" + entries.get(0).getOLATResourceable().getResourceableId());
@@ -535,13 +536,17 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 				entries = entries.subList(1, entries.size());
 			}
 			if (contentCtr instanceof Activateable2) {
-				((Activateable2) contentCtr).activate(ureq, entries, entry.getTransientState());
+				((Activateable2)contentCtr).activate(ureq, entries, entry.getTransientState());
 			}
 		} else {
 			// maybe the node is a GAE-NavigationKey ?
 			GenericActionExtension gAE = ExtManager.getInstance().getActionExtensioByNavigationKey(className, node);
 			if (gAE != null) {
-				activateTreeNodeByActionExtension(ureq, gAE);
+				//if the controller is already selected, only activate it, don't reinstanciate it
+				if(selectedNode != null && selectedNode.getUserObject() != gAE) {
+					activateTreeNodeByActionExtension(ureq, gAE);
+				}
+
 				if (entries.size() >= 1) {
 					entries = entries.subList(1, entries.size());
 				}

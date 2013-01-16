@@ -422,7 +422,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			SiteInstance s = sites.get(0);
 			if (contentCtrl == null) {
 				//activate site only if no content was set -> allow content before activation of default site.
-				activateSite(s, ureq, null, null);
+				activateSite(s, ureq, null, null, false);
 				updateBusinessPath(ureq, s);
 			}
 		}
@@ -468,7 +468,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 				if(siteToBusinessPath.containsKey(s)) {
 					point = siteToBusinessPath.get(s);
 				}
-				activateSite(s, ureq, null, null);
+				activateSite(s, ureq, null, null, true);
 				if(point != null) {
 					BusinessControlFactory.getInstance().addToHistory(ureq, point);
 				}
@@ -547,7 +547,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 				SiteInstance site = ((StateSite)s).getSite();
 				for(SiteInstance savedSite:sites) {
 					if(site.getClass().equals(savedSite.getClass())) {
-						activateSite(savedSite, ureq, null, entries);
+						activateSite(savedSite, ureq, null, entries, false);
 						//updateBusinessPath(ureq, savedSite);
 					}
 				}
@@ -611,7 +611,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 
 	// FROM FULLCHIEFCONTROLLER
 	//fxdiff BAKS-7 Resume function
-	private void activateSite(SiteInstance s, UserRequest ureq, String viewIdentifier, List<ContextEntry> entries) {
+	private void activateSite(SiteInstance s, UserRequest ureq, String viewIdentifier,
+			List<ContextEntry> entries, boolean forceReload) {
 		BornSiteInstance bs = siteToBornSite.get(s);
 		GuiStack gs;
 		Controller resC;
@@ -620,7 +621,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 			// single - click -> fetch guistack from cache
 			gs = bs.getGuiStackHandle();
 			resC = bs.getController();
-			//PB//site_wControl = bs.getWindowControl();
+		} else if (bs != null && s == curSite && !forceReload) {
+			//via activate, don't force the reload
+			gs = bs.getGuiStackHandle();
+			resC = bs.getController();
 		} else {
 			// bs == null (not yet in cache) || s == curSite
 			// double click or not yet in cache.
@@ -967,7 +971,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			SiteInstance site = it_sites.next();
 			String cName = site.getClass().getName();
 			if (cName.equals(className)) {
-				activateSite(site, ureq, viewIdentifier, entries);
+				activateSite(site, ureq, viewIdentifier, entries, false);
 				return;
 			}
 		}
