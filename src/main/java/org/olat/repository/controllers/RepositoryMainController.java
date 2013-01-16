@@ -71,7 +71,6 @@ import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
@@ -536,8 +535,9 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			if (event.equals(Event.CHANGED_EVENT)) {
 				getWindowControl().pop();
 				removeAsListenerAndDispose(creationWizardController);
-				detailsController.setEntry(chooseStepsController.getCourseRepositoryEntry(), urequest, false);
-				detailsController.doLaunch(urequest);
+				RepositoryEntry re = chooseStepsController.getCourseRepositoryEntry();
+				detailsController.setEntry(re, urequest, false);
+				detailsController.doLaunch(urequest, re);
 			} else if (event.equals(Event.CANCELLED_EVENT)) {
 				// delete entry when the wizard was cancelled
 				detailsController.deleteRepositoryEntry(urequest, getWindowControl(), (RepositoryEntry) chooseStepsController.getCourseRepositoryEntry());
@@ -599,17 +599,19 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			if (event.getCommand().equals(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY)) {
 				// entry has been selected to be launched in the
 				// searchController
-				ToolController toolC = detailsController.setEntry(selectedEntry, urequest, false);
+
 				if (selectedEntry.getCanLaunch()) {
-					if(!detailsController.doLaunch(urequest)) {
+					if(!detailsController.doLaunch(urequest, selectedEntry)) {
 						//cannot launch -> open details
+						ToolController toolC = detailsController.setEntry(selectedEntry, urequest, false);
 						Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 						columnsLayoutCtr.setCol2(toolComp);
 						mainPanel.setContent(detailsController.getInitialComponent());
 					}
 				} else if (selectedEntry.getCanDownload()) {
-					detailsController.doDownload(urequest, false);
+					detailsController.doDownload(urequest, selectedEntry, false);
 				} else { // offer details view
+					ToolController toolC = detailsController.setEntry(selectedEntry, urequest, false);
 					Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 					columnsLayoutCtr.setCol2(toolComp);
 					mainPanel.setContent(detailsController.getInitialComponent());
@@ -625,25 +627,19 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			}
 		} else if (source == detailsController) { // back from details
 			//fxdiff FXOLAT-128: back/resume function
-			if (event.equals(Event.DONE_EVENT) || event.equals(RepositoryDetailsController.LAUNCHED_EVENT)) {
+			if (event.equals(Event.DONE_EVENT)) {
 				if (backtocatalog) {
 					backtocatalog = false;
 					ToolController toolC = catalogCntrllr.createCatalogToolController();
 					Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 					columnsLayoutCtr.setCol2(toolComp);
 					mainPanel.setContent(catalogCntrllr.getInitialComponent());
-					//fxdiff BAKS-7 Resume function
-					if(!event.equals(RepositoryDetailsController.LAUNCHED_EVENT)) {
-						catalogCntrllr.updateHistory(urequest);
-					}
+					catalogCntrllr.updateHistory(urequest);
 				} else {
 					Component toolComp = (mainToolC == null ? null : mainToolC.getInitialComponent());
 					columnsLayoutCtr.setCol2(toolComp);
 					mainPanel.setContent(main);
-					//fxdiff BAKS-7 Resume function
-					if(!event.equals(RepositoryDetailsController.LAUNCHED_EVENT)) {
-						addToHistory(urequest, searchWindowControl);
-					}
+					addToHistory(urequest, searchWindowControl);
 				}
 			} else if (event instanceof EntryChangedEvent) {
 				Component toolComp = (mainToolC == null ? null : mainToolC.getInitialComponent());
