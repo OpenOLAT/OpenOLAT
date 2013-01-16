@@ -45,7 +45,7 @@ import org.olat.core.id.Persistable;
 @Entity(name="imrosterentryview") @Cacheable(false)
 @Table(name="o_im_roster_entry_v")
 @NamedQueries({
-	@NamedQuery(name="loadIMRosterEntryViewByResource", query="select entry from imrosterentryview entry where entry.resourceId=:resid and entry.resourceTypeName=:resname"),
+	@NamedQuery(name="loadIMRosterEntryViewByResource", query="select entry from imrosterentryview entry where entry.resourceId=:resid and entry.resourceTypeName=:resname")
 })
 public class RosterEntryView implements Persistable, CreateInfo {
 
