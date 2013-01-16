@@ -29,6 +29,12 @@
 		<transaction transactionMode="TRANSACTIONAL" />
 	</namedCache>
 	
+	<namedCache name="CalendarManager@calendar">
+		<eviction maxEntries="500" strategy="LRU"/>
+		<expiration maxIdle="900000" wakeUpInterval="5000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
 	<!-- 
 	Hibernate cache
 	 -->

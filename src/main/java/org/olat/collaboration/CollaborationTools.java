@@ -218,7 +218,7 @@ public class CollaborationTools implements Serializable {
 	 * cache for Boolean Objects representing the State
 	 */
 	private final static String KEY_NEWS = "news";
-	private final static String KEY_CALENDAR_ACCESS = "cal";
+	public final static String KEY_CALENDAR_ACCESS = "cal";
 	//fxdiff VCRP-8: collaboration tools folder access control
 	public final static String KEY_FOLDER_ACCESS = "folder";
 
