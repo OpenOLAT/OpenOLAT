@@ -6,7 +6,7 @@
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.user.UserImpl" table="o_user">  
   
-		<cache usage="read-write" />
+		<cache usage="transactional" />
 
     <id name="key" column="user_id" type="long" unsaved-value="null">
       <generator class="hilo"/>

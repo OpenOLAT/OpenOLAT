@@ -5,7 +5,7 @@
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.core.commons.services.commentAndRating.impl.UserRatingImpl" table="o_userrating">
   		
-	<cache usage="read-write" />
+	<cache usage="transactional" />
 
 	<id name="key" type="long" column="rating_id"	unsaved-value="null">
 		<generator class="hilo"/>

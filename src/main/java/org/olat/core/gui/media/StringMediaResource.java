@@ -41,14 +41,12 @@ import org.olat.core.util.StringHelper;
 public class StringMediaResource extends DefaultMediaResource {
 	//default - if no encoding is specified we assume iso latin
 	private String encoding = "iso-8859-1";
-	
 	private String data;
-	
-	//FIXME:fj:c override method getSize()
-	
+
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
 	 */
+	@Override
 	public InputStream getInputStream() {
 		ByteArrayInputStream bis = null;
 		try {
@@ -75,6 +73,12 @@ public class StringMediaResource extends DefaultMediaResource {
 		this.encoding = StringHelper.check4xMacRoman(encoding);
 	}
 	
+	@Override
+	public Long getSize() {
+		return new Long(data.length());
+	}
+
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		// HTTP 1.1
 		hres.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate, proxy-revalidate, s-maxage=0, max-age=0");
@@ -82,5 +86,10 @@ public class StringMediaResource extends DefaultMediaResource {
 		hres.setHeader("Pragma", "no-cache");
 		hres.setDateHeader("Expires", 0);
 		//
+	}
+	
+	@Override
+	public String toString() {
+		return data;
 	}
 }

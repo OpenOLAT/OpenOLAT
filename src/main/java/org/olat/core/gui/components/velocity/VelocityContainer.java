@@ -53,9 +53,6 @@ public class VelocityContainer extends Container {
 	private String page;
 	private Context context = new VelocityContext();
 
-	// access for the renderer only
-	String markingCommandString;
-
 	/**
 	 * Constructor to create a VC container from a given file path
 	 * @param componentName Name of component, displayed in debug mode

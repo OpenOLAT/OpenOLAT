@@ -20,6 +20,7 @@
 
 package org.olat.core.id.context;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,8 +33,9 @@ import java.util.List;
  * Initial Date:  18 jan. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
-public class HistoryPointImpl implements HistoryPoint {
+public class HistoryPointImpl implements HistoryPoint, Serializable {
 
+	private static final long serialVersionUID = -7002881531372365733L;
 	private final String uuid;
 	private final String businessPath;
 	private final List<ContextEntry> entries;

@@ -54,7 +54,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.groupchat.GroupChatManagerController;
+import org.olat.instantMessaging.ui.InstantMessagingMainController;
 
 /**
  * Description:<br>
@@ -68,8 +68,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	
 	private static final String ACTION_LOGOUT = "logout";
 	private VelocityContainer topNavVC;
-	private Controller imController;
-	private GroupChatManagerController groupChatController;
+	private InstantMessagingMainController imController;
 	private SearchController searchC;
 	private Link helpLink, loginLink, impressumLink;
 
@@ -90,13 +89,10 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		boolean isInvitee = ureq.getUserSession().getRoles().isInvitee();
 		
 		// instant messaging area, only when enabled and user is not a guest user
-		if (InstantMessagingModule.isEnabled() && !isGuest && !isInvitee) {
-			imController = InstantMessagingModule.getAdapter().createClientController(ureq, this.getWindowControl());
+		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() && !isGuest && !isInvitee) {
+			imController = new InstantMessagingMainController(ureq, getWindowControl());
 			listenTo(imController);
 			topNavVC.put("imclient", imController.getInitialComponent());
-			groupChatController = InstantMessagingModule.getAdapter().getGroupChatManagerController(ureq);
-			listenTo(groupChatController);
-			topNavVC.put("groupchatcontroller", groupChatController.getGroupChatContainer());
 		}
 		//
 		// the help link

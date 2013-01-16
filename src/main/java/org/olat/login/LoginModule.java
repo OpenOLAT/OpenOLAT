@@ -33,7 +33,7 @@ import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.auth.AuthenticationProvider;
 
@@ -231,7 +231,7 @@ public class LoginModule extends AbstractOLATModule {
 		}
 				
 		// configure timed cache default params: refresh 1 minute, timeout according to configuration
-		failedLoginCache = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(this.getClass(), "blockafterfailedattempts");
+		failedLoginCache = coordinatorManager.getCoordinator().getCacher().getCache(LoginModule.class.getSimpleName(), "blockafterfailedattempts");
 		
 	}
 

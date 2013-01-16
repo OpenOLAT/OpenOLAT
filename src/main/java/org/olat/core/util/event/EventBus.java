@@ -96,7 +96,7 @@ public interface EventBus {
 	 * @return a Set of Identities which had at the very moment controllers which
 	 *         were listening to the OLATResourceable ores
 	 */
-	public abstract Set getListeningIdentityNamesFor(OLATResourceable ores);
+	public abstract Set<String> getListeningIdentityNamesFor(OLATResourceable ores);
 
 	/**
 	 * 

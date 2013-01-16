@@ -74,6 +74,14 @@
 		<mapping-file>org/olat/core/commons/services/tagging/model/TagImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/logging/activity/LoggingObject.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
+		
+		<class>org.olat.group.model.BusinessGroupParticipantViewImpl</class>
+		<class>org.olat.group.model.BusinessGroupOwnerViewImpl</class>
+		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
+		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
+		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>
+		<class>org.olat.instantMessaging.model.RosterEntryView</class>
+		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>

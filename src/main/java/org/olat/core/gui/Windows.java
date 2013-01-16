@@ -26,6 +26,7 @@
 
 package org.olat.core.gui;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -42,18 +43,19 @@ import org.olat.core.util.UserSession;
  * @author Felix Jost
  */
 
-public class Windows implements Disposable {
+public class Windows implements Disposable, Serializable {
 
+	private static final long serialVersionUID = -106724331637750672L;
 	private static final String SESSIONID_NAME_FOR_WINDOWS = Windows.class.getName();
 
-	private FIFOMap<UriPrefixIdPair,Window> windows = new FIFOMap<UriPrefixIdPair,Window>(100); // one user may at most save 100
+	private transient FIFOMap<UriPrefixIdPair,Window> windows = new FIFOMap<UriPrefixIdPair,Window>(100); // one user may at most save 100
 	// windows in a session
 	private int windowId = 1;
-	private WindowManager windowManagerImpl;
+	private transient WindowManager windowManagerImpl;
 	
-	private Map<String, Object> attributes = new HashMap<String, Object>();
+	private transient Map<String, Object> attributes = new HashMap<String, Object>();
 
-	private SlowBandWidthSimulator sbws;
+	private transient SlowBandWidthSimulator sbws;
 	
 	private Windows() {
 		// private constructor

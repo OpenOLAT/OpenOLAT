@@ -36,7 +36,6 @@ import java.util.WeakHashMap;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
@@ -133,7 +132,7 @@ class EventAgency {
 	 * use only for administrative purposes!
 	 * @return a Set of IdentitieNames (Strings) who are registered with this event agency.
 	 */
-	Set getListeningIdentityNames() {
+	Set<String> getListeningIdentityNames() {
 		synchronized (listeners) {//cluster_ok
 			Collection<String> c = listeners.values();
 			Set<String> distinctIds = new HashSet<String>(c);

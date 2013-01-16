@@ -63,6 +63,7 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
@@ -340,12 +341,12 @@ public class UserWebService {
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortrait(@PathParam("identityKey") Long identityKey, @Context Request request) {
 		try {
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
 			if(identity == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			
-			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity);
+			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
 			if(portrait == null || !portrait.exists()) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -378,7 +379,7 @@ public class UserWebService {
 	public Response postPortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		MultipartReader partsReader = null;
 		try {
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
 			if(identity == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -389,7 +390,7 @@ public class UserWebService {
 			}
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
-			DisplayPortraitManager.getInstance().setPortrait(tmpFile, identity);
+			DisplayPortraitManager.getInstance().setPortrait(tmpFile, identity.getName());
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

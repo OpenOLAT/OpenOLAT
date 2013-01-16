@@ -297,14 +297,12 @@ public class TableRenderer implements ComponentRenderer {
 				target.append("<a name=\"b_table\"></a>"); // add once for accessabillitykey
 			}
 			String action = cd.getAction(i);
-			StringOutput so = new StringOutput();
-			cd.renderValue(so, i, renderer);
-			String renderval = so.toString();
-
 			if (action != null) {
-				appendSingleDataRowActionColumn(target, ubu, iframePostEnabled, i, currentPosInModel, j, cd, action, renderval);
+				StringOutput so = new StringOutput(100);
+				cd.renderValue(so, i, renderer);
+				appendSingleDataRowActionColumn(target, ubu, iframePostEnabled, i, currentPosInModel, j, cd, action, so.toString());
 			} else {
-				target.append(renderval);
+				cd.renderValue(target, i, renderer);
 			}
 			target.append("</td>");
 		}

@@ -25,11 +25,14 @@
 */ 
 package org.olat.core.gui.control.winmgr;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -53,6 +56,8 @@ import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.render.intercept.debug.GuiDebugDispatcherController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.ui.I18nUIFactory;
@@ -67,6 +72,8 @@ import org.olat.core.util.i18n.ui.InlineTranslationInterceptHandlerController;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class WindowBackOfficeImpl implements WindowBackOffice {
+	
+	private static final OLog log = Tracing.createLoggerFor(WindowBackOfficeImpl.class);
 
 	private final WindowManagerImpl winmgrImpl;
 	private Window window;
@@ -163,6 +170,16 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 */
 	public void sendCommandTo(Command wco) {
 		ajaxC.sendCommandTo(new WindowCommand(this,wco));
+	}
+	
+	public void pushCommands(Writer w, boolean wrapHTML) {
+		try {
+			ajaxC.pushResource(w, wrapHTML);
+		} catch (IOException e) {
+			log.error("Error pushing commans to the AJAX canal.", e);
+		} finally {
+			IOUtils.closeQuietly(w);
+		}
 	}
 
 	/**

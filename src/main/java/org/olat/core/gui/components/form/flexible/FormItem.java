@@ -312,15 +312,6 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public Component getErrorC();
 
 	/**
-	 * 
-	 * <p>
-	 * This method is used by a form infrastructure provider.
-	 * 
-	 * @return
-	 */
-	public String getErrorText();
-
-	/**
 	 * translated example text, wrapped in component
 	 * <p>
 	 * This method is used by a form infrastructure provider.

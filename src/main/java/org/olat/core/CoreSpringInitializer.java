@@ -19,6 +19,8 @@
  */
 package org.olat.core;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.core.env.PropertySource;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
@@ -32,6 +34,8 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
  *
  */
 public class CoreSpringInitializer implements ApplicationContextInitializer<ConfigurableWebApplicationContext> {
+	
+	private static final OLog log = Tracing.createLoggerFor(CoreSpringInitializer.class);
   
 	public void initialize(ConfigurableWebApplicationContext ctx) {
   	//detect activemq
@@ -42,6 +46,7 @@ public class CoreSpringInitializer implements ApplicationContextInitializer<Conf
 		} catch (ClassNotFoundException e) {
 			jmsProvider = "jndi";
 		}
+  	log.info("Bootstrapping spring startup");
   	PropertySource<String> ps = new OpenOLATProperties(jmsProvider);
     ctx.getEnvironment().getPropertySources().addFirst(ps);
 	}

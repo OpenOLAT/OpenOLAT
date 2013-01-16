@@ -20,7 +20,6 @@
 package org.olat.modules.openmeetings.manager;
 
 import java.io.File;
-import java.io.Serializable;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +42,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -120,7 +119,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
-	private CacheWrapper sessionCache;
+	private CacheWrapper<String,Long> sessionCache;
 	private OpenMeetingsLanguages languagesMapping;
 	
 	@PostConstruct
@@ -131,7 +130,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		languagesMapping = new OpenMeetingsLanguages();
 		languagesMapping.read();
 
-		sessionCache = coordinator.getCoordinator().getCacher().getOrCreateCache(OpenMeetingsManager.class, "session");
+		sessionCache = coordinator.getCoordinator().getCacher().getCache(OpenMeetingsManager.class.getSimpleName(), "session");
 	}
 
 	@Override
@@ -295,7 +294,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private String getPortraitURL(Identity identity) {
-		File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity);
+		File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
 		if(portrait == null || !portrait.exists()) {
 			return "";
 		}
@@ -314,11 +313,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	
 	@Override
 	public Long getIdentityKey(String token) {
-		Serializable obj = sessionCache.get(token);
-		if(obj instanceof Long) {
-			return (Long)obj;
-		}
-		return null;
+		return sessionCache.get(token);
 	}
 	
 	@Override

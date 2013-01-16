@@ -44,6 +44,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.PermissionOnResourceable;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.configuration.Initializable;
@@ -271,7 +272,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		msgProperties.put("locationCSV", registrationModule.getLocationCoordinates());
 		
 		// System config
-		msgProperties.put("instantMessagingEnabled", String.valueOf(InstantMessagingModule.isEnabled()));
+		msgProperties.put("instantMessagingEnabled", String.valueOf(CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()));
 		msgProperties.put("enabledLanguages", I18nModule.getEnabledLanguageKeys().toString());
 		msgProperties.put("clusterEnabled", clusterMode);
 		msgProperties.put("debuggingEnabled", String.valueOf(Settings.isDebuging()));

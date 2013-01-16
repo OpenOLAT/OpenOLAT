@@ -5,7 +5,7 @@
 <hibernate-mapping default-lazy="false">
   
   <class name="org.olat.course.assessment.model.UserEfficiencyStatementImpl" table="o_as_eff_statement">	
-	<cache usage="read-write" />
+	<cache usage="transactional" />
 
 	<id name="key" type="long" column="id"	unsaved-value="null">
 		<generator class="hilo"/>

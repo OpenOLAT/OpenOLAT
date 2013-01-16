@@ -63,9 +63,9 @@ public abstract class AbstractEventBus implements EventBus {
 	/**
 	 * @return the listening names on a resource - only use for admin purposes!
 	 */
-	public Set getListeningIdentityNamesFor(OLATResourceable ores) {
+	public Set<String> getListeningIdentityNamesFor(OLATResourceable ores) {
 		EventAgency ea = getEventAgencyFor(ores);
-		Set s = ea.getListeningIdentityNames();
+		Set<String> s = ea.getListeningIdentityNames();
 		return s;
 	}
 

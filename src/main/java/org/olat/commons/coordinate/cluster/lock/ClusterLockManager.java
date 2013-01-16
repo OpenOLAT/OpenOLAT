@@ -27,7 +27,6 @@ package org.olat.commons.coordinate.cluster.lock;
 import java.util.List;
 
 import org.hibernate.type.StandardBasicTypes;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
@@ -106,15 +105,13 @@ public class ClusterLockManager extends BasicManager {
 	/**
 	 * @param identName the name of the identity to release all locks for (only the non-persistent locks in cluster mode, -not- the persistent locks!)
 	 */
-	public void releaseAllLocksFor(String identName) {
-		Tracing.logInfo("releaseAllLocksFor: "+identName+" START", getClass());
-		Identity ident = BaseSecurityManager.getInstance().findIdentityByName(identName);
-				
+	public void releaseAllLocksFor(Long identityKey) {
+		Tracing.logInfo("releaseAllLocksFor: " + identityKey + " START", getClass());	
 		DBFactory.getInstance().delete("from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch " +
-				"alock.owner as owner where owner.key = ?", ident.getKey(), StandardBasicTypes.LONG);
+				"alock.owner as owner where owner.key = ?", identityKey, StandardBasicTypes.LONG);
 		// cluster:: can we save a query (and is it appropriate considering encapsulation) 
 		// here by saying: alock.owner as owner where owner.name = ? (using identName parameter)
-		Tracing.logInfo("releaseAllLocksFor: "+identName+" END", getClass());
+		Tracing.logInfo("releaseAllLocksFor: "+identityKey+" END", getClass());
 	}
 
 }

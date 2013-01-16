@@ -22,9 +22,7 @@ package org.olat.course.nodes.feed;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -47,14 +45,11 @@ import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalAdministrationSiteUtil;
 import org.olat.util.FunctionalCourseUtil;
 import org.olat.util.FunctionalCourseUtil.BlogEdit;
+import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
-import org.olat.util.FunctionalUtil.OlatSite;
 import org.olat.util.FunctionalUtil.WaitLimitAttribute;
 import org.olat.util.FunctionalVOUtil;
-import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
-import org.olat.util.browser.Browser1;
-import org.olat.util.browser.Browser2;
 import org.olat.util.browser.Student1;
 import org.olat.util.browser.Student2;
 import org.olat.util.browser.Tutor1;
@@ -215,8 +210,8 @@ public class FunctionalBlogTest {
 		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
 		Assert.assertTrue(functionalAdministrationSiteUtil.clearCache(browser,
 				new String[]{
-				"org.olat.core.util.cache.n.impl.svm.SingleVMCacher@org.olat.modules.webFeed.dispatching.Path_feed__0",
-				"org.olat.core.util.cache.n.impl.svm.SingleVMCacher@org.olat.modules.webFeed.managers.FeedManagerImpl_feed__0"
+				"SingleVMCacher@org.olat.modules.webFeed.dispatching.Path_feed__0",
+				"SingleVMCacher@org.olat.modules.webFeed.managers.FeedManagerImpl_feed__0"
 				}
 		));
 

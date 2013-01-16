@@ -68,6 +68,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
@@ -77,6 +78,11 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.main.MemberListTableModel.Cols;
+import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -100,6 +106,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	public static final String TABLE_ACTION_MAIL = "tbl_mail";
 	public static final String TABLE_ACTION_REMOVE = "tbl_remove";
 	public static final String TABLE_ACTION_GRADUATE = "tbl_graduate";
+	public static final String TABLE_ACTION_IM = "tbl_im";
 	
 	protected final TableController memberListCtr;
 	protected final VelocityContainer mainVC;
@@ -123,6 +130,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private final BusinessGroupService businessGroupService;
 	private final BusinessGroupModule groupModule;
 	private final ACService acService;
+	private final InstantMessagingModule imModule;
+	private final InstantMessagingService imService;
+	private final UserSessionManager sessionManager;
 	
 	private static final CourseMembershipComparator MEMBERSHIP_COMPARATOR = new CourseMembershipComparator();
 	
@@ -147,6 +157,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
+		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer(page);
@@ -179,11 +192,14 @@ public abstract class AbstractMemberListController extends BasicController imple
 	}
 	
 	protected void initColumns() {
+		int offset = Cols.values().length;
+		if(imModule.isEnabled() && imModule.isViewOnlineUsersEnabled()) {
+			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.online.i18n(), Cols.online.ordinal(), TABLE_ACTION_IM, getLocale(),
+					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
+		}
 		if(isAdministrativeUser) {
 			memberListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.username.i18n(), Cols.username.ordinal(), null, getLocale()));
 		}
-		
-		int offset = Cols.values().length;
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
@@ -240,6 +256,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 					confirmDelete(ureq, Collections.singletonList(member));
 				} else if(TABLE_ACTION_GRADUATE.equals(actionid)) {
 					doGraduate(ureq, Collections.singletonList(member));
+				} else if(TABLE_ACTION_IM.equals(actionid)) {
+					doIm(ureq, member);
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
@@ -350,6 +368,17 @@ public abstract class AbstractMemberListController extends BasicController imple
 				true, translate("edit.member"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	/**
+	 * Open private chat
+	 * @param ureq
+	 * @param member
+	 */
+	protected void doIm(UserRequest ureq, MemberView member) {
+		Buddy buddy = imService.getBuddyById(member.getIdentityKey());
+		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	
 	protected void doConfirmChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, List<Identity> members) {
@@ -562,8 +591,16 @@ public abstract class AbstractMemberListController extends BasicController imple
 			}
 		}
 		
+		Long me = getIdentity().getKey();
 		for(Identity identity:identities) {
 			MemberView member = new MemberView(identity);
+			if(identity.getKey().equals(me)) {
+				member.setOnlineStatus("me");
+			} else if(sessionManager.isOnline(identity.getKey())) {
+				member.setOnlineStatus(Presence.available.name());
+			} else {
+				member.setOnlineStatus(Presence.unavailable.name());
+			}
 			memberList.add(member);
 			keyToMemberMap.put(identity.getKey(), member);
 		}

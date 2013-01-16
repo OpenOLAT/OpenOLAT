@@ -26,6 +26,8 @@
 
 package org.olat.core.gui.control.winmgr;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -158,17 +160,16 @@ public class AjaxController extends DefaultController {
 				smr.setEncoding("utf-8");
 				try {
 					
-					StringOutput slink = new StringOutput();
+					StringOutput slink = new StringOutput(50);
 					StaticMediaDispatcher.renderStaticURI(slink, null);
 					//slink now holds static url base like /olat/raw/700/
 					
 					URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherAction.PATH_AUTHENTICATED, "1", "1", null);
-					StringOutput blink = new StringOutput();
+					StringOutput blink = new StringOutput(50);
 					ubu.buildURI(blink, null, null);
 					//blink holds the link back to olat like /olat/auth/1%3A1%3A0%3A0%3A0/
 		
 					String p = FileUtils.load(getClass().getResourceAsStream("_content/standby.html"), WebappHelper.getDefaultCharset());
-
 					p = p.replace("_staticLink_",	slink.toString());
 					p = p.replace("_pageTitle_",	t.translate("standby.page.title"));
 					p = p.replace("_pageHeading_",	t.translate("standby.page.heading"));
@@ -200,16 +201,78 @@ public class AjaxController extends DefaultController {
 	public void setHighLightingEnabled(boolean enabled) {
 		myContent.contextPut("highlight", Boolean.valueOf(enabled));
 	}
+	
+	public void pushResource(Writer sb, boolean wrapHTML) throws IOException {
+		if (wrapHTML) {
+			// most ajax responses are a lot smaller than 16k
+			sb.append("<html><head><script type=\"text/javascript\">\n/* <![CDATA[ */\nfunction invoke(){var r=");
+			pushJSONAndClear(sb);
+			sb.append("; ") 
+				.append("if (parent!=self&&parent.window.o_info){")
+				.append("parent.window.o_ainvoke(r);")
+					// normal case: ajax result can be delivered into the hidden iframe.
+					// else: no parent frame or parent frame is not olat -> reasons:
+					// a) mouse-right-click to open in new tab/window
+					// b) fast double-click when target causes a 302 and browser's window's document has been updated, but old link was still clickable
+					// c) ...
+					// -> in all cases, do not show the json command, but reload the window which contained the link clicked (= window id of url)
+					
+				.append("} else {") 
+					// inform user that ajax-request cannot be opened in a new window,
+					// todo felix: maybe send back request to bookmark-launch current url? -> new window?
+					// we could then come near to what the user probably wanted when he/she opened a link in a new window
+				.append("this.document.location=\"")
+				.append(StaticMediaDispatcher.createStaticURIFor("msg/json/en/info.html"))
+				.append("\";")
+					//.append("window.open(self.location+\"?o_win_jsontop=1\"); this.close();")
+					//.append("this.document.location=self.location+\"?o_win_jsontop=1\";")
+				.append("}}\n/* ]]> */\n</script></head><body onLoad=\"invoke()\"></body></html>");
+		} else {
+			pushJSONAndClear(sb);
+		}
+	}
+	
+	private void pushJSONAndClear(Writer writer) throws IOException {
+		synchronized (windowcommands) { //o_clusterOK by:fj
+			// handle all windowcommands now, create json
+			writer.append("{\"cmds\":[");
+			int sum = windowcommands.size();
+			if (sum > 0) {
+				// treat commands waiting for the poll
+				for (int i = 0; i < sum; i++) {
+					if(i != 0) writer.append(",");
+					WindowCommand wc = windowcommands.get(i);
+					pushJSON(wc, writer);
+				}
+			}
+			writer.append("],\"cmdcnt\":").append(Integer.toString(sum)).append("}");
+			windowcommands.clear();
+		}
+	}
+	
+	private void pushJSON(WindowCommand wc, Writer writer) throws IOException {
+		Command c = wc.getCommand();
+		String winId = wc.getWindowBackOffice().getWindow().getDispatchID();
+		try {
+			writer.append("{\"w\":\"").append(winId)
+			      .append("\",\"cmd\":").append(Integer.toString(c.getCommand()))
+			      .append(",\"cda\":");
+			c.getSubJSON().write(writer);	
+			writer.append("}");
+		} catch (JSONException e) {
+			throw new AssertException("json exception:", e);
+		}
+	}
 
 	public MediaResource extractMediaResource(boolean wrapHTML) {
-		JSONObject json = getAndClearJSON();
+		JSONObject json = getAndClearJSON(true);
 		String res;
 		String jsonText = json.toString();
 		//System.out.println("jsontext:"+jsonText);
 		if (wrapHTML) {
 			// most ajax responses are a lot smaller than 16k
-			StringBuffer sb = new StringBuffer(16384);
-			sb.append("<html><head><script type=\"text/javascript\">\n/* <![CDATA[ */\nfunction invoke(){var r=")
+			StringBuilder sb = new StringBuilder(16384);
+			sb.append("<html><head><script type=\"text/javascript\">\n/* <![CDATA[ *//*\nfunction invoke(){var r=")
 				.append(jsonText).append("; ") 
 				.append("if (parent!=self&&parent.window.o_info){")
 				.append("parent.window.o_ainvoke(r);")
@@ -230,7 +293,7 @@ public class AjaxController extends DefaultController {
 					//.append("window.open(self.location+\"?o_win_jsontop=1\"); this.close();")
 					//.append("this.document.location=self.location+\"?o_win_jsontop=1\";")
 				.append("}}")
-				.append("\n/* ]]> */\n</script></head><body onLoad=\"invoke()\">");
+				.append("\n/* ]]> *//*\n</script></head><body onLoad=\"invoke()\">");
 					if (showJSON) {
 						try {
 							sb.append("<pre style=\"font-size:12px;\">len:").append(jsonText.length()).append(":\n").append(StringEscapeUtils.escapeHtml(json.toString(2))).append("</pre>");
@@ -271,9 +334,8 @@ public class AjaxController extends DefaultController {
 	 * @param moreCmds a List of WindowCommand objects
 	 * @return
 	 */
-	private JSONObject getAndClearJSON() {
+	private JSONObject getAndClearJSON(boolean clear) {
 		JSONObject root = new JSONObject();
-		
 
 		try {
 			if (Settings.isDebuging()) {
@@ -293,7 +355,9 @@ public class AjaxController extends DefaultController {
 						JSONObject jo = createJSON(wc);
 						ja.put(jo);
 					}
-					windowcommands.clear();
+					if(clear) {
+						windowcommands.clear();
+					}
 				}
 				
 			}

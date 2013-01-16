@@ -202,6 +202,9 @@ public interface BaseSecurity {
 	 */
 	public Identity loadIdentityByKey(Long identityKey);
 	
+
+	public IdentityShort loadIdentityShortByKey(Long identityKey);
+	
 	/**
 	 * Load a list of identities by their keys.
 	 * 
@@ -210,7 +213,12 @@ public interface BaseSecurity {
 	 */
 	public List<Identity> loadIdentityByKeys(Collection<Long> identityKeys);
 	
-	public IdentityShort loadIdentityShortByKey(Long identityKey);
+	/**
+	 * Load a list of identities (short) by their keys
+	 * @param identityKeys
+	 * @return
+	 */
+	public List<IdentityShort> loadIdentityShortByKeys(Collection<Long> identityKeys);
 	
 	/**
 	 * find an identity by the key or return null if no identity found

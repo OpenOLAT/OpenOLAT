@@ -206,7 +206,7 @@ class SpecialPrefsForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		// OLAT-6429 don't change another users GUI prefs when he is logged in 
 		if (!ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
-			if (sessionManager.isSignedOnIdentity(tobeChangedIdentity.getName())) {
+			if (sessionManager.isSignedOnIdentity(tobeChangedIdentity.getKey())) {
 				showError("error.user.logged.in", tobeChangedIdentity.getName());
 				prefsElement.reset();
 				return;

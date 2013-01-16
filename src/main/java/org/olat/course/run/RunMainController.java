@@ -117,7 +117,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.groupchat.GroupChatManagerController;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.note.NoteController;
 import org.olat.repository.RepositoryEntry;
@@ -142,7 +143,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private static final String ACTION_CALENDAR = "cal";
 	private static final String ACTION_BOOKMARK = "bm";
+	private static final String ACTION_CHAT = "chat";
 	private static final String TOOL_BOOKMARK = "b";
+	private static final String TOOL_CHAT = "chat";
 	
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
 	private final OLATResourceable courseRunOres; //course run ores for course run channel 
@@ -156,7 +159,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private NavigationHandler navHandler;
 	private UserCourseEnvironment uce;
 	private LayoutMain3ColsController columnLayoutCtr;
-	private GroupChatManagerController courseChatManagerCtr;
 
 	private Controller currentToolCtr;
 	private ToolController toolC;
@@ -260,18 +262,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (courseRepositoryEntry != null && RepositoryManager.getInstance().createRepositoryEntryStatus(courseRepositoryEntry.getStatusCode()).isClosed()) {
 			wControl.setWarning(translate("course.closed"));
 		}
-		
-		// instant messaging: send presence like "reading course: Biology I" as
-		// awareness info. Important: do this before initializing the toolbox
-		// controller!
-		if (InstantMessagingModule.isEnabled() && CourseModule.isCourseChatEnabled() && !isGuest) {
-			String intro = translate("course.presence.message.enter") + " " + getExtendedCourseTitle(ureq.getLocale());
-			InstantMessagingModule.getAdapter().sendStatus(identity.getName(), intro);
-			if (course.getCourseEnvironment().getCourseConfig().isChatEnabled()) {
-				// create groupchat room link only if course chat is enabled
-				createCourseGroupChatLink(ureq);
-			}
-		}
 
 		// add text marker wrapper controller to implement course glossary
 		// textMarkerCtr must be created before the toolC!
@@ -361,19 +351,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		return oLATResourceable;
 	}
 
-	
-	/**
-	 * @param ureq
-	 */
-	private void createCourseGroupChatLink(UserRequest ureq) {
-		
-		courseChatManagerCtr = InstantMessagingModule.getAdapter().getGroupChatManagerController(ureq);
-		if (courseChatManagerCtr != null) {
-			courseChatManagerCtr.createGroupChat(ureq, getWindowControl(), course, getExtendedCourseTitle(ureq.getLocale()), true, true);
-			listenTo(courseChatManagerCtr);
-		}
-	}
-
 	/**
 	 * @param locale
 	 * @return
@@ -451,8 +428,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		String selNodeId = nclr.getSelectedNodeId();
 		luTree.setSelectedNodeId(selNodeId);
 		luTree.setOpenNodeIds(nclr.getOpenNodeIds());
-		CourseNode courseNode = nclr.getCalledCourseNode();
-		updateState(courseNode);
 
 		// get new run controller.
 		currentNodeController = nclr.getRunController();
@@ -472,12 +447,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// enableCustomCourseCSS(ureq);
 		
 		return true;
-	}
-
-	private void updateState(CourseNode courseNode) {
-		// TODO: fj : describe when the course node can be null
-		if (courseNode == null) return;
-		
 	}
 
 	/**
@@ -529,7 +498,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				luTree.setSelectedNodeId(nodeId);
 				luTree.setOpenNodeIds(nclr.getOpenNodeIds());
 				currentCourseNode = nclr.getCalledCourseNode();
-				updateState(currentCourseNode);
 
 				// get new run controller. Dispose only if not already disposed in navHandler.evaluateJumpToTreeNode()
 				if (currentNodeController != null && !currentNodeController.isDisposed()) currentNodeController.dispose();
@@ -728,7 +696,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				listenTo(currentToolCtr);
 				all.pushController(translate("command.openstatistic"), currentToolCtr);
 			} else throw new OLATSecurityException("clicked statistic, but no according right");
-		//fxdiff: open a panel to manage the course dbs
+		} else if (cmd.equals(TOOL_CHAT)) {
+			boolean vip = isCourseCoach || isCourseAdmin;
+			OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle, vip);
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 		} else if (cmd.equals("customDb")) {
 			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
 				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
@@ -1126,17 +1097,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		
 		//add group chat to toolbox
-		boolean instantMsgYes = InstantMessagingModule.isEnabled();
-		boolean chatIsEnabled = CourseModule.isCourseChatEnabled() &&  cc.isChatEnabled();
-		if (instantMsgYes && chatIsEnabled && !isGuest) {
-			// we add the course chat link controller to the toolbox
-			if (courseChatManagerCtr == null && ureq != null) createCourseGroupChatLink(ureq);
-			if (courseChatManagerCtr != null){
-				Controller groupChatController = courseChatManagerCtr.getGroupChatController(course);
-				if(groupChatController !=null){
-					myTool.addComponent(groupChatController.getInitialComponent());
-				}
-			}
+		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+		boolean chatIsEnabled = !isGuest && imModule.isEnabled() && imModule.isCourseEnabled()
+				&& CourseModule.isCourseChatEnabled() && cc.isChatEnabled();
+		if(chatIsEnabled) {
+			myTool.addLink(ACTION_CHAT, translate("command.coursechat"), TOOL_CHAT, null);
 		}
 		
 		if (CourseModule.displayParticipantsCount() && !isGuest) {
@@ -1225,15 +1190,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			currentNodeController = null;
 		}
 
-		// instant messaging: send presence like "leaving course: Biology I" as
-		// awareness info.
-		if (InstantMessagingModule.isEnabled()&& CourseModule.isCourseChatEnabled() && !isGuest) {
-			if (courseChatManagerCtr != null) {
-				courseChatManagerCtr.removeChat(course);
-			}
-			String intro = translate("course.presence.message.leave") + " " + getExtendedCourseTitle(getLocale());
-			InstantMessagingModule.getAdapter().sendStatus(getIdentity().getName(), intro);
-		}
 		// log to Statistical and User log
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_LEAVING, getClass());
 		

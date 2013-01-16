@@ -1,0 +1,19 @@
+<org.olat.core.id.context.HistoryPointImpl>
+  <uuid>2</uuid>
+  <businessPath>[RepositorySite:0][search.my:0]</businessPath>
+  <entries>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.core.util.resource.OresHelper$1">
+        <val_-type>RepositorySite</val_-type>
+        <val_-key>0</val_-key>
+      </olatResourceable>
+      <state class="org.olat.core.id.context.StateSite"/>
+    </org.olat.core.id.context.MyContextEntry>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.core.util.resource.OresHelper$1">
+        <val_-type>search.my</val_-type>
+        <val_-key>0</val_-key>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+  </entries>
+</org.olat.core.id.context.HistoryPointImpl>

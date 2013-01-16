@@ -29,7 +29,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.SyncHelper;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -125,13 +125,13 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 				isanonymous.add(identityKey);
 			} else {
 				// check if already in group
-				boolean inGroup = SyncHelper.containsPersistable(existIdents, ident);
+				boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
 				if (inGroup) {
 					// added to warning: already in group
 					alreadyin.add(ident.getName());
 				} else {
 					// ok to add -> preview (but filter duplicate entries)
-					if (!SyncHelper.containsPersistable(oks, ident)) {
+					if (!PersistenceHelper.containsPersistable(oks, ident)) {
 						oks.add(ident);
 					}
 				}
@@ -162,13 +162,13 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 					isanonymous.add(username);
 				} else {
 					// check if already in group
-					boolean inGroup = SyncHelper.containsPersistable(existIdents, ident);
+					boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
 					if (inGroup) {
 						// added to warning: already in group
 						alreadyin.add(ident.getName());
 					} else {
 						// ok to add -> preview (but filter duplicate entries)
-						if (!SyncHelper.containsPersistable(oks, ident)) {
+						if (!PersistenceHelper.containsPersistable(oks, ident)) {
 							oks.add(ident);
 						}
 					}

@@ -28,6 +28,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.resource.Resourceable;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
@@ -51,10 +52,14 @@ public class HistoryManager extends BasicManager {
 		//xstream config
 		historyReadStream.omitField(BusinessGroup.class, "groupContext");
 		historyReadStream.omitField(BusinessGroupImpl.class, "groupContext");
-
+		historyReadStream.alias("org.olat.core.util.resource.OresHelper$1", Resourceable.class);
+		historyReadStream.aliasAttribute(Resourceable.class, "resourceableTypeName", "val_-type");
+		historyReadStream.aliasAttribute(Resourceable.class, "resourceableTypeName", "val$type");
+		historyReadStream.aliasAttribute(Resourceable.class, "resourceableId", "val_-key");
+		historyReadStream.aliasAttribute(Resourceable.class, "resourceableId", "val$key");
 	}
 	
-	private HistoryManager() {
+	public HistoryManager() {
 		THIS = this;
 	}
 	

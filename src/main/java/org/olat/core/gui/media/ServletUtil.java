@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,8 +42,10 @@ import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.Windows;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
@@ -174,7 +178,7 @@ public class ServletUtil {
 					}
 					// buffer input stream
 					bis = new BufferedInputStream(in);
-					FileUtils.copy(bis, out);
+					IOUtils.copy(bis, out);
 				}
 				
 				if (debug) {
@@ -405,15 +409,7 @@ public class ServletUtil {
 	 * @param result
 	 */
 	public static void serveStringResource(HttpServletRequest httpReq, HttpServletResponse response, String result) {
-		// we ignore the accept-charset from the request and always write in utf-8
-		// -> see comment below
-		response.setContentType("text/html;charset=utf-8");
-		// never allow to cache pages since they contain a timestamp valid only once
-		// HTTP 1.1
-		response.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate, proxy-revalidate, s-maxage=0, max-age=0");
-		// HTTP 1.0
-		response.setHeader("Pragma", "no-cache");
-		response.setDateHeader("Expires", 0);
+		setStringResourceHeaders(response);
 
 		// log the response headers prior to sending the output
 		boolean isDebug = log.isDebug();
@@ -466,6 +462,53 @@ public class ServletUtil {
 				log.warn("client browser abort when serving inline", e);
 			}
 		}
+	}
+
+	public static void serveStringResource(HttpServletRequest httpReq, HttpServletResponse response, StringOutput result) {
+		setStringResourceHeaders(response);
+		// log the response headers prior to sending the output
+		boolean isDebug = log.isDebug();
+		if (isDebug) {
+			log.debug("\nResponse headers (some)\ncontent type:" + response.getContentType() + "\ncharacterencoding:"
+					+ response.getCharacterEncoding() + "\nlocale:" + response.getLocale());
+		}
+
+		try {
+			long rstart = 0;
+			if (isDebug || true) {
+				rstart = System.currentTimeMillis();
+			}
+			// make a ByteArrayOutputStream to be able to determine the length.
+			// buffer size: assume average length of a char in bytes is max 2
+			int encLen = result.length();
+			Reader reader = result.getReader();
+			response.setContentLength(encLen);
+			
+			PrintWriter os = response.getWriter();
+			IOUtils.copy(reader, os);
+			os.close();
+			
+			if (isDebug) {
+				log.debug("time to serve inline-resource " + result.length() + " chars / " + encLen + " bytes: " 
+					+ (System.currentTimeMillis() - rstart));
+			}
+		} catch (IOException e) {
+			if (isDebug) {
+				log.warn("client browser abort when serving inline", e);
+			}
+		}
+	}
+	
+	public static void setStringResourceHeaders(HttpServletResponse response) {
+		// we ignore the accept-charset from the request and always write in utf-8
+		// -> see comment below
+		response.setContentType("text/html;charset=utf-8");
+		// never allow to cache pages since they contain a timestamp valid only once
+		// HTTP 1.1
+		response.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate, proxy-revalidate, s-maxage=0, max-age=0");
+		// HTTP 1.0
+		response.setHeader("Pragma", "no-cache");
+		response.setDateHeader("Expires", 0);
 	}
 	
 	//fxdiff FXOLAT-118: accept range to deliver videos for iPad

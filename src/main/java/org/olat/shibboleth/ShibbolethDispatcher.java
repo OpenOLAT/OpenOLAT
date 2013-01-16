@@ -43,6 +43,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -108,7 +109,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for 
-			ureq = new UserRequest(uriPrefix, req, resp);
+			ureq = new UserRequestImpl(uriPrefix, req, resp);
 		}catch(NumberFormatException nfe){
 			//MODE could not be decoded
 			//typically if robots with wrong urls hit the system
@@ -231,7 +232,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 	 * @param resp
 	 */
 	private void handleException(Throwable e, HttpServletRequest req, HttpServletResponse resp, Translator translator) {
-		UserRequest ureq = new UserRequest(ShibbolethDispatcher.PATH_SHIBBOLETH, req, resp);
+		UserRequest ureq = new UserRequestImpl(ShibbolethDispatcher.PATH_SHIBBOLETH, req, resp);
 		if(e instanceof ShibbolethException) {			
 			String userMsg = "";
 			int errorCode = ((ShibbolethException)e).getErrorCode();

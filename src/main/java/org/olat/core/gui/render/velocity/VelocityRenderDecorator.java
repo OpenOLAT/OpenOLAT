@@ -53,14 +53,16 @@ public class VelocityRenderDecorator {
 	private final VelocityContainer vc;
 	private final Renderer renderer;
 	private final boolean isIframePostEnabled;
+	private final StringOutput target;
 
 	/**
 	 * @param renderer
 	 * @param vc
 	 */
-	public VelocityRenderDecorator(Renderer renderer, VelocityContainer vc) {
+	public VelocityRenderDecorator(Renderer renderer, VelocityContainer vc, StringOutput target) {
 		this.renderer = renderer;
 		this.vc = vc;
+		this.target = target;
 		this.isIframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 	}
 
@@ -532,21 +534,27 @@ public class VelocityRenderDecorator {
 		StringOutput sb;
 		if (source == null) {
 			sb = new StringOutput(1);
+		} else if (target == null) {
+			sb = new StringOutput(10000);
+			renderer.render(source, sb, null);
 		} else {
-			sb = renderer.render(source);
+			renderer.render(source, target, null);
 		}
-		return sb;
+		return new StringOutput(1);
 	}
 	
-
 	private StringOutput doRender(String componentName, String[] args) {
 		Component source = renderer.findComponent(componentName);
 		StringOutput sb;
 		if (source == null) {
-			sb = new StringOutput(1);
+			sb = new StringOutput(128);
 			sb.append(">>>>>>>>>>>>>>>>>>>>>>>>>> component " + componentName + " could not be found to be rendered!");
+		} else if (target == null) {
+			sb = new StringOutput(10000);
+			renderer.render(source, sb, args);
 		} else {
-			sb = renderer.render(source, args);
+			sb = new StringOutput(1);
+			renderer.render(source, target, args);
 		}
 		return sb;
 	}

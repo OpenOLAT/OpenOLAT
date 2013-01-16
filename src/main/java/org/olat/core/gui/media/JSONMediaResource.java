@@ -21,10 +21,14 @@ package org.olat.core.gui.media;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -47,6 +51,25 @@ public class JSONMediaResource extends DefaultMediaResource {
 		this.encoding = encoding;
 		this.setContentType("application/json; charset=" + encoding);
 	}
+	
+	
+
+	@Override
+	public void prepare(HttpServletResponse hres) {
+		super.prepare(hres);
+		
+		try {
+			json.write(hres.getWriter());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
@@ -63,7 +86,7 @@ public class JSONMediaResource extends DefaultMediaResource {
 				// iso-8859-1 must be supported on the platform
 			}
 		}
-		return new BufferedInputStream(bis);
+		return null;
 		// nputStream sis = new
 		// ByteArrayInputStream(json.toString().getBytes());
 		// return sis;

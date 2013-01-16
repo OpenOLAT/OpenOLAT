@@ -37,7 +37,7 @@ public class SignOnOffEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = 5721212429245547948L;
 	
-	private String identityName;
+	private Long identityKey;
 	private boolean signOn;
 	/**
 	 * @param ident
@@ -45,15 +45,15 @@ public class SignOnOffEvent extends MultiUserEvent {
 	 */
 	public SignOnOffEvent(Identity ident, boolean signOn) {
 		super("signonoroff");
-		this.identityName = ident.getName();
+		this.identityKey = ident.getKey();
 		this.signOn = signOn;
 	}
 
 	/**
 	 * @return Returns the unique name of the ident. (aka login)
 	 */
-	public String getIdentityName() {
-		return identityName;
+	public Long getIdentityKey() {
+		return identityKey;
 	}
 	/**
 	 * @return Returns the signOn.

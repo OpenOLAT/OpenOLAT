@@ -137,7 +137,7 @@ public class FormJSHelper {
 	}
 	
 	public static String getJSStartWithVarDeclaration(String id){
-		StringBuffer sb = new StringBuffer(120);
+		StringBuilder sb = new StringBuilder(120);
 		sb.append(" <script type=\"text/javascript\">\n /* <![CDATA[ */ \n");
 		// Execute code within an anonymous function (closure) to not leak
 		// variables to global scope (OLAT-5755)

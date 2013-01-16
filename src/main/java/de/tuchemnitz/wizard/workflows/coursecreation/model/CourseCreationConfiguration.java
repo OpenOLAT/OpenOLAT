@@ -42,6 +42,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
@@ -360,10 +361,11 @@ public class CourseCreationConfiguration {
 		
 		Context context = vc.getContext();
 		Renderer fr = Renderer.getInstance(vc, translator, null, new RenderResult(), globalSettings);
-		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc);			
+		StringOutput wOut = new StringOutput(10000);
+		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc, wOut);			
 		context.put("r", vrdec);
-		String bodyMarkup = VelocityHelper.getInstance().mergeContent(vc.getPage(), context, null);
-		return WysiwygFactory.createXHtmlFileContent(bodyMarkup, courseTitle);
+		VelocityHelper.getInstance().mergeContent(vc.getPage(), context, wOut, null);
+		return WysiwygFactory.createXHtmlFileContent(wOut.toString(), courseTitle);
 	}
 	
 	private static class EmptyAJAXFlags extends AJAXFlags {

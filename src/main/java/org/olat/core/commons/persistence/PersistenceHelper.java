@@ -109,7 +109,6 @@ public class PersistenceHelper {
 
 	/**
 	 * 
-	 * FIXME:fj:c cleanup up these methods here and class SyncHelper
 	 * Checks if the given persistable is in the given iterator (database identity). 
 	 * If so, the persistable from the iterator is returned. If not, null is returned. 
 	 * @param iter Iterator of persistable objects
@@ -117,10 +116,9 @@ public class PersistenceHelper {
 	 * @return null if not found or the persistable object that has the same key as the given 
 	 * persistable object. The object might also have object identity, but this is not guaranteed. 
 	 */
-	// TODO:cg: not used => Remove it, ask fj
-	public static Persistable getPersistableByPersistableKey(Iterator iter, Persistable persistable) {
+	public static Persistable getPersistableByPersistableKey(Iterator<? extends Persistable> iter, Persistable persistable) {
 		while (iter.hasNext()) {
-			Persistable persistableFromIterator = (Persistable) iter.next();
+			Persistable persistableFromIterator = iter.next();
 			if (persistable.equalsByPersistableKey(persistableFromIterator)) 
 				return persistableFromIterator;
 		}
@@ -136,7 +134,7 @@ public class PersistenceHelper {
 	 * @param persistable Persistable object
 	 * @return boolean
 	 */
-	public static boolean listContainsObjectByKey(List objects, Persistable persistable) {
+	public static boolean listContainsObjectByKey(List<? extends Persistable> objects, Persistable persistable) {
 		return listContainsObjectByKey(objects, persistable.getKey());
 	}
 
@@ -147,10 +145,10 @@ public class PersistenceHelper {
 	 * @param persistable Persistable object
 	 * @return boolean
 	 */
-	public static boolean listContainsObjectByKey(List objects, Long key) {
-		for (Iterator iter = objects.iterator(); iter.hasNext();) {
+	public static boolean listContainsObjectByKey(List<? extends Persistable> objects, Long key) {
+		for (Iterator<? extends Persistable> iter = objects.iterator(); iter.hasNext();) {
 			try {
-				Persistable listObject = (Persistable) iter.next();
+				Persistable listObject = iter.next();
 				if (listObject.getKey().equals(key))  {
 					return true;
 				}
@@ -168,7 +166,7 @@ public class PersistenceHelper {
 	 * @param persistable
 	 * @return int position of object in list
 	 */
-	public static int indexOf(List objects, Persistable persistable){
+	public static int indexOf(List<? extends Persistable> objects, Persistable persistable){
 		return indexOf(objects, persistable.getKey());
 	}
 	
@@ -179,10 +177,10 @@ public class PersistenceHelper {
 	 * @param key
 	 * @return int position of object in list
 	 */
-	public static int indexOf(List objects, Long key) {
-		for (Iterator iter = objects.iterator(); iter.hasNext();) {
+	public static int indexOf(List<? extends Persistable> objects, Long key) {
+		for (Iterator<? extends Persistable> iter = objects.iterator(); iter.hasNext();) {
 			try {
-				Persistable listObject = (Persistable) iter.next();
+				Persistable listObject = iter.next();
 				if (listObject.getKey().equals(key))  {
 					return objects.indexOf(listObject);
 				}
@@ -200,7 +198,7 @@ public class PersistenceHelper {
 	 * replace value
 	 * @return boolean true: object replaced; false: object was not found in list
 	 */
-	public static boolean replaceObjectInListByKey(List objects, Persistable toBeReplacedObject) {
+	public static boolean replaceObjectInListByKey(List<Persistable> objects, Persistable toBeReplacedObject) {
 		int i = indexOf(objects, toBeReplacedObject);
 		// return false when object was not found in list
 		if (i < 0) return false;
@@ -220,14 +218,14 @@ public class PersistenceHelper {
 	 * After calling this operation the originalList will contain less or the same amount of
 	 * objects
 	 */
-	public static int removeObjectsFromList(List originalList, List toBeRemovedObjects) {	
+	public static int removeObjectsFromList(List<? extends Persistable> originalList, List<? extends Persistable> toBeRemovedObjects) {	
 		int counter = 0;
-		Iterator removeIter = toBeRemovedObjects.iterator();
+		Iterator<? extends Persistable> removeIter = toBeRemovedObjects.iterator();
 		while (removeIter.hasNext()) {
-			Persistable toBeRemoved = (Persistable) removeIter.next();
-			Iterator originalIter = originalList.iterator();
+			Persistable toBeRemoved = removeIter.next();
+			Iterator<? extends Persistable> originalIter = originalList.iterator();
 			while (originalIter.hasNext()) {
-				Persistable fromOriginal = (Persistable) originalIter.next();
+				Persistable fromOriginal = originalIter.next();
 				if (fromOriginal.getKey().equals(toBeRemoved.getKey())) {
 					originalList.remove(fromOriginal);
 					counter++;
@@ -236,6 +234,33 @@ public class PersistenceHelper {
 			}
 		}
 		return counter;
+	}
+	
+	public static Persistable findInListByKey(List<? extends Persistable> persistables, Persistable persistable) {
+		Long key = persistable.getKey();
+		for (Iterator<? extends Persistable> iter = persistables.iterator(); iter.hasNext();) {
+			Persistable ppit  = iter.next();
+			if (ppit.getKey().equals(key)) {
+				return ppit;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * @param listOfPersistables
+	 * @param persistable
+	 * @return True if listOfPersistable contains persistable
+	 */
+	public static boolean containsPersistable(List<? extends Persistable> listOfPersistables, Persistable persistable) {
+		Long key = persistable.getKey();
+		for (Iterator<? extends Persistable> iter = listOfPersistables.iterator(); iter.hasNext();) {
+			Persistable entry = iter.next();
+			if (entry.getKey().equals(key)) {
+				return true;
+			} 
+		}
+		return false;
 	}
 	
 	/**

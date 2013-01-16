@@ -77,7 +77,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -119,6 +119,8 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.group.BusinessGroup;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
@@ -162,7 +164,7 @@ public class CourseFactory extends BasicManager {
 	 */
 	private CourseFactory(CoordinatorManager coordinatorManager, RepositoryManager repositoryManager, OLATResourceManager olatResourceManager, 
 			BaseSecurity securityManager, ReferenceManager referenceManager, GlossaryManager glossaryManager) {
-		loadedCourses = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(CourseFactory.class, "courses");
+		loadedCourses = coordinatorManager.getCoordinator().getCacher().getCache(CourseFactory.class.getSimpleName(), "courses");
 		CourseFactory.repositoryManager = repositoryManager;
 		CourseFactory.olatResourceManager = olatResourceManager;
 		CourseFactory.securityManager = securityManager;
@@ -396,6 +398,8 @@ public class CourseFactory extends BasicManager {
 		// delete course calendar
 		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		calManager.deleteCourseCalendar(res);
+		// delete IM messages
+		CoreSpringFactory.getImpl(InstantMessagingService.class).deleteMessages(res);
 
 		// cleanup cache
 		removeFromCache(res.getResourceableId());
@@ -880,6 +884,9 @@ public class CourseFactory extends BasicManager {
 		}, course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, charset, null, null);
 
 		PersistingCourseGroupManager.getInstance(course).archiveCourseGroups(exportDirectory);
+		
+		CoreSpringFactory.getImpl(ChatLogHelper.class).archive(course, exportDirectory);
+		
 	}
 
 	/**

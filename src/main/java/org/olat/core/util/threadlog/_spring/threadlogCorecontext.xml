@@ -4,12 +4,12 @@
 	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
   http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  http://www.springframework.org/schema/context/spring-context-3.1.xsd">
   
-<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
-<context:annotation-config />
+	<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" system-properties-mode="OVERRIDE"/>
+	<context:annotation-config />
 
 <!-- Configuration note: Make sure this Spring file is loaded at the earliest point possible to be sure
                          to catch as many Loggers as possible.

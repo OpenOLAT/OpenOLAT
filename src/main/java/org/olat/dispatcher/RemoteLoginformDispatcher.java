@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
@@ -101,7 +102,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 		UserRequest ureq = null;
 
 		try {
-			ureq = new UserRequest(uriPrefix, request, response);
+			ureq = new UserRequestImpl(uriPrefix, request, response);
 				
 			if (! request.getMethod().equals(METHOD_POST)) {
 				log.warn("Wrong HTTP method, only POST allowed, but current method::" + request.getMethod());

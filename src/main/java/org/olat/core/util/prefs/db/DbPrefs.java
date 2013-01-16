@@ -28,6 +28,7 @@
 */
 package org.olat.core.util.prefs.db;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,8 +47,10 @@ import org.olat.core.util.prefs.PreferencesStorage;
  *
  * @author Felix Jost
  */
-public class DbPrefs implements Preferences {
-	
+public class DbPrefs implements Preferences, Serializable {
+
+	private static final long serialVersionUID = 3828851618949061953L;
+
 	// keys: prefs-keys; values: any Prefs-Objects
 	private Map<String,Object> prefstore = new HashMap<String,Object>();
 

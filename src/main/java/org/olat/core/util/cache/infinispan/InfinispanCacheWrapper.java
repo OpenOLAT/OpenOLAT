@@ -1,0 +1,115 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.  
+* <p>
+*/ 
+package org.olat.core.util.cache.infinispan;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.infinispan.Cache;
+import org.infinispan.CacheException;
+import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.cache.CacheWrapper;
+
+/**
+ * Description:<br>
+ * this class is threadsafe. this is the singleVM implementation of the cachewrapper.
+ * it uses an ehcache as its internal cache.
+ * <P>
+ * Initial Date:  03.10.2007 <br>
+ * @author Felix Jost, http://www.goodsolutions.ch
+ */
+public class InfinispanCacheWrapper<U,V extends Serializable> implements CacheWrapper<U,V> {
+
+	private Cache<U,V> cache;
+
+	/**
+	 * @param cache
+	 */
+	protected InfinispanCacheWrapper(Cache<U,V> cache) {
+		this.cache = cache;
+	}
+	
+	@Override
+	public int size() {
+		return cache.size();
+	}
+
+	@Override
+	public List<U> getKeys() {
+		return new ArrayList<U>(cache.keySet());
+	}
+
+	@Override
+	public boolean containsKey(Object key) {
+		return cache.containsKey(key);
+	}
+
+	// ---- cache get, set, remove
+	@Override
+	public V get(U key) {
+		V elem;
+		try {
+			synchronized (cache) {//cluster_ok by definition of this class as used in single vm
+				elem = cache.get(key);				
+			}
+		} catch (IllegalStateException e) {
+			throw new OLATRuntimeException("cache state error for cache " + cache.getName(), e);
+		} catch (CacheException e) {
+			throw new OLATRuntimeException("cache error for cache " + cache.getName(), e);
+		}
+		return elem;
+	}
+
+	@Override
+	public void remove(Object key) {
+		synchronized (cache) {//cluster_ok by definition of this class as used in single vm
+			cache.remove(key);
+		}
+	}
+	
+	@Override
+	public V update(U key, V value) {
+		V reloaded;
+		synchronized (cache) {
+			if(cache.containsKey(key)) {
+				reloaded = cache.replace(key, value);
+			} else {
+				reloaded = cache.put(key, value);
+			}
+		}	
+		return reloaded;
+	}
+
+	@Override
+	public V put(U key, V value) {
+		V reloaded;
+		synchronized (cache) {
+			reloaded = cache.put(key, value);
+		}
+		return reloaded;
+	}
+}

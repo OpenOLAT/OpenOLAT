@@ -208,7 +208,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		User user = identity.getUser();
 		String firstname = user.getProperty(UserConstants.FIRSTNAME, null);
 		String lastname = user.getProperty(UserConstants.LASTNAME, null);
-		MediaResource rsrc = portraitManager.getSmallPortraitResource(identity);
+		MediaResource rsrc = portraitManager.getSmallPortraitResource(identity.getName());
 		
 		String portraitCssClass = null;
 		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
@@ -329,7 +329,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 					for(FormLink memberLink:memberLinks) {
 						Member m = (Member)memberLink.getUserObject();
 						if(m.getIdentity().getKey().equals(key)) {
-							return portraitManager.getSmallPortraitResource(m.getIdentity());
+							return portraitManager.getSmallPortraitResource(m.getIdentity().getName());
 						}
 					}
 				}

@@ -13,7 +13,20 @@
 	border: 1px solid #ACAAAA; overflow: scroll; margin: 0 0 1em 0; overflow-x:auto; height:170px;
 	@include o-gradient-white();
 }
-.o_instantmessaging_chat_history div, .o_groupchat_history div { border-top: 1px solid #eee; padding: 0.3em 0;}	
+.o_instantmessaging_chat_history div, .o_groupchat_history div { border-top: 1px solid #eee;}
+.o_instantmessaging_chat_history {
+	div.o_instantmessaging_avatar {
+		float:left;
+		padding: 3px;
+		border: 1px solid #333;
+		margin: 3px;
+	}
+	span.o_instantmessaging_from { text-align:left; color:#999; }
+	span.o_instantmessaging_from:hover { color:#000; }
+	span.o_instantmessaging_date { text-align:right; color:#999; }
+	span.o_instantmessaging_date:hover { color:#000; }
+	p-o_instantmessaging_body { background-color:red; }
+}
 .o_instantmessaging_chat_form input, .o_groupchat_chat_form input { width: 99%}
 .o_instantmessaging_chat_form div.b_button_group, .o_groupchat_chat_form div.b_button_group {margin-top: 1em;}
 #o_instantmessages_buddieslist {
@@ -21,25 +34,29 @@
 		a.b_contexthelp { margin-top:5px; padding-right: 5px; }
 		ul {list-style-type: none; padding: 0; margin: 0} 
 		li { margin: 0; padding: 0;}
-		li.o_instantmessaging_groupname {padding: 0 0 0 20px; background: url(../openolat/images/users.png) no-repeat 0 0;} 
+		li.o_instantmessaging_groupname {padding: 0 0 0 20px; background: url(../openolat/images/users.png) no-repeat 0 0;}
+		a.o_instantmessaging_vip span { font-weight:bold; }
 		li a { padding: 2px 0 2px 20px; background-repeat: no-repeat; background-position: 0 0; }
-		a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/users_conf.png) no-repeat 0 0;} 
-		a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/grstar.png) no-repeat 0 0;} 
+		a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/users_conf.png) no-repeat 0 0;}
+		a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/grstar.png) no-repeat 0 0;}
+		a.o_instantmessaging_hideofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/gstar.png) no-repeat 0 0;}
 }
+
+#o_instantmessages_buddy a { padding: 2px 0 2px 20px; background-repeat: no-repeat; background-position: 0 0; }
 
 div.o_groupchat_roster {
 		margin: 0;
-		ul { list-style-type: disc;margin: 0; padding: 0;}
+		ul { list-style-type: none;margin: 0; padding: 0;}
 		li { font-size: 95%}
 }
 
+li.o_instantmessaging_vip span { font-weight:bold; }
+li.o_instantmessaging_anonymous span { text-decoration:line-through; }
+
 /* im icons */
 .o_instantmessaging_available_icon { background-image: url(../openolat/images/im/gstar.png); }
-.o_instantmessaging_chat_icon {	background-image: url(../openolat/images/im/gstar_chat.png); }
-.o_instantmessaging_away_icon {	background-image: url(../openolat/images/im/gstar_clock.png); }
 .o_instantmessaging_dnd_icon { background-image: url(../openolat/images/im/gstar_cross.png); }
 .o_instantmessaging_unavailable_icon { background-image: url(../openolat/images/im/grstar.png); }
-.o_instantmessaging_xa_icon { background-image: url(../openolat/images/im/grstar_clock.png); }
 .o_instantmessaging_offline_icon { background-image: url(../openolat/images/im/grstar.png);}
 .o_instantmessaging_new_msg_icon { background-image: url(../openolat/images/im/new_message.png);}
 .o_instantmessaging_error_icon { background-image: url(../openolat/images/cross.png);}	

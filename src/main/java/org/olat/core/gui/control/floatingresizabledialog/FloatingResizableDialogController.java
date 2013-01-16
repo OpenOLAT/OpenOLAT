@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,8 +49,7 @@ import org.olat.core.util.ConsumableBoolean;
  */
 public class FloatingResizableDialogController extends BasicController {
 	
-	private VelocityContainer wrapper = createVelocityContainer("index");
-	private Panel main;
+	private VelocityContainer wrapper;
 	private String panelName;
 	
 	private int offsetX = -1;
@@ -120,11 +118,11 @@ public class FloatingResizableDialogController extends BasicController {
 		this.offsetX = offsetX;
 		this.offsetY = offsetY;
 		
-		main = new Panel("extjsPanel");
-		main.setContent(wrapper);
-		
+		wrapper = createVelocityContainer("index");
 		wrapper.put("panelContent", content);
-		if (collabsibleContent != null) wrapper.put("collapsibleContent", collabsibleContent);
+		if (collabsibleContent != null) {
+			wrapper.put("collapsibleContent", collabsibleContent);
+		}
 		
 		panelName = "o_extjsPanel_" + (uniquePanelName == null ? hashCode() : uniquePanelName);
 		wrapper.contextPut("panelName", panelName);
@@ -147,7 +145,7 @@ public class FloatingResizableDialogController extends BasicController {
 		
 		wrapper.contextPut("ajaxFlags", wControl.getWindowBackOffice().getGlobalSettings().getAjaxFlags());
 		
-		putInitialPanel(main);
+		putInitialPanel(wrapper);
 	}
 
 	/**

@@ -38,6 +38,7 @@ import org.olat.core.gui.Windows;
  */
 public class SessionInfo {
 
+	private Long identityKey;
 	private String login;
 	private HttpSession session;
 	private String firstname;
@@ -58,7 +59,8 @@ public class SessionInfo {
 	 * @param login
 	 * @param session
 	 */
-	public SessionInfo(String login, HttpSession session) {
+	public SessionInfo(Long identityKey, String login, HttpSession session) {
+		this.identityKey = identityKey;
 		setLogin(login);
 		setSession(session);
 		secure = false;
@@ -84,6 +86,13 @@ public class SessionInfo {
 	 */
 	public boolean isSecure() {
 		return secure;
+	}
+	
+	/**
+	 * @return The primary key of the identity object
+	 */
+	public Long getIdentityKey() {
+		return identityKey;
 	}
 	
 	/**

@@ -85,13 +85,13 @@ public class PortraitUploadController extends BasicController {
 		super(ureq, wControl);
 		dps = DisplayPortraitManager.getInstance();
 		this.portraitIdent = portraitIdent;
-		this.uploadDir = dps.getPortraitDir(portraitIdent);
+		this.uploadDir = dps.getPortraitDir(portraitIdent.getName());
 		this.limitKB = (int) limitKB;
 		
 		folderContainer = createVelocityContainer("portraitupload");
 		deleteButton = LinkFactory.createButtonSmall("command.delete", this.folderContainer, this);
 		
-		MediaResource mr = dps.getSmallPortraitResource(portraitIdent);
+		MediaResource mr = dps.getSmallPortraitResource(portraitIdent.getName());
 		if (mr != null) folderContainer.contextPut("hasPortrait", Boolean.TRUE);
 		else folderContainer.contextPut("hasPortrait", Boolean.FALSE);
 		
@@ -138,7 +138,7 @@ public class PortraitUploadController extends BasicController {
 				if (!newFile.exists()) {
 					showError("Failed");
 				} else {
-					dps.setPortrait(newFile, portraitIdent);
+					dps.setPortrait(newFile, portraitIdent.getName());
 					// Cleanup original file
 					newFile.delete();
 					// And finish workflow

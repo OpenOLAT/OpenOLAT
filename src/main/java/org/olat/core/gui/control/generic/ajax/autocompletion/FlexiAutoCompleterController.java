@@ -211,7 +211,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	protected void doDispose() {
 		// Cleanup javascript objects on browser side by triggering dispose
 		// function
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder(128);
 		// first datastore
 		sb.append("if (o_info.objectMap.containsKey('")
 				.append(datastoreName)

@@ -50,7 +50,6 @@
 					classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml
 					
 					classpath:/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml
-					classpath:/serviceconfig/org/olat/core/commons/scheduler/_spring/schedulerCorecontext.xml
 					classpath:/serviceconfig/org/olat/core/commons/modules/glossary/_spring/glossaryCorecontext.xml
 					classpath:/serviceconfig/org/olat/core/commons/services/commentAndRating/_spring/commentsAndRatingCorecontext.xml
 					classpath:/serviceconfig/org/olat/core/commons/linkchooser/_spring/linkchooserCorecontext.xml
@@ -130,9 +129,12 @@
 	<listener>
 		<listener-class>org.olat.core.dispatcher.mapper.MapperSessionListener</listener-class>
 	</listener>
+	<listener>
+		<listener-class>org.olat.core.servlets.OLATContextListener</listener-class>
+	</listener>
     
-    <!-- 4. Servlets -->
-    <servlet>
+  <!-- 4. Servlets -->
+  <servlet>
     <servlet-name>log4j-init</servlet-name>
     <servlet-class>org.olat.core.servlets.Log4JInitServlet</servlet-class>
 

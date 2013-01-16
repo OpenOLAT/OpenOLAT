@@ -52,6 +52,7 @@ public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 			case 2: return member.getLastTime();
 			case 3: return member.getMembership();
 			case 4: return member;
+			case 5:return member.getOnlineStatus();
 			default: {
 				int propPos = col - Cols.values().length;
 				if(propPos < userPropertyHandlers.size()) {
@@ -74,7 +75,8 @@ public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
 		role("table.header.role"),
-		groups("table.header.groups");
+		groups("table.header.groups"),
+		online("table.header.online");
 		
 		private final String i18n;
 		

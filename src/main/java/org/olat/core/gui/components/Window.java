@@ -66,6 +66,7 @@ import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.render.intercept.InterceptHandler;
@@ -78,6 +79,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.component.ComponentTraverser;
@@ -90,6 +92,8 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * @author Felix Jost
  */
 public class Window extends Container {
+	
+	private static final OLog log = Tracing.createLoggerFor(Window.class);
 	
 	private static final String LOG_SEPARATOR = "^$^";
 	/**
@@ -475,19 +479,19 @@ public class Window extends Container {
 						} else { // not dispatched
 							if (isDebugLog) {
 								long durationBeforeBuildURIFor = System.currentTimeMillis() - debug_start;
-								Tracing.logDebug("Perf-Test: Window durationBeforeBuildURIFor=" + durationBeforeBuildURIFor, Window.class);
+								log.debug("Perf-Test: Window durationBeforeBuildURIFor=" + durationBeforeBuildURIFor);
+								log.debug("Found a valid timestamp but could not dispatch to component: ureq.compid:"+ureq.getComponentID()+" ureq.win-ts:"+ureq.getTimestampID()+" ureq.comp-ts:"+ureq.getComponentTimestamp() + " target.timestamp:" + target.getTimestamp() + " target=" + target);
 							}
-							Tracing.logDebug("Found a valid timestamp but could not dispatch to component: ureq.compid:"+ureq.getComponentID()+" ureq.win-ts:"+ureq.getTimestampID()+" ureq.comp-ts:"+ureq.getComponentTimestamp() + " target.timestamp:" + target.getTimestamp() + " target=" + target, this.getClass());
 							String reRenderUri = buildURIFor(this, timestampID, null);
 							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
 							wbackofficeImpl.sendCommandTo(rmrcom);
 						}
 						if (isDebugLog) {
 							long durationBeforeServeResource = System.currentTimeMillis() - debug_start;
-							Tracing.logDebug("Perf-Test: Window durationBeforeServeResource=" + durationBeforeServeResource, Window.class);
+							log.debug("Perf-Test: Window durationBeforeServeResource=" + durationBeforeServeResource);
 						}
-						MediaResource jsonmr = wbackofficeImpl.extractCommands(true);
-						ServletUtil.serveResource(request, response, jsonmr);
+						ServletUtil.setStringResourceHeaders(response);
+						wbackofficeImpl.pushCommands(response.getWriter(), true);
 					} catch (Throwable th) {
 						// in any case, try to inform the user appropriately.
 						// a) error while dispatching (e.g. db problem, npe, ...)
@@ -688,9 +692,8 @@ public class Window extends Container {
 						}
 					}
 
-					
 					wbackofficeImpl.fireCycleEvent(BEFORE_INLINE_RENDERING);
-					String result;
+					StringOutput result;
 					synchronized(render_mutex) { //o_clusterOK by:fj
 						// render now
 						//TODO state-less 
@@ -720,14 +723,16 @@ public class Window extends Container {
 						if (isDebugLog) {
 							rstart = System.currentTimeMillis();
 						}
-						result = fr.render(top).toString();
+						result = StringOutputPool.allocStringBuilder(100000);
+						fr.render(top, result, null);
 						if (isDebugLog) {
 							long rstop = System.currentTimeMillis();
 							long diff = rstop - rstart;
 							debugMsg.append("render:").append(diff).append(LOG_SEPARATOR);
 						}
-						if (renderResult.getRenderException() != null) throw new OLATRuntimeException(Window.class, renderResult.getLogMsg(),
-								renderResult.getRenderException());
+						if (renderResult.getRenderException() != null) {
+							throw new OLATRuntimeException(Window.class, renderResult.getLogMsg(), renderResult.getRenderException());
+						}
 		
 						// after rendering we know if some component awaits further async
 						// calls
@@ -745,6 +750,7 @@ public class Window extends Container {
 					
 					wbackofficeImpl.fireCycleEvent(AFTER_INLINE_RENDERING);
 					ServletUtil.serveStringResource(request, response, result);
+					StringOutputPool.free(result);
 					if (isDebugLog) {
 						long diff = System.currentTimeMillis() - debug_start;
 						debugMsg.append("inl_serve:").append(diff).append(LOG_SEPARATOR);
@@ -769,11 +775,10 @@ public class Window extends Container {
 		
 		if (isDebugLog) {
 			// log the collected data now
-			Tracing.logDebug(debugMsg.toString(), Window.class);
+			log.info(debugMsg.toString());
 			long durationDispatchRequest = System.currentTimeMillis() - debug_start;
-			Tracing.logDebug("Perf-Test: Window durationDispatchRequest=" + durationDispatchRequest, Window.class);
+			log.debug("Perf-Test: Window durationDispatchRequest=" + durationDispatchRequest);
 		}
-
 	}
 
 	/**
@@ -867,12 +872,12 @@ public class Window extends Container {
 				}};
 			ComponentTraverser ct = new ComponentTraverser(dirtyV, getContentPane(), false);
 			ct.visitAll(null);
+			int dCnt = dirties.size();
 			if (isDebugLog) {
 				long durationVisitAll = System.currentTimeMillis() - start;
-				Tracing.logDebug("Perf-Test: Window.handleDirties after ct.visitAll durationVisitAll=" + durationVisitAll, Window.class);
+				log.debug("Perf-Test: Window.handleDirties after ct.visitAll durationVisitAll=" + durationVisitAll);
+				log.debug("Perf-Test: Window.handleDirties dirties.size()=" + dirties.size());
 			}
-			int dCnt = dirties.size();
-			Tracing.logDebug("Perf-Test: Window.handleDirties dirties.size()=" + dirties.size(), Window.class);
 			if (dCnt > 0) { // collect the redraw dirties command
 				try {			
 					JSONObject root = new JSONObject();
@@ -896,10 +901,11 @@ public class Window extends Container {
 						}
 						
 						for (int i = 0; i < dCnt; i++) {
-							long startLoop = System.currentTimeMillis();
 							Component toRender = dirties.get(i);
-							Tracing.logDebug("Perf-Test: Window.handleDirties toRender.getComponentName()=" + toRender.getComponentName(), Window.class);
-							Tracing.logDebug("Perf-Test: Window.handleDirties toRender=" + toRender, Window.class);
+							if(isDebugLog) {
+								log.debug("Perf-Test: Window.handleDirties toRender.getComponentName()=" + toRender.getComponentName());
+								log.debug("Perf-Test: Window.handleDirties toRender=" + toRender);
+							}
 							boolean wasDomR = toRender.isDomReplaceable();
 							if (!wasDomR) {
 								throw new AssertException("cannot replace as dom fragment:"+toRender.getComponentName()+" ("+toRender.getClass().getName()+"),"+toRender.getExtendedDebugInfo());
@@ -908,9 +914,9 @@ public class Window extends Container {
 							Panel wrapper = new Panel("renderpanel");
 							wrapper.setDomReplaceable(false); // to omit <div> around the render helper panel
 							RenderResult renderResult = null;
-							StringOutput jsol = new StringOutput();
-							StringOutput hdr = new StringOutput();
-							String result = null;
+							StringOutput jsol = null;
+							StringOutput hdr = null;
+							StringOutput result = null;
 							try {
 								toRender.setDomReplaceable(false);
 								wrapper.setContent(toRender);
@@ -928,31 +934,32 @@ public class Window extends Container {
 								}
 
 								Renderer fr = Renderer.getInstance(wrapper,null, ubu, renderResult, gsettings);
-
-								jsol = new StringOutput();
+								jsol = StringOutputPool.allocStringBuilder(2048);
 								fr.renderBodyOnLoadJSFunctionCall(jsol,toRender);
-
-								hdr = new StringOutput();
+								hdr = StringOutputPool.allocStringBuilder(2048);
 								fr.renderHeaderIncludes(hdr, toRender);
 
 								long pstart = 0;
 								if (isDebugLog) {
 									pstart = System.currentTimeMillis();
 								}
-								result = fr.render(toRender).toString();
+								result = StringOutputPool.allocStringBuilder(100000);
+								fr.render(toRender, result, null);
 								if (isDebugLog) {
 									long pstop = System.currentTimeMillis();
 									debugMsg.append(toRender.getComponentName()).append(":").append((pstop - pstart));
 									if (i < dCnt - 1)
 										debugMsg.append(",");
 								}
+								
 							} catch (Exception e) {
 								throw new OLATRuntimeException(Window.class,renderResult.getLogMsg(), renderResult.getRenderException());
 							} finally {
 								toRender.setDomReplaceable(true);
 							}
-							if (renderResult.getRenderException() != null) throw new OLATRuntimeException(Window.class, renderResult.getLogMsg(),
-									renderResult.getRenderException());
+							if (renderResult.getRenderException() != null) {
+								throw new OLATRuntimeException(Window.class, renderResult.getLogMsg(), renderResult.getRenderException());
+							}
 							
 							AsyncMediaResponsible curAmr = renderResult.getAsyncMediaResponsible();
 							if (curAmr != null) {
@@ -974,14 +981,10 @@ public class Window extends Container {
 							
 							jo.put("cid", cid);
 							jo.put("cidvis", toRender.isVisible());
-							jo.put("hfrag", result);
-							jo.put("jsol", jsol);
-							jo.put("hdr", hdr);
+							jo.put("hfrag", StringOutputPool.freePop(result));
+							jo.put("jsol", StringOutputPool.freePop(jsol));
+							jo.put("hdr", StringOutputPool.freePop(hdr));
 							ja.put(jo);
-							if (isDebugLog) {
-								long durationLoop = System.currentTimeMillis() - startLoop;
-								Tracing.logDebug("Perf-Test: Window.handleDirties loop i=" + i + " durationLoop=" + durationLoop, Window.class);
-							}
 						}
 						//polling case should never set the asyncMediaResp. 
 						//to null otherwise it possible that e.g. pdf served as following click within a CP component
@@ -992,7 +995,7 @@ public class Window extends Container {
 						if (isDebugLog) {
 							long rstop = System.currentTimeMillis();
 							debugMsg.append(";inl_part_render:").append((rstop-rstart));
-							Tracing.logDebug(debugMsg.toString(), Window.class);
+							log.debug(debugMsg.toString());
 						}
 
 					}
@@ -1000,7 +1003,7 @@ public class Window extends Container {
 					com.setSubJSON(root);
 					if (isDebugLog) {
 						long durationHandleDirties = System.currentTimeMillis() - start;
-						Tracing.logDebug("Perf-Test: Window.handleDirties finished 1  durationHandleDirties=" + durationHandleDirties, Window.class);
+						log.debug("Perf-Test:" + durationHandleDirties);
 					}
 					return com;
 					
@@ -1010,7 +1013,7 @@ public class Window extends Container {
 			}
 			if (isDebugLog) {
 				long durationHandleDirties = System.currentTimeMillis() - start;
-				Tracing.logDebug("Perf-Test: Window.handleDirties finished 2  durationHandleDirties=" + durationHandleDirties, Window.class);
+				log.debug("Perf-Test: Window.handleDirties finished 2  durationHandleDirties=" + durationHandleDirties);
 			}
 			return com;
 		}

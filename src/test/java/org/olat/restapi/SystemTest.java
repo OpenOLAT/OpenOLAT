@@ -136,7 +136,6 @@ public class SystemTest extends OlatJerseyTestCase {
 		assertNotNull(sessionInfos);
 		assertTrue(sessionInfos.getCount() > 0);
 		assertTrue(sessionInfos.getAuthenticatedCount() >= 0);
-		assertTrue(sessionInfos.getInstantMessagingCount() >= 0);
 		assertTrue(sessionInfos.getSecureAuthenticatedCount() >= 0);
 		assertTrue(sessionInfos.getSecureWebdavCount() >= 0);
 		assertTrue(sessionInfos.getWebdavCount() >= 0);

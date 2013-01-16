@@ -79,7 +79,7 @@ import org.olat.ims.qti.container.AssessmentContext;
 import org.olat.ims.qti.navigator.NavigatorDelegate;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
-import org.olat.instantMessaging.InstantMessaging;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
@@ -122,7 +122,6 @@ public class IQRunController extends BasicController implements GenericEventList
 	private OLATResourceable assessmentEventOres;	
 	private UserSession userSession;
 	
-	private OLATResourceable chatEventOres;
 	private OLATResourceable assessmentInstanceOres;
 	
 	
@@ -147,7 +146,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		this.assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 		this.assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
-		this.chatEventOres = OresHelper.createOLATResourceableType(InstantMessaging.class);
 		
 		this.userSession = ureq.getUserSession();
 		
@@ -346,14 +344,14 @@ public class IQRunController extends BasicController implements GenericEventList
 		
 		if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
 			checkChats(ureq);
-			singleUserEventCenter.registerFor(this, getIdentity(), chatEventOres);
+			singleUserEventCenter.registerFor(this, getIdentity(), InstantMessagingService.TOWER_EVENT_ORES);
 		}
 	}
 	
 	private void checkChats (UserRequest ureq) {
 		List<?> allChats = null;
 		if (ureq != null) {
-			allChats = (List<?>)ureq.getUserSession().getEntry("chats");
+			allChats = ureq.getUserSession().getChats();
 		}
 		if (allChats == null || allChats.size() == 0) {
 			startButton.setEnabled (true);
@@ -668,7 +666,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		}
 		
 		singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
-		singleUserEventCenter.deregisterFor(this, chatEventOres);
+		singleUserEventCenter.deregisterFor(this, InstantMessagingService.TOWER_EVENT_ORES);
 		
 		if (!assessmentStopped) {		 
 				AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
