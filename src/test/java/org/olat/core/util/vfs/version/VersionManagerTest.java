@@ -208,9 +208,7 @@ public class VersionManagerTest extends OlatTestCase {
 		Versions versions = VersionsFileManager.getInstance().createVersionsFor((VFSLeaf)retrievedFile);	
 		List<VFSRevision> revisions = versions.getRevisions();
 		assertNotNull(revisions);
-		assertEquals(1, revisions.size());
-
-		assertEquals("Version 5", versions.getComment());
+		assertTrue(revisions.isEmpty());
 	}
 	
 	@Test

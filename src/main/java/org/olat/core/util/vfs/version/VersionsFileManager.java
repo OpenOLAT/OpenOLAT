@@ -555,6 +555,11 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	 */
 	@Override
 	public boolean addToRevisions(Versionable currentVersion, Identity identity, String comment) {
+		int maxNumOfVersions = versioningConfigurator.getMaxNumOfVersionsAllowed();
+		if(maxNumOfVersions == 0) {
+			return true;//deactivated, return all ok
+		}
+		
 		VFSLeaf currentFile = (VFSLeaf) currentVersion;
 		
 		VFSLeaf versionFile = getCanonicalVersionXmlFile(currentFile, true);
@@ -615,8 +620,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			if (identity != null) {
 				versions.setAuthor(identity.getName());
 			}
-			
-			int maxNumOfVersions = versioningConfigurator.versionAllowed();
+
 			if(maxNumOfVersions >= 0 && versions.getRevisions().size() >= maxNumOfVersions) {
 				List<VFSRevision> revisions = versions.getRevisions();
 				int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions) + 1);

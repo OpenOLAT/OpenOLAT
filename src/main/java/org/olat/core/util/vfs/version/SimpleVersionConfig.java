@@ -130,7 +130,7 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 	}
 
 	@Override
-	public int versionAllowed() {
+	public int getMaxNumOfVersionsAllowed() {
 		return getVersionAllowed();
 	}
 
