@@ -27,29 +27,26 @@
 package org.olat.basesecurity;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.PropertyValueException;
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.DBRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -62,16 +59,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BaseSecurityTest extends OlatTestCase {
 	
+	private static final OLog log = Tracing.createLoggerFor(BaseSecurityTest.class);
+	
 	@Autowired
 	private BaseSecurity baseSecurityManager;
 	
 
 	
-	@Test public void testGetIdentitiesByPowerSearch() {
+	@Test
+	public void testGetIdentitiesByPowerSearch() {
 		System.out.println("start testGetIdentitiesByPowerSearch");
 		try {
 			Identity ident = getOrCreateIdentity("anIdentity");
 			Identity ident2 = getOrCreateTestIdentity("extremegroovy");
+			Assert.assertNotNull(ident2);
 			Identity deletedIdent = getOrCreateTestIdentity("delete");
 			deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
 
@@ -202,11 +203,9 @@ public class BaseSecurityTest extends OlatTestCase {
 			// basic query to find all system users without restrictions
 			List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, null);
 			assertTrue(results.size()>0); 
-			int numberOfAllUsers = results.size();
 
 			results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_DELETED);
 			assertTrue(results.size() >0);
-			int numberOfDeletedUsers = results.size();
 
 			results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, groups1, null, null, null, null, null, null, null);
 			assertTrue(results.size() >0);
@@ -240,7 +239,7 @@ public class BaseSecurityTest extends OlatTestCase {
 
 			// policy search test
 			DBFactory.getInstance().closeSession();
-			List policies = baseSecurityManager.getPoliciesOfSecurityGroup(admins);
+			List<Policy> policies = baseSecurityManager.getPoliciesOfSecurityGroup(admins);
 			PermissionOnResourceable[] adminPermissions = convertPoliciesListToPermissionOnResourceArray(policies);
 			policies = baseSecurityManager.getPoliciesOfSecurityGroup(anonymous);
 			PermissionOnResourceable[] anonymousPermissions = convertPoliciesListToPermissionOnResourceArray(policies);
@@ -484,22 +483,22 @@ public class BaseSecurityTest extends OlatTestCase {
 			User onePropUser = UserManager.getInstance().createUser("onepropuser", "onepropuser", "onepropuser@lustig.com");
 			onePropUser.setProperty(UserConstants.FIRSTNAME, "one");		
 			Identity onePropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("onePropUser", onePropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "onepropuser", Encoder.encrypt("ppp"));
+			Assert.assertNotNull(onePropeIdentity);
 			
 			User twoPropUser = UserManager.getInstance().createUser("twopropuser", "twopropuser", "twopropuser@lustig.com");
 			twoPropUser.setProperty(UserConstants.FIRSTNAME, "two");
 			twoPropUser.setProperty(UserConstants.LASTNAME, "prop");
-
 			Identity twoPropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("twopropuser", twoPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "twopropuser", Encoder.encrypt("ppp"));
+			Assert.assertNotNull(twoPropeIdentity);
 			// commit
 			DBFactory.getInstance().closeSession();
 
 			HashMap<String, String> userProperties;
-			List results;
-
+			
 			// find first
 			userProperties = new HashMap<String, String>();
 			userProperties.put(UserConstants.FIRSTNAME, "one");
-			results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
+			List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
 			assertTrue(results.size() == 1);
 
 			// no intersection - all properties optional
@@ -577,16 +576,16 @@ public class BaseSecurityTest extends OlatTestCase {
 			multiPropUser.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "multiinst");		
 			multiPropUser.setProperty(UserConstants.CITY, "züri");		
 			Identity onePropeIdentity = baseSecurityManager.createAndPersistIdentityAndUser("multiPropUser", multiPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "multipropuser", Encoder.encrypt("ppp"));
-
+			Assert.assertNotNull(onePropeIdentity);
+			
 			// commit
 			DBFactory.getInstance().closeSession();
 
 			HashMap<String, String> userProperties;
-			List results;
-			
+
 			userProperties = new HashMap<String, String>();
 			userProperties.put(UserConstants.FIRSTNAME, "multi");
-			results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
+			List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
 			sysoutResults(results);
 			assertTrue(results.size() == 1);
 
@@ -758,10 +757,10 @@ public class BaseSecurityTest extends OlatTestCase {
 		}
 	}
 
-	private PermissionOnResourceable[] convertPoliciesListToPermissionOnResourceArray(List policies) {
+	private PermissionOnResourceable[] convertPoliciesListToPermissionOnResourceArray(List<Policy> policies) {
 		PermissionOnResourceable[] array = new PermissionOnResourceable[policies.size()];
 		for (int i = 0; i < policies.size()	; i++) {
-			Policy policy = (Policy) policies.get(i);
+			Policy policy = policies.get(i);
 			PermissionOnResourceable por = new PermissionOnResourceable(policy.getPermission(), policy.getOlatResource());
 			array[i] = por;			
 		}
@@ -772,28 +771,25 @@ public class BaseSecurityTest extends OlatTestCase {
 	/*
 	 * Only for debugging to see identities result list.
 	 */
-	private void sysoutResults(List results) {
-		System.out.println("TEST results.size()=" + results.size());
-		for (Iterator iterator = results.iterator(); iterator.hasNext();) {
-			Identity identity = (Identity) iterator.next();
-			System.out.println("TEST ident=" + identity);
+	private void sysoutResults(List<Identity> results) {
+		log.info("TEST results.size()=" + results.size());
+		for (Identity identity:results) {
+			log.debug("TEST ident=" + identity);
 		}		
 	}
 
 	// check Helper Methoden
 	////////////////////////
-	private void checkIdentitiesHasPermissions(List results, PermissionOnResourceable[] adminPermissions) {
-		for (Iterator iterator = results.iterator(); iterator.hasNext();) {
-			Identity resultIdentity = (Identity) iterator.next();
+	private void checkIdentitiesHasPermissions(List<Identity> results, PermissionOnResourceable[] adminPermissions) {
+		for (Identity resultIdentity: results) {
 			for (int i = 0; i < adminPermissions.length; i++) {
 				assertTrue( baseSecurityManager.isIdentityPermittedOnResourceable(resultIdentity, adminPermissions[i].getPermission(), adminPermissions[i].getOlatResourceable() ) );
 			}
 		}
 	}
 	
-	private void checkIdentitiesHasAuthProvider(List results, String[] authProviders) {
-		for (Iterator iterator = results.iterator(); iterator.hasNext();) {
-			Identity resultIdentity = (Identity) iterator.next();
+	private void checkIdentitiesHasAuthProvider(List<Identity> results, String[] authProviders) {
+		for (Identity resultIdentity : results) {
 			boolean foundIdentityWithAuth = false;
 			for (int i = 0; i < authProviders.length; i++) {
 				Authentication authentication = baseSecurityManager.findAuthentication(resultIdentity, authProviders[i]);
@@ -805,9 +801,8 @@ public class BaseSecurityTest extends OlatTestCase {
 		}
 	}
 
-	private void checkIdentitiesAreInGroups(List results, SecurityGroup[] groups1) {
-		for (Iterator iterator = results.iterator(); iterator.hasNext();) {
-			Identity resultIdentity = (Identity) iterator.next();
+	private void checkIdentitiesAreInGroups(List<Identity> results, SecurityGroup[] groups1) {
+		for (Identity resultIdentity:results) {
 			boolean foundIdentityInSecGroup = false;
 			for (int i = 0; i < groups1.length; i++) {
 				if (baseSecurityManager.isIdentityInSecurityGroup(resultIdentity, groups1[i]) ) {
@@ -819,14 +814,11 @@ public class BaseSecurityTest extends OlatTestCase {
 	}
 	
 	private void checkIdentitiesHasRoles(List<Identity> results, boolean checkIsAuthor) {
-		for (Iterator iterator = results.iterator(); iterator.hasNext();) {
-			Identity resultIdentity = (Identity) iterator.next();
+		for (Identity resultIdentity: results) {
 			Roles roles = baseSecurityManager.getRoles(resultIdentity);
 			if (checkIsAuthor) {
 				assertTrue("Identity has not roles author, identity=" + resultIdentity, roles.isAuthor());
 			}
 		}
 	}
-	
-
 }

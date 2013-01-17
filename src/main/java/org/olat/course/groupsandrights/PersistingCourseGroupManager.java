@@ -120,6 +120,10 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		boolean hasRight = rightManager.hasBGRight(courseRight, identity, courseResource);
 		return hasRight;
 	}
+	
+	public List<String> getRights(Identity identity) {
+		return securityManager.getIdentityPermissionOnresourceable(identity, courseResource);
+	}
 
 	@Override
 	public boolean isIdentityInGroup(Identity identity, Long groupKey) {

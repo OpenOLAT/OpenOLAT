@@ -303,6 +303,21 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return query.getResultList();
 	}
 	
+	@Override
+	public List<String> getIdentityPermissionOnresourceable(Identity identity, OLATResourceable olatResourceable) {
+		Long oresid = olatResourceable.getResourceableId();
+		if (oresid == null) {
+			oresid = new Long(0);
+		}
+		List<String> permissions = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("getIdentityPermissionsOnResourceableCheckType", String.class)
+			.setParameter("identitykey", identity.getKey())
+			.setParameter("resid", oresid)
+			.setParameter("resname", olatResourceable.getResourceableTypeName())
+			.getResultList();
+		return permissions;
+	}
+	
 	public boolean isIdentityPermittedOnResourceable(Identity identity, String permission, OLATResourceable olatResourceable) {
 		return isIdentityPermittedOnResourceable(identity, permission, olatResourceable, true);
 	}

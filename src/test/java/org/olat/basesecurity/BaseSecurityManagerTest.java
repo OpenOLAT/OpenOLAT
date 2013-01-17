@@ -760,4 +760,75 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(policies_3.contains(policy_3_3));
 		Assert.assertFalse(policies_3.contains(policy_1_3));
 	}
+	
+	@Test
+	public void isIdentityPermittedOnResourceable_checkType() {
+		//create an identity, a security group, a resource and give the identity some
+		//permissions on the resource
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("test-ipor-1-" + UUID.randomUUID().toString());
+		securityManager.addIdentityToSecurityGroup(id, secGroup);
+		securityManager.createAndPersistPolicy(secGroup, "test.ipor-1_1", resource);
+		securityManager.createAndPersistPolicy(secGroup, "test.ipor-1_2", resource);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean hasIpor_1_1 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_1", resource);
+		Assert.assertTrue(hasIpor_1_1);
+		boolean hasIpor_1_2 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_2", resource);
+		Assert.assertTrue(hasIpor_1_2);
+		boolean hasIpor_1_3 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_3", resource);
+		Assert.assertFalse(hasIpor_1_3);
+		
+		//check type
+		boolean hasIpor_1_1_ct = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_1", resource, true);
+		Assert.assertTrue(hasIpor_1_1_ct);
+		boolean hasIpor_1_2_ct = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_2", resource, true);
+		Assert.assertTrue(hasIpor_1_2_ct);
+		boolean hasIpor_1_3_ct = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_3", resource, true);
+		Assert.assertFalse(hasIpor_1_3_ct);
+	}
+	
+	@Test
+	public void isIdentityPermittedOnResourceable_noCheckType() {
+		//create an identity, a security group, a resource and give the identity some
+		//permissions on the resource
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("test-ipornc-1-" + UUID.randomUUID().toString());
+		securityManager.addIdentityToSecurityGroup(id, secGroup);
+		securityManager.createAndPersistPolicy(secGroup, "test.ipornc-1_1", resource);
+		securityManager.createAndPersistPolicy(secGroup, "test.ipornc-1_2", resource);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean hasIpor_1_1 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipornc-1_1", resource, false);
+		Assert.assertTrue(hasIpor_1_1);
+		boolean hasIpor_1_2 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipornc-1_2", resource, false);
+		Assert.assertTrue(hasIpor_1_2);
+		boolean hasIpor_1_3 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipornc-1_3", resource, false);
+		Assert.assertFalse(hasIpor_1_3);
+	}
+	
+	@Test
+	public void getIdentityPermissionsOnResourceable() {
+		//create an identity, a security group, a resource and give the identity some
+		//permissions on the resource
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("test-gpor-1-" + UUID.randomUUID().toString());
+		securityManager.addIdentityToSecurityGroup(id, secGroup);
+		securityManager.createAndPersistPolicy(secGroup, "test.gpor-1_1", resource);
+		securityManager.createAndPersistPolicy(secGroup, "test.gpor-1_2", resource);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<String> permissions = securityManager.getIdentityPermissionOnresourceable(id, resource);
+		Assert.assertNotNull(permissions);
+		Assert.assertTrue(permissions.size() >= 2);
+		Assert.assertTrue(permissions.contains("test.gpor-1_1"));
+		Assert.assertTrue(permissions.contains("test.gpor-1_2"));
+		Assert.assertFalse(permissions.contains("test.gpor-1_3"));
+	}
 }

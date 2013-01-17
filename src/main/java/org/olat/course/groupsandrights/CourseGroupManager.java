@@ -63,6 +63,14 @@ public interface CourseGroupManager {
 	 * @return true if user has course right, false otherwise
 	 */
 	public boolean hasRight(Identity identity, String courseRight);
+	
+	/**
+	 * Return the users course rights in any of the available right group context of
+	 * this course
+	 * @param identity
+	 * @return
+	 */
+	public List<String> getRights(Identity identity);
 
 	/**
 	 * Checks if an identity is in a learning group with the given name in any

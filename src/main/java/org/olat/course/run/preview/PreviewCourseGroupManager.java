@@ -26,6 +26,7 @@
 package org.olat.course.run.preview;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -80,7 +81,12 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		}
 		throw new AssertException("unsupported");
 	}
-	
+
+	@Override
+	public List<String> getRights(Identity identity) {
+		return new ArrayList<String>(1);
+	}
+
 	@Override
 	public boolean isIdentityInGroup(Identity identity, Long groupKey) {
 		for(BusinessGroup group:groups) {

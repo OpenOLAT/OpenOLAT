@@ -378,13 +378,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 3) all other rights are defined in the groupmanagement using the learning
 		// group rights
 		
-		courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT)));
-		courseRightsCache.put(CourseRights.RIGHT_COURSEEDITOR, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)));
-		courseRightsCache.put(CourseRights.RIGHT_ARCHIVING, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_ARCHIVING)));
-		courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_ASSESSMENT)));
-		courseRightsCache.put(CourseRights.RIGHT_GLOSSARY, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_GLOSSARY)));
-		courseRightsCache.put(CourseRights.RIGHT_STATISTICS, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_STATISTICS)));
-		courseRightsCache.put(CourseRights.RIGHT_DB, new Boolean(cgm.hasRight(identity, CourseRights.RIGHT_DB)));
+		List<String> rights = cgm.getRights(identity);
+		courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, new Boolean(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
+		courseRightsCache.put(CourseRights.RIGHT_COURSEEDITOR, new Boolean(rights.contains(CourseRights.RIGHT_COURSEEDITOR)));
+		courseRightsCache.put(CourseRights.RIGHT_ARCHIVING, new Boolean(rights.contains(CourseRights.RIGHT_ARCHIVING)));
+		courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT, new Boolean(rights.contains(CourseRights.RIGHT_ASSESSMENT)));
+		courseRightsCache.put(CourseRights.RIGHT_GLOSSARY, new Boolean(rights.contains(CourseRights.RIGHT_GLOSSARY)));
+		courseRightsCache.put(CourseRights.RIGHT_STATISTICS, new Boolean(rights.contains(CourseRights.RIGHT_STATISTICS)));
+		courseRightsCache.put(CourseRights.RIGHT_DB, new Boolean(rights.contains(CourseRights.RIGHT_DB)));
 	}
 
 	/**
