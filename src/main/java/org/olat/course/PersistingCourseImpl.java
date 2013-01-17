@@ -47,6 +47,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.version.Versionable;
+import org.olat.core.util.vfs.version.VersionsFileManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.config.CourseConfig;
@@ -80,6 +82,8 @@ import com.thoughtworks.xstream.XStream;
  * @author Felix Jost
  */
 public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializable {
+
+	private static final long serialVersionUID = -1022498371474445868L;
 
 	public static String COURSE_ROOT_DIR_NAME = "course";
 	
@@ -408,6 +412,12 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		VFSItem vfsItem = getCourseBaseContainer().resolve(fileName);
 		if (vfsItem == null) {
 			vfsItem = getCourseBaseContainer().createChildLeaf(fileName);
+		} else if(vfsItem.exists() && vfsItem instanceof Versionable) {
+			try {
+				VersionsFileManager.getInstance().addToRevisions((Versionable)vfsItem, null, "");
+			} catch (Exception e) {
+				log.error("Cannot versioned " + fileName, e);
+			}
 		}
 		XStream xstream = CourseXStreamAliases.getWriteCourseXStream();
 		XStreamHelper.writeObject(xstream, (VFSLeaf)vfsItem, obj);

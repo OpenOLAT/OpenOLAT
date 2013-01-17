@@ -129,6 +129,12 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 		}
 	}
 
+	@Override
+	public int versionAllowed() {
+		return getVersionAllowed();
+	}
+
+	@Override
 	public int versionAllowed(String relPath) {
 		if(StringHelper.containsNonWhitespace(relPath)) {
 			if(relPath.startsWith("/tmp/")//no versioning in tmp

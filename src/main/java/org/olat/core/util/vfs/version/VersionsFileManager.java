@@ -91,6 +91,8 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	private File rootFolder;
 	private File rootVersionFolder;
 	private VFSContainer rootVersionsContainer;
+	
+	private FolderVersioningConfigurator versioningConfigurator;
 
 	/**
 	 * [spring]
@@ -98,6 +100,16 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	private VersionsFileManager() {
 		INSTANCE = this;
 	}
+	
+	/**
+	 * [used by Spring]
+	 * @param versioningConfigurator
+	 */
+	public void setVersioningConfigurator(FolderVersioningConfigurator versioningConfigurator) {
+		this.versioningConfigurator = versioningConfigurator;
+	}
+
+
 
 	@Override
 	public Versions createVersionsFor(VFSLeaf leaf) {
@@ -602,6 +614,17 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		if (sameFile || VFSManager.copyContent(currentFile, versionContainer.createChildLeaf(uuid))) {
 			if (identity != null) {
 				versions.setAuthor(identity.getName());
+			}
+			
+			int maxNumOfVersions = versioningConfigurator.versionAllowed();
+			if(maxNumOfVersions >= 0 && versions.getRevisions().size() >= maxNumOfVersions) {
+				List<VFSRevision> revisions = versions.getRevisions();
+				int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions) + 1);
+				if(numOfVersionsToDelete > 0) {
+					List<VFSRevision> versionsToDelete = revisions.subList(0, numOfVersionsToDelete);
+					deleteRevisions(currentVersion, versionsToDelete);
+					versions = (VersionsFileImpl)currentVersion.getVersions();
+				}
 			}
 			versions.setComment(comment);
 			versions.getRevisions().add(newRevision);

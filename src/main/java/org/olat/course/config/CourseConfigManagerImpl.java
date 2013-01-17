@@ -25,10 +25,14 @@
 
 package org.olat.course.config;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.version.Versionable;
+import org.olat.core.util.vfs.version.VersionsFileManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseXStreamAliases;
 import org.olat.course.ICourse;
@@ -44,6 +48,7 @@ import com.thoughtworks.xstream.XStream;
  */
 public class CourseConfigManagerImpl extends BasicManager implements CourseConfigManager {
 
+	private static final OLog log = Tracing.createLoggerFor(CourseConfigManagerImpl.class);
 	private static final CourseConfigManagerImpl INSTANCE = new CourseConfigManagerImpl();
 
 	
@@ -114,6 +119,12 @@ public class CourseConfigManagerImpl extends BasicManager implements CourseConfi
 		if (configFile == null) {
 			// create new config file
 			configFile = course.getCourseBaseContainer().createChildLeaf(COURSECONFIG_XML);
+		} else if(configFile.exists() && configFile instanceof Versionable) {
+			try {
+				VersionsFileManager.getInstance().addToRevisions((Versionable)configFile, null, "");
+			} catch (Exception e) {
+				log.error("Cannot versioned CourseConfig.xml", e);
+			}
 		}
 		XStreamHelper.writeObject(configFile, courseConfig);
 	}

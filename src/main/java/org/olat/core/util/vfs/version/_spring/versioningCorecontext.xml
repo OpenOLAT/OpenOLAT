@@ -5,7 +5,9 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-	<bean id="versionsManager" class="org.olat.core.util.vfs.version.VersionsFileManager" init-method="init"/>
+	<bean id="versionsManager" class="org.olat.core.util.vfs.version.VersionsFileManager" init-method="init">
+		<property name="versioningConfigurator" ref="versioningConfigurator" />
+	</bean>
 
 	<bean id="versioningConfigurator" class="org.olat.core.util.vfs.version.SimpleVersionConfig"
 		depends-on="coordinatorManager,org.olat.core.util.WebappHelper,folderModule">
