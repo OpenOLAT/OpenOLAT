@@ -25,8 +25,6 @@
 
 package org.olat.course.run.userview;
 
-import java.util.Map;
-
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
@@ -54,16 +52,13 @@ public interface UserCourseEnvironment {
 	
 	public ScoreAccounting getScoreAccounting();
 	
-	/**
-	 * @return a temporary map (lives as long as the user is visiting the course)
-	 * @param owner the owning class
-	 * @param key the key
-	 * 
-	 * owner's classname and the key form a composite unique key / namespace
-	 */
-	public Map getTempMap(Class owner, String key);
+
+	public boolean isAdmin();
 	
+	public boolean isCoach();
+
+	public boolean isParticipant();
 	
-	//TODO: add a method like isCourseAdmin() to be offered in a conditioninterpreter function
-	
+	public boolean isIdentityInCourseGroup(Long groupKey);
+
 }

@@ -53,7 +53,7 @@ public class NodeEvaluation extends GenericNode {
 	private CourseNode courseNode;
 	private GenericTreeNode gtn = null;
 
-	private Map accesses = new HashMap(4);
+	private Map<String, Boolean> accesses = new HashMap<String, Boolean>(4);
 
 	private boolean visible = false;
 	private boolean atLeastOneAccessible = false;
@@ -105,8 +105,8 @@ public class NodeEvaluation extends GenericNode {
 	 */
 	public void build() {
 		// if at least one access	capability is true 
-		for (Iterator iter = accesses.values().iterator(); iter.hasNext();) {
-			Boolean entry = (Boolean) iter.next();
+		for (Iterator<Boolean> iter = accesses.values().iterator(); iter.hasNext();) {
+			Boolean entry = iter.next();
 			atLeastOneAccessible = atLeastOneAccessible || entry.booleanValue();
 		}
 

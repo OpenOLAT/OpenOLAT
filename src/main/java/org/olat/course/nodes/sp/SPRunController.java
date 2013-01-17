@@ -83,7 +83,6 @@ public class SPRunController extends BasicController {
 		
 	private VFSContainer courseFolderContainer;
 	private String fileName;
-	private final Map tempstorage;
 	
 	private boolean hasEditRights;
 	private CustomLinkTreeModel linkTreeModel;
@@ -101,9 +100,8 @@ public class SPRunController extends BasicController {
 	 * @param courseNode
 	 * @param courseFolderPath The course folder which contains the single page html file
 	 */
-	public SPRunController(WindowControl wControl, UserRequest ureq, Map tempstorage, UserCourseEnvironment userCourseEnv, SPCourseNode courseNode, VFSContainer courseFolderContainer) {
+	public SPRunController(WindowControl wControl, UserRequest ureq, UserCourseEnvironment userCourseEnv, SPCourseNode courseNode, VFSContainer courseFolderContainer) {
 		super(ureq,wControl);
-		this.tempstorage = tempstorage;
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
@@ -153,8 +151,7 @@ public class SPRunController extends BasicController {
 				// refire to listening controllers
 				fireEvent(ureq, event);
 			} else if (event instanceof NewInlineUriEvent) {
-				NewInlineUriEvent nue = (NewInlineUriEvent)event;
-				tempstorage.put(KEY_CURRENT_URI, nue.getNewUri());
+				//do nothing
 			}
 		}
 	}

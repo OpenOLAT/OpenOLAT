@@ -25,7 +25,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -63,10 +62,10 @@ public class IsCourseParticipantFunction extends AbstractFunction {
 			return defaultValue();
 		}
 
-		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
-		boolean isParticipant = cgm.isIdentityCourseParticipant(ident);
+		//CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
+		boolean isParticipant = getUserCourseEnv().isParticipant();// cgm.isIdentityCourseParticipant(ident);
 		if (log.isDebug()) {
+			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 			log.debug("identity "+ident.getName()+", coursecoach:"+isParticipant+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}
 		

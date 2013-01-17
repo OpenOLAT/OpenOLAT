@@ -26,7 +26,6 @@
 package org.olat.course.nodes;
 
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -96,13 +95,8 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
 
-		String nodeId = ne.getCourseNode().getIdent();
-		// obtain a temporary (as long as the users visits the course) map to store
-		// intermediate data
-		Map tmpstoremap = userCourseEnv.getTempMap(this.getClass(), nodeId);
-		
 		VFSContainer container = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-		SPRunController runController = new SPRunController(wControl, ureq, tmpstoremap, userCourseEnv, this, container);
+		SPRunController runController = new SPRunController(wControl, ureq, userCourseEnv, this, container);
 		return new NodeRunConstructionResult(runController);
 	}
 

@@ -110,7 +110,6 @@ import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticMainController;
 import org.olat.group.BusinessGroup;
@@ -157,7 +156,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private StackedController all;
 
 	private NavigationHandler navHandler;
-	private UserCourseEnvironment uce;
+	private UserCourseEnvironmentImpl uce;
 	private LayoutMain3ColsController columnLayoutCtr;
 
 	private Controller currentToolCtr;
@@ -170,9 +169,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Map<String, Boolean> courseRightsCache = new HashMap<String, Boolean>();
 	private boolean isCourseAdmin = false;
 	private boolean isCourseCoach = false;
-	private List<BusinessGroup> ownedGroups;
-	private List<BusinessGroup> participatedGroups;
-	private List<BusinessGroup> waitingListGroups;
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
@@ -236,20 +232,19 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree.setExpandSelectedNode(false);
 		contentP = new Panel("building_block_content");
 
-		// get all group memberships for this course
-		initGroupMemberships(identity);
 		// Initialize the the users roles and right for this course
 		// 1) is guest flag
 		isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-		// 2) all course internal rights
-		initUserRolesAndRights(identity);
-
 		// preload user assessment data in assessmnt properties cache to speed up
 		// course loading
 		course.getCourseEnvironment().getAssessmentManager().preloadCache(identity);
 
 		// build up the running structure for this user;
-		uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
+		// get all group memberships for this course
+		uce = loadUserCourseEnvironment(ureq, course);
+		// 2) all course internal rights
+		reloadUserRolesAndRights(identity);
+
 		// build score now
 		uce.getScoreAccounting().evaluateAll();
 		navHandler = new NavigationHandler(uce, false);
@@ -336,6 +331,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
+	private UserCourseEnvironmentImpl loadUserCourseEnvironment(UserRequest ureq, ICourse course) {
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(ureq.getIdentity());
+		List<BusinessGroup> participatedGroups = cgm.getParticipatingBusinessGroups(ureq.getIdentity());
+		List<BusinessGroup> waitingLists = cgm.getWaitingListGroups(ureq.getIdentity());
+		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(),
+				coachedGroups, participatedGroups, waitingLists, null, null, null);
+	}
+	
 	private void setLaunchDates(final Identity identity) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(identity), new SyncerExecutor(){
 			public void execute() {
@@ -365,7 +369,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		return extendedCourseTitle;
 	}
 
-	private void initUserRolesAndRights(final Identity identity) {
+	private void reloadUserRolesAndRights(final Identity identity) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// 1) course admins: users who are in repository entry owner group
 		// if user has the role InstitutionalResourceManager and has the same institution like author
@@ -377,6 +381,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		isCourseCoach = cgm.isIdentityCourseCoach(identity);
 		// 3) all other rights are defined in the groupmanagement using the learning
 		// group rights
+		uce.setUserRoles(isCourseAdmin, isCourseCoach);
 		
 		List<String> rights = cgm.getRights(identity);
 		courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, new Boolean(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
@@ -548,7 +553,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				needsRebuildAfterPublish = false;
 				
 			  // rebuild up the running structure for this user, after publish;
-				uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), CourseFactory.loadCourse(course.getResourceableId()).getCourseEnvironment());
+				course = CourseFactory.loadCourse(course.getResourceableId());
+				uce = loadUserCourseEnvironment(ureq, course);
 				// build score now
 				uce.getScoreAccounting().evaluateAll();
 				navHandler = new NavigationHandler(uce, false);
@@ -667,7 +673,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				logAudit("User tried to launch a group but user is not owner or participant "
 						+ "of group or group doesn't exist. Hacker attack or group has been changed or deleted. group key :: " + groupKey, null);
 				// refresh toolbox that contained wrong group
-				initGroupMemberships(ureq.getIdentity());
+				reloadGroupMemberships(ureq.getIdentity());
 				removeAsListenerAndDispose(toolC);
 				toolC = initToolController(ureq.getIdentity(), ureq);
 				listenTo(toolC);
@@ -938,9 +944,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// was adding or removing of the user
 			if (bgme.wasMyselfAdded(identity) || bgme.wasMyselfRemoved(identity)) {
 				// 1) reinitialize all group memberships
-				initGroupMemberships(identity);
+				reloadGroupMemberships(identity);
 				// 2) reinitialize the users roles and rights
-				initUserRolesAndRights(identity);
+				reloadUserRolesAndRights(identity);
 				// 3) rebuild toolboxes with link to groups and tools
 				removeAsListenerAndDispose(toolC);
 				toolC = initToolController(identity, null);
@@ -952,12 +958,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// check if this affects a right group where the user does participate.
 				// if so, we need
 				// to rebuild the toolboxes
-				if (PersistenceHelper.listContainsObjectByKey(participatedGroups, bgme.getModifiedGroupKey()) ||
-						PersistenceHelper.listContainsObjectByKey(ownedGroups, bgme.getModifiedGroupKey())) {
+				if (PersistenceHelper.listContainsObjectByKey(uce.getParticipatingGroups(), bgme.getModifiedGroupKey()) ||
+						PersistenceHelper.listContainsObjectByKey(uce.getCoachedGroups(), bgme.getModifiedGroupKey())) {
 					// 1) reinitialize all group memberships
-					initGroupMemberships(identity);
+					reloadGroupMemberships(identity);
 					// 2) reinitialize the users roles and rights
-					initUserRolesAndRights(identity);
+					reloadUserRolesAndRights(identity);
 					// 3) rebuild toolboxes with link to groups and tools
 					removeAsListenerAndDispose(toolC);
 					toolC = initToolController(identity, null);
@@ -1033,25 +1039,25 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 
 		// 2) add coached groups
-		if (ownedGroups.size() > 0) {
+		if (uce.getCoachedGroups().size() > 0) {
 			myTool.addHeader(translate("header.tools.ownerGroups"));
-			for (BusinessGroup group:ownedGroups) {
+			for (BusinessGroup group:uce.getCoachedGroups()) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
 		}
 
 		// 3) add participating groups
-		if (participatedGroups.size() > 0) {
+		if (uce.getParticipatingGroups().size() > 0) {
 			myTool.addHeader(translate("header.tools.participatedGroups"));
-			for (BusinessGroup group: participatedGroups) {
+			for (BusinessGroup group: uce.getParticipatingGroups()) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
 		}
 
 		// 5) add waiting-list groups
-		if (waitingListGroups.size() > 0) {
+		if (uce.getWaitingLists().size() > 0) {
 			myTool.addHeader(translate("header.tools.waitingListGroups"));
-			for (BusinessGroup group:waitingListGroups) {
+			for (BusinessGroup group:uce.getWaitingLists()) {
 				int pos = businessGroupService.getPositionInWaitingListFor(identity, group);
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName() + "(" + pos + ")", group
 						.getKey().toString(), null);
@@ -1159,11 +1165,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * 
 	 * @param identity
 	 */
-	private void initGroupMemberships(Identity identity) {
+	private void reloadGroupMemberships(Identity identity) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		ownedGroups = cgm.getOwnedBusinessGroups(identity);
-		participatedGroups = cgm.getParticipatingBusinessGroups(identity);
-		waitingListGroups = cgm.getWaitingListGroups(identity);
+		List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(identity);
+		List<BusinessGroup> participatedGroups = cgm.getParticipatingBusinessGroups(identity);
+		List<BusinessGroup> waitingLists = cgm.getWaitingListGroups(identity);
+		uce.setGroupMemberships(coachedGroups, participatedGroups, waitingLists);
 	}
 
 	/**
