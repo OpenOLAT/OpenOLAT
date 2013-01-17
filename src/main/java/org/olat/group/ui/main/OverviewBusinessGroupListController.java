@@ -65,8 +65,8 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		
 		mainVC = createVelocityContainer("group_list_overview");
 		
-		boolean marked = updateMarkedGroups(ureq).updateMarkedGroups();
-		if(!marked) {
+		boolean markedEmpty = updateMarkedGroups(ureq).isEmpty();
+		if(markedEmpty) {
 			updateAllGroups(ureq);
 		}
 		
@@ -74,10 +74,10 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		markedGroupsLink = LinkFactory.createLink("marked.groups", mainVC, this);
 		markedGroupsLink.setElementCssClass("o_sel_group_bookmarked_groups_seg");
-		segmentView.addSegment(markedGroupsLink, marked);
+		segmentView.addSegment(markedGroupsLink, !markedEmpty);
 		allGroupsLink = LinkFactory.createLink("opengroups.all", mainVC, this);
 		allGroupsLink.setElementCssClass("o_sel_group_all_groups_seg");
-		segmentView.addSegment(allGroupsLink, !marked);
+		segmentView.addSegment(allGroupsLink, markedEmpty);
 		ownedGroupsLink = LinkFactory.createLink("owned.groups", mainVC, this);
 		ownedGroupsLink.setElementCssClass("o_sel_group_owned_groups_seg");
 		segmentView.addSegment(ownedGroupsLink, false);

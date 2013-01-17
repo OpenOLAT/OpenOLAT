@@ -201,6 +201,12 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		return admin;
 	}
 	
+	protected boolean isEmpty() {
+		return groupListCtr == null ? true :
+			(groupListCtr.getTableDataModel() == null ? true :
+				groupListCtr.getTableDataModel().getRowCount() == 0);
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
