@@ -279,16 +279,15 @@ public class ImportCalendarManager extends BasicManager {
 	 * @param calId
 	 */
 	private static void reloadCalendarFromUrl(String importUrl, String calType, String calId) {
-	    try {
-	        String calendarContent = getContentFromUrl(importUrl);
-	        CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
-	        Kalendar kalendar = calManager.buildKalendarFrom(calendarContent, calType, calId);
-	        calManager.persistCalendar(kalendar);
-        } catch (IOException e) {
-        	log.error("Could not reload calendar from url=" + importUrl, e);
-        }
-	    
+    try {
+    	String calendarContent = getContentFromUrl(importUrl);
+    	CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+    	Kalendar kalendar = calManager.buildKalendarFrom(calendarContent, calType, calId);
+    	calManager.persistCalendar(kalendar);
+    } catch (Exception e) {
+      	log.error("Could not reload calendar from url=" + importUrl, e);
     }
+	}
 
 	/**
 	 * Get a temporary calendarID for upload
