@@ -30,6 +30,7 @@ import java.util.UUID;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.model.PersistedMapper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -84,16 +85,7 @@ public class MapperServiceImpl implements MapperService {
 	@Override
 	public String register(UserSession session, Mapper mapper) {
 		String mapid = UUID.randomUUID().toString().replace("-", "");
-		return register(session, mapid, mapper);
-	}	
-		
-	@Override
-	public String register(UserSession session, String mapid, Mapper mapper) {
-		String saveMapperID = Encoder.encrypt(mapid);
-		return internRegister(session, saveMapperID, mapper);
-	}
-	
-	private String internRegister(UserSession session, String mapid, Mapper mapper) {
+		mapid = Encoder.encrypt(mapid);
 		mapperIdToMapper.put(mapid, mapper);
 		mapperToMapperId.put(mapper, mapid);
 		if(session.getSessionInfo() == null) {
@@ -113,6 +105,35 @@ public class MapperServiceImpl implements MapperService {
 			mapperDao.persistMapper(sessionId, mapid, (Serializable)mapper);
 		}
 		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + mapid;
+	}	
+	
+	/**
+	 * Cacheable mapper, not session dependant
+	 */
+	@Override
+	public String register(UserSession session, String mapperId, Mapper mapper) {
+		String encryptedMapId = Encoder.encrypt(mapperId);
+		boolean alreadyLoaded = mapperIdToMapper.containsKey(encryptedMapId);
+		if(mapper instanceof Serializable) {
+			if(alreadyLoaded) {
+				if(!mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper)) {
+					mapperDao.persistMapper(null, encryptedMapId, (Serializable)mapper);
+				}
+			} else {
+				PersistedMapper persistedMapper = mapperDao.loadByMapperId(encryptedMapId);
+				if(persistedMapper == null) {
+					mapperDao.persistMapper(null, encryptedMapId, (Serializable)mapper);
+				} else {
+					mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper);
+				}
+			}
+		}
+		mapperIdToMapper.put(encryptedMapId, mapper);
+		mapperToMapperId.put(mapper, encryptedMapId);
+		if(session.getSessionInfo() == null) {
+			return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + encryptedMapId;
+		}
+		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + encryptedMapId;
 	}
 
 	@Override
