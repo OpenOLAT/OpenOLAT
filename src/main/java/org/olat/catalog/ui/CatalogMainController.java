@@ -51,12 +51,13 @@ public class CatalogMainController extends BasicController implements Activateab
 	private CatalogNodeController nodeController;
 
 	private final CatalogManager catalogManager;
+
 	
 	public CatalogMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
-		
+
 		mainVC = createVelocityContainer("main_catalog");
 		if(ureq.getUserSession().getRoles().isGuestOnly()) {
 			mainVC.contextPut("isGuest", Boolean.TRUE);

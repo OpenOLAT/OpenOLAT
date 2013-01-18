@@ -39,6 +39,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -149,7 +150,11 @@ public class CatalogNodeController extends BasicController implements Activateab
 		mainVC.put("entries", entryListController.getInitialComponent());
 		listenTo(entryListController);
 
-		putInitialPanel(mainVC);
+		//wrapper needed
+		LayoutMain3ColsController columnsLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, mainVC, "catmain");
+		columnsLayoutCtr.addCssClassToMain("o_catalog");
+		listenTo(columnsLayoutCtr);
+		putInitialPanel(columnsLayoutCtr.getInitialComponent());
 		updateContent(ureq);
 	}
 

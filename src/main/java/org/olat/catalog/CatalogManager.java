@@ -426,7 +426,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
 	}
 	
-	public List<CatalogEntry> getCategoryParentLine(CatalogEntry entry) {
+	private final List<CatalogEntry> getCategoryParentLine(CatalogEntry entry) {
 		List<CatalogEntry> parentLine = new ArrayList<CatalogEntry>();
 		parentLine.add(entry);
 		

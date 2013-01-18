@@ -25,20 +25,15 @@
 
 package org.olat.repository.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.ui.CatalogMainController;
 import org.olat.catalog.ui.CopyOfCatalogController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -103,7 +98,7 @@ import de.bps.olat.repository.controllers.WizardAddOwnersController;
  * @date Initial Date: Oct 21, 2004 <br>
  * @author Felix Jost
  */
-public class RepositoryMainController extends MainLayoutBasicController implements Activateable2, StackedController{
+public class RepositoryMainController extends MainLayoutBasicController implements Activateable2{
 
 	private static final OLog log = Tracing.createLoggerFor(RepositoryMainController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(RepositoryManager.class);
@@ -136,7 +131,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private RepositoryDetailsController detailsController;
 	private DialogBoxController launchEditorDialog;
 	private boolean isAuthor;
-	private CatalogMainController catalogCntrllr2;
 	private CopyOfCatalogController catalogCntrllrOld;
 	
 	
@@ -152,12 +146,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private RepositoryAddChooseStepsController chooseStepsController;
 	private Controller creationWizardController;
 	private final PortfolioModule portfolioModule;
-	
-	private final VelocityContainer stackVC;
-	
-	//stacked
-	private final Link backLink;
-	private final List<Link> stack = new ArrayList<Link>(3);
 
 	/**
 	 * The check for author rights is executed on construction time and then
@@ -214,25 +202,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		columnsLayoutCtr.addCssClassToMain("o_repository");
 		listenTo(columnsLayoutCtr);
 
-		//create the stack
-		String stackPage = Util.getPackageVelocityRoot(StackedController.class) + "/stack.html";
-		stackVC = new VelocityContainer(null, "vc_stack", stackPage, getTranslator(), this);
-		stackVC.put("content", columnsLayoutCtr.getInitialComponent());
-		//back link
-		backLink = LinkFactory.createCustomLink("back", "back", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, stackVC, this);
-		backLink.setCustomEnabledLinkCSS("b_breadcumb_back");
-		backLink.setCustomDisplayText("\u25C4"); // unicode back arrow (black left pointer symbol)
-		backLink.setTitle(translate("back"));
-		backLink.setAccessKey("b"); // allow navigation using keyboard
-		stackVC.put("back", backLink);
-		//add the root
-		Link link = LinkFactory.createLink("gcrumb_root", stackVC, this);
-		link.setCustomDisplayText(menuTree.getTreeModel().getRootNode().getTitle());
-		link.setUserObject(this);
-		stack.add(link);
-		stackVC.contextPut("breadCrumbs", stack);
-		
-		
 		if (isAuthor || ureq.getUserSession().getRoles().isOLATAdmin()) {
 			activateContent(ureq, "search.my", null, null);
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.my", rootNode);
@@ -242,89 +211,8 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject("catalog", rootNode);
 			menuTree.setSelectedNode(activatedNode);
 		}
-		
-		putInitialPanel(stackVC);
-		//putInitialPanel(columnsLayoutCtr.getInitialComponent());
-		
-		
-	}
 
-	@Override
-	public void popController(Controller controller) {
-		Controller popedCtrl = null;
-		for(int i=stack.size(); i-->0; ) {
-			Link link = stack.remove(i);
-			popedCtrl = (Controller)link.getUserObject();
-			popedCtrl.dispose();
-			if(popedCtrl == controller) {
-				break;
-			}
-		}
-
-		Link currentLink = stack.get(stack.size() - 1);
-		Controller currentCtrl  = (Controller)currentLink.getUserObject();
-		if(currentCtrl == this) {
-			mainPanel.setContent(main);
-		} else {
-			mainPanel.setContent(currentCtrl.getInitialComponent());
-		}
-		stackVC.setDirty(true);
-	}
-
-	private void popController(Component source) {
-		int index = stack.indexOf(source);
-		if(index >= 0 && index < (stack.size() - 1)) {
-			Controller popedCtrl = null;
-			for(int i=stack.size(); i-->(index+1); ) {
-				Link link = stack.remove(i);
-				popedCtrl = (Controller)link.getUserObject();
-				if(popedCtrl != catalogCntrllr2) {
-					popedCtrl.dispose();
-				}
-			}
-
-			Link currentLink = stack.get(index);
-			Controller currentCtrl  = (Controller)currentLink.getUserObject();
-			if(currentCtrl == this) {
-				mainPanel.setContent(main);
-			} else {
-				mainPanel.setContent(currentCtrl.getInitialComponent());
-			}
-			stackVC.setDirty(true);
-		}
-	}
-
-	@Override
-	public void popUpToRootController(UserRequest ureq) {
-		if(stack.size() > 1) {
-			Controller popedCtrl = null;
-			for(int i=stack.size(); i-->1; ) {
-				Link link = stack.remove(i);
-				popedCtrl = (Controller)link.getUserObject();
-				if(popedCtrl != catalogCntrllr2) {
-					popedCtrl.dispose();
-				}
-			}
-			
-			//set the root controller
-			Link rootLink = stack.get(0);
-			Controller rootController  = (Controller)rootLink.getUserObject();
-			if(rootController == this) {
-				mainPanel.setContent(main);
-			} else {
-				mainPanel.setContent(rootController.getInitialComponent());
-			}
-			stackVC.setDirty(true);
-		}
-	}
-
-	@Override
-	public void pushController(String displayName, Controller controller) {
-		Link link = LinkFactory.createLink("gcrumb_" + stack.size(), stackVC, this);
-		link.setCustomDisplayText(displayName);
-		link.setUserObject(controller);
-		stack.add(link);
-		mainPanel.setContent(controller.getInitialComponent());
+		putInitialPanel(columnsLayoutCtr.getInitialComponent());
 	}
 
 	/**
@@ -379,12 +267,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		rootNode.setCssClass("o_sel_repo_home");
 		gtm.setRootNode(rootNode);
 
-		// TODO:catalog not yet finished :
-		GenericTreeNode node = new GenericTreeNode(translate("search.catalog"), "catalog");
-		node.setCssClass("o_sel_repo_catalog");
-		rootNode.addChild(node);
-		
-		node = new GenericTreeNode(translate("search.catalog"), "search.catalog.old");
+		GenericTreeNode node = new GenericTreeNode(translate("search.catalog"), "search.catalog.old");
 		node.setCssClass("o_sel_repo_catalog");
 		rootNode.addChild(node);
 
@@ -464,16 +347,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		long start = 0;
 		if(isLogDebugEnabled()) start = System.currentTimeMillis(); // TODO: add check if debug logging 
 		
-		if (source.equals(backLink)) {
-			if (stack.size() > 1) {
-				// back means to one level down, change source to the stack item one below current
-				source = stack.get(stack.size()-2);
-				// now continue as if user manually pressed a stack item in the list
-			}
-		}
-		if(stack.contains(source)) {
-			popController(source);
-		} else if (source == menuTree) {
+		if (source == menuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				Component toolComp = (mainToolC == null ? null : mainToolC.getInitialComponent());
 				columnsLayoutCtr.setCol2(toolComp);
@@ -503,9 +377,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	 */
 	private void activateContent(UserRequest ureq, Object userObject, List<ContextEntry> entries, StateEntry state) {
 		log.info("activateContent userObject=" + userObject);
-		
-		popUpToRootController(ureq);
-		
+
 		if (userObject.equals("search.home")) { // the
 			// home
 			main.setPage(VELOCITY_ROOT + "/index.html");
@@ -516,10 +388,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			mainPanel.setContent(main);
 			searchController.displaySearchForm();
 			searchController.enableBackToSearchFormLink(true);
-		} else if (userObject.equals("catalog")) {
-			// enter catalog browsing
-			activateNewCatalogController(ureq, entries, state);
-			mainPanel.setContent(catalogCntrllr2.getInitialComponent());
 		} else if (userObject.equals("search.catalog.old")) {
 			// enter catalog browsing
 			activateCatalogController(ureq, entries, state);
@@ -637,22 +505,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		ToolController ccToolCtr = catalogCntrllrOld.createCatalogToolController();
 		Component toolComp = (ccToolCtr == null ? null : ccToolCtr.getInitialComponent());
 		columnsLayoutCtr.setCol2(toolComp);
-	}
-	
-	private void activateNewCatalogController(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (catalogCntrllr2 == null || lastUserObject.equals("catalog")) {
-			removeAsListenerAndDispose(catalogCntrllr2);
-			//fxdiff BAKS-7 Resume function
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("search.catalog", 0l);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			catalogCntrllr2 = new CatalogMainController(ureq, bwControl);
-			catalogCntrllr2.setStackedController(this);
-			listenTo(catalogCntrllr2);
-		}
-		catalogCntrllr2.activate(ureq, entries, state);
-		columnsLayoutCtr.setCol2(null);
-		
-		pushController("Catalog", catalogCntrllr2);
 	}
 
 	/**
@@ -1033,7 +885,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 						detailsController.activate(ureq, subEntries.subList(1, subEntries.size()), nextEntry.getTransientState());
 					} else if(CatalogEntry.class.getSimpleName().equals(subType)) {
 						catalogCntrllrOld.activate(ureq, subEntries, entry.getTransientState());
-						catalogCntrllr2.activate(ureq, subEntries, entry.getTransientState());
 					}
 				}
 			}

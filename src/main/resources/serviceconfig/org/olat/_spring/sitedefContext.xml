@@ -20,6 +20,10 @@
 	   <property name="order" value="4" />
 	   <property name="enabled" value="${site.groups.enable}"/>
 	</bean>
+	<bean id="olatsites_catalog" class="org.olat.catalog.site.CatalogSiteDef" scope="prototype" >
+	   <property name="order" value="5" />
+	   <property name="enabled" value="${site.catalog.enable}"/>
+	</bean>
 	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef" scope="prototype" >
 	   <property name="order" value="5" />
 	   <property name="enabled" value="${site.repository.enable}"/>
