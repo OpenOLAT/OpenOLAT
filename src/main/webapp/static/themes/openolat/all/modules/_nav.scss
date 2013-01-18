@@ -73,9 +73,9 @@
 				&.site_demo_icon > div { background-image: url('../openolat/images/information-white.png');  }
 				&.f_site_library > div { background-image: url('../openolat/images/library.png'); } 
 				&.fx_members >  div { background-image: url('../openolat/images/users_members.png'); } 
-				&.o_site_guidemo div { background-image: url('../openolat/images/light-bulb.png') }
-				&.b_resource_GroupInfoMainController div { background-image: url(../openolat/images/users.png) }
-	
+				&.o_site_guidemo div { background-image: url('../openolat/images/light-bulb.png'); }
+				&.b_resource_GroupInfoMainController div { background-image: url(../openolat/images/users.png); }
+				&.o_site_catalog div { background-image: url(../openolat/images/drawer-open.png); }
 			}
 			
 			/* -- TABS ( courses, wiki, etc.) -- */
