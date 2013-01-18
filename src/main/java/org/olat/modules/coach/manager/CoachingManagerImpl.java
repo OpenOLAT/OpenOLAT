@@ -31,7 +31,6 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityShort;
-import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
@@ -46,6 +45,7 @@ import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntryStrictTutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,16 +69,12 @@ public class CoachingManagerImpl extends BasicManager implements CoachingManager
 	@Override
 	public boolean isCoach(Identity coach) {
 		try {
-			StringBuilder query = new StringBuilder();
-			query.append("select count(re) from ").append(RepositoryEntry.class.getName()).append(" as re ")
-			     .append(" inner join re.tutorGroup as tutorSecGroup ")
-			     .append(" where tutorSecGroup in (")
-			     .append("   select tutorSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as tutorSgmi ")
-			     .append("     where tutorSgmi.identity.key=:coachKey")
-			     .append("   )");
+			StringBuilder sb = new StringBuilder();
+			sb.append("select count(vmember.key) from ").append(RepositoryEntryStrictTutor.class.getName()).append(" vmember")
+				.append(" where vmember.repoTutorKey=:identityKey or vmember.groupOwnerKey=:identityKey");
 
-			TypedQuery<Number> dbQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Number.class);
-			dbQuery.setParameter("coachKey", coach.getKey());
+			TypedQuery<Number> dbQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class);
+			dbQuery.setParameter("identityKey", coach.getKey());
 			Number entries = (Number)dbQuery.getSingleResult();
 			return entries.intValue() > 0;
 		} catch (Exception e) {
