@@ -17,34 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.site;
+package org.olat.home;
 
 import org.olat.catalog.CatalogModule;
-import org.olat.core.CoreSpringFactory;
+import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
-import org.olat.core.gui.control.navigation.SiteDefinition;
-import org.olat.core.gui.control.navigation.SiteInstance;
 
 /**
  * 
- * Initial date: 16.01.2013<br>
+ * Description:<br>
+ * ActionExtension for the "my courses"
+ * 
+ * <P>
+ * Initial Date:  18 jan. 2013 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CatalogSiteDef extends AbstractSiteDefinition implements SiteDefinition {
+public class CourseActionExtension extends GenericActionExtension {
+	
+	private final CatalogModule catModule;
+	
+	public CourseActionExtension(CatalogModule catModule) {
+		this.catModule = catModule;
+	}
+	
 
-	/**
-	 * @see org.olat.navigation.SiteDefinition#createSite(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
-	public SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
-		CatalogModule catModule = CoreSpringFactory.getImpl(CatalogModule.class);
-		if(catModule.isCatalogSiteEnabled()) {
-			SiteInstance si = new CatalogSite(ureq.getLocale());
-			return si;
-		}
-		return null;
+	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
+		return new CourseMainController(ureq, wControl);
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return catModule.isMyCoursesEnabled();
 	}
 }

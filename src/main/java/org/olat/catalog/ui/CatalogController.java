@@ -52,8 +52,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -144,7 +142,7 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  * Date: 2005/10/14 12:35:40 <br>
  * @author Felix Jost
  */
-public class CatalogController extends BasicController implements Activateable2, StackedControllerAware {
+public class CatalogController extends BasicController implements Activateable2 {
 
 	// catalog actions
 	
@@ -245,13 +243,8 @@ public class CatalogController extends BasicController implements Activateable2,
 	 * @param rootce
 	 */
 	public CatalogController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
-	}
-	
-	public CatalogController(UserRequest ureq, WindowControl wControl, CatalogEntry parentNode) {
 		// fallback translator to repository package to reduce redundant translations
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
-		
 		
 		cm = CatalogManager.getInstance();
 		acService = CoreSpringFactory.getImpl(ACService.class);
@@ -288,13 +281,6 @@ public class CatalogController extends BasicController implements Activateable2,
 	
 		putInitialPanel(myContent);
 	}
-
-	@Override
-	public void setStackedController(StackedController stackPanel) {
-		//
-	}
-
-
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
@@ -987,8 +973,7 @@ public class CatalogController extends BasicController implements Activateable2,
 			}
 		}
 		
-		List<OLATResourceAccess> resourcesWithOffer = resourceKeys.isEmpty() ? Collections.<OLATResourceAccess>emptyList()
-				: acService.getAccessMethodForResources(resourceKeys, null, true, new Date());
+		List<OLATResourceAccess> resourcesWithOffer = acService.getAccessMethodForResources(resourceKeys, null, true, new Date());
 		for ( CatalogEntry entry : childCe ) {
 			if(entry.getType() == CatalogEntry.TYPE_NODE) continue;
 			//fxdiff VCRP-1,2: access control of resources

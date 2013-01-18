@@ -1420,7 +1420,6 @@ create or replace view o_as_eff_statement_grouped_v as (
       sg_studentMembership.identity_id, sg_statement.id, sg_statement.passed, sg_statement.score, pg_initial_launch.id
 );
 
-drop view o_as_eff_statement_members_v;
 create view o_as_eff_statement_members_v as (
    select
       sm_re.repositoryentry_id as re_id,
