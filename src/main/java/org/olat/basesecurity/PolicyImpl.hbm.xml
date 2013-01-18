@@ -43,6 +43,9 @@
 	<query name="isIdentityPermittedOnResourceable">
 		<![CDATA[select count(poi) from org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi, org.olat.basesecurity.PolicyImpl as poi, org.olat.resource.OLATResourceImpl as ori where sgmsi.identity.key = :identitykey and sgmsi.securityGroup =  poi.securityGroup and poi.permission = :permission and poi.olatResource = ori and (ori.resId = :resid) and ori.resName = :resname]]>
 	</query>
+	<query name="getIdentityPermissionsOnResourceableCheckType">
+		<![CDATA[select distinct poi.permission from org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi, org.olat.basesecurity.PolicyImpl as poi, org.olat.resource.OLATResourceImpl as ori where sgmsi.identity.key=:identitykey and sgmsi.securityGroup=poi.securityGroup and poi.olatResource=ori and (ori.resId=:resid or ori.resId=0) and ori.resName=:resname]]>
+	</query>
 	
 </hibernate-mapping>
 

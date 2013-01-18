@@ -35,6 +35,7 @@ import java.util.UUID;
 import junit.framework.Assert;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
@@ -67,6 +68,8 @@ public class VersionManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private VersionsFileManager versionManager;
+	@Autowired
+	private SimpleVersionConfig versioningConfigurator;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -80,6 +83,12 @@ public class VersionManagerTest extends OlatTestCase {
 		versionConfig.setMaxNumberOfVersionsProperty(new Long(10));
 		
 		setuped = true;
+	}
+	
+	@After
+	public void resetMaxVersions() {
+		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(10));
+		versioningConfigurator.getMaxNumberOfVersionsProperty();
 	}
 	
 	@Test
@@ -134,6 +143,72 @@ public class VersionManagerTest extends OlatTestCase {
 		assertEquals("Version 1", revision1.getComment());
 		assertEquals("Version 2", revision2.getComment());
 		assertEquals("Version 3", versions.getComment());
+	}
+	
+	@Test
+	public void testOverflow_lowLevel() throws IOException {
+		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(3));
+		
+		//create a file
+		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test_" + UUID.randomUUID(), null);
+		String filename = getRandomName();
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		OutputStream out = file.getOutputStream(false);
+		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
+		int byteCopied = IOUtils.copy(in, out);
+		IOUtils.closeQuietly(in);
+		assertFalse(byteCopied == 0);
+		assertTrue(file instanceof Versionable);
+		
+		//save a first version
+		for(int i=0; i<5; i++) {
+			Versionable versionedFile = (Versionable)file;
+			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
+			versionedFile.getVersions().addVersion(id2, "Version " + (1 +i), inv);
+			IOUtils.closeQuietly(inv);
+		}
+
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		Versions versions = VersionsFileManager.getInstance().createVersionsFor((VFSLeaf)retrievedFile);	
+		List<VFSRevision> revisions = versions.getRevisions();
+		assertNotNull(revisions);
+		assertEquals(3, revisions.size());
+		assertEquals("3", revisions.get(0).getRevisionNr());
+		assertEquals("4", revisions.get(1).getRevisionNr());
+		assertEquals("5", revisions.get(2).getRevisionNr());
+
+		assertEquals("Version 5", versions.getComment());
+		assertEquals(id2.getName(), revisions.get(2).getAuthor());
+	}
+	
+	@Test
+	public void testOverflow_lowLevel_deactivated() throws IOException {
+		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(0));
+		
+		//create a file
+		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test_" + UUID.randomUUID(), null);
+		String filename = getRandomName();
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		OutputStream out = file.getOutputStream(false);
+		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
+		int byteCopied = IOUtils.copy(in, out);
+		IOUtils.closeQuietly(in);
+		assertFalse(byteCopied == 0);
+		assertTrue(file instanceof Versionable);
+		
+		//save a first version
+		for(int i=0; i<5; i++) {
+			Versionable versionedFile = (Versionable)file;
+			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
+			versionedFile.getVersions().addVersion(id2, "Version " + (1 +i), inv);
+			IOUtils.closeQuietly(inv);
+		}
+
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		Versions versions = VersionsFileManager.getInstance().createVersionsFor((VFSLeaf)retrievedFile);	
+		List<VFSRevision> revisions = versions.getRevisions();
+		assertNotNull(revisions);
+		assertTrue(revisions.isEmpty());
 	}
 	
 	@Test

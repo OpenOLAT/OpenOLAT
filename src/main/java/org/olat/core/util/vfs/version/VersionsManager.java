@@ -92,6 +92,14 @@ public abstract class VersionsManager extends BasicManager {
 	 */
 	public abstract boolean addVersion(Versionable currentVersion, Identity author, String comment, InputStream newVersion);
 
+	/**
+	 * Add a new revision to the files. The method check the number of revisions against the absolute
+	 * maximum limit for the instance.
+	 * @param currentVersion
+	 * @param author
+	 * @param comment
+	 * @return
+	 */
 	public abstract boolean addToRevisions(Versionable currentVersion, Identity author, String comment);
 	
 	/**

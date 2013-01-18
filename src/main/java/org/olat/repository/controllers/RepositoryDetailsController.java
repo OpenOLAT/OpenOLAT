@@ -582,9 +582,9 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				doCloseDetailView(ureq);
 				return;
 			} else if (sourceLink == downloadButton){
-				doDownload(ureq, false);
+				doDownload(ureq, repositoryEntry, false);
 			} else if (sourceLink == launchButton){
-				doLaunch(ureq);
+				doLaunch(ureq, repositoryEntry);
 			} else if (sourceLink == loginLink){
 				DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
 			} else if (sourceLink.getUserObject() instanceof IdentityShort) {
@@ -617,7 +617,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private void doCloseDetailView(UserRequest ureq) {
 		// REVIEW:pb:note:handles jumps from Catalog and Course
 		if (jumpfromcourse && repositoryEntry.getCanLaunch()) {
-			doLaunch(ureq);
+			doLaunch(ureq, repositoryEntry);
 		} else {
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
@@ -654,28 +654,28 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * 
 	 * @param ureq
 	 */
-	boolean doLaunch(UserRequest ureq) {
-		RepositoryHandler typeToLaunch = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
+	boolean doLaunch(UserRequest ureq, RepositoryEntry re) {
+		RepositoryHandler typeToLaunch = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
 		if (typeToLaunch == null){
 			StringBuilder sb = new StringBuilder(translate("error.launch"));
 			sb.append(": No launcher for repository entry: ");
-			sb.append(repositoryEntry.getKey());
+			sb.append(re.getKey());
 			throw new OLATRuntimeException(RepositoryDetailsController.class,sb.toString(), null);
 		}
-		if (RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey()) == null) {
+		if (RepositoryManager.getInstance().lookupRepositoryEntry(re.getKey()) == null) {
 			showInfo("info.entry.deleted");
 			return false;
 		}
 		
 		try {
-			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+			String businessPath = "[RepositoryEntry:" + re.getKey() + "]";
 			boolean ok = NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 			if(ok) {
 				fireEvent(ureq, LAUNCHED_EVENT);
 			}
 			return ok;
 		} catch (CorruptedCourseException e) {
-			logError("Corrupted course: " + repositoryEntry, e);
+			logError("Corrupted course: " + re, e);
 			return false;
 		}
 	}
@@ -721,16 +721,16 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * 
 	 * @param ureq
 	 */
-	void doDownload(UserRequest ureq, boolean backwardsCompatible) {
-		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
+	void doDownload(UserRequest ureq, RepositoryEntry re, boolean backwardsCompatible) {
+		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
 
 		if (typeToDownload == null){
 			StringBuilder sb = new StringBuilder(translate("error.download"));
 			sb.append(": No download handler for repository entry: ");
-			sb.append(repositoryEntry.getKey());
+			sb.append(re.getKey());
 			throw new OLATRuntimeException(RepositoryDetailsController.class, sb.toString(), null);
 		}
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(repositoryEntry.getOlatResource());
+		OLATResource ores = OLATResourceManager.getInstance().findResourceable(re.getOlatResource());
 		if (ores == null) {
 			showError("error.download");
 			return;
@@ -741,7 +741,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		  if(lockResult==null || (lockResult!=null && lockResult.isSuccess() && !isAlreadyLocked)) {
 		    MediaResource mr = typeToDownload.getAsMediaResource(ores, backwardsCompatible);
 		    if(mr!=null) {
-		      RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntry);
+		      RepositoryManager.getInstance().incrementDownloadCounter(re);
 		      ureq.getDispatchResult().setResultingMediaResource(mr);
 		    } else {
 			    showError("error.export");
@@ -866,12 +866,12 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			//
 		} else if (source == detailsToolC) {
 			if (cmd.equals(ACTION_DOWNLOAD)) { // download
-				doDownload(ureq, false);
+				doDownload(ureq, repositoryEntry, false);
 				return;
 			} else if (cmd.equals(ACTION_DOWNLOAD_BACKWARD_COMPAT)) {
-				doDownload(ureq, true);
+				doDownload(ureq, repositoryEntry, true);
 			} else if (cmd.equals(ACTION_LAUNCH)) { // launch resource
-				doLaunch(ureq);
+				doLaunch(ureq, repositoryEntry);
 				return;
 			} else if (cmd.equals(ACTION_EDIT)) { // start editor
 				doEdit(ureq);

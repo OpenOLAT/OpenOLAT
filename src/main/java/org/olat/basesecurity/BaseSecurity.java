@@ -62,6 +62,14 @@ public interface BaseSecurity {
 	public boolean isIdentityPermittedOnResourceable(Identity identity, String permission, OLATResourceable olatResourceable);
 
 	/**
+	 * Return the list of "allowed to..."
+	 * @param identity
+	 * @param olatResourceable
+	 * @return
+	 */
+	public List<String> getIdentityPermissionOnresourceable(Identity identity, OLATResourceable olatResourceable);
+	
+	/**
 	 * Get the identity's roles
 	 * 
 	 * @param identity

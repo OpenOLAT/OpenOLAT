@@ -600,6 +600,10 @@ public class RepositoryManager extends BasicManager {
 	 * @throws AssertException if the softkey could not be found (strict=true)
 	 */
 	public RepositoryEntry lookupRepositoryEntryBySoftkey(String softkey, boolean strict) {
+		if(softkey == null || "sf.notconfigured".equals(softkey)) {
+			return null;
+		}
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v")
 		  .append(" inner join fetch v.olatResource as ores ")

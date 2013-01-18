@@ -32,6 +32,12 @@ import org.olat.core.util.vfs.VFSContainer;
  * @author srosse
  */
 public interface FolderVersioningConfigurator {
+	
+	/**
+	 * The absolut limit for this instance
+	 * @return -1 for versioning without limit, 0 for no versioning, 1 - n is the maximum number of revision per file
+	 */
+	public int getMaxNumOfVersionsAllowed();
 
 	/**
 	 * @param relPath

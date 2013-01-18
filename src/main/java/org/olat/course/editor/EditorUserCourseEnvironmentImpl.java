@@ -25,8 +25,6 @@
 
 package org.olat.course.editor;
 
-import java.util.Map;
-
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.AssertException;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -90,9 +88,24 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return sa;
 	}
 
-	public Map getTempMap(Class owner, String key) {
-		// TODO Auto-generated method stub
-		return null;
+	@Override
+	public boolean isIdentityInCourseGroup(Long groupKey) {
+		//TODO OO-502
+		return false;
 	}
 
+	@Override
+	public boolean isAdmin() {
+		return false;
+	}
+
+	@Override
+	public boolean isCoach() {
+		return false;
+	}
+
+	@Override
+	public boolean isParticipant() {
+		return false;
+	}
 }

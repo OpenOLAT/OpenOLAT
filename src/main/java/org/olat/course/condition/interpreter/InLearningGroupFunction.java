@@ -81,21 +81,17 @@ public class InLearningGroupFunction extends AbstractFunction {
 			return defaultValue();
 		}
 
-		/*
-		 * the real function evaluation which is used during run time
-		 */
-		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-		
-		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
-		//System.out.println("todo: check if "+(ident==null? "n/a":ident.getName())+" is in group "+groupName);
-		
+		//the real function evaluation which is used during run time
 		if(isGroupKey(groupName)) {
 			Long groupKey = Long.parseLong(groupName);
-			return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+			return getUserCourseEnv().isIdentityInCourseGroup(groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+			//return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}
-		
+
+		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		List<Long> groupKeys = CoreSpringFactory.getImpl(BusinessGroupService.class).toGroupKeys(groupName, cgm.getCourseResource());
 		if(!groupKeys.isEmpty()) {
+			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 			return cgm.isIdentityInGroup(ident, groupKeys.get(0)) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}
 		return ConditionInterpreter.INT_FALSE;
