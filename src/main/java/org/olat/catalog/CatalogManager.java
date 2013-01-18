@@ -335,7 +335,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		for (CatalogEntry nextCe:children) {
 			deleteCatalogSubtree(nextCe,secGroupsToBeDeleted);
 		}
-		ce = dbInstance.getCurrentEntityManager().find(CatalogEntry.class, ce.getKey());
+		ce = dbInstance.getCurrentEntityManager().find(CatalogEntryImpl.class, ce.getKey());
 		//mark owner group for deletion.
 		SecurityGroup owner = ce.getOwnerGroup();
 		if (owner != null) {

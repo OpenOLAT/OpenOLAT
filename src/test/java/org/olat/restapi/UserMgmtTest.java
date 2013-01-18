@@ -293,13 +293,14 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		InputStream body = response.getEntity().getContent();
 		List<UserVO> vos = parseUserArray(body);
-		
-		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
-
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
-		assertEquals(vos.size(), identities.size());
+		int voSize = vos.size();
+		vos = null;
 		
+		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		assertEquals(voSize, identities.size());
+
 		conn.shutdown();
 	}
 	

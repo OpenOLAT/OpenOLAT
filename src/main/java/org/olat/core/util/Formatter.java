@@ -89,7 +89,8 @@ public class Formatter {
 		if(localToFormatterMap.containsKey(locale)) {
 			formatter = localToFormatterMap.get(locale);
 		} else {
-			formatter = localToFormatterMap.put(locale, new Formatter(locale));
+			formatter = new Formatter(locale);
+			localToFormatterMap.put(locale, formatter);
 		}
 		return formatter;
 	}
