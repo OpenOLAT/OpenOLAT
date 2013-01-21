@@ -278,7 +278,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 			MailConfirmation confirmation = (MailConfirmation)confirmSendMailBox.getUserObject();
 			MemberPermissionChangeEvent e =confirmation.getE();
 			if(e.getMember() != null) {
-				doChangePermission(ureq, e, null, sendMail);
+				doChangePermission(ureq, e, sendMail);
 			} else {
 				doChangePermission(ureq, e, confirmation.getMembers(), sendMail);
 			}
