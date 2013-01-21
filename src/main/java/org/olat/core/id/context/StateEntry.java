@@ -19,6 +19,8 @@
  */
 package org.olat.core.id.context;
 
+import java.io.Serializable;
+
 /**
  * 
  * <h3>Description:</h3>
@@ -27,7 +29,7 @@ package org.olat.core.id.context;
  * Initial Date:  18 jan. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
-public interface StateEntry extends Cloneable {
+public interface StateEntry extends Cloneable, Serializable {
 	
 	public StateEntry clone();
 }

@@ -105,7 +105,8 @@ public class HomePageContextEntryControllerCreator extends DefaultContextEntryCo
 		return identity != null;
 	}
 	
-	private class HomePageStateEntry implements StateEntry {
+	public static class HomePageStateEntry implements StateEntry {
+		private static final long serialVersionUID = -8949620136046652588L;
 		private final Identity identity;
 		
 		public HomePageStateEntry(Identity identity) {

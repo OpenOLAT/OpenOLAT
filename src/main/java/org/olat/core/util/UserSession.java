@@ -74,7 +74,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private static final long serialVersionUID = 1975177605776990868L;
 
 	// the environment (identity, locale, ..) of the identity
-	private transient IdentityEnvironment identityEnvironment;
+	private IdentityEnvironment identityEnvironment;
 	private transient SessionInfo sessionInfo;
 	private transient Map<String,Object> store;
 	/**
@@ -82,10 +82,10 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 */
 	private transient Map<String,Object> nonClearedStore = new HashMap<String,Object>();
 	private boolean authenticated = false;
-	private transient  Preferences guiPreferences;
-	private transient  EventBus singleUserSystemBus;
+	private transient Preferences guiPreferences;
+	private transient EventBus singleUserSystemBus;
 	private List<String> chats;
-	private transient Stack<HistoryPoint> history = new Stack<HistoryPoint>();
+	private Stack<HistoryPoint> history = new Stack<HistoryPoint>();
 
 	public UserSession() {
 		init();
@@ -97,6 +97,15 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
 		authenticated = false;
 		sessionInfo = null;
+	}
+	
+	private Object readResolve() {
+		store = new HashMap<String,Object>(4);
+		nonClearedStore = new HashMap<String,Object>();
+		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
+		sessionInfo = null;
+		System.out.println("readResolve 2");
+		return this;
 	}
 
 	/**
@@ -127,9 +136,15 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @return entry
 	 */
 	public Object getEntry(String key) {
-		if (key == null) return null;
-		if (store.get(key) != null) return store.get(key);
-		if (nonClearedStore.get(key) != null) return nonClearedStore.get(key);
+		if (key == null) {
+			return null;
+		}
+		if (store.get(key) != null) {
+			return store.get(key);
+		}
+		if (nonClearedStore.get(key) != null) {
+			return nonClearedStore.get(key);
+		}
 		else return null;
 	}
 

@@ -28,6 +28,7 @@
 */
 package org.olat.core.id.context;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.DateFormat;
@@ -523,7 +524,9 @@ public class BusinessControlFactory {
 	}
 }	
 
-class MyContextEntry implements ContextEntry {
+class MyContextEntry implements ContextEntry, Serializable {
+
+	private static final long serialVersionUID = 949522581806327579L;
 	private final OLATResourceable olatResourceable;
 
 	//fxdiff BAKS-7 Resume function

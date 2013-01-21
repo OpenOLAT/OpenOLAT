@@ -29,8 +29,9 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  * Initial Date:  18 jan. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
-public class StateSite implements StateEntry{
+public class StateSite implements StateEntry {
 	
+	private static final long serialVersionUID = 963711681410259249L;
 	private transient SiteInstance site;
 	
 	public StateSite() {
