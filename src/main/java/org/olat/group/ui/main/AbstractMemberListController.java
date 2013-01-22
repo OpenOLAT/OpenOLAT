@@ -374,43 +374,47 @@ public abstract class AbstractMemberListController extends BasicController imple
 	}
 	
 	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, boolean sendMail) {
+		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
-			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes, null);
+			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes, mailing);
 		}
 
-		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), null);
+		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);
 		//make sure all is committed before loading the model again (I see issues without)
 		DBFactory.getInstance().commitAndCloseSession();
 		
-		if(e.getGroupChanges() != null && !e.getGroupChanges().isEmpty()) {
+		/*if(sendMail && e.getGroupChanges() != null && !e.getGroupChanges().isEmpty()) {
 			for (BusinessGroupMembershipChange mod : e.getGroupChanges()) {
 				sendMailAfterChangePermission(mod);
 			}
-		}
+		}*/
 
 		reloadModel();
 	}
 	
 	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members, boolean sendMail) {
+
+		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
-			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, null);
+			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, mailing);
 		}
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
-		businessGroupService.updateMemberships(getIdentity(), allModifications, null);
+		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
 		DBFactory.getInstance().commitAndCloseSession();
 		
-		if(allModifications != null && !allModifications.isEmpty()) {
+		/*if(sendMail && allModifications != null && !allModifications.isEmpty()) {
 			for (BusinessGroupMembershipChange mod : allModifications) {
 				sendMailAfterChangePermission(mod);
 			}
 		}
 
 		//make sure all is committed before loading the model again (I see issues without)
-		DBFactory.getInstance().commitAndCloseSession();
+		//DBFactory.getInstance().commitAndCloseSession();
+		*/
 		reloadModel();
 	}
 	
