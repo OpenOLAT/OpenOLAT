@@ -61,6 +61,10 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	private static final String ACCEPT_MEMBERSHIP_USERMANAGERS = "acceptMembershipForUsermanagers";
 	private static final String ACCEPT_MEMBERSHIP_GROUPMANAGERS = "acceptMembershipForGroupmanagers";
 	private static final String ACCEPT_MEMBERSHIP_ADMINISTRATORS = "acceptMembershipForAdministrators";
+	
+	private static final String GROUP_MGR_LINK_COURSE_ALLOWED = "groupManagersAllowedToLinkCourses";
+	private static final String RESOURCE_MGR_LINK_GROUP_ALLOWED = "resourceManagersAllowedToLinkGroups";
+	
 
 	private boolean userAllowedCreate;
 	private boolean authorAllowedCreate;
@@ -78,6 +82,9 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	private String acceptMembershipForUsermanagers;
 	private String acceptMembershipForGroupmanagers;
 	private String acceptMembershipForAdministrators;
+	
+	private boolean groupManagersAllowedToLinkCourses;
+	private boolean resourceManagersAllowedToLinkGroups;
 
 	/**
 	 * [used by spring]
@@ -123,6 +130,9 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		acceptMembershipForUsermanagers = getStringConfigParameter(ACCEPT_MEMBERSHIP_USERMANAGERS, "false", true);
 		acceptMembershipForGroupmanagers = getStringConfigParameter(ACCEPT_MEMBERSHIP_GROUPMANAGERS, "false", true);
 		acceptMembershipForAdministrators = getStringConfigParameter(ACCEPT_MEMBERSHIP_ADMINISTRATORS, "false", true);
+		
+		groupManagersAllowedToLinkCourses = getBooleanConfigParameter(GROUP_MGR_LINK_COURSE_ALLOWED, false);
+		resourceManagersAllowedToLinkGroups = getBooleanConfigParameter(RESOURCE_MGR_LINK_GROUP_ALLOWED, false);
 	}
 
 	@Override
@@ -191,6 +201,15 @@ public class BusinessGroupModule extends AbstractOLATModule {
 		enabled = getStringPropertyValue(ACCEPT_MEMBERSHIP_ADMINISTRATORS, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			acceptMembershipForAdministrators = enabled;
+		}
+		
+		String linkCourseAllowed = getStringPropertyValue(GROUP_MGR_LINK_COURSE_ALLOWED, true);
+		if(StringHelper.containsNonWhitespace(linkCourseAllowed)) {
+			groupManagersAllowedToLinkCourses = "true".equals(linkCourseAllowed);
+		}
+		String linkGroupAllowed = getStringPropertyValue(RESOURCE_MGR_LINK_GROUP_ALLOWED, true);
+		if(StringHelper.containsNonWhitespace(linkGroupAllowed)) {
+			resourceManagersAllowedToLinkGroups = "true".equals(linkGroupAllowed);
 		}
 	}
 	
@@ -349,5 +368,21 @@ public class BusinessGroupModule extends AbstractOLATModule {
 
 	public void setAcceptMembershipForAdministrators(String mandatory) {
 		setStringProperty(ACCEPT_MEMBERSHIP_ADMINISTRATORS, mandatory, true);
+	}
+
+	public boolean isGroupManagersAllowedToLinkCourses() {
+		return groupManagersAllowedToLinkCourses;
+	}
+
+	public void setGroupManagersAllowedToLinkCourses(boolean enabled) {
+		setStringProperty(GROUP_MGR_LINK_COURSE_ALLOWED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isResourceManagersAllowedToLinkGroups() {
+		return resourceManagersAllowedToLinkGroups;
+	}
+
+	public void setResourceManagersAllowedToLinkGroups(boolean enabled) {
+		setStringProperty(RESOURCE_MGR_LINK_GROUP_ALLOWED, Boolean.toString(enabled), true);
 	}
 }

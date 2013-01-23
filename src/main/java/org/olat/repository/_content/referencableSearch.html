@@ -1,18 +1,13 @@
 <div class="o_sel_search_referenceable_entries">
-<h3>$r.translate("referencableSearch.title")</h3>
-<p>	
-	|&nbsp;$r.render("allEntriesLink")&nbsp;|
-	$r.render("myEntriesLink")&nbsp;|
-	$r.render("searchEntriesLink")&nbsp;|
-</p>
-#if($hasCreateRessourceButton)
-	$r.render("cmd.create.ressource")&nbsp;
-#end
-#if($hasImportRessourceButton)
-	$r.render("cmd.import.ressource")&nbsp;
-#end
-<p>
-	<h4>$subtitle</h4>
+	<h4 #if($titleCss) class="$titleCss" #end>$r.translate("referencableSearch.title")</h4>
+	<div class="o_buttons_box_right">
+		#if($r.available("cmd.create.ressource"))
+			$r.render("cmd.create.ressource")
+		#end
+		#if($r.available("cmd.import.ressource"))
+			$r.render("cmd.import.ressource")
+		#end
+	</div>
+	$r.render("segments")<br/>
 	$r.render("searchCtr")
-</p>
 </div>

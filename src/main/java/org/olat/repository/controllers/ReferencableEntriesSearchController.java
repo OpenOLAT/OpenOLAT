@@ -29,10 +29,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -40,12 +44,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.fileresource.types.WikiResource;
+import org.olat.group.BusinessGroupModule;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
@@ -70,8 +76,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 	public static final Event EVENT_REPOSITORY_ENTRY_SELECTED = new Event("event.repository.entry.selected");
 	public static final Event EVENT_REPOSITORY_ENTRIES_SELECTED = new Event("event.repository.entries.selected");
 
-	private static final String CMD_SEARCH = "cmd.search";
 	private static final String CMD_SEARCH_ENTRIES = "cmd.searchEntries";
+	private static final String CMD_ADMIN_SEARCH_ENTRIES = "cmd.adminSearchEntries";
 	private static final String CMD_ALL_ENTRIES = "cmd.allEntries";
 	private static final String CMD_MY_ENTRIES = "cmd.myEntries";
   private static final String ACTION_CREATE = "create";
@@ -83,11 +89,9 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private CloseableModalController previewModalCtr;
 	private Controller previewCtr;
 
-	private Link myEntriesLink, allEntriesLink;
-	private Link searchEntriesLink;
-
-	private Link createRessourceButton;
-	private Link importRessourceButton;
+	private SegmentViewComponent segmentView;
+	private Link myEntriesLink, allEntriesLink, searchEntriesLink, adminEntriesLink;
+	private Link createRessourceButton, importRessourceButton;
 	private RepositoryAddController addController;
 	private CloseableModalController cmc;
 	
@@ -98,48 +102,78 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private final boolean canCreate;
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{limitType},commandLabel, true, true, true, false);
+		this(wControl, ureq, new String[]{limitType},commandLabel, true, true, true, false, false);
 		setBasePackage(RepositoryManager.class);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
-		this(wControl, ureq, limitTypes,commandLabel, true, true, true, false);
+		this(wControl, ureq, limitTypes,commandLabel, true, true, true, false, false);
 	}
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel,
-			boolean canImport, boolean canCreate, boolean canDirectLaunch, boolean multiSelect) {
+			boolean canImport, boolean canCreate, boolean canDirectLaunch, boolean multiSelect, boolean adminSearch) {
 		super(ureq, wControl);
 		this.canImport = canImport;
 		this.canCreate = canCreate;
 		this.limitTypes = limitTypes;
 		setBasePackage(RepositoryManager.class);
 		mainVC = createVelocityContainer("referencableSearch");
-		// add all link to velocity
-		initLinks();
+		
+		if(limitTypes != null && limitTypes.length == 1 && limitTypes[0] != null) {
+			mainVC.contextPut("titleCss", "b_with_small_icon_left o_" + limitTypes[0] + "_icon");
+		}
 
 		// add repo search controller
 		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(), false, canDirectLaunch, multiSelect, limitTypes);
 		listenTo(searchCtr);
 		
 		// do instantiate buttons
-		boolean isVisible = isCreateButtonVisible();
-		if (isVisible) {
+		if (canCreate && isCreateButtonVisible()) {
 			createRessourceButton = LinkFactory.createButtonSmall("cmd.create.ressource", mainVC, this);
 			createRessourceButton.setElementCssClass("o_sel_repo_popup_create_resource");
 		}
-		mainVC.contextPut("hasCreateRessourceButton", new Boolean(isVisible));
-		isVisible = isImportButtonVisible(); 
-		if (isVisible) {
+		if (canImport && isImportButtonVisible()) {
 			importRessourceButton = LinkFactory.createButtonSmall("cmd.import.ressource", mainVC, this);
 			importRessourceButton.setElementCssClass("o_sel_repo_popup_import_resource");
 		}
-		mainVC.contextPut("hasImportRessourceButton", new Boolean(isVisible));
+
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		allEntriesLink = LinkFactory.createCustomLink(CMD_ALL_ENTRIES, CMD_ALL_ENTRIES, "referencableSearch." + CMD_ALL_ENTRIES, Link.LINK, mainVC, this);
+		allEntriesLink.setElementCssClass("o_sel_repo_popup_all_resources");
+		segmentView.addSegment(allEntriesLink, true);
+		myEntriesLink = LinkFactory.createCustomLink(CMD_MY_ENTRIES, CMD_MY_ENTRIES, "referencableSearch." + CMD_MY_ENTRIES, Link.LINK, mainVC, this);
+		myEntriesLink.setElementCssClass("o_sel_repo_popup_my_resources");
+		segmentView.addSegment(myEntriesLink, false);
+		searchEntriesLink = LinkFactory.createCustomLink(CMD_SEARCH_ENTRIES, CMD_SEARCH_ENTRIES, "referencableSearch." + CMD_SEARCH_ENTRIES, Link.LINK, mainVC, this);
+		searchEntriesLink.setElementCssClass("o_sel_repo_popup_search_resources");
+		segmentView.addSegment(searchEntriesLink, false);
 		
-		event(ureq, myEntriesLink, null);
+		if(adminSearch && isAdminSearchVisible(limitTypes, ureq)) {
+			adminEntriesLink = LinkFactory.createCustomLink(CMD_ADMIN_SEARCH_ENTRIES, CMD_ADMIN_SEARCH_ENTRIES, "referencableSearch." + CMD_ADMIN_SEARCH_ENTRIES, Link.LINK, mainVC, this);
+			adminEntriesLink.setElementCssClass("o_sel_repo_popup_admin_search_resources");	
+			segmentView.addSegment(adminEntriesLink, false);
+		}
+
+		searchCtr.doSearchByOwnerLimitType(ureq.getIdentity(), limitTypes);
 		searchCtr.enableSearchforAllReferencalbeInSearchForm(true);
 		mainVC.put("searchCtr", searchCtr.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+	}
+	
+	/**
+	 * Admin. search allow group managers to search all courses
+	 * @param limitTypes
+	 * @param ureq
+	 * @return
+	 */
+	private boolean isAdminSearchVisible(String[] limitTypes, UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		return limitTypes != null && limitTypes.length == 1 && "CourseModule".equals(limitTypes[0])
+				&& (roles.isOLATAdmin() ||
+						(roles.isInstitutionalResourceManager() && roles.isGroupManager()) ||
+						(roles.isGroupManager()
+								&& CoreSpringFactory.getImpl(BusinessGroupModule.class).isGroupManagersAllowedToLinkCourses()));
 	}
 	
 	/**
@@ -150,7 +184,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private boolean isImportButtonVisible() {
 		if(!canImport) return false;
 		
-		List<String> limitTypeList = Arrays.asList(this.limitTypes);
+		List<String> limitTypeList = Arrays.asList(limitTypes);
 		
 		String[] importAllowed = new String[] {
 				TestFileResource.TYPE_NAME,
@@ -175,7 +209,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private boolean isCreateButtonVisible() {
 		if(!canCreate) return false;
 		
-		List<String> limitTypeList = Arrays.asList(this.limitTypes);
+		List<String> limitTypeList = Arrays.asList(limitTypes);
 		
 		String[] createAllowed = new String[] {
 				TestFileResource.TYPE_NAME,
@@ -198,7 +232,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	 */
 	private String getAction(String type) {
 		String action = new String();
-		List<String> limitTypeList = Arrays.asList(this.limitTypes);
+		List<String> limitTypeList = Arrays.asList(limitTypes);
 		if(limitTypeList.contains(TestFileResource.TYPE_NAME)) {
 			// it's a test
 			if (type.equals(ACTION_CREATE)) {
@@ -264,21 +298,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 	}
 
 	/**
-	 * Create all link components for workflow navigation
-	 */
-	private void initLinks() {
-	  	// link to search all referencable entries
-		searchEntriesLink = LinkFactory.createCustomLink("searchEntriesLink", CMD_SEARCH_ENTRIES, "referencableSearch." + CMD_SEARCH_ENTRIES, Link.LINK, mainVC, this);
-		searchEntriesLink.setElementCssClass("o_sel_repo_popup_search_resources");
-		// link to show all referencable entries
-		allEntriesLink = LinkFactory.createCustomLink("allEntriesLink", CMD_ALL_ENTRIES, "referencableSearch." + CMD_ALL_ENTRIES, Link.LINK, mainVC, this);
-		allEntriesLink.setElementCssClass("o_sel_repo_popup_all_resources");
-		// link to show all my entries
-		myEntriesLink = LinkFactory.createCustomLink("myEntriesLink", CMD_MY_ENTRIES, "referencableSearch." + CMD_MY_ENTRIES, Link.LINK, mainVC, this);
-		myEntriesLink.setElementCssClass("o_sel_repo_popup_my_resources");
-	}
-
-	/**
 	 * @return Returns the selectedEntry.
 	 */
 	public RepositoryEntry getSelectedEntry() {
@@ -301,32 +320,22 @@ public class ReferencableEntriesSearchController extends BasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == myEntriesLink) {
-			searchCtr.doSearchByOwnerLimitType(ureq.getIdentity(), limitTypes);
-			mainVC.contextPut("subtitle", translate("referencableSearch." + CMD_MY_ENTRIES));
-			myEntriesLink.setCustomEnabledLinkCSS("b_selected");
-			allEntriesLink.removeCSS();
-			searchEntriesLink.removeCSS();
-		}
-		if (source == allEntriesLink) {
-			searchCtr.doSearchForReferencableResourcesLimitType(ureq.getIdentity(), limitTypes, ureq.getUserSession().getRoles());
-			mainVC.contextPut("subtitle", translate("referencableSearch." + CMD_ALL_ENTRIES));
-			allEntriesLink.setCustomEnabledLinkCSS("b_selected");
-			myEntriesLink.removeCSS();
-			searchEntriesLink.removeCSS();
-		}
-		if (source == searchEntriesLink) {
-			mainVC.contextPut("subtitle", translate("referencableSearch." + CMD_SEARCH_ENTRIES));
-			// start with search view
-			searchCtr.displaySearchForm();
-			mainVC.contextPut("subtitle", translate("referencableSearch." + CMD_SEARCH));
-			
-			searchEntriesLink.setCustomEnabledLinkCSS("b_selected");
-			myEntriesLink.removeCSS();
-			allEntriesLink.removeCSS();
-		}
-		if (source == createRessourceButton) {
-			
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == myEntriesLink) {
+					searchCtr.doSearchByOwnerLimitType(ureq.getIdentity(), limitTypes);
+				} else if (clickedLink == allEntriesLink){
+					searchCtr.doSearchForReferencableResourcesLimitType(ureq.getIdentity(), limitTypes, ureq.getUserSession().getRoles());
+				} else if (clickedLink == searchEntriesLink){
+					searchCtr.displaySearchForm();
+				} else if (clickedLink == adminEntriesLink) {
+					searchCtr.displayAdminSearchForm();
+				}
+			}
+		} else if(source == createRessourceButton) {
 			removeAsListenerAndDispose(addController);
 			addController = new RepositoryAddController(ureq, getWindowControl(), getAction(ACTION_CREATE));
 			listenTo(addController);
@@ -336,8 +345,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 			listenTo(cmc);
 			
 			cmc.activate();
-		}
-		if (source == importRessourceButton) {
+		} else if (source == importRessourceButton) {
 			
 			removeAsListenerAndDispose(addController);
 			addController = new RepositoryAddController(ureq, getWindowControl(), getAction(ACTION_IMPORT));
@@ -396,7 +404,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 				selectedRepositoryEntries = searchCtr.getSelectedEntries();
 				fireEvent(ureq, EVENT_REPOSITORY_ENTRIES_SELECTED);
 			}
-			initLinks();
+			//initLinks();
 		}  else if (source == addController) { 
 				if (event.equals(Event.DONE_EVENT)) {
 					cmc.deactivate();

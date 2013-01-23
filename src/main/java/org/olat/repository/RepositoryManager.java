@@ -1069,7 +1069,8 @@ public class RepositoryManager extends BasicManager {
 	 * @param desc Limit search to description. Can be NULL
 	 * @return List of repository entries
 	 */	
-	public List<RepositoryEntry> queryReferencableResourcesLimitType(Identity identity, Roles roles, List resourceTypes, String displayName, String author, String desc) {
+	public List<RepositoryEntry> queryReferencableResourcesLimitType(Identity identity, Roles roles, List<String> resourceTypes,
+			String displayName, String author, String desc) {
 		if (identity == null) {
 			throw new AssertException("identity can not be null!");
 		}
@@ -1077,7 +1078,12 @@ public class RepositoryManager extends BasicManager {
 			// if user has no author right he can not reference to any resource at all
 			return new ArrayList<RepositoryEntry>();
 		}
-
+		return queryResourcesLimitType(identity, resourceTypes, displayName, author, desc);
+	}
+		
+	public List<RepositoryEntry> queryResourcesLimitType(Identity identity, List<String> resourceTypes,
+			String displayName, String author, String desc) {
+			
 		// cleanup some data: use null values if emtpy
 		if (resourceTypes != null && resourceTypes.size() == 0) resourceTypes = null;
 		if ( ! StringHelper.containsNonWhitespace(displayName)) displayName = null;
@@ -1105,9 +1111,18 @@ public class RepositoryManager extends BasicManager {
 		// be to large (does not work when more than 100 repo entries present!)
 		query.append(" ownerGroup = sgmsi.securityGroup"); 
 		// restrict on ownership or referencability flag
-		query.append(" and ( sgmsi.identity = :identity "); 
-		query.append(" or ");
-		query.append(" (v.access >= :access and v.canReference = true) )");				
+		query.append(" and (");
+		
+		int access;
+		if(identity != null) {
+			access = RepositoryEntry.ACC_OWNERS_AUTHORS;
+			query.append(" sgmsi.identity = :identity  or (v.access>=:access and v.canReference = true) ");
+		} else {
+			access = RepositoryEntry.ACC_OWNERS;
+			query.append(" v.access>=:access ");
+		}
+		query.append("   ");		
+		query.append(" )");
 		// restrict on type
 		if (resourceTypes != null) {
 			query.append(" and res.resName in (:resourcetypes)");
@@ -1135,23 +1150,24 @@ public class RepositoryManager extends BasicManager {
 		}
 		
 		// create query an set query data
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
-		dbquery.setEntity("identity", identity);
-		dbquery.setInteger("access", RepositoryEntry.ACC_OWNERS_AUTHORS);
+		TypedQuery<RepositoryEntry> dbquery = this.dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class);
+		if(identity != null) {
+			dbquery.setParameter("identity", identity);
+		}
+		dbquery.setParameter("access", access);
 		if (author != null) {
-			dbquery.setString("author", author);
+			dbquery.setParameter("author", author);
 		}
 		if (displayName != null) {
-			dbquery.setString("displayname", displayName);
+			dbquery.setParameter("displayname", displayName);
 		}
 		if (desc != null) {
-			dbquery.setString("desc", desc);
+			dbquery.setParameter("desc", desc);
 		}
 		if (resourceTypes != null) {
-			dbquery.setParameterList("resourcetypes", resourceTypes, StandardBasicTypes.STRING);
+			dbquery.setParameter("resourcetypes", resourceTypes);
 		}
-		return dbquery.list();		
-		
+		return dbquery.getResultList();		
 	}
 
 	

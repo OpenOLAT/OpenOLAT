@@ -49,10 +49,12 @@ import org.olat.group.ui.main.DedupMembersConfirmationController;
  */
 public class BusinessGroupModuleAdminController extends FormBasicController implements ProgressDelegate {
 	
-	private FormLink dedupLink, optionLink, privacyLink;
+	private FormLink dedupLink;
 	private MultipleSelectionElement allowEl;
 	private MultipleSelectionElement enrolmentEl;
 	private MultipleSelectionElement membershipEl;
+	private MultipleSelectionElement assignCoursesEl;
+	private MultipleSelectionElement assignGroupsEl;
 
 	private Panel mainPopPanel;
 	private CloseableModalController cmc;
@@ -65,6 +67,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	private String[] enrollmentKeys = new String[]{
 			"users","authors", "usermanagers", "groupmanagers", "administrators"
 	};
+	private String[] assignKeys = new String[]{"granted"};
 	
 	public BusinessGroupModuleAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "bg_admin");
@@ -84,11 +87,20 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		allowEl = uifactory.addCheckboxesVertical("module.admin.allow.create", optionsContainer, onKeys, values, null, 1);
 		allowEl.select("user", module.isUserAllowedCreate());
 		allowEl.select("author", module.isAuthorAllowedCreate());
+		allowEl.addActionListener(this, FormEvent.ONCHANGE);
+
+		FormLayoutContainer resourceAssignmentContainer = FormLayoutContainer.createDefaultFormLayout("resourceAssignment", getTranslator());
+		formLayout.add(resourceAssignmentContainer);
 		
-		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("module.buttons", getTranslator());
-		buttonsContainer.setRootForm(mainForm);
-		optionsContainer.add(buttonsContainer);
-		optionLink = uifactory.addFormLink("ok", "ok", null, buttonsContainer, Link.BUTTON);
+		String[] courseValues = new String[]{ translate("module.resource.courses.grant") };
+		assignCoursesEl = uifactory.addCheckboxesVertical("module.resource.courses", resourceAssignmentContainer, assignKeys, courseValues, null, 1);
+		assignCoursesEl.select(assignKeys[0], module.isGroupManagersAllowedToLinkCourses());
+		assignCoursesEl.addActionListener(this, FormEvent.ONCHANGE);
+		
+		String[] groupValues = new String[]{ translate("module.resource.groups.grant") };
+		assignGroupsEl = uifactory.addCheckboxesVertical("module.resource.groups", resourceAssignmentContainer, assignKeys, groupValues, null, 1);
+		assignGroupsEl.select(assignKeys[0], module.isResourceManagersAllowedToLinkGroups());
+		assignGroupsEl.addActionListener(this, FormEvent.ONCHANGE);
 		
 		FormLayoutContainer privacyOptionsContainer = FormLayoutContainer.createDefaultFormLayout("privacy_options", getTranslator());
 		formLayout.add(privacyOptionsContainer);
@@ -105,6 +117,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		enrolmentEl.select("usermanagers", "true".equals(module.getMandatoryEnrolmentEmailForUsermanagers()));
 		enrolmentEl.select("groupmanagers", "true".equals(module.getMandatoryEnrolmentEmailForGroupmanagers()));
 		enrolmentEl.select("administrators", "true".equals(module.getMandatoryEnrolmentEmailForAdministrators()));
+		enrolmentEl.addActionListener(this, FormEvent.ONCHANGE);
 		
 		String[] membershipValues = new String[]{
 				translate("enrolment.email.users"),
@@ -119,12 +132,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		membershipEl.select("usermanagers", "true".equals(module.getAcceptMembershipForUsermanagers()));
 		membershipEl.select("groupmanagers", "true".equals(module.getAcceptMembershipForGroupmanagers()));
 		membershipEl.select("administrators", "true".equals(module.getAcceptMembershipForAdministrators()));
-		
-		FormLayoutContainer buttonsPrivacyContainer = FormLayoutContainer.createButtonLayout("module.buttons.privacy", getTranslator());
-		buttonsPrivacyContainer.setRootForm(mainForm);
-		privacyOptionsContainer.add(buttonsPrivacyContainer);
-		privacyLink = uifactory.addFormLink("ok", "ok", "", buttonsPrivacyContainer, Link.BUTTON);
-		
+		membershipEl.addActionListener(this, FormEvent.ONCHANGE);
 
 		FormLayoutContainer dedupCont = FormLayoutContainer.createDefaultFormLayout("dedup", getTranslator());
 		formLayout.add(dedupCont);
@@ -195,23 +203,27 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == dedupLink) {
 			doDedupMembers(ureq);
-		} else if(source == optionLink) {
+		} else if(source == allowEl) {
 			module.setUserAllowedCreate(allowEl.isSelected(0));
 			module.setAuthorAllowedCreate(allowEl.isSelected(1));
-		} else if(source == privacyLink) {
+		} else if(source == membershipEl) {
 			Set<String> membershipSelectedKeys = membershipEl.getSelectedKeys();
 			module.setAcceptMembershipForUsers(membershipSelectedKeys.contains("users") ? "true" : "false");
 			module.setAcceptMembershipForAuthors(membershipSelectedKeys.contains("authors") ? "true" : "false");
 			module.setAcceptMembershipForUsermanagers(membershipSelectedKeys.contains("usermanagers") ? "true" : "false");
 			module.setAcceptMembershipForGroupmanagers(membershipSelectedKeys.contains("groupmanagers") ? "true" : "false");
 			module.setAcceptMembershipForAdministrators(membershipSelectedKeys.contains("administrators") ? "true" : "false");
-
+		} else if(source == enrolmentEl) {
 			Set<String> enrolmentSelectedKeys = enrolmentEl.getSelectedKeys();
 			module.setMandatoryEnrolmentEmailForUsers(enrolmentSelectedKeys.contains("users") ? "true" : "false");
 			module.setMandatoryEnrolmentEmailForAuthors(enrolmentSelectedKeys.contains("authors") ? "true" : "false");
 			module.setMandatoryEnrolmentEmailForUsermanagers(enrolmentSelectedKeys.contains("usermanagers") ? "true" : "false");
 			module.setMandatoryEnrolmentEmailForGroupmanagers(enrolmentSelectedKeys.contains("groupmanagers") ? "true" : "false");
 			module.setMandatoryEnrolmentEmailForAdministrators(enrolmentSelectedKeys.contains("administrators") ? "true" : "false");
+		} else if(assignCoursesEl == source) {
+			module.setGroupManagersAllowedToLinkCourses(assignCoursesEl.isSelected(0));
+		} else if(assignGroupsEl == source) {
+			module.setResourceManagersAllowedToLinkGroups(assignGroupsEl.isSelected(0));
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}

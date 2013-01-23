@@ -258,11 +258,11 @@ public class RepositorySearchController extends BasicController implements Activ
 	private void doSearchAllReferencables(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.searchForm;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		Set<String> s = searchForm.getRestrictedTypes();
 		List<String> restrictedTypes;
 		if(limitType != null) {
 			restrictedTypes = Collections.singletonList(limitType);
 		} else {
+			Set<String> s = searchForm.getRestrictedTypes();
 			restrictedTypes = (s == null) ? null : new ArrayList<String>(s);
 		}
 		Roles roles = ureq.getUserSession().getRoles();
@@ -271,7 +271,12 @@ public class RepositorySearchController extends BasicController implements Activ
 		String author = searchForm.getAuthor();
 		String desc = searchForm.getDescription();
 		
-		List<RepositoryEntry> entries = rm.queryReferencableResourcesLimitType(ident, roles, restrictedTypes, name, author, desc);
+		List<RepositoryEntry> entries;
+		if(searchForm.isAdminSearch()) {
+			entries = rm.queryResourcesLimitType(null, restrictedTypes, name, author, desc);
+		} else {
+			entries = rm.queryReferencableResourcesLimitType(ident, roles, restrictedTypes, name, author, desc);
+		}
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		if(updateFilters) {
@@ -483,6 +488,16 @@ public class RepositorySearchController extends BasicController implements Activ
 	 */
 	public void displaySearchForm() {
 		searchForm.setVisible(true);
+		searchForm.setAdminSearch(false);
+		vc.setPage(VELOCITY_ROOT + "/search.html");
+	}
+	
+	/**
+	 * Will reset the controller to display the search form again.
+	 */
+	public void displayAdminSearchForm() {
+		searchForm.setVisible(true);
+		searchForm.setAdminSearch(true);
 		vc.setPage(VELOCITY_ROOT + "/search.html");
 	}
 	
@@ -570,16 +585,17 @@ public class RepositorySearchController extends BasicController implements Activ
 			} else if (ecv.getChange() == EntryChangedEvent.ADDED) {
 				doSearchByOwner(urequest.getIdentity());
 			}
-		}
-		else if (source == searchForm) { // process search form events
+		}	else if (source == searchForm) { // process search form events
 			if (event == Event.DONE_EVENT) {
-				if (searchForm.hasId())	doSearchById(searchForm.getId());
-				else if (enableSearchforAllReferencalbeInSearchForm) doSearchAllReferencables(urequest, null, true);
-				else doSearch(urequest, null, true);
-				return;
+				if (searchForm.hasId())	{
+					doSearchById(searchForm.getId());
+				} else if (enableSearchforAllReferencalbeInSearchForm) {
+					doSearchAllReferencables(urequest, null, true);
+				} else {
+					doSearch(urequest, null, true);
+				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(urequest, Event.CANCELLED_EVENT);
-				return;
 			}
 		}
 	}
