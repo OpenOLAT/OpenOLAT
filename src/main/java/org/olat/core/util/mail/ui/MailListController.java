@@ -66,6 +66,7 @@ import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailImpl;
 import org.olat.core.util.mail.model.DBMailRecipient;
 import org.olat.core.util.mail.ui.MailDataModel.Columns;
+import org.olat.core.util.mail.ui.MailDataModel.ContextPair;
 import org.olat.core.util.resource.OresHelper;
 
 
@@ -135,7 +136,19 @@ public class MailListController extends BasicController implements Activateable2
 		if(outbox) {
 			//context / recipients / subject / sendDate
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Columns.context.i18nKey(), Columns.context.ordinal(), null,
-					getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new MailContextCellRenderer(this, tableVC, getTranslator())));
+					getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new MailContextCellRenderer(this, tableVC, getTranslator())) {
+					@Override
+					public int compareTo(int rowa, int rowb) {
+						Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+						Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+						if(a instanceof ContextPair && b instanceof ContextPair) {
+							ContextPair p1 = (ContextPair)a;
+							ContextPair p2 = (ContextPair)b;
+							return super.compareString(p1.getName(), p2.getName());
+						}
+						return super.compareTo(rowa, rowb);
+					}
+			});
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor(Columns.recipients.i18nKey(), Columns.recipients.ordinal(), null, getLocale()));
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor(Columns.subject.i18nKey(), Columns.subject.ordinal(), CMD_READ, getLocale()));
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor(Columns.sendDate.i18nKey(), Columns.sendDate.ordinal(), null, getLocale()));
@@ -148,7 +161,19 @@ public class MailListController extends BasicController implements Activateable2
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Columns.marked.i18nKey(), Columns.marked.ordinal(), CMD_MARK_TOGGLE, 
 					getLocale(), ColumnDescriptor.ALIGNMENT_CENTER, markRenderer));
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Columns.context.i18nKey(), Columns.context.ordinal(), null,
-					getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new MailContextCellRenderer(this, tableVC, getTranslator())));
+					getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new MailContextCellRenderer(this, tableVC, getTranslator())){
+						@Override
+						public int compareTo(int rowa, int rowb) {
+							Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+							Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+							if(a instanceof ContextPair && b instanceof ContextPair) {
+								ContextPair p1 = (ContextPair)a;
+								ContextPair p2 = (ContextPair)b;
+								return super.compareString(p1.getName(), p2.getName());
+							}
+							return super.compareTo(rowa, rowb);
+						}
+			});
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Columns.from.i18nKey(), Columns.from.ordinal(), null,
 					getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new MailFromCellRenderer(this, tableVC, getTranslator())));
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor(Columns.subject.i18nKey(), Columns.subject.ordinal(), CMD_READ, getLocale()));

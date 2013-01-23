@@ -147,20 +147,22 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
 		Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
 		// depending on the class of the Objects, we compare
-		// FIXME:fj:c Use CollationKeys for Performance to compare Strings
-		 
 		if (a == null || b == null) {
 			return compareNullObjects(a, b);
 		}
 		if (a instanceof String && b instanceof String) {
 			return collator.compare(a, b);
-		} else if (a instanceof Comparable && b instanceof Comparable) {
-			return compareComparablesAndTimestamps(a, b);
-		} else if (a instanceof Boolean && b instanceof Boolean) { // faster than string compare
-			return compareBooleans((Boolean)a, (Boolean)b);
-		} else { // don't know how to compare, use the String value
-			return a.toString().compareTo(b.toString());
 		}
+		if(a instanceof Date && b instanceof Date) {
+			return compareDateAndTimestamps((Date)a, (Date)b);
+		}
+		if (a instanceof Comparable && b instanceof Comparable) {
+			return ((Comparable)a).compareTo((Comparable)b);
+		}
+		/*if (a instanceof Boolean && b instanceof Boolean) { // faster than string compare, boolean are comparable
+			return compareBooleans((Boolean)a, (Boolean)b);
+		}*/
+		return a.toString().compareTo(b.toString());
 	}
 	
 	protected int compareString(final String a, final String b) {
@@ -172,21 +174,22 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		boolean bb = b.booleanValue();
 		return ba? (bb? 0: -1):(bb? 1: 0);
 	}
-
-	protected int compareComparablesAndTimestamps(final Object a, final Object b) {
-		// grmpf, we need to check on timestamp since Timestamp cannot compare dates (ClassCastException)
-		// See also http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5103041 for the java 1.4/1.5 code bug
-		if (a instanceof Timestamp && b instanceof Date) { // a timestamp (a) cannot compare a date (b), but vice versa is ok.
-			Timestamp ta = (Timestamp)a;
-			Date aAsDate = new Date(ta.getTime());
-			return aAsDate.compareTo((Date)b);
-		} else if (a instanceof Date && b instanceof Timestamp) {
+	
+	protected int compareDateAndTimestamps(Date a, Date b) {
+		if (a instanceof Timestamp) { // a timestamp (a) cannot compare a date (b), but vice versa is ok.
+			if(b instanceof Timestamp) {
+				return ((Timestamp)a).compareTo((Timestamp)b);
+			} else {
+				Timestamp ta = (Timestamp)a;
+				Date aAsDate = new Date(ta.getTime());
+				return aAsDate.compareTo((Date)b);
+			}
+		} else if (b instanceof Timestamp) {
 			Timestamp tb = (Timestamp)b;
 			Date bAsDate = new Date(tb.getTime());
 			return ((Date)a).compareTo(bAsDate);
-		} else {
-			return ((Comparable)a).compareTo(b);
 		}
+		return a.compareTo(b);
 	}
 
 	protected int compareNullObjects(final Object a, final Object b) {

@@ -53,9 +53,11 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 	private final AssessmentManager am;
 	private final long simulatedDateTime;
 	private Long resourceablId;
+	private CourseConfig courseConfig;
 
-	PreviewCourseEnvironment(String title, Structure runStructure, Date simulatedDateTime, VFSContainer courseFolderContainer, OlatRootFolderImpl courseBaseContainer,
-			Long courseResourceableID, CoursePropertyManager cpm, CourseGroupManager cgm, UserNodeAuditManager auditman, AssessmentManager am) {
+	PreviewCourseEnvironment(String title, Structure runStructure, Date simulatedDateTime, VFSContainer courseFolderContainer,
+			OlatRootFolderImpl courseBaseContainer, Long courseResourceableID, CoursePropertyManager cpm, CourseGroupManager cgm,
+			UserNodeAuditManager auditman, AssessmentManager am, CourseConfig courseConfig) {
 		super();
 		this.title = title;
 		this.simulatedDateTime = simulatedDateTime.getTime();
@@ -67,6 +69,7 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 		this.auditman = auditman;
 		this.am = am;
 		this.resourceablId = courseResourceableID;
+		this.courseConfig = courseConfig.clone();
 	}
 
 	/**
@@ -135,14 +138,14 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 	}
 
 	public CourseConfig getCourseConfig() {
-		throw new UnsupportedOperationException("never to be called in preview mode");
+		return courseConfig;
 	}
 
 	/**
 	 * @see org.olat.course.run.environment.CourseEnvironment#setCourseConfig()
 	 */
 	public void setCourseConfig(CourseConfig cc) {
-		throw new UnsupportedOperationException("never to be called in preview mode");
+		courseConfig = (cc == null ? null : cc.clone());
 	}
 
 	/**
