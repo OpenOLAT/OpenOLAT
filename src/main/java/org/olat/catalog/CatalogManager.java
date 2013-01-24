@@ -144,7 +144,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		return entries;
 	}
 	
-	public List<CatalogEntryShort> getShortChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
+	public List<CatalogEntry> getShortChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
@@ -157,15 +157,15 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			sb.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
 		}
 
-		TypedQuery<CatalogEntryShort> dbQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CatalogEntryShort.class)
+		TypedQuery<CatalogEntry> dbQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogEntry.class)
 				.setParameter("parentKey", ce.getKey())
 				.setFirstResult(0);
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
 		}
 
-		List<CatalogEntryShort> entries = dbQuery.getResultList();
+		List<CatalogEntry> entries = dbQuery.getResultList();
 		return entries;
 	}
 
