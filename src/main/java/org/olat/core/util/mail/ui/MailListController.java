@@ -398,7 +398,9 @@ public class MailListController extends BasicController implements Activateable2
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				BitSet deleteMails = (BitSet)deleteConfirmationBox.getUserObject();
 				for (int i=deleteMails.nextSetBit(0); i >= 0; i=deleteMails.nextSetBit(i+1)) {
-					DBMailImpl mail = (DBMailImpl) tableCtr.getTableDataModel().getObject(i);
+					DBMail mail = (DBMail)tableCtr.getTableDataModel().getObject(i);
+					//reload the message
+					mail = mailManager.getMessageByKey(mail.getKey());
 					boolean deleteMetaMail = outbox && !StringHelper.containsNonWhitespace(metaId);
 					mailManager.delete(mail, getIdentity(), deleteMetaMail);
 					// Do not remove from model to prevent concurrent modification

@@ -41,6 +41,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
@@ -77,6 +78,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.context.BGContext2Resource;
 import org.olat.group.model.BGResourceRelation;
@@ -1355,20 +1357,35 @@ public class RepositoryManager extends BasicManager {
 	//fxdiff VCRP-1,2: access control
 	public boolean isMember(Identity identity, RepositoryEntry entry) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
-			.append(" where v.key=:repositoryEntryKey and v.key in (")
-			.append("   select vmember.key from ").append(RepositoryEntryMember.class.getName()).append(" vmember")
-			.append("   where vmember.key=:repositoryEntryKey and ")
-			.append("     (vmember.repoParticipantKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.repoOwnerKey=:identityKey")
-			.append("     or vmember.groupParticipantKey=:identityKey or vmember.groupOwnerKey=:identityKey)")
+		sb.append("select re.key, ident.key ")
+		  .append("from ").append(RepositoryEntry.class.getName()).append(" as re, ")
+		  .append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append("where ident.key=:identityKey and re.key=:repositoryEntryKey ")
+		  .append(" and (exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where ident=vmember.identity and vmember.securityGroup=re.participantGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where ident=vmember.identity and vmember.securityGroup=re.tutorGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where ident=vmember.identity and vmember.securityGroup=re.ownerGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+			.append("      ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+			.append("      ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+			.append("      where bgroup.partipiciantGroup=vmember.securityGroup and re.olatResource=bresource.resource ")
+			.append("        and bgroup=bresource.group and ident=vmember.identity")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+			.append("      ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+			.append("      ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+			.append("      where bgroup.ownerGroup=vmember.securityGroup and re.olatResource=bresource.resource ")
+			.append("        and bgroup=bresource.group and ident=vmember.identity")
+			.append("  )")
 			.append(" )");
 
-		Number counter = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+		List<Object[]> counter = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getSingleResult();
-		return counter.intValue() > 0;
+				.getResultList();
+		return !counter.isEmpty();
 	}
 	
 	/**
