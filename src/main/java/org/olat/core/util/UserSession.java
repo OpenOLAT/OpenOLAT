@@ -104,7 +104,6 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		nonClearedStore = new HashMap<String,Object>();
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
 		sessionInfo = null;
-		System.out.println("readResolve 2");
 		return this;
 	}
 

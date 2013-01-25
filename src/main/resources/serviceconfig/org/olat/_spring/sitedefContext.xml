@@ -25,7 +25,7 @@
 	   <property name="enabled" value="${site.catalog.enable}"/>
 	</bean>
 	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef" scope="prototype" >
-	   <property name="order" value="5" />
+	   <property name="order" value="6" />
 	   <property name="enabled" value="${site.repository.enable}"/>
 	</bean>
 	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef" scope="prototype" >

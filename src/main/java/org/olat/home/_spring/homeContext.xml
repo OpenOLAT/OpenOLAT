@@ -153,7 +153,7 @@
 	<!--  the other users aka Usersearch -->
 	<bean class="org.olat.home.CourseActionExtension" init-method="initExtensionPoints">
 	    <constructor-arg index="0" ref="catalogModule"/>
-		<property name="order" value="109" />
+		<property name="order" value="99" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.home.CourseMainController"/>
