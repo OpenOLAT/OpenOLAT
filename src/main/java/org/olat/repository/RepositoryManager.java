@@ -85,7 +85,6 @@ import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.model.RepositoryEntryMember;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntryShortImpl;

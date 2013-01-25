@@ -1,20 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping default-lazy="false">
-
-	<class name="org.olat.repository.model.RepositoryEntryMember" table="o_re_member_v" mutable="false">
-		<composite-id>
-			<key-property name="key" column="re_id" type="long" />
-			<key-property name="repoOwnerKey" column="re_owner_member_id" type="long" />
-			<key-property name="repoTutorKey" column="re_tutor_member_id" type="long" />
-			<key-property name="repoParticipantKey" column="re_part_member_id" type="long" />
-			<key-property name="groupOwnerKey" column="bg_owner_member_id" type="long" />
-			<key-property name="groupParticipantKey" column="bg_part_member_id" type="long" />
-		</composite-id>
-		
-		<property name="access" column="re_accesscode" type="int"/>
-		<property name="membersOnly" column="re_membersonly" type="boolean"/>
-	</class>
 	
 	<class name="org.olat.repository.model.RepositoryEntryStrictMember" table="o_re_strict_member_v" mutable="false">
 		<composite-id>

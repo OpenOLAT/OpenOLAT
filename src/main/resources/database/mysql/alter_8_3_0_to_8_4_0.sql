@@ -176,3 +176,10 @@ create or replace view o_as_eff_statement_members_strict_v as (
    left join o_as_eff_statement as sm_statement on (sm_statement.fk_resource_id = sm_reResource.resource_id and sm_statement.fk_identity = sm_studentMembership.identity_id)
    left join o_as_user_course_infos as pm_initial_launch on (pm_initial_launch.fk_resource_id = sm_reResource.resource_id and pm_initial_launch.fk_identity = sm_studentMembership.identity_id)
 );
+
+drop view o_re_member_v;
+
+
+
+
+
