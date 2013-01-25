@@ -330,6 +330,52 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void isMember_v2() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-1-lc-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-2-lc-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-3-lc-" + UUID.randomUUID().toString());
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-4-lc-" + UUID.randomUUID().toString());
+		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-5-lc-" + UUID.randomUUID().toString());
+		Identity id6 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-6-lc-" + UUID.randomUUID().toString());
+		Identity idNull = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-null-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "member-1-g", "tg", null, null, false, false, re);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "member-2-g", "tg", null, null, false, false, re);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "member-3-g", "tg", null, null, true, false, re);
+		BusinessGroup groupNull = businessGroupService.createBusinessGroup(null, "member-null-g", "tg", null, null, true, false, null);
+		securityManager.addIdentityToSecurityGroup(id1, re.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(id2, re.getTutorGroup());
+		securityManager.addIdentityToSecurityGroup(id3, re.getParticipantGroup());
+		securityManager.addIdentityToSecurityGroup(id4, group1.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(id5, group2.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id6, group3.getWaitingGroup());
+		securityManager.addIdentityToSecurityGroup(idNull, groupNull.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+
+		//id1 is owner
+		boolean member1 = repositoryManager.isMember(id1, re);
+		Assert.assertTrue(member1);
+		//id2 is tutor
+		boolean member2 = repositoryManager.isMember(id2, re);
+		Assert.assertTrue(member2);
+		//id3 is repo participant
+		boolean member3 = repositoryManager.isMember(id3, re);
+		Assert.assertTrue(member3);
+		//id4 is group coach
+		boolean member4= repositoryManager.isMember(id4, re);
+		Assert.assertTrue(member4);
+		//id5 is group participant
+		boolean member5 = repositoryManager.isMember(id5, re);
+		Assert.assertTrue(member5);
+		//id6 is waiting
+		boolean member6 = repositoryManager.isMember(id6, re);
+		Assert.assertFalse(member6);
+		//idNull is not member
+		boolean memberNull = repositoryManager.isMember(idNull, re);
+		Assert.assertFalse(memberNull);
+	}
+	
+	@Test
 	public void isOwnerOfRepositoryEntry() {
 		//create a repository entry with an owner and a participant
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
