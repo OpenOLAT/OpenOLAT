@@ -209,9 +209,9 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			activateContent(ureq, "search.my", null, null);
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.my", rootNode);
 			menuTree.setSelectedNode(activatedNode);
-		} else {
+		} else if(catalogModule.isCatalogRepoEnabled()) {
 			activateContent(ureq, "catalog", null, null);
-			TreeNode activatedNode = TreeHelper.findNodeByUserObject("catalog", rootNode);
+			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.catalog", rootNode);
 			menuTree.setSelectedNode(activatedNode);
 		}
 
