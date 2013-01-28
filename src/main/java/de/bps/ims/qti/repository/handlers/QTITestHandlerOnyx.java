@@ -39,15 +39,9 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.ims.qti.editor.AddNewQTIDocumentController;
-import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
-import org.olat.ims.qti.process.ImsRepositoryResolver;
-import org.olat.ims.qti.process.Resolver;
 import org.olat.ims.qti.repository.handlers.QTITestHandler;
-import org.olat.modules.iq.IQManager;
-import org.olat.modules.iq.IQPreviewSecurityCallback;
-import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.AddFileResourceController;
 import org.olat.repository.controllers.IAddController;
@@ -55,7 +49,6 @@ import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
-import org.olat.resource.references.ReferenceManager;
 
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.run.OnyxRunController;
@@ -74,28 +67,31 @@ public class QTITestHandlerOnyx extends QTITestHandler {
 	private static final boolean DOWNLOADEABLE = true;
 	private static final boolean EDITABLE = true;
 
-	static List supportedTypes;
+	static List<String> supportedTypes;
 
 	/**
-	 * Default construcotr.
+	 * Default constructor.
 	 */
-	public QTITestHandlerOnyx() { super(); } 
+	public QTITestHandlerOnyx() { 
+		super();
+	} 
 
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(1);
+		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(TestFileResource.TYPE_NAME);
 	}
 	
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
 	 */
+	@Override
 	public boolean supportsLaunch(RepositoryEntry repoEntry) { 
 		return LAUNCHEABLE; 
 	}
@@ -103,18 +99,24 @@ public class QTITestHandlerOnyx extends QTITestHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-	public boolean supportsDownload(RepositoryEntry repoEntry) { return DOWNLOADEABLE; }
+	@Override
+	public boolean supportsDownload(RepositoryEntry repoEntry) {
+		return DOWNLOADEABLE;
+	}
+	
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
 	 */
+	@Override
 	public boolean supportsEdit(RepositoryEntry repoEntry) {
 		if (OnyxModule.isOnyxTest(repoEntry.getOlatResource())) {
 			return false;
 		}
 		return EDITABLE; 
-		}
+	}
 	
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		MainLayoutController layoutCtr = (MainLayoutController) getLaunchController( res,  ureq,  wControl);
 		//fxdiff VCRP-1: access control of learn resources
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
@@ -127,11 +129,9 @@ public class QTITestHandlerOnyx extends QTITestHandler {
 	 * @param wControl
 	 * @return Controller
 	 */
+	@Override
 	public Controller getLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		
 		if (OnyxModule.isOnyxTest(res)) {
-			Resolver resolver = new ImsRepositoryResolver(res);
-			IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
 			// <OLATCE-1054>
 			Controller runController = new OnyxRunController(ureq, wControl, res, false);
 			// </OLATCE-1054>
@@ -148,33 +148,19 @@ public class QTITestHandlerOnyx extends QTITestHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		
 		if (OnyxModule.isOnyxTest(res)) {
 			return null;
 		} else {
 			return super.createEditorController(res, ureq, wControl);
 		}
-		
-//		TestFileResource fr = new TestFileResource();
-//		fr.overrideResourceableId(res.getResourceableId());
-//		
-//		//check if we can edit in restricted mode -> only typos 
-//		ReferenceManager refM = ReferenceManager.getInstance();
-//		List referencees = refM.getReferencesTo(res);
-//		//String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
-//		//boolean restrictedEdit = referencesSummary != null;
-//		QTIEditorMainController editor =  new QTIEditorMainController(referencees,ureq, wControl, fr);
-//		if (editor.isLockedSuccessfully()) {
-//			return editor;
-//		} else {
-//			return null;
-//		}
 	}
 
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback, java.lang.Object, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
 		if (userObject == null || userObject.equals(RepositoryAddController.PROCESS_ADD))
 			return new AddFileResourceController(callback, supportedTypes, new String[] {"zip"}, ureq, wControl);
@@ -182,12 +168,13 @@ public class QTITestHandlerOnyx extends QTITestHandler {
 			return new AddNewQTIDocumentController(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, callback, ureq, wControl);
 	}
 
+	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_qtitest_"; 
 	}
-	
+
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}
-
 }
