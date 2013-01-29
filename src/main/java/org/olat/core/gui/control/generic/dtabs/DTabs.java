@@ -79,7 +79,7 @@ public interface DTabs {
 	 * adds the tab. (upon Event.DONE of the contained controller && if controller is DTabAware -> controller.dispose called by dtabs)
 	 * @param dt
 	 */
-	public void addDTab(UserRequest ureq, DTab dt);
+	public boolean addDTab(UserRequest ureq, DTab dt);
 
 	/**
 	 * Remove a tab from tabs-list.
