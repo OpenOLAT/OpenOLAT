@@ -29,10 +29,12 @@ import java.util.UUID;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -203,7 +205,8 @@ public class EditMembershipController extends FormBasicController {
 			if(needMemberInfoController) {
 				infoController = new MemberInfoController(ureq, getWindowControl(), member, repoEntry, mainForm);
 				listenTo(infoController);
-				layoutCont.put("infos", infoController.getInitialComponent());
+				layoutCont.add(infoController.getInitialFormItem());
+				layoutCont.add("infos", infoController.getInitialFormItem());
 			}
 			
 			String name = repoEntry == null ? businessGroup.getName() : repoEntry.getDisplayname();
@@ -272,6 +275,15 @@ public class EditMembershipController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		super.formInnerEvent(ureq, source, event);
+		if(infoController != null) {
+			//the inner event are not naturally propagated to the sub controller
+			infoController.formInnerEvent(ureq, source, event);
+		}
+	}
+
 	public void collectRepoChanges(MemberPermissionChangeEvent e) {
 		if(repoEntry == null) return;
 		
