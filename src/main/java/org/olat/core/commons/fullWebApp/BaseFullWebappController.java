@@ -543,10 +543,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 			updateBusinessPath(ureq, dt);
 		} else {
 			StateEntry s = state.getTransientState();
-			if(s instanceof StateSite && sites != null) {
+			if(s instanceof StateSite && ((StateSite)s).getSite() != null && sites != null) {
 				SiteInstance site = ((StateSite)s).getSite();
 				for(SiteInstance savedSite:sites) {
-					if(site.getClass().equals(savedSite.getClass())) {
+					if(savedSite != null && site.getClass().equals(savedSite.getClass())) {
 						activateSite(savedSite, ureq, null, entries);
 						//updateBusinessPath(ureq, savedSite);
 					}
