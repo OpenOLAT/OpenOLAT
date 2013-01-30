@@ -577,14 +577,13 @@ public class Table extends Component implements Comparator {
 			}
 			currentSortingCd.sortingAboutToStart();
 			long start = 0;
-			long stop = 0;
 			boolean logDebug = Tracing.isDebugEnabled(Table.class);
 			if (logDebug){
 				start = System.currentTimeMillis();
 			}
 			Collections.sort(sorter, this);
 			if (logDebug) {
-				stop = System.currentTimeMillis();
+				long stop = System.currentTimeMillis();
 				TableDataModel model = getTableDataModel();
 				Tracing.logDebug("sorting time for " + (model==null ? "null" : model.getRowCount()) + " rows:" + (stop - start) + " ms", Table.class);
 			}

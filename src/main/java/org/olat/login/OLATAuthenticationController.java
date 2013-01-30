@@ -113,6 +113,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		if (LoginModule.isGuestLoginLinksEnabled()) {
 			anoLink = LinkFactory.createLink("_olat_login_guest", "menu.guest", loginComp, this);
 			anoLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
+			anoLink.setEnabled(!AuthHelper.isLoginBlocked());
 		}
 		
 		

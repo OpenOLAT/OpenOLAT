@@ -240,9 +240,12 @@ public class NewControllerFactory extends LogDelegator {
 				}
 
 				dt.setController(launchC);
-				dts.addDTab(ureq, dt);
-				dts.activate(ureq, dt, context.getContext()); // null: do not activate to a certain view
-				return true;
+				if(dts.addDTab(ureq, dt)) {
+					dts.activate(ureq, dt, context.getContext()); // null: do not activate to a certain view
+					return true;
+				} else {
+					return false;
+				}
 			}
 		}
 	}

@@ -126,6 +126,6 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	}
 
 	public Object createCopyWithEmptyList() {
-		throw new AssertException("createCopyWithEmptyList not implemented!"); 
+		throw new AssertException("createCopyWithEmptyList not implemented for model:" + this.getClass().getName()); 
 	}
 }

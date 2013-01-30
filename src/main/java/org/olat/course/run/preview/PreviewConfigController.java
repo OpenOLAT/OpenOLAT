@@ -48,6 +48,7 @@ import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -180,9 +181,10 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		final CoursePropertyManager cpm = new PreviewCoursePropertyManager();
 		final Structure runStructure = course.getEditorTreeModel().createStructureForPreview();
 		final String title = course.getCourseTitle();
+		final CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
 
 		simCourseEnv = new PreviewCourseEnvironment(title, runStructure, psf.getDate(), course.getCourseFolderContainer(), course
-				.getCourseBaseContainer(),course.getResourceableId(), cpm, cgm, auditman, am);
+				.getCourseBaseContainer(),course.getResourceableId(), cpm, cgm, auditman, am, courseConfig);
 		simIdentEnv = new IdentityEnvironment();
 		simIdentEnv.setRoles(new Roles(false, false, false, isGlobalAuthor, isGuestOnly, false, false));
 		final Identity ident = new PreviewIdentity();

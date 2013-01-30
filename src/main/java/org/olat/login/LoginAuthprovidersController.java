@@ -363,7 +363,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		root.addChild(gtn);
 		root.setDelegate(gtn);		
 
-		if (LoginModule.isGuestLoginLinksEnabled()) {
+		if (LoginModule.isGuestLoginLinksEnabled() && !AuthHelper.isLoginBlocked()) {
 			gtn = new GenericTreeNode("guest_item");		
 			gtn.setTitle(translate("menu.guest"));
 			gtn.setUserObject(ACTION_GUEST);

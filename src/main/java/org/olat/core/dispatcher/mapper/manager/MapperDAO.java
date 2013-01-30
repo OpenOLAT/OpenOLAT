@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.LockModeType;
 import javax.persistence.TemporalType;
 
 import org.olat.core.commons.persistence.DB;
@@ -57,25 +56,29 @@ public class MapperDAO {
 		return m;
 	}
 	
-	public void updateConfiguration(String mapperId, Serializable mapper) {
+	public boolean updateConfiguration(String mapperId, Serializable mapper) {
 		PersistedMapper m = loadForUpdate(mapperId);
+		if(m == null) {
+			return false;
+		}
 		
 		String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
 		m.setXmlConfiguration(configuration);
 		m.setLastModified(new Date());
-		
 		dbInstance.getCurrentEntityManager().merge(m);
+		return true;
 	}
 	
 	private PersistedMapper loadForUpdate(String mapperId) {
 		StringBuilder q = new StringBuilder();
 		q.append("select mapper from ").append(PersistedMapper.class.getName()).append(" as mapper ")
-		 .append(" where mapper.mapperId=:mapperId");
+		 .append(" where mapper.mapperId=:mapperId order by mapper.key");
 		
 		List<PersistedMapper> mappers = dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), PersistedMapper.class)
 				.setParameter("mapperId", mapperId)
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+				.setFirstResult(0)
+				.setMaxResults(1)
 				.getResultList();
 		return mappers.isEmpty() ? null : mappers.get(0);
 	}

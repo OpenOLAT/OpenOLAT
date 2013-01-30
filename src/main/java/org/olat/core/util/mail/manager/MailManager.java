@@ -1208,6 +1208,9 @@ public class MailManager extends BasicManager {
 				//we want not send really e-mails
 			} else if (mailModule.isMailHostEnabled() && result.getReturnCode() == MailerResult.OK) {
 				// now send the mail
+				if(Settings.isDebuging()) {
+					logInfo("E-mail send: " + msg.getSubject());
+				}
 				Transport.send(msg);
 			} else {
 				result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);

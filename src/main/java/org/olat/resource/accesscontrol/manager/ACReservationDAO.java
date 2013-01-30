@@ -82,7 +82,8 @@ public class ACReservationDAO {
 	}
 	
 	public List<ResourceReservation> loadReservations(Identity identity) {
-		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createNamedQuery("loadReservationsByIdentity", ResourceReservation.class)
+		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadReservationsByIdentity", ResourceReservation.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		return reservations;

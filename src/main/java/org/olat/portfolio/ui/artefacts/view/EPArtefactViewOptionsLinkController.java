@@ -119,6 +119,9 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 			PortfolioStructure newStruct = epsEv.getPortfolioStructure();
 			showInfo("artefact.moved", newStruct.getTitle());
 			moveTreeBox.deactivate();
+		} else if (source == artefactOptionCalloutCtrl) {
+			removeAsListenerAndDispose(artefactOptionCalloutCtrl);
+			artefactOptionCalloutCtrl = null;
 		}
 		fireEvent(ureq, event);
 	}

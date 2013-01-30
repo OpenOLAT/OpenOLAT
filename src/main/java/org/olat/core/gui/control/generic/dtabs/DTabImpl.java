@@ -68,14 +68,17 @@ public class DTabImpl implements Disposable, DTab {
 		this.title = title;
 		//Root the JumpInPath - typically all resources are opened in tabs
 		StackedBusinessControl businessControl = new StackedBusinessControl(null, wOrigControl.getBusinessControl());
-		this.wControl = BusinessControlFactory.getInstance().createBusinessWindowControl(businessControl, wOrigControl);
+		wControl = BusinessControlFactory.getInstance().createBusinessWindowControl(businessControl, wOrigControl);
 		
-		//TODO:fj:c calculate truncation depending on how many tabs are already open
 		String typeName = ores.getResourceableTypeName();
-		String shortTitle = title;
-		if (!title.startsWith(I18nManager.IDENT_PREFIX)) {
+		String shortTitle;
+		if(title == null) {
+			shortTitle = "???";
+		} else if (!title.startsWith(I18nManager.IDENT_PREFIX)) {
 			// don't truncate titles when in inline translation mode (OLAT-3811)
 			shortTitle = Formatter.truncate(title,15);
+		} else {
+			shortTitle = title;
 		}
 		navElement = new DefaultNavElement(shortTitle, title, "b_resource_" + typeName.replace(".", "-"));
 	}
