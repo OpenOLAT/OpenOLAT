@@ -410,8 +410,11 @@ public class WikiManager extends BasicManager {
 		if (wikiCache!=null) {
 			wikiCache.update(OresHelper.createStringRepresenting(ores), wiki);
 		}
-		// do logging
-		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass());
+		
+		if(ThreadLocalUserActivityLogger.getLoggedIdentity() != null) {
+			// do logging only for real user
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass());
+		}
 	}
 
 	/**

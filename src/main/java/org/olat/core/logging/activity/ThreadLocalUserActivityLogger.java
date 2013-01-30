@@ -104,7 +104,7 @@ public class ThreadLocalUserActivityLogger {
 	public static Identity getLoggedIdentity() {
 		IUserActivityLogger logger = userActivityLogger_.get();
 		if (logger!=null) {
-			logger.getLoggedIdentity();
+			return logger.getLoggedIdentity();
 		}
 		return null;
 	}
