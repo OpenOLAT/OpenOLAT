@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -62,8 +61,8 @@ public class MemberInfoController extends FormBasicController {
 	private final UserCourseInformationsManager efficiencyStatementManager;
 	
 	public MemberInfoController(UserRequest ureq, WindowControl wControl, Identity identity,
-			RepositoryEntry repoEntry, Form rootForm) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "info_member", rootForm);
+			RepositoryEntry repoEntry) {
+		super(ureq, wControl, "info_member");
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), getTranslator()));
 
 		userManager = CoreSpringFactory.getImpl(UserManager.class);

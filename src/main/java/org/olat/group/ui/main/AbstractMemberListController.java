@@ -105,7 +105,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected final VelocityContainer mainVC;
 	
 	protected CloseableModalController cmc;
-	private EditMembershipController editMemberCtrl;
+	private EditMembershipController editMembersCtrl;
+	private EditSingleMembershipController editSingleMemberCtrl;
 	private ContactFormController contactCtrl;
 	private MemberLeaveConfirmationController leaveDialogBox;
 	private DialogBoxController confirmSendMailBox;
@@ -263,15 +264,17 @@ public abstract class AbstractMemberListController extends BasicController imple
 			}
 			cmc.deactivate();
 			cleanUpPopups();
-		} else if(source == editMemberCtrl) {
+		} else if(source == editMembersCtrl) {
 			cmc.deactivate();
 			if(event instanceof MemberPermissionChangeEvent) {
 				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
-				if(e.getMember() != null) {
-					doConfirmChangePermission(ureq, e, null);
-				} else {
-					doConfirmChangePermission(ureq, e, editMemberCtrl.getMembers());
-				}
+				doConfirmChangePermission(ureq, e, editMembersCtrl.getMembers());
+			}
+		} else if(source == editSingleMemberCtrl) {
+			cmc.deactivate();
+			if(event instanceof MemberPermissionChangeEvent) {
+				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
+				doConfirmChangePermission(ureq, e, null);
 			}
 		} else if(confirmSendMailBox == source) {
 			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
@@ -295,13 +298,15 @@ public abstract class AbstractMemberListController extends BasicController imple
 	 */
 	protected void cleanUpPopups() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(editMemberCtrl);
+		removeAsListenerAndDispose(editMembersCtrl);
+		removeAsListenerAndDispose(editSingleMemberCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
 		removeAsListenerAndDispose(contactCtrl);
 		cmc = null;
 		contactCtrl = null;
 		leaveDialogBox = null;
-		editMemberCtrl = null;
+		editMembersCtrl = null;
+		editSingleMemberCtrl = null;
 	}
 	
 	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
@@ -333,9 +338,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	protected void openEdit(UserRequest ureq, MemberView member) {
 		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup);
-		listenTo(editMemberCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
+		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup);
+		listenTo(editSingleMemberCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
 				true, translate("edit.member"));
 		cmc.activate();
 		listenTo(cmc);
@@ -344,9 +349,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected void openEdit(UserRequest ureq, List<MemberView> members) {
 		List<Long> identityKeys = getMemberKeys(members);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
-		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
-		listenTo(editMemberCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
+		editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
+		listenTo(editMembersCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
 				true, translate("edit.member"));
 		cmc.activate();
 		listenTo(cmc);
