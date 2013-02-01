@@ -15,22 +15,22 @@ $r.render("resize_image_wrapper")
 #if ($showMetadata)
 	$r.render("metadata")
 #end
-
 $r.render("buttons")
 
 </div>
 #if($resizeImg)
 <script type="text/javascript">
 /* <![CDATA[ */ 
-Ext.onReady(function() {
-	if ($$('.b_fileinput_realchooser').length > 0) {
-		$$('.b_fileinput_realchooser')[0].observe("change", function() {
-			var re = new RegExp('[.](jpeg)|(jpg)|(png)$');
-			var name = $$('.b_fileinput_realchooser')[0].value;
-			if(name != null && name.toLowerCase().match(re)) { $('resize_image_wrapper').show(); } 
-			else { $('resize_image_wrapper').hide(); } 
-		});
-	}
+jQuery(function() {
+	jQuery('.b_fileinput_realchooser').on("change", function() {
+		var re = new RegExp('[.](jpeg)|(jpg)|(png)$');
+		var name = jQuery(this).val();
+		if(name != null && name.toLowerCase().match(re)) {
+			jQuery('#resize_image_wrapper').show();
+		} else { 
+			jQuery('#resize_image_wrapper').hide();
+		} 
+	});
 });
 /* ]]> */
 </script>

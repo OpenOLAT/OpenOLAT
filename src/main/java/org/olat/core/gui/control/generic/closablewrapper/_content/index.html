@@ -31,7 +31,7 @@
 
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
-	Effect.ScrollTo('b_top');
+	jQuery('#b_top').scrollTop();
 	var bodyHeight = document.getElementById('b_body').parentNode.offsetHeight;
 	var windowHeight = window.innerHeight;
 	var finalHeight = Math.min(bodyHeight, windowHeight)-20;

@@ -9,14 +9,14 @@
 (function() {
 	// Load OLAT translator
 	function findMainWindow(win) {
-		if (win.b_jsTranslatorFactory) return win;
+		if (win.o_info) return win;
 		else if (win.opener) return findMainWindow(opener);
 		else return null;
 	}
 	var mainWin = findMainWindow(window);
 	var translator;
 	if (mainWin) {
-		translator = mainWin.b_jsTranslatorFactory.getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatsmileys')	
+		translator = jQuery(document).ooTranslator().getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatsmileys')	
 	} else {
 		// implement dummy-translator
 		translator = {	translate : function(key) { return key; } }

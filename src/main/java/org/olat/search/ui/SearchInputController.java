@@ -64,7 +64,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowController;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -100,7 +99,7 @@ public class SearchInputController extends FormBasicController implements Search
 	protected FormLink searchButton;
 	protected TextElement searchInput;
 	private ResultsSearchController resultCtlr;
-	private Controller searchDialogBox;
+	private CloseableModalController searchDialogBox;
 
 	protected List<FormLink> didYouMeanLinks;
 	
@@ -373,15 +372,9 @@ public class SearchInputController extends FormBasicController implements Search
 	
 	private void popupResultsSearchController(UserRequest ureq) {
 		String title = translate("search.title");
-		boolean ajaxOn = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
-		if (ajaxOn) {
-			searchDialogBox = new CloseableModalWindowController(ureq, getWindowControl(), title, resultCtlr.getInitialComponent(), "ofulltextsearch");
-			((CloseableModalWindowController)searchDialogBox).activate();
-			resultCtlr.listenTo(searchDialogBox);
-		} else {
-			searchDialogBox = new CloseableModalController(getWindowControl(), title, resultCtlr.getInitialComponent());
-			((CloseableModalController)searchDialogBox).activate();
-		}
+		searchDialogBox = new CloseableModalController(getWindowControl(), title, resultCtlr.getInitialComponent());
+		searchDialogBox.activate();
+		listenTo(searchDialogBox);
 	}
 
 	@Override
@@ -394,18 +387,16 @@ public class SearchInputController extends FormBasicController implements Search
 			} else if (event == Event.DONE_EVENT) {
 				setSearchString(resultCtlr.getSearchString());
 			}
-		} else if (CloseableModalWindowController.CLOSE_WINDOW_EVENT.equals(event)) {
+		} else if (source == searchDialogBox) {
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 
 	public void closeSearchDialogBox() {
-		if (searchDialogBox instanceof CloseableModalController) {
+		if(searchDialogBox != null) {
 			((CloseableModalController)searchDialogBox).deactivate();
-		} else if(searchDialogBox instanceof CloseableModalWindowController) {
-			((CloseableModalWindowController)searchDialogBox).deactivate();
+			searchDialogBox = null;
 		}
-		searchDialogBox = null;
 	}
 	
 	/**

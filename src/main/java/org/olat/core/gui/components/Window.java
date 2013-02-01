@@ -831,6 +831,16 @@ public class Window extends Container {
 		}
 		return null;
 	}
+	
+	public String renderComponent(Component cmp) {
+		RenderResult renderResult = new RenderResult();
+		URLBuilder ubu = new URLBuilder(getUriPrefix(), getInstanceId(), getTimestamp(), wbackofficeImpl);
+		Renderer fr = Renderer.getInstance(cmp.getParent(), cmp.getTranslator(), ubu, renderResult, wbackofficeImpl.getGlobalSettings());
+		
+		StringOutput sb = StringOutputPool.allocStringBuilder(2048);
+		fr.render(cmp, sb, null);
+		return StringOutputPool.freePop(sb);
+	}
 
 	/**
 	 * to be called by Window.java or the AjaxController only!

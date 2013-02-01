@@ -157,9 +157,15 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	public void reset() {
 		// a link can not be resetted
 	}
-	
+
+	@Override
 	protected Component getFormItemComponent() {
 		return component;
+	}
+
+	@Override
+	public String getCmd() {
+		return cmd;
 	}
 
 	@Override

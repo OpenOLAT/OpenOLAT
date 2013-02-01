@@ -46,7 +46,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -92,7 +92,7 @@ public class EPArtefactViewController extends FormBasicController {
 	private PortfolioModule portfolioModule;
 	private final boolean detailsLinkEnabled;
 	
-	private CloseableModalWindowWrapperController artefactBox;
+	private CloseableModalController artefactBox;
 	private FormLink detailsLink;
 	private FormLink reflexionBtn;
 	private EPCollectStepForm03 reflexionCtrl;
@@ -172,7 +172,6 @@ public class EPArtefactViewController extends FormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(detailsLinkEnabled && !artefactChooseMode) {
 			detailsLink = uifactory.addFormLink("details.link", formLayout, Link.LINK);

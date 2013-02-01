@@ -4,14 +4,14 @@
 	<script type="text/javascript" src="../../org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/tiny_mce_popup.js"></script>
 	<script type="text/javascript">
 		function findMainWindow(win) {
-			if (win.b_jsTranslatorFactory) return win;
+			if (win.o_info) return win;
 			else if (win.opener) return findMainWindow(opener);
 			else return null;
 		}
 		var mainWin = findMainWindow(tinyMCEPopup.getWin());
 		var translator;
 		if (mainWin) {
-			translator = mainWin.b_jsTranslatorFactory.getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatsmileys')	
+			translator = mainWin.o_info.oo_translator.getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatsmileys')	
 		} else {
 			// implement dummy-translator
 			translator = {	translate : function(key) { return key; } }

@@ -20,11 +20,9 @@
 #if($r.available("ratingUserC"))
 <script type="text/javascript">
 /* <![CDATA[ */ 
-Ext.onReady(function(){
-	Ext.get('b_rating_wrapper_$viewIdent').hover( 
-			function(){ var el = Ext.get('b_rating_$viewIdent'); el.show(); },
-			function(){ var el = Ext.get('b_rating_$viewIdent'); el.hide(); }
-	);
+jQuery(function(){
+	jQuery('#b_rating_wrapper_$viewIdent')
+		.hover(function(){ jQuery('#b_rating_$viewIdent').show(); }, function(){ jQuery('#b_rating_$viewIdent').hide(); });
 });
 /* ]]> */
 </script>

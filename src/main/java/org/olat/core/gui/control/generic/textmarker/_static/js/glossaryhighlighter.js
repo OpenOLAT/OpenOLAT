@@ -85,10 +85,10 @@ function o_tm_highlightFromArray(glossaryId, domId) {
 	
 	try {
 	
-	//if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("running highlightFromArray(" + glossaryId + ", " + domId + ")" ,"glossarymarker.js");
+	//if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"running highlightFromArray(" + glossaryId + ", " + domId + ")" ,"glossarymarker.js");
 	
 		markerArray = new Array();
-		markerArray = eval(o_glossaries[glossaryId]);
+		markerArray = eval(jQuery(document).data("o_glossaries")[glossaryId]);
 	
 		// do the highlighting on the given dom element
 		o_tm_doHighlightAll(document, markerArray, domId);
@@ -133,14 +133,14 @@ function o_tm_doHighlightAll(currentDocument, markerArray, domId) {
 		isHighlighting = true;
 		debug ? console.log("Higlighting in " + currentDocument) : null;
 		try {
-	//		if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("running doHighlightAll(" + Object.toHTML(currentDocument) + ", " + domId + ")" ,"glossarymarker.js");
+	//		if (B_AjaxLogger.isDebugEnabled()) jQuery(document).ooLog('debug',"running doHighlightAll(" + Object.toHTML(currentDocument) + ", " + domId + ")" ,"glossarymarker.js");
 			var searchNode;
 			if (domId == null || domId == "null" || domId == "") {
 		  		// search over whole body
 				searchNode = currentDocument.getElementsByTagName("body")[0];
 			} else {
 		  		// search only in given dom ID
-		   		searchNode = $(domId);
+		   		searchNode = jQuery('#' + domId);
 		  	}
 		  	if (searchNode == null || typeof(searchNode.innerHTML) == "undefined") {
 				// do access to innerHTML, we have to exit here

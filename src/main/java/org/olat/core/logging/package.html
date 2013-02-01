@@ -25,10 +25,7 @@ where is it often difficult to find the origin reason for the exception.
 <p>
 Javascript logging: You can use
 <pre>
-if (B_AjaxLogger.isDebugEnabled()) {
-// always test if in log debug before loggin!!
-B_AjaxLogger.logDebug("This is a cool ajaxified debug message", "myjsfile.js");
-} 
+if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"This is a cool ajaxified debug message", "myjsfile.js");
 </pre>
 to debug and log javascript stuff to the olat.log file. To enable it set the loglevel in the log4j.properties file of the controller to debug
 <pre>log4j.logger.org.olat.core.logging.JavaScriptTracingController=DEBUG</pre>

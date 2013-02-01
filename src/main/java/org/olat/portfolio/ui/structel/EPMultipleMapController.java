@@ -35,7 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -88,7 +88,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 	private DialogBoxController copyMapCtrl;
 	private EPMapViewController mapViewCtrl;
 	private EPShareListController shareListController;
-	private CloseableModalWindowWrapperController shareBox;
+	private CloseableModalController shareBox;
 	private Panel myPanel;
 	
 	private final EPMapRunViewOption option;
@@ -417,9 +417,8 @@ public class EPMultipleMapController extends BasicController implements Activate
 		listenTo(shareListController);
 
 		String title = translate("map.share");
-		shareBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, shareListController.getInitialComponent(),
-				"shareBox" + map.getKey());
-		shareBox.setInitialWindowSize(800, 600);
+		shareBox = new CloseableModalController(getWindowControl(), title, shareListController.getInitialComponent());
+		//shareBox.setInitialWindowSize(800, 600);
 		listenTo(shareBox);
 		shareBox.activate();
 	}

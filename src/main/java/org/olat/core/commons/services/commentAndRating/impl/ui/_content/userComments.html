@@ -1,5 +1,5 @@
 #if(($commentControllers.size() > 0) && $r.available("createCommentFormCtr"))
-	<a id="b_comment_form_link" class="b_link_forward" onclick="{Effect.ScrollTo('b_comment_form'); return false;}" href="#b_comment_form">
+	<a id="b_comment_form_link" class="b_link_forward" onclick="{jQuery('#b_comment_form').scrollTop(); return false;}" href="#b_comment_form">
 		$r.translate("comments.create.goto")
 	</a>
 #end

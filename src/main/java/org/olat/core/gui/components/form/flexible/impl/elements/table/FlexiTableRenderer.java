@@ -51,7 +51,6 @@ class FlexiTableRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
-	@SuppressWarnings("unused")
 	public void render(Renderer renderer, StringOutput target, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
@@ -97,7 +96,10 @@ class FlexiTableRenderer implements ComponentRenderer {
 		target.append("<tbody>");
 		// the really selected rowid (from the tabledatamodel)
 		
-		for (int i = 0; i < rows; i++) {
+		int firstRow = 0;
+		int maxRows = 20;
+		int lastRow = Math.min(rows, firstRow + maxRows);
+		for (int i = firstRow; i < lastRow; i++) {
 			// use alternating css class
 			String cssClass;
 			if (i % 2 == 0) cssClass = "";
@@ -148,6 +150,34 @@ class FlexiTableRenderer implements ComponentRenderer {
 			target.append(FormJSHelper.getJSEnd());
 		}
 
+		target.append("<script>")
+		  .append("jQuery(document).ready(function() {\n")
+      .append("	jQuery('#").append(id).append("').dataTable( {\n")
+      .append("		'bScrollInfinite': true,\n")
+      .append("		'bScrollCollapse': true,\n")
+      .append("		'sScrollY': '200px',\n")
+      .append("		'bProcessing': true,\n")
+      .append("		'bServerSide': true,\n")
+      .append("		'iDisplayLength': 20,\n")
+      .append("		'iDeferLoading': ").append(rows).append(",\n")
+      .append("		'sAjaxSource': '").append(ftE.getMapperUrl()).append("',\n")
+      .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex ) {\n")
+      .append("			jQuery(nRow).draggable({ ")
+      .append("				start: function(event,ui){ console.log('Start'); },\n")
+      .append("				stop: function(event,ui){ console.log('Stop'); }\n")
+      .append("			});\n")
+      .append("		},\n")
+      .append("		'aoColumns': [\n")
+      .append("			{'mData':'key'},\n")
+      .append("			{'mData':'subject'},\n")
+      .append("			{'mData':'select'},\n")
+      .append("			{'mData':'mark'}\n")
+      .append("		]\n")
+      .append("	});\n")
+      .append("});\n")
+		  .append("</script>\n");
+
+
 	}
 
 	/**
@@ -156,7 +186,6 @@ class FlexiTableRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.render.RenderingState)
 	 */
-	@SuppressWarnings("unused")
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
 			StringOutput sb, Component source, RenderingState rstate) {
 		// TODO Auto-generated method stub
@@ -171,7 +200,6 @@ class FlexiTableRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderingState)
 	 */
-	@SuppressWarnings("unused")
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
 			Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {

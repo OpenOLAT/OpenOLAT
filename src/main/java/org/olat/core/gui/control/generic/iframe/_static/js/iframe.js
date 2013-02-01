@@ -86,7 +86,7 @@ function b_sizeIframe() {
 				frame.height = docHeight;
 				// Update height of menu / toolbox height in main window
 				if(docHeight != mainWindow.b_iframe_origHeight && mainWindow.B_ResizableColumns != 'undefined') {
-					if (mainWindow.B_AjaxLogger.isDebugEnabled()) mainWindow.B_AjaxLogger.logDebug("b_sizeIframe(): executing resize command on main window","iframe.js");
+					//console.log("b_sizeIframe(): executing resize command on main window","iframe.js");
 					mainWindow.needsHeightAdjustment = true;
 					mainWindow.B_ResizableColumns.adjustHeight();
 				}

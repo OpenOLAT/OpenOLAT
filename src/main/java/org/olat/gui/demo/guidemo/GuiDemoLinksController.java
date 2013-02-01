@@ -60,7 +60,7 @@ public class GuiDemoLinksController extends BasicController {
 	
 	private Link link;
 	private Link linkExtern;	
-	private Link linkBack;
+	private Link linkBack, linkPos, linkTooltip;
 	private Link linkMail;
 	private Link iconButton;
 	private Link buttonLongTrans;
@@ -112,6 +112,12 @@ public class GuiDemoLinksController extends BasicController {
 		linkMail = LinkFactory.createCustomLink("link.mail", "link.mail", "link.mail", Link.LINK, mainVC, this);	
 		linkMail.setCustomEnabledLinkCSS("b_link_mailto");
 		
+		linkPos = LinkFactory.createCustomLink("link.pos", "link.pos", "link.pos", Link.LINK, mainVC, this);
+		linkPos.registerForMousePositionEvent(true);
+		
+		linkTooltip = LinkFactory.createCustomLink("link.tooltip", "link.tooltip", "link.tooltip", Link.LINK, mainVC, this);
+		linkTooltip.setTooltip("link.tooltip.text", false);
+		
 		// add some text components
 		TextFactory.createTextComponentFromString("text.simple", "Hello World, this text is hardcoded", null, true, mainVC);
 		TextFactory.createTextComponentFromI18nKey("text.translated", "text.translated", getTranslator(), null, true, mainVC);
@@ -155,6 +161,10 @@ public class GuiDemoLinksController extends BasicController {
 			showInfo("info.button.link", ureq.getIdentity().getName());			
 		} else if (source == linkBack){
 			showInfo("info.button.link.back", ureq.getIdentity().getName());			
+		} else if(source == linkPos) {
+			int offsetX = linkPos.getOffsetX();
+			int offsetY = linkPos.getOffsetY();
+			showInfo("link.pos.info", "X:" + offsetX + "px - Y:" + offsetY + "px");
 		} else if (source == iconButton){
 			showInfo("info.button.icon", ureq.getIdentity().getName());			
 		} else if (source == buttonLongTrans){

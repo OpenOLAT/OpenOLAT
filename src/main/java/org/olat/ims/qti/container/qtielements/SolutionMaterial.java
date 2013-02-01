@@ -58,7 +58,7 @@ public class SolutionMaterial extends GenericQTIElement {
 	 */
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		Translator translator = new PackageTranslator(PACKAGE_QTI, (Locale)ri.get(RenderInstructions.KEY_LOCALE));
-		buffer.append("<div id=\"o_qti_solutions\"><a href=\"#\" onclick=\"void(new Effect.toggle('o_qti_solutions_inner','slide', {duration:0.5}))\" onkeypress=\"void(new Effect.toggle('o_qti_solutions_inner','slide', {duration:0.5}))\">");
+		buffer.append("<div id=\"o_qti_solutions\"><a href=\"#\" onclick=\"void(jQuery('#o_qti_solutions_inner').slideToggle(300))\" onkeypress=\"void(jQuery('#o_qti_solutions_inner').slideToggle(300))\">");
 		buffer.append(translator.translate("render.solution"));
 		buffer.append("</a><div id=\"o_qti_solutions_inner\" style=\"display:none\"><div class=\"b_important\">");
 		super.render(buffer, ri);

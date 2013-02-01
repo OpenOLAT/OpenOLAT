@@ -1,4 +1,33 @@
-Ext.namespace('Ext.fxMenuTree');
+function onTreeStartDrag(e, targetId) {
+	console.log('onTreeStartDrag', e, targetId);
+}
+
+function onTreeDragOver(e, targetId) {
+	console.log('onTreeDragOver', e, targetId);
+}
+
+function onTreeDragOut(e, targetId) {
+	console.log('onTreeDragOut', e, targetId);
+}
+	
+function onTreeEndDrag(e, targetId) {
+	console.log('onTreeEndDrag', e, targetId);
+}
+
+function onTreeAccept(e, targetId) {
+	console.log('onTreeAccept', e, targetId);
+}
+
+function onTreeDrop(el, targetId) {
+	console.log('onTreeDrop', el, targetId);
+}
+
+function treeAcceptDrop(el, targetId) {
+	console.log('treeAcceptDrop', el);
+	return false;
+}
+
+/*Ext.namespace('Ext.fxMenuTree');
 Ext.fxMenuTree.DDProxy = function(id, group, dropUrl, overUrl) {
 	var config = {dragData:{end:dropUrl, over:overUrl}, scope:this };
 	Ext.fxMenuTree.DDProxy.superclass.constructor.call(this, id, group, config);
@@ -76,4 +105,4 @@ Ext.extend(Ext.fxMenuTree.DDProxy, Ext.dd.DDProxy, {
     		frames['oaa0'].location.href = url + '/';
     	}
 	}
-});
+});*/

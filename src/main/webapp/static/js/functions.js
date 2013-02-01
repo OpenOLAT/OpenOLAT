@@ -13,7 +13,7 @@ var o3c=new Array();//array holds flexi.form id's
 o_info.guibusy = false;
 o_info.linkbusy = false;
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
-o_info.debug = false;
+o_info.debug = true;
 
 /**
  * The BLoader object can be used to :
@@ -31,10 +31,9 @@ var BLoader = {
 	_isAlreadyLoadedJS: function(jsURL) {
 		var notLoaded = true;
 		// first check for scrips loaded via HTML head
-		$$('head script[src]').findAll(function(s) {
-			if (s.src.indexOf(jsURL) != -1) {
+		jQuery('head script[src]').each(function(s,t) {
+			if (jQuery(t).attr('src').indexOf(jsURL) != -1) {
 				notLoaded = false;
-				$break;
 			};
 		});
 		// second check for script loaded via ajax call
@@ -49,19 +48,16 @@ var BLoader = {
 		if (!this._isAlreadyLoadedJS(jsURL)) {		
 			if (o_info.debug) o_log("BLoader::loadJS: loading ajax::" + useSynchronousAjaxRequest + " url::" + jsURL);
 			if (useSynchronousAjaxRequest) {
-				new Ajax.Request(jsURL, {
-					// manually execute because prototype does not execute in global space. Refactor as soon as available
-					onSuccess : function(transport) {BLoader.executeGlobalJS(transport.responseText, 'loadJS');},
-					method: 'get',
-					encoding: encoding,
-					evalJS : false,
-					asynchronous: false // wait for script to be fully loaded, otherwhise followup code might break
+				jQuery.ajax(jsURL, {
+					async: false,
+					dataType: 'script',
+					success: function(script, textStatus, jqXHR) {
+						//BLoader.executeGlobalJS(script, 'loadJS');
+					}
 				});
 				this._ajaxLoadedJS.push(jsURL);
 			} else {
-				// old school, executes asynchronous!!
-				var s= new Element("script", {type : "text/javascript", src : jsURL, charset : encoding});
-				$$('head')[0].appendChild( s);				
+				jQuery.getScript(jsURL);			
 			}
 			if (o_info.debug) o_log("BLoader::loadJS: loading DONE url::" + jsURL);
 		} else {
@@ -78,12 +74,11 @@ var BLoader = {
 			if (window.execScript) window.execScript(jsString); // IE style
 			else window.eval(jsString);
 		} catch(e){
+			console.log(contextDesc, 'cannot execute js', jsString);
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::executeGlobalJS: Error when executing JS code in contextDesc::' + contextDesc + ' error::"'+showerror(e)+' for: '+escape(jsString));
 			}
-			if (B_AjaxLogger.isDebugEnabled()) { // add ajax logger
-				B_AjaxLogger.logDebug('BLoader::executeGlobalJS: Error when executing JS code in contextDesc::' + contextDesc + ' error::"'+showerror(e)+' for: '+escape(jsString), "functions.js::BLoader::executeGlobalJS::" + contextDesc);
-			}	
+			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','BLoader::executeGlobalJS: Error when executing JS code in contextDesc::' + contextDesc + ' error::"'+showerror(e)+' for: '+escape(jsString), "functions.js::BLoader::executeGlobalJS::" + contextDesc);
 			// Parsing of JS script can fail in IE for unknown reasons (e.g. tinymce gets 8002010 error)
 			// Try to do a 'full page refresh' and load everything via page header, this normally works
 			if (window.location.href.indexOf('o_winrndo') != -1) window.location.reload();
@@ -146,9 +141,7 @@ var BLoader = {
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::loadCSS: Error when loading CSS from URL::' + cssURL);
 			}
-			if (B_AjaxLogger.isDebugEnabled()) { // add ajax logger
-				B_AjaxLogger.logDebug('BLoader::loadCSS: Error when loading CSS from URL::' + cssURL, "functions.js::BLoader::loadCSS");
-			}	
+			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','BLoader::loadCSS: Error when loading CSS from URL::' + cssURL, "functions.js::BLoader::loadCSS");
 		}				
 	},
 
@@ -173,12 +166,10 @@ var BLoader = {
 					if (h == cssURL || h == relCssURL) {
 						cnt++;
 						if (!sheets[i].disabled) {
-						//alert("removing style for ie");
 							sheets[i].disabled = true; // = null;
 						} else {
 							if (o_info.debug) o_logwarn("stylesheet: when removing: matching url, but already disabled! url:"+h);
 						}
-						// return;
 					}
 				}
 				if (cnt != 1 && o_info.debug) o_logwarn("stylesheet: when removeing: num of stylesheets found was not 1:"+cnt);
@@ -198,9 +189,7 @@ var BLoader = {
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::unLoadCSS: Error when unloading CSS from URL::' + cssURL);
 			}
-			if (B_AjaxLogger.isDebugEnabled()) { // add ajax logger
-				B_AjaxLogger.logDebug('BLoader::unLoadCSS: Error when unloading CSS from URL::' + cssURL, "functions.js::BLoader::loadCSS");
-			}	
+			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','BLoader::unLoadCSS: Error when unloading CSS from URL::' + cssURL, "functions.js::BLoader::loadCSS");
 		}				
 	}
 };
@@ -223,8 +212,8 @@ var BFormatter = {
 					// retry formatting when ready (recursively until loaded)
 					BFormatter.formatLatexFormulas.delay(0.1);
 				}
-			} else if (B_AjaxLogger.isDebugEnabled()) { // add ajax logger
-				B_AjaxLogger.logDebug('BFormatter::formatLatexFormulas: can not format latex formulas, jsMath not installed. Check your logfile', "functions.js::BFormatter::formatLatexFormulas");
+			} else {
+				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','BFormatter::formatLatexFormulas: can not format latex formulas, jsMath not installed. Check your logfile', "functions.js::BFormatter::formatLatexFormulas");
 			}
 		} catch(e) {
 			if (o_info.debug) o_log("error in BFormatter.formatLatexFormulas: "+showerror(e));
@@ -245,10 +234,10 @@ function o_init() {
 
 function b_initEmPxFactor() {
 	// read px value for 1 em from hidden div
-	o_info.emPxFactor = Ext.get('b_width_1em').getWidth();
+	o_info.emPxFactor = jQuery('#b_width_1em').width();
 	if (o_info.emPxFactor == 0 || o_info.emPxFactor == 'undefined') {
 		o_info.emPxFactor = 12; // default value for all strange settings
-		if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('Could not read with of element b_width_1em, set o_info.emPxFactor to 12', "functions.js");
+		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Could not read with of element b_width_1em, set o_info.emPxFactor to 12', "functions.js");
 	}
 }
 
@@ -263,9 +252,9 @@ function o_getOpenWin() {
 }
 
 function o_beforeserver() {
-//mal versuche mit Ext.onReady().. erst dann wieder clicks erlauben...
+//mal versuche mit jQuery().ready.. erst dann wieder clicks erlauben...
 	o_info.linkbusy = true;
-	showAjaxBusy.delay(0.5);
+	showAjaxBusy();
 	// execute iframe specific onunload code on the iframe
 	if (window.suppressOlatOnUnloadOnce) {
 		// don't call olatonunload this time, reset variable for next time
@@ -282,7 +271,6 @@ function o_afterserver() {
 }
 
 function o2cl() {
-	// alert("busy:"+o_info.linkbusy);
 	if (o_info.linkbusy) {
 		return false;
 	} else {
@@ -357,11 +345,15 @@ Array.prototype.search = function(s,q){
 // executed. Use this callback to execute some JS code to cleanup eventhandlers or alike
 var b_onDomReplacementFinished_callbacks=new Array();//array holding js callback methods that should be executed after the next ajax call
 function b_AddOnDomReplacementFinishedCallback(funct) {
-	B_AjaxLogger.logDebug("callback stack size: " + b_onDomReplacementFinished_callbacks.length, "functions.js ADD"); 
-	if (Ext.isGecko3 && !Ext.isSafari) { B_AjaxLogger.logDebug("stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js ADD") };
+	var debug = jQuery(document).ooLog().isDebugEnabled();
+	
+	if(debug) jQuery(document).ooLog('debug',"callback stack size: " + b_onDomReplacementFinished_callbacks.length, "functions.js ADD"); 
+	if (debug && jQuery.browser.mozilla && !jQuery.browser.webkit) {
+		jQuery(document).ooLog('debug',"stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js ADD")
+	};
 
 	b_onDomReplacementFinished_callbacks.push(funct);
-	B_AjaxLogger.logDebug("push to callback stack, func: " + funct, "functions.js ADD");
+	if(debug) jQuery(document).ooLog('debug',"push to callback stack, func: " + funct, "functions.js ADD");
 }
 //fxdiff FXOLAT-310 
 var b_changedDomEl=new Array();
@@ -370,10 +362,10 @@ var b_changedDomEl=new Array();
 //funct then has to be an array("identifier", funct) 
 function b_AddOnDomReplacementFinishedUniqueCallback(funct) {
 	if (funct.constructor == Array){
-		B_AjaxLogger.logDebug("add: its an ARRAY! ", "functions.js ADD"); 
+		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"add: its an ARRAY! ", "functions.js ADD"); 
 		//check if it has been added before
 		if (b_onDomReplacementFinished_callbacks.search(funct[0])){
-			B_AjaxLogger.logDebug("push to callback stack, already there!!: " + funct[0], "functions.js ADD");		
+			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"push to callback stack, already there!!: " + funct[0], "functions.js ADD");		
 			return;
 		} 
 	}
@@ -384,6 +376,10 @@ function b_AddOnDomReplacementFinishedUniqueCallback(funct) {
 var o_debug_trid = 0;
 function o_ainvoke(r) {
 	// commands
+	if(r == undefined) {
+		console.log('r is undefined');
+		return;
+	}
 	
 	o_info.inainvoke = true;
 	var cmdcnt = r["cmdcnt"];
@@ -417,35 +413,45 @@ function o_ainvoke(r) {
 							var jsol = c1["jsol"]; // javascript on load
 							var hdr = c1["hdr"]; // header
 							if (o_info.debug) o_log("c2: redraw: "+c1["cname"]+ " ("+ciid+") "+c1["hfragsize"]+" bytes, listener(s): "+c1["clisteners"]);
-							var con = hfrag.stripScripts();
-							var hdrco = hdr+"\n\n"+con;
-							var inscripts = hfrag.extractScripts();
-							var newc = $("o_c"+ciid);
+							//var con = jQuery(hfrag).find('script').remove(); //Strip scripts
+							var hdrco = hdr+"\n\n"+hfrag;
+							var inscripts = '';//jQuery(hfrag).find('script');//hfrag.extractScripts();
+							var newc = jQuery("#o_c"+ciid);
 							if (newc == null) {
 								if (o_info.debug) o_logwarn("could not find comp with id: o_c"+ciid+",\nname: "+c1["cname"]+",\nlistener(s): "+c1["clisteners"]+",\n\nhtml:\n"+hfrag);
-								if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("Error in o_ainvoke(), could not find comp with id: o_c"+ciid+",\nname: "+c1["cname"]+",\nlistener(s): "+c1["clisteners"]+",\n\nhtml:\n"+hfrag, "functions.js");
+								//TODO jquery
+								if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), could not find comp with id: o_c"+ciid+",\nname: "+c1["cname"]+",\nlistener(s): "+c1["clisteners"]+",\n\nhtml:\n"+hfrag, "functions.js");
 							} else {
 								if(civis){ // needed only for ie 6/7 bug where an empty div requires space on screen
-									newc.style.display="";//reset?
+									newc.css('display','');//.style.display="";//reset?
 								}else{
-									newc.style.display="none";
+									newc.css('display','none'); //newc.style.display="none";
 								}
 								// do dom replacement
 								// remove listeners !! ext overwrite or prototype replace does NOT remove listeners !!
 //								newc.descendants().each(function(el){if (el.stopObserving) el.stopObserving()});
-								Ext.DomHelper.overwrite(newc, hdrco, false);
+								newc.empty();
+								
+								try{
+								newc.html(hdrco);//Ext.DomHelper.overwrite(newc, hdrco, false);
+								} catch(e) {
+									console.log(e);
+									console.log('Fragmet',hdrco);
+								}
+								
 								b_changedDomEl.push('o_c'+ciid);
 								
 								newc = null;
 								
 								// exeucte inline scripts
 								if (inscripts != "") {
-									inscripts.each( function(val){ BLoader.executeGlobalJS(val, 'o_ainvoker::inscripts');} );
+									inscripts.each( function(val){
+										BLoader.executeGlobalJS(val, 'o_ainvoker::inscripts');}
+									);
 								}
 								if (jsol != "") {
 									BLoader.executeGlobalJS(jsol, 'o_ainvoker::jsol');
 								}
-								if (ishighlight) new Effect.Highlight('o_c'+ciid);
 							}
 						}
 						break;
@@ -496,48 +502,58 @@ function o_ainvoke(r) {
 							var ce = jsadd[l];
 							// 3.1) execute before AJAX-code
 							var preJsAdd = ce["before"];
-							if (Object.isString(preJsAdd)) {
+							if (jQuery.type(preJsAdd) === "string") {
 								BLoader.executeGlobalJS(preJsAdd, 'o_ainvoker::preJsAdd');
 							}
 							// 3.2) load js file
 							var url = ce["url"];
 							var enc = ce["enc"];
-							if (Object.isString(url)) BLoader.loadJS(url, enc, true);
+							if (jQuery.type(url) === "string") BLoader.loadJS(url, enc, true);
 							if (o_info.debug) o_log("c7: add js: "+url);
 						}	
 						break;	
 					default:
 						if (o_info.debug) o_log("?: unknown command "+co); 
-						if (B_AjaxLogger.isDebugEnabled()) 	B_AjaxLogger.logDebug("Error in o_ainvoke(), ?: unknown command "+co, "functions.js");
+					if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), ?: unknown command "+co, "functions.js");
 						break;
 				}		
 			} else {
 				if (o_info.debug) o_log ("could not find window??");
-				if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("Error in o_ainvoke(), could not find window??", "functions.js");
+				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), could not find window??", "functions.js");
 			}		
 		}
 		// execute onDomReplacementFinished callback functions
 		var stacklength = b_onDomReplacementFinished_callbacks.length;
-		if (Ext.isGecko3 && !Ext.isSafari) { B_AjaxLogger.logDebug("stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js"); }
+		if (jQuery.browser.mozilla && !jQuery.browser.webkit) { 
+			if(jQuery(document).ooLog().isDebugEnabled())
+				jQuery(document).ooLog('debug',"stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js");
+		}
 		
 		for (mycounter = 0; stacklength > mycounter; mycounter++) { 
 			if (mycounter > 50) {
-				if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("Stopped executing DOM replacement callback functions - to many functions::" + b_onDomReplacementFinished_callbacks.length, "functions.js");
+				if(jQuery(document).ooLog().isDebugEnabled()) {
+					jQuery(document).ooLog('debug',"Stopped executing DOM replacement callback functions - to many functions::" + b_onDomReplacementFinished_callbacks.length, "functions.js");
+				}
 				break; // emergency break
 			}
-			B_AjaxLogger.logDebug("Stacksize before shift: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
+			if(jQuery(document).ooLog().isDebugEnabled()) {
+				jQuery(document).ooLog('debug',"Stacksize before shift: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
+			}
 			var func = b_onDomReplacementFinished_callbacks.shift();
 			if (typeof func.length === 'number'){
 				if (func[0] == "glosshighlighter") {
 					var tmpArr = func[1];
-					B_AjaxLogger.logDebug("arr fct: "+ tmpArr, "functions.js");
+					if(jQuery(document).ooLog().isDebugEnabled())
+						jQuery(document).ooLog('debug',"arr fct: "+ tmpArr, "functions.js");
 					func = tmpArr;
 				 }				
 			}
-			if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("Executing DOM replacement callback function #" + mycounter + " with timeout funct::" + func, "functions.js");
+			if(jQuery(document).ooLog().isDebugEnabled())
+				jQuery(document).ooLog('debug',"Executing DOM replacement callback function #" + mycounter + " with timeout funct::" + func, "functions.js");
 			// don't use execScript here - must be executed outside this function scope so that dom replacement elements are available
-			func.delay(0.01);
-			B_AjaxLogger.logDebug("Stacksize after timeout: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
+			//TODO jquery func.delay(0.01);
+			if(jQuery(document).ooLog().isDebugEnabled())
+				jQuery(document).ooLog('debug',"Stacksize after timeout: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
 		}
 	}
 	
@@ -557,23 +573,28 @@ function showAjaxBusy() {
 	if (o_info.linkbusy) {
 		// try/catch because can fail in full page refresh situation when called before DOM is ready
 		try {
-			$('b_ajax_busy').addClassName('b_ajax_busy');
-			$('b_body').addClassName('b_ajax_busy');
+			jQuery('#b_ajax_busy').delay(500).queue(function( nxt ) {
+				jQuery(this).addClass('b_ajax_busy');
+				jQuery('#b_body').addClass('b_ajax_busy');
+			});
 		} catch (e) {}
 	}
+	return;
 }
 
 function removeAjaxBusy() {
 	// try/catch because can fail in full page refresh situation when called before page DOM is ready
-	try { 
-		$('b_ajax_busy').removeClassName('b_ajax_busy');
-		$('b_body').removeClassName('b_ajax_busy');
-	} catch (e) {}
+	try {
+		jQuery('#b_ajax_busy').delay(500).queue(function( nxt ) {
+			jQuery(this).removeClass('b_ajax_busy');
+			jQuery('#b_body').removeClass('b_ajax_busy');
+		});
+	} catch (e) {/* */}
 }
 
 //safari destroys new added links in htmleditor see: http://bugs.olat.org/jira/browse/OLAT-3198
-var htmlEditorEnabled = (Prototype.Browser.IE || Prototype.Browser.Gecko);
-var scormPlayerEnabled = (Prototype.Browser.IE || Prototype.Browser.Gecko || Prototype.Browser.WebKit);
+var htmlEditorEnabled = (jQuery.browser.msie || jQuery.browser.mozilla);
+var scormPlayerEnabled = (jQuery.browser.msie || jQuery.browser.mozilla || jQuery.browser.webkit);
 
 function setFormDirty(formId) {
 	// sets dirty form content flag to true and renders the submit button
@@ -591,16 +612,16 @@ function setFormDirty(formId) {
 		}
 		// set dirty css class
 		if(mySubmit) mySubmit.className ="b_button b_button_dirty";
-	} else {
-		B_AjaxLogger.logDebug("Error in setFormDirty, myForm was null for formId=" + formId, "functions.js");
+	} else if(jQuery(document).ooLog().isDebugEnabled()) {
+		jQuery(document).ooLog('debug',"Error in setFormDirty, myForm was null for formId=" + formId, "functions.js");
 	}
 }
 
 
 //Pop-up window for context-sensitive help
 function contextHelpWindow(URI) {
-helpWindow = window.open(URI, "HelpWindow", "height=760, width=940, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
-helpWindow.focus();
+	helpWindow = window.open(URI, "HelpWindow", "height=760, width=940, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
+	helpWindow.focus();
 }
 
 //TODO: for 5.3 add popup capability to link and table
@@ -618,14 +639,11 @@ function o_openPopUp(url, windowname, width, height, menubar) {
 
 function b_togglebox(domid, toggler) {
 	// toggle the domid element and switch the toggler classes
-	new Effect.toggle(domid, 'slide', {duration: 0.5}); 
-	if(toggler.hasClassName('b_togglebox_closed')) {
-		toggler.removeClassName('b_togglebox_closed');
-		toggler.addClassName('b_togglebox_opened');
-	} else {
-		toggler.removeClassName('b_togglebox_opened');
-		toggler.addClassName('b_togglebox_closed');
-	}
+	jQuery('#'+domid).slideToggle(400, function() {
+		var togglerEl = jQuery(toggler);
+		togglerEl.toggleClass('b_togglebox_closed');
+		togglerEl.toggleClass('b_togglebox_opened');
+	});
 }
 
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
@@ -669,13 +687,13 @@ function gotonode(nodeid) {
 			// must be content opened using the clone controller - search in opener window
 			if (opener && typeof opener.o_activateCourseNode != 'undefined') {
 			  opener.o_activateCourseNode(nodeid);
-			} else {
-				if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("Error in gotonode(), could not find main window", "functions.js");
+			} else if(jQuery(document).ooLog().isDebugEnabled()) {
+				jQuery(document).ooLog('debug',"Error in gotonode(), could not find main window", "functions.js");
 			}			
 		}
 	} catch (e) {
-	 alert(e);
-		if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("Error in gotonode()::" + e.message, "functions.js");
+		alert('Goto node error:' + e);
+		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in gotonode()::" + e.message, "functions.js");
 	}
 }
 
@@ -695,9 +713,9 @@ function o_openUriInMainWindow(uri) {
 
 function b_viewportHeight() {
 	// based on prototype library
-	var prototypeViewPortHight = document.viewport.getHeight()
-	if (prototypeViewPortHight > 0) {
-		return prototypeViewPortHight;
+	var prototypeViewPortHeight = jQuery(document).height()
+	if (prototypeViewPortHeight > 0) {
+		return prototypeViewPortHeight;
 	} else {
 		return 600; // fallback
 	}
@@ -717,18 +735,18 @@ OPOL.getMainColumnsMaxHeight =  function(){
 	mainInnerHeight = 0,
 	mainHeight = 0,
 	mainDomElement,
-	col1DomElement = Ext.get('b_col1_content'),
-	col2DomElement = Ext.get('b_col2_content'),
-	col3DomElement = Ext.get('b_col3_content');
+	col1DomElement = jQuery('#b_col1_content'),
+	col2DomElement = jQuery('#b_col2_content'),
+	col3DomElement = jQuery('#b_col3_content');
 	
 	if (col1DomElement != 'undefined' && col1DomElement != null) {
-		col1Height = col1DomElement.getHeight();
+		col1Height = col1DomElement.height();
 	}
 	if (col2DomElement != 'undefined' && col2DomElement != null){
-		col2Height = col2DomElement.getHeight();
+		col2Height = col2DomElement.height();
 	}
 	if (col3DomElement != 'undefined' && col3DomElement != null){
-		col3Height = col3DomElement.getHeight();
+		col3Height = col3DomElement.height();
 	}
 
 	mainInnerHeight = (col1Height > col2Height ? col1Height : col2Height);
@@ -738,9 +756,9 @@ OPOL.getMainColumnsMaxHeight =  function(){
 	} 
 	
 	// fallback, try to get height of main container
-	mainDomElement = Ext.get('b_main');
+	mainDomElement = jQuery('#b_main');
 	if (mainDomElement != 'undefined' && mainDomElement != null) { 
-		mainHeight = mainDomElement.getHeight();
+		mainHeight = mainDomElement.height();
 	}
 	if (mainDomElement > 0) {
 		return mainDomElement;
@@ -753,16 +771,17 @@ OPOL.getMainColumnsMaxHeight =  function(){
 function b_resizeIframeToMainMaxHeight(iframeId) {
 	// adjust the given iframe to use as much height as possible
 	// (fg)
-	var theIframe = Ext.fly(iframeId);
+	alert('b_resizeIframeToMainMaxHeight');
+	var theIframe = jQuery('#' + iframeId);
 	if (theIframe != 'undefined' && theIframe != null) {
 		var colsHeight = OPOL.getMainColumnsMaxHeight();
 		
 		var potentialHeight = b_viewportHeight() - 100;// remove some padding etc.
-		var elem = Ext.get('b_header');
+		var elem = jQuery('#b_header');
 		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.getHeight();
-		elem = Ext.get('b_nav');
+		elem = jQuery('#b_nav');
 		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.getHeight();
-		elem = Ext.get('b_footer');
+		elem = jQuery('#b_footer');
 		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.getHeight();
 		// resize now
 		var height = (potentialHeight > colsHeight ? potentialHeight : colsHeight) + "px";
@@ -818,12 +837,12 @@ function o_log(str) {
 		o_log_all = "\n"+o_debug_trid+"> "+str + o_log_all;
 		o_log_all = o_log_all.substr(0,4000);
 	}
-	var logc = $("o_debug_cons");
+	var logc = jQuery("#o_debug_cons");
 	if (logc) {
 		if (o_log_all.length == 4000) o_log_all = o_log_all +"\n... (stripped: to long)... ";
 		logc.value = o_log_all;
 	}
-	if(!Prototype.Browser.IE && !Object.isUndefined(window.console)){
+	if(!jQuery.browser.IE && !jQuery.type(window.console) === "undefined"){
 		//firebug log window
 		window.console.log(str);
 	}
@@ -874,60 +893,52 @@ function o_ffEvent (formNam, dispIdField, dispId, eventIdField, eventInt){
 
 //
 // param formId a String with flexi form id
-function setFlexiFormDirtyByListener(e,target,options){
-	setFlexiFormDirty(options.formId);
+function setFlexiFormDirtyByListener(e){
+	setFlexiFormDirty(e.data.formId);
 }
 
 function setFlexiFormDirty(formId){
-
 	var isRegistered = o3c.indexOf(formId) > -1;
 	if(!isRegistered){
 		o3c.push(formId);
 	}
-	var myForm = document.getElementById(formId);
-	var submitButton = document.getElementById(myForm["FlexiSubmit"]);
-	if(submitButton != null){
-		//not all forms must have a submit element! 
-		submitButton.className ="b_button b_button_dirty";
-		o2c=1;
-	}
+	jQuery('#'+formId).each(function() {
+		var submitId = jQuery(this).data('FlexiSubmit');
+		if(submitId != null) {
+			jQuery('#'+submitId).addClass('b_button b_button_dirty');
+			o2c=1;
+		}
+	});
 }
 
 //
 //
 function o_ffRegisterSubmit(formId, submElmId){
-	var myForm = document.getElementById(formId);
-	myForm["FlexiSubmit"] = submElmId;
+	jQuery('#'+formId).data('FlexiSubmit', submElmId);
 }
 /*
 * renders an info msg that slides from top into the window
 * and hides automatically
 */
-function showInfoBox(title, format){
+function showInfoBox(title, content){
 	// Factory method to create message box
-	function createBox(t, s){
-	        return ['<div class="b_msg-div msg">',
-	                '<div class="b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>', t, '</h3>', s, '<br/><br/>',
-	                '</div>'
-	                ].join('');
-	}
-    var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
-    var msgCt = Ext.get('b_page').insertHtml('beforeBegin', createBox(title, s), true);
+	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
+	var info = '<div id="' + uuid + '" class="b_msg-div msg"><div class="b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>'
+		 + title + '</h3>' + content + '<br/><br/></div></div>';
+    var msgCt = jQuery('#b_page').prepend(info);
     // Hide message automatically
-    var time = (s.length > 70) ? 6 : 4;
-    time = (s.length > 150) ? 8 : time;
-    msgCt.slideIn('t').pause(time).ghost("t", {remove:true});
+    var time = (content.length > 70) ? 6000 : 4000;
+    time = (content.length > 150) ? 8000 : time;
+    jQuery('#' + uuid).slideDown(300).delay(time).slideUp(300);
     // Visually remove message box immediately when user clicks on it
     // The ghost event from above is triggered anyway. 
-    msgCt.on("click", function(e, t) {
-    	var msg = Ext.get(t).findParent("div.b_msg-div",10,true); 
-    	if(msg) {
-    		msg.hide();
-    	}
+    jQuery('#' + uuid).click(function(e) {
+    	jQuery('#' + uuid).remove();
     });
     // 	
     // Help GC, prevent cyclic reference from on-click closure (OLAT-5755)
-    s = null;
+    title = null;
+    content = null;
     msgCt = null;
     time = null;
 }
@@ -940,17 +951,11 @@ function showMessageBox(type, title, message, buttonCallback){
 	if(type == 'info'){
 		showInfoBox(title, message)
 	} else {
-		// No memory issues, this is a singleton. Only one message box possible
-		// at any time, ExtJS takes care itself of cleaning up (it reuses the
-		// DOM elements for the next message)
-		var msg = Ext.MessageBox.show({
+		jQuery('<p>' + message + '</p>').dialog({
+			height: 140,
+			modal: true,
 			title: title,
-			msg: message,
-			cls: 'o_sel_'+type+'_message',
-			icon: 'b_msg_'+type+'_winicon',
-			minWidth: 300,
-			buttons: Ext.MessageBox.OK,
-			fn: buttonCallback
+			resizable:false
 		});
 	}
 }
@@ -1002,13 +1007,14 @@ function b_doPrint() {
  * Attach event listeners to enable inline translation tool hover links
  */ 
 function b_attach_i18n_inline_editing() {
+	return;
 	// Add hover handler to display inline edit links
 	Ext.select('span.b_translation_i18nitem').hover(function(){	
 		Ext.get(this.firstChild).show();
-		//if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("Entered i18nitem::" + this.firstChild, "functions.js:b_attach_i18n_inline_editing()");
+		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Entered i18nitem::" + this.firstChild, "functions.js:b_attach_i18n_inline_editing()");
 	},function(){
 		Ext.select('a.b_translation_i18nitem_launcher').hide();
-		//if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug("Leaving i18nitem::" + this, "functions.js:b_attach_i18n_inline_editing()");
+		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Leaving i18nitem::" + this, "functions.js:b_attach_i18n_inline_editing()");
 	});
 	// Add highlight effect on link to show which element is affected by this link
 	Ext.select('a.b_translation_i18nitem_launcher').hover(function(){	

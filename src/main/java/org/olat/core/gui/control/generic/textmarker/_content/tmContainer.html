@@ -15,31 +15,32 @@ $r.render("tmComponent")
 
 <script type="text/javascript">
 	#if ($glossaryEnabled)
-	 
-		Ext.onReady(function() {
+		jQuery(function() {
 			var glossaryId = "$glossaryId";
 		
 			//loads the terms via ajax-call from GlossaryTermMapper
-		 	if (this.o_glossaries == null) this.o_glossaries = new Object(); 
-			var terms = o_glossaries[glossaryId];
+			var glossaries;
+			if(jQuery(document).data("o_glossaries") == undefined) {
+				jQuery(document).data("o_glossaries", new Object()); 
+		 	}
+			glossaries = jQuery(document).data("o_glossaries");
+			var terms = glossaries[glossaryId];
 			if (terms == null) {
 				// do load
-				var url = this.b_glossaryTermMapperPath + "/" + glossaryId + "/terms.js";
-				new Ajax.Request(url, { asynchronous : false, 
+				var url = b_glossaryTermMapperPath + "/" + glossaryId + "/terms.js";
+				jQuery.ajax(url, {
+					asynchronous : false, 
 					encoding : 'UTF-8', method : 'get', 
-				 	onSuccess: function(transport) {
-				    	//alert(transport.responseText);
-				    	this.o_glossaries[glossaryId] = eval(transport.responseText);
-				  	}
-				  });
+				 	success: function(data, textStatus, jqXHR) {
+				 		jQuery(document).data("o_glossaries")[glossaryId] = eval(jqXHR.responseText);
+				  }
+				});
 			}
-		
 			//  now let highlighter run
 			o_tm_highlightFromArray(glossaryId, "$domId");
 		});
-		
 	#else
 		// clear glossary
-		this.o_glossaries = null;		
+		jQuery(document).data("o_glossaries", null);	
 	#end
 </script>

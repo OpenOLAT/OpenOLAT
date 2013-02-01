@@ -1,22 +1,25 @@
-	<p>
-		$r.render("statisticResult")
-	</p>
-	#if ($hasChart)
- 		<hr class="b_form_spacer"/>
- 		<br/>
-		<p>
-			$chartIntro
-		</p>
- 		<br/>
-		<div class="b_floatscrollbox" style="height: 240px">
-			<img src="$chartUrl" alt="$chartAlt"/>
-		</div>
-	#end
-	#if ($hasChartError)
- 		<hr class="b_form_spacer"/>
- 		<br/>
-		<p>
-			$chartError
-		</p>
-	#end
-	
+<p>$r.render("statisticResult")</p>
+<hr class="b_form_spacer"/>
+<p>$chartIntro</p>
+<div id="placeholder" style="width:600px;height:300px"></div>
+<script type="text/javascript">
+jQuery(function () {
+    	var d2 = [$d2];
+        var options = {
+        	xaxis: {
+        		tickLength: 0, // hide gridlines
+        		ticks: [$thicks]
+        	}
+        };
+	jQuery.plot(jQuery("#placeholder"), [{
+		color:'#879CB8',
+		data: d2,
+		bars: {
+			show: true,
+			align:'center',
+			lineWidth: 1,
+			barWidth: 0.8
+		}
+        }],options);
+});
+</script>

@@ -19,17 +19,16 @@
  */
 package org.olat.core.gui.media;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.olat.core.logging.AssertException;
+import org.json.JSONObject;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
@@ -41,55 +40,46 @@ import org.olat.core.logging.AssertException;
  * @author mkuendig
  */
 public class JSONMediaResource extends DefaultMediaResource {
+	private static final OLog log = Tracing.createLoggerFor(JSONMediaResource.class);
 	private static final String ENCODING_DEFAULT = "iso-8859-1";
 
 	private String encoding = "";
-	private JSONArray json;
+	private JSONArray jsonArray;
+	private JSONObject jsonObject;
 
-	public JSONMediaResource(JSONArray json, String encoding) {
-		this.json = json;
+	public JSONMediaResource(JSONArray jsonArray, String encoding) {
+		this.jsonArray = jsonArray;
 		this.encoding = encoding;
-		this.setContentType("application/json; charset=" + encoding);
+		setContentType("application/json; charset=" + encoding);
 	}
 	
-	
+	public JSONMediaResource(JSONObject jsonObject, String encoding) {
+		this.jsonObject = jsonObject;
+		this.encoding = encoding;
+		setContentType("application/json; charset=" + encoding);
+	}
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		super.prepare(hres);
-		
 		try {
-			json.write(hres.getWriter());
+			if(jsonObject != null) {
+				jsonObject.write(hres.getWriter());
+			} else if(jsonArray != null) {
+				jsonArray.write(hres.getWriter());
+			}
+
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		}
 	}
-
-
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
 	 */
 	public InputStream getInputStream() {
-		ByteArrayInputStream bis = null;
-		try {
-			bis = new ByteArrayInputStream(json.toString().getBytes(encoding));
-		} catch (UnsupportedEncodingException e) {
-			try {
-				bis = new ByteArrayInputStream(json.toString().getBytes(ENCODING_DEFAULT));
-			} catch (UnsupportedEncodingException ec) {
-				throw new AssertException(encoding + " encoding not supported??");
-				// iso-8859-1 must be supported on the platform
-			}
-		}
 		return null;
-		// nputStream sis = new
-		// ByteArrayInputStream(json.toString().getBytes());
-		// return sis;
 	}
-
 }

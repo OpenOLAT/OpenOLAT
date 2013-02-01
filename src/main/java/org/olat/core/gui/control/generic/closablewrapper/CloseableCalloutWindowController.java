@@ -298,11 +298,9 @@ public class CloseableCalloutWindowController extends BasicController {
 	private void cleanupJSCode() {
 		// Cleanup any resources on the browser/DOM side
 		StringBuilder sb = new StringBuilder();
-		sb.append("if( Ext.getCmp('callout_o_c")
-				.append(calloutVC.getDispatchID()).append("') != null ) {");
-		sb.append("  Ext.getCmp('callout_o_c")
-				.append(calloutVC.getDispatchID()).append("').destroy();");
-		sb.append("};");
+		sb.append("if(jQuery('#callout_layer_o_").append(calloutVC.getDispatchID()).append("') != null ) {")
+		  //.append("  jQuery('#callout_layer_o_").append(calloutVC.getDispatchID()).append("').destroy();")
+		  .append("};");
 		// JS command is sent via OLAT AJAX channel
 		Command command = new JSCommand(sb.toString());
 		getWindowControl().getWindowBackOffice().sendCommandTo(command);

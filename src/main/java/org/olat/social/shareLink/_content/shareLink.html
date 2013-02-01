@@ -3,7 +3,7 @@
 /* <![CDATA[ */
     ## Called from Window.java to update the businesspath
 	function b_shareActiveSocialUrl() {
-		$('b_mail').writeAttribute('href','mailto:?subject=' + b_shareSocialTitle() + '&body=' + b_shareSocialUrl());
+		jQuery('#b_mail').attr('href','mailto:?subject=' + b_shareSocialTitle() + '&body=' + b_shareSocialUrl());
 	}
 	## Helper methods for buttons below
 	function b_shareSocialUrl() {

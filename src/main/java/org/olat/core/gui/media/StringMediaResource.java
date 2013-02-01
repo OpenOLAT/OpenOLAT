@@ -72,11 +72,6 @@ public class StringMediaResource extends DefaultMediaResource {
 	public void setEncoding(String encoding) {
 		this.encoding = StringHelper.check4xMacRoman(encoding);
 	}
-	
-	@Override
-	public Long getSize() {
-		return new Long(data.length());
-	}
 
 	@Override
 	public void prepare(HttpServletResponse hres) {

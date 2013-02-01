@@ -8,38 +8,40 @@ var BTinyHelper = {
 	// flexi form text area on-change handler
 	triggerOnChangeOnFormElement : function (tinyObj) {
 		var domID = tinyObj.id;
-		var domElem = $(domID);
+		var domElem = jQuery('#' + domID);
 		if (domElem && domElem.onchange) domElem.onchange();
 	},
 	
 	// This methods adds event handlers to auto-hide the external toolbar 
 	// when the curser leaves the editor area
 	addAutohideExternalToolbarHandler : function (domID) {
-		var tinyExtTB = $(domID + '_external');
+		var tinyExtTB = jQuery(domID + '_external');
 		if (tinyExtTB) {
-			Ext.get(domID + '_parent').hover( 
+			jQuery('#' + domID + '_parent').hover( 
 					function(){ /* do nothing, will be added alread on click events by tiny itself */ },
 					function(){ tinymce.DOM.hide(domID + '_external'); }
 			);
-			tinyExtTB.setStyle({width : $(domID + '_tbl').getWidth()-2 + 'px'});
+			tinyExtTB.width(jQuery('#' + domID + '_tbl').width() - 2 + 'px');
 		}
 		tinyExtTB = null; // Help GC, break circular reference;
 	},
 	
 	// contains uris to open the media popup window
-	editorMediaUris : new Hash(),
+	editorMediaUris : new Hashtable(),
 	
 	// Current media browser callback field
 	currentField : null,
 	
 	// Open link browser in new window. Only one browser window is supported at any time
 	openLinkBrowser : function (formitemId, field_name, url, type, win) {
-		BTinyHelper.currentField = win.document.forms[0].elements[field_name];	
-		BTinyHelper.currentWindow = win;
-		
-		var currentMediaUrl = BTinyHelper.editorMediaUris.get(formitemId);
-		var currentField = win.document.forms[0].elements[field_name];	
-		o_openPopUp(currentMediaUrl + type + '?url=' + encodeURIComponent(url), "chooser", 800, 700, false);
+		if(win != null) {
+			BTinyHelper.currentField = win.document.forms[0].elements[field_name];	
+			BTinyHelper.currentWindow = win;
+			
+			var currentMediaUrl = BTinyHelper.editorMediaUris.get(formitemId);
+			var currentField = win.document.forms[0].elements[field_name];	
+			o_openPopUp(currentMediaUrl + type + '?url=' + encodeURIComponent(url), "chooser", 800, 700, false);
+		}
 	},
 
 	// Write link from media chooser back to tiny and trigger media preview generation
@@ -89,15 +91,15 @@ var BTinyHelper = {
 	},
 
 	// Current form dirty observers
-	formDirtyObservers : new Hash(),
+	formDirtyObservers : new Hashtable(),
 
 	// Stop form dirty observers that exist for this form and element
 	stopFormDirtyObserver : function(formId, elementId) {
 		var observerKey = formId + '-' + elementId;
 		var existingExecutor = BTinyHelper.formDirtyObservers.get(observerKey);
 		if (existingExecutor != null) {
-			existingExecutor.stop();
-			BTinyHelper.formDirtyObservers.unset(observerKey);
+			existingExecutor.cancel();
+			BTinyHelper.formDirtyObservers.remove(observerKey);
 		}
 	},	
 	
@@ -108,12 +110,12 @@ var BTinyHelper = {
 	startFormDirtyObserver : function(formId, elementId) {
 		var observerKey = formId + '-' + elementId;
 		// Check for dirtyness and mark buttons accordingly, each second
-		var newExecutor = new PeriodicalExecuter(function(executor) {
+		var newExecutor = jQuery.periodic({period: 500}, function(executor) {
 			// first check if the html editor still exists on this page, otherwhise stop executing this code
-			var elem = $(elementId);
+			var elem = jQuery('#' + elementId);
 			if (!elem) {
-				executor.stop();
-				BTinyHelper.formDirtyObservers.unset(observerKey);
+				executor.cancel();
+				BTinyHelper.formDirtyObservers.remove(observerKey);
 				return;
 			}
 			if (tinyMCE && tinyMCE.activeEditor) {
@@ -122,8 +124,8 @@ var BTinyHelper = {
 				}
 			}		
 			elem = null; // help GC
-		},0.5);	
-		BTinyHelper.formDirtyObservers.set(observerKey, newExecutor);
+		});	
+		BTinyHelper.formDirtyObservers.put(observerKey, newExecutor);
 	},
 	
 	// Remove the editor instance for the given DOM node ID if such an editor exists.

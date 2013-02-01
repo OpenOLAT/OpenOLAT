@@ -36,7 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -70,7 +70,7 @@ public class EPMapRunController extends BasicController implements Activateable2
 	private Link createMapLink;
 	private Link createMapFromTemplateLink;
 	private EPCreateMapController createMapCtrl;
-	private CloseableModalWindowWrapperController createMapBox;
+	private CloseableModalController createMapBox;
 	private ReferencableEntriesSearchController searchTemplateCtrl;
 	private EPMultipleMapController multiMapCtrl;
 	private SearchController searchController;
@@ -269,9 +269,9 @@ public class EPMapRunController extends BasicController implements Activateable2
 		String title = translate("create.map");
 		createMapCtrl = new EPCreateMapController(ureq, getWindowControl());
 		listenTo(createMapCtrl);
-		createMapBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, createMapCtrl.getInitialComponent(), "addMapBox");
+		createMapBox = new CloseableModalController(getWindowControl(), title, createMapCtrl.getInitialComponent());
 		listenTo(createMapBox);
-		createMapBox.setInitialWindowSize(750, 300);
+		//createMapBox.setInitialWindowSize(750, 300);
 		createMapBox.activate();
 	}
 	
@@ -282,9 +282,9 @@ public class EPMapRunController extends BasicController implements Activateable2
 		searchTemplateCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[]{EPTemplateMapResource.TYPE_NAME}, commandLabel, false, false, false, false);			
 		listenTo(searchTemplateCtrl);
-		createMapBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, searchTemplateCtrl.getInitialComponent(), "addMapFromTemplateBox");
+		createMapBox = new CloseableModalController(getWindowControl(), title, searchTemplateCtrl.getInitialComponent());
 		listenTo(createMapBox);
-		createMapBox.setInitialWindowSize(800, 600);
+		//createMapBox.setInitialWindowSize(800, 600);
 		createMapBox.activate();
 	}
 	

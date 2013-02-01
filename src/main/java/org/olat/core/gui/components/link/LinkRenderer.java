@@ -122,7 +122,7 @@ public class LinkRenderer implements ComponentRenderer {
 		String elementId = link.getElementId();
 		
 		// String buffer to gather all Javascript stuff with this link
-		// there is a var elementId = Ext.get('elementId');
+		// there is a var elementId = jQuery('#elementId');
 		// allowing to reference the link as an Ext.Element 
 		// Optimize initial length based on heuristic measurements of extJsSb
 		StringBuilder extJsSb = new StringBuilder(240); 
@@ -132,10 +132,7 @@ public class LinkRenderer implements ComponentRenderer {
 		extJsSb.append("(function(){");
 		extJsSb.append("var ");
 		extJsSb.append(elementId);
-		extJsSb.append(" = Ext.get('");
-		extJsSb.append(elementId);
-		extJsSb.append("');");
-		//
+		extJsSb.append(" = jQuery('#").append(elementId).append("');");
 
 		boolean hasExtJsSb = false;
 
@@ -198,9 +195,6 @@ public class LinkRenderer implements ComponentRenderer {
 						sb.append(" ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate(title))).append("\"");
 					}
 				}
-				if (link.hasStickyTooltip) {
-					//sb.append(" ext:hide=\"user\"");
-				}
 			}
 			
 
@@ -236,16 +230,14 @@ public class LinkRenderer implements ComponentRenderer {
 			if (link.markIt) {
 				sb.append("</span>");
 			}
-			//Event.observe() is part of prototype.js
+			//on click() is part of prototype.js
 			if(link.registerForMousePositionEvent) {
-				extJsSb.append(" Event.observe(\""+elementId+"\", \"click\", function(event) {");
-				extJsSb.append(" var link = $('" + elementId + "');");
-				// Uncomment next line for live JS debugging
-				//extJsSb.append(" B_AjaxLogger.logDebug(link.getAttribute(\"href\"), 'o_c"+link.getDispatchID()+" - " + elementId + "'); ");
-				extJsSb.append(" if (link.getAttribute(\"href\").indexOf(\"/x\") == -1) link.setAttribute(\"href\", link.href+\"x\"+Event.pointerX(event)+\"y\"+Event.pointerY(event)+\"\");");
-				extJsSb.append("});");
+				extJsSb.append("jQuery('#"+elementId+"').click(function(event) {")
+				       .append(" jQuery('#" + elementId + "').each(function(index, el) {;")
+				       .append("  var href = jQuery(el).attr('href');")
+				       .append(" 	if(href.indexOf('x') == -1) jQuery(el).attr('href',href+'x'+event.pageX+'y'+event.pageY+'');")
+				       .append(" });});");
 				hasExtJsSb = true;
-				
 			}
 			/**
 			 * TODO:gs:b may be usefull as well
@@ -253,7 +245,7 @@ public class LinkRenderer implements ComponentRenderer {
 			 * Event.observe("id", "click", functionName.bindAsEventListener(this));
 			 */
 			if(link.javascriptHandlerFunction != null) {
-				extJsSb.append("  Event.observe(\""+elementId+"\", \""+link.mouseEvent+"\", "+link.javascriptHandlerFunction+");");
+				extJsSb.append("  jQuery('#"+elementId+"').on('"+link.mouseEvent+"', "+link.javascriptHandlerFunction+");");
 				hasExtJsSb = true;
 			}
 			
@@ -302,8 +294,8 @@ public class LinkRenderer implements ComponentRenderer {
 			StringBuilder sbj = new StringBuilder();
 			// examples:
 			// o_lnk400.on({'click',removeBusyAfterDownload,document,{formId:"ofo_100"}};);
-			sbj.append("if (").append(elementId).append(") ").append(elementId).append(".on(\"click");
-			sbj.append("\",removeBusyAfterDownload,document,{delay: 1200}); ");
+			sbj.append("if (").append(elementId).append(") ").append(elementId)
+				.append(".click({delay: 1200},removeBusyAfterDownload);");
 			extJsSb.append(sbj.toString());
 		}
 		

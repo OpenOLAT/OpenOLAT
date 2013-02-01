@@ -135,26 +135,26 @@ class RichTextElementRenderer implements ComponentRenderer {
 			sb.append("<script type='text/javascript'>/* <![CDATA[ */ ");
 			// Execute code within an anonymous function (closure) to not leak
 			// variables to global scope (OLAT-5755)
-			if(teC.isExtDelay()) sb.append("var task = new Ext.util.DelayedTask(function(){");
+			if(teC.isExtDelay()) sb.append("setTimeout(function(){");
 			else sb.append("(function(){");
 			// Stop existing form dirty observers first
 			sb.append("BTinyHelper.stopFormDirtyObserver('" + te.getRootForm().getDispatchFieldId() + "','" + domID + "');");
 			// Now add component dispatch URL as a tiny helper variable to open the
 			// media browser in new window at a later point from javascript
-			sb.append("BTinyHelper.editorMediaUris.set('").append(domID).append("','");
+			sb.append("BTinyHelper.editorMediaUris.put('").append(domID).append("','");
 			ubu.buildURI(sb, null, null);
 			sb.append("');");	
 			
 			// Wait until the browser has fully loaded the tiny js file and the
 			// window.tinyMCE object is available. Loop until its there.
-			sb.append("if (Object.isNumber(o_info.tinyLoaderId)) window.clearTimeout(o_info.tinyLoaderId);");
+			sb.append("if(jQuery.isNumeric(o_info.tinyLoaderId)) window.clearTimeout(o_info.tinyLoaderId);");
 			// To actually load tiny we use a function that is executed deferred
 			// and retries to initialize the tiny instance as long as it might
 			// take to load the tiny code. To not get confused with several tiny
 			// instances on the screen we use a custom method name per rich text element
 			String checkAndLoadTinyFunctionName = "o_checkTinyLoaded" + domID;
 			sb.append("var ").append(checkAndLoadTinyFunctionName).append(" = function() { ");
-			sb.append("if (Object.isUndefined(window.tinyMCE)) o_info.tinyLoaderId = ").append(checkAndLoadTinyFunctionName).append(".delay(0.01); else {");
+			sb.append("if(jQuery.type(window.tinyMCE) === 'undefined') o_info.tinyLoaderId = ").append(checkAndLoadTinyFunctionName).append(".delay(0.01); else {");
 			// Add custom modules just before initializing tiny		
 			RichTextConfiguration richTextConfiguration = te.getEditorConfiguration();
 			richTextConfiguration.appendLoadCustomModulesFromConfig(sb);
@@ -173,7 +173,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 			sb.append("} };");
 			sb.append(checkAndLoadTinyFunctionName).append("();");
 
-			if(teC.isExtDelay()) sb.append("});task.delay(500);");
+			if(teC.isExtDelay()) sb.append("},500);");
 			else sb.append("})();");
 			sb.append("/* ]]> */</script>");
 			// Done with loading of TinyMCE code

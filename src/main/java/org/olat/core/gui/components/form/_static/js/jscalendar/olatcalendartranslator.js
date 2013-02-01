@@ -1,5 +1,5 @@
 // get olat translator for calendar package
-var trans = b_jsTranslatorFactory.getTranslator(o_info.locale, 'org.olat.core.gui.components.form._static.js.jscalendar');
+var trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.core.gui.components.form._static.js.jscalendar');
 
 // short day names
 Calendar._SDN = new Array(

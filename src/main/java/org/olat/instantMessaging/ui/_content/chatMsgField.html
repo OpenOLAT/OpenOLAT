@@ -20,9 +20,9 @@
 	#end
 </div>
 #if($focus)
-	<script>Ext.onReady(function(){try{focus_${panelName}();}catch(e){}});</script>
+	<script>jQuery(function(){try{focus_${panelName}();}catch(e){}});</script>
 #else
-	<script>Ext.onReady(function(){try{tweak_${panelName}();}catch(e){}});</script>
+	<script>jQuery(function(){try{tweak_${panelName}();}catch(e){}});</script>
 #end
 <script type="text/javascript">
 /* <![CDATA[ */

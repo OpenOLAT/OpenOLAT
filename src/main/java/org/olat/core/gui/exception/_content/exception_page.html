@@ -16,32 +16,15 @@ var o_info = new Object();
 /* ]]> */
 </script>
 ## Basic JS libraries for DOM manipulation and visual effects
-<script type="text/javascript" src="$r.staticLink("js/prototype/prototype.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/scriptaculous.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/effects.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/controls.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/sound.js")"></script>
-## EXT JS library
-<link rel="stylesheet" type="text/css" href="$r.staticLink("js/ext/resources/css/ext-all.css")" />
-## Use Ext src version when in debug mode to allow JS debugging. Below are the ext parts that are used in OLAT
-## FIXME:FG:6.4 create ext component in java to reduce loading of ext elements on login screen
-## EXT base elements
-<script type="text/javascript" src="$r.staticLink("js/ext/adapter/prototype/ext-prototype-adapter.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-core.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-foundation.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/cmp-foundation.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-dd.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/resizable.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-foundation.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-json.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-list-views.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/window.js")"></script>		## needed by info/warn/error message
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-buttons.js")"></script>	## needed by info/warn/error message
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-toolbars.js")"></script>	## needed by info/warn/error message
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tips.js")"></script> 		## needed everywhere
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tree.js")"></script> 		## AjaxTreeController
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-forms.js")"></script> 	## needed by tree inline edit
-
+<script type="text/javascript" src="$r.staticLink("js/modernizr/modernizr.js")"></script>
+## jQuery libraries
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.0.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-migrate-1.0.0.min.js")'></script>
+<script>
+/* <![CDATA[ */ 
+     jQuery.noConflict();
+/* ]]> */
+</script>
 ## OLAT libraries
 <script type="text/javascript" src="$r.staticLink("js/functions.js")"></script>
 ##
@@ -144,7 +127,7 @@ $r.renderHeaderIncludes()
 </div>
 
 <p />
-<a href="#" onclick="new Effect.toggle('b_stacktrace', 'slide', {duration: 0.5})" class="b_with_small_icon_left b_exception_stacktrace_icon">$r.translate("error.technical")</a>
+<a href="#" onclick="jQuery('#b_stacktrace').slideToggle(300)" class="b_with_small_icon_left b_exception_stacktrace_icon">$r.translate("error.technical")</a>
 <div id="b_stacktrace" #if(!$debug) style="display: none;" #end class="b_floatscrollbox"><div>
 <pre>
 $listenerInfo

@@ -27,11 +27,11 @@ package org.olat.core.commons.chiefcontrollers;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
 import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.util.i18n.I18nManager;
 
 /**
@@ -56,23 +56,8 @@ class JSTranslatorMapper implements Mapper {
 		String localeKey = parts[1];
 		String bundleName = parts[2];
 		Locale locale = i18nManager.getLocaleOrDefault(localeKey);
-		// Create a media resource		
-		StringMediaResource resource = new StringMediaResource() {
-			@Override
-			public void prepare(HttpServletResponse hres) {
-				// don't use normal string media headers which prevent caching,
-				// use standard browser caching based on last modified timestamp
-			}
-		};
-		resource.setLastModified(i18nManager.getLastModifiedDate(locale, bundleName));
-		resource.setContentType("text/javascript");
 		// Get the translation data 
-		String translationData = i18nManager.getJSTranslatorData(locale, bundleName);
-		resource.setData(translationData);
-		// UTF-8 encoding used in this js file since explicitly set in the ajax
-		// call (usually js files are 8859-1)
-		resource.setEncoding("utf-8");
-		return resource;
+		JSONObject translationData = i18nManager.getJSONTranslatorData(locale, bundleName);
+		return new JSONMediaResource(translationData, "UTF-8");
 	}
-
 }

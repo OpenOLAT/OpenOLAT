@@ -27,11 +27,10 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
@@ -56,7 +55,6 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 	private EPFrontendManager ePFMgr;
 	private Link detailsLink;
 	private AbstractArtefact artefact;
-	private PortfolioStructure struct;
 	private EPSecurityCallback secCallback;
 
 	protected EPArtefactViewReadOnlyController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, EPSecurityCallback secCallback, PortfolioStructure struct) {
@@ -87,21 +85,13 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == detailsLink && secCallback.canView()){
 			String title = translate("view.artefact.header");
-			CloseableModalWindowWrapperController artDetails = EPUIFactory.getAndActivatePopupArtefactController(artefact, ureq, getWindowControl(), title);
+			CloseableModalController artDetails = EPUIFactory.getAndActivatePopupArtefactController(artefact, ureq, getWindowControl(), title);
 			listenTo(artDetails);
 		} 
-	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
 	}
 
 	/**
@@ -109,6 +99,6 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 	 */
 	@Override
 	protected void doDispose() {
+		//
 	}
-
 }

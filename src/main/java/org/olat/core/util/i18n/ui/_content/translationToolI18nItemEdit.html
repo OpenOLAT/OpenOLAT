@@ -116,7 +116,7 @@ function checkClick(wrapperName, langCode) {
 				key = elements[1];
 			}
 			
-			var trans = b_jsTranslatorFactory.getTranslator(langCode, bundleName);
+			var trans = jQuery(document).ooTranslator().getTranslator(langCode, bundleName);
 			if (trans) {
 				var translated = trans.translate(key);
 				##console.log("WORD FOUND::" + reference + " translated as::" + translated);

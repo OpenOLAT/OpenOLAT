@@ -28,6 +28,10 @@
 	   <property name="order" value="5" />
 	   <property name="enabled" value="${site.repository.enable}"/>
 	</bean>
+	<bean id="olatsites_qpool" class="org.olat.modules.qpool.site.QuestionPoolSiteDef" scope="prototype" >
+	   <property name="order" value="7" />
+	   <property name="enabled" value="${site.questionpool.enable}"/>
+	</bean>
 	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef" scope="prototype" >
 	   <property name="order" value="9" />
 	</bean>

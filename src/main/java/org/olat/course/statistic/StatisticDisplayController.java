@@ -28,6 +28,7 @@ package org.olat.course.statistic;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -76,9 +77,34 @@ public class StatisticDisplayController extends BasicController {
 	class Graph {
 		private int max = 0;
 		public String chd;
+		public List<Integer> values;
 		public List<String> labelList;
 		public String chartIntroStr;
 		private int numElements = 0;
+		
+		String getLabelsArray() {
+			StringBuilder sb = new StringBuilder();
+			long count = 0;
+			for (String aLabel : labelList) {
+				if(sb.length() >0) {
+					sb.append(',');
+				}
+				sb.append("[").append(count++).append(",'").append(aLabel).append("']");
+			}
+			return sb.toString();
+		}
+		
+		String getValuesArray() {
+			StringBuilder sb = new StringBuilder();
+			long count = 0;
+			for (Integer v : values) {
+				if(sb.length() >0) {
+					sb.append(',');
+				}
+				sb.append("[").append(count++).append(",'").append(v.toString()).append("']");
+			}
+			return sb.toString();
+		}
 		
 		String getLabelsFormatted(int maxLength, double maxWidth) {
 			final int MIN_LENGTH = 8;
@@ -161,9 +187,6 @@ public class StatisticDisplayController extends BasicController {
 		
 		if (course==null) {
 			throw new IllegalArgumentException("Course must not be null");
-		}
-		if (statisticManager==null) {
-			throw new IllegalArgumentException("statisticManager must not be null");
 		}
 		this.course = course;
 		this.statisticManager = statisticManager;
@@ -328,6 +351,7 @@ public class StatisticDisplayController extends BasicController {
 		String chartIntroStr = headerTranslator_.translate("statistic.chart.intro", new String[] { selectionInfo, getStatsSinceStr(ureq) });
 		
 		StringBuffer chd = new StringBuffer();
+		List<Integer> values = new ArrayList<Integer>();
 
 		int max = 10;
 		int columnCnt = tableCtr_.getTableDataModel().getColumnCount();
@@ -343,6 +367,7 @@ public class StatisticDisplayController extends BasicController {
 				chd.append(",");
 			}
 			chd.append(v);
+			values.add(v);
 			
 			ColumnDescriptor cd = tableCtr_.getColumnDescriptor(column);
 			String headerKey = cd.getHeaderKey();
@@ -353,6 +378,7 @@ public class StatisticDisplayController extends BasicController {
 		}
 		Graph result = new Graph();
 		result.max = max;
+		result.values = values;
 		result.chd = chd.toString();
 		result.labelList = labelList;
 		result.chartIntroStr = chartIntroStr;
@@ -457,6 +483,9 @@ public class StatisticDisplayController extends BasicController {
 			String chartSpaceBetweenBars = String.valueOf(idealBarSpace); 
 			String chartSize = "1000x220";
 			
+			String thicks = graph.getLabelsArray();
+			String vals = graph.getValuesArray();
+			
 			//calculate the max size using default values
 			double n = graph.numElements;
 			long idealWidth = yAxisWidthLeftMargin + Math.round((n - 0.5) * idealBarWidth) + Math.round((n-1) * idealBarSpace) + yAxisWidthRightMargin;
@@ -505,6 +534,11 @@ public class StatisticDisplayController extends BasicController {
 					"&chbh="+chartBarWidth+","+chartSpaceBetweenBars+
 					"&chxr="+chartAxisRange;
 			statisticVc_.contextPut("chartUrl", url);
+			statisticVc_.contextPut("thicks", thicks);
+			statisticVc_.contextPut("d2", vals);
+			
+			
+			System.out.println(url);
 			if (url.length()>2000) {
 				// from http://code.google.com/apis/chart/faq.html#url_length
 				// The maximum length of a URL is not determined by the Google Chart API, 

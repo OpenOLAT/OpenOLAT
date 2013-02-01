@@ -25,7 +25,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -162,11 +162,11 @@ public class EPUIFactory {
 	 * @param title of the popup
 	 * @return a controller to listenTo
 	 */
-	public static CloseableModalWindowWrapperController getAndActivatePopupArtefactController(AbstractArtefact artefact, UserRequest ureq, WindowControl wControl, String title) {
+	public static CloseableModalController getAndActivatePopupArtefactController(AbstractArtefact artefact, UserRequest ureq, WindowControl wControl, String title) {
 		EPArtefactViewController artefactCtlr;
 		artefactCtlr = new EPArtefactViewController(ureq, wControl, artefact, true);
-		CloseableModalWindowWrapperController artefactBox = new CloseableModalWindowWrapperController(ureq, wControl, title, artefactCtlr.getInitialComponent(), "artefactBox" + artefact.getKey());
-		artefactBox.setInitialWindowSize(600, 500);
+		CloseableModalController artefactBox = new CloseableModalController(wControl, title, artefactCtlr.getInitialComponent());
+		//artefactBox.setInitialWindowSize(600, 500);
 		artefactBox.activate();
 		return artefactBox;
 	}

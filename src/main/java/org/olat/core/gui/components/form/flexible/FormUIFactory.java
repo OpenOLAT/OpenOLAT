@@ -979,6 +979,24 @@ public class FormUIFactory {
 		formLayout.add(fte);
 		return fte;
 	}
+	
+	/**
+	 * 
+	 * @param name to be used to render in velocity <code>$r.render("name")</code>
+	 * @param cmd The cmd to be used
+	 * @param i18nLink i18n key for the link text
+	 * @param i18nLabel i18n key for the link elements label, maybe <code>null</code>
+	 * @param formLayout FormLink is added as element here
+	 * @param presentation See Link.BUTTON etc. 
+	 * @return
+	 */
+	public FormLink addFormLink(String name, String cmd, String i18nLink, String i18nLabel, FormItemContainer formLayout, int presentation){
+		FormLinkImpl fte = new FormLinkImpl(name, cmd, i18nLink, presentation);
+		fte.setI18nKey(i18nLink);
+		setLabelIfNotNull(i18nLabel, fte);
+		formLayout.add(fte);
+		return fte;
+	}
 
 	/**
 	 * Add a form link with a special css class

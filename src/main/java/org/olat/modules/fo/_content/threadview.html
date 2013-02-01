@@ -142,15 +142,16 @@
 	$r.render("singleThreadTable")
 	<script type="text/javascript">
 	/* <![CDATA[ */
-		Effect.ScrollTo('b_top');
+		jQuery('#b_top').scrollTop();
 	/* ]]> */
 	</script> 
 #end
 #if($goToMessage)
 	<script type="text/javascript">
 	/* <![CDATA[ */
-		Effect.ScrollTo('o_forum_message_$goToMessageId');
-		Effect.Pulsate('o_forum_message_$goToMessageId', { pulses: 2, duration: 1, from: 0.7 });
+		jQuery('html, body').animate({scrollTop: jQuery("#o_forum_message_$goToMessageId").offset().top}, 300, function() {
+			jQuery("#o_forum_message_$goToMessageId").effect("pulsate");
+		});
 	/* ]]> */
 	</script> 
 #end

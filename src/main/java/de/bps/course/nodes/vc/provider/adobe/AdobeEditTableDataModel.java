@@ -21,7 +21,6 @@
 package de.bps.course.nodes.vc.provider.adobe;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
@@ -38,7 +37,7 @@ import de.bps.course.nodes.vc.MeetingDate;
  * @author Jens Lindner (jlindne4@hs-mittweida.de)
  * @author skoeber
  */
-public class AdobeEditTableDataModel extends DefaultTableDataModel {
+public class AdobeEditTableDataModel extends DefaultTableDataModel<MeetingDate> {
 
 	private static int COLUMN_COUNT = 4;
 
@@ -59,7 +58,7 @@ public class AdobeEditTableDataModel extends DefaultTableDataModel {
 	 */
 	@Override
 	public Object getValueAt(int row, int col) {
-		final MeetingDate model = ((MeetingDate) objects.get(row));
+		final MeetingDate model = objects.get(row);
 		switch (col) {
 			case 0:
 				return model.getTitle();

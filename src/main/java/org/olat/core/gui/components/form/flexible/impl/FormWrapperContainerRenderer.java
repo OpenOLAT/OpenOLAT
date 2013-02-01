@@ -91,8 +91,11 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 			// transfer and parameter extracing overhead
 			if (formC.isMultipartEnabled()) {
 				sb.append(" enctype=\"multipart/form-data\"");
-			}			
-			sb.append(" name=\"");
+			}
+
+			sb.append(" id=\"");
+			sb.append(formC.getFormName());
+			sb.append("\" name=\"");
 			sb.append(formC.getFormName());
 			sb.append("\" action=\"");
 			ubu.buildURI(sb, new String[] { Form.FORMID }, new String[] { Form.FORMCMD }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME

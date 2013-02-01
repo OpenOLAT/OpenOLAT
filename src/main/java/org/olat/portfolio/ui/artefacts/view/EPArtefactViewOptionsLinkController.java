@@ -30,7 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -58,7 +58,7 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 	
 	//controllers
 	private EPCollectStepForm04 moveTreeCtrl;
-	private CloseableModalWindowWrapperController moveTreeBox;
+	private CloseableModalController moveTreeBox;
 	private Controller reflexionCtrl;
 	private CloseableCalloutWindowController artefactOptionCalloutCtrl;
 	
@@ -132,9 +132,8 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 		moveTreeCtrl = new EPCollectStepForm04(ureq, getWindowControl(), artefact, struct);
 		listenTo(moveTreeCtrl);
 		String title = translate("artefact.move.title");
-		moveTreeBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, moveTreeCtrl.getInitialComponent(), "moveTreeBox");
+		moveTreeBox = new CloseableModalController(getWindowControl(), title, moveTreeCtrl.getInitialComponent());
 		listenTo(moveTreeBox);
-		moveTreeBox.setInitialWindowSize(450, 300);
 		moveTreeBox.activate();
 	}
 	

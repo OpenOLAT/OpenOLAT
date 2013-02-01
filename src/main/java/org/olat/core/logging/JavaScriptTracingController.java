@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NothingChangedMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -57,9 +58,9 @@ import org.olat.core.util.Util;
  * <p>
  * <code>
  * [...]
- * if (B_AjaxLogger.isDebugEnabled()) {
+ * if (jQuery(document).ooLog().isDebugEnabled()) {
  * 	// always test if in log debug before loggin!!
- * 	B_AjaxLogger.logDebug("This is a cool ajaxified debug message", "myjsfile.js");
+ * 	jQuery(document).ooLog('debug','This is a cool ajaxified debug message', 'myjsfile.js');
  * }
  * [...]
  * </code>
@@ -83,39 +84,36 @@ public class JavaScriptTracingController extends BasicController {
 	public JavaScriptTracingController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		// dummy translator, empty
-		Translator trans = Util.createPackageTranslator(
-				JavaScriptTracingController.class, ureq.getLocale());
 		// dummy velocity container, empty
-		VelocityContainer mainVC = new VelocityContainer("JSTracing", Util
-				.getPackageVelocityRoot(JavaScriptTracingController.class)
-				+ "/JSTracing.html", trans, this);
-
-		// The javascript ajax tracing library, attached to the dummy velocity
-		// container so that it gets included
-		JSAndCSSComponent tmJs = new JSAndCSSComponent("js",
-				JavaScriptTracingController.class,
-				new String[] { "JSTracing.js" }, null, false);
-		mainVC.put("js", tmJs);
+		VelocityContainer mainVC = createVelocityContainer("JSTracing");
 
 		// The mapper that handels all log postings
 		Mapper mapper = new Mapper() {
-			public MediaResource handle(String relPath,
-					HttpServletRequest request) {
+			public MediaResource handle(String relPath, HttpServletRequest request) {
 				// the log message
 				String logMsg = request.getParameter("logMsg");
 				// optional, the logging file name
 				String jsFile = request.getParameter("jsFile");
 				// currently only debug level is supported but in the future...
 				String level = request.getParameter("level");
-				if (level != null && level.equals("debug") && logMsg != null) {
-					// log to standard OLAT logging system
-					logDebug(logMsg, jsFile);
+				if(logMsg == null) {
+					logMsg = "";
+				}
+				
+				if(level != null) {
+					if("debug".equals(level)) {
+						logDebug(logMsg, jsFile);
+					} else if("info".equals(level)) {
+						logInfo(logMsg, jsFile);
+					} else if("warn".equals(level)) {
+						logWarn(logMsg + "/" + jsFile, null);
+					} else if("error".equals(level)) {
+						logError(logMsg + "/" +  jsFile, null);
+					} else if("audit".equals(level)) {
+						logAudit(logMsg + "/" +  jsFile, null);
+					}
 				}
 				// sent empty response
-				StringMediaResource smr = new StringMediaResource();
-				smr.setContentType("application/javascript");
-				smr.setEncoding("utf-8");
-				smr.setData("");
 				StringMediaResource mediaResource = new StringMediaResource();
 				mediaResource.setEncoding("utf-8");
 				mediaResource.setContentType("text/javascript;charset=utf-8");
@@ -127,32 +125,20 @@ public class JavaScriptTracingController extends BasicController {
 
 		// push some variables to the header that are needed to initialize the
 		// JS Tracing
-		String jsHeader = "<script type='text/javascript'>o_info.JSTracingUri='"
-				+ mapperUri
-				+ "/';o_info.JSTracingLogDebugEnabled="
-				+ isLogDebugEnabled()
-				+ ";</script>";
-		HtmlHeaderComponent JSTracingHeader = new HtmlHeaderComponent(
-				"JSTracingHeader", null, jsHeader);
+		StringBuilder jsHeader = new StringBuilder();
+		jsHeader.append("<script type='text/javascript'>o_info.JSTracingUri='").append(mapperUri)
+		        .append("/';o_info.JSTracingLogDebugEnabled=").append(isLogDebugEnabled()).append(";</script>");
+		HtmlHeaderComponent JSTracingHeader = new HtmlHeaderComponent("JSTracingHeader", null, jsHeader.toString());
 		mainVC.put("JSTracingHeader", JSTracingHeader);
 
 		putInitialPanel(mainVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	protected void doDispose() {
 		// mapper deregistered by basic controller
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
 	}
-
 }

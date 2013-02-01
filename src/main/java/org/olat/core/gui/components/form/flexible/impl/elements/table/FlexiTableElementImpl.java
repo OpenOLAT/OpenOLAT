@@ -27,6 +27,8 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElment;
@@ -42,6 +44,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElm
   
 	private FlexiTableDataModel tableModel;
 	private FlexiTableComponent component;
+	private String mapperUrl;
 	
 	
 	public FlexiTableElementImpl(String name, FlexiTableDataModel tableModel) {
@@ -54,6 +57,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElm
 		super(name);
 		this.tableModel = tableModel;
 		component = new FlexiTableComponent(this, translator);
+	}
+	
+	public String getMapperUrl() {
+		return mapperUrl;
+	}
+	
+	public void setMapper(UserRequest ureq) {
+		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
+		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(this));
 	}
 	
 	/**

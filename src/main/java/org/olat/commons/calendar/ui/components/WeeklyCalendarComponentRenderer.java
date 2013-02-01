@@ -135,15 +135,15 @@ public class WeeklyCalendarComponentRenderer implements ComponentRenderer {
 		
 		// optimize grid height and position scrollbar using ext.onready
 		sb.append("<script type=\"text/javascript\">\n/* <![CDATA[ */\n");
-		sb.append("Ext.onReady(function(){\n");
-		sb.append("B_AjaxLogger.logDebug('onready','calendar');");
+		sb.append("jQuery(function(){\n");
+		sb.append("if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','onready','calendar');");
 		sb.append("o_adjustCalendarHeight(\"o_cal_wv_grid\", 960);\n");
 		sb.append("window.onresize = function() {o_adjustCalendarHeight(\"o_cal_wv_grid\", 960) };\n");
 		sb.append("o_positionScrollbar(\"o_cal_wv_grid\", ").append(viewStartHour * 2 * halfHourHeightPixels).append(");\n");
 		sb.append("o_init_event_tooltips();");
 		sb.append("o_mark_event_box_overflow();");
 		sb.append("\n});");
-		sb.append("B_AjaxLogger.logDebug('right away','calendar');");
+		sb.append("if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','right away','calendar');");
 		sb.append("\n/* ]]> */\n</script>");
 
 		// render print view

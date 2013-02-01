@@ -1,7 +1,7 @@
 #if($selectPath.isTrue())
 <script type="text/javascript">
 /* <![CDATA[ */ 
-Ext.onReady(BTree.selectPath.curry('$selectedPath', '$treePanelName'));
+jQuery(BTree.selectPath.curry('$selectedPath', '$treePanelName'));
 /* ]]> */
 </script>
 #end
@@ -9,7 +9,7 @@ Ext.onReady(BTree.selectPath.curry('$selectedPath', '$treePanelName'));
 #if($removePath.isTrue())
 <script type="text/javascript">
 /* <![CDATA[ */ 
-Ext.onReady(BTree.removePath.curry('$removedPath', '$treePanelName'));
+jQuery(BTree.removePath.curry('$removedPath', '$treePanelName'));
 /* ]]> */
 </script>
 #end
@@ -17,7 +17,7 @@ Ext.onReady(BTree.removePath.curry('$removedPath', '$treePanelName'));
 #if($reloadPath.isTrue())
 <script type="text/javascript">
 /* <![CDATA[ */ 
-Ext.onReady(BTree.reloadPath.curry('$reloadedPath', '$treePanelName'));
+jQuery(BTree.reloadPath.curry('$reloadedPath', '$treePanelName'));
 /* ]]> */
 </script>
 #end

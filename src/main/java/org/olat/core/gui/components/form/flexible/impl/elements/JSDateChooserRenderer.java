@@ -86,8 +86,10 @@ class JSDateChooserRenderer implements ComponentRenderer {
 			//date chooser button
 			content.append("<span class=\"b_form_datechooser\" id=\"").append(triggerId).append("\" title=\"").append(StringEscapeUtils.escapeHtml(sourceTranslator.translate("calendar.choose"))).append("\">&nbsp;</span>");
 			// date chooser javascript
-			content.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n").append("Calendar.setup({").append("inputField:\"").append(receiverId).append("\",")
-					.append("ifFormat:\"");
+			content.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
+				.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({")
+				.append("inputField:\"").append(receiverId).append("\",")
+				.append("ifFormat:\"");
 			
 			boolean timeFormat24 = true;
 			if (jsdcc.getDateChooserDateFormat() == null) {
@@ -117,7 +119,8 @@ class JSDateChooserRenderer implements ComponentRenderer {
 			TextElementImpl te = teC.getTextElementImpl();
 			content.append("onUpdate:function(){setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("')}");
 			// Finish js code
-			content.append("});").append("\n/* ]]> */ \n</script>");
+			content.append("})});").append("\n/* ]]> */ \n</script>");
+
 			sb.append(content);
 		} else{
 			//readonly view
@@ -206,8 +209,7 @@ class JSDateChooserRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.render.RenderingState)
 	 */
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	/**
@@ -220,8 +222,6 @@ class JSDateChooserRenderer implements ComponentRenderer {
 	 */
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
-	// TODO Auto-generated method stub
-
+		//
 	}
-
 }

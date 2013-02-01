@@ -27,6 +27,8 @@ package org.olat.core.gui.components.form.flexible.elements;
 import org.olat.core.gui.components.form.flexible.FormItem;
 
 public interface FormLink extends FormItem{
+	
+	public String getCmd();
 
 	/**
 	 * @param customEnabledLinkCSS The customEnabledLinkCSS to set.

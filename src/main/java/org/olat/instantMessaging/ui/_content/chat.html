@@ -14,7 +14,7 @@
 	/* <![CDATA[ */ 
 function tweak_${panelName}() {
 	try {		
-		var win = Ext.getCmp('${panelName}');
+		var win = jQuery('#${panelName}');
 		var el = win.body.dom.getElementsByClassName('o_instantmessaging_chat_history');
 		if (el.length == 1) {
 			el[0].style.height=win.getSize().height-150 + 'px';

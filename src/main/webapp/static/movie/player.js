@@ -2,6 +2,34 @@ var BPlayer = {
 	insertPlayer: function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar) {
 		BPlayer.insertHTML5Player(address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar);
 	},
+	
+	playSound : function(soundUrl, domId) {
+		var playerUrl = BPlayer.playerUrl();
+		if(jwplayer.utils.isIE()) {
+			var flashvars = "file=" + soundUrl + "&start=0&autostart=true&repeat=none&controlbar=none&showicons=false";
+			if (swfobject.hasFlashPlayerVersion("9")) {
+	     		var fn = function() {
+	        		var att = { data:playerUrl, width:'1px', height:'1px', wmode:'transparent',};
+	        		var par = { flashvars: flashvars };
+	        		var id = domId;
+	        		var myObject = swfobject.createSWF(att, par, id);
+	      		};
+	      		swfobject.addDomLoadEvent(fn);
+			}
+		} else {
+			var args = {
+				file:soundUrl,
+				start:0,
+				autostart:true,
+				repeat:'none',
+				controlbar:'none',
+				width: '1px',
+				height: '1px',
+				showicons:false
+			};
+			jwplayer(domId).setup(args);
+		}
+	},
 
 	insertHTML5Player : function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar) {
 		var videoUrl = address
@@ -17,12 +45,7 @@ var BPlayer = {
 			videoUrl += address;
 		}
 		
-		var playerUrl = BPlayer.findBaseUrl(window);
-		if(playerUrl == null) {
-			playerUrl = "/olat/raw/_noversion_/";
-		}
-		playerUrl += "movie/tinyMCE/movieViewer.swf";
-		
+		var playerUrl = BPlayer.playerUrl();
 		var args = {
 			file:videoUrl,
 			width:width,
@@ -95,6 +118,15 @@ var BPlayer = {
 		} else {
 			jwplayer(domId).setup(args);
 		}
+	},
+	
+	playerUrl: function() {
+		var playerUrl = BPlayer.findBaseUrl(window);
+		if(playerUrl == null) {
+			playerUrl = "/olat/raw/_noversion_/";
+		}
+		playerUrl += "movie/tinyMCE/movieViewer.swf";
+		return playerUrl;
 	},
 	
 	findBaseUrl: function(win) {

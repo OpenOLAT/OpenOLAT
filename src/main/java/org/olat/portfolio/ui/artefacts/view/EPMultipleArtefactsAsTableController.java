@@ -36,7 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
@@ -77,7 +77,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 	private VelocityContainer vC;
 	private TableController artefactListTblCtrl;
 	
-	private CloseableModalWindowWrapperController artefactBox;
+	private CloseableModalController artefactBox;
 	private PortfolioStructure struct;
 	private EPFrontendManager ePFMgr;
 	private boolean mapClosed = false;
@@ -86,7 +86,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 	private PortfolioModule portfolioModule;
 	private DialogBoxController deleteDialogController;
 	private EPCollectStepForm04 moveTreeCtrl;
-	private CloseableModalWindowWrapperController moveTreeBox;
+	private CloseableModalController moveTreeBox;
 
 	public EPMultipleArtefactsAsTableController(UserRequest ureq, WindowControl wControl, List<AbstractArtefact> artefacts, PortfolioStructure struct, boolean artefactChooseMode, EPSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -287,9 +287,9 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 		moveTreeCtrl = new EPCollectStepForm04(ureq, getWindowControl(), artefact, struct);
 		listenTo(moveTreeCtrl);
 		String title = translate("artefact.move.title");
-		moveTreeBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, moveTreeCtrl.getInitialComponent(), "moveTreeBox");
+		moveTreeBox = new CloseableModalController(getWindowControl(), title, moveTreeCtrl.getInitialComponent());
 		listenTo(moveTreeBox);
-		moveTreeBox.setInitialWindowSize(450, 300);
+		//moveTreeBox.setInitialWindowSize(450, 300);
 		moveTreeBox.activate();
 	}
 

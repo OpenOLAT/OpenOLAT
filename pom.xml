@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>8.4-SNAPSHOT</version>
+	<version>9.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>http://www.openolat.org</url>
@@ -111,6 +111,54 @@
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>xml-maven-plugin</artifactId>
 					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>compressjs</id>
+			<build>
+				<plugins>
+					<!-- Compress jquery plugins -->
+					<plugin>
+		        <groupId>net.alchim31.maven</groupId>
+		        <artifactId>yuicompressor-maven-plugin</artifactId>
+		        <version>1.3.0</version>
+		        <executions>
+		          <execution>
+		            <goals>
+		              <goal>compress</goal>
+		            </goals>
+		          </execution>
+		        </executions>        
+		        <configuration>
+		          <nosuffix>true</nosuffix>
+		          <sourceDirectory>src/main/webapp/static/js/jquery</sourceDirectory>
+    					<outputDirectory>${basedir}/target/jquery</outputDirectory>
+    					<excludes>
+		            <exclude>${basedir}/src/**/*.js</exclude>
+		        	</excludes>
+		          <aggregations>
+		            <aggregation>
+		              <!-- insert new line after each concatenation (default: false) -->
+		              <insertNewLine>true</insertNewLine>
+		              <inputDir>${basedir}/src/main/webapp/static/js/jquery</inputDir>
+		              <output>${basedir}/target/jquery/all.js</output>
+		              <!-- files to include, path relative to output's directory or absolute path-->
+		              <!--inputDir>base directory for non absolute includes, default to parent dir of output</inputDir-->
+		              <includes>
+		                <include>openolat/jquery.oolog.js</include>
+		                <include>openolat/jquery.translator.js</include>
+		              </includes>
+		              <!-- files to exclude, path relative to output's directory -->
+		              <excludes>
+		                <exclude>*.min.js</exclude>
+		                <exclude>*.js</exclude>
+		                <exclude>*.css</exclude>
+		              </excludes>
+		            </aggregation>
+		          </aggregations>
+		        </configuration>
+		      </plugin>
 				</plugins>
 			</build>
 		</profile>

@@ -340,7 +340,7 @@ function resize (it) {
 		var h = Math.floor((''+it.scrollHeight).replace('px',''));
 		var l = Math.floor((''+it.getStyle('line-height')).replace('px',''));
 		var nh = h/l*l;
-		Ext.get(it.id).setHeight(nh+'px');
+		jQuery('#' + it.id).height(nh+'px');
 	} catch (e) {
 		//
 	}
@@ -351,7 +351,7 @@ function clrMemo (it) {
 	it.onfocus=null;
 }
 
-Ext.onReady(function(){resize(document.getElementById('o_qti_item_note'));}, 356);
+jQuery(function(){resize(document.getElementById('o_qti_item_note'));}, 356);
 /* ]]> */
 </script>
 

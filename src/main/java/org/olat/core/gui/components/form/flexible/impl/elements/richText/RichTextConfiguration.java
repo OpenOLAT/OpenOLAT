@@ -399,7 +399,8 @@ public class RichTextConfiguration implements Disposable {
 		setQuotedConfigValue(TINY_BASE_CONTAINER_PATH, ClassPathStaticDispatcher.getInstance().getMapperBasePath(RichTextConfiguration.class) + "/js/tinymce/");
 		// Start observing of diry richt text element and trigger calling of setFlexiFormDirty() method
 		// This check is initialized after the editor has fully loaded
-		addOnInitCallbackFunction(ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER + ".curry('" + rootFormDispatchId + "','" + domID + "')");
+		//addOnInitCallbackFunction(ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER + ".curry('" + rootFormDispatchId + "','" + domID + "')");
+		addOnInitCallbackFunction(ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER + "('" + rootFormDispatchId + "','" + domID + "')");
 	}
 
 	/**
@@ -735,7 +736,8 @@ public class RichTextConfiguration implements Disposable {
 			setQuotedConfigValue(THEME_ADVANCED_TOOLBAR_LOCATION, position);
 			if (position.equals(THEME_ADVANCED_TOOLBAR_LOCATION_VALUE_EXTERNAL) && autoHide) {
 				// set the on-init callback and add the auto-hide toolbar listener
-				setNonQuotedConfigValue(INIT_INSTANCE_CALLBACK, INIT_INSTANCE_CALLBACK_VALUE_AUTO_HIDE_TOOLBAR + ".curry('" + domID + "')");
+				//setNonQuotedConfigValue(INIT_INSTANCE_CALLBACK, INIT_INSTANCE_CALLBACK_VALUE_AUTO_HIDE_TOOLBAR + ".curry('" + domID + "')");
+				setNonQuotedConfigValue(INIT_INSTANCE_CALLBACK, INIT_INSTANCE_CALLBACK_VALUE_AUTO_HIDE_TOOLBAR + "('" + domID + "')");
 			}
 		} else {
 			throw new AssertException("Invalid configuration parameters, use RichTextConfigurationConstants");
@@ -1326,7 +1328,8 @@ public class RichTextConfiguration implements Disposable {
 	 */
 	public void setFileBrowserCallback(VFSContainer vfsContainer, CustomLinkTreeModel customLinkTreeModel, String[] supportedImageSuffixes, String[] supportedMediaSuffixes, String[] supportedFlashPlayerSuffixes) {
 		// Add dom ID variable using prototype curry method
-		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + this.domID + "')");
+		//TODO jquery setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + "('" + domID + "')");
 		linkBrowserImageSuffixes = supportedImageSuffixes;
 		linkBrowserMediaSuffixes = supportedMediaSuffixes;
 		linkBrowserFlashPlayerSuffixes = supportedFlashPlayerSuffixes;
@@ -1576,7 +1579,15 @@ public class RichTextConfiguration implements Disposable {
  				sb.append("function(){");
  				while (iter.hasNext()) {
 					String function = iter.next();
-					sb.append(function).append("();");
+					sb.append(function);
+					if(function.endsWith(")")) {
+						sb.append(";");
+					} else {
+						sb.append("();");
+					}
+					
+					
+					
 				}
  				sb.append("}");
  			}

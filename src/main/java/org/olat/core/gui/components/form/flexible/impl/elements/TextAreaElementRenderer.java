@@ -141,7 +141,7 @@ class TextAreaElementRenderer implements ComponentRenderer {
 
 		// resize element to fit content
 		if (teC.isAutoHeightEnabled()) {
-			sb.append("<script type='text/javascript'>Ext.onReady(function(){try{var iter=0; var obj=$('");
+			sb.append("<script type='text/javascript'>jQuery(document).ready(function(){try{var iter=0; var obj=$('");
 			sb.append(id);
 			if (!source.isEnabled()) sb.append("_disabled");			
 			sb.append("');while (obj.scrollHeight>obj.offsetHeight && iter < 99){ iter++; obj.rows = obj.rows + 1}} catch(e){}});</script>");

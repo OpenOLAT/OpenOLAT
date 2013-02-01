@@ -28,12 +28,11 @@ package org.olat.core.gui.control.generic.textmarker;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.modules.glossary.GlossaryItem;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
-import org.olat.core.util.Encoder;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 
 
@@ -53,51 +52,46 @@ public class TextMarkerJsGenerator {
 		StringBuilder sb = new StringBuilder();		
 		sb.append("o_info.glossaryTermArray_").append(domID).append(" = ").append(buildJSArrayString(glossaryItemArr));
 		// start highlighting process with this array
-		sb.append("Ext.onReady(function() {o_tm_highlightFromArray(o_info.glossaryTermArray_").append(domID).append(", \"").append(domID).append("\")});");
+		sb.append("jQuery(function() {o_tm_highlightFromArray(o_info.glossaryTermArray_").append(domID).append(", \"").append(domID).append("\")});");
 		
 		return sb.toString();
 	}
 	
 	public static String loadGlossaryItemListAsJSArray(VFSContainer glossaryFolder) {
-		ArrayList<GlossaryItem> glossaryItemArr = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
+		List<GlossaryItem> glossaryItemArr = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
 
-		//FIXME: gloss: use helper method to encode folder -> id  
-		String glossaryId = Encoder.encrypt(((LocalFolderImpl)glossaryFolder).getBasefile().toString());
 		StringBuilder sb = new StringBuilder();		
-//		sb.append("o_glossaries[").append(glossaryId).append("] = ").append(buildJSArrayString(glossaryItemArr));
 		sb.append(buildJSArrayString(glossaryItemArr));
-
 		return sb.toString();		
 	}
-	
 	
 	/*
 	 * build array of glossaryTerms containing array with term, flexion, synonym...
 	 */
-	public static StringBuilder buildJSArrayString(ArrayList<GlossaryItem> glossaryItemArr){
+	public static StringBuilder buildJSArrayString(List<GlossaryItem> glossaryItemArr){
 		StringBuilder sb = new StringBuilder();
 		sb.append("new Array(");
-		for (Iterator iterator = glossaryItemArr.iterator(); iterator.hasNext();) {
-			GlossaryItem glossaryItem = (GlossaryItem) iterator.next();
+		for (Iterator<GlossaryItem> iterator = glossaryItemArr.iterator(); iterator.hasNext();) {
+			GlossaryItem glossaryItem = iterator.next();
 			ArrayList<String> allHighlightStrings = glossaryItem.getAllStringsToMarkup();
 			sb.append("new Array(\"");
-			for (Iterator iterator2 = allHighlightStrings.iterator(); iterator2.hasNext();) {
-				String termFlexionSynonym = (String) iterator2.next();
+			for (Iterator<String> iterator2 = allHighlightStrings.iterator(); iterator2.hasNext();) {
+				String termFlexionSynonym = iterator2.next();
 				//fxdiff:  FXOLAT-235  fix quotationsmarks that break the js code
 				termFlexionSynonym = StringEscapeUtils.escapeJava(termFlexionSynonym);
 				
 				sb.append(termFlexionSynonym);
 				sb.append("\"");
-				if (iterator2.hasNext()) sb.append(",\"");
+				if (iterator2.hasNext()) {
+					sb.append(",\"");
+				}
 			}
 			sb.append(")");
-			if (iterator.hasNext()) sb.append(",");
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
 		}
-		
 		sb.append(");");
 		return sb;
 	}
-	
-	
-	
 }

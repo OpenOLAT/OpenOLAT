@@ -35,92 +35,58 @@ o_info.o_baseURI = "$r.staticLink("")";
 o_info.b_classPathStaticBaseURI = "${classPathStaticBaseURI}";
 o_info.b_textMarkingIframeIntervals = new Array();
 
-if (top!=self){top.location=self.location+"?o_winrndo=1";}
+if (top!=self) {
+	top.location=self.location+"?o_winrndo=1";
+}
 function b_start(){
-## init the extjs tooltip engine
-if (window["Ext"]) {Ext.QuickTips.init();}
-o_init();
-## js B
-$r.renderBodyOnLoadJSFunctionCall()
-## js E
-##
-## Set flag that bodyOnLoad has already been called and the page is fully loaded. 
-## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)
-o_info.initialPageLoadFinished = true;
+	## init the extjs tooltip engine
+	//TODO jquery if (window["Ext"]) {Ext.QuickTips.init();}
+	o_init();
+	## js B
+	$r.renderBodyOnLoadJSFunctionCall()
+	## js E
+	## Set flag that bodyOnLoad has already been called and the page is fully loaded. 
+	## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)
+	o_info.initialPageLoadFinished = true;
 }
 /* ]]> */
 </script>
 ## Library to fix issues and detect browser features
-<script type="text/javascript" src="$r.staticLink("js/modernizr/modernizr.js")"></script>
-## Basic JS libraries for DOM manipulation and visual effects
-<script type="text/javascript" src="$r.staticLink("js/prototype/prototype.js")"></script>
-##fxdiff add dragdrop
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/effects.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/dragdrop.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/scriptaculous.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/controls.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/sound.js")"></script>
-## EXT JS library
-<link rel="stylesheet" type="text/css" href="$r.staticLink("js/ext/resources/css/ext-all.css")" />
-## Use Ext src version when in debug mode to allow JS debugging. Below are the ext parts that are used in OLAT
-## FIXME:FG:6.4 create ext component in java to reduce loading of ext elements on login screen
-#set ($extDebug = "")	
-#if($r.isDebuging()) #set ($extDebug = "-debug")#end
-## EXT base elements
-<script type="text/javascript" src="$r.staticLink("js/ext/adapter/prototype/ext-prototype-adapter${extDebug}.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-core${extDebug}.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-foundation${extDebug}.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/cmp-foundation${extDebug}.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-dd${extDebug}.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/resizable${extDebug}.js")"></script>
-## EXT data model and loaders
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-foundation${extDebug}.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-json${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-xml${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-grouping${extDebug}.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-list-views${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/state${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/direct${extDebug}.js")"></script>
-## EXT widgets
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/window${extDebug}.js")"></script>		## needed by info/warn/error message
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-buttons${extDebug}.js")"></script>	## needed by info/warn/error message
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-toolbars${extDebug}.js")"></script>	## needed by info/warn/error message
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-charts${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-grid-editor${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-grid-foundation${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-grid-grouping${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-grid-property${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-history${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-menu${extDebug}.js")"></script>
-##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tabs${extDebug}.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tips${extDebug}.js")"></script> 		## needed everywhere
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tree${extDebug}.js")"></script> 		## AjaxTreeController
-<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-forms${extDebug}.js")"></script> 	## needed by tree inline edit
-## Some initializations
-<script type="text/javascript">
-Ext.BLANK_IMAGE_URL = '$r.staticLink("images/csshelper/s.gif")';
-## references to objects for later access or cleanup
-o_info.objectMap = new Ext.util.MixedCollection();
+<script type="text/javascript" src='$r.staticLink("js/modernizr/modernizr.js")'></script>
+## jQuery libraries
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.0.js")'></script>
+<script>
+/* <![CDATA[ */ 
+     jQuery.noConflict();
+/* ]]> */
 </script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-migrate-1.0.0.min.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-ui-1.10.0.custom.min.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/datatables/jquery.dataTables.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/flot/jquery.flot.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jsMath/easy/load.js")'></script>
 
-## OLAT JS libraries
-<script type="text/javascript" src="$r.staticLink("js/functions.js")"></script>
-## Initialize js translator factory with the js translator mapper path
-<script type="text/javascript" src="$r.staticLink("js/jsTranslator.js")"></script>
-<script type="text/javascript">var b_jsTranslatorFactory = new JSTranslatorFactory("$jsTranslationMapperPath");</script>
-
-## Always load jsmath. By default the autoloader is enabled, this means that 
-## the real jsmath code is loaded on demand when needed
-## There is a rewrite of jsMath called http://www.mathjax.org/ which does not need font images. Switch to this one!
-#if($jsMathEnabled)<script type="text/javascript" src="$r.staticLink("js/jsMath/easy/load.js")"></script>#end
-
-##Std flash player
+<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.oolog.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
 <script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
+
+<link type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" rel="stylesheet"/>
+<script type="text/javascript">
+/* <![CDATA[ */ 
+	## references to objects for later access or cleanup
+	o_info.objectMap = new Hashtable();
+	## Initialize js translator factory with the js translator mapper path
+	jQuery(document).ooTranslator().initialize("$jsTranslationMapperPath");
+	o_info.oo_translator = jQuery(document).ooTranslator();
+/* ]]> */
+</script>
 
 
 ##
 ## LAYOUT
-
 ## 1) Dynamic component CSS included by components
 $r.render("jsCssRawHtmlHeader", "pre-theme")
 ## 2) CSS theme inclusion and favicons
@@ -174,7 +140,9 @@ $r.render("olatContentPanel")
 <script type="text/javascript">
 /* <![CDATA[ */ 
 // init size and listen to text resize events
-Ext.onReady(function() {b_initEmPxFactor();Ext.EventManager.onTextResize(b_initEmPxFactor)},{delay:1000});
+jQuery(document).ready(function() {
+	b_initEmPxFactor(); /*Ext.EventManager.onTextResize(b_initEmPxFactor) */
+});
 /* ]]> */
 </script>
 </div>

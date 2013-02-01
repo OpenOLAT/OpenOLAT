@@ -24,9 +24,7 @@ function initPolling () {
 }
 
 ##observe mouse/keyboard activity to resume polling
-Event.observe("b_body","click",function(event){initPolling();});
-Event.observe("b_body","mouseover",function(event){initPolling();});
-Event.observe("b_body","keyup",function(event){initPolling();});
+jQuery("#b_body").bind("mouseover click keypress", function(event){initPolling();});
 
 o_info.mainwinref = this.window;
 o_info.wins = {};
@@ -57,34 +55,26 @@ if (window.opener == null) document.cookie = sbcookie+'='+sbtimestamp+'; path=/'
 ##
 
 function tick () {
-	##log("starting poller with interval: "+pollperiod);
-	new PeriodicalExecuter(function(pe) {
+	//console.log("starting poller with interval: "+pollperiod);
+	jQuery.periodic({period: 5000}, function(pe) {
 		if ( !o_info.linkbusy && (pollperiod > 1000) && (pollError < 2) ) {
 			try {
 				var now = new Date().getTime();
-				##log("checking for pollrequest...");
 				if ((now - o_info.lastClickTime) < (pollminutes*60*1000)) {
 					if ((now - timestampLastPoll) > (pollperiod + pollgrowth)) {
 						timestampLastPoll = now;
 						pollcount++;
 						pollgrowth = Math.ceil((pollperiod+pollgrowth)*(100+growthrate)/100)-pollperiod;
-						o_info.ajaxpp = new Ajax.Request('$mapuri/', {method: 'post', onComplete:onPollSuccess, onFailure: onPollFailure});
+						o_info.ajaxpp = jQuery.ajax({method:'POST', url:'$mapuri/', success:onPollSuccess, failure: onPollFailure});
 						var idl = (now - o_info.lastClickTime)/1000;
-						##log("sent poll request. idle="+idl+"s gr="+growthrate+" g="+pollgrowth+" c="+pollcount+" eff="+Math.floor(idl/pollcount*1000));
+						//log("sent poll request. idle="+idl+"s gr="+growthrate+" g="+pollgrowth+" c="+pollcount+" eff="+Math.floor(idl/pollcount*1000));
 					}
 				} else {
-					##log("stopped polling. User was inactive for more than "+pollminutes+" minutes");
 					stopped = true;
 				}
 			} catch (e) {
-				##log("poll request error:"+showerror(e));
 				pe.stop(); //stop on errors
 			}
-		} else {
-			##log("preconditions for are not ok:");
-			##log("period: "+pollperiod);
-			##log("busy: "+o_info.linkbusy);
-			##log("errorcount: "+pollError);
 		}
 
 		// if window is not a popup window, become a standby window 
@@ -110,26 +100,30 @@ function tick () {
 				}
 			}
 		}
-	}, 1);
+	});
 }
 
 
-Ext.onReady(initPolling);
+jQuery(document).ready(initPolling);
 
 #if ($isAdmin)
 ##check whether polling started or not. Wrap in ext makes it more stable
-Ext.onReady(
+jQuery(document).ready(
 	function() { 
-		setTimeout( function(){ if (!o_info.ajaxpp) {showMessageBox('error', 'error',  'Some core functionality could not be started. Please log out of OLAT and login again. ');B_AjaxLogger.logDebug('Could not initialize polling!', "serverpart.html");} },60000);
+		setTimeout( function(){ if (!o_info.ajaxpp) {
+			showMessageBox('error', 'error',  'Some core functionality could not be started. Please log out of OLAT and login again. ');
+			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Could not initialize polling!', "serverpart.html");
+		}},60000);
 	}
 );
 #end
 
-
-function onPollSuccess(r) {
-	if(r.status == 200){
+function onPollSuccess(content, s, response) {
+	if(response.status == 304) {
 	 	pollError = 0;
-	 	o_onc(r);
+	} else if(response.status >= 200 && response.status < 300) {
+	 	pollError = 0;
+	 	o_onc(response);
 	} else {
 	 	pollError++;
 	}

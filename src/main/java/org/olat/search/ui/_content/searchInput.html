@@ -19,7 +19,12 @@
 	## toggle the form on/off on click to the form title
 	<script type="text/javascript">
 	/* <![CDATA[ */ 
-		Ext.onReady(function() {  Ext.get('o_search_form_toggler').on('click', function() { Effect.toggle('o_search_form_content', 'slide', {duration: 0.3});}); });
+		jQuery(function() {
+			jQuery('#o_search_form_toggler').click(function() {
+				console.log('Aoi malena');
+				jQuery('#o_search_form_content').slideToggle(300);
+			});
+		});
 	/* ]]> */
 	</script>
 </div>

@@ -26,7 +26,7 @@ Element.addMethods({
 	
 	cacheData: function(element, key, value)
 	{
-		if (Object.isUndefined(this[$(element).identify()]) || !Object.isHash(this[$(element).identify()]))
+		if (jQuery.type(this[$(element).identify()]) === "undefined" || !Object.isHash(this[$(element).identify()]))
 		{
 			this[$(element).identify()] = $H();
 		}
@@ -78,7 +78,7 @@ function $pick()
 {
 	for (var i = 0; i < arguments.length; i++)
 	{
-		if (!Object.isUndefined(arguments[i]))
+		if (!jQuery.type(arguments[i]) === "undefined")
 		{
 			return arguments[i];
 		}
@@ -613,7 +613,7 @@ var ProtoMultiSelect = Class.create(TextboxList, {
 		if (this.options.get('autoResize'))
 		{
 			this.autoResize();
-			Event.observe(window, 'resize', function() { this.autoResize(); }.bind(this));
+			jQuery(window).resize(function() { this.autoResize(); });//.bind(this));
 		}
 
 		// Defines the autocomplete list
@@ -631,7 +631,7 @@ var ProtoMultiSelect = Class.create(TextboxList, {
 		// We need to load from input as part of the AJAX request when using fetchFile
 		// or else the data won't have completed being fetched before the data in the 
 		// input is loaded
-		if (Object.isUndefined(this.options.get('fetchFile')) && this.options.get('loadFromInput'))
+		if (JQuery.type(this.options.get('fetchFile')) === "undefined" && this.options.get('loadFromInput'))
 		{
 			this.loadFromInput()
 		}
@@ -659,7 +659,7 @@ var ProtoMultiSelect = Class.create(TextboxList, {
 		// Loading the options list only once at initialize.
 		// This would need to be further extended if the list was exceptionally long
 		// fxdiff: changed to load all time!
-		if (!Object.isUndefined(this.options.get('fetchFile')))
+		if (!(jQuery.type(this.options.get('fetchFile')) === "undefined"))
 		{
 			var fetchParamName = this.options.get('fetchParameters') + "=" + this.current.retrieveData('input').getValue();
 			if (debug) o_log("fetch data; processing is: " + this.processing);
@@ -684,7 +684,7 @@ var ProtoMultiSelect = Class.create(TextboxList, {
 				});					
 		//	}
 		}
-		else if (!Object.isUndefined(this.options.get('feed')))
+		else if (!(jQuery.type(this.options.get('feed')) === "undefined"))
 		{
 			this.options.get('feed').each(function(t) { this.autoFeed(t) }.bind(this));
 		}

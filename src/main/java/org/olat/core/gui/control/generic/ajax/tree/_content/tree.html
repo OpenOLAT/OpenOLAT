@@ -1,6 +1,6 @@
 <script type="text/javascript">
 /* <![CDATA[ */
-Ext.onReady(function(){
+jQuery(function(){
 try {
 	## cleanup any old tree first, only one tree at any time supported right now
 	if (o_info.objectMap.containsKey('${r.getId("treePanel")}')) {
@@ -125,7 +125,7 @@ try {
 	#end
 
 } catch (e) {
-	B_AjaxLogger.logDebug("Problem creating the ajax tree with id::${treeId} ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
+	if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Problem creating the ajax tree with id::${treeId} ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
 }
 });
 /* ]]> */

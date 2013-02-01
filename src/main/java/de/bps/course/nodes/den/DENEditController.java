@@ -19,8 +19,7 @@
  */
 package de.bps.course.nodes.den;
 
-import javax.sound.midi.ControllerEventListener;
-import javax.sound.midi.ShortMessage;
+
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,7 +32,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -46,8 +44,7 @@ import org.olat.modules.ModuleConfiguration;
 
 import de.bps.course.nodes.DENCourseNode;
 
-public class DENEditController extends ActivateableTabbableDefaultController
-		implements ControllerEventListener {
+public class DENEditController extends ActivateableTabbableDefaultController {
 	
 	public static final String PANE_TAB_DENCONFIG = "pane.tab.denconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
@@ -56,7 +53,6 @@ public class DENEditController extends ActivateableTabbableDefaultController
 	private OLATResourceable ores;
 	private DENCourseNode courseNode;
 	private VelocityContainer editVc;
-	private Translator translator;
 	
 	private CloseableModalController manageDatesModalCntrll, listParticipantsModalCntrll;
 	private Link manageDatesButton, manageParticipantsButton;
@@ -160,10 +156,6 @@ public class DENEditController extends ActivateableTabbableDefaultController
 			listParticipantsModalCntrll.addControllerListener(this);
 			listParticipantsModalCntrll.activate();
 		}
-	}
-
-	public void controlChange(ShortMessage event) {
-		//nothing to do
 	}
 
 	public void addTabs(TabbedPane tabbedPane) {

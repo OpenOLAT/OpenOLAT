@@ -77,7 +77,7 @@ public class UserSearchListProvider implements ListProvider {
 	
 	protected List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
 	  return securityManager.getVisibleIdentitiesByPowerSearch(
-			(login.equals("") ? null : login),
+			("".equals(login) ? null : login),
 			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
 			null, null, null, null, null);
 	}

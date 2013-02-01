@@ -1,7 +1,7 @@
 function o_adjustCalendarHeight(gridId, dayheight) {
 	// adjust the given iframe to use as much height as possible
 	// (fg)
-	var calgrid = $(gridId);
+	var calgrid = jQuery('#' + gridId);
 	if (calgrid) {
 		
 		// check for calendar config, subtract if available
@@ -10,20 +10,20 @@ function o_adjustCalendarHeight(gridId, dayheight) {
 		// the calendar and thus the cal config real eastate must be subtracted as well
 		// to calculate the remaining space for the calender itself.
 		if (o_containsElement("o_cal_config_below_cal_container", "o_cal_config", 5)) {
-			calConfigHeight = Element.getHeight("o_cal_config");		
+			calConfigHeight = jQuery("#o_cal_config").height();		
 		}
 		
 		// height of all day events..
 		var allDayHeight = 0;
-		var allDayElem = $("o_cal_wv_daylong");
+		var allDayElem = jQuery("#o_cal_wv_daylong");
 		if (allDayElem != null && allDayElem != 'undefined') {
-			allDayHeight = Element.getHeight("o_cal_wv_daylong");
+			allDayHeight = jQuery("#o_cal_wv_daylong").height();
 		}
 		// height of header
 		var headerHeight = 0;
-		var headerElem = $("o_cal_wv_header");
+		var headerElem = jQuery("#o_cal_wv_header");
 		if (headerElem != null && headerElem != 'undefined') {
-			headerHeight = Element.getHeight("o_cal_wv_header");
+			headerHeight = jQuery("#o_cal_wv_header").height();
 		}
 		
 		// now calculate remaining space for calendar
@@ -33,12 +33,12 @@ function o_adjustCalendarHeight(gridId, dayheight) {
 			if (contentHeight < 200) {
 				contentHeight=200; // never smaller than 200px, makes no sense 
 			}
-			calgrid.setStyle({height: contentHeight + 'px'});
+			calgrid.css('height', contentHeight + 'px');
 		} else {
-			calgrid.setStyle({height: dayheight + 'px'});
+			calgrid.css('height', dayheight + 'px');
 		}
 	} else {
-		B_AjaxLogger.logDebug("No calendar grid found","calendar.js::o_adjustCalendarHeight()");
+		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"No calendar grid found","calendar.js::o_adjustCalendarHeight()");
 	}
 }
 
@@ -85,19 +85,19 @@ function o_init_event_tooltips() {
 	// init the Ext.tooltip for each event
 	// (gw)
 	// 1) for day events
-	$$(".o_cal_wv_devent").each(o_init_event_tooltip);
+	jQuery(".o_cal_wv_devent").each(o_init_event_tooltip);
 	// 2) for normal events
-	$$(".o_cal_wv_event").each(o_init_event_tooltip);
+	jQuery(".o_cal_wv_event").each(o_init_event_tooltip);
 }
 
 function o_mark_event_box_overflow() {
 	// check if the event boxes can display everything, if not add a ... at the bottom right corner
-	$$(".o_cal_wv_event").each(function(item) {
+	jQuery(".o_cal_wv_event").each(function(item) {
 		if (item.offsetHeight + 5 < item.scrollHeight) {
 			item.insert("<div class='o_cal_wv_event_overflow' style='top: " + (item.offsetHeight-15) + "px;'>...</div>");
 		}
 	});
-	$$(".o_cal_wv_devent_content").each(function(item) {
+	jQuery(".o_cal_wv_devent_content").each(function(item) {
 		if (item.offsetHeight + 5 < item.scrollHeight) {
 			item.insert("<div class='o_cal_wv_event_overflow' style='top: " + (item.offsetHeight-5) + "px;'>...</div>");
 		}

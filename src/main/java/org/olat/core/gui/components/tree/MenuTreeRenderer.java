@@ -233,7 +233,8 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		target.append(" b_tree_l").append(level);		
 		
 		// fix needed for firefox bug when fast clicking: the onclick="try{return o2cl()}catch(e){return false}"  -> when the document is reloaded, all function js gets unloaded, but the old link can still be clicked.			
-		target.append("\" onclick=\"try {if(o2cl()){Effect.ScrollTo('b_top'); return true;} else {return false;}} catch(e){return false}\" href=\"");					
+		//target.append("\" onclick=\"try {if(o2cl()){$('html, body').animate({scrollTop: $('#b_top').offset().top}, 500); return true;} else {return false;}} catch(e){return false}\" href=\"");					
+		target.append("\" onclick=\"try {if(o2cl()){ return true;} else {return false;}} catch(e){return false}\" href=\"");					
 		
 		// Build menu item URI
 		if (GUIInterna.isLoadPerformanceMode()) {
@@ -319,23 +320,31 @@ public class MenuTreeRenderer implements ComponentRenderer {
 	//fxdiff VCRP-9: drag and drop in menu tree
 	private void appendSiblingDropObj(TreeNode node, int level, MenuTree tree, StringOutput target, boolean after) {
 		String id = (after ? "dt" : "ds") + node.getIdent();
-		String dndGroup = tree.getDragAndDropGroup();
 		target.append("<div id='").append(id).append("' class='b_dd_sibling b_dd_sibling_l").append(level).append("'>")
-			.append("<script type='text/javascript'>Ext.get('").append(id).append("').dd = new Ext.dd.DDTarget('").append(id).append("','").append(dndGroup).append("');</script>")
+			//.append("<script type='text/javascript'>Ext.get('").append(id).append("').dd = new Ext.dd.DDTarget('").append(id).append("','").append(dndGroup).append("');</script>")
+			.append("<script type='text/javascript'>jQuery('#").append(id)
+			.append("').droppable({hoverClass:'b_dd_over', accept: treeAcceptDrop, over: onTreeDragOver, out:onTreeDragOut, drop:onTreeDrop});</script>")
 			.append("&nbsp;&nbsp;</div>");
 	}
 	
 	//fxdiff VCRP-9: drag and drop in menu tree
 	private void appendDragAndDropObj(TreeNode node, MenuTree tree, StringOutput target, URLBuilder ubu, AJAXFlags flags) {
 		String id = node.getIdent();
-		String dndGroup = tree.getDragAndDropGroup();
 		String feedBackUri = tree.getDndFeedbackUri();
 		StringOutput endUrl = new StringOutput();
 		ubu.buildURI(endUrl, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_DROP, id }, flags.isIframePostEnabled() ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		target.append("<script type='text/javascript'>")
-		 .append("Ext.get('dd").append(id).append("').dd = new Ext.fxMenuTree.DDProxy('dd").append(id).append("','").append(dndGroup).append("','").append(endUrl).append("','").append(feedBackUri).append("');")
-		 .append("Ext.get('da").append(id).append("').dd = new Ext.fxMenuTree.DDProxy('da").append(id).append("','").append(dndGroup).append("','").append(endUrl).append("','").append(feedBackUri).append("');")
-		 .append("</script>");
+		 //.append("Ext.get('dd").append(id).append("').dd = new Ext.fxMenuTree.DDProxy('dd").append(id).append("','").append(dndGroup).append("','").append(endUrl).append("','").append(feedBackUri).append("');")
+		 //.append("Ext.get('da").append(id).append("').dd = new Ext.fxMenuTree.DDProxy('da").append(id).append("','").append(dndGroup).append("','").append(endUrl).append("','").append(feedBackUri).append("');")
+		 .append("jQuery('#dd").append(id).append("')");
+		appendDraggable(target);
+		target.append("jQuery('#da").append(id).append("')");
+		appendDraggable(target);
+		target.append("</script>");
+	}
+	
+	private void appendDraggable(StringOutput sb) {
+		sb.append(".draggable({start:onTreeStartDrag, revert:'invalid' });");
 	}
 	
 	//fxdiff VCRP-9: drag and drop in menu tree

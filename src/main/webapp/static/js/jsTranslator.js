@@ -10,7 +10,7 @@
  **/
 
 // needs prototype library
-if(typeof Prototype == 'undefined') throw("jsTranslator.js requires including of prototype.js library!");
+//if(typeof Prototype == 'undefined') throw("jsTranslator.js requires including of prototype.js library!");
 
 /**
  * JSTranslatorFactory provides a factory method to create a translator and to get instances

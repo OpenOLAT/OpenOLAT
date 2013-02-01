@@ -27,7 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.StringHelper;
 import org.olat.portfolio.EPSecurityCallback;
@@ -59,7 +59,7 @@ public class EPReflexionWrapperController extends BasicController {
 	private EPSecurityCallback secCallback;
 	private AbstractArtefact artefact;
 	private PortfolioStructure struct;
-	private CloseableModalWindowWrapperController reflexionBox;
+	private CloseableModalController reflexionBox;
 
 	public EPReflexionWrapperController(UserRequest ureq, WindowControl wControl, EPSecurityCallback secCallback, AbstractArtefact artefact,
 			PortfolioStructure struct) {
@@ -107,10 +107,9 @@ public class EPReflexionWrapperController extends BasicController {
 		}
 		listenTo(reflexionCtrl);
 		removeAsListenerAndDispose(reflexionBox);
-		reflexionBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, reflexionCtrl.getInitialComponent(),
-				"reflexionBox");
+		reflexionBox = new CloseableModalController(getWindowControl(), title, reflexionCtrl.getInitialComponent());
 		listenTo(reflexionBox);
-		reflexionBox.setInitialWindowSize(550, 600);
+		//reflexionBox.setInitialWindowSize(550, 600);
 		reflexionBox.activate();
 	}
 

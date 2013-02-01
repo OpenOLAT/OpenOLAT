@@ -164,7 +164,7 @@ wayf_additional_idps = [$additionalIDPs];
 
 // Override ugly shibboleth default style form buttons to match OLAT style
 function o_overrideShibSubmitButtonStyle() {
-       Ext.onReady( function() {              
+       jQuery( function() {              
                try {
                        $('wayf_submit_button').addClassName('b_button').setStyle('float:left');
                        $('user_idp').observe('change',function(){$('wayf_submit_button').addClassName('b_dirty')});

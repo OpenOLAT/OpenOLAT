@@ -11,7 +11,7 @@ var BTree = {
 				_tree.selectPath(path);
 			});
 		} catch(e) {
-			B_AjaxLogger.logDebug("Problem selecting the node with path::" + path + " ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
+			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Problem selecting the node with path::" + path + " ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
 		}
 		tree = null;
 	},
@@ -29,7 +29,7 @@ var BTree = {
 			var parent = tree.getNodeById(parentPath.substring(slashPos + 1));
 			if (parent) parent.reload();
 		} catch(e) {
-			B_AjaxLogger.logDebug("Problem reloading the node with path::" + path + " ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
+			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Problem reloading the node with path::" + path + " ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
 		}
 	},
 	
@@ -49,7 +49,7 @@ var BTree = {
 			var parent = tree.getNodeById(parentPath.substring(slashPos + 1));
 			if (parent)	parent.removeChild(node);
 		} catch(e) {
-			B_AjaxLogger.logDebug("Problem deleting the node with path::" + path + " ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
+			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Problem deleting the node with path::" + path + " ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
 		}
 	}
 

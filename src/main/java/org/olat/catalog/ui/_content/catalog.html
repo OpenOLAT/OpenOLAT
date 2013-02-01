@@ -80,16 +80,6 @@
 									#end
 								#end
 								<a href="$r.commandURIbg("detail.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("details.header")</a>
-								<script type="text/javascript">
-								Ext.onReady(function(){
-									Ext.QuickTips.init();
-									Ext.apply(Ext.QuickTips.getQuickTip(), {
-										dismissDelay: 0
-									});
-								});
-									
-								</script>
-								
 								#if($r.get("ac_$ri"))
 									#foreach($ac_type in $r.get("ac_$ri"))
 										#if($ac_type.price && $ac_type.price.length() > 0)
@@ -100,26 +90,25 @@
 									#end
 								#end
 								<a href="$r.commandURIbg("leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_with_small_icon_left ${iconRenderer.getIconCssClass($child.getRepositoryEntry())}">
-								<span id="leaf$ri">$child.getRepositoryEntry().getDisplayname()								
-								</span>
-								<div id="o_tooltip_$ri" class="x-hidden">
-								#if($r.available("image$ri"))
-									<div class="o_repository_resource_image">$r.render("image$ri")</div>
-									<div class="b_ext_tooltip_wrapper" style="min-height:110px">$child.getRepositoryEntry().getFormattedDescription()</div>
-								#else
-									<div class="b_ext_tooltip_wrapper">$child.getRepositoryEntry().getFormattedDescription()</div>
-								#end								
-								</div>								
+									<span id="leaf$ri">$child.getRepositoryEntry().getDisplayname()</span>
 								</a>
+								<div id="o_tooltip_$ri" style="display:none;">
+									#if($r.available("image$ri"))
+										<div class="o_repository_resource_image">$r.render("image$ri")</div>
+										<div class="b_ext_tooltip_wrapper" style="min-height:110px">$child.getRepositoryEntry().getFormattedDescription()</div>
+									#else
+										<div class="b_ext_tooltip_wrapper">$child.getRepositoryEntry().getFormattedDescription()</div>
+									#end								
+								</div>
 <script type="text/javascript">
-new Ext.ToolTip({
-	target: 'leaf$ri',
-	contentEl: 'o_tooltip_$ri',		
-	width: 500,
-	title: '$r.escapeJavaScript($child.getRepositoryEntry().getDisplayname())',
-	autoHide: true,
-	hideDelay: 1000
+/* <![CDATA[ */
+jQuery(document).ready(function() {
+	jQuery('#leaf$ri').tooltip({
+		items: "span",
+		content: function(){ return jQuery('#o_tooltip_$ri').html(); }	
+	});
 });
+/* ]]> */
 </script>
 							</div>
 						</td>				
