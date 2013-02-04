@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.main;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -125,6 +126,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private final BusinessGroupModule groupModule;
 	private final ACService acService;
 	
+	private final GroupMemberViewComparator memberViewComparator;
 	private static final CourseMembershipComparator MEMBERSHIP_COMPARATOR = new CourseMembershipComparator();
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, String page) {
@@ -148,6 +150,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		
+		memberViewComparator = new GroupMemberViewComparator(Collator.getInstance(getLocale()));
 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer(page);
@@ -202,14 +206,23 @@ public abstract class AbstractMemberListController extends BasicController imple
 				Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
 				if(a instanceof CourseMembership && b instanceof CourseMembership) {
 					return MEMBERSHIP_COMPARATOR.compare((CourseMembership)a, (CourseMembership)b);
-				} else {
-					return super.compareTo(rowa, rowb);
 				}
+				return super.compareTo(rowa, rowb);
 			}
 		});
 		if(repoEntry != null) {
 			CustomCellRenderer groupRenderer = new GroupCellRenderer();
-			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
+			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer) {
+				@Override
+				public int compareTo(final int rowa, final int rowb) {
+					Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+					Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+					if(a instanceof MemberView && b instanceof MemberView) {
+						return memberViewComparator.compare((MemberView)a, (MemberView)b);
+					}
+					return super.compareTo(rowa, rowb);
+				}
+			});
 		}
 		
 		memberListCtr.addColumnDescriptor(new GraduateColumnDescriptor("table.header.graduate", TABLE_ACTION_GRADUATE, getTranslator()));
