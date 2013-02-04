@@ -24,9 +24,9 @@
 */
 package org.olat.core.util.threadlog;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
@@ -51,7 +51,7 @@ public class UserBasedLogLevelManager {
 	private final String PROP_NAME_USERNAMES2LEVELS = "Usernames2Levels";
 	
 	/** The core of this class is this map containing the list of usernames mapped to logconfigs **/
-	private final Map<String,LogConfig> username2LogConfig = new HashMap<String,LogConfig>();
+	private final Map<String,LogConfig> username2LogConfig = new ConcurrentHashMap<String,LogConfig>();
 	
 	/** A reference to the persistentProperties used to persistent the usernames map **/
 	private PersistedProperties persistentProperties;

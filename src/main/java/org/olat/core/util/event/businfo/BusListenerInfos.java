@@ -25,11 +25,11 @@
 */ 
 package org.olat.core.util.event.businfo;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.core.id.OLATResourceable;
 
@@ -48,7 +48,7 @@ import org.olat.core.id.OLATResourceable;
  */
 public class BusListenerInfos {
 	// key: nodeId, values: a map with keys: derivedString of a olatresourceable; values: listener count of this node
-	private Map<Integer, BusListenerInfo> nodeBusInfos = new HashMap<Integer, BusListenerInfo>();
+	private Map<Integer, BusListenerInfo> nodeBusInfos = new ConcurrentHashMap<Integer, BusListenerInfo>();
 	
 	public int getListenerCountFor(OLATResourceable ores) {
 		synchronized (nodeBusInfos) {//cluster_ok
@@ -73,13 +73,13 @@ public class BusListenerInfos {
 	}
 	
 	public String getAsString() {
+		StringBuilder sb = new StringBuilder();
 		Set<String> allNodesDerivedStrings = new TreeSet<String>(); // the derived strings are sorted then
 		for (BusListenerInfo busInfo : nodeBusInfos.values()) {
 			allNodesDerivedStrings.addAll(busInfo.getAllDerivedStrings());
 		}
 		
 		// for each derived-string, print out the total number of listeners, and the contribution of each node
-		StringBuilder sb = new StringBuilder();
 		for (String derived : allNodesDerivedStrings) {
 			int total = 0;
 			sb.append(derived).append(" : ");
@@ -90,11 +90,7 @@ public class BusListenerInfos {
 				total+= cnt;
 			}
 			sb.append(" Sum:").append(total).append("<br />");
-			
 		}
 		return sb.toString();
 	}
-	
-	
-	
 }

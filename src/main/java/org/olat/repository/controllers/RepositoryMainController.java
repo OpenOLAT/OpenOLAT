@@ -204,17 +204,17 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		columnsLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, toolComp, mainPanel, "repomain");
 		columnsLayoutCtr.addCssClassToMain("o_repository");
 		listenTo(columnsLayoutCtr);
-
+		
 		if (isAuthor || ureq.getUserSession().getRoles().isOLATAdmin()) {
 			activateContent(ureq, "search.my", null, null);
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.my", rootNode);
 			menuTree.setSelectedNode(activatedNode);
 		} else if(catalogModule.isCatalogRepoEnabled()) {
-			activateContent(ureq, "catalog", null, null);
+			activateContent(ureq, "search.catalog", null, null);
 			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.catalog", rootNode);
 			menuTree.setSelectedNode(activatedNode);
 		}
-
+		
 		putInitialPanel(columnsLayoutCtr.getInitialComponent());
 	}
 
@@ -295,7 +295,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			node.setCssClass("o_sel_repo_my_student");
 			rootNode.addChild(node);
 			// for authors or users with group rights also show the teacher portlet
-			if(bIsAuthor || RepositoryManager.getInstance().countLearningResourcesAsTeacher(getIdentity()) > 0) {
+			if(bIsAuthor || RepositoryManager.getInstance().hasLearningResourcesAsTeacher(getIdentity())) {
 				node = new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher");
 				node.setCssClass("o_sel_repo_my_teacher");
 				rootNode.addChild(node);
@@ -383,7 +383,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	 */
 	private void activateContent(UserRequest ureq, Object userObject, List<ContextEntry> entries, StateEntry state) {
 		log.info("activateContent userObject=" + userObject);
-
 		if (userObject.equals("search.home")) { // the
 			// home
 			main.setPage(VELOCITY_ROOT + "/index.html");
@@ -491,7 +490,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(lastUserObject, 0l);
 		searchWindowControl = addToHistory(ureq, ores, null);
 	}
-
 
 	private void activateCatalogController(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(!catalogModule.isCatalogRepoEnabled()) return;

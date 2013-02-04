@@ -252,8 +252,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 				BaseFullWebappController.this.activateStatic(ureq, className, null, entries);
 			}
 
-			public void addDTab(UserRequest ureq, DTab dt) {
-				BaseFullWebappController.this.addDTab(ureq, dt);
+			public boolean addDTab(UserRequest ureq, DTab dt) {
+				return BaseFullWebappController.this.addDTab(ureq, dt);
 			}
 			//fxdiff BAKS-7 Resume function
 			public DTab createDTab(OLATResourceable ores, String title) {
@@ -543,10 +543,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 			updateBusinessPath(ureq, dt);
 		} else {
 			StateEntry s = state.getTransientState();
-			if(s instanceof StateSite && sites != null) {
+			if(s instanceof StateSite && ((StateSite)s).getSite() != null && sites != null) {
 				SiteInstance site = ((StateSite)s).getSite();
 				for(SiteInstance savedSite:sites) {
-					if(site.getClass().equals(savedSite.getClass())) {
+					if(savedSite != null && site.getClass().equals(savedSite.getClass())) {
 						activateSite(savedSite, ureq, null, entries, false);
 						//updateBusinessPath(ureq, savedSite);
 					}
@@ -871,13 +871,17 @@ public class BaseFullWebappController extends BasicController implements Generic
 	/**
 	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#addDTab(org.olat.core.gui.control.generic.dtabs.DTab)
 	 */
-	public void addDTab(UserRequest ureq, DTab dt) {
+	public boolean addDTab(UserRequest ureq, DTab dt) {
+		if(isDisposed()) {
+			return false;
+		}
+
 		DTab old = getDTab(dt.getOLATResourceable());
 		if (old != null) {
 			//do make a red screen for that
 			//throw new AssertException("dtabs already contained: " + old);
 			getWindowControl().getWindowBackOffice().getWindow().setAttribute("BUSPATH", dt.getWindowControl());
-			return;
+			return true;
 		}
 		// add to tabs list
 		synchronized (dtabs) {
@@ -915,7 +919,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 		//set current BusPath for extraction in the TopNav Controller
 		//FIXME:pb:2009-06-21:move core
 		getWindowControl().getWindowBackOffice().getWindow().setAttribute("BUSPATH", dt.getWindowControl());		
-		
+		return true;
 	}
 
 	/**

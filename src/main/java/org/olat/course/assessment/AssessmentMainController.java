@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.admin.user.UserTableDataModel;
@@ -195,8 +196,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 		this.stackPanel = stackPanel;
 		this.ores = ores;
 		this.callback = assessmentCallback;
-		localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>(10000);
-		initialLaunchDates = new HashMap<Long,Date>(10000);
+		localUserCourseEnvironmentCache = new ConcurrentHashMap<Long, UserCourseEnvironment>();
+		initialLaunchDates = new ConcurrentHashMap<Long,Date>();
 		
     //use the PropertyHandlerTranslator	as tableCtr translator
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
@@ -1113,7 +1114,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 			ICourse course = CourseFactory.loadCourse(ores);
 			// 1) preload assessment cache with database properties
 			long start = 0;
-			boolean logDebug = true || log.isDebug();
+			boolean logDebug = log.isDebug();
 			if(logDebug) start = System.currentTimeMillis();
 			List<Identity> identities = getAllAssessableIdentities();
 			course.getCourseEnvironment().getAssessmentManager().preloadCache(identities);
@@ -1126,7 +1127,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedContro
 				if (Thread.interrupted()) break;
 			}
 			if (logDebug) {
-				log.info("Preloading of user course environment cache for course::" + course.getResourceableId() + " for "
+				log.debug("Preloading of user course environment cache for course::" + course.getResourceableId() + " for "
 						+ localUserCourseEnvironmentCache.size() + " user course environments. Loading time::" + (System.currentTimeMillis() - start)
 						+ "ms");
 			}

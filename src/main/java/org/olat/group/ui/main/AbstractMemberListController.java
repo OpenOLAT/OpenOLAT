@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.main;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -112,7 +113,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected final VelocityContainer mainVC;
 	
 	protected CloseableModalController cmc;
-	private EditMembershipController editMemberCtrl;
+	private EditMembershipController editMembersCtrl;
+	private EditSingleMembershipController editSingleMemberCtrl;
 	private ContactFormController contactCtrl;
 	private MemberLeaveConfirmationController leaveDialogBox;
 	private DialogBoxController confirmSendMailBox;
@@ -134,6 +136,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	private final InstantMessagingService imService;
 	private final UserSessionManager sessionManager;
 	
+	private final GroupMemberViewComparator memberViewComparator;
 	private static final CourseMembershipComparator MEMBERSHIP_COMPARATOR = new CourseMembershipComparator();
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, String page) {
@@ -160,6 +163,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		memberViewComparator = new GroupMemberViewComparator(Collator.getInstance(getLocale()));
 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer(page);
@@ -217,14 +221,23 @@ public abstract class AbstractMemberListController extends BasicController imple
 				Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
 				if(a instanceof CourseMembership && b instanceof CourseMembership) {
 					return MEMBERSHIP_COMPARATOR.compare((CourseMembership)a, (CourseMembership)b);
-				} else {
-					return super.compareTo(rowa, rowb);
 				}
+				return super.compareTo(rowa, rowb);
 			}
 		});
 		if(repoEntry != null) {
 			CustomCellRenderer groupRenderer = new GroupCellRenderer();
-			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer));
+			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.groups.i18n(), Cols.groups.ordinal(), null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, groupRenderer) {
+				@Override
+				public int compareTo(final int rowa, final int rowb) {
+					Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
+					Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
+					if(a instanceof MemberView && b instanceof MemberView) {
+						return memberViewComparator.compare((MemberView)a, (MemberView)b);
+					}
+					return super.compareTo(rowa, rowb);
+				}
+			});
 		}
 		
 		memberListCtr.addColumnDescriptor(new GraduateColumnDescriptor("table.header.graduate", TABLE_ACTION_GRADUATE, getTranslator()));
@@ -281,15 +294,17 @@ public abstract class AbstractMemberListController extends BasicController imple
 			}
 			cmc.deactivate();
 			cleanUpPopups();
-		} else if(source == editMemberCtrl) {
+		} else if(source == editMembersCtrl) {
 			cmc.deactivate();
 			if(event instanceof MemberPermissionChangeEvent) {
 				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
-				if(e.getMember() != null) {
-					doConfirmChangePermission(ureq, e, null);
-				} else {
-					doConfirmChangePermission(ureq, e, editMemberCtrl.getMembers());
-				}
+				doConfirmChangePermission(ureq, e, editMembersCtrl.getMembers());
+			}
+		} else if(source == editSingleMemberCtrl) {
+			cmc.deactivate();
+			if(event instanceof MemberPermissionChangeEvent) {
+				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
+				doConfirmChangePermission(ureq, e, null);
 			}
 		} else if(confirmSendMailBox == source) {
 			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
@@ -313,13 +328,15 @@ public abstract class AbstractMemberListController extends BasicController imple
 	 */
 	protected void cleanUpPopups() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(editMemberCtrl);
+		removeAsListenerAndDispose(editMembersCtrl);
+		removeAsListenerAndDispose(editSingleMemberCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
 		removeAsListenerAndDispose(contactCtrl);
 		cmc = null;
 		contactCtrl = null;
 		leaveDialogBox = null;
-		editMemberCtrl = null;
+		editMembersCtrl = null;
+		editSingleMemberCtrl = null;
 	}
 	
 	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
@@ -351,9 +368,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	protected void openEdit(UserRequest ureq, MemberView member) {
 		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup);
-		listenTo(editMemberCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
+		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup);
+		listenTo(editSingleMemberCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
 				true, translate("edit.member"));
 		cmc.activate();
 		listenTo(cmc);
@@ -362,9 +379,9 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected void openEdit(UserRequest ureq, List<MemberView> members) {
 		List<Long> identityKeys = getMemberKeys(members);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
-		editMemberCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
-		listenTo(editMemberCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMemberCtrl.getInitialComponent(),
+		editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
+		listenTo(editMembersCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
 				true, translate("edit.member"));
 		cmc.activate();
 		listenTo(cmc);

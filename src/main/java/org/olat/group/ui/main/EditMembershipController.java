@@ -66,8 +66,6 @@ public class EditMembershipController extends FormBasicController {
 	
 	private EditMemberTableDataModel tableDataModel;
 	private MultipleSelectionElement repoRightsEl;
-	private MemberInfoController infoController;
-	private boolean needMemberInfoController = false;
 	private boolean withButtons;
 	
 	private static final String[] repoRightsKeys = {"owner", "tutor", "participant"};
@@ -97,7 +95,6 @@ public class EditMembershipController extends FormBasicController {
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		memberships = repositoryManager.getRepositoryEntryMembership(repoEntry, member);
-		needMemberInfoController = true;
 		initForm(ureq);
 		loadModel(member);
 		
@@ -119,7 +116,6 @@ public class EditMembershipController extends FormBasicController {
 				}
 			}
 		}
-		infoController.setMembershipCreation(membershipCreation);
 	}
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
@@ -200,12 +196,6 @@ public class EditMembershipController extends FormBasicController {
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			if(needMemberInfoController) {
-				infoController = new MemberInfoController(ureq, getWindowControl(), member, repoEntry, mainForm);
-				listenTo(infoController);
-				layoutCont.put("infos", infoController.getInitialComponent());
-			}
-			
 			String name = repoEntry == null ? businessGroup.getName() : repoEntry.getDisplayname();
 			String title = translate("edit.member.title", new String[]{ name });
 			layoutCont.contextPut("editTitle", title);
@@ -271,7 +261,7 @@ public class EditMembershipController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-	
+
 	public void collectRepoChanges(MemberPermissionChangeEvent e) {
 		if(repoEntry == null) return;
 		

@@ -28,10 +28,10 @@ package org.olat.core.logging;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -107,7 +107,7 @@ public class Tracing {
 	private static long __performanceRefNum__ = 0;
 	
 	// VM local cache to have one logger object per class
-	private static final Map<Class, OLog> loggerLookupMap = new HashMap<Class, OLog>();
+	private static final Map<Class, OLog> loggerLookupMap = new ConcurrentHashMap<Class, OLog>();
 
 	/**
 	 * per-thread singleton holding the actual HttpServletRequest which is the

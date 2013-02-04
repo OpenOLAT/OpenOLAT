@@ -179,7 +179,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	}
 	
 	private void doRemoveResource(RepositoryEntry entry) {
-		businessGroupService.removeResourceFrom(group, entry);
+		businessGroupService.removeResourceFrom(Collections.singletonList(group), entry);
 		repoTableModel.getObjects().remove(entry);
 		resourcesCtr.modelChanged();
 	}

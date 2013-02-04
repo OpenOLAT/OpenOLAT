@@ -1534,13 +1534,23 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	@Transactional
-	public void removeResourceFrom(BusinessGroup group, RepositoryEntry re) {
-		businessGroupRelationDAO.deleteRelation(group, re.getOlatResource());
-		//remove author permission
-		securityManager.deletePolicy(re.getOwnerGroup(), Constants.PERMISSION_ACCESS, group.getResource());
-		//remove permission
-		securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, re.getOlatResource());
-		securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
+	public void removeResourceFrom(List<BusinessGroup> groups, RepositoryEntry re) {
+		if(groups == null || groups.isEmpty()) {
+			return; // nothing to do
+		}
+		
+		int count = 0;
+		for(BusinessGroup group:groups) {
+			businessGroupRelationDAO.deleteRelation(group, re.getOlatResource());
+			//remove author permission
+			securityManager.deletePolicy(re.getOwnerGroup(), Constants.PERMISSION_ACCESS, group.getResource());
+			//remove permission
+			securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, re.getOlatResource());
+			securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
+			if(count++ % 20 == 0) {
+				dbInstance.intermediateCommit();
+			}
+		}
 	}
 	
 	@Override

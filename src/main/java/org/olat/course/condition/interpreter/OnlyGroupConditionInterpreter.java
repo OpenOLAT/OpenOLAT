@@ -78,6 +78,7 @@ public class OnlyGroupConditionInterpreter extends ConditionInterpreter{
 		env.addFunction(IsUserFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(IsGuestFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(IsGlobalAuthorFunction.name, new DummyBooleanFunction(userCourseEnv));
+		env.addFunction(Sleep.name, new Sleep(userCourseEnv));
 		env.addFunction("hasAttribute", new DummyBooleanFunction(userCourseEnv));
 		env.addFunction("isInAttribute", new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(GetUserPropertyFunction.name, new DummyStringFunction(userCourseEnv));
