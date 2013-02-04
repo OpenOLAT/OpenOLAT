@@ -34,6 +34,7 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableEvent;
+import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -46,6 +47,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
 import org.olat.group.ui.main.BGAccessControlledCellRenderer;
 import org.olat.group.ui.main.BGResourcesCellRenderer;
+import org.olat.group.ui.main.BGTableItem;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -59,12 +61,14 @@ import org.olat.resource.OLATResource;
 public class CourseBusinessGroupListController extends AbstractBusinessGroupListController {
 	
 	private static String TABLE_ACTION_UNLINK = "tblUnlink";
+	private static String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
 	
 	private final RepositoryEntry re;
 	private final Link createGroup;
 	private final Link addGroup;
 
 	private DialogBoxController confirmRemoveResource;
+	private DialogBoxController confirmRemoveMultiResource;
 	private SelectBusinessGroupController selectController;
 	
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
@@ -86,6 +90,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		groupListCtr.addMultiSelectAction("table.users.management", TABLE_ACTION_USERS);
 		groupListCtr.addMultiSelectAction("table.config", TABLE_ACTION_CONFIG);
 		groupListCtr.addMultiSelectAction("table.email", TABLE_ACTION_EMAIL);
+		groupListCtr.addMultiSelectAction("table.header.remove", TABLE_ACTION_MULTI_UNLINK);
 	}
 
 	@Override
@@ -137,11 +142,31 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 					confirmRemoveResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
 					confirmRemoveResource.setUserObject(group);
 				}
+			} else if (event instanceof TableMultiSelectEvent) {
+				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
+				if(TABLE_ACTION_MULTI_UNLINK.equals(te.getAction())) {
+					List<BGTableItem> selectedItems = groupListModel.getObjects(te.getSelection());
+					StringBuilder sb = new StringBuilder();
+					for(BGTableItem item:selectedItems) {
+						if(sb.length() > 0) sb.append(", ");
+						sb.append(item.getBusinessGroupName() == null ? "???" : item.getBusinessGroupName());
+					}
+					String text = getTranslator().translate("group.remove", new String[] { sb.toString(), re.getDisplayname() });
+					confirmRemoveMultiResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
+					confirmRemoveMultiResource.setUserObject(selectedItems);
+				}
 			}
 		} else if (source == confirmRemoveResource) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
 				BusinessGroup group = (BusinessGroup)confirmRemoveResource.getUserObject();
-				doRemoveBusinessGroup(group);
+				doRemoveBusinessGroups(Collections.singletonList(group));
+			}
+		} else if (source == confirmRemoveMultiResource) {
+			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
+				@SuppressWarnings("unchecked")
+				List<BGTableItem> selectedItems = (List<BGTableItem>)confirmRemoveMultiResource.getUserObject();
+				List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, false);
+				doRemoveBusinessGroups(groups);
 			}
 		}
 
@@ -155,8 +180,8 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		selectController = null;
 	}
 	
-	private void doRemoveBusinessGroup(BusinessGroup group) {
-		businessGroupService.removeResourceFrom(group, re);
+	private void doRemoveBusinessGroups(List<BusinessGroup> groups) {
+		businessGroupService.removeResourceFrom(groups, re);
 		reloadModel();
 	}
 
