@@ -85,13 +85,10 @@ import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.model.RepositoryEntryMember;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.repository.model.RepositoryEntryStrictMember;
-import org.olat.repository.model.RepositoryEntryStrictParticipant;
-import org.olat.repository.model.RepositoryEntryStrictTutor;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
@@ -1927,17 +1924,37 @@ public class RepositoryManager extends BasicManager {
 	 */
 	 //fxdiff VCRP-1,2: access control of resources
 	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(400);
-		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
+		StringBuilder sb = new StringBuilder(1200);
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" left join fetch v.ownerGroup as ownerGroup ")
+		  .append(" inner join fetch v.participantGroup as participantGroup ")
+		  .append(" left join fetch v.tutorGroup as tutorGroup ")
+		  .append("where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" and (")
+		  .append(" exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=participantGroup)")
+		  .append(" or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+		  .append("   ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+		  .append("   ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+		  .append("   where bgroup.partipiciantGroup=vmember.securityGroup and res=bresource.resource and bgroup=bresource.group and vmember.identity=:identityKey")
+		  .append("  )")
+		  .append(" )");
+
+		/* query based on permission
+		StringBuilder sb3 = new StringBuilder(400);
+		sb3.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join fetch v.olatResource as res")
 			.append(" left join fetch v.ownerGroup as ownerGroup")
 			.append(" inner join fetch v.participantGroup as participantGroup")
 			.append(" left join fetch v.tutorGroup as tutorGroup")
-			.append(" where v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictParticipant.class.getName()).append(" vmember")
-			.append("   where (vmember.repoParticipantKey=:identityKey or vmember.groupParticipantKey=:identityKey)")
+			.append(" where exists (from ").append(PolicyImpl.class.getName()).append(" as poi,")
+			.append("   ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi")
+			.append("   where sgmsi.identity.key=:identityKey and sgmsi.securityGroup=poi.securityGroup")
+			.append("   and poi.permission='access' and poi.olatResource=res")
 			.append(" ))");
-		appendOrderBy(sb, "v", orderby);
-
+		*/
+		
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
@@ -1945,7 +1962,7 @@ public class RepositoryManager extends BasicManager {
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		List<RepositoryEntry> repoEntries = query.getResultList();	
+		List<RepositoryEntry> repoEntries = query.getResultList();
 		return repoEntries;
 	}
 	
@@ -1957,21 +1974,25 @@ public class RepositoryManager extends BasicManager {
 	 * @param identity
 	 * @return list of RepositoryEntries
 	 */
-	public int countLearningResourcesAsTeacher(Identity identity) {
-		StringBuilder sb = new StringBuilder(400);
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
-			.append(" inner join v.olatResource as res ");
-		whereClauseLearningResourcesAsTeacher(sb);
-		
+	public boolean hasLearningResourcesAsTeacher(Identity identity) {
+		/*
+		StringBuilder sb = new StringBuilder(1200);
+		sb.append("select count(v.key) from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join v.olatResource as res ")
+			.append(" left join v.ownerGroup as ownerGroup")
+			.append(" left join v.tutorGroup as tutorGroup");
+		whereClauseLearningResourcesAsTeacher(sb);	
 		Number count = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
 				.getSingleResult();
-		return count.intValue();
+		*/
+		List<RepositoryEntry> repos = getLearningResourcesAsTeacher(identity, 0, 1);
+		return !repos.isEmpty();
 	}
 	
 	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(400);
+		StringBuilder sb = new StringBuilder(1200);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join fetch v.olatResource as res ")
 			.append(" left join fetch v.ownerGroup as ownerGroup")
@@ -1996,7 +2017,9 @@ public class RepositoryManager extends BasicManager {
 	 * @param sb
 	 */
 	private final void whereClauseLearningResourcesAsTeacher(StringBuilder sb) {
-		sb.append(" where v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictTutor.class.getName()).append(" vmember")
+		/*
+		StringBuilder s2 = new StringBuilder();
+		s2.append(" where v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictTutor.class.getName()).append(" vmember")
 			.append("   where (vmember.repoOwnerKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.groupOwnerKey=:identityKey)")   
 			.append(" )")
 			.append(" or ")
@@ -2008,6 +2031,20 @@ public class RepositoryManager extends BasicManager {
 			.append("   and poi.permission = 'bgr.editor' and poi.olatResource = ori")
 			.append("   and groupRelation.resource=ori")
 		  .append(" )");
+		*/
+		
+	  sb.append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+	  	.append(" and (exists (from ").append(PolicyImpl.class.getName()).append(" as poi,")
+			.append("   ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi")
+			.append("   where sgmsi.identity.key=:identityKey and sgmsi.securityGroup=poi.securityGroup")
+			.append("   and poi.permission='bgr.editor' and poi.olatResource=res")
+	    .append(" ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+	    .append("     where vmember.identity.key=:identityKey and (vmember.securityGroup=tutorGroup or vmember.securityGroup=ownerGroup)")
+	    .append(" ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+	    .append("   ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+	    .append("   ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+	    .append("   where bgroup.ownerGroup=vmember.securityGroup and res=bresource.resource and bgroup=bresource.group and vmember.identity=:identityKey")
+	    .append(" ))");
 	}
 	
 	/**

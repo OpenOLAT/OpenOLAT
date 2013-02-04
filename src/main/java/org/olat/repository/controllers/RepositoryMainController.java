@@ -71,7 +71,6 @@ import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
@@ -292,7 +291,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			node.setCssClass("o_sel_repo_my_student");
 			rootNode.addChild(node);
 			// for authors or users with group rights also show the teacher portlet
-			if(bIsAuthor || RepositoryManager.getInstance().countLearningResourcesAsTeacher(getIdentity()) > 0) {
+			if(bIsAuthor || RepositoryManager.getInstance().hasLearningResourcesAsTeacher(getIdentity())) {
 				node = new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher");
 				node.setCssClass("o_sel_repo_my_teacher");
 				rootNode.addChild(node);
