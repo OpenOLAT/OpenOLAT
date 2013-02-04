@@ -20,10 +20,10 @@
 package org.olat.restapi.security;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpSession;
 
@@ -42,9 +42,9 @@ import org.olat.core.util.StringHelper;
  */
 public class RestSecurityBeanImpl implements RestSecurityBean {
 
-	private Map<String,Long> tokenToIdentity = new HashMap<String,Long>();
-	private Map<String,List<String>> tokenToSessionIds = new HashMap<String,List<String>>();
-	private Map<String,String> sessionIdToTokens = new HashMap<String,String>();
+	private Map<String,Long> tokenToIdentity = new ConcurrentHashMap<String,Long>();
+	private Map<String,List<String>> tokenToSessionIds = new ConcurrentHashMap<String,List<String>>();
+	private Map<String,String> sessionIdToTokens = new ConcurrentHashMap<String,String>();
 	
 	@Override
 	public String generateToken(Identity identity, HttpSession session) {

@@ -26,13 +26,13 @@ import java.lang.management.ThreadMXBean;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -55,7 +55,7 @@ public class ThreadInfosManager implements Sampler {
 	private final static NumberFormat percentFormat = NumberFormat.getPercentInstance(Locale.ENGLISH);
 	
 	private long prevUpTime;
-	private Map<Long,ThreadView> threadMap = new HashMap<Long,ThreadView>();
+	private Map<Long,ThreadView> threadMap = new ConcurrentHashMap<Long,ThreadView>();
 
 	public List<ThreadView> getThreadViews() {
 		if(threadMap.isEmpty()) {

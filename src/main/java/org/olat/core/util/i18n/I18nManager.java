@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -128,9 +129,9 @@ public class I18nManager extends BasicManager {
 
 	// keys: bundlename ":" locale.toString() (e.g. "org.olat.admin:de_DE");
 	// values: PropertyFile
-	private Map<String, Properties> cachedBundles = new HashMap<String, Properties>();
-	private Map<String, String> cachedJSTranslatorData = new HashMap<String, String>();
-	private Map<String, Set<String>> referencingBundlesIndex = new HashMap<String, Set<String>>();
+	private Map<String, Properties> cachedBundles = new ConcurrentHashMap<String, Properties>();
+	private Map<String, String> cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
+	private Map<String, Set<String>> referencingBundlesIndex = new ConcurrentHashMap<String, Set<String>>();
 	private boolean cachingEnabled = true;
 
 	private static FilenameFilter i18nFileFilter = new FilenameFilter() {
@@ -1543,9 +1544,9 @@ public class I18nManager extends BasicManager {
 	 */
 	public void setCachingEnabled(boolean useCache) {
 		if (useCache) {
-			cachedBundles = new HashMap<String, Properties>();
-			cachedJSTranslatorData = new HashMap<String, String>();
-			referencingBundlesIndex = new HashMap<String, Set<String>>();
+			cachedBundles = new ConcurrentHashMap<String, Properties>();
+			cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
+			referencingBundlesIndex = new ConcurrentHashMap<String, Set<String>>();
 		} else {
 			cachedBundles = new AlwaysEmptyMap<String, Properties>();
 			cachedJSTranslatorData = new AlwaysEmptyMap<String, String>();

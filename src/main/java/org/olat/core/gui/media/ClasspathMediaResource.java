@@ -32,8 +32,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -58,8 +58,8 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 	private Long size;
 	private URL url;
 	// local cache to minimize access to jar content (expensive)
-	private static final Map<String,Long> cachedJarResourceLastModified = new HashMap<String, Long>();
-	private static final Map<String,Long> cachedJarResourceSize = new HashMap<String, Long>();
+	private static final Map<String,Long> cachedJarResourceLastModified = new ConcurrentHashMap<String, Long>();
+	private static final Map<String,Long> cachedJarResourceSize = new ConcurrentHashMap<String, Long>();
 
 	/**
 	 * Constructor that uses class loader of this (ClasspathMediaResource) class
