@@ -27,10 +27,8 @@
 package org.olat.core.gui.components;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,6 +43,7 @@ import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
+import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
@@ -52,6 +51,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.JSAndCSSAdderImpl;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
@@ -152,15 +152,17 @@ public class Window extends Container {
 	private Component latestDispatchedComp;
 	private String latestDispatchComponentInfo = null;
 	
+	//dtabs
+	private DTabs dTabs;
+	//custom css
+	private CustomCSS customCSS;
+	
 	// wbackoffice reference
 	private WindowBackOfficeImpl wbackofficeImpl;
 	// mutex for rendering
 	private final Object render_mutex = new Object();
 	// delegate for css and js includes
 	private final JSAndCSSAdderImpl jsAndCssAdder;
-	
-
-	private Map<String, Object> attributes = new HashMap<String, Object>();
 	
 	/**
 	 * @param name
@@ -273,7 +275,7 @@ public class Window extends Container {
 		boolean incTimestamp = false;//!GUIInterna.isLoadPerformanceMode();
 		
 		MediaResource mr = null;
-		final boolean isDebugLog = Tracing.isDebugEnabled(Window.class);
+		final boolean isDebugLog = log.isDebug();
 		StringBuilder debugMsg = null;
 		long debug_start = 0;
 		if (isDebugLog) {
@@ -316,13 +318,13 @@ public class Window extends Container {
 							String cTimest = target.getTimestamp();
 							String urlCTimest = ureq.getComponentTimestamp();
 							validForDispatching = cTimest.equals(urlCTimest);
-							if (!validForDispatching && Tracing.isDebugEnabled(this.getClass()) ) { 
+							if (!validForDispatching && isDebugLog) { 
 								Tracing.logDebug("Invalid timestamp: ureq.compid:"+ureq.getComponentID()+" ureq.win-ts:"+ureq.getTimestampID()+" ureq.comp-ts:"+ureq.getComponentTimestamp() + " target.timestamp:" + cTimest + " target=" + target, this.getClass());
 							}
 						} else { 
 							// the component was not found in the rendertree anymore.
 							// this can happen e.g. on quick double-clicks, so that the dom-replacement-command never reaches the client.
-							if (Tracing.isDebugEnabled(this.getClass())) Tracing.logDebug("no ajax dispatch: component not found (target=null)",this.getClass());
+							if (isDebugLog) Tracing.logDebug("no ajax dispatch: component not found (target=null)",this.getClass());
 							validForDispatching = false;
 						}
 						
@@ -555,12 +557,12 @@ public class Window extends Container {
 						// "open in new window/tab" in the browser).
 						if ((componentID != null && componentID.equals("-1")) || (ureq.getParameter("o_winrndo") != null)) { 
 							// just rerender
-						}	else {
+						}	else  {
 							// not a valid timestamp -> most likely a browser back or forward event (or a copy/paste of a url) ->
 
 							// fire event to listening chiefcontroller
 							//fxdiff BAKS-7: resume controller
-							Tracing.logDebug("Removed old timestamp event", Window.class);
+							if(isDebugLog) Tracing.logDebug("Removed old timestamp event", Window.class);
 							//fireEvent(ureq, OLDTIMESTAMPCALL);
 						}
 						// just rerender current window
@@ -780,42 +782,23 @@ public class Window extends Container {
 			log.debug("Perf-Test: Window durationDispatchRequest=" + durationDispatchRequest);
 		}
 	}
+	
+	
 
-	/**
-	 * Set a window-scope variable
-	 * 
-	 * @param key
-	 *            the identifier, must not be NULL
-	 * @param value
-	 *            the value, must not be NULL. Use removeAttribute() to remove a
-	 *            key
-	 */
-	public void setAttribute(String key, Object value) {
-		attributes.put(key, value);
+	public DTabs getDTabs() {
+		return dTabs;
 	}
 
-	/**
-	 * Get a window-scope variable
-	 * 
-	 * @param key
-	 *            the identifier, must not be NULL
-	 * @return The object or NULL if no object exists for this key
-	 */
-	public Object getAttribute(String key) {
-		return attributes.get(key);
+	public void setDTabs(DTabs dTabs) {
+		this.dTabs = dTabs;
 	}
 
-	/**
-	 * Remove a windo-scope variable
-	 * 
-	 * @param key
-	 *            the identifier, must not be NULL
-	 * @param the
-	 *            previously attribute that was set for this key or NULL when
-	 *            the key was not set at all
-	 */
-	public Object removeAttribute(String key) {
-		return attributes.remove(key);
+	public CustomCSS getCustomCSS() {
+		return customCSS;
+	}
+
+	public void setCustomCSS(CustomCSS customCSS) {
+		this.customCSS = customCSS;
 	}
 	
 	//fxdiff FXOLAT-119: update business path
@@ -844,7 +827,7 @@ public class Window extends Container {
 		// more accurately, the synchronized is needed when other classes than window call this method.
 		synchronized(this) {
 			Command com = null;
-			boolean isDebugLog = Tracing.isDebugEnabled(Window.class);
+			boolean isDebugLog = log.isDebug();
 			StringBuilder debugMsg = null;
 			long start = 0;
 			if (isDebugLog) {

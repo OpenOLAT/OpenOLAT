@@ -58,7 +58,7 @@ public class Panel extends Container {
 		
 	
 	private Component curContent;
-	protected List<Component> stackList; // allow access to extending classes
+	protected final List<Component> stackList = new ArrayList<Component>(3);; // allow access to extending classes
 	
 	private DragAndDropImpl dragAndDropImpl; 
 
@@ -67,7 +67,6 @@ public class Panel extends Container {
 	 */
 	public Panel(String name) {
 		super(name);
-		stackList = new ArrayList<Component>(3);
 		curContent = null;
 	}
 

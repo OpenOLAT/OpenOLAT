@@ -1386,14 +1386,7 @@ public class DefaultServlet
     protected InputStream render
         (String contextPath, ResourceInfo resourceInfo) {
 
-        String name = resourceInfo.path;
-
-        // Number of characters to trim from the beginnings of filenames
-        int trim = name.length();
-        if (!name.endsWith("/"))
-            trim += 1;
-        if (name.equals("/"))
-            trim = 1;
+        String name = resourceInfo.path; 
 
         // Prepare a writer to a buffered area
         ByteArrayOutputStream stream = new ByteArrayOutputStream();

@@ -235,7 +235,6 @@ public class FileCopyController extends LinkChooserController {
 			finishSuccessfullUpload(existingVFSItem.getName(), ureq);
 		} else if (source == unlockCtr) {
 			// Overwrite...
-			String fileName = existingVFSItem.getName();
 			if(!unlockCtr.keepLocked()) {
 				MetaInfo info = ((MetaTagged)existingVFSItem).getMetaInfo();
 				info.setLocked(false);

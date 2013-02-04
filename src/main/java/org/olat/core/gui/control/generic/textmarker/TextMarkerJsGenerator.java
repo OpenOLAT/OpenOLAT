@@ -62,9 +62,9 @@ public class TextMarkerJsGenerator {
 		ArrayList<GlossaryItem> glossaryItemArr = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
 
 		//FIXME: gloss: use helper method to encode folder -> id  
-		String glossaryId = Encoder.encrypt(((LocalFolderImpl)glossaryFolder).getBasefile().toString());
+		//String glossaryId = Encoder.encrypt(((LocalFolderImpl)glossaryFolder).getBasefile().toString());
 		StringBuilder sb = new StringBuilder();		
-//		sb.append("o_glossaries[").append(glossaryId).append("] = ").append(buildJSArrayString(glossaryItemArr));
+		//sb.append("o_glossaries[").append(glossaryId).append("] = ").append(buildJSArrayString(glossaryItemArr));
 		sb.append(buildJSArrayString(glossaryItemArr));
 
 		return sb.toString();		

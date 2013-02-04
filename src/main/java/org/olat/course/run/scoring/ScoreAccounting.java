@@ -49,12 +49,10 @@ public class ScoreAccounting implements Visitor {
 	private UserCourseEnvironment userCourseEnvironment;
 
 	private boolean error;
-	private boolean childNotFoundError;
-	private boolean childNotOfAssessableTypeError;
 	private CourseNode evaluatingCourseNode;
 	private String wrongChildID;
 
-	private Map cachedScoreEvals = new HashMap();
+	private Map<AssessableCourseNode, ScoreEvaluation> cachedScoreEvals = new HashMap<AssessableCourseNode, ScoreEvaluation>();
 	private int recursionCnt;
 
 	/**
@@ -111,7 +109,7 @@ public class ScoreAccounting implements Visitor {
 				"stack overflow in scoreaccounting, probably circular logic: acn ="
 				+ cn.toString(), null);
 
-		ScoreEvaluation se = (ScoreEvaluation) cachedScoreEvals.get(cn);
+		ScoreEvaluation se = cachedScoreEvals.get(cn);
 		if (se == null) { // result of this node has not been calculated yet, do it
 			se = cn.getUserScoreEvaluation(userCourseEnvironment);
 			cachedScoreEvals.put(cn, se);
@@ -130,13 +128,11 @@ public class ScoreAccounting implements Visitor {
 		CourseNode foundNode = findChildByID(childId);
 		if (foundNode == null) {
 			error = true;
-			childNotFoundError = true;
 			wrongChildID = childId;
 			return new Float(-9999999.0f);
 		}
 		if (!(foundNode instanceof AssessableCourseNode)) {
 			error = true;
-			childNotOfAssessableTypeError = true;
 			wrongChildID = childId;
 			return new Float(-1111111.0f);
 		}
@@ -166,13 +162,11 @@ public class ScoreAccounting implements Visitor {
 		CourseNode foundNode = findChildByID(childId);
 		if (foundNode == null) {
 			error = true;
-			childNotFoundError = true;
 			wrongChildID = childId;
 			return Boolean.FALSE;
 		}
 		if (!(foundNode instanceof AssessableCourseNode)) {
 			error = true;
-			childNotOfAssessableTypeError = true;
 			wrongChildID = childId;
 			return Boolean.FALSE;
 		}

@@ -147,7 +147,7 @@ public class CourseGlossaryToolLinkController extends BasicController {
 			final CourseConfig cc = courseEnvir.getCourseConfig(); // do not cache cc, not save
 			
 			// if glossary had been opened from LR as Tab before, warn user:
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+			DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
 			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(cc.getGlossarySoftKey(), false);
 			DTab dt = dts.getDTab(repoEntry.getOlatResource());
 			if (dt != null) {

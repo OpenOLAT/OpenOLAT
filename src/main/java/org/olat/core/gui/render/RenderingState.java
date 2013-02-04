@@ -26,37 +26,18 @@
 
 package org.olat.core.gui.render;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.olat.core.gui.components.ComponentRenderer;
 
 /**
+ * Marker only
+ * 
+ * 
  * Initial Date:  13.10.2005 <br>
  * @author Felix Jost
  */
 public class RenderingState {
-	private Map renderinfo = new HashMap();
 	
-	/**
-	 * 
-	 * @param componentrenderer the classname of the renderer will be taken to generate a namespace per componentrenderer-class 
-	 * @param key
-	 * @param data
-	 */
-	public void putRenderInfo(ComponentRenderer componentrenderer, String key, Object data) {
-		renderinfo.put(componentrenderer.getClass().getName()+":"+key, data);
+	public RenderingState() {
+		//
 	}
-	
-	/**
-	 * 
-	 * @param componentrenderer
-	 * @param key
-	 * @return the object stored for the class of the componentrenderer and the given key
-	 */
-	public Object getRenderInfo(ComponentRenderer componentrenderer, String key) {
-		// componentrenderer is most performant by being a singleton per component class, but we rely on the class rather than on the instance
-		return renderinfo.get(componentrenderer.getClass().getName()+":"+key);
-	}
-	
+
 }

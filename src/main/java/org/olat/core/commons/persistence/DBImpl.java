@@ -617,7 +617,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	public Persistable loadObject(Persistable persistable, boolean forceReloadFromDB) {
 		if (persistable == null) throw new AssertException("persistable must not be null");
 		beginTransaction(persistable);
-		Persistable ret;
 		Class theClass = persistable.getClass();
 		if (forceReloadFromDB) {
 			// we want to reload it from the database.

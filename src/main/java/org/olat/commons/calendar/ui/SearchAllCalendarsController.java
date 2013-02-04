@@ -84,7 +84,6 @@ public class SearchAllCalendarsController extends BasicController {
 	
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == eventSelectionTree) {
-			TreeEvent te = (TreeEvent) event;
 			if (event.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) {
 				Date gotoDate = (Date)eventSelectionTree.getSelectedNode().getUserObject();
 				fireEvent(ureq, new GotoDateEvent(gotoDate));

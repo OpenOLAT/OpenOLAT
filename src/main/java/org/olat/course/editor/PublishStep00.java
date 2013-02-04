@@ -206,7 +206,6 @@ class PublishStep00 extends BasicStep {
 				String errors = "<UL>";
 				int errCnt = 0;
 				String warnings = "<UL>";
-				int warCnt = 0;
 				for (int i = 0; i < sds.length; i++) {
 					StatusDescription description = sds[i];
 					String nodeId = sds[i].getDescriptionForUnit();
@@ -222,7 +221,6 @@ class PublishStep00 extends BasicStep {
 						errCnt++;
 					} else if (description.isWarning()) {
 						warnings += "<LI>" + isFor + description.getShortDescription(ureq.getLocale()) + "</LI>";
-						warCnt++;
 					}
 				}
 				warnings += "</UL>";

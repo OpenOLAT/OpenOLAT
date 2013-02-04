@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElment;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
@@ -141,7 +140,6 @@ class ImportStep01 extends BasicStep {
 			colPos++;
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.lang"));
 			colPos++;
-			UserManager um = UserManager.getInstance();
 			// followed by all properties configured
 			// if only mandatory required: check for um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
 			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
@@ -154,7 +152,7 @@ class ImportStep01 extends BasicStep {
 
 			FlexiTableDataModel tableDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new Model(idents, colPos),
 					tableColumnModel);
-			FlexiTableElment fte = uifactory.addTableElement("newUsers", tableDataModel, formLayoutVertical);
+			uifactory.addTableElement("newUsers", tableDataModel, formLayoutVertical);
 
 		}
 

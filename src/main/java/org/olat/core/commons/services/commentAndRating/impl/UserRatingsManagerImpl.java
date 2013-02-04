@@ -93,8 +93,7 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 		query.setLong("resId", getOLATResourceable().getResourceableId());
 		query.setCacheable(true);
 		//
-		List results = query.list();
-		Double average = (Double) query.list().get(0);
+		Double average = (Double)query.list().get(0);
 		// When no ratings are found, a null value is returned!
 		if (average == null) return Float.valueOf(0);
 		else return average.floatValue();			

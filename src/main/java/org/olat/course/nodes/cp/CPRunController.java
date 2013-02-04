@@ -29,7 +29,6 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.Panel;
@@ -42,7 +41,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
@@ -72,8 +70,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class CPRunController extends BasicController implements ControllerEventListener, Activateable2 {
 	private static final OLog log = Tracing.createLoggerFor(CPRunController.class);
-	
-	private String attrFromStartpage;
 
 	private ModuleConfiguration config;
 	private File cpRoot;
@@ -110,14 +106,6 @@ public class CPRunController extends BasicController implements ControllerEventL
 		if (!CPEditController.isModuleConfigValid(config)) throw new AssertException("cprun controller had an invalid module config:"	+ config.toString());
 		this.config = config;
 		this.cpNode = cpNode;
-		this.attrFromStartpage  = "fromStartpage:" + cpNode.getIdent();
-		Object frmStrtPg = null;
-		//REVIEW:pb:2009-07-14:see OLAT-4166 problem with JumpIn no Window available during Constructor call.
-		if(Windows.getWindows(ureq)!=null && Windows.getWindows(ureq).getWindow(ureq)!=null)
-			frmStrtPg = Windows.getWindows(ureq).getWindow(ureq).getAttribute(attrFromStartpage);
-		if(frmStrtPg instanceof Boolean && (Boolean)frmStrtPg == Boolean.TRUE) {
-			Windows.getWindows(ureq).getWindow(ureq).removeAttribute(attrFromStartpage);
-		}
 		addLoggingResourceable(LoggingResourceable.wrap(cpNode));
 
 		// jump to either the forum or the folder if the business-launch-path says so.
@@ -148,7 +136,6 @@ public class CPRunController extends BasicController implements ControllerEventL
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showCPButton) { // those must be links
-			Windows.getWindows(ureq).getWindow(ureq).setAttribute(attrFromStartpage, Boolean.TRUE);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			doLaunch(ureq);
 		}

@@ -50,7 +50,7 @@ public class URIHelper {
 	private URI uri;
 	private String string;
 	private String query;
-	private Map params;
+	private Map<String, String> params;
 	private boolean modified;
 
 	public URIHelper(String str) throws URISyntaxException {
@@ -178,7 +178,7 @@ public class URIHelper {
 		if (query == null) return;
 		// build the map
 		modified = true;
-		params = new HashMap();
+		params = new HashMap<String,String>();
 
 		// Split off the given URL from its query string
 		StringTokenizer pairParser = new StringTokenizer(query, "&");
@@ -207,9 +207,9 @@ public class URIHelper {
 
 		// build the query string from parameter map
 		StringBuilder sb = new StringBuilder();
-		for (Iterator it = params.keySet().iterator(); it.hasNext();) {
-			String name = (String) it.next();
-			String value = (String) params.get(name);
+		for (Iterator<String> it = params.keySet().iterator(); it.hasNext();) {
+			String name = it.next();
+			String value = params.get(name);
 			if (value.length() == 0) continue;
 			sb.append(encode(name)).append('=').append(encode(value));
 			sb.append('&');

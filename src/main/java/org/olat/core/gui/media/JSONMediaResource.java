@@ -87,9 +87,6 @@ public class JSONMediaResource extends DefaultMediaResource {
 			}
 		}
 		return null;
-		// nputStream sis = new
-		// ByteArrayInputStream(json.toString().getBytes());
-		// return sis;
 	}
 
 }

@@ -1114,9 +1114,8 @@ public class CatalogController extends BasicController implements Activateable2 
 	private void updateToolAccessRights(UserRequest ureq, CatalogEntry ce, int pos) {
 		// 1) check if user has already a bookmark for this level
 		final CatalogEntry tmp=ce;
-		OLATResourceable catEntryOres = CatalogManager.getInstance().createOLATResouceableFor(ce);
 		//TODO bookmark
-		if (tmp != null/* &&  BookmarkManager.getInstance().isResourceableBookmarked(ureq.getIdentity(), catEntryOres)*/){
+		if (tmp != null){
 			canBookmark = false;
 			if(catalogToolC != null){
 				catalogToolC.setEnabled(TOOL_BOOKMARK, canBookmark);

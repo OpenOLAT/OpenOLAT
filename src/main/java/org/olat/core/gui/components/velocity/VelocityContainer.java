@@ -35,7 +35,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
 
 /**
  * Description: <br>
@@ -168,11 +167,7 @@ public class VelocityContainer extends Container {
 	 * @see org.olat.core.gui.components.Container#getExtendedDebugInfo()
 	 */
 	public String getExtendedDebugInfo() {
-		String webappContext = WebappHelper.getServletContextPath();
-		String url = "page:"+page+" "+super.getExtendedDebugInfo();
-		//url="<a href=&#34;gugus.html&#34;>halldfsdfolll</a>";
-		//ServletUtils.
-		return url;//"page:" + page + " ," + super.getExtendedDebugInfo();
+		return "page:"+page+" "+super.getExtendedDebugInfo();
 	}
 
 	public ComponentRenderer getHTMLRendererSingleton() {

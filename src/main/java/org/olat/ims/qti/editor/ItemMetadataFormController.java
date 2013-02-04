@@ -185,7 +185,7 @@ public class ItemMetadataFormController extends FormBasicController {
 
 		// Question Type
 		String typeName = getType();
-		StaticTextElement type = uifactory.addStaticTextElement("type", "form.imd.type", typeName, formLayout);
+		uifactory.addStaticTextElement("type", "form.imd.type", typeName, formLayout);
 
 		// Description
 		desc = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", item.getObjectives(), 8, -1, false, true, null, null,

@@ -27,9 +27,8 @@ package org.olat.core.gui.control.winmgr;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.io.IOUtils;
@@ -49,6 +48,7 @@ import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.guistack.GuiStackNiceImpl;
 import org.olat.core.gui.control.guistack.GuiStackSimpleImpl;
 import org.olat.core.gui.control.pushpoll.WindowCommand;
+import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.dev.controller.DevelopmentController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.intercept.InterceptHandler;
@@ -89,7 +89,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		
 	private String iframeName;
 	
-	private Map<String, Object> data = new HashMap<String, Object>(); // request-transient render-related data
+	private List<ZIndexWrapper> guiMessages = new ArrayList<ZIndexWrapper>(); // request-transient render-related data
 	
 	private transient List<GenericEventListener> cycleListeners = new CopyOnWriteArrayList<GenericEventListener>();
 	
@@ -337,7 +337,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		}
 		if (cycleEvent == Window.AFTER_VALIDATING) {
 			// clear the added data for this cycle
-			data.clear();
+			guiMessages.clear();
 		}
 		
 	}
@@ -352,11 +352,8 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		cycleListeners.remove(gel);
 	}
 
-	public Object getData(String key) {
-		return data.get(key);
-	}
-
-	public void putData(String key, Object value) {
-		data.put(key, value);
+	@Override
+	public List<ZIndexWrapper> getGuiMessages() {
+		return guiMessages;
 	}
 }

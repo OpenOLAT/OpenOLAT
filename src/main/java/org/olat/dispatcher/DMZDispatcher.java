@@ -303,7 +303,7 @@ public class DMZDispatcher implements Dispatcher {
 					String businessPath = (String) usess.removeEntryFromNonClearedStore(DMZDISPATCHER_BUSINESSPATH);
 					if (businessPath != null) {
 						List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
-						DTabs dts = (DTabs) window.getAttribute("DTabs");
+						DTabs dts = window.getDTabs();
 						dts.activate(ureq, null, ces);
 					}
 				}

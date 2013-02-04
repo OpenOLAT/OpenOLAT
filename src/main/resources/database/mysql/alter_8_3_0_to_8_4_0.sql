@@ -178,6 +178,8 @@ create or replace view o_as_eff_statement_members_strict_v as (
 );
 
 drop view o_re_member_v;
+drop view o_re_strict_participant_v;
+drop view o_re_strict_tutor_v;
 
 
 

@@ -171,7 +171,7 @@ public class NewControllerFactory extends LogDelegator {
 			logDebug("Found no window for jumpin => take WindowBackOffice", null);
 			window = wControl.getWindowBackOffice().getWindow();
 		}
-		DTabs dts = (DTabs) window.getAttribute("DTabs");
+		DTabs dts = window.getDTabs();
 		DTab dt = dts.getDTab(ores);
 		if (dt != null) {
 			// tab already open => close it

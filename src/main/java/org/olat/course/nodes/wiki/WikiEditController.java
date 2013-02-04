@@ -218,7 +218,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 			RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 			// Open editor in new tab
 			OLATResourceable ores = repositoryEntry.getOlatResource();
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+			DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
 			DTab dt = dts.getDTab(ores);
 			if (dt == null) {
 				// does not yet exist -> create and add
