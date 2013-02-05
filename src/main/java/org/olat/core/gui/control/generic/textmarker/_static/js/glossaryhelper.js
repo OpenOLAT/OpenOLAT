@@ -40,21 +40,17 @@ function o_gloss_setLastActiveGlossary(glossaryId){
  * 
  * March 2009  Roman Haag, roman.haag@frentix.com
  */
-function o_gloss_getUniqueTargetId(targetId){
+function o_gloss_getUniqueTargetId(targetId) {
 	var myhash = o_info["glosshash"];
-	if (myhash != null && myhash != undefined){
-		var hashnow = myhash.getEntryForKey(targetId);
-	} else {
-		var hashnow;
+	var hashnow = null;
+	if (myhash != null && myhash != undefined) {
+		hashnow = myhash.get(targetId);
 	}
-	
-	if(hashnow == undefined){	
-		debug ? console.log("hash->value not found for target: " + targetId): null;
+	if(hashnow == null) {	
 		var uniqId = ((new Date()).getTime() + "" + Math.floor(Math.random() * 1000000)).substr(0, 18);
-		myhash.addEntry(targetId,uniqId);
+		myhash.put(targetId,uniqId);
 	}
-		
-	return "o_gloss" + myhash.getEntryForKey(targetId);
+	return "o_gloss" + myhash.get(targetId);
 } 
  
 

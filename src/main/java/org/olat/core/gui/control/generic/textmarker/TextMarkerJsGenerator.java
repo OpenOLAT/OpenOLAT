@@ -76,10 +76,7 @@ public class TextMarkerJsGenerator {
 			ArrayList<String> allHighlightStrings = glossaryItem.getAllStringsToMarkup();
 			sb.append("new Array(\"");
 			for (Iterator<String> iterator2 = allHighlightStrings.iterator(); iterator2.hasNext();) {
-				String termFlexionSynonym = iterator2.next();
-				//fxdiff:  FXOLAT-235  fix quotationsmarks that break the js code
-				termFlexionSynonym = StringEscapeUtils.escapeJava(termFlexionSynonym);
-				
+				String termFlexionSynonym = StringEscapeUtils.escapeJava(iterator2.next());
 				sb.append(termFlexionSynonym);
 				sb.append("\"");
 				if (iterator2.hasNext()) {

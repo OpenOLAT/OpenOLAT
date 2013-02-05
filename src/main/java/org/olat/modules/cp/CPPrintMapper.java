@@ -159,17 +159,7 @@ public class CPPrintMapper implements Mapper {
 	private void injectJavascriptAndCss(StringBuilder output) {	
 		StringOutput sb = new StringOutput();
 		sb.append("\n<script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/prototype/prototype.js");
-		sb.append("\"></script><script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/ext/adapter/prototype/ext-prototype-adapter.js");
-		sb.append("\"></script><link rel=\"stylesheet\" type=\"text/css\" href=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/ext/resources/css/ext-all.css");
-		sb.append("\" /><script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/ext/pkgs/ext-core.js");
-		sb.append("\"></script><script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/ext/pkgs/ext-foundation.js");
-		sb.append("\"></script><script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/ext/pkgs/cmp-foundation.js");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-1.9.0.min.js");
 		sb.append("\"></script>");
 		output.append(sb.toString());
 		

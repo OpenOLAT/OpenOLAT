@@ -84,15 +84,11 @@ function o_tm_highlightFromArray(glossaryId, domId) {
 	debug ? console.log("running highlightFromArray(" + glossaryId + ", " + domId + ")") : null;
 	
 	try {
-	
-	//if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"running highlightFromArray(" + glossaryId + ", " + domId + ")" ,"glossarymarker.js");
-	
 		markerArray = new Array();
 		markerArray = eval(jQuery(document).data("o_glossaries")[glossaryId]);
 	
 		// do the highlighting on the given dom element
 		o_tm_doHighlightAll(document, markerArray, domId);
-
 	} catch (e) {
 	  	// catch any exception that might happen and do nothing. just in case
 	  	// something unexpected happens, make sure the text marker code does not break
@@ -106,8 +102,10 @@ function o_tm_highlightFromArray(glossaryId, domId) {
 		}
 	}
 	  
-	setTimeout(function() {  b_AddOnDomReplacementFinishedUniqueCallback( new Array("glosshighlighter", GlossaryHighlightCallback.highlightAfterDomReplace) ); },0);
-//	b_AddOnDomReplacementFinishedUniqueCallback( function(){ workedOnDom = []; } );
+	setTimeout(function() {
+		b_AddOnDomReplacementFinishedUniqueCallback( new Array("glosshighlighter", GlossaryHighlightCallback.highlightAfterDomReplace) );
+	},0);
+
 
 	isExecuting = false;	
 	}//isExecuting
@@ -155,16 +153,7 @@ function o_tm_doHighlightAll(currentDocument, markerArray, domId) {
 		  	foundTerms = [];
 		  	foundTerms = new Array();
 		  	workedOnSpans = [];
-		
-		  	
-		  	//enable/disable to have a hash as cache
-			/*  	o_info["glosshash"] = [];
-				  	var myhash = null;
-			  		myhash = $H(); 
-			  		o_info["glosshash"] = myhash; */
-			//
-		  	
-		  	
+
 		  	var highlightString = ""; 
 		  	for (var i = 0; i < markerArray.length; i++) {
 		  		var allTerms = markerArray[i];
@@ -209,65 +198,33 @@ function o_tm_doHighlightAll(currentDocument, markerArray, domId) {
  */
 function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 	try {
-		debug ? console.log("######### new tooltip for " + glossaryMainTerm + " and occurrence #" + occurrence + " of word " + highlightString): null;
-		debug ? console.log("Ext is ready: " + Ext.isReady): null;
 		var mapperPath = o_gloss_getDefinitionMapperPath() + "/" + o_gloss_getGlossaryId() + '/';
 		var targetId = 'gloss' + glossaryMainTerm + '' + highlightString + '' + occurrence;
 		targetId = mainwindow.o_gloss_getUniqueTargetId(targetId);
 		
 		//prevent adding tip twice or more!
 		if (workedOnSpans.indexOf(targetId) == -1){
-				workedOnSpans.push(targetId);
+			workedOnSpans.push(targetId);
 			
-			var tipname = targetId + '_tip';
-			var tip = $(tipname)
-			debug ? console.log("existing tip: " + tip): null;
-			
-			var oldtip = Ext.getCmp(tipname);
-			debug ? console.log("old tip: " + oldtip): null;
-			if (oldtip) {
-				oldtip.destroy();
-				debug ? console.log("destroy tip!!"): null; 
-				var oldtip_d = Ext.getCmp(tipname);
-				debug ? console.log("destroyed tip: " + oldtip_d): null;
-			}
-	
-			var targetChk = $(targetId);
-			var targetChkExt = Ext.get(targetId);
-			debug ? console.log("targetChk : " + targetChkExt): null;
-			debug ? console.log("scope " + document.title): null;
-			if (targetChk){
-				debug ? console.log("tooltip for " + glossaryMainTerm + " and targetId " + targetId + " of path " + mapperPath): null;
-				targetChkExt.removeAllListeners();
+			var tip = jQuery('#' + targetId + '_tip');
+			var targetChk = jQuery('#' + targetId);
+			if (targetChk) {
 
-				Ext.Ajax.request({
-					url: mapperPath + glossaryMainTerm + '.html',
-					disableCaching: true,
-					success: function(response, opts) {
-						if(response.status == 200) {
-							new Ext.ToolTip({
-								target: targetId,
-								id: targetId + '_tip',
-								minWidth: 250,
-								dismissDelay: 0,
-								constrainPosition: true,
-								html: response.responseText
-							});
-					   }  
-					}
+				var glossUrl = mapperPath + glossaryMainTerm + '.html';
+				targetChk.tooltip({
+					items: '#' + targetId,
+					content: function(evt, ui) {
+				        var elem = jQuery(this);
+				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {
+				        	elem.tooltip('option', 'content', data).tooltip('open');
+				         });
+				    }
 				});
-
-				debug ? console.log("neutip ID: " + neutip.getId()): null;
-				debug ? console.log("target ev id after creating tip: " + targetChk._prototypeEventID): null;
-		    } 		    
-		} else {
-			debug ? console.log("already worked on " + targetId): null;
+		    }
 		}
+    } catch(e) {
+    	console.log("error: " + e);
     }
-    catch(e){
-    	debug ? console.log("error: " + e): null;
-    }
-   
 } 
  
  
@@ -280,7 +237,9 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
  * August 2006 Florian Gnägi
  */
 function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {
+	
 	highlightEndTag  = "</span>";
+	
   
   // find all occurences of the search term in the given text,
   // and add some "highlight" tags to them (we're not using a
@@ -295,10 +254,10 @@ function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {
   var occurrence = 0;
   // prevent highlighting in buggy IE when a movieplayer is used or in some TinyMCE-cases
   // see OLAT-5447 for more infos
-  if(bodyText.indexOf('BGlossarIgnore') > 0  || ( Ext.isIE && bodyText.indexOf('olatFlashMovieViewer') > 0)) {
+  if(bodyText.indexOf('BGlossarIgnore') > 0  || (jQuery.browser.msie && bodyText.indexOf('olatFlashMovieViewer') > 0)) {
   	return bodyText;
   }
-  
+
   while (bodyText.length > 0) {
 	i = lcBodyText.indexOf(lcSearchTerm, i+1);
 	// Finish when search term is not found
@@ -322,6 +281,7 @@ function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {
 			|| char == ">" || char == "\"" || char == "'" || char == "`" || char == "(" || char == "["  || char == "{"  || char == "-") )		
 			continue;
 	}
+
 	if (lcBodyText.length > i + searchTerm.length) {
 		// check character right after the the search term
 		char = lcBodyText.charAt(i + searchTerm.length);
@@ -349,10 +309,8 @@ function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {
 	lcBodyText = bodyText.toLowerCase();
 	i = -1;
   }
-  
   return newText;
 }
-
 
 /*
  * creates an identifier to use for highlighting 
