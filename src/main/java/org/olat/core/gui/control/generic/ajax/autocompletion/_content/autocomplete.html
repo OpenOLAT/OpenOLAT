@@ -20,83 +20,38 @@
 <script type="text/javascript">
 /* <![CDATA[ */ 
 jQuery(function(){
-	jQuery('#$r.getId("b_autocomplete_input")').autocomplete({
+	var myAuto = jQuery('#$r.getId("b_autocomplete_input")').autocomplete({
 		minLength: 3,
-		source: '$mapuri',
+		source: function( request, response ) {
+			jQuery.ajax({
+				url: '$mapuri',
+				data: request,
+				dataType: "json",
+				success: function( data ) {
+					response(jQuery.map( data, function( item ) {
+						return {
+							label: item.value,
+							username: item.displayKey,
+							cssClass: item.cssClass,
+							value: item.key
+						}
+					}));
+				}
+	    });
+	  },
 		select: function( event, ui ) {
-			console.log(event, ui);
-			return true;
+			$r.javaScriptBgCommand("select") + '?key=' + ui.item.value;
+			return false;
 		}
-	})/*.data("autocomplete")._renderItem = function( ul, item ) {
-		return jQuery("<li>")
-			.append("<div class='b_form_auto_completer_item search-item " + item.cssClass + "'>")
-      .append("<span class='b_value'>" + item.value + "</span>")
-      .appendTo(ul);
-	}*/;
-	
-	
-	
-
-	
-	/*
-    var dataStore = new Ext.data.Store({
-        proxy: new Ext.data.ScriptTagProxy({
-            url: '$mapuri'
-        }),
-        reader: new Ext.data.JsonReader({
-            root: 'rows',
-            totalProperty: 'results',
-            id: 'key'
-        }, [
-            {name: 'key', mapping: 'key'},
-            {name: 'displayKey', mapping: 'displayKey'},
-            {name: 'value', mapping: 'value'},
-            {name: 'cssClass', mapping: 'cssClass'}
-        ])
-    });
-	*/
-	
-    ## The auto completer input field element
-   /* var comboBox = new Ext.form.ComboBox({
-        store: dataStore,
-        typeAhead: false,
-        hideTrigger: true,
-        minChars : $minChars,
-        ## Note when you use the pageing feature you get a conflict with ServletUtil.isFlashPseudoStreaming() 
-        ## which tests for a start parameter which is used by the pageing as well. Set to 0 to disable feature.
-        pageSize: 0,  
-        loadingText: '$r.translate("autocomplete.searching")',
-        tpl: new Ext.XTemplate('<tpl for="."><div class="b_form_auto_completer_item search-item {cssClass}">','#if($showDisplayKey)<span class=\'b_key\'>{displayKey}: </span>#end<span class=\'b_value\'>{value}</span>','</div></tpl>'),
-        itemSelector: 'div.search-item',
-        applyTo: '$r.getId("b_autocomplete_input")'
-    });*/
-	## Put combobox into managed object map to access it later on
-	//o_info.objectMap.addEntry('${r.getId("autocompleterCombobox")}', comboBox);
-	##comboBox.on('destroy', function() {console.log('destroying ${r.getId("autocompleterCombobox")}')});
-
-	## Add some event listeners
-    ## Fire selection back to controller
-    /*comboBox.on('select', function(combo, record, index){ 
-        	## Send event to controller with selected key
-            $r.javaScriptBgCommand("select") + '?key=' + record.data.key;
-        }
-    );*/
-    ## When the result list is showed, check if the input field is still visible
-    ## When user enters fast and presses enter, the search might have been triggered
-    ## by the form submit and the combo box result list is showed delayed. In this case
-    ## don't expand
-    /*comboBox.on('expand', function(combo) {
-    		##console.log('Expand');
-	    	var elem=document.getElementById('${r.getId("aj_ac_f")}'); 
-    		##console.log('Expand', elem);
-	    	if (!elem) combo.collapse();
-	    	elem = null;
-    	}
-    );  */      
-
-    ## Help GC
-    //dataStore = null;
-    //comboBox = null;
+	}).data("uiAutocomplete")._renderItem = function(ul, item) {
+    var itemVal = "<a><div class='b_form_auto_completer_item search-item " + item.cssClass + "'>";
+    #if($showDisplayKey)
+			itemVal += "<span class=\'b_key\'>" + item.username + ": </span>";
+		#end
+		itemVal += "<span class='b_value'>" + item.label + "</span>";
+    itemVal += "</div></a>";
+    return jQuery("<li>").append(itemVal).appendTo(ul);
+	};
 });
 /* ]]> */
 </script>

@@ -63,6 +63,13 @@ public class JSONMediaResource extends DefaultMediaResource {
 	public void prepare(HttpServletResponse hres) {
 		super.prepare(hres);
 		try {
+			hres.setCharacterEncoding(encoding);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		
+		try {
 			if(jsonObject != null) {
 				jsonObject.write(hres.getWriter());
 			} else if(jsonArray != null) {
