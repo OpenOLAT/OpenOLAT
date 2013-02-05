@@ -30,11 +30,8 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -58,7 +55,6 @@ import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.LogDelegator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -78,7 +74,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	private EntityManagerFactory emf = null;
 
 	private final ThreadLocal<ThreadLocalData> data = new ThreadLocal<ThreadLocalData>();
-	private OLog forcedLogger;
 	// Max value for commit-counter, values over this limit will be logged.
 	private static int maxCommitCounter = 10;
 
@@ -103,9 +98,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		private int accessCounter = 0;
 		// count number of commit in db-session, used to log warn 'Call more than one commit in a db-session'
 		private int commitCounter = 0;
-
-		// transaction listeners
-		private Set<ITransactionListener> transactionListeners_ = null;
 		
 		private ThreadLocalData() {
 		// don't let any other class instantiate ThreadLocalData.
@@ -152,51 +144,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 
 		protected void resetCommitCounter() {
 			this.commitCounter = 0;
-		}	
-		
-		protected void addTransactionListener(ITransactionListener txListener) {
-			if (transactionListeners_==null) {
-				transactionListeners_ = new HashSet<ITransactionListener>();
-			}
-			transactionListeners_.add(txListener);
-		}
-		
-		protected void removeTransactionListener(ITransactionListener txListener) {
-			if (transactionListeners_==null) {
-				// can't remove then - never mind
-				return;
-			}
-			transactionListeners_.remove(txListener);
-		}
-		
-		protected void handleCommit(DB db) {
-			if (transactionListeners_==null) {
-				//  nobody to be notified
-				return;
-			}
-			for (Iterator<ITransactionListener> it = transactionListeners_.iterator(); it.hasNext();) {
-				ITransactionListener listener = it.next();
-				try{
-					listener.handleCommit(db);
-				} catch(Exception e) {
-					logWarn("ITransactionListener threw exception in handleCommit:", e);
-				}
-			}
-		}
-
-		protected void handleRollback(DB db) {
-			if (transactionListeners_==null) {
-				//  nobody to be notified
-				return;
-			}
-			for (Iterator<ITransactionListener> it = transactionListeners_.iterator(); it.hasNext();) {
-				ITransactionListener listener = it.next();
-				try{
-					listener.handleRollback(db);
-				} catch(Exception e) {
-					logWarn("ITransactionListener threw exception in hanldeRollback:", e);
-				}
-			}
 		}
 	}
 
@@ -301,7 +248,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			if (Settings.isJUnitTest()) {
 				if (isLogDebugEnabled()) logDebug("Call commit", null);
 				getTransaction().commit(); 
-				getData().handleCommit(this);
 			} else {
 				if (isLogDebugEnabled()) logDebug("Call commit", null);
 				throw new AssertException("Close db-session with un-committed transaction");
@@ -692,7 +638,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 					}
 				}
 				getTransaction().commit();
-				getData().handleCommit(this);
 				if (isLogDebugEnabled()) logDebug("Commit DONE hasTransaction()=" + hasTransaction(), null);
 			} else {
 				if (isLogDebugEnabled()) logDebug("Call commit without starting transaction", null );
@@ -709,7 +654,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			try {
 				if (hasTransaction() && !getTransaction().isRolledBack()) {
 					getTransaction().rollback();
-					getData().handleRollback(this);
 				}
 			} catch (Error er) {
 				logError("Uncaught Error in DBImpl.commit.catch(Exception).", er);
@@ -733,7 +677,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			if (isConnectionOpen() && hasTransaction() && getTransaction().isInTransaction() ) {
 				if (isLogDebugEnabled()) logDebug("Call rollback", null);
 				getTransaction().rollback();
-				getData().handleRollback(this);
 			}
 		} catch (Exception ex) {
 			logWarn("Could not rollback transaction!",ex);
@@ -787,16 +730,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 */
 	public void intermediateCommit() {
 		this.commit();
-		getData().handleCommit(this);
 		this.closeSession();
-	}
-	
-	public void addTransactionListener(ITransactionListener listener) {
-		getData().addTransactionListener(listener);
-	}
-	
-	public void removeTransactionListener(ITransactionListener listener) {
-		getData().removeTransactionListener(listener);
 	}
 
 	/**
@@ -806,69 +740,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		// see closeSession() and OLAT-4318: more robustness with commit/rollback/close, therefore
 		// we check if the connection is open at this stage at all
 		return isConnectionOpen() && hasTransaction() && !getTransaction().isRolledBack() && getTransaction().isInTransaction();
-	}
-
-	/** temp debug only **/
-	public void forceSetDebugLogLevel(boolean enabled) {
-		if (!enabled) {
-			forcedLogger = null;
-			return;
-		}
-		forcedLogger = new OLog() {
-
-			public void audit(String logMsg) {
-				Tracing.logAudit(logMsg, DBImpl.class);
-			}
-
-			public void audit(String logMsg, String userObj) {
-				Tracing.logAudit(logMsg, userObj, DBImpl.class);
-			}
-
-			public void debug(String logMsg, String userObj) {
-				Tracing.logInfo(logMsg, userObj, DBImpl.class);
-			}
-
-			public void debug(String logMsg) {
-				Tracing.logInfo(logMsg, DBImpl.class);
-			}
-
-			public void error(String logMsg, Throwable cause) {
-				Tracing.logError(logMsg, cause, DBImpl.class);
-			}
-
-			public void error(String logMsg) {
-				Tracing.logError(logMsg, DBImpl.class);
-			}
-
-			public void info(String logMsg, String userObject) {
-				Tracing.logInfo(logMsg, userObject, DBImpl.class);
-			}
-
-			public void info(String logMsg) {
-				Tracing.logInfo(logMsg, DBImpl.class);
-			}
-
-			public boolean isDebug() {
-				return true;
-			}
-
-			public void warn(String logMsg, Throwable cause) {
-				Tracing.logWarn(logMsg, cause, DBImpl.class);
-			}
-
-			public void warn(String logMsg) {
-				Tracing.logWarn(logMsg, DBImpl.class);
-			}
-			
-		};
-	}
-	
-	protected OLog getLogger() {
-		if (forcedLogger==null) {
-			return super.getLogger();
-		} else {
-			return forcedLogger;
-		}
 	}
 	
 	/**
