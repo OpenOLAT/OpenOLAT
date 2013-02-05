@@ -42,13 +42,14 @@ import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
  */
 public class SelectSearchBusinessGroupController extends AbstractBusinessGroupListController {
 	
+	private final boolean restricted;
 	private final BusinessGroupSearchController searchController;
 	
-	public SelectSearchBusinessGroupController(UserRequest ureq, WindowControl wControl) {
+	public SelectSearchBusinessGroupController(UserRequest ureq, WindowControl wControl, boolean restricted) {
 		super(ureq, wControl, "group_list_search");
-
+		this.restricted = restricted;
 		//search controller
-		searchController = new BusinessGroupSearchController(ureq, wControl, isAdmin(), true, false);
+		searchController = new BusinessGroupSearchController(ureq, wControl, isAdmin(), restricted, false);
 		listenTo(searchController);
 		mainVC.put("search", searchController.getInitialComponent());
 	}
@@ -127,7 +128,7 @@ public class SelectSearchBusinessGroupController extends AbstractBusinessGroupLi
 		} else {
 			SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
 			//security
-			if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()
+			if(restricted && !params.isAttendee() && !params.isOwner() && !params.isWaiting()
 					&& (params.getPublicGroups() == null || !params.getPublicGroups().booleanValue())) {
 				params.setOwner(true);
 				params.setAttendee(true);

@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.control.generic.closablewrapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -106,11 +105,7 @@ public class CloseableModalController extends DefaultController {
 				// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.
 				// the windowbackoffice doesn't know about guimessages, it is only a container that keeps them for one render cycle
 				WindowBackOffice wbo = getWindowControl().getWindowBackOffice();
-				List<ZIndexWrapper> zindexed = (List<ZIndexWrapper>) wbo.getData("guimessage");
-				if (zindexed == null) {
-					zindexed = new ArrayList<ZIndexWrapper>(3);
-					wbo.putData("guimessage", zindexed);
-				}
+				List<ZIndexWrapper> zindexed = wbo.getGuiMessages();
 				zindexed.add(new ZIndexWrapper(guiMsgPlace, 20));
 			}
 		};

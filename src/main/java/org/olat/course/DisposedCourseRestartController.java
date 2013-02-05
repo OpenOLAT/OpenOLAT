@@ -83,7 +83,7 @@ public class DisposedCourseRestartController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == restartLink) {
-			DTabs dts = (DTabs) getWindowControl().getWindowBackOffice().getWindow().getAttribute("DTabs");
+			DTabs dts = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
 			OLATResourceable ores = OLATResourceManager.getInstance().findResourceable(
 					courseRepositoryEntry.getOlatResource().getResourceableId(), courseRepositoryEntry.getOlatResource().getResourceableTypeName());
 			if(ores==null) {

@@ -41,6 +41,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
@@ -77,19 +78,17 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.context.BGContext2Resource;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.model.RepositoryEntryMember;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.repository.model.RepositoryEntryStrictMember;
-import org.olat.repository.model.RepositoryEntryStrictParticipant;
-import org.olat.repository.model.RepositoryEntryStrictTutor;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
@@ -1069,7 +1068,8 @@ public class RepositoryManager extends BasicManager {
 	 * @param desc Limit search to description. Can be NULL
 	 * @return List of repository entries
 	 */	
-	public List<RepositoryEntry> queryReferencableResourcesLimitType(Identity identity, Roles roles, List resourceTypes, String displayName, String author, String desc) {
+	public List<RepositoryEntry> queryReferencableResourcesLimitType(Identity identity, Roles roles, List<String> resourceTypes,
+			String displayName, String author, String desc) {
 		if (identity == null) {
 			throw new AssertException("identity can not be null!");
 		}
@@ -1077,7 +1077,12 @@ public class RepositoryManager extends BasicManager {
 			// if user has no author right he can not reference to any resource at all
 			return new ArrayList<RepositoryEntry>();
 		}
-
+		return queryResourcesLimitType(identity, resourceTypes, displayName, author, desc);
+	}
+		
+	public List<RepositoryEntry> queryResourcesLimitType(Identity identity, List<String> resourceTypes,
+			String displayName, String author, String desc) {
+			
 		// cleanup some data: use null values if emtpy
 		if (resourceTypes != null && resourceTypes.size() == 0) resourceTypes = null;
 		if ( ! StringHelper.containsNonWhitespace(displayName)) displayName = null;
@@ -1105,9 +1110,18 @@ public class RepositoryManager extends BasicManager {
 		// be to large (does not work when more than 100 repo entries present!)
 		query.append(" ownerGroup = sgmsi.securityGroup"); 
 		// restrict on ownership or referencability flag
-		query.append(" and ( sgmsi.identity = :identity "); 
-		query.append(" or ");
-		query.append(" (v.access >= :access and v.canReference = true) )");				
+		query.append(" and (");
+		
+		int access;
+		if(identity != null) {
+			access = RepositoryEntry.ACC_OWNERS_AUTHORS;
+			query.append(" sgmsi.identity = :identity  or (v.access>=:access and v.canReference = true) ");
+		} else {
+			access = RepositoryEntry.ACC_OWNERS;
+			query.append(" v.access>=:access ");
+		}
+		query.append("   ");		
+		query.append(" )");
 		// restrict on type
 		if (resourceTypes != null) {
 			query.append(" and res.resName in (:resourcetypes)");
@@ -1135,23 +1149,24 @@ public class RepositoryManager extends BasicManager {
 		}
 		
 		// create query an set query data
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
-		dbquery.setEntity("identity", identity);
-		dbquery.setInteger("access", RepositoryEntry.ACC_OWNERS_AUTHORS);
+		TypedQuery<RepositoryEntry> dbquery = this.dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class);
+		if(identity != null) {
+			dbquery.setParameter("identity", identity);
+		}
+		dbquery.setParameter("access", access);
 		if (author != null) {
-			dbquery.setString("author", author);
+			dbquery.setParameter("author", author);
 		}
 		if (displayName != null) {
-			dbquery.setString("displayname", displayName);
+			dbquery.setParameter("displayname", displayName);
 		}
 		if (desc != null) {
-			dbquery.setString("desc", desc);
+			dbquery.setParameter("desc", desc);
 		}
 		if (resourceTypes != null) {
-			dbquery.setParameterList("resourcetypes", resourceTypes, StandardBasicTypes.STRING);
+			dbquery.setParameter("resourcetypes", resourceTypes);
 		}
-		return dbquery.list();		
-		
+		return dbquery.getResultList();		
 	}
 
 	
@@ -1339,20 +1354,35 @@ public class RepositoryManager extends BasicManager {
 	//fxdiff VCRP-1,2: access control
 	public boolean isMember(Identity identity, RepositoryEntry entry) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
-			.append(" where v.key=:repositoryEntryKey and v.key in (")
-			.append("   select vmember.key from ").append(RepositoryEntryMember.class.getName()).append(" vmember")
-			.append("   where vmember.key=:repositoryEntryKey and ")
-			.append("     (vmember.repoParticipantKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.repoOwnerKey=:identityKey")
-			.append("     or vmember.groupParticipantKey=:identityKey or vmember.groupOwnerKey=:identityKey)")
+		sb.append("select re.key, ident.key ")
+		  .append("from ").append(RepositoryEntry.class.getName()).append(" as re, ")
+		  .append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append("where ident.key=:identityKey and re.key=:repositoryEntryKey ")
+		  .append(" and (exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where ident=vmember.identity and vmember.securityGroup=re.participantGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where ident=vmember.identity and vmember.securityGroup=re.tutorGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+			.append("     where ident=vmember.identity and vmember.securityGroup=re.ownerGroup")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+			.append("      ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+			.append("      ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+			.append("      where bgroup.partipiciantGroup=vmember.securityGroup and re.olatResource=bresource.resource ")
+			.append("        and bgroup=bresource.group and ident=vmember.identity")
+			.append("  ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+			.append("      ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+			.append("      ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+			.append("      where bgroup.ownerGroup=vmember.securityGroup and re.olatResource=bresource.resource ")
+			.append("        and bgroup=bresource.group and ident=vmember.identity")
+			.append("  )")
 			.append(" )");
 
-		Number counter = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+		List<Object[]> counter = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getSingleResult();
-		return counter.intValue() > 0;
+				.getResultList();
+		return !counter.isEmpty();
 	}
 	
 	/**
@@ -1922,17 +1952,37 @@ public class RepositoryManager extends BasicManager {
 	 */
 	 //fxdiff VCRP-1,2: access control of resources
 	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(400);
-		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
+		StringBuilder sb = new StringBuilder(1200);
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" left join fetch v.ownerGroup as ownerGroup ")
+		  .append(" inner join fetch v.participantGroup as participantGroup ")
+		  .append(" left join fetch v.tutorGroup as tutorGroup ")
+		  .append("where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" and (")
+		  .append(" exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=participantGroup)")
+		  .append(" or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+		  .append("   ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+		  .append("   ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+		  .append("   where bgroup.partipiciantGroup=vmember.securityGroup and res=bresource.resource and bgroup=bresource.group and vmember.identity=:identityKey")
+		  .append("  )")
+		  .append(" )");
+
+		/* query based on permission
+		StringBuilder sb3 = new StringBuilder(400);
+		sb3.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join fetch v.olatResource as res")
 			.append(" left join fetch v.ownerGroup as ownerGroup")
 			.append(" inner join fetch v.participantGroup as participantGroup")
 			.append(" left join fetch v.tutorGroup as tutorGroup")
-			.append(" where v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictParticipant.class.getName()).append(" vmember")
-			.append("   where (vmember.repoParticipantKey=:identityKey or vmember.groupParticipantKey=:identityKey)")
+			.append(" where exists (from ").append(PolicyImpl.class.getName()).append(" as poi,")
+			.append("   ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi")
+			.append("   where sgmsi.identity.key=:identityKey and sgmsi.securityGroup=poi.securityGroup")
+			.append("   and poi.permission='access' and poi.olatResource=res")
 			.append(" ))");
-		appendOrderBy(sb, "v", orderby);
-
+		*/
+		
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
@@ -1940,7 +1990,7 @@ public class RepositoryManager extends BasicManager {
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		List<RepositoryEntry> repoEntries = query.getResultList();	
+		List<RepositoryEntry> repoEntries = query.getResultList();
 		return repoEntries;
 	}
 	
@@ -1952,21 +2002,25 @@ public class RepositoryManager extends BasicManager {
 	 * @param identity
 	 * @return list of RepositoryEntries
 	 */
-	public int countLearningResourcesAsTeacher(Identity identity) {
-		StringBuilder sb = new StringBuilder(400);
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
-			.append(" inner join v.olatResource as res ");
-		whereClauseLearningResourcesAsTeacher(sb);
-		
+	public boolean hasLearningResourcesAsTeacher(Identity identity) {
+		/*
+		StringBuilder sb = new StringBuilder(1200);
+		sb.append("select count(v.key) from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join v.olatResource as res ")
+			.append(" left join v.ownerGroup as ownerGroup")
+			.append(" left join v.tutorGroup as tutorGroup");
+		whereClauseLearningResourcesAsTeacher(sb);	
 		Number count = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
 				.getSingleResult();
-		return count.intValue();
+		*/
+		List<RepositoryEntry> repos = getLearningResourcesAsTeacher(identity, 0, 1);
+		return !repos.isEmpty();
 	}
 	
 	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(400);
+		StringBuilder sb = new StringBuilder(1200);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join fetch v.olatResource as res ")
 			.append(" left join fetch v.ownerGroup as ownerGroup")
@@ -1991,7 +2045,9 @@ public class RepositoryManager extends BasicManager {
 	 * @param sb
 	 */
 	private final void whereClauseLearningResourcesAsTeacher(StringBuilder sb) {
-		sb.append(" where v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictTutor.class.getName()).append(" vmember")
+		/*
+		StringBuilder s2 = new StringBuilder();
+		s2.append(" where v.key in (select distinct(vmember.key) from ").append(RepositoryEntryStrictTutor.class.getName()).append(" vmember")
 			.append("   where (vmember.repoOwnerKey=:identityKey or vmember.repoTutorKey=:identityKey or vmember.groupOwnerKey=:identityKey)")   
 			.append(" )")
 			.append(" or ")
@@ -2003,6 +2059,20 @@ public class RepositoryManager extends BasicManager {
 			.append("   and poi.permission = 'bgr.editor' and poi.olatResource = ori")
 			.append("   and groupRelation.resource=ori")
 		  .append(" )");
+		*/
+		
+	  sb.append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+	  	.append(" and (exists (from ").append(PolicyImpl.class.getName()).append(" as poi,")
+			.append("   ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi")
+			.append("   where sgmsi.identity.key=:identityKey and sgmsi.securityGroup=poi.securityGroup")
+			.append("   and poi.permission='bgr.editor' and poi.olatResource=res")
+	    .append(" ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+	    .append("     where vmember.identity.key=:identityKey and (vmember.securityGroup=tutorGroup or vmember.securityGroup=ownerGroup)")
+	    .append(" ) or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+	    .append("   ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+	    .append("   ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+	    .append("   where bgroup.ownerGroup=vmember.securityGroup and res=bresource.resource and bgroup=bresource.group and vmember.identity=:identityKey")
+	    .append(" ))");
 	}
 	
 	/**

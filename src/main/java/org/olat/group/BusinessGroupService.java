@@ -285,7 +285,7 @@ public interface BusinessGroupService {
 	
 	public void addResourcesTo(List<BusinessGroup> groups, List<RepositoryEntry> resources);
 	
-	public void removeResourceFrom(BusinessGroup group, RepositoryEntry re);
+	public void removeResourceFrom(List<BusinessGroup> group, RepositoryEntry re);
 	
 	public void removeResource(OLATResource resource);
 	

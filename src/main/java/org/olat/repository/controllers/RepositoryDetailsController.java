@@ -805,7 +805,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		OLATResourceable ores = repositoryEntry.getOlatResource();
 		
 		//was brasato:: DTabs dts = getWindowControl().getDTabs();
-		DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+		DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
 		DTab dt = dts.getDTab(ores);
 		if (dt == null) {
 			// does not yet exist -> create and add

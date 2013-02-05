@@ -708,7 +708,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 		listenTo(cmc);
 	}
 	
-	private List<BusinessGroup> toBusinessGroups(UserRequest ureq, List<BGTableItem> items, boolean editableOnly) {
+	protected List<BusinessGroup> toBusinessGroups(UserRequest ureq, List<BGTableItem> items, boolean editableOnly) {
 		List<Long> groupKeys = new ArrayList<Long>();
 		for(BGTableItem item:items) {
 			groupKeys.add(item.getBusinessGroupKey());

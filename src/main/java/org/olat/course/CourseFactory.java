@@ -28,7 +28,6 @@ package org.olat.course;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -146,11 +145,11 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class CourseFactory extends BasicManager {
 		
 	private static CacheWrapper loadedCourses;
-	private static ConcurrentHashMap <Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap <Long, ModifyCourseEvent>();
+	private static ConcurrentHashMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<Long, ModifyCourseEvent>();
 
 	public static final String COURSE_EDITOR_LOCK = "courseEditLock";
   //this is the lock that must be aquired at course editing, copy course, export course, configure course.
-	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new HashMap<Long,PersistingCourseImpl>();
+	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<Long,PersistingCourseImpl>();
 	private static OLog log = Tracing.createLoggerFor(CourseFactory.class);
 	private static RepositoryManager repositoryManager;
 	private static OLATResourceManager olatResourceManager;

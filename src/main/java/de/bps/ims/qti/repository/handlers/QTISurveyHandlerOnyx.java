@@ -66,7 +66,7 @@ class QTISurveyHandlerOnyx extends QTISurveyHandler {
 	private static final boolean DOWNLOADEABLE = true;
 	private static final boolean EDITABLE = true;
 
-	static List supportedTypes;
+	static List<String> supportedTypes;
 
 	/**
 	 * Default constructor.
@@ -78,48 +78,57 @@ class QTISurveyHandlerOnyx extends QTISurveyHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(1);
+		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(SurveyFileResource.TYPE_NAME);
 	}
 	
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
 	 */
-	public boolean supportsLaunch() { return LAUNCHEABLE; }
+	public boolean supportsLaunch() {
+		return LAUNCHEABLE;
+	}
 
 	//<OLATCE-1025>	
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-	public boolean supportsDownload() { return DOWNLOADEABLE; }
+	public boolean supportsDownload() {
+		return DOWNLOADEABLE;
+	}
+	
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
 	 */
+	@Override
 	public boolean supportsEdit(RepositoryEntry repoEntry) {
 		if (OnyxModule.isOnyxTest(repoEntry.getOlatResource())) {
 			return false;
 		}
 		return EDITABLE; 
-		}
-	//</OLATCE-1025>	
-	
-	//<OLATCE-1025>	
-	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
-		return (MainLayoutController) getLaunchController( res,  ureq,  wControl);
 	}
 	//</OLATCE-1025>	
-	
+
+	//<OLATCE-1025>	
+
+	//</OLATCE-1025>	
+	@Override
+	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+		return (MainLayoutController)getLaunchController( res,  ureq,  wControl);
+	}
+
 	/**
 	 * @param res
 	 * @param ureq
 	 * @param wControl
 	 * @return Controller
 	 */
+	@Override
 	public Controller getLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 	//<OLATCE-1025>	
 		if (OnyxModule.isOnyxTest(res)) {
@@ -142,6 +151,7 @@ class QTISurveyHandlerOnyx extends QTISurveyHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		//<OLATCE-1025>	
 		if (OnyxModule.isOnyxTest(res)) {
@@ -149,38 +159,26 @@ class QTISurveyHandlerOnyx extends QTISurveyHandler {
 		} else {
 			return super.createEditorController(res, ureq, wControl);
 		}
-		
-//		SurveyFileResource fr = new SurveyFileResource();
-//		fr.overrideResourceableId(res.getResourceableId());
-//		
-//		//check if we can edit in restricted mode -> only typos 
-//		ReferenceManager refM = ReferenceManager.getInstance();
-//		List referencees = refM.getReferencesTo(res);
-//		//String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
-//		//boolean restrictedEdit = referencesSummary != null;
-//		QTIEditorMainController editor =  new QTIEditorMainController(referencees,ureq, wControl, fr);
-//		if (editor.isLockedSuccessfully()) {
-//			return editor;
-//		} else {
-//			return null;
-//		}
 		//</OLATCE-1025>	
 	}
 
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback, java.lang.Object, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
 		if (userObject == null || userObject.equals(RepositoryAddController.PROCESS_ADD))
 			return new AddFileResourceController(callback, supportedTypes, new String[] {"zip"}, ureq, wControl);
 		else//RepositoryAddController.PROCESS_NEW
 			return new AddNewQTIDocumentController(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, callback, ureq, wControl);
 	}
-	
+
+	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_qtisurvey_"; 
 	}
-	
+
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}

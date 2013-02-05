@@ -178,7 +178,6 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 		HashSet<OLATResourceable> oresList = new HashSet<OLATResourceable>();
 		for (Iterator<Tag> iterator = resList.iterator(); iterator.hasNext();) {
 			Tag tag = iterator.next();
-			TagImpl tagI = (TagImpl) tag;
 			OLATResourceable ores = tag.getOLATResourceable();
 			oresList.add(ores);			
 		}		

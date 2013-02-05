@@ -12,11 +12,8 @@ in the Java part of OLAT.
 
 The database directory contains ready to use SQL scripts for MySQL and PostgreSQL
 in the corresponding subdirectories.
-You can also run org.olat.persistence.DatabaseSetup.main() to generate the olat 
-database script for your hibernate dialect. The generated sql commands saved
-to database/setupDatabase.sql.
 
-See our docu for more information: http://www.olat.org/docu/
+See our docu for more information: http://www.openolat.org/documentation.html
 
 
 my.cnf InnoDB Sample Config 

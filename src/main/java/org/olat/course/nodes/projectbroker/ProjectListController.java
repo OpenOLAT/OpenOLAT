@@ -360,7 +360,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		// did not work to open as popup based on ureq! -> open as tab in same window
 			HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
 			OLATResourceable ores = hpcm.loadConfigFor(ident.getName());
-			DTabs dts = (DTabs) Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+			DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
 			DTab dt = dts.getDTab(ores);
 			if (dt == null) {
 				// does not yet exist -> create and add

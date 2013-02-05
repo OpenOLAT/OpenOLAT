@@ -24,9 +24,9 @@
 */
 package org.olat.core.util.threadlog;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,7 +53,7 @@ public class RequestBasedLogLevelManager {
 	private final String PROP_NAME_REQUESTBASED_IPS = "RequestBasedIps";
 	
 	/** The core of this class is this map containing the list of ip addresses mapped to logconfigs **/
-	private final Map<String,LogConfig> remoteAddrs2LogConfigs = new HashMap<String,LogConfig>();
+	private final Map<String,LogConfig> remoteAddrs2LogConfigs = new ConcurrentHashMap<String,LogConfig>();
 	
 	/** A reference to the persistentProperties used to persistent the ip address map **/
 	private PersistedProperties persistentProperties;

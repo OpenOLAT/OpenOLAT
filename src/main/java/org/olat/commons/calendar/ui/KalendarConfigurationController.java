@@ -193,7 +193,7 @@ public class KalendarConfigurationController extends BasicController {
 		} else if (source == confirmRegenerateDialog) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(currentCalendarID);
-				String regeneratedIcalFeedLink = ICalTokenGenerator.regenerateIcalAuthToken(calendarWrapper.getKalendar().getType(), currentCalendarID, ureq.getIdentity());			
+				ICalTokenGenerator.regenerateIcalAuthToken(calendarWrapper.getKalendar().getType(), currentCalendarID, ureq.getIdentity());			
 				String calFeedLink = ICalTokenGenerator.getIcalFeedLink(calendarWrapper.getKalendar().getType(), currentCalendarID, ureq.getIdentity());
 				exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink);
 				listenTo(exportController);

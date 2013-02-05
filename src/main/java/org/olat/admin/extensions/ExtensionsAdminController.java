@@ -39,7 +39,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
@@ -114,38 +113,14 @@ public class ExtensionsAdminController extends BasicController {
 		}
 		return beanDefinitionList;
 	}
-	
-	/**
-	 * hmmm, does not work yet, how to get a list with all overwritten beans like the output from to the log.info
-	 * http://www.docjar.com/html/api/org/springframework/beans/factory/support/DefaultListableBeanFactory.java.html
-	 * @return
-	 */
-	private List getOverwrittenBeans() {
-		ApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
-		XmlWebApplicationContext context = (XmlWebApplicationContext)applicationContext;
-		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
-		String[] beanDefinitionNames = beanFactory.getBeanDefinitionNames();
-		for (int i = 0; i < beanDefinitionNames.length; i++) {
-			String beanName = beanDefinitionNames[i];
-			if (!beanName.contains("#")) {
-				BeanDefinition beanDef = (BeanDefinition)beanFactory.getBeanDefinition(beanName);
-				//System.out.println(beanDef.getOriginatingBeanDefinition());
-			}
-		}
-		return null;
-	}
-
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// TODO Auto-generated method stub
-		
+		//
 	}
-
 }

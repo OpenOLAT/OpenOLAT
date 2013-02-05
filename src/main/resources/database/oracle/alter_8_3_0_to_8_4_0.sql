@@ -82,6 +82,7 @@ create view o_gp_visible_owner_v as (
    inner join o_bs_identity ident on (bg_owner_member.identity_id = ident.id)
 );
 
+drop view o_re_member_v;
 
 
 

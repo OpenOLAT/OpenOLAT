@@ -116,6 +116,7 @@ public class ConditionInterpreter {
 		env.addFunction(IsUserFunction.name, new IsUserFunction(userCourseEnv));
 		env.addFunction(IsGuestFunction.name, new IsGuestFunction(userCourseEnv));
 		env.addFunction(IsGlobalAuthorFunction.name, new IsGlobalAuthorFunction(userCourseEnv));
+		env.addFunction(Sleep.name, new Sleep(userCourseEnv));
 		EvalAttributeFunction eaf;
 		eaf = new EvalAttributeFunction(userCourseEnv, EvalAttributeFunction.FUNCTION_TYPE_HAS_ATTRIBUTE);
 		env.addFunction(eaf.name, eaf);

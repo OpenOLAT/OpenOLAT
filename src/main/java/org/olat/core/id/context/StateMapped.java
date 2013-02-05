@@ -31,7 +31,8 @@ import java.util.Map;
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
 public class StateMapped implements StateEntry{
-	
+
+	private static final long serialVersionUID = -164313132644246934L;
 	private Map<String,String> delegate = new HashMap<String,String>();
 	
 	public StateMapped() {

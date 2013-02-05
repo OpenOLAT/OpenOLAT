@@ -205,7 +205,6 @@ public class WizardAddOwnersController extends WizardController {
 			}
 			if (event instanceof SingleIdentityChosenEvent) {
 				SingleIdentityChosenEvent  sice = (SingleIdentityChosenEvent) event;
-				final Identity choosenIdentity = sice.getChosenIdentity();
 				owners.add(sice.getChosenIdentity());
 			}
 			//add choosen identities as owners

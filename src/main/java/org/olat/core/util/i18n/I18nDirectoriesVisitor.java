@@ -58,7 +58,6 @@ class I18nDirectoriesVisitor implements FileVisitor {
 		if (file.isFile()) { // regular file
 			String toBeChechedkFilName = file.getName();
 			// match?
-			I18nManager i18nMgr = I18nManager.getInstance();
 			List<String> referenceLangKeys = I18nModule.getTransToolReferenceLanguages();
 			for (String langKey : referenceLangKeys) {
 				String computedFileName = I18nModule.LOCAL_STRINGS_FILE_PREFIX + langKey + I18nModule.LOCAL_STRINGS_FILE_POSTFIX;

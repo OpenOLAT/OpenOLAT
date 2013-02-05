@@ -45,7 +45,6 @@ import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.model.RepositoryEntryStrictTutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,14 +68,7 @@ public class CoachingManagerImpl extends BasicManager implements CoachingManager
 	@Override
 	public boolean isCoach(Identity coach) {
 		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("select count(vmember.key) from ").append(RepositoryEntryStrictTutor.class.getName()).append(" vmember")
-				.append(" where vmember.repoTutorKey=:identityKey or vmember.groupOwnerKey=:identityKey");
-
-			TypedQuery<Number> dbQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class);
-			dbQuery.setParameter("identityKey", coach.getKey());
-			Number entries = (Number)dbQuery.getSingleResult();
-			return entries.intValue() > 0;
+			return repositoryManager.hasLearningResourcesAsTeacher(coach);
 		} catch (Exception e) {
 			logError("isCoach: ", e);
 			return false;

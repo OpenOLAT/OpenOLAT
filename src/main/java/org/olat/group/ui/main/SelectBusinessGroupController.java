@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.main;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,6 +32,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Roles;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 
 /**
@@ -42,6 +45,7 @@ import org.olat.group.model.BusinessGroupSelectionEvent;
 public class SelectBusinessGroupController extends BasicController {
 	
 	private final Link markedGroupsLink, ownedGroupsLink, courseGroupsLink, searchOpenLink;
+	private Link adminSearchOpenLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
@@ -49,6 +53,7 @@ public class SelectBusinessGroupController extends BasicController {
 	private SelectOwnedBusinessGroupController ownedGroupsCtrl;
 	private SelectBusinessGroupCourseAuthorController authorGroupsCtrL;
 	private SelectSearchBusinessGroupController searchGroupsCtrl;
+	private SelectSearchBusinessGroupController searchAdminGroupsCtrl;
 	
 	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -70,8 +75,19 @@ public class SelectBusinessGroupController extends BasicController {
 		segmentView.addSegment(ownedGroupsLink, !marked);
 		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
 		segmentView.addSegment(searchOpenLink, false);
-		
+		if(isAdminSearchAllowed(ureq)) {
+			adminSearchOpenLink = LinkFactory.createLink("opengroups.search.admin", mainVC, this);
+			segmentView.addSegment(adminSearchOpenLink, false);
+		}
 		putInitialPanel(mainVC);
+	}
+	
+	private boolean isAdminSearchAllowed(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		return roles.isOLATAdmin() ||
+				(roles.isInstitutionalResourceManager() && roles.isGroupManager()) ||
+				(ureq.getUserSession().getRoles().isInstitutionalResourceManager()
+						&& CoreSpringFactory.getImpl(BusinessGroupModule.class).isResourceManagersAllowedToLinkGroups());
 	}
 	
 	@Override
@@ -94,6 +110,8 @@ public class SelectBusinessGroupController extends BasicController {
 					updateCourseGroups(ureq);
 				} else if (clickedLink == searchOpenLink) {
 					updateSearch(ureq);
+				} else if (clickedLink == adminSearchOpenLink) {
+					updateAdminSearch(ureq);
 				}
 			}
 		}
@@ -140,11 +158,21 @@ public class SelectBusinessGroupController extends BasicController {
 	
 	private SelectSearchBusinessGroupController updateSearch(UserRequest ureq) {
 		if(searchGroupsCtrl == null) {
-			searchGroupsCtrl = new SelectSearchBusinessGroupController(ureq, getWindowControl());
+			searchGroupsCtrl = new SelectSearchBusinessGroupController(ureq, getWindowControl(), true);
 			listenTo(searchGroupsCtrl);
 		}
 		searchGroupsCtrl.updateSearch(ureq);
 		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());
 		return searchGroupsCtrl;
+	}
+	
+	private SelectSearchBusinessGroupController updateAdminSearch(UserRequest ureq) {
+		if(searchAdminGroupsCtrl == null) {
+			searchAdminGroupsCtrl = new SelectSearchBusinessGroupController(ureq, getWindowControl(), false);
+			listenTo(searchAdminGroupsCtrl);
+		}
+		searchAdminGroupsCtrl.updateSearch(ureq);
+		mainVC.put("groupList", searchAdminGroupsCtrl.getInitialComponent());
+		return searchAdminGroupsCtrl;
 	}
 }

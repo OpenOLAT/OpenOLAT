@@ -164,7 +164,7 @@ public class MailerWithTemplate {
 		if (recipientsTO != null) {
 			for (Identity recipient : recipientsTO) {
 				// populate velocity context with variables
-				VelocityContext context = new VelocityContext();
+				VelocityContext context = getContext(template);
 				template.putVariablesInMailContext(context, recipient);
 				sendWithContext(context, mCtxt, metaId, recipient, template, sender, result);
 				if (!result.getFailedIdentites().contains(recipient)) {
@@ -177,7 +177,7 @@ public class MailerWithTemplate {
 				List<Identity> cc = new ArrayList<Identity>();
 				cc.add(recipient);
 				// populate velocity context with variables
-				VelocityContext context = new VelocityContext();
+				VelocityContext context = getContext(template);
 				template.putVariablesInMailContext(context, recipient);
 				sendWithContext(context, mCtxt, metaId, recipient, template, sender, result);
 			}
@@ -189,6 +189,13 @@ public class MailerWithTemplate {
 			result.setReturnCode(MailerResult.OK);
 		}
 		return result;
+	}
+	
+	private VelocityContext getContext(MailTemplate template) {
+		if(template != null && template.getContext() != null) {
+			return new VelocityContext(template.getContext());
+		}
+		return new VelocityContext();
 	}
 	
 	/**

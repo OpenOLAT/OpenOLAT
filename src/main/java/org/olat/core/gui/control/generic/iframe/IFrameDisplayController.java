@@ -28,7 +28,6 @@ package org.olat.core.gui.control.generic.iframe;
 
 import java.io.File;
 
-import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -410,7 +409,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			// that during the constructing phase this property is not yet set on the
 			// window. 
 			Window myWindow = getWindowControl().getWindowBackOffice().getWindow();
-			CustomCSS currentCustomCSS = (CustomCSS) myWindow.getAttribute(BaseFullWebappController.CURRENT_CUSTOM_CSS_KEY);
+			CustomCSS currentCustomCSS = myWindow.getCustomCSS();
 			if (currentCustomCSS != null) {
 				contentMapper.setCustomCssURL(currentCustomCSS.getCSSURLIFrame());
 			}

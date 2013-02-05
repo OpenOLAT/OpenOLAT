@@ -74,7 +74,7 @@ public class UserSearchAndInfoController extends BasicController {
 				if (chosenIdentity != null) {
 					HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
 					OLATResourceable ores = hpcm.loadConfigFor(chosenIdentity.getName());
-					DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+					DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
 					//was brasato:: DTabs dts = getWindowControl().getDTabs();
 					DTab dt = dts.getDTab(ores);
 					if (dt == null) {

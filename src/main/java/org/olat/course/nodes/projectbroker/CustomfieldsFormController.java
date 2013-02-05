@@ -120,23 +120,19 @@ public class CustomfieldsFormController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean changed = false;
 		// loop over all Element to store values
 		for (int i = 0; i < customFields.size(); i++) {
 			TextElement nameTextElement = customFieldNameElementList.get(i);
 			if ( !customFields.get(i).getName().equals(nameTextElement.getValue()) ) {
 				customFields.get(i).setName(nameTextElement.getValue());
-				changed = true;
 			}
 			TextElement valueTextElement = customFieldValueElementList.get(i);
 			if ( !customFields.get(i).getValue().equals(valueTextElement.getValue()) ) {
 				customFields.get(i).setValue(valueTextElement.getValue());
-				changed = true;
 			}
 			MultipleSelectionElement tableViewElement = customFieldTableFlagElementList.get(i);
 			if ( customFields.get(i).isTableViewEnabled() != tableViewElement.isSelected(0) ) {
 				customFields.get(i).setTableViewEnabled(tableViewElement.isSelected(0));
-				changed = true;
 			}
 		}
 		config.setCustomFields(customFields);
@@ -163,7 +159,7 @@ public class CustomfieldsFormController extends FormBasicController {
 			} else {
 				int deleteElementNumber = ((Integer)link.getUserObject()).intValue();
 				getLogger().debug("remove customfield #=" + deleteElementNumber);
-				CustomField customField = customFields.remove(deleteElementNumber);
+				customFields.remove(deleteElementNumber);
 				initFormElements(flc);
 			}
 		}

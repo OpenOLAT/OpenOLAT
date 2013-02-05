@@ -24,7 +24,6 @@
 */
 package org.olat.core.gui.control.guistack;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -91,11 +90,7 @@ public class GuiStackNiceImpl implements GuiStack {
 				super.validate(ureq, vr);
 				// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.
 				// the windowbackoffice doesn't know about guimessages, it is only a container that keeps them for one render cycle
-				List zindexed = (List) wbo.getData("guimessage");
-				if (zindexed == null) {
-					zindexed = new ArrayList(3);
-					wbo.putData("guimessage", zindexed);
-				}
+				List<ZIndexWrapper> zindexed = wbo.getGuiMessages();
 				zindexed.add(new ZIndexWrapper(guiMsgPlace, 10));
 			}
 		};

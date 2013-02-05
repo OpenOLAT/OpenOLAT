@@ -37,27 +37,7 @@ import org.olat.core.id.Persistable;
 public interface DB {
 
 	/** temp debug only **/
-	public void forceSetDebugLogLevel(boolean enabled);
-	
-	/**
-	 * Add an ITransactionListener to this DB instance.
-	 * <p>
-	 * The ITransactionListener will be informed about commit and rollbacks.
-	 * <p>
-	 * Adding the same listener twice has no effect.
-	 * <p>
-	 * @param listener the listener to be added
-	 */
-	public void addTransactionListener(ITransactionListener listener);
-
-	/**
-	 * Removes an ITransactionListener from this DB instance.
-	 * <p>
-	 * If the ITransactionListener is currently not registered, this call
-	 * has no effect.
-	 * @param listener
-	 */
-	public void removeTransactionListener(ITransactionListener listener);
+	//public void forceSetDebugLogLevel(boolean enabled);
 	
 	/**
 	 * Close the database session.

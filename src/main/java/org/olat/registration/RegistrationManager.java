@@ -317,7 +317,9 @@ public class RegistrationManager extends BasicManager {
 	 */
 	public void deleteTemporaryKeyWithId(String keyValue) {
 		TemporaryKeyImpl tKey = loadTemporaryKeyByRegistrationKey(keyValue);
-		deleteTemporaryKey(tKey);
+		if(tKey != null) {
+			deleteTemporaryKey(tKey);
+		}
 	}
 
 	/**

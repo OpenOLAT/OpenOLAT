@@ -22,10 +22,10 @@ package org.olat.core.dispatcher.mapper.manager;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -51,9 +51,9 @@ import org.springframework.stereotype.Service;
 @Service("mapperService")
 public class MapperServiceImpl implements MapperService {
 	
-	private Map<String,Mapper> mapperIdToMapper = new HashMap<String,Mapper>();
-	private Map<Mapper,String> mapperToMapperId = new HashMap<Mapper, String>();
-	private Map<String,List<String>> sessionIdToMapperIds = new HashMap<String,List<String>>();
+	private Map<String,Mapper> mapperIdToMapper = new ConcurrentHashMap<String,Mapper>();
+	private Map<Mapper,String> mapperToMapperId = new ConcurrentHashMap<Mapper, String>();
+	private Map<String,List<String>> sessionIdToMapperIds = new ConcurrentHashMap<String,List<String>>();
 
 	private CacheWrapper<String, Serializable> mapperCache;
 	

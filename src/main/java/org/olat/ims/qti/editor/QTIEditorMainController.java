@@ -251,7 +251,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			// acquired a lock for the duration of the session only
 			//fileResource has the RepositoryEntre.getOlatResource within, which is used in qtiPackage
 			activeSessionLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(qtiPackage.getRepresentingResourceable(), ureq.getIdentity(), null);
-			Long resourceableId = fileResource.getResourceableId();
 			//
 			qtiDoc = qtiPackage.getQTIDocument();
 			if (qtiDoc == null) {
@@ -966,10 +965,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		// FIXME:pb:break down into smaller pieces
 		final StringBuilder result = new StringBuilder();
 		if (isRestrictedEdit()) {
-			Set keys = history.keySet();
-			/*
-			 * 
-			 */
 			Visitor v = new Visitor() {
 				/*
 				 * a history key is built as follows

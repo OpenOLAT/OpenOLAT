@@ -88,10 +88,10 @@ public class SearchForm extends FormBasicController{
 	private FormLink searchButton;
 	
 	private String limitUsername;
-	private String limitType;
 	private String[] limitTypes;
 	private boolean withCancel;
 	private boolean isAdmin;
+	private boolean isAdminSearch = false;
 	
 	/**
 	 * Generic search form.
@@ -104,7 +104,9 @@ public class SearchForm extends FormBasicController{
 	 */
 	public SearchForm(UserRequest ureq, WindowControl wControl, boolean withCancel, boolean isAdmin, String limitType, String limitUser) {
 		this(ureq, wControl,  withCancel,  isAdmin);
-		this.limitType = limitType;
+		if(limitType != null) {
+			this.limitTypes = new String[]{limitType};
+		}
 		this.limitUsername = limitUser;		
 	}
 
@@ -129,7 +131,7 @@ public class SearchForm extends FormBasicController{
 	}
 	
 	@Override
-	protected boolean validateFormLogic(@SuppressWarnings("unused") UserRequest ureq) {
+	protected boolean validateFormLogic(UserRequest ureq) {
 		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty()))	{
 			showWarning("cif.error.allempty", null);
 			return false;
@@ -189,6 +191,14 @@ public class SearchForm extends FormBasicController{
 		flc.setVisible(onoff);
 	}
 
+	public boolean isAdminSearch() {
+		return isAdminSearch;
+	}
+
+	public void setAdminSearch(boolean isAdminSearch) {
+		this.isAdminSearch = isAdminSearch;
+	}
+
 	@Override
 	protected void formOK (UserRequest ureq) {
 		fireEvent (ureq, Event.DONE_EVENT); 
@@ -222,7 +232,7 @@ public class SearchForm extends FormBasicController{
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		setFormTitle("search.generic");
+		//setFormTitle("search.generic");
 		
 		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", formLayout);
 		displayName.setElementCssClass("o_sel_repo_search_displayname");

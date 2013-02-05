@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.AssertException;
 
 /**
  * Description:<br>

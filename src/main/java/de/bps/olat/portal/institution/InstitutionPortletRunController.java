@@ -182,7 +182,7 @@ public class InstitutionPortletRunController extends BasicController {
 						getWindowControl().setWarning(translate("warn.cantlaunch"));
 					} else {
 						OLATResourceable ores = re.getOlatResource();
-						DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+						DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
 						DTab dt = dts.getDTab(ores);
 						if (dt == null) {
 							// does not yet exist -> create and add

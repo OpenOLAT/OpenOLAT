@@ -117,7 +117,6 @@ public class StatisticDisplayController extends BasicController {
 					sb.append(aLabel);
 				} else {
 					if (maxLength<MIN_LENGTH) {
-						int diff = Math.min(5, aLabel.length()) - maxLength;
 						if (labelsToIgnore>0) {
 							// then we don't issue a label here
 							labelsToIgnore--;

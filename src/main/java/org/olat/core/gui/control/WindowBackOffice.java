@@ -25,12 +25,15 @@
 */ 
 package org.olat.core.gui.control;
 
+import java.util.List;
+
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.guistack.GuiStack;
+import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.event.GenericEventListener;
 
@@ -112,23 +115,12 @@ public interface WindowBackOffice extends Disposable{
 	public void sendCommandTo(Command wco);
 	
 	/**
-	 * together with getData and registerForCycleEvents, this serves to exchange request-transient render-related data amongst parties,
-	 * e.g. layoutcontrollers telling the implementor of the windowcontrol/guimessage receiver where to visually put the guimessage. 
-	 *<br>
-	 * all the data is clear before the inline-rendering-about-to-start event, since after that point no state change must occur.
-	 *
-	 * @param key the key (to be agreed upon by the inter-communicating parties)
-	 * @param value any object
-	 */
-	public void putData(String key, Object value);
-	
-	/**
 	 * gets the data
 	 * @see putData(String key, Object value)
 	 * @param key the key
 	 * @return
 	 */
-	public Object getData(String key);
+	public List<ZIndexWrapper> getGuiMessages();
 	
 	/**
 	 * not used normally! normally you do not have to care about when happens what - you should only need to know what to do in your event-methods of your controllers. 

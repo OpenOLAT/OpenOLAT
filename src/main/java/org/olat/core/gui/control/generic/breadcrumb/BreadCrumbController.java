@@ -22,7 +22,6 @@ package org.olat.core.gui.control.generic.breadcrumb;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -171,7 +170,6 @@ public class BreadCrumbController extends BasicController {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		int activateLinkPos = 0;
 		for (Link link : breadCrumbLinks) {
 			if (source == link) {
 				// set content to new controller view and disable the corresponding link
@@ -188,9 +186,7 @@ public class BreadCrumbController extends BasicController {
 				break;
 			} else {
 				link.setEnabled(true);
-				activateLinkPos++;
 			}
 		}
 	}
-	
 }

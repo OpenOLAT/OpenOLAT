@@ -114,7 +114,7 @@ public class RepoEntryCategoriesTableController extends BasicController {
 			
 			if (action.equals(CategoriesListModel.ACTION_GOTO)) {
 				// select repo site and activate catalog entry in catalog
-				DTabs dts = (DTabs) getWindowControl().getWindowBackOffice().getWindow().getAttribute("DTabs");
+				DTabs dts = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("CatalogEntry", selectedCategoryLevel.getKey());
 				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
 				dts.activateStatic(ureq, RepositorySite.class.getName(), entries);
