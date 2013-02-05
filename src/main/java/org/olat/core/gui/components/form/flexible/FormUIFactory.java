@@ -33,7 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElment;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
@@ -921,13 +921,13 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public FlexiTableElment addTableElement(String name, FlexiTableDataModel tableModel, FormItemContainer formLayout) {
+	public FlexiTableElement addTableElement(String name, FlexiTableDataModel tableModel, FormItemContainer formLayout) {
 		FlexiTableElementImpl fte = new FlexiTableElementImpl(name,tableModel);
 		formLayout.add(fte);
 		return fte;
 	}
 	
-	public FlexiTableElment addTableElement(String name, FlexiTableDataModel tableModel, Translator translator,  FormItemContainer formLayout) {
+	public FlexiTableElement addTableElement(String name, FlexiTableDataModel tableModel, Translator translator,  FormItemContainer formLayout) {
 		FlexiTableElementImpl fte = new FlexiTableElementImpl(name, translator, tableModel);
 		formLayout.add(fte);
 		return fte;

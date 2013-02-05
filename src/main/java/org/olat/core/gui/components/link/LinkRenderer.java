@@ -42,7 +42,6 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -69,9 +68,6 @@ public class LinkRenderer implements ComponentRenderer {
 		boolean flexiformlink = (presentation - Link.FLEXIBLEFORMLNK) >= 0;
 		if (flexiformlink) {
 			presentation = presentation - Link.FLEXIBLEFORMLNK;
-			if (link.tooltipContent != null) {
-				throw new AssertException("Form link does not support long transaction, tooltip yet!");
-			}
 		}
 		boolean nontranslated = (presentation - Link.NONTRANSLATED) >= 0;
 		if (nontranslated) {
@@ -248,19 +244,6 @@ public class LinkRenderer implements ComponentRenderer {
 				extJsSb.append("  jQuery('#"+elementId+"').on('"+link.mouseEvent+"', "+link.javascriptHandlerFunction+");");
 				hasExtJsSb = true;
 			}
-			
-			if (link.tooltipContent != null) {
-				extJsSb.append("Ext.QuickTips.tips({");
-				extJsSb.append("target: '").append(elementId).append("',");
-				//FIXME:FG:Check component containing single quotes or line breaks
-				StringOutput clearedContentSb = new StringOutput(100);
-				renderer.render(link.tooltipContent, clearedContentSb, null);
-				String clearedContent = clearedContentSb.toString().replaceAll("\n", "");
-				extJsSb.append("text: '").append(clearedContent).append("',");
-				extJsSb.append("autoHide: ").append(String.valueOf(!link.hasStickyTooltip));
-				extJsSb.append("});");
-				hasExtJsSb=true;
-			}
 		} else {
 			String text;
 			if (customDisplayText != null) {
@@ -281,7 +264,7 @@ public class LinkRenderer implements ComponentRenderer {
 				description = msq.replaceAll("&#39;");
 				Matcher mdq = doubleQutoe.matcher(description);
 				description = mdq.replaceAll("\\\\\"");
-				sb.append(" ext:qtip=\"").append(description).append("\" ");
+				sb.append(" title=\"").append(description).append("\" ");
 			}
 			sb.append(cssSb).append(">").append(text).append("</span>");
 		}

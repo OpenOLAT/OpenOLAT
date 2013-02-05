@@ -199,7 +199,7 @@ public class StatisticDisplayController extends BasicController {
 	}
 	
 	protected Component createInitialComponent(UserRequest ureq) {
-		statisticVc_ = this.createVelocityContainer("statistic");
+		statisticVc_ = createVelocityContainer("statistic");
 		statisticVc_.contextPut("statsSince", getStatsSinceStr(ureq));
 		Package pkg = getStatisticManager().getClass().getPackage();
 		String fullPkgName = pkg.getName();
@@ -535,9 +535,7 @@ public class StatisticDisplayController extends BasicController {
 			statisticVc_.contextPut("chartUrl", url);
 			statisticVc_.contextPut("thicks", thicks);
 			statisticVc_.contextPut("d2", vals);
-			
-			
-			System.out.println(url);
+
 			if (url.length()>2000) {
 				// from http://code.google.com/apis/chart/faq.html#url_length
 				// The maximum length of a URL is not determined by the Google Chart API, 

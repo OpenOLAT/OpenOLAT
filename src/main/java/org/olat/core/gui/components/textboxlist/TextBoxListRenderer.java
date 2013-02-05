@@ -144,6 +144,32 @@ public class TextBoxListRenderer implements ComponentRenderer {
 
 		// generate the JS-code for the textboxlist
 		output.append(FormJSHelper.getJSStart());
+		output.append("jQuery(function(){\n")
+		      .append("  jQuery('#textboxlistinput").append(dispatchId).append("').tagit({\n")
+		      .append("    allowDuplicates:").append(tblComponent.isAllowDuplicates()).append(",\n");
+		      
+		      
+		if (tblComponent.doFormSubmitOnInput()) {
+			output.append("  afterTagAdded: function(input){\n")
+			      .append("    document.forms['").append(rootForm.getFormName()).append("'].submit();\n")
+			      .append("  },\n")
+			      .append("  afterTagRemoved: function(input){\n")
+			      .append("    document.forms['").append(rootForm.getFormName()).append("'].submit();\n")
+			      .append("  },\n").append(lineBreak);
+		} else {
+			// otherwise, o_ffEvents are fired: OO-137 ( invoke o_ffEvent on UserAdd or userRemove ) but only in flexiform
+			String o_ffEvent = FormJSHelper.getJSFnCallFor(rootForm, dispatchId, 2);
+			output.append("  afterTagAdded: function(input){").append(lineBreak)
+			      .append(o_ffEvent).append(";},").append(lineBreak)
+			      .append("  afterTagRemoved: function(input){").append(lineBreak)
+			      .append(o_ffEvent).append(";},").append(lineBreak);
+		}
+		output.append("    test:''")//so i don't forget a ,
+		      .append("  });\n")
+		      .append("})\n");
+	
+		
+		/*
 		output.append("tlist = new ProtoMultiSelect('textboxlistinput").append(dispatchId).append("', 'textboxlist-auto").append(dispatchId)
 				.append("',{ newValues: ").append(lineBreak);
 		output.append(Boolean.toString(tblComponent.isAllowNewValues())).append(lineBreak);
@@ -217,6 +243,7 @@ public class TextBoxListRenderer implements ComponentRenderer {
 			output.append(";");
 			output.append("myjson.each(function(t){tlist.autoFeed(t)});");
 		}
+		*/
 
 		output.append(FormJSHelper.getJSEnd()).append(lineBreak);
 	}

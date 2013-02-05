@@ -90,24 +90,4 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	public String getExampleDateString() {
 		return element.getExampleDateString();
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.render.ValidationResult)
-	 */
-	@Override
-	public void validate(UserRequest ureq, ValidationResult vr) {
-		super.validate(ureq, vr);
-		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		// FIXME:FG:THEME: calendar.css files for themes
-		jsa.addRequiredCSSFile(org.olat.core.gui.components.form.Form.class,
-				"css/jscalendar.css", false);
-		jsa.addRequiredJsFile(org.olat.core.gui.components.form.Form.class,
-				"js/jscalendar/calendar.js");
-		jsa.addRequiredJsFile(org.olat.core.gui.components.form.Form.class,
-				"js/jscalendar/olatcalendartranslator.js");
-		jsa.addRequiredJsFile(org.olat.core.gui.components.form.Form.class,
-				"js/jscalendar/calendar-setup.js");
-	}
-
 }

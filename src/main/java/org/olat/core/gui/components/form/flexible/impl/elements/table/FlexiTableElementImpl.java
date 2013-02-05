@@ -31,7 +31,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElment;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
 
@@ -40,7 +40,7 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author Christian Guretzki
  */
-public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElment {
+public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement {
   
 	private FlexiTableDataModel tableModel;
 	private FlexiTableComponent component;

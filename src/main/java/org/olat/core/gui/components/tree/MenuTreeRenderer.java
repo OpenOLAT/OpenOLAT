@@ -102,8 +102,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		if(!tree.isRootVisible()) {
 			target.append(" b_tree_root_hidden");
 		}
-		target.append("'>\n");
-		target.append("<ul class=\"b_tree_l0\">");
+		target.append("'><ul class=\"b_tree_l0\">");
 		if(tree.isRootVisible()) {
 			renderLevel(target, 0, root, selPath, openNodeIds, ubu, flags, tree.markingTreeNode, tree);
 		} else {
@@ -114,14 +113,12 @@ public class MenuTreeRenderer implements ComponentRenderer {
 				renderLevel(target, 0, curChd, selPath, openNodeIds, ubu, flags, tree.markingTreeNode, tree);
 			}
 		}
-
-		target.append("</ul>");
-		target.append("\n</div>");
+		target.append("</ul>").append("</div>");
 	}
 
-	private void renderLevel(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds,
-			URLBuilder ubu, AJAXFlags flags, TreeNode markedNode, MenuTree tree) {	
-		//TODO make performant
+	private void renderLevel(StringOutput target, int level, TreeNode curRoot, List<INode> selPath,
+			Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, TreeNode markedNode, MenuTree tree) {	
+
 		INode curSel = null;
 		if (level < selPath.size()) {
 			curSel = selPath.get(level);

@@ -126,6 +126,14 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Object,
 	 *      java.lang.String)
 	 */
+	public void addRequiredStaticJsFile(String jsFileName) {
+		addRequiredJsFile(null, jsFileName, ENCODING_DEFAULT, null);
+	}
+	
+	/**
+	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Object,
+	 *      java.lang.String)
+	 */
 	public void addRequiredJsFile(Class baseClass, String jsFileName) {
 		addRequiredJsFile(baseClass, jsFileName, ENCODING_DEFAULT, null);
 	}
@@ -144,7 +152,16 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	 */
 	public void addRequiredJsFile(Class baseClass, String jsFileName, String fileEncoding,
 			String AJAXAddJsCode) {
-		String jsPath = getMappedPathFor(baseClass, jsFileName);
+
+		String jsPath;
+		if(baseClass == null) {
+			StringOutput sb = new StringOutput(50);
+			Renderer.renderStaticURI(sb, jsFileName);
+			jsPath = sb.toString();
+		} else {
+			jsPath = getMappedPathFor(baseClass, jsFileName);
+		}
+
 		if (!curJsList.contains(jsPath)) {
 			//System.out.println("reqJs:"+jsPath);
 			curJsList.add(jsPath);

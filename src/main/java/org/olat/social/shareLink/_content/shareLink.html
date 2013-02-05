@@ -30,34 +30,20 @@
 	#elseif ($link == "mail")	
 		<a id="b_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")"></a>
 	#elseif ($link == "link")	
-		<span id="b_link" href="" title="$r.translateInAttribute("share.link")" onclick="javascript:b_shareSocialLink();"></span>
+		<a id="b_link" href="#" onclick="javascript:b_shareSocialLink();"></a>
 		<script type="text/javascript">
 		/* <![CDATA[ */
 			function b_shareSocialLink() {
-				if(Ext.getCmp('callout_share_link') != null ) {
-					Ext.getCmp('callout_share_link').destroy();
-				};
-				var tt = new Ext.ToolTip({
-					id: 'callout_share_link',
-					html: '<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" value="' + b_shareSocialUrl() + '" /></p>',
-					target: 'b_link',
-					title: '<span>' + b_shareSocialTitle() + '</span>',
-					closable: true,
-					autoHide: false,
-					hideDelay: 100000,
-					anchor: 'box',
-					width: 500,
-					autoScroll: true,
-					style: 'z-index:900',
-					onDocMouseDown: function(e) { }
-				});
-				tt.show();
-				document.getElementById('callout_share_link_in').focus();
+				jQuery('#b_link').tooltip({
+					items: '#b_link',
+					content: function() {
+						return jQuery('<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" value="' + b_shareSocialUrl() + '" /></p>')
+							.html();
+					}
+				}).tooltip('open');
 			}
 		/* ]]> */
 		</script>
-	#else
-		<!-- did not found code for $link share link button in shareLink.html template-->
 	#end
 #end
 </div>

@@ -42,6 +42,10 @@ public abstract class JSAndCSSAdder {
 	// everything that must be loaded after the theme: 51 - 99
 	public static final int CSS_INDEX_AFTER_THEME = 65;
 
+	
+
+	public abstract void addRequiredStaticJsFile(String jsFileName);
+	
 	/**
 	 * adds a js file to be served in the html header to the list of required
 	 * js-files. e.g. addRequiredJsFile(MyController.class, "js/myscript.js")

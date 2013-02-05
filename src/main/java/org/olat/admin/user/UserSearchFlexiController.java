@@ -34,7 +34,7 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElment;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -98,7 +98,7 @@ public class UserSearchFlexiController extends FormBasicController {
 
 	private FormLink backLink, selectAll, deselectAll;
 	private Panel searchPanel;
-	private FlexiTableElment tableEl;
+	private FlexiTableElement tableEl;
 	private VelocityContainer tableVC;
 	private UserSearchForm searchform;
 	private UserSearchFlexiTableModel userTableModel;

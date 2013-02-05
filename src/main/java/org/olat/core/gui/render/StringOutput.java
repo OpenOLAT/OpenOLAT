@@ -53,9 +53,18 @@ public class StringOutput extends Writer {
 
 	/**
 	 * @param val
-	 * @return
+	 * @return this
 	 */
 	public StringOutput append(String val) {
+		sb.append(val);
+		return this;
+	}
+	
+	/**
+	 * @param val
+	 * @return this
+	 */
+	public StringOutput append(boolean val) {
 		sb.append(val);
 		return this;
 	}
@@ -65,7 +74,7 @@ public class StringOutput extends Writer {
 	 * @return
 	 */
 	public StringOutput append(int i) {
-		sb.append(String.valueOf(i));
+		sb.append(i);
 		return this;
 	}
 

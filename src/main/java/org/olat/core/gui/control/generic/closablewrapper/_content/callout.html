@@ -17,13 +17,11 @@ jQuery(function() {
 		#end
 	});
 
-	console.log('$target');
 	jQuery('#$target').tooltip({
 		items: '#$target',
 		position: { my: 'left+15 center', at: 'right bottom', collision: 'flipfit'},
 		content: function(response) {
-			var txt = jQuery('#callout_layer_content_$r.getCId()').html();
-			return txt;
+			return jQuery('#callout_layer_content_$r.getCId()').html();
 		},
 		close: function( event, ui ) {
 			$r.javaScriptBgCommand('close');

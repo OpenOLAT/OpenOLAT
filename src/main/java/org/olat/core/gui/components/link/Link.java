@@ -95,7 +95,6 @@ public class Link extends Component {
 
 	boolean hasTooltip;
 	boolean hasStickyTooltip;
-	Component tooltipContent;
 
 	private boolean suppressDirtyFormWarning = false;
 	private boolean isDownloadLink = false;
@@ -506,18 +505,6 @@ public class Link extends Component {
 		setTitle(tooltipI18nKey);
 		this.hasTooltip = true;
 		this.hasStickyTooltip = sticky;
-		setDirty(true);
-		
-	}
-	
-	/**
-	 * sets a tooltip with a more complext content which is passed as an component
-	 * @param comp
-	 * @param stricky if true the user has to close the tooltip himself
-	 */
-	public void setTooltip(Component comp, boolean stricky) {
-		this.tooltipContent = comp;
-		this.hasStickyTooltip = stricky;
 		setDirty(true);
 	}
 

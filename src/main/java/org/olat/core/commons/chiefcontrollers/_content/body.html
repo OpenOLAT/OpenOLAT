@@ -39,8 +39,6 @@ if (top!=self) {
 	top.location=self.location+"?o_winrndo=1";
 }
 function b_start(){
-	## init the extjs tooltip engine
-	//TODO jquery if (window["Ext"]) {Ext.QuickTips.init();}
 	o_init();
 	## js B
 	$r.renderBodyOnLoadJSFunctionCall()
@@ -62,9 +60,9 @@ function b_start(){
 </script>
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-migrate-1.0.0.min.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-ui-1.10.0.custom.min.js")'></script>
+<link type="text/css" href='$r.staticLink("js/jquery/jquery-ui.css")' rel="stylesheet"/>
 <script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/jquery/datatables/jquery.dataTables.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/jquery/flot/jquery.flot.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/datatables/jquery.dataTables.min.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/jsMath/easy/load.js")'></script>
 
@@ -73,7 +71,9 @@ function b_start(){
 <script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
 
-<link type="text/css" href='$r.staticLink("js/jquery/jquery-ui.css")' rel="stylesheet"/>
+
+<link type="text/css" href='$r.staticLink("js/jquery/tagit/jquery.tagit.css")' rel="stylesheet"/>
+
 <script type="text/javascript">
 /* <![CDATA[ */ 
 	## references to objects for later access or cleanup

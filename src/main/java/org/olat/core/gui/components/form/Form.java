@@ -70,10 +70,5 @@ public final class Form  {
 	// this variables are used in functions.js - do not change
 	/** html form id prependix * */
 	public static final String JSFORMID = "bfo_";
-	/** html element id prependix * */
-//	public static final String JSELEMENTID = "bel_";
-	/** html row id prependix * */
-//	public static final String JSELEMENTROWID = "ber_";
-	
-	
+
 }

@@ -200,6 +200,7 @@ public class FloatingResizableDialogController extends BasicController {
 		String w = getPanelName();
 		StringBuilder sb = new StringBuilder();
 		sb.append("try{");
+		//TODO jquery
 		sb.append("Ext.getCmp('").append(w).append("').purgeListeners();");
 		sb.append("Ext.getCmp('").append(w).append("').close();");
 		sb.append("Ext.getCmp('").append(w).append("').distroy();");

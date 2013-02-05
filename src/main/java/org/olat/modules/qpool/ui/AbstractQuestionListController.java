@@ -32,7 +32,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElment;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -55,7 +55,7 @@ import org.olat.modules.qpool.QuestionPoolService;
  */
 public class AbstractQuestionListController extends FormBasicController implements StackedControllerAware {
 
-	private FlexiTableElment itemsTable;
+	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
 	private StackedController stackPanel;
 	protected final QuestionPoolService qpoolService;

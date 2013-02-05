@@ -342,7 +342,6 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 				sb.append("b_addOnclickEvent(b_sizeIframe);");		
 			}
 			// register the tooltips enabling on document load event
-			sb.append("b_addOnloadEvent(b_enableTooltips);");
 			sb.append("b_addOnloadEvent(b_hideExtMessageBox);");
 			if (addCheckForInlineEvents) {
 				// Refresh dirty menu tree by triggering client side request to component which fires events

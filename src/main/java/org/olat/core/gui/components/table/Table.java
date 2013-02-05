@@ -37,9 +37,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -859,14 +857,6 @@ public class Table extends Component implements Comparator {
 
 	protected BitSet getMultiSelectSelectedRows() {
 		return multiSelectSelectedRows;
-	}
-	
-	public void validate(final UserRequest ureq, final ValidationResult vr) {
-		super.validate(ureq, vr);
-		// include needed css and js libs
-
-		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredJsFile(Table.class, "js/table.js");
 	}
 
 	public boolean isShowAllSelected() {

@@ -146,12 +146,6 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		wbo = winman.createWindowBackOffice("basechiefwindow", this);
 		Window w = wbo.getWindow();
 
-		// part that builds the css and javascript lib includes (<script
-		// src="..."> and <rel link
-		// e.g.
-		// <script type="text/javascript"
-		// src="/demo/g/2/js/jscalendar/calendar.js"></script>
-
 		mainvc.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());
 
 		// control part for ajax-communication. returns an empty panel if ajax

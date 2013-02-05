@@ -127,12 +127,6 @@ function b_sizeIframe() {
 	}
 }
 
-function b_enableTooltips(){
-	if (window["Ext"]) {
-		Ext.QuickTips.init();
-	};
-};
-
 //start highlighting glossary term inside iframe. will also generate ext-tooltips in the correct context.
 function b_glossaryHighlight(){
 	if (typeof(o_tm_doHighlightAll) == 'function'){

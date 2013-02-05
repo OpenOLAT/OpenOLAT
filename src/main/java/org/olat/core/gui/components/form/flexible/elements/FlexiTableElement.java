@@ -30,6 +30,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 /**
  * 
  */
-public interface FlexiTableElment extends FormItem {
+public interface FlexiTableElement extends FormItem {
 	
 }
