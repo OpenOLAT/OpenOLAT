@@ -25,27 +25,35 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.ValidationStatus;
 
 
 /**
  * 
  * @author Christian Guretzki
  */
-public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement {
+public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection {
   
 	private FlexiTableDataModel tableModel;
 	private FlexiTableComponent component;
 	private String mapperUrl;
 	
+	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
 	public FlexiTableElementImpl(String name, FlexiTableDataModel tableModel) {
 		super(name);
@@ -67,7 +75,21 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
 		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(this));
 	}
+
+	@Override
+	public Iterable<FormItem> getFormItems() {
+		return components.values();
+	}
+
+	@Override
+	public FormItem getFormComponent(String name) {
+		return components.get(name);
+	}
 	
+	protected void addFormItem(FormItem item) {
+		components.put(item.getName(), item);
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
 	 */
@@ -83,16 +105,23 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	@SuppressWarnings("unused")
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		//static text must not validate
 	}
 
 	@Override
 	public void reset() {
 		// static text can not be resetted
-	};
+	}
 	
+	/**
+	 * Prevent parent to be set as dirty for every request
+	 */
+	@Override
+	public boolean isInlineEditingElement() {
+		return true;
+	}
+
 	@Override
 	protected void rootFormAvailable() {
 		//root form not interesting for Static text
@@ -105,5 +134,30 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public FlexiTableDataModel getTableDataModel() {
 		return tableModel;
 	}
+	
+	private class FormItemsIterable implements Iterable<FormItem> {
+		@Override
+		public Iterator<FormItem> iterator() {
+			return new FormItemsIterator();
+		}
+	}
+	
+	private class FormItemsIterator implements Iterator<FormItem> {
+		private Iterator<FormItem> delegate = new ArrayList<FormItem>().iterator();
 
+		@Override
+		public boolean hasNext() {
+			return delegate.hasNext();
+		}
+
+		@Override
+		public FormItem next() {
+			return delegate.next();
+		}
+
+		@Override
+		public void remove() {
+			//not implemented
+		}
+	}
 }

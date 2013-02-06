@@ -28,8 +28,12 @@ package org.olat.core.gui.control.winmgr;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.GlobalSettings;
@@ -51,6 +55,7 @@ import org.olat.core.gui.control.pushpoll.WindowCommand;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.dev.controller.DevelopmentController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.intercept.InterceptHandler;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.render.intercept.debug.GuiDebugDispatcherController;
@@ -172,9 +177,25 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		ajaxC.sendCommandTo(new WindowCommand(this,wco));
 	}
 	
-	public void pushCommands(Writer w, boolean wrapHTML) {
+	public void pushCommands(HttpServletRequest request, HttpServletResponse response) {
+		Writer w = null;
 		try {
-			ajaxC.pushResource(w, wrapHTML);
+			boolean acceptJson = false;
+			w = response.getWriter();
+			for(Enumeration<String> headers=request.getHeaders("Accept"); headers.hasMoreElements(); ) {
+				String accept = headers.nextElement();
+				if(accept.contains("application/json")) {
+					acceptJson = true;
+				}
+			}
+			
+			if(acceptJson) {
+				ServletUtil.setJSONResourceHeaders(response);
+				ajaxC.pushJSONAndClear(w);
+			} else {
+				ServletUtil.setStringResourceHeaders(response);
+				ajaxC.pushResource(w, true);
+			}
 		} catch (IOException e) {
 			log.error("Error pushing commans to the AJAX canal.", e);
 		} finally {

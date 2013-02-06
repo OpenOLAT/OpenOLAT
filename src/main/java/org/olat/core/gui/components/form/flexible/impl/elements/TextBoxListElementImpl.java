@@ -94,7 +94,7 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 
 	@Override
 	public List<String> getValueList() {
-		return this.component.getCurrentItemValues();
+		return component.getCurrentItemValues();
 	}
 
 	@Override
@@ -106,17 +106,6 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	public void setAutoCompleteContent(Map<String, String> tagM) {
 		component.setAutoCompleteContent(tagM);		
 	}
-
-	@Override
-	public void doFormSubmitOnInput(boolean doFormSubmit) {
-		component.doFormSubmitOnInput(doFormSubmit);		
-	}
-
-	@Override
-	public boolean doFormSubmitOnInput() {
-		return component.doFormSubmitOnInput();
-	}
-
 	
 	/**
 	 * @return Returns the allowDuplicates.

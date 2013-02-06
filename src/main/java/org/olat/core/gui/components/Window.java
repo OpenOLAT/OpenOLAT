@@ -215,7 +215,7 @@ public class Window extends Container {
 	/**
 	 * @see org.olat.core.gui.components.Container#getComponent(java.lang.String)
 	 */
-	public Component getComponent(@SuppressWarnings("unused") String name) {
+	public Component getComponent(String name) {
 		throw new AssertException("please use getContentPane()");
 	}
 
@@ -319,12 +319,12 @@ public class Window extends Container {
 							String urlCTimest = ureq.getComponentTimestamp();
 							validForDispatching = cTimest.equals(urlCTimest);
 							if (!validForDispatching && isDebugLog) { 
-								Tracing.logDebug("Invalid timestamp: ureq.compid:"+ureq.getComponentID()+" ureq.win-ts:"+ureq.getTimestampID()+" ureq.comp-ts:"+ureq.getComponentTimestamp() + " target.timestamp:" + cTimest + " target=" + target, this.getClass());
+								log.debug("Invalid timestamp: ureq.compid:"+ureq.getComponentID()+" ureq.win-ts:"+ureq.getTimestampID()+" ureq.comp-ts:"+ureq.getComponentTimestamp() + " target.timestamp:" + cTimest + " target=" + target);
 							}
 						} else { 
 							// the component was not found in the rendertree anymore.
 							// this can happen e.g. on quick double-clicks, so that the dom-replacement-command never reaches the client.
-							if (isDebugLog) Tracing.logDebug("no ajax dispatch: component not found (target=null)",this.getClass());
+							if (isDebugLog) log.debug("no ajax dispatch: component not found (target=null)");
 							validForDispatching = false;
 						}
 						
@@ -337,7 +337,7 @@ public class Window extends Container {
 							incTimestamp = dispatchResult.isIncTimestamp();
 							if (isDebugLog) {
 								long durationAfterDoDispatchToComponent = System.currentTimeMillis() - debug_start;
-								Tracing.logDebug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent, Window.class);
+								log.debug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent);
 							}
 						}	
 							
@@ -377,12 +377,12 @@ public class Window extends Container {
 								ComponentTraverser ct = new ComponentTraverser(vv, top, false);
 								if (isDebugLog) {
 									long durationBeforeVisitAll = System.currentTimeMillis() - debug_start;
-									Tracing.logDebug("Perf-Test: Window durationBeforeVisitAll=" + durationBeforeVisitAll, Window.class);
+									log.debug("Perf-Test: Window durationBeforeVisitAll=" + durationBeforeVisitAll);
 								}
 								ct.visitAll(ureq);
 								if (isDebugLog) {
 									long durationAfterVisitAll = System.currentTimeMillis() - debug_start;
-									Tracing.logDebug("Perf-Test: Window durationAfterVisitAll=" + durationAfterVisitAll, Window.class);
+									log.debug("Perf-Test: Window durationAfterVisitAll=" + durationAfterVisitAll);
 								}
 								wbackofficeImpl.fireCycleEvent(Window.AFTER_VALIDATING);
 								
@@ -432,14 +432,14 @@ public class Window extends Container {
 										// check for dirty child components in the component tree
 										if (isDebugLog) {
 											long durationBeforeHandleDirties = System.currentTimeMillis() - debug_start;
-											Tracing.logDebug("Perf-Test: Window durationBeforeHandleDirties=" + durationBeforeHandleDirties, Window.class);
+											log.debug("Perf-Test: Window durationBeforeHandleDirties=" + durationBeforeHandleDirties);
 										}
 										Command co = handleDirties();
 										//fxdiff FXOLAT-119: update business path
 										Command co2 = handleBusinessPath(ureq);
 										if (isDebugLog) {
 											long durationAfterHandleDirties = System.currentTimeMillis() - debug_start;
-											Tracing.logDebug("Perf-Test: Window durationAfterHandleDirties=" + durationAfterHandleDirties, Window.class);
+											log.debug("Perf-Test: Window durationAfterHandleDirties=" + durationAfterHandleDirties);
 										}
 										wbackofficeImpl.fireCycleEvent(AFTER_INLINE_RENDERING);
 										if (co != null) { // see method handleDirties for the rare case of co == null even if there are dirty components;
@@ -458,7 +458,7 @@ public class Window extends Container {
 								}
 								if (isDebugLog) {
 									long durationBeforeCreateMediaResourceMapper = System.currentTimeMillis() - debug_start;
-									Tracing.logDebug("Perf-Test: Window durationBeforeCreateMediaResourceMapper=" + durationBeforeCreateMediaResourceMapper, Window.class);
+									log.debug("Perf-Test: Window durationBeforeCreateMediaResourceMapper=" + durationBeforeCreateMediaResourceMapper);
 								}
 								// not inline, new mediaresource
 								// send it to the parent window (e.g. an excel download, but could also be a 302 redirect)
@@ -475,7 +475,7 @@ public class Window extends Container {
 								wbackofficeImpl.sendCommandTo(rmrcom);
 								if (isDebugLog) {
 									long durationAfterCreateMediaResourceMapper = System.currentTimeMillis() - debug_start;
-									Tracing.logDebug("Perf-Test: Window durationAfterCreateMediaResourceMapper=" + durationAfterCreateMediaResourceMapper, Window.class);
+									log.debug("Perf-Test: Window durationAfterCreateMediaResourceMapper=" + durationAfterCreateMediaResourceMapper);
 								}
 							}
 						} else { // not dispatched
@@ -492,8 +492,8 @@ public class Window extends Container {
 							long durationBeforeServeResource = System.currentTimeMillis() - debug_start;
 							log.debug("Perf-Test: Window durationBeforeServeResource=" + durationBeforeServeResource);
 						}
-						ServletUtil.setStringResourceHeaders(response);
-						wbackofficeImpl.pushCommands(response.getWriter(), true);
+						
+						wbackofficeImpl.pushCommands(request, response);
 					} catch (Throwable th) {
 						// in any case, try to inform the user appropriately.
 						// a) error while dispatching (e.g. db problem, npe, ...)
@@ -502,7 +502,7 @@ public class Window extends Container {
 						// since an error has occured for a request which is targeted in the background iframe, we need to redirect to the error window.
 						// create the error window
 						try {
-							Tracing.logDebug("Error in Window, rollback", getClass());
+							log.debug("Error in Window, rollback");
 							DBFactory.getInstance().rollback();
 						
 							ChiefController msgcc = MsgFactory.createMessageChiefController(ureq, th);
@@ -517,12 +517,12 @@ public class Window extends Container {
 							MediaResource jsonmr = wbackofficeImpl.extractCommands(true);
 							ServletUtil.serveResource(request, response, jsonmr);
 						} catch (Throwable anotherTh) {
-							Tracing.logError("Exception while handling exception!!!!", anotherTh, this.getClass());
+							log.error("Exception while handling exception!!!!", anotherTh);
 						}
 					}
 					if (isDebugLog) {
 						long durationDispatchRequest = System.currentTimeMillis() - debug_start;
-						Tracing.logDebug("Perf-Test: Window return from 1 durationDispatchRequest=" + durationDispatchRequest, Window.class);
+						log.debug("Perf-Test: Window return from 1 durationDispatchRequest=" + durationDispatchRequest);
 					}
 					return;
 				}
@@ -562,7 +562,7 @@ public class Window extends Container {
 
 							// fire event to listening chiefcontroller
 							//fxdiff BAKS-7: resume controller
-							if(isDebugLog) Tracing.logDebug("Removed old timestamp event", Window.class);
+							if(isDebugLog) log.debug("Removed old timestamp event");
 							//fireEvent(ureq, OLDTIMESTAMPCALL);
 						}
 						// just rerender current window
@@ -646,9 +646,9 @@ public class Window extends Container {
 					if (isDebugLog) {
 						long diff = System.currentTimeMillis() - debug_start;
 						debugMsg.append("rdirnw:").append(diff).append(LOG_SEPARATOR);
-						Tracing.logDebug(debugMsg.toString(), Window.class);
+						log.debug(debugMsg.toString());
 						long durationDispatchRequest = System.currentTimeMillis() - debug_start;
-						Tracing.logDebug("Perf-Test: Window return from 2 durationDispatchRequest=" + durationDispatchRequest, Window.class);
+						log.debug("Perf-Test: Window return from 2 durationDispatchRequest=" + durationDispatchRequest);
 					}
 					return;
 				}
@@ -686,9 +686,9 @@ public class Window extends Container {
 							if (isDebugLog) {
 								long diff = System.currentTimeMillis() - debug_start;
 								debugMsg.append("rdirva:").append(diff).append(LOG_SEPARATOR);
-								Tracing.logDebug(debugMsg.toString(), Window.class);
+								log.debug(debugMsg.toString());
 								long durationDispatchRequest = System.currentTimeMillis() - debug_start;
-								Tracing.logDebug("Perf-Test: Window return form 3 durationDispatchRequest=" + durationDispatchRequest, Window.class);
+								log.debug("Perf-Test: Window return form 3 durationDispatchRequest=" + durationDispatchRequest);
 							}
 							return;
 						}
@@ -841,7 +841,7 @@ public class Window extends Container {
 			StringBuilder debugMsg = null;
 			long start = 0;
 			if (isDebugLog) {
-				Tracing.logDebug("Perf-Test: Window.handleDirties started...", Window.class);
+				log.debug("Perf-Test: Window.handleDirties started...");
 				start = System.currentTimeMillis();
 			}
 			
@@ -871,6 +871,7 @@ public class Window extends Container {
 				log.debug("Perf-Test: Window.handleDirties after ct.visitAll durationVisitAll=" + durationVisitAll);
 				log.debug("Perf-Test: Window.handleDirties dirties.size()=" + dirties.size());
 			}
+			
 			if (dCnt > 0) { // collect the redraw dirties command
 				try {			
 					JSONObject root = new JSONObject();

@@ -26,18 +26,12 @@
 
 package org.olat.core.util.component;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 
 /**
  * Description: <br>
- * FIXME:pb discuss "copy pasted -> sign that Container and component should be interfaces"
  * 
  * @author Patrick Brunner
  */
@@ -70,13 +64,18 @@ public class FormComponentTraverser {
 		if (!visitChildrenFirst) {
 			if (!v.visit(node, ureq)) return;
 		}
-		if (node instanceof FormItemContainer) { // visit children
-			FormItemContainer co = (FormItemContainer) node;
+		if (node instanceof FormItemCollection) { // visit children
+			FormItemCollection co = (FormItemCollection) node;
+			for(FormItem item:co.getFormItems()) {
+				doVisit(item, ureq);
+			}
+			/*
 			Map<String, FormItem> children = co.getFormComponents();
 			Set<FormItem> formItems = new HashSet<FormItem>(children.values());
 			for (Iterator<FormItem> iter = formItems.iterator(); iter.hasNext();) {
 				doVisit(iter.next(), ureq);
 			}
+			*/
 		}
 		if (visitChildrenFirst) {
 			v.visit(node, ureq);

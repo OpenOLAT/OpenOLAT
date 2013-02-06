@@ -29,7 +29,6 @@ package org.olat.core.gui.components;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -56,11 +55,9 @@ public class ComponentHelper {
 			ancestors.add(target);
 			return true;
 		}
-		if (current instanceof Container) {
-			Container co = (Container) current;
-			Map<String,Component> children = co.getComponents();
-			for (Iterator<Component> iter = children.values().iterator(); iter.hasNext();) {
-				Component child = iter.next();
+		if (current instanceof ComponentCollection) {
+			ComponentCollection co = (ComponentCollection) current;
+			for (Component child : co.getComponents()) {
 				boolean found = dofindAncestors(child, target, ancestors);
 				if (found) {
 					ancestors.add(current);
@@ -83,11 +80,9 @@ public class ComponentHelper {
 
 	private static Component dofind(Component current, String id, List<Component> foundPath) {
 		if (id.equals(current.getDispatchID())) return current;
-		if (current instanceof Container) {
-			Container co = (Container) current;
-			Map<String,Component> children = co.getComponents();
-			for (Iterator<Component> iter = children.values().iterator(); iter.hasNext();) {
-				Component child = iter.next();
+		if (current instanceof ComponentCollection) {
+			ComponentCollection co = (ComponentCollection)current;
+			for (Component child : co.getComponents()) {
 				Component found = dofind(child, id, foundPath);
 				if (found != null) {
 					foundPath.add(child);
@@ -116,11 +111,9 @@ public class ComponentHelper {
 		if (!current.isVisible()) return; // invisible components are not validated,
 		// since they are not displayed
 		current.validate(ureq, vr);
-		if (current instanceof Container) { // visit children
-			Container co = (Container) current;
-			Map<String,Component> children = co.getComponents();
-			for (Iterator<Component> iter = children.values().iterator(); iter.hasNext();) {
-				Component child = iter.next();
+		if (current instanceof ComponentCollection) { // visit children
+			ComponentCollection co = (ComponentCollection)current;
+			for (Component child : co.getComponents()) {
 				doValidate(ureq, child, vr);
 			}
 		}

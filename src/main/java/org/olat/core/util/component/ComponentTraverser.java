@@ -26,12 +26,9 @@
 
 package org.olat.core.util.component;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.Container;
+import org.olat.core.gui.components.ComponentCollection;
 
 /**
  * Description: <br>
@@ -68,11 +65,9 @@ public class ComponentTraverser {
 		if (!visitChildrenFirst) {
 			if (!v.visit(node, ureq)) return;
 		}
-		if (node instanceof Container) { // visit children
-			Container co = (Container) node;
-			Map children = co.getComponents();
-			for (Iterator iter = children.values().iterator(); iter.hasNext();) {
-				Component child = (Component) iter.next();
+		if (node instanceof ComponentCollection) { // visit children
+			ComponentCollection co = (ComponentCollection)node;
+			for (Component child:co.getComponents()) {
 				doVisit(child, ureq);
 			}
 		}

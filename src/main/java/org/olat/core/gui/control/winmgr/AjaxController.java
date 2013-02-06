@@ -232,7 +232,7 @@ public class AjaxController extends DefaultController {
 		}
 	}
 	
-	private void pushJSONAndClear(Writer writer) throws IOException {
+	public void pushJSONAndClear(Writer writer) throws IOException {
 		synchronized (windowcommands) { //o_clusterOK by:fj
 			// handle all windowcommands now, create json
 			writer.append("{\"cmds\":[");

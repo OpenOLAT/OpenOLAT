@@ -37,7 +37,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 
 /**
  * Description:<br>
@@ -99,89 +98,100 @@ public class TextBoxListRenderer implements ComponentRenderer {
 			logger.debug("rendering TextBoxListComponent in debug mode, nice JS output.");
 		}
 		
+		TextBoxListElementImpl te = ((TextBoxListElementComponent)tblComponent).getTextElementImpl();
+		Form rootForm = te.getRootForm();
+		String dispatchId = tblComponent.getFormDispatchId();
+
+		output.append("<input type=\"text\" id=\"textboxlistinput").append(dispatchId).append("\" ")
+		      .append("name='textboxlistinput").append(dispatchId).append("' ")
+		      .append("value='").append(tblComponent.getInitialItemsAsString()).append("'")
+		      .append("/>\n");
+
+		// OO-137 : here, we display the currentItems. (at first render, this is equal to initialItems)
+		// on succeeding rendering, we want to reflect the current component status
+
+		// generate the JS-code for the tagit
+		output.append(FormJSHelper.getJSStart());
+		output.append("jQuery(function(){\n")
+		      .append("  jQuery('#textboxlistinput").append(dispatchId).append("').tagit({\n")
+		      .append("    allowDuplicates:").append(tblComponent.isAllowDuplicates()).append(",\n")
+		      .append("    autocomplete: {\n")
+		      .append("      delay: 100,");
+		
+		//set autocompleter.source if a provider is around
+		if (tblComponent.getProvider() != null) {
+			String mapperUri = tblComponent.getMapperUri();
+			output.append("    source: function(request, response) {\n")
+			      .append("      jQuery.ajax('").append(mapperUri).append("',{\n")
+			      .append("        data: request,\n")
+			      .append("        dataType:'json',\n")
+			      .append("        success: function(data) {\n")
+			      .append("          response(jQuery.map(data, function( item ) {\n")
+			      .append("            return item;\n")
+			      .append("          }));\n")
+			      .append("        }\n")
+			      .append("      });\n")
+			      .append("    },\n");
+		}
+ 
+		output.append("      minLength: 2\n")
+		      .append("    },\n")
+		      .append("    availableTags:[");
+		Map<String, String> initItems = tblComponent.getCurrentItems();
+		if (initItems != null) {
+			boolean sep = true;
+			for (Entry<String, String> item :initItems.entrySet()) {
+				if(sep) sep = false;
+				else output.append(",");
+
+				String value;
+				if (StringHelper.containsNonWhitespace(item.getValue())) {
+					value = item.getValue();
+				} else {
+					value = item.getKey();
+				}
+				output.append("'").append(value).append("'");
+			}
+		}
+    output.append("],\n");  
+		
+			// otherwise, o_ffEvents are fired: OO-137 ( invoke o_ffEvent on UserAdd or userRemove ) but only in flexiform
+		String o_ffEvent = FormJSHelper.getJSFnCallFor(rootForm, dispatchId, 2);
+		output.append("  afterTagAdded: function(input){\n")
+			    .append(o_ffEvent).append("; console.log('Added',input)},\n")
+			    .append("  afterTagRemoved: function(input){\n")
+			    .append(o_ffEvent).append("; console.log('Remove',input)}\n");
+		output.append("  });\n")
+		      .append("})\n");
+		
+		output.append(FormJSHelper.getJSEnd()).append(lineBreak);
+	}
+	/*
+	private void test(TextBoxListComponent tblComponent, StringOutput output, Translator translator) {
+		
+		// if in debug mode, create more readable javascript code
+		String lineBreak = "";
+		if(logger.isDebug()){
+			lineBreak = Character.toString((char)10);
+			logger.debug("rendering TextBoxListComponent in debug mode, nice JS output.");
+		}
+		
 		TextBoxListElementImpl te = ((TextBoxListElementComponent) tblComponent).getTextElementImpl();
 		Form rootForm = te.getRootForm();
 		Translator fullTrans = Util.createPackageTranslator(TextBoxListRenderer.class, translator.getLocale(), translator);
 		String dispatchId = tblComponent.getFormDispatchId();
-
-		output.append("<ol class=\"textbox-outer\">");
-		output.append("<li id=\"textbox-list").append(dispatchId).append("\" class=\"input-text\">");
-
-		// TODO: epf: RH: provide the initial input as value (json-string),
-		// set jsonInputValue: true, loadfromInput: true
-		output.append("<input type=\"text\" value=\"\" id=\"textboxlistinput").append(dispatchId).append("\" ");
-		output.append("name=\"textboxlistinput");
-		output.append(dispatchId);
-		output.append("\"");
-		output.append("/>");
-
-		// building the "initial" content-list
-		output.append("<div class=\"textboxlist-auto\" id=\"textboxlist-auto").append(dispatchId).append("\">");
-
-		output.append("<ul class=\"feed\">");
-		// OO-137 : here, we display the currentItems. (at first render, this is equal to initialItems)
-		// on succeeding rendering, we want to reflect the current component status
-		Map<String, String> initItems = tblComponent.getCurrentItems();
-		if (initItems != null) {
-			for (Entry<String, String> item : initItems.entrySet()) {
-				output.append("<li value=\"");
-				String value;
-				if (StringHelper.containsNonWhitespace(item.getValue()))
-					value = item.getValue();
-				else
-					value = item.getKey();
-				output.append(value);
-				output.append("\">");
-				output.append(item.getKey());
-				output.append("</li>");
-			}
-		}
-
-		output.append("</ul>");
-		output.append("</div>");
-		output.append("</li>");
-		output.append("</ol>");
-
-		// generate the JS-code for the textboxlist
-		output.append(FormJSHelper.getJSStart());
-		output.append("jQuery(function(){\n")
-		      .append("  jQuery('#textboxlistinput").append(dispatchId).append("').tagit({\n")
-		      .append("    allowDuplicates:").append(tblComponent.isAllowDuplicates()).append(",\n");
-		      
-		      
-		if (tblComponent.doFormSubmitOnInput()) {
-			output.append("  afterTagAdded: function(input){\n")
-			      .append("    document.forms['").append(rootForm.getFormName()).append("'].submit();\n")
-			      .append("  },\n")
-			      .append("  afterTagRemoved: function(input){\n")
-			      .append("    document.forms['").append(rootForm.getFormName()).append("'].submit();\n")
-			      .append("  },\n").append(lineBreak);
-		} else {
-			// otherwise, o_ffEvents are fired: OO-137 ( invoke o_ffEvent on UserAdd or userRemove ) but only in flexiform
-			String o_ffEvent = FormJSHelper.getJSFnCallFor(rootForm, dispatchId, 2);
-			output.append("  afterTagAdded: function(input){").append(lineBreak)
-			      .append(o_ffEvent).append(";},").append(lineBreak)
-			      .append("  afterTagRemoved: function(input){").append(lineBreak)
-			      .append(o_ffEvent).append(";},").append(lineBreak);
-		}
-		output.append("    test:''")//so i don't forget a ,
-		      .append("  });\n")
-		      .append("})\n");
-	
-		
-		/*
 		output.append("tlist = new ProtoMultiSelect('textboxlistinput").append(dispatchId).append("', 'textboxlist-auto").append(dispatchId)
 				.append("',{ newValues: ").append(lineBreak);
 		output.append(Boolean.toString(tblComponent.isAllowNewValues())).append(lineBreak);
 		output.append(", ").append(lineBreak);
-
+		
 		if (tblComponent.getProvider() != null) {
 			// use autocomplete provider instead of prebuilt-map
 			String mapperUri = tblComponent.getMapperUri();
 			output.append("fetchFile: '").append(mapperUri).append("', ").append(lineBreak);
 		}
 		output.append("jsonInputValue: false,").append(lineBreak);
-
+		
 		// hint for the input field
 		String setHintKey = tblComponent.getInputHint();
 		String inputHint;
@@ -189,11 +199,11 @@ public class TextBoxListRenderer implements ComponentRenderer {
 			inputHint = fullTrans.translate("default.input.hint");
 		else
 			inputHint = tblComponent.getTranslator().translate(setHintKey);
-
+		
 		output.append("inputMessage: '").append(inputHint).append("',").append(lineBreak);
 		output.append("sortResults: true, ").append(lineBreak);
 		output.append("autoResize: true, ").append(lineBreak);
-
+		
 		if (tblComponent.getMaxResults() > 0 ) {
 			output.append("results: ").append(tblComponent.getMaxResults()).append(", ").append(lineBreak);
 			output.append("maxResults: ").append(tblComponent.getMaxResults()).append(", ").append(lineBreak);
@@ -205,15 +215,15 @@ public class TextBoxListRenderer implements ComponentRenderer {
 		output.append("allowDuplicates: ").append(Boolean.toString(tblComponent.isAllowDuplicates())).append(", ").append(lineBreak);
 		output.append("loadFromInput: false,").append(lineBreak);
 		output.append("fetchParameters: 'keyword', ").append(lineBreak);
-
+		
 		// depending on config of the Component, form is submitted on input
-		if (tblComponent.doFormSubmitOnInput()) {
+		if (false) {
 			output.append("onEmptyInput: function(input){ ");
 			output.append("document.forms['").append(rootForm.getFormName()).append("'].submit();} , ").append(lineBreak);
-
+		
 			output.append("onUserAdd: function(input){");
 			output.append("document.forms['").append(rootForm.getFormName()).append("'].submit();} , ").append(lineBreak);
-
+		
 			output.append("onUserRemove: function(input){");
 			output.append("document.forms['").append(rootForm.getFormName()).append("'].submit();} , ").append(lineBreak);
 		} else {
@@ -228,25 +238,22 @@ public class TextBoxListRenderer implements ComponentRenderer {
 			output.append("onUserAdd: function(input){").append(lineBreak);
 			//output.append("console.log('onUserAdd');").append(lineBreak);
 			output.append(o_ffEvent).append("; } , ").append(lineBreak);
-
+		
 			output.append("onUserRemove: function(input){").append(lineBreak);
 			//output.append("console.log('onUserRemove');").append(lineBreak);
 			output.append(o_ffEvent).append("; } , ").append(lineBreak);
 		}
 		output.append("regexSearch: false });").append(lineBreak);
-
+		
 		if (tblComponent.getProvider() == null) {
 			// no provider is specified, use a prebuilt-map to look for
 			// autocompletion
 			output.append("var myjson = ");
-			output.append(tblComponent.getAutoCompleteJSON());
+			output.append(tblComponent.getAutoCompleteJSON().toString());
 			output.append(";");
 			output.append("myjson.each(function(t){tlist.autoFeed(t)});");
 		}
-		*/
-
-		output.append(FormJSHelper.getJSEnd()).append(lineBreak);
-	}
+	}*/
 
 	/**
 	 * Renders the textBoxListComponent in disabled/read-only mode

@@ -113,7 +113,12 @@ public class AbstractQuestionListController extends FormBasicController implemen
 				doSelect(ureq, row.getItem());
 			} else if("mark".equals(link.getCmd())) {
 				QuestionItemRow row = (QuestionItemRow)link.getUserObject();
-				doMark(ureq, row.getItem());
+				if(doMark(ureq, row.getItem())) {
+					link.setI18nKey("Mark_true");
+				} else {
+					link.setI18nKey("Mark_false");
+				}
+				link.getComponent().setDirty(true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -125,12 +130,14 @@ public class AbstractQuestionListController extends FormBasicController implemen
 		stackPanel.pushController(item.getSubject(), mainCtrl);
 	}
 	
-	protected void doMark(UserRequest ureq, QuestionItem item) {
+	protected boolean doMark(UserRequest ureq, QuestionItem item) {
 		if(markManager.isMarked(item, getIdentity(), null)) {
 			markManager.deleteMark(item);
+			return false;
 		} else {
 			String businessPath = "[QuestionItem:" + item.getKey() + "]";
 			markManager.setMark(item, getIdentity(), null, businessPath);
+			return true;
 		}
 	}
 
@@ -153,10 +160,10 @@ public class AbstractQuestionListController extends FormBasicController implemen
 		boolean marked = markedQuestionKeys.contains(item.getKey());
 		
 		QuestionItemRow row = new QuestionItemRow(item);
-		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "Mark_" + marked, null, flc, Link.NONTRANSLATED);
+		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "Mark_" + marked, null, null, Link.NONTRANSLATED);
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
-		FormLink selectLink = uifactory.addFormLink("select_" + row.getKey(), "select", "Select", null, flc, Link.NONTRANSLATED);
+		FormLink selectLink = uifactory.addFormLink("select_" + row.getKey(), "select", "Select", null, null, Link.NONTRANSLATED);
 		selectLink.setUserObject(row);
 		row.setSelectLink(selectLink);
 		return row;

@@ -31,19 +31,16 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.control.JSAndCSSAdder;
+import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -103,11 +100,6 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 
 	private ResultMapProvider provider;
 	private String mapperUri;
-
-	/*
-	 * if set to true, form is submitted on user input. Default is false
-	 */
-	private boolean doFormSubmitOnInput = false;
 
 	/*
 	 * the number of maxResults shown in the auto-completion list
@@ -183,6 +175,8 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 				currentItems.put(caption, itemValue);
 			}
 		}
+		
+		System.out.println(cmd + " :: " + cleanedItemValues);
 
 		if (logger.isDebug())
 			logger.debug("doDispatchRequest --> firing textBoxListEvent with current items: " + cleanedItemValues);
@@ -293,7 +287,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 		//jsa.addRequiredJsFile(TextBoxListComponent.class, "js/multiselect.js");
 		jsa.addRequiredStaticJsFile("js/jquery/tagit/tag-it.min.js");
 
-		if (this.provider != null)
+		if (provider != null)
 			setMapper(ureq);
 	}
 
@@ -304,25 +298,19 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 */
 	private void setMapper(UserRequest ureq) {
 		Mapper mapper = new Mapper() {
-
 			public MediaResource handle(String relPath, HttpServletRequest request) {
-				String lastInput = request.getParameter("keyword");
-				if (lastInput.length() > 2) {
+				String lastInput = request.getParameter("term");
+				if (lastInput != null && lastInput.length() > 2) {
 					Map<String, String> autoCContLoc = new HashMap<String, String>();
 					provider.getAutoCompleteContent(lastInput, autoCContLoc);
 					setAutoCompleteContent(autoCContLoc);
 				}
-				String jsonResult = getAutoCompleteJSON();
-				StringMediaResource mediaResource = new StringMediaResource();
-				mediaResource.setContentType("application/x-json;charset=utf-8");
-				mediaResource.setEncoding("utf-8");
-				mediaResource.setData(jsonResult);
-				return mediaResource;
+				JSONArray jsonResult = getAutoCompleteJSON();
+				return new JSONMediaResource(jsonResult, "UTF-8");
 			}
 		};
 
-		String fetchUri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapper);
-		this.mapperUri = fetchUri + "/";
+		mapperUri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapper);
 	}
 
 	/**
@@ -398,24 +386,19 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 * 
 	 * @return the autoCompletionContent as JSON
 	 */
-	protected String getAutoCompleteJSON() {
-		String res = "[]";
+	protected JSONArray getAutoCompleteJSON() {
+		JSONArray array = new JSONArray();
 		try {
-			JSONArray cssAdd = new JSONArray();
 			Map<String, String> autoCont = getAutoCompleteContent();
-			if (autoCont != null && !autoCont.isEmpty()) {
+			if (autoCont != null) {
 				for (String item : autoCont.keySet()) {
-					JSONObject array = new JSONObject();
-					array.put("caption", item);
-					array.put("value", autoCont.get(item));
-					cssAdd.put(array);
+					array.put(autoCont.get(item));
 				}
-				res = cssAdd.toString();
 			}
-		} catch (JSONException e) {
-			throw new OLATRuntimeException("could not convert the autocompletion-map to json", e);
+		} catch (Exception e) {
+			logger.error("", e);
 		}
-		return res;
+		return array;
 	}
 
 	public void setMapperProvider(ResultMapProvider provider) {
@@ -445,26 +428,6 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 */
 	public void setMaxResults(int maxResults) {
 		this.maxResults = maxResults;
-	}
-
-	/**
-	 * configures the behavior on user input (item added, item deleted).
-	 * 
-	 * @param doFormSubmit
-	 *            If set to true, containing form will be submitted on user
-	 *            input
-	 */
-	public void doFormSubmitOnInput(boolean doFormSubmit) {
-		this.doFormSubmitOnInput = doFormSubmit;
-	}
-
-	/**
-	 * 
-	 * @return true if this TextBoxListElement is configured to submit the
-	 *         containing form on userinput.
-	 */
-	public boolean doFormSubmitOnInput() {
-		return doFormSubmitOnInput;
 	}
 
 	/**

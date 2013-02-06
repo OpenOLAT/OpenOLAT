@@ -55,22 +55,6 @@ public interface TextBoxListElement extends FormItem {
 	 * @param maxResults
 	 */
 	public void setMaxResults(int maxResults);
-		
-	/**
-	 * configures the behaviour on user input (item added, item deleted).
-	 * 
-	 * @param preventFormSubmit
-	 *            If set to true, containing form will be submitted on user
-	 *            input
-	 */
-	public void doFormSubmitOnInput(boolean doFormSubmit);
-
-	/**
-	 * 
-	 * @return true if this TextBoxListElement is configured to submit the
-	 *         containing form on userinput.
-	 */
-	public boolean doFormSubmitOnInput();
 
 	/**
 	 * @return Returns the allowDuplicates.

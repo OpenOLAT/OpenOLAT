@@ -511,6 +511,18 @@ public class ServletUtil {
 		response.setDateHeader("Expires", 0);
 	}
 	
+	public static void setJSONResourceHeaders(HttpServletResponse response) {
+		// we ignore the accept-charset from the request and always write in utf-8
+		// -> see comment below
+		response.setContentType("application/json;charset=utf-8");
+		// never allow to cache pages since they contain a timestamp valid only once
+		// HTTP 1.1
+		response.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate, proxy-revalidate, s-maxage=0, max-age=0");
+		// HTTP 1.0
+		response.setHeader("Pragma", "no-cache");
+		response.setDateHeader("Expires", 0);
+	}
+	
 	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
   protected static class Range {
     public long start;

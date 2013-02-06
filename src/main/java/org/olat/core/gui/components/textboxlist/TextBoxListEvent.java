@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
  */
 public class TextBoxListEvent extends Event {
 
+	private static final long serialVersionUID = -3171640979953788199L;
 	private static final String TEXTBOXLISTCHANGE = "textboxlistchange";
 	private List<String> allItems;
 

@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * <h2>Description:</h2>
@@ -581,7 +582,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormComponent#validate(java.util.List)
 	 */
-	public abstract void validate(List validationResults);
+	public abstract void validate(List<ValidationStatus> validationResults);
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItem#reset()

@@ -26,9 +26,6 @@
 
 package org.olat.core.gui.render;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
@@ -238,13 +235,10 @@ public class Renderer {
 				Container ccpar = cc.getParent();
 				while (ccpar != null) { // omit content pane
 					// find out name under which cc was registered in its parent - that is the relevant name, not the name of the component itself
-					Map<String,Component> namedChildren = ccpar.getComponents();
-					for (Iterator<String> it_chd = namedChildren.keySet().iterator(); it_chd.hasNext();) {
-						String chdName = it_chd.next();
-						Component chd = ccpar.getComponent(chdName);
+					for (Component chd: ccpar.getComponents()) {
 						if (chd == cc) {
 							// found -> append name
-							pathsb.append(chdName).append('!');
+							pathsb.append(chd.getComponentName()).append('!');
 							break;
 						}
 					}

@@ -87,6 +87,18 @@ public class FormJSHelper {
 		content += ("')");
 		return content;
 	}
+	
+	public static String getXHRFnCallFor(Form form, String id, int actionIndex) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("o_ffXHREvent('")
+		  .append(form.getFormName()).append("','")
+		  .append(form.getDispatchFieldId()).append("','")
+		  .append(id).append("','")
+		  .append(form.getEventFieldId()).append("','")
+		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
+		  .append("','hello','world')");
+		return sb.toString();
+	}
 
 	public static void appendReadOnly(String text, StringOutput sb) {
 		sb.append(READONLYA);

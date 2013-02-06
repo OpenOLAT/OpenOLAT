@@ -185,7 +185,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 		// check if users portal columns contain only defined portals. remove all non existing portals
 		// to make it possible to change the portlets in a next release or to remove a portlet
 		List<List<String>> cleanedUserColumns = new ArrayList<List<String>>();
-		Set availablePortlets = PortletFactory.getPortlets().keySet();
+		Set<String> availablePortlets = PortletFactory.getPortlets().keySet();
 		Iterator colIter = userColumns.iterator();
 		while (colIter.hasNext()) {
 			// add this row as new cleaned row to columns
@@ -236,21 +236,21 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 				}			
 				pc.addControllerListener(this);
 				// remember this portlet container
-				this.portletContainers.put(portlet.getName(), pc);
+				portletContainers.put(portlet.getName(), pc);
 				String addLinkName = "command.add." + portlet.getName();
 				Link tmp = LinkFactory.createCustomLink(addLinkName, addLinkName, "add", Link.BUTTON_XSMALL, portalVC, this);
 				tmp.setUserObject(portlet.getName());
 				// and add to velocity
-				this.portalVC.put(portlet.getName(), pc.getInitialComponent());
+				portalVC.put(portlet.getName(), pc.getInitialComponent());
 				
 				// check if portlet is active for this user
-				Iterator colIter = this.portalColumns.iterator();
+				Iterator<List<String>> colIter = portalColumns.iterator();
 				boolean isActive = false;
 				while (colIter.hasNext()) {
-					List row = (List) colIter.next();
-					Iterator rowIter = row.iterator();
+					List<String> row = colIter.next();
+					Iterator<String> rowIter = row.iterator();
 					while (rowIter.hasNext()) {
-						String activePortletName = (String) rowIter.next();
+						String activePortletName = rowIter.next();
 						if (portlet.getName().equals(activePortletName)) isActive = true;
 					}
 				}
@@ -275,7 +275,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source instanceof Link && portalVC.getComponents().containsValue(source)) {
+		if (source instanceof Link && portalVC.contains(source)) {
 			Link tmp = (Link)source;
 			String portletName = (String)tmp.getUserObject();
 			List<String> firstColumn = this.portalColumns.get(0);

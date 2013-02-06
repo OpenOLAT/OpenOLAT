@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
  */
 public class FormEvent extends Event {
 
+	private static final long serialVersionUID = -3538521396051263132L;
 	private FormItem source;
 	public static final int ONDBLCLICK = 1;
 	public static final int ONCLICK = 2; 

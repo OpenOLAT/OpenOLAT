@@ -959,7 +959,9 @@ public class FormUIFactory {
 	 */
 	public FormLink addFormLink(String name, FormItemContainer formLayout, int presentation) {
 		FormLinkImpl fte = new FormLinkImpl(name, name, name, presentation);
-		formLayout.add(fte);
+		if(formLayout != null) {
+			formLayout.add(fte);
+		}
 		return fte;
 	}
 
@@ -976,7 +978,9 @@ public class FormUIFactory {
 		FormLinkImpl fte = new FormLinkImpl(name,name,i18nLink,presentation);
 		fte.setI18nKey(i18nLink);
 		setLabelIfNotNull(i18nLabel, fte);
-		formLayout.add(fte);
+		if(formLayout != null) {
+			formLayout.add(fte);
+		}
 		return fte;
 	}
 	
@@ -994,7 +998,9 @@ public class FormUIFactory {
 		FormLinkImpl fte = new FormLinkImpl(name, cmd, i18nLink, presentation);
 		fte.setI18nKey(i18nLink);
 		setLabelIfNotNull(i18nLabel, fte);
-		formLayout.add(fte);
+		if(formLayout != null) {
+			formLayout.add(fte);
+		}
 		return fte;
 	}
 
@@ -1009,7 +1015,9 @@ public class FormUIFactory {
 	public FormLink addFormLink(String name, FormItemContainer formLayout, String customEnabledLinkCSS) {
 		FormLinkImpl fte = new FormLinkImpl(name);
 		fte.setCustomEnabledLinkCSS(customEnabledLinkCSS);
-		formLayout.add(fte);
+		if(formLayout != null) {
+			formLayout.add(fte);
+		}
 		return fte;
 	}
 

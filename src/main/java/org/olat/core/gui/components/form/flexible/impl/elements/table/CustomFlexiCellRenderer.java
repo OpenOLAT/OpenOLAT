@@ -48,7 +48,6 @@ public abstract class CustomFlexiCellRenderer implements FlexiCellRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
-	@SuppressWarnings("unused")
 	public void render(Renderer renderer, StringOutput target, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
@@ -61,7 +60,6 @@ public abstract class CustomFlexiCellRenderer implements FlexiCellRenderer {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.render.RenderingState)
 	 */
-	@SuppressWarnings("unused")
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
 			StringOutput sb, Component source, RenderingState rstate) {
 		// TODO Auto-generated method stub
@@ -76,7 +74,6 @@ public abstract class CustomFlexiCellRenderer implements FlexiCellRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderingState)
 	 */
-	@SuppressWarnings("unused")
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
 			Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {

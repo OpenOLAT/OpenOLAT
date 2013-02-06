@@ -29,6 +29,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -57,6 +58,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 		//
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		Form rootForm = ftE.getRootForm();
 
 		String id = ftC.getFormDispatchId();
 		//
@@ -123,8 +125,11 @@ class FlexiTableRenderer implements ComponentRenderer {
 				if (cellValue instanceof FormItem) {
 					FormItem formItem = (FormItem)cellValue;
 					formItem.setTranslator(translator);
-					formItem.setRootForm(ftE.getRootForm());
+					if(ftE.getRootForm() != formItem.getRootForm()) {
+						formItem.setRootForm(ftE.getRootForm());
+					}
 					formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(), ubu, translator, renderResult, args);
+					ftE.addFormItem(formItem);
 				} else {
 					ftE.getTableDataModel().getTableColumnModel().getColumnModel(j).
 						getCellRenderer().render(target, cellValue, translator);
@@ -174,6 +179,10 @@ class FlexiTableRenderer implements ComponentRenderer {
       .append("			{'mData':'mark'}\n")
       .append("		]\n")
       .append("	});\n")
+      //clic rows
+      .append("	jQuery('#").append(id).append(" tbody tr').click( function( e ) {\n")
+      .append("	  //").append(FormJSHelper.getXHRFnCallFor(rootForm, id, 1)).append(";\n")
+      .append("	});\n")
       .append("});\n")
 		  .append("</script>\n");
 
@@ -188,8 +197,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 	 */
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
 			StringOutput sb, Component source, RenderingState rstate) {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 	/**
@@ -203,10 +211,6 @@ class FlexiTableRenderer implements ComponentRenderer {
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
 			Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
-		// TODO Auto-generated method stub
-
+		//
 	}
-
-	
-
 }

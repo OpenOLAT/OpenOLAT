@@ -333,11 +333,13 @@ public abstract class FormBasicController extends BasicController {
 				 */
 				FormItem fiSrc = fe.getFormItemSource();
 				// check for InlineElments
+				//TODO jquery
+				/*
 				if(fiSrc instanceof InlineElement){
 					if(!((InlineElement) fiSrc).isInlineEditingElement()){ //OO-137
 						this.flc.setDirty(true);
 					}
-				}
+				}*/
 				//
 				formInnerEvent(ureq, fiSrc, fe);
 				// no need to set container dirty, up to controller code if something is dirty

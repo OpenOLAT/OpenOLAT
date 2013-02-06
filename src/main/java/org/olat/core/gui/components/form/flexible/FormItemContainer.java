@@ -27,7 +27,6 @@ package org.olat.core.gui.components.form.flexible;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Stack;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -47,7 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
  * 
  * @author patrickb
  */
-public interface FormItemContainer extends FormItem {
+public interface FormItemContainer extends FormItem, FormItemCollection {
 
 	/**
 	 * add a formelement or container by adding subcomponents
@@ -68,13 +67,6 @@ public interface FormItemContainer extends FormItem {
 	 * @param formComp
 	 */
 	public void add(String name, FormItem formComp);
-
-	/**
-	 * register only, does not addsubcomponents, does not expose formItem in the velocity.
-	 * In 99% of the cases you should use an addXX method instead.
-	 * @param formComp
-	 */
-	public void register(FormItem formComp);
 	
 	/**
 	 * remove the component from this container
@@ -90,7 +82,7 @@ public interface FormItemContainer extends FormItem {
 
 	/**
 	 * the form components managed by this container
-	 * @return
+	 * @return Return an unmodifiable map
 	 */
 	public Map<String, FormItem> getFormComponents();
 	

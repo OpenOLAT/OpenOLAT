@@ -377,7 +377,6 @@ var o_debug_trid = 0;
 function o_ainvoke(r) {
 	// commands
 	if(r == undefined) {
-		console.log('r is undefined');
 		return;
 	}
 	
@@ -417,11 +416,11 @@ function o_ainvoke(r) {
 							var hdrco = hdr+"\n\n"+hfrag;
 							var inscripts = '';//jQuery(hfrag).find('script');//hfrag.extractScripts();
 							var newc = jQuery("#o_c"+ciid);
-							if (newc == null) {
-								if (o_info.debug) o_logwarn("could not find comp with id: o_c"+ciid+",\nname: "+c1["cname"]+",\nlistener(s): "+c1["clisteners"]+",\n\nhtml:\n"+hfrag);
-								//TODO jquery
-								if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), could not find comp with id: o_c"+ciid+",\nname: "+c1["cname"]+",\nlistener(s): "+c1["clisteners"]+",\n\nhtml:\n"+hfrag, "functions.js");
-							} else {
+							if (newc == null || (newc.length == 0)) {
+								//not a container, perhaps an element
+								newc = jQuery("#o_fi"+ciid);
+							} 
+							if (newc != null) {
 								if(civis){ // needed only for ie 6/7 bug where an empty div requires space on screen
 									newc.css('display','');//.style.display="";//reset?
 								}else{
@@ -433,10 +432,10 @@ function o_ainvoke(r) {
 								newc.empty();
 								
 								try{
-								newc.html(hdrco);//Ext.DomHelper.overwrite(newc, hdrco, false);
+									newc.html(hdrco);//Ext.DomHelper.overwrite(newc, hdrco, false);
 								} catch(e) {
 									console.log(e);
-									console.log('Fragmet',hdrco);
+									console.log('Fragment',hdrco);
 								}
 								
 								b_changedDomEl.push('o_c'+ciid);
@@ -889,6 +888,33 @@ function o_ffEvent (formNam, dispIdField, dispId, eventIdField, eventInt){
 	}
 	dispIdEl.value = defDispId;
 	eventIdEl.value = defEventId;
+}
+
+function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
+	var data = new Object();
+	data['dispatchuri'] = dispId;
+	data['dispatchevent'] = eventInt;
+	if(arguments.length > 5) {
+		var argLength = arguments.length;
+		for(var i=5; i<argLength; i=i+2) {
+			if(argLength > i+1) {
+				data[arguments[i]] = arguments[i+1];
+			}
+		}
+	}
+	
+	var targetUrl = jQuery('#' + formNam).attr("action");
+	jQuery.ajax(targetUrl,{
+		type:'GET',
+		data: data,
+		dataType: 'json',
+		success: function(data, textStatus, jqXHR) {
+			o_ainvoke(data);
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			if(console) console.log('Error status', textStatus);
+		}
+	})
 }
 
 //

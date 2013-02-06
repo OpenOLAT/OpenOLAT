@@ -25,14 +25,20 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.translator.Translator;
 
 /**
  * @author Christian Guretzki
  */
-class FlexiTableComponent extends FormBaseComponentImpl {
+class FlexiTableComponent extends FormBaseComponentImpl implements ComponentCollection {
 
 	private ComponentRenderer RENDERER = new FlexiTableRenderer();
 	private FlexiTableElementImpl element;
@@ -48,8 +54,26 @@ class FlexiTableComponent extends FormBaseComponentImpl {
 		this.element = element;
 	}
 	
-	FlexiTableElementImpl getFlexiTableElement(){
+	FlexiTableElementImpl getFlexiTableElement() {
 		return element;
+	}
+
+	@Override
+	public Component getComponent(String name) {
+		FormItem item = element.getFormComponent(name);
+		if(item != null) {
+			return item.getComponent();
+		}
+		return null;
+	}
+
+	@Override
+	public Iterable<Component> getComponents() {
+		List<Component> cmp = new ArrayList<Component>();
+		for(FormItem item:element.getFormItems()) {
+			cmp.add(item.getComponent());
+		}
+		return cmp;
 	}
 
 	/**

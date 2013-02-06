@@ -76,7 +76,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		vh.mergeContent(pagePath, ctx, target, theme);
 		
 		//set all not rendered component as not dirty
-		for(Component cmp: vc.getComponents().values()) {
+		for(Component cmp: vc.getComponents()) {
 			if(cmp.isDirty()) {
 				cmp.setDirty(false);
 			}
@@ -92,7 +92,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		VelocityContainer vc = (VelocityContainer) source;
 		// the velocity container itself needs no headerincludes, but ask the
 		// children also
-		for (Component child : vc.getComponents().values()) {
+		for (Component child : vc.getComponents()) {
 			renderer.renderHeaderIncludes(sb, child, rstate);
 		}
 	}
@@ -105,7 +105,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		VelocityContainer vc = (VelocityContainer) source;
 		// the velocity container itself needs no headerincludes, but ask the
 		// children also
-		for (Component child : vc.getComponents().values()) {
+		for (Component child : vc.getComponents()) {
 			renderer.renderBodyOnLoadJSFunctionCall(sb, child, rstate);
 		}
 	}

@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * <h2>Summary:</h2>
@@ -153,7 +154,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * 
 	 * @return
 	 */
-	public void validate(List validationResults);
+	public void validate(List<ValidationStatus> validationResults);
 
 	/**
 	 * reset the data in the field to a initial/predefined value. This method is 

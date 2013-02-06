@@ -47,25 +47,24 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for FormVelocityContainer
+ * 
  * <P>
  * Initial Date: 22.11.2006 <br>
  * 
  * @author patrickb
  */
 public class FormLayoutContainer extends FormItemImpl implements FormItemContainer, FormLayouter, Disposable {
-	//
-	private static final String PACKAGE = Util.getPackageName(FormLayoutContainer.class);
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+
+	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(FormLayoutContainer.class);
 	private static final String LAYOUT_DEFAULT = VELOCITY_ROOT + "/form_default.html";
 	private static final String LAYOUT_HORIZONTAL = VELOCITY_ROOT + "/form_horizontal.html";
 	private static final String LAYOUT_VERTICAL = VELOCITY_ROOT + "/form_vertical.html";
 	private static final String LAYOUT_SELBOX = VELOCITY_ROOT + "/form_selbox.html";
 	private static final String LAYOUT_BUTTONGROUP = VELOCITY_ROOT + "/form_buttongroup.html";
-	//
 
 	/**
 	 * manage the form components of this form container
@@ -79,10 +78,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * The register method register an element only -> used for setErrorComponent / setLabelComponent.
 	 */
 	protected Map<String,FormItem> formComponents;
-	protected List formComponentsNames;
+	protected List<String> formComponentsNames;
 	protected Map<String,FormItem> listeningOnlyFormComponents;
 	private boolean hasRootForm=false;
-	private HashMap<String, Map> dependencyRules=null;
+	private Map<String, Map<String, FormItemDependencyRule>> dependencyRules;
 
 
 	/**
@@ -118,13 +117,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.contextPut("f", new FormDecoratorImpl(this));
 		// this container manages the form items, the GUI form item componentes are
 		// managed in the associated velocitycontainer
-		formComponentsNames = new ArrayList(5);
+		formComponentsNames = new ArrayList<String>(5);
 		formLayoutContainer.contextPut("formitemnames", formComponentsNames);
 		formComponents = new HashMap<String, FormItem>();
-		//
 		listeningOnlyFormComponents = new HashMap<String, FormItem>();
-		//
-		dependencyRules = new HashMap<String, Map>();
+		dependencyRules = new HashMap<String, Map<String, FormItemDependencyRule>>();
 	}
 
 	
@@ -133,14 +130,12 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @see org.olat.core.gui.components.form.flexible.FormComponent#rememberFormRequest(org.olat.core.gui.UserRequest,
 	 *      long[], int)
 	 */
-	@SuppressWarnings("unused")
 	public void evalFormRequest(UserRequest ureq) {
 		// form layouter has no values to store temporary
 	}
 
 	@Override
-	@SuppressWarnings("unused")
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		// form layouter is not validating
 	}
 
@@ -237,15 +232,12 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 			add(foName, formItem);
 			foItemsCollectionAsNames.add(foName);
 		}
-		
-		
-		
 	}
-
 	
 	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.FormItemContainer#register(org.olat.core.gui.components.form.flexible.FormItem)
+	 * register only, does not addsubcomponents, does not expose formItem in the velocity.
+	 * In 99% of the cases you should use an addXX method instead.
+	 * @param formComp
 	 */
 	public void register(FormItem formComp) {
 		if(!hasRootForm){
@@ -262,10 +254,9 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		}
 		formComp.setTranslator(itemTranslator);
 		formComp.setRootForm(getRootForm());
-		//
+
 		String formCompName = formComp.getName();
 		// book keeping of FormComponent order
-
 		listeningOnlyFormComponents.put(formCompName, formComp);
 		
 		if (GUIInterna.isLoadPerformanceMode()) {
@@ -358,6 +349,13 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	protected Component getFormItemComponent() {
 		return formLayoutContainer;
 	}
+	
+	@Override
+	public Iterable<FormItem> getFormItems() {
+		List<FormItem> merged = new ArrayList<FormItem>(formComponents.values());
+		merged.addAll(listeningOnlyFormComponents.values());
+		return merged;
+	}
 
 	public Map<String, FormItem> getFormComponents() {
 		Map<String,FormItem> merged = new HashMap<String, FormItem>(formComponents);
@@ -366,7 +364,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	}
 
 	public FormItem getFormComponent(String name){
-		return getFormComponents().get(name);
+		if(formComponents.containsKey(name)) {
+			return formComponents.get(name);
+		}
+		return listeningOnlyFormComponents.get(name);
 	}
 	
 	public void contextPut(String key, Object value) {
@@ -401,7 +402,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.api.FormItemContainer#addDependencyRule(org.olat.core.gui.components.form.flexible.api.FormItemDependencyRule)
 	 */
-	@SuppressWarnings("unchecked")
 	public void addDependencyRule(FormItemDependencyRule depRule) {
 		String key = depRule.getTriggerElement().getName();
 		Map<String, FormItemDependencyRule> rules;
@@ -425,9 +425,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		if(dependencyRules.containsKey(key)){
 			Map<String, FormItemDependencyRule> ruleSet = dependencyRules.get(key);
 			Collection<FormItemDependencyRule> rules = ruleSet.values();
-			for (Iterator iter = rules.iterator(); iter.hasNext();) {
-				FormItemDependencyRule tmp = (FormItemDependencyRule)iter.next();
-				if (tmp.applyRule(this)) this.setDirty(true);
+			for (Iterator<FormItemDependencyRule> iter = rules.iterator(); iter.hasNext();) {
+				FormItemDependencyRule tmp = iter.next();
+				if (tmp.applyRule(this)) {
+					setDirty(true);
+				}
 			}
 		}
 		
@@ -441,9 +443,9 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		//enable / disable this
 		super.setEnabled(isEnabled);
 		//iterate over all components and disable / enable them
-		Collection formItems = getFormComponents().values();
-		for (Iterator iter = formItems.iterator(); iter.hasNext();) {
-			FormItem element = (FormItem) iter.next();
+		Collection<FormItem> formItems = getFormComponents().values();
+		for (Iterator<FormItem> iter = formItems.iterator(); iter.hasNext();) {
+			FormItem element = iter.next();
 			element.setEnabled(isEnabled);
 		}
 	}

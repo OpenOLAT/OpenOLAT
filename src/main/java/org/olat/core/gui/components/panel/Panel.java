@@ -122,7 +122,7 @@ public class Panel extends Container {
 	 */
 	public void setContent(Component newContent) {
 		stackList.clear();
-		getComponents().clear();
+		clear();
 		if (newContent != null) {
 			pushContent(newContent);
 		} else {
