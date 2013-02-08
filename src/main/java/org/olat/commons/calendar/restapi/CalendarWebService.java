@@ -57,6 +57,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
@@ -208,7 +209,7 @@ public class CalendarWebService {
 		}
 
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		if(event.getId() == null) {
+		if(StringHelper.containsNonWhitespace(event.getId())) {
 			String id = UUID.randomUUID().toString();
 			KalendarEvent kalEvent = new KalendarEvent(id, event.getSubject(), event.getBegin(), event.getEnd());
 			transfer(event, kalEvent);
