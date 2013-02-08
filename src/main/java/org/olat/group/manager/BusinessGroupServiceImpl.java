@@ -507,6 +507,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public void updateMembership(Identity ureqIdentity, MembershipModification membersMod,
 			List<BusinessGroup> groups, MailPackage mailing) {
 		Roles ureqRoles = securityManager.getRoles(ureqIdentity);
@@ -553,9 +554,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 		}
 		removeOwners(ureqIdentity, ownerToRemove, group);
-		
-		//release lock
-		dbInstance.commit();
 	}
 
 	@Override
@@ -1548,7 +1546,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, re.getOlatResource());
 			securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
 			if(count++ % 20 == 0) {
-				dbInstance.intermediateCommit();
+				dbInstance.commit();
 			}
 		}
 	}

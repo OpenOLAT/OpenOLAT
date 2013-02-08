@@ -32,7 +32,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.junit.After;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLog;
@@ -101,6 +104,7 @@ public class DBTest extends OlatTestCase {
 			assertNotNull(db.getError());
 		}
 	}
+	
 	@Test
 	public void testRollback() {
 		DB db = DBFactory.getInstance();
@@ -125,6 +129,7 @@ public class DBTest extends OlatTestCase {
 		Property p =pm.findProperty(null, null, null, null, propertyKey);
 		assertNull("Property.save is NOT rollbacked", p);
 	}
+	
 	@Test
 	public void testMixedNonTransactional_Transactional() {
 		DB db = DBFactory.getInstance();
@@ -157,6 +162,7 @@ public class DBTest extends OlatTestCase {
 		Property p_2 =pm.findProperty(null, null, null, null, propertyKey2);
 		assertNull("Property2 is NOT rollbacked", p_2);
 	}
+	
 	@Test
 	public void testRollbackNonTransactional() {
 		DB db = DBFactory.getInstance();
@@ -188,38 +194,6 @@ public class DBTest extends OlatTestCase {
 		assertNull("Property2 is NOT rollbacked", p_2);
 	}
 
-	
-	/**
-	 * Test concurrent updating. DbWorker threads updates concurrent db.
-	 */
-	@Test
-	public void testConcurrentUpdate() {
-		int maxWorkers = 5;
-		int loops = 100;
-		log.info("start testConcurrentUpdate maxWorkers=" + maxWorkers + "  loops=" + loops);
-		DbWorker[] dbWorkers = new DbWorker[maxWorkers];
-		for (int i=0; i<maxWorkers; i++) {
-			dbWorkers[i] = new DbWorker(i,loops);
-		}
-		boolean allDbWorkerFinished = false;
-		while (!allDbWorkerFinished) {
-			allDbWorkerFinished = true;
-			for (int i=0; i<maxWorkers; i++) {
-				if (!dbWorkers[i].isfinished() ) {
-					allDbWorkerFinished = false;
-				}
-			}
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("testConcurrentUpdate InterruptedException=" + e);
-			}
-		}
-		for (int i=0; i<maxWorkers; i++) {
-			assertEquals(0,dbWorkers[i].getErrorCounter());
-		}
-		log.info("finished testConcurrentUpdate ");
-	}
 	@Test
 	public void testDbPerf() {
 		int loops = 1000;
@@ -272,13 +246,14 @@ public class DBTest extends OlatTestCase {
 	public void testDBUTF8capable() {
 		DB db = DBFactory.getInstance();
 		PropertyManager pm = PropertyManager.getInstance();
+		String name = UUID.randomUUID().toString();
 		String unicodetest = "a-greek a\u03E2a\u03EAa\u03E8 arab \u0630a\u0631 chinese:\u3150a\u3151a\u3152a\u3153a\u3173a\u3110-z";
-		Property p = pm.createPropertyInstance(null, null, null, null, "superbluberkey", null, null, unicodetest, null);
+		Property p = pm.createPropertyInstance(null, null, null, null, name, null, null, unicodetest, null);
 		pm.saveProperty(p);
 		// forget session cache etc.
 		db.closeSession();
 		
-		Property p2 = pm.findProperty(null, null, null, null, "superbluberkey");
+		Property p2 = pm.findProperty(null, null, null, null, name);
 		String lStr = p2.getStringValue();
 		assertEquals(unicodetest, lStr);
 	}
@@ -301,40 +276,58 @@ public class DBTest extends OlatTestCase {
 		testObject = DBFactory.getInstance().findObject(Property.class, propertyKey);
 		assertNull(testObject);
 	}
-
+	
 	/**
-	 * @see junit.framework.TestCase#tearDown()
+	 * Test concurrent updating. DbWorker threads updates concurrent db.
 	 */
-	@After
-	public void tearDown() throws Exception {
-		DBFactory.getInstance().closeSession();
+	@Test
+	public void testConcurrentUpdate() {
+		int maxWorkers = 5;
+		int loops = 100;
+		log.info("start testConcurrentUpdate maxWorkers=" + maxWorkers + "  loops=" + loops);
+		
+		CountDownLatch latch = new CountDownLatch(maxWorkers);
+		DbWorker[] dbWorkers = new DbWorker[maxWorkers];
+		for (int i=0; i<maxWorkers; i++) {
+			dbWorkers[i] = new DbWorker(i,loops, latch);
+		}
+		for (int i=0; i<maxWorkers; i++) {
+			dbWorkers[i].start();
+		}
+		
+	// sleep until t1 and t2 should have terminated/excepted
+		try {
+			latch.await(20, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.error("", e);
+			fail("Takes too long");
+		}
+
+		for (int i=0; i<maxWorkers; i++) {
+			assertEquals(0,dbWorkers[i].getErrorCounter());
+		}
+		log.info("finished testConcurrentUpdate ");
 	}
 	
-	class DbWorker implements Runnable {
-
-		private Thread workerThread = null;
+	private class DbWorker extends Thread {
 		private int numberOfLoops;
 		private String workerId;
 		private int errorCounter = 0;
-		private boolean isfinished = false;
+		private final CountDownLatch latch;
 
-		public DbWorker(int id, int numberOfLoops) {
+		public DbWorker(int id, int numberOfLoops, CountDownLatch latch) {
+			this.latch = latch;
 			this.numberOfLoops = numberOfLoops;
 			this.workerId = Integer.toString(id);
-			if ( (workerThread == null) || !workerThread.isAlive()) {
-				log.info("start DbWorker thread id=" + id);
-				workerThread = new Thread(this, "TestWorkerThread-" + id);
-				workerThread.setPriority(Thread.MAX_PRIORITY);
-				workerThread.setDaemon(true);
-				workerThread.start();
-			}
 		}
 
 		public void run() {
 			int loopCounter = 0;
 			try {
+				Thread.sleep(10);
+				
 				while (loopCounter++ < numberOfLoops ) {
-					String propertyKey = "DbWorkerKey-" + workerId + "-" + loopCounter;
+					String propertyKey = UUID.randomUUID().toString();
 					DB db = DBFactory.getInstance();
 					PropertyManager pm = PropertyManager.getInstance();
 					String testValue = "DbWorkerValue-" + workerId + "-" + loopCounter;
@@ -347,26 +340,20 @@ public class DBTest extends OlatTestCase {
 					Property p2 = pm.findProperty(null, null, null, null, propertyKey);
 					String lStr = p2.getStringValue();
 					if (!testValue.equals(lStr)) {
-						log.info("Property ERROR testValue=" + testValue + ": lStr=" + lStr);
 						errorCounter++;
 					}
 					db.closeSession();
-					
-					Thread.sleep(5);
 				}
 			} catch (Exception ex) {
-				log.info("ERROR workerId=" + workerId + ": Exception=" + ex);
+				log.error("", ex);
 				errorCounter++;
+			} finally {
+				latch.countDown();
 			}
-			isfinished  = true;
 		}
 		
 		protected int getErrorCounter() {
 			return errorCounter;
-		}
-		
-		protected boolean isfinished() {
-			return isfinished;
 		}
 	}
 }

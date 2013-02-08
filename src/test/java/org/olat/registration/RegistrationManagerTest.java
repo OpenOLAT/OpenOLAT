@@ -31,6 +31,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
+import java.util.UUID;
+
 import org.junit.After;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -99,8 +101,9 @@ public class RegistrationManagerTest extends OlatTestCase {
 	/**
 	 * Test load of temp key.
 	 */
-	@Test public void testLoadTemporaryKeyEntry() {
-		String emailaddress = "patrickbrunner@uzh.ch";
+	@Test
+	public void testLoadTemporaryKeyEntry() {
+		String emailaddress = UUID.randomUUID().toString().replace("-", "") + "@frentix.com";
 		TemporaryKeyImpl result = null;
 		String ipaddress = "130.60.112.11";
 
@@ -148,6 +151,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 	public void validateAgainstWhiteList() {
 		//set domains
 		registrationModule.setDomainListRaw("frentix.com cyberiacafe.ch,openolat.org\nfrentix.de");
+		sleep(2000);//event based, asynchronous
 		String domains = registrationModule.getDomainListRaw();
 		assertEquals("frentix.com,cyberiacafe.ch,openolat.org,frentix.de", domains);
 		
@@ -161,6 +165,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 	public void validateAgainstWhiteListWithWildCard() {
 		//set domains
 		registrationModule.setDomainListRaw("frentix.com *cyberiacafe.ch,openolat.org\nfrentix.de");
+		sleep(2000);//event based, asynchronous
 		String domains = registrationModule.getDomainListRaw();
 		assertEquals("frentix.com,*cyberiacafe.ch,openolat.org,frentix.de", domains);
 		

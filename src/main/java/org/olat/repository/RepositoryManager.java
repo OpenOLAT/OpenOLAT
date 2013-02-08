@@ -510,11 +510,9 @@ public class RepositoryManager extends BasicManager {
 			   .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.key in (:repoKey)");
 		
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
-		dbQuery.setParameterList("repoKey", keys);
-		@SuppressWarnings("unchecked")
-		List<RepositoryEntry> entries = dbQuery.list();
-		return entries;
+		return dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", keys)
+				.getResultList();
 	}
 
 	/**
@@ -876,7 +874,7 @@ public class RepositoryManager extends BasicManager {
 			query.append(" and reResource.resName in (:resnames)");
 		}
 		
-		TypedQuery<RepositoryEntry> dbquery = DBFactory.getInstance().getCurrentEntityManager()
+		TypedQuery<RepositoryEntry> dbquery = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), RepositoryEntry.class)
 				.setParameter("editorKey", editor.getKey());
 		if(resourceTypes != null && resourceTypes.length > 0) {

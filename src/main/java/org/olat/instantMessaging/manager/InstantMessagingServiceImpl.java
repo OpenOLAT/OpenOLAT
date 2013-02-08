@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
@@ -92,11 +93,12 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private DB dbInstance;
 
 	@Override
-	@Transactional
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		rosterDao.clear();
+		//rosterDao.clear();
 		businessGroupService.registerDeletableGroupDataListener(this);
 	}
 

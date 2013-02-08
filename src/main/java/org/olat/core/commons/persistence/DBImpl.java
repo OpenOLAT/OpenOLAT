@@ -30,39 +30,30 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 
-import org.hibernate.HibernateException;
-import org.hibernate.SessionFactory;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
-import org.hibernate.jmx.StatisticsService;
 import org.hibernate.stat.Statistics;
 import org.hibernate.type.Type;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.Destroyable;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.LogDelegator;
-import org.olat.core.logging.Tracing;
-import org.olat.testutils.codepoints.server.Codepoint;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.jmx.support.MBeanServerFactoryBean;
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * A <b>DB </b> is a central place to get a Hibernate Session. It acts as a
+ * A <b>DB </b> is a central place to get a Entity Managers. It acts as a
  * facade to the database, transactions and Queries. The hibernateSession is
  * lazy loaded per thread.
  * 
@@ -72,7 +63,11 @@ import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 public class DBImpl extends LogDelegator implements DB, Destroyable {
 	private static final int MAX_DB_ACCESS_COUNT = 500;
 	private static DBImpl INSTANCE;
-	private EntityManagerFactory emf = null;
+	
+	private final DBManager dbManagerDelegate = new DBManager();
+	
+	private EntityManagerFactory emf;
+	private PlatformTransactionManager txManager;
 
 	private final ThreadLocal<ThreadLocalData> data = new ThreadLocal<ThreadLocalData>();
 	// Max value for commit-counter, values over this limit will be logged.
@@ -81,9 +76,17 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	/**
 	 * [used by spring]
 	 */
-    private DBImpl() {
-       INSTANCE = this;
-    }
+	private DBImpl() {
+		INSTANCE = this;
+	}
+    
+	public void setEntityManagerFactory(EntityManagerFactory emf) {
+		this.emf = emf;
+	}
+	
+	public void setTxManager(PlatformTransactionManager txManager) {
+		this.txManager = txManager;
+	}
 
 	/**
 	 * A <b>ThreadLocalData</b> is used as a central place to store data on a per
@@ -92,8 +95,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @author Andreas CH. Kapp
 	 * @author Christian Guretzki
 	 */
-	private class ThreadLocalData {
-		private DBManager manager;
+	protected static class ThreadLocalData {
+
+		private boolean error;
+		private Exception lastError;
+		
 		private boolean initialized = false;
 		// count number of db access in beginTransaction, used to log warn 'to many db access in one transaction'
 		private int accessCounter = 0;
@@ -111,18 +117,27 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			return initialized;
 		}
 
-		protected DBManager getManager() {
-			return manager;
-		}
-
 		protected void setInitialized(boolean b) {
 			initialized = b;
 		}
 
-		protected void setManager(DBManager manager) {
-			this.manager = manager;
+		public boolean isError() {
+			return error;
 		}
-		
+
+		public void setError(boolean error) {
+			this.error = error;
+		}
+
+		public Exception getLastError() {
+			return lastError;
+		}
+
+		public void setError(Exception ex) {
+			this.lastError = ex;
+			this.error = true;
+		}
+
 		protected void incrementAccessCounter() {
 			this.accessCounter++;
 		}
@@ -160,90 +175,107 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		}
 		return tld;
 	}
-
-	protected DBSession getDBSession() {
-		DBManager dbm = getData().getManager();
-		if (isLogDebugEnabled() && dbm == null) logDebug("DB manager ist null.", null); 
-		return (dbm == null) ? null : dbm.getDbSession();
-	}
 	
 	@Override
 	public EntityManager getCurrentEntityManager() {
 		//if spring has already an entity manager in this thread bounded, return it
 		EntityManager threadBoundedEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
-		if(threadBoundedEm != null) {
+		if(threadBoundedEm != null && threadBoundedEm.isOpen()) {
+			EntityTransaction trx = threadBoundedEm.getTransaction();
+			//if not active begin a new one (possibly manual committed)
+			if(!trx.isActive()) {
+				trx.begin();
+			}
+			updateDataStatistics(threadBoundedEm, "entityManager");
 			return threadBoundedEm;
 		}
-		
-		DBImpl current = getInstance(true);
-		DBManager dbm = current.getData().getManager();
-		if (dbm == null) {
-			logDebug("DB manager ist null.", null);
-			return null;
-		}
-		beginTransaction("entityManager");
-		return dbm.getDbSession().getEntityManager();
-	}
-
-	protected void setManager(DBManager manager) {
-		getData().setManager(manager);
-	}
-
-	DBManager getDBManager() {
-		return getData().getManager();
-	}
-
-	boolean isConnectionOpen() {
-		if ( (getData().getManager() == null) 
-				|| (getData().getManager().getDbSession() == null) ) {
-			return false;
-		}
-		return getData().getManager().getDbSession().isOpen();
+		EntityManager em = getEntityManager();
+		updateDataStatistics(em, "entityManager");
+		return em;
 	}
 	
-	DBTransaction getTransaction() {
-		if ( (getData().getManager() == null) 
-				|| (getData().getManager().getDbSession() == null) ) {
-			return null;
+	private EntityManager getEntityManager() {
+		EntityManager txEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		if(txEm == null) {
+			if(txManager != null) {
+				DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+				txManager.getTransaction(def);
+				txEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+			} else {
+				txEm = emf.createEntityManager();
+			}
+		} else if(!txEm.isOpen()) {
+			DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+			def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+			txManager.getTransaction(def);
+			txEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		} else {
+			EntityTransaction trx = txEm.getTransaction();
+			//if not active begin a new one (possibly manual committed)
+			if(!trx.isActive()) {
+				trx.begin();
+			}
 		}
-		return getData().getManager().getDbSession().getTransaction();
+		return txEm;
 	}
 
-	private void createSession() {
-		DBSession dbs = getDBSession();
-		if (dbs == null) {
+  private void updateDataStatistics(EntityManager em, Object logObject) {
+		/*
+  	//OLAT-3621: paranoia check for error state: we need to catch errors at the earliest point possible. OLAT-3621 has a suspected situation
+		//           where an earlier transaction failed and didn't clean up nicely. To check this, we introduce error checking in getInstance here
+	  
+		if (transaction != null && transaction.isActive() && transaction.getRollbackOnly()
+				&& !Thread.currentThread().getName().equals("TaskExecutorThread")) {
+			INSTANCE.logWarn("beginTransaction: Transaction (still?) in Error state: "+transaction, new Exception("DBImpl begin transaction)"));
+		}
+		*/
+	
+  	// increment only non-cachable query 
+  	if (logObject instanceof String ) {
+  		String query = (String) logObject;
+  		query = query.trim();
+  		if (   !query.startsWith("select count(poi) from org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi, org.olat.basesecurity.PolicyImpl as poi,")
+  		    && !query.startsWith("select count(grp) from org.olat.group.BusinessGroupImpl as grp")
+  		    && !query.startsWith("select count(sgmsi) from  org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi") ) {
+  			// it is no of cached queries
+  			getData().incrementAccessCounter();  			
+  		}
+  	} else {
+  		getData().incrementAccessCounter();
+  	}
+
+    if (getData().getAccessCounter() > MAX_DB_ACCESS_COUNT) {
+    	logWarn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject, null);
+    	getData().resetAccessCounter();
+    }
+    
+    EntityTransaction transaction = em.getTransaction();
+    if(transaction == null) {
+    	logError("Call beginTransaction but transaction is null", null);
+    } else if (transaction.isActive() && transaction.getRollbackOnly()) {
+    	logError("Call beginTransaction but transaction is already rollbacked", null);
+    } else if (!transaction.isActive()) {
+    	logError("Call beginTransaction but transaction is already completed", null);
+    }
+  }
+  /*
+	private void createSession2() {
+		ThreadLocalData data = getData();
+		if (data == null) {
 			if (isLogDebugEnabled()) logDebug("createSession start...", null);
-			EntityManager em = null;
-			Codepoint.codepoint(DBImpl.class, "initializeSession");
-			if (isLogDebugEnabled()) logDebug("initializeSession", null);
-			try {
-				em = emf.createEntityManager();
-			} catch (HibernateException e) {
-				logError("could not open database session!", e);
-			}
-			setManager(new DBManager(em));
-			getData().resetAccessCounter();
-			getData().resetCommitCounter();
-		} else if (!dbs.isOpen()) {
-			EntityManager em = null;
-			try {
-				em = emf.createEntityManager();
-			} catch (HibernateException e) {
-				logError("could not open database session!", e);
-			}
-			setManager(new DBManager(em));
-			getData().resetAccessCounter();
-			getData().resetCommitCounter();
+			data.resetAccessCounter();
+			data.resetCommitCounter();
 		}
 		setInitialized(true);
 		if (isLogDebugEnabled()) logDebug("createSession end...", null);
-	}
-
+	}*/
 
 	/**
 	 * Close the database session.
 	 */
 	public void closeSession() {
+		
+
 		getData().resetAccessCounter();
 		// Note: closeSession() now also checks if the connection is open at all
 		//  in OLAT-4318 a situation is described where commit() fails and closeSession()
@@ -251,33 +283,37 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		//  that was closed underneath by hibernate (not noticed by DBImpl).
 		//  in order to be robust for any similar situation, we check if the 
 		//  connection is open, otherwise we shouldn't worry about doing any commit/rollback anyway
-		if (isConnectionOpen() && hasTransaction() && getTransaction().isInTransaction() && !getTransaction().isRolledBack()) {
-			if (Settings.isJUnitTest()) {
-				if (isLogDebugEnabled()) logDebug("Call commit", null);
-				getTransaction().commit(); 
-			} else {
-				if (isLogDebugEnabled()) logDebug("Call commit", null);
-				throw new AssertException("Close db-session with un-committed transaction");
+		
+
+		//commit
+		//getCurrentEntityManager();
+		EntityManager s = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		if(s != null) {
+			EntityTransaction trx = s.getTransaction();
+			if(trx.isActive()) {
+				if(trx.getRollbackOnly()) {
+					trx.rollback();
+				} else {
+					try {
+						trx.commit();
+					} catch (Exception e) {
+						logError("", e);
+						trx.rollback();
+					}
+				}
+			}
+	
+			TransactionSynchronizationManager.clear();
+			EntityManagerFactoryUtils.closeEntityManager(s);
+			Map<Object,Object> map = TransactionSynchronizationManager.getResourceMap();
+			if(map.containsKey(emf)) {
+				TransactionSynchronizationManager.unbindResource(emf);
 			}
 		}
-		DBSession s = getDBSession();
-		if (s != null) {
-			Codepoint.codepoint(DBImpl.class, "closeSession");
-			s.close();
-			// OLAT-3652 related: on closeSession also set the transaction to null
-			s.clearTransaction();
-		}
-		
 		data.remove();
 	}
 	
 	public void cleanUpSession() {
-		EntityManager threadBoundedEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
-		if(threadBoundedEm != null) {
-			EntityManagerFactoryUtils.closeEntityManager(threadBoundedEm);
-		}
-
-		if(data.get() == null) return;
 		closeSession();
 	}
 
@@ -291,14 +327,14 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return the DB instance.
 	 */
 	protected static DBImpl getInstance(boolean initialize) {
-		
+		/*
 		//OLAT-3621: paranoia check for error state: we need to catch errors at the earliest point possible. OLAT-3621 has a suspected situation
 		//           where an earlier transaction failed and didn't clean up nicely. To check this, we introduce error checking in getInstance here
-		DBTransaction transaction = INSTANCE.getTransaction();
+		EntityTransaction transaction = INSTANCE.getTransaction();
 		if (transaction!=null) {		
 			// Filter Exception form async TaskExecutorThread, there are exception allowed
-			if (transaction.isError() && !Thread.currentThread().getName().equals("TaskExecutorThread")) {
-				INSTANCE.logWarn("getInstance: Transaction (still?) in Error state: "+transaction.getError(), new Exception("DBImpl begin transaction)", transaction.getError()));
+			if (transaction.isActive() && transaction.getRollbackOnly() && !Thread.currentThread().getName().equals("TaskExecutorThread")) {
+				INSTANCE.logWarn("getInstance: Transaction (still?) in Error state: "+transaction, new Exception("DBImpl begin transaction)"));
 			}
 		}  
 		
@@ -307,7 +343,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		// the only cleanup-calls to db.closeSession do nothing
 		if (initialize) {
 			INSTANCE.createSession();
-		}
+		}*/
 		return INSTANCE;
 	}
 
@@ -334,64 +370,10 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	boolean isInitialized() {
 		return getData().isInitialized();
 	}
-
-    
-  /**
-   * Call this to begin a transaction .
-   * @param logObject TODO
-   */
-  private void beginTransaction(Object logObject) {
-	//OLAT-3621: paranoia check for error state: we need to catch errors at the earliest point possible. OLAT-3621 has a suspected situation
-	//           where an earlier transaction failed and didn't clean up nicely. To check this, we introduce error checking in getInstance here
-	DBTransaction transaction = INSTANCE.getTransaction();
-	if (transaction!=null) {		
-		// Filter Exception form async TaskExecutorThread, there are exception allowed
-		if (transaction.isError() && !Thread.currentThread().getName().equals("TaskExecutorThread")) {
-			INSTANCE.logWarn("beginTransaction: Transaction (still?) in Error state: "+transaction.getError(), new Exception("DBImpl begin transaction)", transaction.getError()));
-		}
-	}  
-	createSession();
-	
-  	// TODO: 07.01.2009/cg ONLY FOR DEBUGGING 'too many db access in one transaction'
-  	// increment only non-cachable query 
-  	if (logObject instanceof String ) {
-  		String query = (String) logObject;
-  		query = query.trim();
-  		if (   !query.startsWith("select count(poi) from org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi, org.olat.basesecurity.PolicyImpl as poi,")
-  		    && !query.startsWith("select count(grp) from org.olat.group.BusinessGroupImpl as grp")
-  		    && !query.startsWith("select count(sgmsi) from  org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi") ) {
-  			// it is no of cached queries
-  			getData().incrementAccessCounter();  			
-  		}
-  	} else {
-  		getData().incrementAccessCounter();
-  	}
-  	
-  	
-    if (getData().getAccessCounter() > MAX_DB_ACCESS_COUNT) {
-    	logWarn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject, null);
-        getData().resetAccessCounter();
-    }
-    if(isLogDebugEnabled()) {
-    	logDebug("beginTransaction TEST getDBSession()=" + getDBSession(), null);
-    }
-    
-    if (!hasTransaction() ) {
-      // if no transaction exists, start a new one.
-      getDBSession().beginDbTransaction();
-      if(isLogDebugEnabled()) {
-    	  logDebug("No transaction exists, start a new one.", null);
-      }
-    } else if (getTransaction() != null && getTransaction().isRolledBack() ) {
-    	logError("Call beginTransaction but transaction is already rollbacked",null);
-    }
-    if(isLogDebugEnabled()) {
-    	logDebug("beginTransaction TEST hasTransaction()=" + hasTransaction(), null);
-    }
-  }
   
 	private boolean contains(Object object) {
-		return getDBManager().contains(object);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.contains(em, object);
 	}
 
 	/**
@@ -401,8 +383,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return DBQuery
 	 */
 	public DBQuery createQuery(String query) {
-		beginTransaction(query);
-		return getDBManager().createQuery(query);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.createQuery(em, query, getData());
 	}
 
 	/**
@@ -411,8 +393,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param object
 	 */
 	public void deleteObject(Object object) {
-		beginTransaction(object);
-		getDBManager().deleteObject(getTransaction(), object);
+		EntityManager em = getCurrentEntityManager();
+		dbManagerDelegate.deleteObject(em, object, getData());
 	}
 
 	/**
@@ -424,8 +406,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return nr of deleted rows
 	 */
 	public int delete(String query, Object value, Type type) {
-		beginTransaction(query);
-		return getDBManager().delete(getTransaction(), query, value, type);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.delete(em, query, value, type);
 	}
 
 	/**
@@ -437,8 +419,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return nr of deleted rows
 	 */
 	public int delete(String query, Object[] values, Type[] types) {
-		beginTransaction(query);
-		return getDBManager().delete(getTransaction(), query, values, types);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.delete(em, query, values, types);
 	}
 
 	/**
@@ -450,8 +432,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return List of results.
 	 */
 	public List find(String query, Object value, Type type) {
-		beginTransaction(query);
-		return getDBManager().find(getTransaction(), query, value, type);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.find(em, query, value, type, getData());
 	}
 
 	/**
@@ -463,8 +445,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return List of results.
 	 */
 	public List find(String query, Object[] values, Type[] types) {
-		beginTransaction(query);
-		return getDBManager().find(getTransaction(), query, values, types);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.find(em , query, values, types, getData());
 	}
 
 	/**
@@ -474,8 +456,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return List of results.
 	 */
 	public List find(String query) {
-		beginTransaction(query);
-		return getDBManager().find(getTransaction(), query);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.find(em , query, getData());
 	}
 
 	/**
@@ -486,7 +468,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return Object, if any found. Null, if non exist. 
 	 */
 	public <U> U findObject(Class<U> theClass, Long key) {
-		beginTransaction(key);
 		return getCurrentEntityManager().find(theClass, key);
 	}
 	
@@ -498,8 +479,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return Object.
 	 */
 	public <U> U loadObject(Class<U> theClass, Long key) {
-		beginTransaction(key);
-		return getDBManager().loadObject(getTransaction(), theClass, key);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.loadObject(em , theClass, key);
 	}
 
 	/**
@@ -508,8 +489,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param object
 	 */
 	public void saveObject(Object object) {
-		beginTransaction(object);
-		getDBManager().saveObject(getTransaction(), object);
+		EntityManager em = getCurrentEntityManager();
+		dbManagerDelegate.saveObject(em, object, getData());
 	}
 
 	/**
@@ -518,8 +499,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param object
 	 */
 	public void updateObject(Object object) {
-		beginTransaction(object);
-		getDBManager().updateObject(getTransaction(), object);
+		EntityManager em = getCurrentEntityManager();
+		dbManagerDelegate.updateObject(em, object, getData());
 	}
 
 	/**
@@ -528,27 +509,32 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @return Exception, if any.
 	 */
 	public Exception getError() {
-		if (hasTransaction()) {
-			return getTransaction().getError();
-		} else {
-			return getDBManager().getLastError();
-		}
+		return getData().getLastError();
 	}
 
 	/**
 	 * @return True if any errors occured in the previous DB call.
 	 */
 	public boolean isError() {
-		if (hasTransaction()) {
-			return getTransaction().isError();
-		} else {
-			return getDBManager()==null ? false : getDBManager().isError();
+		//EntityTransaction trx = getCurrentEntityManager().getTransaction();
+		EntityManager em = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		if(em != null && em.isOpen()) {
+			EntityTransaction trx = em.getTransaction();
+			if (trx != null && trx.isActive()) {
+				return trx.getRollbackOnly();
+			} 
 		}
-
+		return getData() == null ? false : getData().isError();
 	}
 
 	boolean hasTransaction() {
-		return null == getTransaction() ? false : getTransaction().isInTransaction();
+		//EntityManager em = getCurrentEntityManager();
+		EntityManager em = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		if(em != null && em.isOpen()) {
+			EntityTransaction trx = em.getTransaction();
+			return trx != null && trx.isActive();
+		}
+		return false;
 	}
 
 	/**
@@ -574,8 +560,9 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 */
 	public Persistable loadObject(Persistable persistable, boolean forceReloadFromDB) {
 		if (persistable == null) throw new AssertException("persistable must not be null");
-		beginTransaction(persistable);
-		Class theClass = persistable.getClass();
+
+		EntityManager em = getCurrentEntityManager();
+		Class<? extends Persistable> theClass = persistable.getClass();
 		if (forceReloadFromDB) {
 			// we want to reload it from the database.
 			// there are 3 scenarios possible:
@@ -585,22 +572,22 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			
 			if (contains(persistable)) {
 				// case b - then we can use evict and load
-				getDBManager().evict(persistable);
-				return (Persistable) loadObject(theClass, persistable.getKey());
+				dbManagerDelegate.evict(em, persistable, getData());
+				return loadObject(theClass, persistable.getKey());
 			} else {
 				// case a or c - unfortunatelly we can't distinguish these two cases
 				// and session.refresh(Object) doesn't work.
 				// the only scenario that works is load/evict/load
 				Persistable attachedObj = (Persistable) loadObject(theClass, persistable.getKey());
-				getDBManager().evict(attachedObj);
-				return (Persistable) loadObject(theClass, persistable.getKey());
+				dbManagerDelegate.evict(em, attachedObj, getData());
+				return loadObject(theClass, persistable.getKey());
 			}
 		} else if (!contains(persistable)) { 
 			// forceReloadFromDB is false - hence it is OK to take it from the cache if it would be there
 			// now this object directly is not in the cache, but it's possible that the object is detached
 			// and there is an object with the same id in the hibernate cache.
 			// therefore the following loadObject can either return it from the cache or load it from the DB
-			return (Persistable) loadObject(theClass, persistable.getKey());
+			return loadObject(theClass, persistable.getKey());
 		} else { 
 			// nothing to do, return the same object
 			return persistable;
@@ -610,13 +597,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	@Override
 	public void commitAndCloseSession() {
 		try {
-			if (needsCommit()) {
-				commit();
-			}
+			commit();
 		} finally {
 			try{
 				// double check: is the transaction still open? if yes, is it not rolled-back? if yes, do a rollback now!
-				if (isConnectionOpen() && hasTransaction() && getTransaction().isInTransaction() && !getTransaction().isRolledBack()) {
+				if (hasTransaction() && isError()) {
 					getLogger().error("commitAndCloseSession: commit seems to have failed, transaction still open. Doing a rollback!", new Exception("commitAndCloseSession"));
 					rollback();
 				}
@@ -641,7 +626,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	public void commit() {
 		if (isLogDebugEnabled()) logDebug("commit start...", null);
 		try {
-			if (isConnectionOpen() && hasTransaction() && getTransaction().isInTransaction()) {
+			if (hasTransaction() && !isError()) {
 				if (isLogDebugEnabled()) logDebug("has Transaction and is in Transaction => commit", null);
 				getData().incrementCommitCounter();
 				if ( isLogDebugEnabled() ) {
@@ -649,7 +634,12 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 						logInfo("Call too many commit in a db-session, commitCounter=" + getData().getCommitCounter() +"; could be a performance problem" , null);
 					}
 				}
-				getTransaction().commit();
+				
+				EntityTransaction trx = getCurrentEntityManager().getTransaction();
+				if(trx != null) {
+					trx.commit();
+				}
+
 				if (isLogDebugEnabled()) logDebug("Commit DONE hasTransaction()=" + hasTransaction(), null);
 			} else {
 				if (isLogDebugEnabled()) logDebug("Call commit without starting transaction", null );
@@ -664,8 +654,10 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			}
 			// Error when trying to commit
 			try {
-				if (hasTransaction() && !getTransaction().isRolledBack()) {
-					getTransaction().rollback();
+				if (hasTransaction()) {
+					TransactionStatus status = txManager.getTransaction(null);
+					txManager.rollback(status);
+					//getTransaction().rollback();
 				}
 			} catch (Error er) {
 				logError("Uncaught Error in DBImpl.commit.catch(Exception).", er);
@@ -686,10 +678,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		try {
 			// see closeSession() and OLAT-4318: more robustness with commit/rollback/close, therefore
 			// we check if the connection is open at this stage at all
-			if (isConnectionOpen() && hasTransaction() && getTransaction().isInTransaction() ) {
-				if (isLogDebugEnabled()) logDebug("Call rollback", null);
-				getTransaction().rollback();
-			}
+
+			TransactionStatus status = txManager.getTransaction(null);
+			txManager.rollback(status);
+			//getTransaction().rollback();
+
 		} catch (Exception ex) {
 			logWarn("Could not rollback transaction!",ex);
 			throw new DBRuntimeException("rollback failed", ex);
@@ -708,62 +701,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
    }
 
 	/**
-	 * Register StatisticsService as MBean for JMX support.
-	 * @param mySessionFactory
-	 */
-	private void registerStatisticsServiceAsMBean(SessionFactory mySessionFactory) {
-		if (mySessionFactory == null) {
-			throw new AssertException("Can not register StatisticsService as MBean, SessionFactory is null");
-		}
-    try {
-	    Hashtable<String, String> tb = new Hashtable<String, String>();
-	    tb.put("type", "statistics");
-	    tb.put("sessionFactory", "HibernateStatistics");
-	    ObjectName on = new ObjectName("org.olat.core.persistance", tb);
-	    MBeanServer server = (MBeanServer) CoreSpringFactory.getBean(MBeanServerFactoryBean.class);
-	    StatisticsService stats = new StatisticsService();
-	    stats.setSessionFactory(mySessionFactory);
-	    server.registerMBean(stats, on);
-    } catch (MalformedObjectNameException e) {
-        logWarn("JMX-Error : Can not register as MBean, MalformedObjectNameException=", e);
-    } catch (InstanceAlreadyExistsException e) {
-        logWarn("JMX-Error : Can not register as MBean, InstanceAlreadyExistsException=", e);
-    } catch (MBeanRegistrationException e) {
-        logWarn("JMX-Error : Can not register as MBean, MBeanRegistrationException=", e);
-    } catch (NotCompliantMBeanException e) {
-        logWarn("JMX-Error : Can not register as MBean, NotCompliantMBeanException=", e);
-    } catch (NoSuchBeanDefinitionException e) {
-    	logWarn("JMX-Error : Can not register as MBean, NoSuchBeanDefinitionException=", e);
-    }
-	}
-
-	/**
 	 * @see org.olat.core.commons.persistence.DB#intermediateCommit()
 	 */
 	public void intermediateCommit() {
-		this.commit();
-		this.closeSession();
-	}
-
-	/**
-	 * @see org.olat.core.commons.persistence.DB#needsCommit()
-	 */
-	public boolean needsCommit() {
-		// see closeSession() and OLAT-4318: more robustness with commit/rollback/close, therefore
-		// we check if the connection is open at this stage at all
-		return isConnectionOpen() && hasTransaction() && !getTransaction().isRolledBack() && getTransaction().isInTransaction();
-	}
-	
-	/**
-	 * [used by spring]
-	 * @param sessionFactory
-	 */
-	public void setSessionFactory(SessionFactory sessionFactory) {
-		//this.sessionFactory = sessionFactory;
-	}
-	
-	public void setEntityManagerFactory(EntityManagerFactory emf) {
-		this.emf = emf;
+		commit();
+		closeSession();
 	}
 
 	@Override
@@ -775,7 +717,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			try {
 				DriverManager.deregisterDriver(registeredDrivers.nextElement());
 			} catch (SQLException e) {
-				Tracing.logError("Could not unregister database driver.", e, this.getClass());
+				logError("Could not unregister database driver.", e);
 			}
 		}
 	}
@@ -813,7 +755,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			throw new AssertException("queryName must not be NULL");
 		}
 		
-		beginTransaction(queryName);
-		return getDBManager().createNamedQuery(queryName, dbVendor, vendorSpecific);
+		EntityManager em = getCurrentEntityManager();
+		return dbManagerDelegate.createNamedQuery(em, queryName, dbVendor, vendorSpecific);
 	}	
 }

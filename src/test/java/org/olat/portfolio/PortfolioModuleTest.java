@@ -111,6 +111,7 @@ public class PortfolioModuleTest extends OlatTestCase {
 		// disable
 		//////////////////////////////////
 		portfolioModule.setEnableArtefactHandler(dummyHandler, false);
+		sleep(2000);//settings asynchronous
 		
 		//found in the list of all available handlers
 		List<EPArtefactHandler<?>> allHandlers = portfolioModule.getAllAvailableArtefactHandlers();
@@ -142,6 +143,7 @@ public class PortfolioModuleTest extends OlatTestCase {
 		// enable
 		//////////////////////////////////
 		portfolioModule.setEnableArtefactHandler(dummyHandler, false);
+		sleep(2000);//settings asynchronous
 		
 		//found in the list of all available handlers
 		allHandlers = portfolioModule.getAllAvailableArtefactHandlers();

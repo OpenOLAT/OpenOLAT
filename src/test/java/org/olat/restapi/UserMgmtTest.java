@@ -137,7 +137,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
-	private BaseSecurityManager securityManager;
+	private BaseSecurity securityManager;
 	
 	@Before
 	@Override

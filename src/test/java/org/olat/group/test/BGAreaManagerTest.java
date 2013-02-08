@@ -781,18 +781,4 @@ public class BGAreaManagerTest extends OlatTestCase {
 				}
 			}}).start();
 	}
-
-	
-	/**
-	 * 
-	 * @param millis the duration in milliseconds to sleep
-	 */
-	private void sleep(int millis) {
-		try {
-			Thread.sleep(millis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
 }
