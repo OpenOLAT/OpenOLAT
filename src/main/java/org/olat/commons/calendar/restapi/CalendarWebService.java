@@ -209,7 +209,7 @@ public class CalendarWebService {
 		}
 
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		if(StringHelper.containsNonWhitespace(event.getId())) {
+		if(!StringHelper.containsNonWhitespace(event.getId())) {
 			String id = UUID.randomUUID().toString();
 			KalendarEvent kalEvent = new KalendarEvent(id, event.getSubject(), event.getBegin(), event.getEnd());
 			transfer(event, kalEvent);
