@@ -18,7 +18,7 @@
 </bean>
 
 <bean id="coordinatorManager" class="org.olat.core.util.coordinate.CoordinatorManagerImpl">
-		<property name="coordinator" ref="org.olat.core.util.coordinate.${cluster.mode}Coordinator"/>
+		<property name="coordinator" ref="org.olat.core.util.coordinate.ClusterCoordinator"/>
 </bean>
 
 
@@ -38,13 +38,14 @@
 		<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
 		<property name="cacher" ref="infinispanCacher"/>
 </bean>
-
+<!--
 <bean id="org.olat.core.util.coordinate.SingleVMCoordinator" class="org.olat.commons.coordinate.singlevm.SingleVMCoordinator" lazy-init="true">
 	<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer"/>
   <property name="eventBus" ref="org.olat.commons.coordinate.singlevm.SingleVMEventBus"/>
 	<property name="locker" ref="org.olat.commons.coordinate.singlevm.SingleVMLocker"/>
 	<property name="cacher" ref="infinispanCacher"/>
 </bean>
+-->
 
 <bean id="infinispanCacheManager" class="org.olat.core.util.cache.infinispan.InfinispanCacheManager" destroy-method="stop">
 	<property name="configuration" value="infinispan-config.xml"/>
@@ -143,13 +144,14 @@ init-method="springInit" destroy-method="stop" lazy-init="true">
 </bean>
 
 <bean id="clusterLockManager" class="org.olat.commons.coordinate.cluster.lock.ClusterLockManager"/>
-
+<!-- 
 <bean id="org.olat.commons.coordinate.singlevm.SingleVMEventBus" class="org.olat.commons.coordinate.singlevm.SingleVMEventBus" lazy-init="true"/>
 
 	<bean id="org.olat.commons.coordinate.singlevm.SingleVMLocker" class="org.olat.commons.coordinate.singlevm.SingleVMLocker" init-method="init" lazy-init="true">
 		<property name="eventBus" ref="org.olat.commons.coordinate.singlevm.SingleVMEventBus"/>
 		<lookup-method name="getPersistentLockManager" bean="persistentLockManager"/>
 	</bean>
+-->
 
 	<import resource="classpath:/serviceconfig/org/olat/core/_spring/olatcorejms_${jms.provider}.xml"/>
 	
