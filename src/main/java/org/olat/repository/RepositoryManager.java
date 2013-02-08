@@ -771,7 +771,6 @@ public class RepositoryManager extends BasicManager {
 		updateLifeCycle(reloadedRe);
 		
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -788,7 +787,6 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setLastUsage(new Date());
 		updateLifeCycle(reloadedRe);
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -802,7 +800,6 @@ public class RepositoryManager extends BasicManager {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		reloadedRe.setLastUsage(new Date());
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -813,7 +810,6 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setMembersOnly(membersOnly);//fxdiff VCRP-1,2: access control of resources
 		
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -834,7 +830,6 @@ public class RepositoryManager extends BasicManager {
 			reloadedRe.setDescription(description);
 		}
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -846,7 +841,6 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setCanLaunch(canLaunch);
 		reloadedRe.setCanDownload(canDownload);
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 	

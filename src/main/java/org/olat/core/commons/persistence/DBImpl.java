@@ -59,6 +59,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.jmx.support.MBeanServerFactoryBean;
+import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 
 /**
  * A <b>DB </b> is a central place to get a Hibernate Session. It acts as a
@@ -168,6 +169,12 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	
 	@Override
 	public EntityManager getCurrentEntityManager() {
+		//if spring has already an entity manager in this thread bounded, return it
+		EntityManager threadBoundedEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		if(threadBoundedEm != null) {
+			return threadBoundedEm;
+		}
+		
 		DBImpl current = getInstance(true);
 		DBManager dbm = current.getData().getManager();
 		if (dbm == null) {
@@ -265,6 +272,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	}
 	
 	public void cleanUpSession() {
+		EntityManager threadBoundedEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		if(threadBoundedEm != null) {
+			EntityManagerFactoryUtils.closeEntityManager(threadBoundedEm);
+		}
+
 		if(data.get() == null) return;
 		closeSession();
 	}

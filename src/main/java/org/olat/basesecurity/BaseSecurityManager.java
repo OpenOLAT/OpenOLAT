@@ -72,6 +72,7 @@ import org.olat.user.ChangePasswordController;
 import org.olat.user.PersonalSettingsController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <h3>Description:</h3>
@@ -1756,19 +1757,28 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#saveIdentityStatus(org.olat.core.id.Identity)
 	 */
 	@Override
+	@Transactional
 	public Identity saveIdentityStatus(Identity identity, Integer status) {
 		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
 		reloadedIdentity.setStatus(status);
-		return dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		return reloadedIdentity;
 	}
 	
 	@Override
+	@Transactional
 	public Identity setIdentityLastLogin(Identity identity) {
 		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
 		reloadedIdentity.setLastLogin(new Date());
-		return dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		return reloadedIdentity;
 	}
 	
+	/**
+	 * Don't forget to commit/roolback the transaction as soon as possible
+	 * @param identityKey
+	 * @return
+	 */
 	private IdentityImpl loadForUpdate(Long identityKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select id from ").append(IdentityImpl.class.getName()).append(" as id")

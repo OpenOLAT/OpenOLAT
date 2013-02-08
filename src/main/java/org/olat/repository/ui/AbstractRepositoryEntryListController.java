@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
@@ -81,7 +81,7 @@ public abstract class AbstractRepositoryEntryListController extends BasicControl
 	protected final MarkManager markManager;
 	protected final UserManager userManager;
 	protected final CoachingService coachService;
-	protected final BaseSecurityManager securityManager;
+	protected final BaseSecurity securityManager;
 	protected final RepositoryManager repositoryManager;
 	protected final UserCourseInformationsManager courseInfoManager;
 	
@@ -96,7 +96,7 @@ public abstract class AbstractRepositoryEntryListController extends BasicControl
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		coachService = CoreSpringFactory.getImpl(CoachingService.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
+		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		courseInfoManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 

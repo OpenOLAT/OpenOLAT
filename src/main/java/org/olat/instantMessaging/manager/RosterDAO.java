@@ -75,11 +75,10 @@ public class RosterDAO {
 	
 	private RosterEntryImpl loadForUpdate(OLATResourceable ores, Identity identity) {
 		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadIMRosterEntryByIdentityandResource", RosterEntryImpl.class)
+				.createNamedQuery("loadIMRosterEntryForUpdate", RosterEntryImpl.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
-				.setParameter("identityKey", identity.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+				.setParameter("identityKey", identity.getKey());
 		List<RosterEntryImpl> entries = query.getResultList();
 		if(entries.size() > 0) {
 			return entries.get(0);

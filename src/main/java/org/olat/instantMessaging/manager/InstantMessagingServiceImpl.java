@@ -101,27 +101,32 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public boolean deleteGroupDataFor(BusinessGroup group) {
 		imDao.deleteMessages(group);
 		return true;
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public String getStatus(Long identityKey) {
 		return prefsDao.getStatus(identityKey);
 	}
 
 	@Override
+	@Transactional
 	public ImPreferences getImPreferences(Identity identity) {
 		return prefsDao.getPreferences(identity);
 	}
 
 	@Override
+	@Transactional
 	public void updateImPreferences(Identity identity, boolean visible) {
 		prefsDao.updatePreferences(identity, visible);
 	}
 
 	@Override
+	@Transactional
 	public void updateStatus(Identity identity, String status) {
 		prefsDao.updatePreferences(identity, status);
 	}
@@ -139,6 +144,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public InstantMessage getMessageById(Identity identity, Long messageId, boolean markedAsRead) {
 		InstantMessageImpl msg = imDao.loadMessageById(messageId);
 		if(markedAsRead && msg != null) {
@@ -149,6 +155,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public List<InstantMessage> getMessages(Identity identity, OLATResourceable chatResource,
 			Date from, int firstResult, int maxResults, boolean markedAsRead) {
 		List<InstantMessage> msgs = imDao.getMessages(chatResource, from, firstResult, maxResults);
@@ -159,6 +166,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
 		InstantMessage message = imDao.createMessage(from, fromNickName, anonym, body, chatResource);
 		InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
@@ -171,6 +179,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	@Override
+	@Transactional
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey, String body, OLATResourceable chatResource) {
 		String name = userManager.getUserDisplayName(from.getUser());
 		InstantMessage message = imDao.createMessage(from, name, false, body, chatResource);
@@ -190,11 +199,13 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public void deleteMessages(OLATResourceable ores) {
 		imDao.deleteMessages(ores);
 	}
 
 	@Override
+	@Transactional
 	public void sendPresence(Identity me, String nickName, boolean anonym, boolean vip, OLATResourceable chatResource) {
 		InstantMessagingEvent event = new InstantMessagingEvent("participant", chatResource);
 		event.setAnonym(anonym);
@@ -209,11 +220,13 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public List<InstantMessageNotification> getNotifications(Identity identity) {
 		return imDao.getNotifications(identity);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Buddy getBuddyById(Long identityKey) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
 		String fullname = userManager.getUserDisplayName(identity);
@@ -222,6 +235,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<BuddyGroup> getBuddyGroups(Identity me, boolean offlineUsers) {
 		List<BuddyGroup> groups = new ArrayList<BuddyGroup>(25);
 		Map<Long,BuddyGroup> groupMap = new HashMap<Long,BuddyGroup>();
@@ -264,6 +278,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Buddy> getOnlineBuddies() {
 		Collection<Long> ids = sessionManager.getUsersOnline();
 		List<IdentityShort> contacts = securityManager.loadIdentityShortByKeys(ids);
@@ -277,6 +292,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public BuddyStats getBuddyStats(Identity me) {
 		BuddyStats stats = new BuddyStats();
 		
@@ -288,6 +304,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource) {
 		List<RosterEntryView> roster = rosterDao.getRosterView(chatResource, 0, -1);
 		List<Buddy> buddies = new ArrayList<Buddy>();
@@ -307,14 +324,16 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public void listenChat(Identity identity, OLATResourceable chatResource,
 			boolean anonym, boolean vip, GenericEventListener listener) {
 		String fullName = userManager.getUserDisplayName(identity.getUser());
-		rosterDao.createRosterEntry(chatResource, identity, fullName, null, anonym, vip);
+		rosterDao.updateRosterEntry(chatResource, identity, fullName, null, anonym, vip);
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);
 	}
 
 	@Override
+	@Transactional
 	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener) {
 		rosterDao.deleteEntry(identity, chatResource);
 		coordinator.getCoordinator().getEventBus().deregisterFor(listener, chatResource);

@@ -27,6 +27,7 @@
 package org.olat.core.util.event;
 
 import org.olat.core.gui.control.Event;
+import org.olat.core.util.WebappHelper;
 
 /**
  * Description:<BR/>
@@ -43,25 +44,27 @@ import org.olat.core.gui.control.Event;
  * @author Felix Jost 
  */
 public class MultiUserEvent extends Event {
-	
+
+	private static final long serialVersionUID = -3371406997475826632L;
 	//used to mark event
 	//comparing VM_MARKER == vm_marker gives the info if the (deserialized) event comes
 	//from the same node. Most of the time such a comparison is wrong, especially for strings
 	//here it is used as "feature".
 	protected static String VM_MARKER = "VM_MARKER";
-	protected String vm_marker; 
+	protected int vm_marker; 
 	
 	/**
 	 * @param command
 	 */
 	public MultiUserEvent(String command) {
 		super(command);
-		vm_marker = VM_MARKER;
+		vm_marker = WebappHelper.getNodeId();
 	}
 	
 	/**
 	 * should be overridden by subclasses for debug info
 	 */
+	@Override
 	public String toString() {
 		return "MUE:com="+getCommand();
 	}
@@ -74,14 +77,14 @@ public class MultiUserEvent extends Event {
 	 * @return
 	 */
 	public boolean isEventOnThisNode() {
-		return vm_marker == VM_MARKER;
+		return vm_marker == WebappHelper.getNodeId();
 	}
 	
 	@Override
 	public int hashCode() { 
 		int hc = 3;
 		int hcMul = 7;
-		hc = hc * hcMul + vm_marker.hashCode();
+		hc = hc * hcMul + vm_marker;
 		return hc * hcMul + super.hashCode();
 	}
 	
