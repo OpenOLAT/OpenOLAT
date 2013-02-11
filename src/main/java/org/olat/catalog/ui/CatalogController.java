@@ -1167,6 +1167,7 @@ public class CatalogController extends BasicController implements Activateable2 
 
 		ContextEntry catCe = entries.remove(0);
 		Long catId = catCe.getOLATResourceable().getResourceableId();
+		if(catId == null || catId.longValue() == 0) return;
 		CatalogEntry ce = CatalogManager.getInstance().loadCatalogEntry(catId);
 		switch(ce.getType()) {
 			case CatalogEntry.TYPE_NODE: {

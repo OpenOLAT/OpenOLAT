@@ -231,6 +231,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
 			Integer minParticipants, Integer maxParticipants, Boolean waitingList, Boolean autoCloseRanks) {
 		
@@ -321,25 +322,21 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup loadBusinessGroup(BusinessGroup group) {
 		return businessGroupDAO.load(group.getKey());
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup loadBusinessGroup(Long key) {
 		return businessGroupDAO.load(key);
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup loadBusinessGroup(OLATResource resource) {
 		return businessGroupDAO.load(resource.getResourceableId());
 	}
 
 	@Override
-	@Transactional
 	public List<BusinessGroup> loadBusinessGroups(Collection<Long> keys) {
 		return businessGroupDAO.load(keys);
 	}
@@ -444,6 +441,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public BusinessGroup mergeBusinessGroups(final Identity ureqIdentity, BusinessGroup targetGroup,
 			final List<BusinessGroup> groupsToMerge, MailPackage mailing) {
 		groupsToMerge.remove(targetGroup);//to be sure
@@ -626,20 +624,17 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup findBusinessGroup(SecurityGroup secGroup) {
 		return businessGroupDAO.findBusinessGroup(secGroup);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<BusinessGroup> findBusinessGroupsOwnedBy(Identity identity, OLATResource resource) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
 		return businessGroupDAO.findBusinessGroups(params, resource, 0, -1);
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
 	public List<BusinessGroup> findBusinessGroupsAttendedBy(Identity identity, OLATResource resource) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
 		return businessGroupDAO.findBusinessGroups(params, resource, 0, -1);
@@ -651,7 +646,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
 	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource) {
 		if(params == null) {
 			params = new SearchBusinessGroupParams();
@@ -660,7 +654,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource,
 			int firstResult, int maxResults, BusinessGroupOrder... ordering) {
 		if(params == null) {
@@ -670,7 +663,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public int countBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource) {
 		if(params == null) {
 			params = new SearchBusinessGroupParams();
@@ -679,7 +671,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, OLATResource resource, int firstResult,
 			int maxResults, BusinessGroupOrder... ordering) {
 		if(params == null) {
@@ -689,30 +680,27 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<BusinessGroupView> findBusinessGroupViewsWithAuthorConnection(Identity author) {
 		return businessGroupDAO.findBusinessGroupWithAuthorConnection(author);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<Long> toGroupKeys(String groupNames, OLATResource resource) {
 		return businessGroupRelationDAO.toGroupKeys(groupNames, resource);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public int countContacts(Identity identity) {
 		return contactDao.countContacts(identity);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults) {
 		return contactDao.findContacts(identity, firstResult, maxResults);
 	}
 
 	@Override
+	@Transactional
 	public void deleteBusinessGroup(BusinessGroup group) {
 		try{
 			OLATResourceableJustBeforeDeletedEvent delEv = new OLATResourceableJustBeforeDeletedEvent(group);
@@ -782,6 +770,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public MailerResult deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, String businessPath, Identity deletedBy, Locale locale) {
 		Codepoint.codepoint(this.getClass(), "deleteBusinessGroupWithMail");
 			
@@ -829,6 +818,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, Roles ureqRoles, List<Identity> addIdentities,
 			BusinessGroup group, MailPackage mailing) {
 		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
@@ -1022,6 +1012,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource, MailPackage mailing) {
 		if(identities == null || identities.isEmpty() || resource == null) return;//nothing to do
 		
@@ -1186,6 +1177,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
+	@Transactional
 	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(Identity ureqIdentity, List<Identity> identities, 
 			BusinessGroup currBusinessGroup, MailPackage mailing) {
 		
@@ -1207,30 +1199,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 		}
 		
-		return response;
-	}
-
-	@Override
-	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup) {
-		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
-		for (Identity identity : addIdentities) {
-			if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
-				response.getIdentitiesWithoutPermission().add(identity);
-			}
-			// Check if identity is already in group. make a db query in case
-			// someone in another workflow already added this user to this group. if
-			// found, add user to model
-			else if (securityManager.isIdentityInSecurityGroup(identity, secGroup)) {
-				response.getIdentitiesAlreadyInGroup().add(identity);
-			} else {
-	      // identity has permission and is not already in group => add it
-				securityManager.addIdentityToSecurityGroup(identity, secGroup);
-				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(identity));
-				
-				response.getAddedIdentities().add(identity);
-				log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + secGroup.getKey());
-			}
-		}
 		return response;
 	}
 	
@@ -1384,13 +1352,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
 	public boolean hasResources(BusinessGroup group) {
 		return businessGroupRelationDAO.countResources(group) > 0;
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
 	public boolean hasResources(List<BusinessGroup> groups) {
 		return businessGroupRelationDAO.countResources(groups) > 0;
 	}
@@ -1479,7 +1445,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional
 	public int countDuplicateMembers(RepositoryEntry entry, boolean coaches, boolean participants) {
 		return dedupSingleRepositoryentry(null, entry, coaches, participants, true);
 	}
@@ -1567,31 +1533,26 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findResources(groups, firstResult, maxResults);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findRepositoryEntries(groups, firstResult, maxResults);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<RepositoryEntryShort> findShortRepositoryEntries(Collection<BusinessGroupShort> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findShortRepositoryEntries(groups, firstResult, maxResults);
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
 	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<Long> groupKeys, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findRelationToRepositoryEntries(groupKeys, firstResult, maxResults);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup) {
 		SecurityGroup participants = businessGroup.getPartipiciantGroup();
 		if (participants != null && securityManager.isIdentityInSecurityGroup(identity, participants)) {
@@ -1605,7 +1566,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<BusinessGroupMembership> getBusinessGroupMembership(Collection<Long> businessGroups, Identity... identity) {
 		List<BusinessGroupMembershipViewImpl> views =
 				businessGroupDAO.getMembershipInfoInBusinessGroups(businessGroups, identity);
@@ -1651,7 +1611,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
 	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey,
 			boolean ownedById, boolean attendedById, OLATResource resource) {
 		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupKey, ownedById, attendedById, resource);

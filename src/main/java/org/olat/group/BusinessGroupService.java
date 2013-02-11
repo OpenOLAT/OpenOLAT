@@ -459,9 +459,7 @@ public interface BusinessGroupService {
 	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(Identity ureqIdentity, List<Identity> identities,
 			BusinessGroup currBusinessGroup, MailPackage mailing);
 
-	
-	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
-	
+
 	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
 	/**

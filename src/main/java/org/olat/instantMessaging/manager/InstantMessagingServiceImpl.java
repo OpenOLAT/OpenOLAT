@@ -110,7 +110,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public String getStatus(Long identityKey) {
 		return prefsDao.getStatus(identityKey);
 	}
@@ -146,7 +145,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public InstantMessage getMessageById(Identity identity, Long messageId, boolean markedAsRead) {
 		InstantMessageImpl msg = imDao.loadMessageById(messageId);
 		if(markedAsRead && msg != null) {
@@ -157,7 +155,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public List<InstantMessage> getMessages(Identity identity, OLATResourceable chatResource,
 			Date from, int firstResult, int maxResults, boolean markedAsRead) {
 		List<InstantMessage> msgs = imDao.getMessages(chatResource, from, firstResult, maxResults);
@@ -222,13 +219,11 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
 	public List<InstantMessageNotification> getNotifications(Identity identity) {
 		return imDao.getNotifications(identity);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public Buddy getBuddyById(Long identityKey) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
 		String fullname = userManager.getUserDisplayName(identity);
@@ -237,7 +232,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<BuddyGroup> getBuddyGroups(Identity me, boolean offlineUsers) {
 		List<BuddyGroup> groups = new ArrayList<BuddyGroup>(25);
 		Map<Long,BuddyGroup> groupMap = new HashMap<Long,BuddyGroup>();
@@ -280,7 +274,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<Buddy> getOnlineBuddies() {
 		Collection<Long> ids = sessionManager.getUsersOnline();
 		List<IdentityShort> contacts = securityManager.loadIdentityShortByKeys(ids);
@@ -294,7 +287,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public BuddyStats getBuddyStats(Identity me) {
 		BuddyStats stats = new BuddyStats();
 		
@@ -306,7 +298,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource) {
 		List<RosterEntryView> roster = rosterDao.getRosterView(chatResource, 0, -1);
 		List<Buddy> buddies = new ArrayList<Buddy>();
