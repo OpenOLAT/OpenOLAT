@@ -48,7 +48,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
@@ -91,7 +90,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private Condition validatedCondition;
 	private CourseEditorEnv courseEditorEnv;
 	private List<CourseNode> nodeIdentList;
-	private FormSubmit subm;
 	//private FormReset reset;
 	private MultipleSelectionElement coachExclusive;
 	private JSDateChooser fromDate;
@@ -314,16 +312,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		
-		if (source == coachExclusive) {
-			if (coachExclusive.isSelected(0)) {
-				subm.setVisible(false);
-				formOK (ureq);
-			} else {
-				subm.setVisible(true);		
-			}
-			return;
-		} else if (source == chooseGroupsLink) {
+		if (source == chooseGroupsLink) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(groupChooseC);
 			
@@ -727,11 +716,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		addRules(formLayout);
 		
 		// the submit button
-		subm = uifactory.addFormSubmitButton("subm", "submit", formLayout);
+		uifactory.addFormSubmitButton("subm", "submit", formLayout);
 		validateGroupFields();
-		if (coachExclusive.isSelected(0)) {
-			subm.setVisible(false);
-		}
 	}
 
 	private void addAttributeSwitch(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
