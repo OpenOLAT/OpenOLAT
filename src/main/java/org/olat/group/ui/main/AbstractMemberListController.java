@@ -429,13 +429,6 @@ public abstract class AbstractMemberListController extends BasicController imple
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);
 		//make sure all is committed before loading the model again (I see issues without)
 		DBFactory.getInstance().commitAndCloseSession();
-		
-		/*if(sendMail && e.getGroupChanges() != null && !e.getGroupChanges().isEmpty()) {
-			for (BusinessGroupMembershipChange mod : e.getGroupChanges()) {
-				sendMailAfterChangePermission(mod);
-			}
-		}*/
-
 		reloadModel();
 	}
 	
@@ -493,7 +486,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected void doLeave(List<Identity> members, boolean sendMail) {
 		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
-			repositoryManager.removeMembers(members, repoEntry);
+			repositoryManager.removeMembers(getIdentity(), members, repoEntry, mailing);
 			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource(), mailing);
 		} else {
 			businessGroupService.removeMembers(getIdentity(), members, businessGroup.getResource(), mailing);

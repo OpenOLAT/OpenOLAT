@@ -1209,7 +1209,12 @@ public class MailManager extends BasicManager {
 			} else if (mailModule.isMailHostEnabled() && result.getReturnCode() == MailerResult.OK) {
 				// now send the mail
 				if(Settings.isDebuging()) {
-					logInfo("E-mail send: " + msg.getSubject());
+					try {
+						logInfo("E-mail send: " + msg.getSubject());
+						logInfo("Content    : " + msg.getContent());
+					} catch (IOException e) {
+						logError("", e);
+					}
 				}
 				Transport.send(msg);
 			} else {
