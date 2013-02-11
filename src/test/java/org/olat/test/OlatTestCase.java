@@ -159,6 +159,14 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		}
 		
 	}
+	
+	protected void sleep(int milliSeconds) {
+		try {
+			Thread.sleep(milliSeconds);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * @return True if the test run on PostreSQL

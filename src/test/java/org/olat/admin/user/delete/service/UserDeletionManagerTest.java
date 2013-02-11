@@ -31,8 +31,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -60,51 +61,25 @@ public class UserDeletionManagerTest extends OlatTestCase {
 
 	@Test
 	public void testSetIdentityAsActiv() {
-		final int maxLoop = 4000; // => 4000 x 11ms => 44sec => finished in 50sec
+		final int maxLoop = 2000; // => 4000 x 11ms => 44sec => finished in 50sec
 		// Let two thread call UserDeletionManager.setIdentityAsActiv
-
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 
-		// t1
-		new Thread(new Runnable() {
-			public void run() {
-				for (int i=0; i<maxLoop; i++) {
-					try {
-						UserDeletionManager.getInstance().setIdentityAsActiv(ident);
-					} catch (Exception e) {
-						exceptionHolder.add(e);
-					} finally {
-						try {
-							DBFactory.getInstance().closeSession();
-						} catch (Exception e) {
-							// ignore
-						};
-					}
-					sleep(10);
-				}
-			}}).start();
+		CountDownLatch latch = new CountDownLatch(4);
+		ActivThread[] threads = new ActivThread[4];
+		for(int i=0; i<threads.length;i++) {
+			threads[i] = new ActivThread(maxLoop, latch, exceptionHolder);
+		}
+
+		for(int i=0; i<threads.length;i++) {
+			threads[i].start();
+		}
 		
-		// t2
-		new Thread(new Runnable() {
-			public void run() {
-				for (int i=0; i<maxLoop; i++) {
-					try {
-						UserDeletionManager.getInstance().setIdentityAsActiv(ident);
-					} catch (Exception e) {
-						exceptionHolder.add(e);
-					} finally {
-						try {
-							DBFactory.getInstance().closeSession();
-						} catch (Exception e) {
-							// ignore
-						};
-					}
-					sleep(11);
-				}
-			}}).start();
-		
-		// sleep until t1 and t2 should have terminated/excepted
-		sleep(50000);
+		try {
+			latch.await(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			exceptionHolder.add(e);
+		}
 		
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
@@ -114,21 +89,39 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		assertTrue("Exceptions #" + exceptionHolder.size(), exceptionHolder.size() == 0);				
 	}
 	
-	@After
-	public void tearDown() throws Exception {
-		DBFactory.getInstance().closeSession();
-	}
-	
-	/**
-	 * 
-	 * @param milis the duration in miliseconds to sleep
-	 */
-	private void sleep(int milis) {
-		try {
-			Thread.sleep(milis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	private static class ActivThread extends Thread {
+		
+		private final int maxLoop;
+		private final CountDownLatch countDown;
+		private final List<Exception> exceptionHolder;
+		
+		public ActivThread(int maxLoop, CountDownLatch countDown, List<Exception> exceptionHolder) {
+			this.maxLoop = maxLoop;
+			this.countDown = countDown;
+			this.exceptionHolder = exceptionHolder;
+		}
+		
+		public void run() {
+			try {
+				sleep(10);
+				for (int i=0; i<maxLoop; i++) {
+					try {
+						UserDeletionManager.getInstance().setIdentityAsActiv(ident);
+					} catch (Exception e) {
+						exceptionHolder.add(e);
+					} finally {
+						try {
+							DBFactory.getInstance().closeSession();
+						} catch (Exception e) {
+							// ignore
+						}
+					}
+				}
+			} catch (Exception e) {
+				exceptionHolder.add(e);
+			} finally {
+				countDown.countDown();
+			}
 		}
 	}
-
 }

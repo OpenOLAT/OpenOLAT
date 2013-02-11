@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
@@ -496,7 +497,6 @@ public class RepositoryManager extends BasicManager {
 		return entries.get(0);
 	}
 
-	@Transactional(readOnly=true)
 	public List<RepositoryEntry> lookupRepositoryEntries(Collection<Long> keys) {
 		if (keys == null || keys.isEmpty()) {
 			return Collections.emptyList();
@@ -510,11 +510,9 @@ public class RepositoryManager extends BasicManager {
 			   .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.key in (:repoKey)");
 		
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
-		dbQuery.setParameterList("repoKey", keys);
-		@SuppressWarnings("unchecked")
-		List<RepositoryEntry> entries = dbQuery.list();
-		return entries;
+		return dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", keys)
+				.getResultList();
 	}
 
 	/**
@@ -524,7 +522,6 @@ public class RepositoryManager extends BasicManager {
 	 * @return the RepositorEntry or null if strict=false
 	 * @throws AssertException if the softkey could not be found (strict=true)
 	 */
-	@Transactional(readOnly=true)
 	public RepositoryEntry lookupRepositoryEntry(OLATResourceable resourceable, boolean strict) {
 		OLATResource ores = (resourceable instanceof OLATResource) ? (OLATResource)resourceable
 				: OLATResourceManager.getInstance().findResourceable(resourceable);
@@ -732,7 +729,7 @@ public class RepositoryManager extends BasicManager {
 
 	private RepositoryEntry loadForUpdate(RepositoryEntry re) {
 		//first remove it from caches
-		DBFactory.getInstance().getCurrentEntityManager().detach(re);
+		dbInstance.getCurrentEntityManager().detach(re);
 
 		StringBuilder query = new StringBuilder();
 		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
@@ -741,8 +738,8 @@ public class RepositoryManager extends BasicManager {
 			   .append(" inner join fetch v.participantGroup as participantGroup")
 			   .append(" inner join fetch v.tutorGroup as tutorGroup")*/
 		     .append(" where v.key=:repoKey");
-		
-		RepositoryEntry entry = DBFactory.getInstance().getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
+
+		RepositoryEntry entry = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
 				.setParameter("repoKey", re.getKey())
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getSingleResult();
@@ -771,7 +768,6 @@ public class RepositoryManager extends BasicManager {
 		updateLifeCycle(reloadedRe);
 		
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -784,11 +780,10 @@ public class RepositoryManager extends BasicManager {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		if(reloadedRe == null) return null;//deleted
 
-		reloadedRe.incrementDownloadCounter();
+		reloadedRe.setDownloadCounter(reloadedRe.getDownloadCounter() + 1);
 		reloadedRe.setLastUsage(new Date());
 		updateLifeCycle(reloadedRe);
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -802,7 +797,6 @@ public class RepositoryManager extends BasicManager {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		reloadedRe.setLastUsage(new Date());
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -813,7 +807,6 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setMembersOnly(membersOnly);//fxdiff VCRP-1,2: access control of resources
 		
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -834,7 +827,6 @@ public class RepositoryManager extends BasicManager {
 			reloadedRe.setDescription(description);
 		}
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 
@@ -846,7 +838,6 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setCanLaunch(canLaunch);
 		reloadedRe.setCanDownload(canDownload);
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
-		DBFactory.getInstance().commitAndCloseSession();
 		return updatedRe;
 	}
 	
@@ -882,7 +873,7 @@ public class RepositoryManager extends BasicManager {
 			query.append(" and reResource.resName in (:resnames)");
 		}
 		
-		TypedQuery<RepositoryEntry> dbquery = DBFactory.getInstance().getCurrentEntityManager()
+		TypedQuery<RepositoryEntry> dbquery = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), RepositoryEntry.class)
 				.setParameter("editorKey", editor.getKey());
 		if(resourceTypes != null && resourceTypes.length > 0) {
@@ -1888,7 +1879,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param members
 	 * @param re
 	 */
-	public boolean removeMembers(List<Identity> members, RepositoryEntry re) {
+	public boolean removeMembers(Identity ureqIdentity, List<Identity> members, RepositoryEntry re, MailPackage mailing) {
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		if(re.getOwnerGroup() != null) {
 			secGroups.add(re.getOwnerGroup());
@@ -1917,8 +1908,12 @@ public class RepositoryManager extends BasicManager {
 				reservationDao.deleteReservation(reservation);
 			}
 		}
-		
-		return securityManager.removeIdentityFromSecurityGroups(members, secGroups);
+
+		boolean allOk = securityManager.removeIdentityFromSecurityGroups(members, secGroups);
+		for(Identity identity:members) {
+			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
+		}
+		return allOk;
 	}
 
 	/**

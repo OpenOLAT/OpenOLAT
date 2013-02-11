@@ -535,19 +535,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		System.out.println("testConcurrentAddRemoveEvent finish successful");
 	}
 
-	
-	/**
-	 * 
-	 * @param milis the duration in miliseconds to sleep
-	 */
-	private void sleep(int milis) {
-		try {
-			Thread.sleep(milis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 

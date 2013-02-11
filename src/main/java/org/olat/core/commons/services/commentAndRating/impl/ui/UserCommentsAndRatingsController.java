@@ -299,8 +299,8 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			UserCommentsCountChangedEvent changedEvent = (UserCommentsCountChangedEvent) event;
 			if (!changedEvent.isSentByMyself(this) && !canExpandToFullView) {
 				// Update counter in GUI, but only when in minimized mode (otherwise might confuse user)
-				if ( (this.oresSubPath == null && changedEvent.getOresSubPath() == null)
-					|| this.oresSubPath.equals(changedEvent.getOresSubPath()) ) {
+				if ( (oresSubPath == null && changedEvent.getOresSubPath() == null)
+					|| (oresSubPath != null && oresSubPath.equals(changedEvent.getOresSubPath()))) {
 					updateCommentCountView();					
 				}
 			}
@@ -308,8 +308,8 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			UserRatingChangedEvent changedEvent = (UserRatingChangedEvent) event;
 			// Update rating in GUI
 			if (!changedEvent.isSentByMyself(this)) {
-				if ( (this.oresSubPath == null && changedEvent.getOresSubPath() == null)
-					|| this.oresSubPath.equals(changedEvent.getOresSubPath()) ) {
+				if ( (oresSubPath == null && changedEvent.getOresSubPath() == null)
+					|| (oresSubPath != null && oresSubPath.equals(changedEvent.getOresSubPath()))) {
 					updateRatingView();
 				}
 			}

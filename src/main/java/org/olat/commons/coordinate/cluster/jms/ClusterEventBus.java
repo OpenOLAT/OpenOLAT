@@ -196,6 +196,12 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 					} catch(Error er) {
 						log.error("Error enountered by serve-thread:", er);
 						// continue
+					} finally {
+						try {
+							DBFactory.getInstance().commitAndCloseSession();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
 				
@@ -256,7 +262,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 */
 	public void fireEventToListenersOf(MultiUserEvent event, OLATResourceable ores) {
 		// 1. fire directly within vm, because it used to be so before, and in this way this olat node can run even if jms is down
-		doFire(event, ores);
+		//TODO jms doFire(event, ores);
 		
 		// 2. send the event wrapped over jms to all nodes 
 		// (the receiver will detect whether messages are from itself and thus can be ignored, since they were already sent directly.
@@ -373,11 +379,11 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			
 			// message with destination and source both having this vm are ignored here, since they were already 
 			// "inline routed" when having been sent (direct call within the vm).
-			if (!fromSameNode) {
+			//TODO jms if (!fromSameNode) {
 				// distribute the unmarshalled event to all JVM wide listeners for this channel.
 				doFire(event, ores);
 				DBFactory.getInstance(false).commitAndCloseSession();
-			} // else message already sent "in-vm"
+			//TODO jms } // else message already sent "in-vm"
 			
 			// stats
 			final long doneTime = System.currentTimeMillis();

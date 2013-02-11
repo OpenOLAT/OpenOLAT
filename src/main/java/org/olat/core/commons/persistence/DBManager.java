@@ -29,11 +29,14 @@ package org.olat.core.commons.persistence;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.ejb.HibernateEntityManager;
 import org.hibernate.type.Type;
+import org.olat.core.commons.persistence.DBImpl.ThreadLocalData;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.manager.BasicManager;
@@ -44,21 +47,13 @@ import org.olat.core.manager.BasicManager;
  * @author Christian Guretzki
  */
 class DBManager extends BasicManager {
-	private Exception lastError;
-	private boolean error;
-	private  DBSession dbSession = null;
 
-	DBManager(EntityManager em) {
-		setDbSession(new DBSession(em));
+	DBManager() {
+		//
 	}
 	
-	/**
-	 * @param e
-	 */
-	private void setError(Exception e) {
-		setLastError(e);
-		error = true;
-
+	private boolean unusableTrx(EntityTransaction trx) {
+		return trx == null || !trx.isActive() || trx.getRollbackOnly();
 	}
 
 	/**
@@ -67,19 +62,19 @@ class DBManager extends BasicManager {
 	 * @param trx The current db transaction
 	 * @param o Object to be updated
 	 */	
-	void updateObject(DBTransaction trx, Object o) {
-		
-		if (trx.isRolledBack() || trx.isCommitted()) { // some program bug
+	void updateObject(EntityManager em, Object o, ThreadLocalData data) {
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
 			throw new DBRuntimeException("cannot update in a transaction that is rolledback or committed " + o);
 		}
 		try {
-			getSession().update(o);
+			getSession(em).update(o);
 			if (isLogDebugEnabled()) {
 				logDebug("update (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString());	
 			}									
 		} catch (HibernateException e) { // we have some error
-			trx.setErrorAndRollback(e);
-			setError(e);
+			trx.setRollbackOnly();
+			data.setError(e);
 			throw new DBRuntimeException("Update object failed in transaction. Query: " +  o , e);
 		}
 	}
@@ -90,20 +85,20 @@ class DBManager extends BasicManager {
 	 * @param trx The current db transaction
 	 * @param o Object to be deleted
 	 */	
-	void deleteObject(DBTransaction trx, Object o) {
-		
-		if (trx.isRolledBack() || trx.isCommitted()) { // some program bug
+	void deleteObject(EntityManager em,  Object o, ThreadLocalData data) {
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
 			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + o);
 		}
 		try {
-			Object relaoded = getSession().merge(o);
-			getSession().delete(relaoded);
+			Object relaoded = em.merge(o);
+			em.remove(relaoded);
 			if (isLogDebugEnabled()) {
 				logDebug("delete (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString());	
 			}
 		} catch (HibernateException e) { // we have some error
-			trx.setErrorAndRollback(e);
-			setError(e);
+			trx.setRollbackOnly();
+			data.setError(e);
 			throw new DBRuntimeException("Delete of object failed: " + o, e);
 		}
 	}
@@ -114,22 +109,21 @@ class DBManager extends BasicManager {
 	 * @param trx The current db transaction
 	 * @param o Object to be saved
 	 */	
-	void saveObject(DBTransaction trx, Object o) {
-		Session hibernateSession = this.getSession();
-		if (trx.isRolledBack() || trx.isCommitted()) { // some program bug
+	void saveObject(EntityManager em, Object o, ThreadLocalData data) {
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
 			throw new DBRuntimeException("cannot save in a transaction that is rolledback or committed: " + o);
 		}
 		try {
-			hibernateSession.save(o);
+			em.persist(o);
 			if (isLogDebugEnabled()) {
 				logDebug("save (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString());	
 			}						
-
-		} catch (HibernateException e) { // we have some error
-			trx.setErrorAndRollback(e);		
+		} catch (Exception e) { // we have some error
+			trx.setRollbackOnly();
+			data.setError(e);
 			throw new DBRuntimeException("Save failed in transaction. object: " +  o, e);
 		}
-
 	}
 
 	/**
@@ -139,16 +133,15 @@ class DBManager extends BasicManager {
 	 * @param theClass The class for the object to be loaded
 	 * @param pK The primary key for the object
 	 */	
-	<U> U loadObject(DBTransaction trx, Class<U> theClass, Long pK) {
+	<U> U loadObject(EntityManager em, Class<U> theClass, Long pK) {
 		U o = null;
+		EntityTransaction trx = em.getTransaction();
 		try {
-			o = getEntityManager().find(theClass, pK);
+			o = em.find(theClass, pK);
 			if (isLogDebugEnabled()) {
 				logDebug("load (res " +(o == null? "null": "ok")+")(trans "+trx.hashCode()+") key "+pK+" class "+theClass.getName());	
 			}
-
-		} catch (HibernateException e) {
-			trx.setErrorAndRollback(e);
+		} catch (Exception e) {
 			String msg = "loadObject error: " + theClass + " " + pK + " ";
 			throw new DBRuntimeException(msg, e);
 		}
@@ -163,15 +156,16 @@ class DBManager extends BasicManager {
 	 * @param value The value to search for
 	 * @param type The Hibernate datatype of the search value 
 	 */	
-	List find(DBTransaction trx, String query, Object value, Type type) {
+	List find(EntityManager em, String query, Object value, Type type, ThreadLocalData data) {
 		List li = null;
+		EntityTransaction trx = em.getTransaction();
 		try {
 			boolean doLog = isLogDebugEnabled();
 			long start = 0;
 			if (doLog) start = System.currentTimeMillis();
 
 			// old: li = this.getSession().find(query, value, type);
-			Query qu = this.getSession().createQuery(query);
+			Query qu = getSession(em).createQuery(query);
 			qu.setParameter(0, value, type);
 			li = qu.list();
 			
@@ -180,9 +174,9 @@ class DBManager extends BasicManager {
 				logQuery("find (time "+time+", res " +(li == null? "null": ""+li.size())+")(trans "+trx.hashCode()+")", new Object[] {value}, new Type[] {type}, query);	
 			}
 		} catch (HibernateException e) {
-			trx.setErrorAndRollback(e);
+			trx.setRollbackOnly();
 			String msg = "Find failed in transaction. Query: " +  query + " " + e;
-			setError(e);
+			data.setError(e);
 			throw new DBRuntimeException(msg, e);
 		}
 		return li;
@@ -196,14 +190,15 @@ class DBManager extends BasicManager {
 	 * @param values The object array containing all search values 
 	 * @param types The object array containing all Hibernate datatype of the search values 
 	 */	
-	List find(DBTransaction trx, String query, Object [] values, Type [] types) {
+	List find(EntityManager em, String query, Object [] values, Type [] types, ThreadLocalData data) {
 		List li = null;
+		EntityTransaction trx = em.getTransaction();
 		try {
 			boolean doLog = isLogDebugEnabled();
 			long start = 0;
 			if (doLog) start = System.currentTimeMillis();
 			// old: li = getSession().find(query, values, types);
-			Query qu = this.getSession().createQuery(query);
+			Query qu = getSession(em).createQuery(query);
 			qu.setParameters(values, types);
 			li = qu.list();
 			
@@ -214,9 +209,9 @@ class DBManager extends BasicManager {
 			}			
 	
 		} catch (HibernateException e) {
-			trx.setErrorAndRollback(e);
+			trx.setRollbackOnly();
 			String msg = "Find failed in transaction. Query: " +  query + " " + e;
-			setError(e);
+			data.setError(e);
 			throw new DBRuntimeException(msg, e);
 		}
 		return li;
@@ -228,14 +223,15 @@ class DBManager extends BasicManager {
 	 * @param trx The current db transaction
 	 * @param query The HQL query
 	 */	
-	List find(DBTransaction trx, String query) {
+	List find(EntityManager em, String query, ThreadLocalData data) {
 		List li = null;
+		EntityTransaction trx = em.getTransaction();
 		try {
 			boolean doLog = isLogDebugEnabled();
 			long start = 0;
 			if (doLog) start = System.currentTimeMillis();
 			// old: li = getSession().find(query);
-			Query qu = this.getSession().createQuery(query);
+			Query qu = getSession(em).createQuery(query);
 			li = qu.list();
 
 			if (doLog) {
@@ -244,47 +240,36 @@ class DBManager extends BasicManager {
 			}
 		} catch (HibernateException e) {
 			String msg = "Find in transaction failed: " + query + " " + e;
-			trx.setErrorAndRollback(e);
-			setError(e);
+			trx.setRollbackOnly();
+			data.setError(e);
 			throw new DBRuntimeException(msg, e);
 		}
 		return li;
 	}
 
-	DBSession getDbSession() {
-		return dbSession;
-	}
 	
-	Session getSession() {
-		return getDbSession().getHibernateSession();
-	}
-	
-	EntityManager getEntityManager() {
-		return getDbSession().getEntityManager();
-	}
-
-	DBTransaction beginTransaction() {
-		return getDbSession().beginDbTransaction();
+	Session getSession(EntityManager em) {
+		return em.unwrap(HibernateEntityManager.class).getSession();
 	}
 	
 	/**
 	 * @param query
 	 * @return Hibernate Query object.
 	 */
-	DBQuery createQuery(String query) {
+	DBQuery createQuery(EntityManager em, String query, ThreadLocalData data) {
 		Query q = null;
 		DBQuery dbq = null;
 		try {
-			q = getSession().createQuery(query);
+			q = getSession(em).createQuery(query);
 			dbq = new DBQueryImpl(q);
 		} catch (HibernateException he) {
-			setError(he);
+			data.setError(he);
 			throw new DBRuntimeException("Error while creating DBQueryImpl: ", he);
 		}
 		return dbq;
 	}
 	
-	DBQuery createNamedQuery(final String queryName, String dbVendor, boolean vendorSpecific) {
+	DBQuery createNamedQuery(EntityManager em, String queryName, String dbVendor, boolean vendorSpecific) {
 		if (queryName == null) {
 			throw new AssertException("queryName must not be NULL");
 		}
@@ -292,10 +277,10 @@ class DBManager extends BasicManager {
 		DBQuery dbq = null;
 		if (vendorSpecific) {
 			String finalQueryName = vendorSpecific ? dbVendor + "_" + queryName : queryName;
-			q = this.getSession().getNamedQuery(finalQueryName);
+			q = getSession(em).getNamedQuery(finalQueryName);
 			if (q == null) { 
 				// try fallback with normal query
-				q = this.getSession().getNamedQuery(queryName);
+				q = getSession(em).getNamedQuery(queryName);
 			}
 			if (q == null) {
 				String msg = "Can not create namedQuery::" + finalQueryName;
@@ -310,13 +295,6 @@ class DBManager extends BasicManager {
 			}
 		}
 		return dbq;
-	}	
-	
-	/**
-	 * @param session
-	 */
-	void setDbSession(DBSession session) {
-		dbSession = session;
 	}
 
 	/**
@@ -324,8 +302,8 @@ class DBManager extends BasicManager {
 	 * @param object
 	 * @return True if the Object instance is in the Hibernate Session.
 	 */
-	boolean contains(Object object) {
-		return getDbSession().contains(object);
+	boolean contains(EntityManager em, Object object) {
+		return em.contains(object);
 	}
 	
 
@@ -333,11 +311,11 @@ class DBManager extends BasicManager {
 	 * Hibernates Evict method
 	 * @param object The object to be removed from hibernates session cache
 	 */
-	void evict(Object object) {
+	void evict(EntityManager em, Object object, ThreadLocalData data) {
 		try {
-			getSession().evict(object);			
+			getSession(em).evict(object);			
 		} catch (Exception e) {
-			setError(e);
+			data.setError(e);
 			throw new DBRuntimeException("Error in evict() Object from Database. ", e);
 		}
 	}
@@ -346,54 +324,26 @@ class DBManager extends BasicManager {
 	 * Hibernate refresh method
 	 * @return object a persistent or detached instance
 	 */
-	void refresh(Object object) {
+	void refresh(EntityManager em, Object object, ThreadLocalData data) {
 		try{
-			getSession().refresh(object);
+			em.refresh(object);
 		} catch(Exception e) {
-			setError(e);
+			data.setError(e);
 			throw new DBRuntimeException("Error in refresh() Object from Database. ", e);
 		}
 	}
+	
+	int delete(EntityManager em, String query, Object value, Type type) {	
+		int deleted = 0;
 
-	boolean isError() {
-		return error;
-	}
-	
-	int delete(String query, Object value, Type type) {
-		int deleted = 0;
-		try {
-			// old: deleted = getSession().delete(query, value, type);
-			Session si = getSession();
-			Query qu = si.createQuery(query);
-			qu.setParameter(0, value, type);
-			List foundToDel = qu.list();
-			int deletionCount = foundToDel.size();
-			for (int i = 0; i < deletionCount; i++ ) {
-				si.delete( foundToDel.get(i) );
-			}
-			////
-			getSession().flush();
-			
-			if (isLogDebugEnabled()) {
-				logQuery("delete", new Object[] {value}, new Type[] {type}, query);	
-			}						
-		} catch (HibernateException e) {
-			setError(e);
-			throw new DBRuntimeException ("Delete error. Query" + query + " Object: " + value, e);
-		}
-		return deleted;
-	}
-	
-	int delete(DBTransaction trx, String query, Object value, Type type) {	
-		int deleted = 0;
-		
-		if (trx.isRolledBack() || trx.isCommitted()) { // some program bug
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
 			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + value);
 		}
 		try {
 			//old: deleted = getSession().delete(query, value, type);
 			
-			Session si = getSession();
+			Session si = getSession(em);
 			Query qu = si.createQuery(query);
 			qu.setParameter(0, value, type);
 			List foundToDel = qu.list();
@@ -406,21 +356,21 @@ class DBManager extends BasicManager {
 				logQuery("delete (trans "+trx.hashCode()+")",new Object[] {value}, new Type[] {type}, query);	
 			}
 		} catch (HibernateException e) { // we have some error
-			trx.setErrorAndRollback(e);
+			trx.setRollbackOnly();
 			throw new DBRuntimeException ("Could not delete object: " + value, e);
 		}
 		return deleted;
 	}
 
-	int delete(DBTransaction trx, String query, Object[] values, Type[] types) {
+	int delete(EntityManager em, String query, Object[] values, Type[] types) {
 		int deleted = 0;
-		
-		if (trx.isRolledBack() || trx.isCommitted()) { // some program bug
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
 			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + values);
 		}
 		try {
 			//old: deleted = getSession().delete(query, values, types);
-			Session si = getSession();
+			Session si = getSession(em);
 			Query qu = si.createQuery(query);
 			qu.setParameters(values, types);
 			List foundToDel = qu.list();
@@ -433,7 +383,7 @@ class DBManager extends BasicManager {
 				logQuery("delete (trans "+trx.hashCode()+")", values, types, query);	
 			}			
 		} catch (HibernateException e) { // we have some error
-			trx.setErrorAndRollback(e);
+			trx.setRollbackOnly();
 			throw new DBRuntimeException ("Could not delete object: " + values, e);
 		}
 		return deleted;
@@ -442,50 +392,19 @@ class DBManager extends BasicManager {
 	/**
 	 * Find a Object by its identifier. 
 	 * This method should be used instead of loadObject when it is ok to not find the object.
-	 * In oposite to the loadObject method this method will return null and not throw a 
+	 * In opposite to the loadObject method this method will return null and not throw a 
 	 * DBRuntimeException when the object can't be loaded.
 	 * @param theClass
 	 * @param key
 	 * @return an persistent object.
 	 */
-	Object findObject(Class theClass, Long key) {
-	    //o_clusterREVIEW see Session.java
-		 /* You should not use this method to determine if an instance exists (use <tt>get()</tt>
-		 * instead). Use this only to retrieve an instance that you assume exists, where non-existence
-		 * would be an actual error.
-		 *
-		 * @param theClass a persistent class
-		 * @param id a valid identifier of an existing persistent instance of the class
-		 * @return the persistent instance or proxy
-		 * @throws HibernateException
-		 */
-		//public Object load(Class theClass, Serializable id) throws HibernateException;
-
-		
-		//try {
-	    	//Object o = getSession().load(theClass, key);
-	    	Object o = getSession().get(theClass, key);
-	    	if (isLogDebugEnabled()) {
-				logDebug("findload (res " +(o == null? "null": "ok")+") key "+key+" class "+theClass.getName());	
-			}			
-            return o;
-        //} catch (HibernateException e) {
-         //   return null;
-        //}
-	}
-
-	/**
-	 * @return Exception if any
-	 */
-	Exception getLastError() {
-		return lastError;
-	}
-
-	/**
-	 * @param exception
-	 */
-	private void setLastError(Exception exception) {
-		lastError = exception;
+	Object findObject(EntityManager em, Class theClass, Long key) {
+		//o_clusterREVIEW see Session.java
+		Object o = getSession(em).get(theClass, key);
+		if (isLogDebugEnabled()) {
+			logDebug("findload (res " +(o == null? "null": "ok")+") key "+key+" class "+theClass.getName());	
+		}			
+		return o;
 	}
 	
 	private void logQuery(String info, Object[] values, Type[] types, String query) {
@@ -504,5 +423,4 @@ class DBManager extends BasicManager {
 		sb.append(", query: ").append(query);
 		logDebug(sb.toString());
 	}
-	
 }

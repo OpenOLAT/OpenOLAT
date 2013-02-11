@@ -25,9 +25,7 @@
 
 package org.olat.repository;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroup;
@@ -83,7 +81,7 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	private boolean canDownload;
 	private boolean membersOnly;//fxdiff VCRP-1,2: access control of resources
 	private int statusCode;
-	private List<MetaDataElement> metaDataElements;
+	//private List<MetaDataElement> metaDataElements;
 	private long launchCounter;
 	private long downloadCounter;
 	private Date lastUsage;
@@ -100,7 +98,7 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	 */
 	RepositoryEntry() {
 		softkey = CodeHelper.getGlobalForeverUniqueID();
-		metaDataElements = new ArrayList<MetaDataElement>();
+		//metaDataElements = new ArrayList<MetaDataElement>();
 		access = ACC_OWNERS;
 	}
 
@@ -160,16 +158,16 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	}
 	/**
 	 * @return Returns the metaDataElements.
-	 */
+	 *//*
 	public List<MetaDataElement> getMetaDataElements() {
 		return metaDataElements;
-	}
+	}*/
 	/**
 	 * @param metaDataElements The metaDataElements to set.
-	 */
+	 *//*
 	public void setMetaDataElements(List<MetaDataElement> metaDataElements) {
 		this.metaDataElements = metaDataElements;
-	}
+	}*/
 	/**
 	 * @return Returns the statusCode.
 	 */
@@ -371,20 +369,6 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	 */
 	public void setLaunchCounter(long l) {
 		launchCounter = l;
-	}
-
-	/**
-	 * Increment launch counter.
-	 */
-	public void incrementLaunchCounter() {
-		launchCounter++;
-	}
-	
-	/**
-	 * Increment download counter.
-	 */
-	public void incrementDownloadCounter() { 
-		downloadCounter++;
 	}
 	
 	/**

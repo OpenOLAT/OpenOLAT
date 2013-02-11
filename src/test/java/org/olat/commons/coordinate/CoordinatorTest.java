@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -393,20 +392,6 @@ public class CoordinatorTest extends OlatTestCase {
 		return true;
 	}
 
-
-
-	/**
-	 * 
-	 * @param milis the duration in miliseconds to sleep
-	 */
-	private void sleep(int milis) {
-		try {
-			Thread.sleep(milis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -420,19 +405,4 @@ public class CoordinatorTest extends OlatTestCase {
 		
 		DBFactory.getInstance().closeSession();
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After
-	public void tearDown() throws Exception {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
-		}
-	}
-
 }

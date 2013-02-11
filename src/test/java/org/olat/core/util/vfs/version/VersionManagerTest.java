@@ -81,6 +81,7 @@ public class VersionManagerTest extends OlatTestCase {
 		
 		SimpleVersionConfig versionConfig = (SimpleVersionConfig)CoreSpringFactory.getBean("versioningConfigurator");
 		versionConfig.setMaxNumberOfVersionsProperty(new Long(10));
+		sleep(2000);
 		
 		setuped = true;
 	}
@@ -88,6 +89,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@After
 	public void resetMaxVersions() {
 		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(10));
+		sleep(2000);
 		versioningConfigurator.getMaxNumberOfVersionsProperty();
 	}
 	
@@ -148,6 +150,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@Test
 	public void testOverflow_lowLevel() throws IOException {
 		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(3));
+		sleep(1000);
 		
 		//create a file
 		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test_" + UUID.randomUUID(), null);
@@ -184,6 +187,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@Test
 	public void testOverflow_lowLevel_deactivated() throws IOException {
 		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(0));
+		sleep(1000);
 		
 		//create a file
 		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test_" + UUID.randomUUID(), null);

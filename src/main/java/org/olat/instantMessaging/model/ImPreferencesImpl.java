@@ -59,7 +59,8 @@ import org.olat.instantMessaging.ImPreferences;
 @NamedQueries({
 	@NamedQuery(name="loadIMRosterStatusByIdentity", query="select msg.rosterDefaultStatus from impreferences msg where msg.identity.key=:identityKey"),
 	@NamedQuery(name="loadIMPreferencesByIdentity", query="select msg from impreferences msg where msg.identity.key=:identityKey"),
-	@NamedQuery(name="loadIMPreferencesForUpdate", query="select msg from impreferences msg where msg.identity.key=:identityKey", lockMode=LockModeType.PESSIMISTIC_WRITE)
+	@NamedQuery(name="loadIMPreferencesForUpdate", query="select msg from impreferences msg where msg.identity.key=:identityKey",
+		lockMode=LockModeType.PESSIMISTIC_WRITE)
 })
 public class ImPreferencesImpl implements ImPreferences, Persistable, CreateInfo {
 

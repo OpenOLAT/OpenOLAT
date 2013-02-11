@@ -40,6 +40,7 @@ import org.olat.course.Structure;
  */
 public class PublishTreeModel extends GenericTreeModel implements INodeFilter {
 
+	private static final long serialVersionUID = 8262940754776391142L;
 	private Structure currentRunStructure;
 
 	/**
@@ -135,8 +136,33 @@ public class PublishTreeModel extends GenericTreeModel implements INodeFilter {
 		return false;
 	}
 
-	public boolean accept(INode node) {
+	@Override
+	public boolean isSelectable(INode node) {
 		TreeNode tn = (TreeNode)node;
 		return tn.isAccessible();
+	}
+
+	@Override
+	public boolean isVisible(INode node) {
+		TreeNode tn = (TreeNode)node;
+		if(tn.isAccessible()) {
+			return true;
+		}
+		return isVisibleRec(tn);
+	}
+	
+	private boolean isVisibleRec(TreeNode tn) {
+		for(int i=tn.getChildCount(); i-->0; ) {
+			TreeNode child = (TreeNode)tn.getChildAt(i);
+			if(child.isAccessible()) {
+				return true;
+			}
+			if(child.getChildCount() > 0) {
+				if(isVisibleRec(child)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

@@ -265,19 +265,6 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 	public String getResourceableTypeName() {
 		return this.getClass().getName();
 	}
-	
-	/**
-	 * 
-	 * @param milis the duration in miliseconds to sleep
-	 */
-	private void sleep(int milis) {
-		try {
-			Thread.sleep(milis);
-		} catch (InterruptedException e) {
-			log.error("", e);
-		}
-	}
-
 
 	/**
 	 * Test resource for null values

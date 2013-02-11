@@ -40,6 +40,9 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class IdentitySelectionTreeModel  extends GenericTreeModel implements INodeFilter {
+
+	private static final long serialVersionUID = -6125701723946912197L;
+
 	/**
 	 * Constructor
 	 * 
@@ -82,10 +85,13 @@ public class IdentitySelectionTreeModel  extends GenericTreeModel implements INo
 		}			
 	}
 
-	/**
-	 * @see org.olat.core.util.tree.INodeFilter#accept(org.olat.core.util.nodes.INode)
-	 */
-	public boolean accept(INode node) {
+	@Override
+	public boolean isSelectable(INode node) {
+		return true;
+	}
+
+	@Override
+	public boolean isVisible(INode node) {
 		return true;
 	}
 

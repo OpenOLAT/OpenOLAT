@@ -274,7 +274,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
 		//commit changes to the repository entry
 		MailerResult result = new MailerResult();
-		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), template != null);
+		MailPackage reMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		
 		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
 		repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);

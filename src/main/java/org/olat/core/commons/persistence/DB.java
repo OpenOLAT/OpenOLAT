@@ -35,9 +35,6 @@ import org.hibernate.type.Type;
 import org.olat.core.id.Persistable;
 
 public interface DB {
-
-	/** temp debug only **/
-	//public void forceSetDebugLogLevel(boolean enabled);
 	
 	/**
 	 * Close the database session.
@@ -234,5 +231,4 @@ public interface DB {
 	 * @return
 	 */
 	public EntityManager getCurrentEntityManager();
-
 }

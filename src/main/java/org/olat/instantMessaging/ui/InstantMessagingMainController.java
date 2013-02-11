@@ -132,9 +132,9 @@ public class InstantMessagingMainController extends BasicController implements G
 
 		// (offline / online) link
 		onlineOfflineCount = LinkFactory.createCustomLink("onlineOfflineCount", "cmd.roster", "", Link.NONTRANSLATED, main, this);
-		onlineOfflineCount.setCustomDisplayText("(?/?)");
 		onlineOfflineCount.setTooltip(getTranslator().translate("im.roster.intro"), false);
 		onlineOfflineCount.registerForMousePositionEvent(true);
+		updateBuddyStats();
 		main.put("buddiesSummaryPanel", onlineOfflineCount);
 
 		main.put("newMsgPanel", newMsgIcon);
@@ -211,8 +211,7 @@ public class InstantMessagingMainController extends BasicController implements G
 			updateStatusCss(statusChangerCtr.getSelectedStatus());
 		} else if (source == rosterPanelCtr) {
 			//closing the floating panel event
-			BuddyStats stats = imService.getBuddyStats(getIdentity());
-			onlineOfflineCount.setCustomDisplayText("(" + stats.getOnlineBuddies() + "/" + stats.getOfflineBuddies() + ")");
+			updateBuddyStats();
 			removeAsListenerAndDispose(rosterCtr);
 			removeAsListenerAndDispose(rosterPanelCtr);
 			rosterCtr = null;
@@ -242,6 +241,13 @@ public class InstantMessagingMainController extends BasicController implements G
 			processOpenInstantMessageEvent((OpenInstantMessageEvent)event);
 		} else if(event instanceof CloseInstantMessagingEvent) {
 			processCloseInstantMessageEvent();
+		}
+	}
+	
+	private void updateBuddyStats() {
+		if(onlineOfflineCount != null) {
+			BuddyStats stats = imService.getBuddyStats(getIdentity());
+			onlineOfflineCount.setCustomDisplayText("(" + stats.getOnlineBuddies() + "/" + stats.getOfflineBuddies() + ")");
 		}
 	}
 	

@@ -30,10 +30,14 @@
     <bean id="AuditInterceptor" class="org.olat.core.commons.persistence.AuditInterceptor" />
     
     <bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="jpaDialect" ref="jpaDialect" />
 		<property name="entityManagerFactory" ref="emf"/>
 	</bean>
+	
+	<bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
 
 	<bean id="database" class="org.olat.core.commons.persistence.DBImpl" destroy-method="destroy">
+		<property name="txManager" ref="txManager"/>
 		<property name="entityManagerFactory" ref="emf"/>
 		<property name="dbVendor" value="${db.vendor}" />
 	</bean>

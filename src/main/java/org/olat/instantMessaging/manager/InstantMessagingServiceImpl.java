@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
@@ -92,15 +93,17 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private DB dbInstance;
 
 	@Override
-	@Transactional
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		rosterDao.clear();
+		//rosterDao.clear();
 		businessGroupService.registerDeletableGroupDataListener(this);
 	}
 
 	@Override
+	@Transactional
 	public boolean deleteGroupDataFor(BusinessGroup group) {
 		imDao.deleteMessages(group);
 		return true;
@@ -112,16 +115,19 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public ImPreferences getImPreferences(Identity identity) {
 		return prefsDao.getPreferences(identity);
 	}
 
 	@Override
+	@Transactional
 	public void updateImPreferences(Identity identity, boolean visible) {
 		prefsDao.updatePreferences(identity, visible);
 	}
 
 	@Override
+	@Transactional
 	public void updateStatus(Identity identity, String status) {
 		prefsDao.updatePreferences(identity, status);
 	}
@@ -159,6 +165,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
 		InstantMessage message = imDao.createMessage(from, fromNickName, anonym, body, chatResource);
 		InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
@@ -171,6 +178,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	@Override
+	@Transactional
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey, String body, OLATResourceable chatResource) {
 		String name = userManager.getUserDisplayName(from.getUser());
 		InstantMessage message = imDao.createMessage(from, name, false, body, chatResource);
@@ -190,11 +198,13 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public void deleteMessages(OLATResourceable ores) {
 		imDao.deleteMessages(ores);
 	}
 
 	@Override
+	@Transactional
 	public void sendPresence(Identity me, String nickName, boolean anonym, boolean vip, OLATResourceable chatResource) {
 		InstantMessagingEvent event = new InstantMessagingEvent("participant", chatResource);
 		event.setAnonym(anonym);
@@ -307,14 +317,16 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
+	@Transactional
 	public void listenChat(Identity identity, OLATResourceable chatResource,
 			boolean anonym, boolean vip, GenericEventListener listener) {
 		String fullName = userManager.getUserDisplayName(identity.getUser());
-		rosterDao.createRosterEntry(chatResource, identity, fullName, null, anonym, vip);
+		rosterDao.updateRosterEntry(chatResource, identity, fullName, null, anonym, vip);
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);
 	}
 
 	@Override
+	@Transactional
 	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener) {
 		rosterDao.deleteEntry(identity, chatResource);
 		coordinator.getCoordinator().getEventBus().deregisterFor(listener, chatResource);

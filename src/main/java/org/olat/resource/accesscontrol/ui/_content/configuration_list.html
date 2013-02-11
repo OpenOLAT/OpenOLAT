@@ -19,9 +19,12 @@
 				<td><div class="b_form_element">$r.render("to_$confController.link.key")</div></td>
 				<td>$r.render("del_$confController.link.key")</td>
 			</tr>
-			<tr class="$css b_access_desc">
-				<td colspan="5">$confController.getLink().getOffer().getDescription()</td>
-			</tr>
+			#set($desc = $confController.getLink().getOffer().getDescription())
+			#if ($desc)
+				<tr class="$css b_access_desc">
+					<td colspan="5">$desc</td>
+				</tr>
+			#end
 		#end
 	</tbody>
 </table>

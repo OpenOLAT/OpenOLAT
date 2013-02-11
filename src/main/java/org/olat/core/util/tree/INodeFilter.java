@@ -33,6 +33,10 @@ import org.olat.core.util.nodes.INode;
  */
 public interface INodeFilter {
 	
-	public boolean accept(INode node);
+	public boolean isSelectable(INode node);
+	
+	public boolean isVisible(INode node);
+	
+	
 
 }
