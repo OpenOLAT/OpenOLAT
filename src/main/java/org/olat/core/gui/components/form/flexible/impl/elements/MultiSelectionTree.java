@@ -64,13 +64,13 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl implements 
 		keys = new String[flatModel.size()];
 		values = new String[keys.length];
 		int i = 0;
-		for (Iterator iterator = flatModel.iterator(); iterator.hasNext();) {
-			TreeNode treeNode = (TreeNode) iterator.next();
+		for (Iterator<TreeNode> iterator = flatModel.iterator(); iterator.hasNext();) {
+			TreeNode treeNode = iterator.next();
 			keys[i] = treeNode.getIdent();
 			values[i] = treeNode.getTitle();
 			i++;
 		}
-		component = new SelectionTreeComponent(name, getTranslator(), this, treemodel);
+		component = new SelectionTreeComponent(name, getTranslator(), this, treemodel, selectableFilter);
 	}
 
 	@Override
@@ -87,15 +87,17 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl implements 
 		Map<String, Component> checkboxitems = new HashMap<String, Component>(); 
 		for (int i = 0; i < keys.length; i++) {
 			TreeNode tn = treemodel.getNodeById(keys[i]);
-			if(selectableFilter.accept(tn)){
-				// apply css class of tree node to checkbox label wrapper as well
-				String cssClass = tn.getCssClass(); 
-				CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i, cssClass);
-				checkboxitems.put(keys[i], ssec);
-			}else{
-				StaticTextElement ste = new StaticTextElementImpl(keys[i], tn.getTitle());
-				ste.setRootForm(this.getRootForm());
-				checkboxitems.put(keys[i], new StaticTextElementComponent(ste));
+			if(selectableFilter.isVisible(tn)) {
+				if(selectableFilter.isSelectable(tn)){
+					// apply css class of tree node to checkbox label wrapper as well
+					String cssClass = tn.getCssClass(); 
+					CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i, cssClass);
+					checkboxitems.put(keys[i], ssec);
+				} else {
+					StaticTextElement ste = new StaticTextElementImpl(keys[i], tn.getTitle());
+					ste.setRootForm(getRootForm());
+					checkboxitems.put(keys[i], new StaticTextElementComponent(ste));
+				}
 			}
 		}
 		component.setComponents(checkboxitems);

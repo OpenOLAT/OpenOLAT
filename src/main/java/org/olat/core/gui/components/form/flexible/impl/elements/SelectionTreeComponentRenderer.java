@@ -38,6 +38,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.tree.INodeFilter;
 
 /**
  * @author patrickb
@@ -66,10 +67,11 @@ class SelectionTreeComponentRenderer implements ComponentRenderer {
 		
 		TreeModel tm = stc.getTreeModel();
 		TreeNode rootNode = tm.getRootNode();
+		INodeFilter selectableFilter = stc.getSelectableFilter();
 		
 		sb.append("<div class=\"b_selectiontree\">");		
 		renderRootNode(rootNode, sb);
-		renderChildNodes(rootNode, "", stc.hashCode(), sb, renderer, checkboxes, args);		
+		renderChildNodes(rootNode, "", stc.hashCode(), sb, renderer, checkboxes, selectableFilter, args);		
 		sb.append("</div>");
 	}
 
@@ -85,13 +87,19 @@ class SelectionTreeComponentRenderer implements ComponentRenderer {
 		target.append("</div></div>");
 	}
 
-	private void renderChildNodes(TreeNode root, String indent, int treeID, StringOutput sb, Renderer renderer, Map<String,Component> checkboxes, String[] args) {
+	private void renderChildNodes(TreeNode root, String indent, int treeID, StringOutput sb, Renderer renderer,
+			Map<String,Component> checkboxes, INodeFilter selectableFilter, String[] args) {
 		String newIndent = indent + imgDots;
 
 		// extract directories
 		int childcnt = root.getChildCount();
 		for (int i = 0; i < childcnt; i++) {
 			TreeNode child = (TreeNode) root.getChildAt(i);
+			if(selectableFilter != null && !selectableFilter.isVisible(child)) {
+				continue;
+			}
+			
+			
 			// BEGIN  of choice div
 			sb.append("\n<div class=\"b_selectiontree_item\">");
 			// render all icons first
@@ -139,9 +147,9 @@ class SelectionTreeComponentRenderer implements ComponentRenderer {
 
 			// do the same for all children
 			if (i < childcnt - 1) {
-				renderChildNodes(child, newIndent, treeID, sb, renderer, checkboxes, args);
+				renderChildNodes(child, newIndent, treeID, sb, renderer, checkboxes, selectableFilter, args);
 			} else {
-				renderChildNodes(child, indent + imgDots_spacer, treeID, sb, renderer, checkboxes, args);
+				renderChildNodes(child, indent + imgDots_spacer, treeID, sb, renderer, checkboxes, selectableFilter, args);
 			}
 
 		} // for recursion

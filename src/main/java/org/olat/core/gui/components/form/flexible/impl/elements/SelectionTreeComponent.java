@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.tree.INodeFilter;
 
 /**
  * @author patrickb
@@ -41,17 +42,20 @@ import org.olat.core.gui.translator.Translator;
 class SelectionTreeComponent extends FormBaseComponentImpl {
 
 	private SelectionElement selectionElement;
-	private TreeModel treeModel;
+	private final TreeModel treeModel;
+	private final INodeFilter selectableFilter;
 	private Map<String, Component> subComponents;
 	private final static ComponentRenderer RENDERER = new SelectionTreeComponentRenderer(); 
 
 	/**
 	 * @param name
 	 */
-	public SelectionTreeComponent(String name, Translator translator, SelectionElement selectionElement, TreeModel treeModel) {
+	public SelectionTreeComponent(String name, Translator translator, SelectionElement selectionElement,
+			TreeModel treeModel, INodeFilter selectableFilter) {
 		super(name, translator);
 		this.selectionElement = selectionElement;
 		this.treeModel = treeModel;
+		this.selectableFilter = selectableFilter;
 	}
 
 	/* (non-Javadoc)
@@ -68,6 +72,10 @@ class SelectionTreeComponent extends FormBaseComponentImpl {
 
 	TreeModel getTreeModel() {
 		return treeModel;
+	}
+
+	INodeFilter getSelectableFilter() {
+		return selectableFilter;
 	}
 
 	/**
