@@ -63,17 +63,6 @@ public abstract class Container extends Component implements ComponentCollection
 		super(id, name, translator);
 	}
 
-	/**
-	 * puts a component into this container
-	 * @deprecated Please use put(String name, Component component) instead!
-	 * @param component
-	 */
-	//FIXME fj: replace with new style
-	public void put(Component component) {
-		String coName = component.getComponentName();
-		put(coName, component);
-	}
-
 	 /* puts the component into this container.
 	 * @param name how the component is called, e.g. for rendering in a html fragment: $r.render("name")
 	 * @param component the component to add as a child into this container

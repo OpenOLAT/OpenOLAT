@@ -420,7 +420,7 @@ public abstract class Component {
 	 * @return
 	 */
 	public Container getParent(){
-		return this.parent;
+		return parent;
 	}
 	
 	/**

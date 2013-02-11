@@ -703,7 +703,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 					editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 				}
 				if (isEditable(urequest.getIdentity(), re)) {
-					myContent.put(editTestButton);
+					myContent.put("command.editRepFile", editTestButton);
 				} else {
 					myContent.remove(editTestButton);
 				}

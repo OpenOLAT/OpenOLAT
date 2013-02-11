@@ -136,7 +136,7 @@ public class DisplayPortraitController extends BasicController {
 			if (portrait != null){
 				ic = new ImageComponent("image");
 				ic.setMediaResource(portrait);
-				myContent.put(ic);
+				myContent.put("image", ic);
 			}
 		}
 		

@@ -97,7 +97,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		selTree.setTreeModel(ftm);
 
 		selTree.addListener(this);
-		main.put(selTree);
+		main.put(selTree.getComponentName(), selTree);
 		if (move) main.contextPut("move", Boolean.TRUE);
 
 		setInitialComponent(main);

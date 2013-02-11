@@ -155,13 +155,19 @@ public class TextBoxListRenderer implements ComponentRenderer {
 		}
     output.append("],\n");  
 		
-			// otherwise, o_ffEvents are fired: OO-137 ( invoke o_ffEvent on UserAdd or userRemove ) but only in flexiform
+		// otherwise, o_ffEvents are fired: OO-137 ( invoke o_ffEvent on UserAdd or userRemove ) but only in flexiform
 		String o_ffEvent = FormJSHelper.getJSFnCallFor(rootForm, dispatchId, 2);
-		output.append("  afterTagAdded: function(input){\n")
-			    .append(o_ffEvent).append("; console.log('Added',input)},\n")
-			    .append("  afterTagRemoved: function(input){\n")
-			    .append(o_ffEvent).append("; console.log('Remove',input)}\n");
-		output.append("  });\n")
+		output.append("    afterTagAdded: function(event,ui){\n")
+		      .append("      if(!ui.duringInitialization) {")
+			    .append(o_ffEvent).append(";\n")
+			    .append("      }\n")
+			    .append("    },\n")
+			    .append("    afterTagRemoved: function(event,ui){\n")
+		      .append("      if(!ui.duringInitialization) {")
+			    .append(o_ffEvent).append(";\n")
+			    .append("      }\n")
+			    .append("    }\n")
+		      .append("  });\n")
 		      .append("})\n");
 		
 		output.append(FormJSHelper.getJSEnd()).append(lineBreak);
