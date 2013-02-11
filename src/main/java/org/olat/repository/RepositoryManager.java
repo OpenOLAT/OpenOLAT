@@ -1860,7 +1860,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param members
 	 * @param re
 	 */
-	public boolean removeMembers(List<Identity> members, RepositoryEntry re) {
+	public boolean removeMembers(Identity ureqIdentity, List<Identity> members, RepositoryEntry re, MailPackage mailing) {
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		if(re.getOwnerGroup() != null) {
 			secGroups.add(re.getOwnerGroup());
@@ -1889,8 +1889,12 @@ public class RepositoryManager extends BasicManager {
 				reservationDao.deleteReservation(reservation);
 			}
 		}
-		
-		return securityManager.removeIdentityFromSecurityGroups(members, secGroups);
+
+		boolean allOk = securityManager.removeIdentityFromSecurityGroups(members, secGroups);
+		for(Identity identity:members) {
+			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing, mailer);
+		}
+		return allOk;
 	}
 
 	/**

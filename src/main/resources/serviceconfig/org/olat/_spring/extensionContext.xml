@@ -141,7 +141,7 @@
 					<property name="className" value="org.olat.admin.sysinfo.HibernateStatisticsController"/>
 				</bean>
 			</property>
-			<property name="navigationKey" value="locks" />
+			<property name="navigationKey" value="hibernate" />
 			<property name="parentTreeNodeIdentifier" value="systemParent" /> 
 			<property name="translationPackage" value="org.olat.admin"/>
 			<property name="i18nActionKey" value="menu.hibernate"/>
@@ -161,7 +161,7 @@
 					<property name="className" value="org.olat.admin.sysinfo.JavaVMController"/>
 				</bean>
 			</property>
-			<property name="navigationKey" value="locks" />
+			<property name="navigationKey" value="javavm" />
 			<property name="parentTreeNodeIdentifier" value="systemParent" /> 
 			<property name="translationPackage" value="org.olat.admin"/>
 			<property name="i18nActionKey" value="menu.javavm"/>
