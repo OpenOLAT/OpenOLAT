@@ -21,27 +21,18 @@ package org.olat.modules.qpool.ui;
 
 import java.util.List;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItem;
 
 /**
  * 
- * Initial date: 24.01.2013<br>
+ * Initial date: 12.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FavoritQuestionListController extends AbstractQuestionListController {
-
-
-
-	public FavoritQuestionListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-
-		List<QuestionItem> items = qpoolService.getFavoritItems(getIdentity());
-		setItems(items);
-	}
+public interface QuestionItemsSource {
 	
+	public int getNumOfItems();
 	
+	public List<QuestionItem> getItems(int firstResult, int maxResults);
 
 }

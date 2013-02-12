@@ -74,6 +74,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.vfs.VFSContainer;
 
@@ -534,14 +535,13 @@ public class FormUIFactory {
 			}
 		
 			@Override
-			@SuppressWarnings({ "unused", "unchecked" })
-			public void validate(List validationResults) {
+			public void validate(List<ValidationStatus> validationResults) {
 				//nothing to do
 			}
 		
 			@Override
 			protected void rootFormAvailable() {
-			//nothing to do		
+			 //nothing to do		
 			}
 		
 			@Override
@@ -550,11 +550,9 @@ public class FormUIFactory {
 			}
 		
 			@Override
-			@SuppressWarnings("unused")
 			public void evalFormRequest(UserRequest ureq) {
-			//nothing to do
+			 //nothing to do
 			}
-		
 		};
 		setLabelIfNotNull(i18nLabel, fiWrapper);
 		formLayout.add(fiWrapper);
@@ -825,27 +823,21 @@ public class FormUIFactory {
 	
 	public FormItem createSimpleLabelText(final String name, final String translatedText){
 		FormItem wrapper = new FormItemImpl(name) {
-			
 			SimpleLabelText mySimpleLabelTextC = new SimpleLabelText(name, translatedText);
 			
-			@SuppressWarnings("unchecked")
 			@Override
-			public void validate(@SuppressWarnings("unused")
-			List validationResults) {
-			// nothing to do 
-		
+			public void validate(List<ValidationStatus> validationResults) {
+			 // nothing to do 
 			}
 		
 			@Override
 			protected void rootFormAvailable() {
-			//  nothing to do
-		
+			 // nothing to do
 			}
 		
 			@Override
 			public void reset() {
-			//  nothing to do
-		
+			 // nothing to do
 			}
 		
 			@Override
@@ -854,14 +846,10 @@ public class FormUIFactory {
 			}
 		
 			@Override
-			public void evalFormRequest(@SuppressWarnings("unused")
-			UserRequest ureq) {
-			//  nothing to do
-		
+			public void evalFormRequest(UserRequest ureq) {
+			 // nothing to do
 			}
-		
 		};
-		
 		return wrapper;
 	}
 	
@@ -873,15 +861,11 @@ public class FormUIFactory {
 	 */
 	public FormItem createSimpleErrorText(final String name, final String translatedText) {
 		FormItem wrapper = new FormItemImpl(name) {
-			
 			SimpleFormErrorText mySimpleErrorTextC = new SimpleFormErrorText(name, translatedText);
 			
-			@SuppressWarnings("unchecked")
 			@Override
-			public void validate(@SuppressWarnings("unused")
-			List validationResults) {
-			// nothing to do 
-		
+			public void validate(List<ValidationStatus> validationResults) {
+				// nothing to do 
 			}
 		
 			@Override
@@ -892,8 +876,7 @@ public class FormUIFactory {
 		
 			@Override
 			public void reset() {
-			//  nothing to do
-		
+				// nothing to do
 			}
 		
 			@Override
@@ -902,12 +885,9 @@ public class FormUIFactory {
 			}
 		
 			@Override
-			public void evalFormRequest(@SuppressWarnings("unused")
-			UserRequest ureq) {
-			//  nothing to do
-		
+			public void evalFormRequest(UserRequest ureq) {
+				// nothing to do
 			}
-		
 		};
 		
 		return wrapper; 
@@ -921,17 +901,26 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public FlexiTableElement addTableElement(String name, FlexiTableDataModel tableModel, FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(name,tableModel);
+	public FlexiTableElement addTableElement(UserRequest ureq, String name, FlexiTableDataModel tableModel, FormItemContainer formLayout) {
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, name,tableModel);
 		formLayout.add(fte);
 		return fte;
 	}
 	
-	public FlexiTableElement addTableElement(String name, FlexiTableDataModel tableModel, Translator translator,  FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(name, translator, tableModel);
+	public FlexiTableElement addTableElement(UserRequest ureq, String name, FlexiTableDataModel tableModel,
+			Translator translator, FormItemContainer formLayout) {
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, name, translator, tableModel);
 		formLayout.add(fte);
 		return fte;
 	}
+	
+	public FlexiTableElement addTableElement(UserRequest ureq, String name, FlexiTableDataModel tableModel,
+			int pageSize, Translator translator, FormItemContainer formLayout) {
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, name, translator, tableModel, pageSize);
+		formLayout.add(fte);
+		return fte;
+	}
+
 	
 	/**
 	 * creates a form link with the given name which acts also as command, i18n

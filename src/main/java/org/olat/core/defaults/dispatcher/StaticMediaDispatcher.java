@@ -213,6 +213,12 @@ public class StaticMediaDispatcher extends LogDelegator implements Dispatcher {
 	public static void renderStaticURI(StringOutput target, String URI) {
 		renderStaticURI(target, URI, true);
 	}
+	
+	public static String getStaticURI(String uri) {
+		StringOutput target = new StringOutput();
+		renderStaticURI(target, uri, true);
+		return target.toString();
+	}
 
 	/**
 	 * Render a static URL to resource. This is only used in special cases, in

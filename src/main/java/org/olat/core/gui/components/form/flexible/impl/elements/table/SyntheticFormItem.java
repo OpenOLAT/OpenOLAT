@@ -37,7 +37,7 @@ import org.olat.core.util.ValidationStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class SyntheticFormItem implements FormItem {
+class SyntheticFormItem<T> implements FormItem {
 	
 	private final String name;
 	private final String itemId;

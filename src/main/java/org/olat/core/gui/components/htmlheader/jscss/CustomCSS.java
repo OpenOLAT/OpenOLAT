@@ -75,11 +75,10 @@ public class CustomCSS extends LogDelegator implements Disposable {
 		this.relCssFilename = relCssFilename;
 		registerMapper(cssBaseContainer, uSess);
 		// initialize js and css component
-		this.jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(),
-				null, null, false, null);
+		jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(), null, null, false);
 		String fulluri = mapperBaseURI + relCssFilename;
 		// load CSS after the theme
-		this.jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
+		jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
 	}
 	
 	public CustomCSS(final VFSContainer cssBaseContainer,
@@ -90,11 +89,10 @@ public class CustomCSS extends LogDelegator implements Disposable {
 		registerMapper(cssBaseContainer, uSess);
 		
 		// initialize js and css component
-		this.jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(),
-				null, null, false, null);
+		jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(), null, null, false);
 		String fulluri = mapperBaseURI + relCssFilename;
 		// load CSS after the theme
-		this.jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
+		jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
 		
 	}
 

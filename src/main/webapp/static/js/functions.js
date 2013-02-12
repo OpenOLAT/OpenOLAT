@@ -121,23 +121,24 @@ var BLoader = {
 				var mystyle = doc.createStyleSheet(cssURL, pos);
 			} else { // mozilla
 				// double check: first try to remove the <link rel="stylesheet"...> tag, using the id.
-				var el = $(linkid);
-				if (el) {
+				var el = jQuery('#' +linkid);
+				if (el && el.size() > 0) {
 					if (o_info.debug) o_logwarn("BLoader::loadCSS: stylesheet already found in doc when trying to add:"+cssURL+", with id "+linkid);
 					return;
-				}
-				// create the new stylesheet and convince the browser to load the url using @import with protocol 'data'
-				var styles = '@import url("'+cssURL+'");';
-				var newSt = new Element('link', {rel : 'stylesheet', id : linkid, href : 'data:text/css,'+escape(styles) });
-				if (loadAfterTheme) {
-					var tar = $('b_fontSize_css');
-					$$('head')[0].insertBefore(newSt, tar);
 				} else {
-					var tar = $('b_theme_css');
-					$$('head')[0].insertBefore(newSt, tar);
+					// create the new stylesheet and convince the browser to load the url using @import with protocol 'data'
+					//var styles = '@import url("'+cssURL+'");';
+					//var newSt = new Element('link', {rel : 'stylesheet', id : linkid, href : 'data:text/css,'+escape(styles) });
+					var newSt = jQuery('<link id="' + linkid + '" rel="stylesheet" type="text/css" href="' + cssURL+ '">');
+					if (loadAfterTheme) {
+						newSt.insertBefore(jQuery('#b_fontSize_css'));
+					} else {
+						newSt.insertBefore(jQuery('#b_theme_css'));
+					}
 				}
 			}
 		} catch(e){
+			console.log(e);
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::loadCSS: Error when loading CSS from URL::' + cssURL);
 			}
@@ -175,7 +176,7 @@ var BLoader = {
 				if (cnt != 1 && o_info.debug) o_logwarn("stylesheet: when removeing: num of stylesheets found was not 1:"+cnt);
 				
 			} else { // mozilla
-				var el = $(linkid);
+				var el = jQuery('#' +linkid);
 				if (el) {
 					el.href = ""; // fix unload problem in safari
 					el.remove();

@@ -1,30 +1,33 @@
-<div id="callout_layer_$r.getCId()" class="b_callout_content">$r.javaScriptBgCommand("close")</div>
+<div id="callout_layer_$r.getCId()" class="b_callout_content"></div>
 <div style="display:none">
-	<div id="callout_layer_content_$r.getCId()" class="b_ext_tooltip_wrapper">
+	<div id="callout_layer_content_$r.getCId()" class="b_ext_tooltip_wrapper" style="z-index:1800">
 		$r.render("calloutWindowContent")
 	</div>
 </div>
 <script type="text/javascript">
 /* <![CDATA[ */	
 jQuery(function() {
+	/*
+	jQuery('#callout_layer_content_$r.getCId()').dialog({
+		resize: 'auto',
+		modal: true,
+		position: { my: 'left+15 center', at: 'right bottom', of: '#$target' }
+	});
+	jQuery(".ui-dialog-titlebar").hide();
+	*/
 	jQuery('#callout_layer_$r.getCId()').parents('div.b_modal_area').next('div.b_modal_overlay').each(function(index, el) {
 		jQuery(el).css("opacity","0");
 		#if($closable)
 			jQuery(el).click(function() {if (o2cl()) {
-				//TODO jquery
 				$r.javaScriptBgCommand('close');
 			}});
 		#end
 	});
-
 	jQuery('#$target').tooltip({
 		items: '#$target',
 		position: { my: 'left+15 center', at: 'right bottom', collision: 'flipfit'},
 		content: function(response) {
 			return jQuery('#callout_layer_content_$r.getCId()').html();
-		},
-		close: function( event, ui ) {
-			$r.javaScriptBgCommand('close');
 		}
   }).tooltip('open');
 });

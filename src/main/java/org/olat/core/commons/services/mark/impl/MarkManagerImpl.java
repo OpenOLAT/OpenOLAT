@@ -22,7 +22,9 @@ package org.olat.core.commons.services.mark.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.FlushModeType;
 import javax.persistence.Query;
@@ -71,25 +73,25 @@ public class MarkManagerImpl implements MarkManager {
 		List<Mark> results = query.getResultList();
 		return results;
 	}
-
+	
 	@Override
-	public List<Mark> getMarks(Identity identity, String resourceTypeName, Collection<String> subPath) {
+	public Set<Long> getMarkResourceIds(Identity identity, String resourceTypeName, Collection<String> subPaths) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select mark from ").append(MarkImpl.class.getName()).append(" mark where ")
+		sb.append("select distinct(mark.resId) from ").append(MarkImpl.class.getName()).append(" mark where ")
 			.append("mark.resName=:resName and mark.creator=:creator");
-		if(!subPath.isEmpty()) {
+		if(!subPaths.isEmpty()) {
 			sb.append(" and mark.resSubPath in (:resSubPaths)");
 		}
 		
-		TypedQuery<Mark> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Mark.class)
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("resName", resourceTypeName)
 				.setParameter("creator", identity);
-		if(!subPath.isEmpty()) {
-			query.setParameter("resSubPaths", subPath);
+		if(!subPaths.isEmpty()) {
+			query.setParameter("resSubPaths", subPaths);
 		}
 		
-		List<Mark> results = query.getResultList();
-		return results;
+		List<Long> results = query.getResultList();
+		return new HashSet<Long>(results);
 	}
 
 	@Override

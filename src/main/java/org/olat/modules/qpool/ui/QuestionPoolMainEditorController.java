@@ -54,9 +54,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private final Panel content;
 	private StackedController stackPanel;
 
-	private AbstractQuestionListController myQuestionsCtrl;
-	private FavoritQuestionListController markedQuestionsCtrl;
-	private AbstractQuestionListController selectedPoolCtrl;
+	private QuestionsController myQuestionsCtrl;
+	private QuestionsController markedQuestionsCtrl;
+	private QuestionsController selectedPoolCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 	
 	private final QuestionPoolService qpoolService;
@@ -114,7 +114,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectMyQuestions(UserRequest ureq) {
 		if(myQuestionsCtrl == null) {
-			myQuestionsCtrl = new AbstractQuestionListController(ureq, getWindowControl());
+			myQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), new MyQuestionItemsSource(getIdentity()));
 			myQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(myQuestionsCtrl);
 		}
@@ -123,7 +123,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectMarkedQuestions(UserRequest ureq) {
 		if(markedQuestionsCtrl == null) {
-			markedQuestionsCtrl = new FavoritQuestionListController(ureq, getWindowControl());
+			markedQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), new MarkedItemsSource(getIdentity()));
 			markedQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(markedQuestionsCtrl);
 		}
@@ -132,7 +132,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelect(UserRequest ureq, Pool pool) {
 		if(selectedPoolCtrl == null) {
-			selectedPoolCtrl = new PooledQuestionListController(ureq, getWindowControl(), pool);
+			selectedPoolCtrl = new QuestionsController(ureq, getWindowControl(), new PooledItemsSource(pool));
 			selectedPoolCtrl.setStackedController(stackPanel);
 			listenTo(selectedPoolCtrl);
 		}

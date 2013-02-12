@@ -22,6 +22,8 @@ package org.olat.modules.qpool.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
@@ -59,16 +61,35 @@ public class QuestionItemDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItem> getFavoritItems(Identity identity) {
+	public int getNumOfFavoritItems(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item) from questionitem item")
+		  .append(" where item.key in (")
+		  .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where mark.creator.key=:identityKey and mark.resName='QuestionItem'")
+		  .append(" )");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.getSingleResult().intValue();
+	}
+	
+	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
 		  .append(" where item.key in (")
 		  .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where mark.creator.key=:identityKey and mark.resName='QuestionItem'")
 		  .append(" )");
 
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItem.class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultList();
+				.setParameter("identityKey", identity.getKey());
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
 	}
 }

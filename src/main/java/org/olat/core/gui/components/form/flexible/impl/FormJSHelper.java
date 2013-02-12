@@ -88,7 +88,7 @@ public class FormJSHelper {
 		return content;
 	}
 	
-	public static String getXHRFnCallFor(Form form, String id, int actionIndex) {
+	public static String getXHRFnCallFor(Form form, String id, int actionIndex, NameValuePair... pairs) {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("o_ffXHREvent('")
 		  .append(form.getFormName()).append("','")
@@ -96,7 +96,26 @@ public class FormJSHelper {
 		  .append(id).append("','")
 		  .append(form.getEventFieldId()).append("','")
 		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
-		  .append("','hello','world')");
+		  .append("'");
+		if(pairs != null && pairs.length > 0) {
+			for(NameValuePair pair:pairs) {
+				sb.append(",'")
+			    .append(pair.getName()).append("','")
+			    .append(pair.getValue()).append("'");
+			}
+		}
+
+		sb.append(")");
+		return sb.toString();
+	}
+	
+	public static String generateXHRFnCallVariables(Form form, String id, int actionIndex) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("var formNam = '").append(form.getFormName()).append("';\n")
+		  .append("var dispIdField = '").append(form.getDispatchFieldId()).append("';\n")
+		  .append("var dispId = '").append(id).append("';\n")
+		  .append("var eventIdField = '").append(form.getEventFieldId()).append("';\n")
+		  .append("var eventInt = ").append(FormEvent.ON_DOTDOTDOT[actionIndex]).append(";\n");
 		return sb.toString();
 	}
 

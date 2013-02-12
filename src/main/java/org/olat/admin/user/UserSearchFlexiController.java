@@ -176,7 +176,7 @@ public class UserSearchFlexiController extends FormBasicController {
 			
 			Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 			userTableModel = new UserSearchFlexiTableModel(Collections.<UserResultWrapper>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
-			tableEl = uifactory.addTableElement("users", userTableModel, myTrans, formLayout);
+			tableEl = uifactory.addTableElement(ureq, "users", userTableModel, myTrans, formLayout);
 
 			selectAll = uifactory.addFormLink("selectall", formLayout);
 			deselectAll = uifactory.addFormLink("deselectall", formLayout);

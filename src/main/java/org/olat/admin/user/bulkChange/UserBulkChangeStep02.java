@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -272,10 +273,8 @@ class UserBulkChangeStep02 extends BasicStep {
 			colPos++;
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.role.status"));
 
-			FlexiTableDataModel tableDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new OverviewModel(mergedDataChanges,
-					colPos + 1), tableColumnModel);
-
-			uifactory.addTableElement("newUsers", tableDataModel, formLayoutVertical);
+			FlexiTableDataModel tableDataModel = new FlexiTableDataModelImpl<List<String>>(new OverviewModel(mergedDataChanges, colPos + 1), tableColumnModel);
+			uifactory.addTableElement(ureq, "newUsers", tableDataModel, formLayoutVertical);
 
 			//fxdiff: 101 add group overview
 			Set<Long> allGroups = new HashSet<Long>(); 
@@ -296,9 +295,9 @@ class UserBulkChangeStep02 extends BasicStep {
 
 				List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(allGroups);
 				TableDataModel<BusinessGroup> model = new GroupAddOverviewModel(groups, ownGroups, partGroups, mailGroups, getTranslator()); 
-				FlexiTableDataModel groupDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(model, groupColumnModel);
+				FlexiTableDataModel groupDataModel = new FlexiTableDataModelImpl<BusinessGroup>(model, groupColumnModel);
 				
-				uifactory.addTableElement("groupOverview", groupDataModel, formLayout);
+				uifactory.addTableElement(ureq, "groupOverview", groupDataModel, formLayout);
 			}
 		}
 

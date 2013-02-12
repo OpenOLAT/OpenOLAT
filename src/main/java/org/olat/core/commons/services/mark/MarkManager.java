@@ -22,6 +22,7 @@ package org.olat.core.commons.services.mark;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -39,7 +40,7 @@ public interface MarkManager {
 	
 	public List<Mark> getMarks(OLATResourceable ores, Identity identity, Collection<String> subPaths);
 	
-	public List<Mark> getMarks(Identity identity, String resourceTypeName, Collection<String> subPaths);
+	public Set<Long> getMarkResourceIds(Identity identity, String resourceTypeName, Collection<String> subPaths);
 	
 	public List<Mark> getMarks(Identity identity, Collection<String> resourceTypeNames);
 	

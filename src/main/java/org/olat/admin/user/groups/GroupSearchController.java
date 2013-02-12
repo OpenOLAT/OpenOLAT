@@ -132,7 +132,7 @@ public class GroupSearchController extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mail.i18n()));
 		
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
-		FlexiTableElement table = uifactory.addTableElement("groupList", tableDataModel, tableCont);
+		FlexiTableElement table = uifactory.addTableElement(ureq, "groupList", tableDataModel, tableCont);
 		tableCont.add("groupList", table);
 		
 		if (!isUsedInStepWizzard()) {
@@ -381,6 +381,11 @@ public class GroupSearchController extends StepFormBasicController {
 		@Override
 		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
 			columnModel = tableColumnModel;
+		}
+		
+		@Override
+		public void load(int firstResult, int maxResults) {
+			//already loaded
 		}
 
 		@Override

@@ -32,11 +32,17 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
  */
 public interface FlexiTableDataModel {
 
-
 	/**
 	 * @return Number of table rows.
 	 */
 	public int getRowCount();
+	
+	/**
+	 * Load the rows needed for paging
+	 * @param firstResult
+	 * @param maxResults
+	 */
+	public void load(int firstResult, int maxResults);
 
 	/**
 	 * Return Object for certain table cell.

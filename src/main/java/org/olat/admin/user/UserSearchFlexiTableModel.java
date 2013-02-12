@@ -56,6 +56,11 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<UserResultW
 	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
 		columnModel = tableColumnModel;
 	}
+	
+	@Override
+	public void load(int firstResult, int maxResults) {
+		//already loaded
+	}
 
 	@Override
 	public int getColumnCount() {

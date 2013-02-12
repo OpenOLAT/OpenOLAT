@@ -65,7 +65,10 @@ public class FlexiTableModelMapper implements Mapper {
 		
 		if(StringHelper.isLong(firstRowStr) && StringHelper.isLong(maxRowStr)) {
 			FlexiTableDataModel model = ftE.getTableDataModel();
+
 			int rows = ftE.getTableDataModel().getRowCount();
+			String dispatchId = ftE.getComponent().getDispatchID();
+			String rowIdPrefix = "row_" + dispatchId + "-";
 			
 			try {
 				JSONObject root = new JSONObject();
@@ -79,6 +82,8 @@ public class FlexiTableModelMapper implements Mapper {
 				int firstRow = Integer.parseInt(firstRowStr);
 				int maxRows = Integer.parseInt(maxRowStr);
 				int lastRow = Math.min(rows, firstRow + maxRows);
+				//paged loading
+				model.load(firstRow, maxRows);
 				
 				for (int i = firstRow; i < lastRow; i++) {
 					JSONObject row = new JSONObject();
@@ -103,6 +108,8 @@ public class FlexiTableModelMapper implements Mapper {
 					row.put("select", selectVal);
 					String markVal = renderFormItem(mark, request, ftE.getTranslator());
 					row.put("mark", markVal);
+					row.put("DT_RowId", rowIdPrefix + Integer.toString(i));
+					
 					ja.put(row);
 				}
 				return new JSONMediaResource(root, "UTF-8");

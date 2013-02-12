@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -146,9 +147,8 @@ public class DeletStep01 extends BasicStep {
 				}
 			}
 
-			tableDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new IdentityFlexiTableModel(mergedDataChanges, colPos + 1),
-					tableColumnModel);
-			uifactory.addTableElement("newUsers", tableDataModel, formLayout);
+			tableDataModel = new FlexiTableDataModelImpl(new IdentityFlexiTableModel(mergedDataChanges, colPos + 1), tableColumnModel);
+			uifactory.addTableElement(ureq, "newUsers", tableDataModel, formLayout);
 		}
 
 	}

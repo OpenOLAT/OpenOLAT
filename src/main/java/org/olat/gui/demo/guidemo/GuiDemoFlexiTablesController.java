@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -82,8 +83,8 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
     // column 7 : Link
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7"));
 
-		tableDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new SampleFlexiTableModel(this, formLayout), tableColumnModel);
-		uifactory.addTableElement("gui-demo", tableDataModel, formLayout);
+		tableDataModel = new FlexiTableDataModelImpl(new SampleFlexiTableModel(this, formLayout), tableColumnModel);
+		uifactory.addTableElement(ureq, "gui-demo", tableDataModel, formLayout);
 		uifactory.addFormSubmitButton("ok", formLayout);
 	}
 	

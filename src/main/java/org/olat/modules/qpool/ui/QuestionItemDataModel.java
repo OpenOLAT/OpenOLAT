@@ -19,9 +19,12 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.table.TableDataModel;
 
 /**
  * 
@@ -29,13 +32,15 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDataModel extends DefaultTableDataModel<QuestionItemRow> implements FlexiTableDataModel {
+public class QuestionItemDataModel implements FlexiTableDataModel, TableDataModel<QuestionItemRow> {
 
+	private List<QuestionItemRow> rows;
 	private FlexiTableColumnModel columnModel;
+	private final ItemRowsSource source;
 	
-	public QuestionItemDataModel(FlexiTableColumnModel columnModel) {
-		super(null);
+	public QuestionItemDataModel(FlexiTableColumnModel columnModel, ItemRowsSource source) {
 		this.columnModel = columnModel;
+		this.source = source;
 	}
 	
 	@Override
@@ -49,8 +54,49 @@ public class QuestionItemDataModel extends DefaultTableDataModel<QuestionItemRow
 	}
 
 	@Override
+	public int getRowCount() {
+		return source.getRowCount();
+	}
+
+	@Override
+	public QuestionItemRow getObject(int row) {
+		return rows.get(row);
+	}
+
+	@Override
+	public void setObjects(List<QuestionItemRow> objects) {
+		rows = new ArrayList<QuestionItemRow>(objects);
+	}
+
+	@Override
+	public void load(int firstResult, int maxResults) {
+		if(rows == null) {
+			rows = new ArrayList<QuestionItemRow>();
+		}
+		
+		for(int i=rows.size(); i<firstResult; i++) {
+			rows.add(null);
+		}
+		
+		List<QuestionItemRow> newRows = source.getRows(firstResult, maxResults);
+		for(int i=0; i<newRows.size(); i++) {
+			int rowIndex = i + firstResult;
+			if(rowIndex < rows.size()) {
+				rows.set(rowIndex, newRows.get(i));
+			} else {
+				rows.add(newRows.get(i));
+			}
+		}
+	}
+
+	@Override
 	public int getColumnCount() {
 		return columnModel.getColumnCount();
+	}
+	
+	@Override
+	public QuestionItemDataModel createCopyWithEmptyList() {
+		return new QuestionItemDataModel(columnModel, source);
 	}
 
 	@Override

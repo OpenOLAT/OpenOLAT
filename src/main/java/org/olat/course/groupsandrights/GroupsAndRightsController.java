@@ -91,7 +91,7 @@ public class GroupsAndRightsController extends FormBasicController {
 
 		List<BGRightsOption> groupRights = loadModel();
 		tableDataModel = new GroupsAndRightsDataModel(groupRights, tableColumnModel);
-		uifactory.addTableElement("rightList", tableDataModel, formLayout);
+		uifactory.addTableElement(ureq, "rightList", tableDataModel, formLayout);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
@@ -263,6 +263,11 @@ public class GroupsAndRightsController extends FormBasicController {
 		@Override
 		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
 			columnModel = tableColumnModel;
+		}
+
+		@Override
+		public void load(int firstResult, int maxResults) {
+			//already loaded
 		}
 
 		@Override

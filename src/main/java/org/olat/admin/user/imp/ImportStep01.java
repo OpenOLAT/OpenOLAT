@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -103,7 +104,7 @@ class ImportStep01 extends BasicStep {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
-		@SuppressWarnings({ "unused", "unchecked"})
+		@SuppressWarnings("unchecked")
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			FormLayoutContainer formLayoutVertical = FormLayoutContainer.createVerticalFormLayout("vertical", getTranslator());
@@ -150,9 +151,8 @@ class ImportStep01 extends BasicStep {
 			}
 
 
-			FlexiTableDataModel tableDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new Model(idents, colPos),
-					tableColumnModel);
-			uifactory.addTableElement("newUsers", tableDataModel, formLayoutVertical);
+			FlexiTableDataModel tableDataModel = new FlexiTableDataModelImpl(new Model(idents, colPos), tableColumnModel);
+			uifactory.addTableElement(ureq, "newUsers", tableDataModel, formLayoutVertical);
 
 		}
 

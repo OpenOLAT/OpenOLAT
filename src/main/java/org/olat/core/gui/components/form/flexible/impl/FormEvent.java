@@ -39,7 +39,7 @@ import org.olat.core.gui.control.Event;
 public class FormEvent extends Event {
 
 	private static final long serialVersionUID = -3538521396051263132L;
-	private FormItem source;
+	
 	public static final int ONDBLCLICK = 1;
 	public static final int ONCLICK = 2; 
 	// Don't use onchange events for radiobuttons / checkboxes, this does not work
@@ -54,7 +54,9 @@ public class FormEvent extends Event {
 	//sorted x0 > x1 > x2 .. > xn 
 	public static final int[] ON_DOTDOTDOT = new int[]{ONDBLCLICK, ONCLICK, ONCHANGE};
 	public static final FormEvent RESET = new FormEvent("reset",null);
-	private int trigger = -1;
+
+	private final int trigger;
+	private final FormItem source;
 	
 	public FormEvent(String command, FormItem source, int action) {
 		super(command);

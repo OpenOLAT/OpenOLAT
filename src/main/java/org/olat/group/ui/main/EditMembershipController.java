@@ -225,7 +225,7 @@ public class EditMembershipController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.waitingList"));
 		
 		tableDataModel = new EditMemberTableDataModel(Collections.<MemberOption>emptyList(), tableColumnModel);
-		uifactory.addTableElement("groupList", tableDataModel, formLayout);
+		uifactory.addTableElement(ureq, "groupList", tableDataModel, formLayout);
 		
 		if(withButtons) {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
@@ -375,6 +375,11 @@ public class EditMembershipController extends FormBasicController {
 		@Override
 		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
 			columnModel = tableColumnModel;
+		}
+
+		@Override
+		public void load(int firstResult, int maxResults) {
+			//already loaded
 		}
 
 		@Override

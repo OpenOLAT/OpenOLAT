@@ -17,48 +17,53 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.fullWebApp;
+package org.olat.modules.qpool.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.qpool.QuestionItem;
 
 /**
- * <h3>Description:</h3>
- * This is a simple controller that displays no header at all. This is needed to
- * override the default header from the brasato configuration that displays a
- * logo.
- * <p>
- * Use the ControllerCreator to configure this header in the spring configuration
- * <p>
- * Initial Date: 24.10.2007 <br>
  * 
- * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
+ * Initial date: 12.02.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class EmptyHeaderController extends BasicController {
+public class QuestionItemPreviewController extends BasicController {
 
-	/**
-	 * Constructor for an empty header creator that displays a configured logo
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 */
-	public EmptyHeaderController(UserRequest ureq, WindowControl wControl){
+	private QuestionItem item;
+	private final Panel previewPanel;
+	
+	public QuestionItemPreviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		// use an empty panel as content
-		putInitialPanel(new Panel("empty"));
+		
+		previewPanel = new Panel("preview.container");
+		putInitialPanel(previewPanel);
 	}
-
+	
 	@Override
 	protected void doDispose() {
 		//
 	}
 
+	public QuestionItem getItem() {
+		return item;
+	}
+	
+	public void updateItem(QuestionItem item) {
+		this.item = item;
+		
+		VelocityContainer rawContent = createVelocityContainer("raw_content");
+		previewPanel.setContent(rawContent);
+	}
+
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 }

@@ -89,30 +89,24 @@ public class CloseableCalloutWindowController extends BasicController {
 	 *            CSS classes that should be applied to the callout window or
 	 *            NULL to not use any css classes
 	 */
-	public CloseableCalloutWindowController(UserRequest ureq,
-			WindowControl wControl, Component calloutWindowContent,
-			String targetDomID, String title, boolean closable,
-			String cssClasses) {
+	public CloseableCalloutWindowController(UserRequest ureq, WindowControl wControl, Component calloutWindowContent,
+			String targetDomID, String title, boolean closable, String cssClasses) {
 		super(ureq, wControl);
 
-		boolean ajax = getWindowControl().getWindowBackOffice()
-				.getWindowManager().isAjaxEnabled();
+		boolean ajax = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
 		if (ajax) {
 			calloutVC = createVelocityContainer("callout");
-			//
 			calloutVC.put("calloutWindowContent", calloutWindowContent);
 			// Target link
 			setDOMTarget(targetDomID);
 			// Config options, see setter methods
 			calloutVC.contextPut("closable", Boolean.toString(closable));
-			calloutVC.contextPut("cssClasses", (cssClasses == null ? "b_small"
-					: cssClasses));
+			calloutVC.contextPut("cssClasses", (cssClasses == null ? "b_small" : cssClasses));
 			if (title != null) {
-				String escapedTitle = StringEscapeUtils
-						.escapeJavaScript(StringEscapeUtils.escapeHtml(title));
+				String escapedTitle = StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(title));
 				calloutVC.contextPut("title", escapedTitle);
 			}
-			//
+			
 			putInitialPanel(calloutVC);
 		} else {
 			// Fallback to old-school modal dialog
@@ -171,7 +165,15 @@ public class CloseableCalloutWindowController extends BasicController {
 		this(ureq, wControl, calloutWindowContent, "o_fi"
 				+ targetFormLink.getComponent().getDispatchID(), title, closable, cssClasses);
 	}
-
+	
+	public String getDOMTarget() {
+		if (calloutVC != null) {
+			// Setting the new target makes this callout VC dirty which redraws
+			// the callout window and re-initializes the ExtJS tooltip
+			return (String)calloutVC.getContext().get("target");
+		}
+		return null;
+	}
 	
 	/**
 	 * Set the DOM ID of the target element where the callout window should
@@ -218,7 +220,7 @@ public class CloseableCalloutWindowController extends BasicController {
 	 */
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
-			if (event == cmc.CLOSE_MODAL_EVENT) {
+			if (event == CloseableModalController.CLOSE_MODAL_EVENT) {
 				// Forward event to parent controller
 				fireEvent(ureq, CLOSE_WINDOW_EVENT);
 			}
@@ -298,14 +300,12 @@ public class CloseableCalloutWindowController extends BasicController {
 	private void cleanupJSCode() {
 		// Cleanup any resources on the browser/DOM side
 		StringBuilder sb = new StringBuilder();
-		sb.append("if(jQuery('#callout_layer_o_").append(calloutVC.getDispatchID()).append("') != null ) {")
-		  //.append("  jQuery('#callout_layer_o_").append(calloutVC.getDispatchID()).append("').destroy();")
-		  .append("};");
+		sb.append("jQuery(jQuery('#").append(getDOMTarget()).append("').each(function(index, el) {")
+		  .append("  try { jQuery(el).tooltip('destroy'); } catch(e) {}")
+		  .append("}));");
 		// JS command is sent via OLAT AJAX channel
 		Command command = new JSCommand(sb.toString());
 		getWindowControl().getWindowBackOffice().sendCommandTo(command);
-		//
 		requiresJSCleanup = false;
 	}
-	
 }

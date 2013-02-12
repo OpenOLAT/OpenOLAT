@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -30,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 
@@ -73,24 +73,32 @@ public class QuestionPoolServiceImpl implements QuestionPoolService, Application
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<Pool> getPools(Identity identity) {
 		return poolDao.getPools();
 	}
 
 	@Override
-	@Transactional(readOnly=true)
-	public List<QuestionItem> getItemsOfPool(Pool pool) {
-		return poolDao.getItemsOfPool(pool);
+	public int getNumOfItemsInPool(Pool pool) {
+		return poolDao.getNumOfItemsInPool(pool);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
-	public List<QuestionItem> getFavoritItems(Identity identity) {
-		return questionItemDao.getFavoritItems(identity);
+	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults) {
+		return poolDao.getItemsOfPool(pool, firstResult, maxResults);
 	}
-	
-	
-	
-	
+
+	@Override
+	public int getNumOfFavoritItems(Identity identity) {
+		return questionItemDao.getNumOfFavoritItems(identity);
+	}
+
+	@Override
+	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults) {
+		return questionItemDao.getFavoritItems(identity, firstResult, maxResults);
+	}
+
+	@Override
+	public List<QuestionItem> getItems(Identity identity, int firstResult, int maxResults) {
+		return new ArrayList<QuestionItem>();
+	}
 }

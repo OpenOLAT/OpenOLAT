@@ -32,9 +32,9 @@ import org.olat.core.gui.components.table.TableDataModel;
  * Table data model including column models.
  * @author Christian Guretzki
  */
-public class FlexiTableDataModelImpl implements FlexiTableDataModel {
+public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
 	
-	private TableDataModel<?> tableModel;
+	private TableDataModel<T> tableModel;
 	private FlexiTableColumnModel tableColumnModel;
 
 	/**
@@ -42,7 +42,7 @@ public class FlexiTableDataModelImpl implements FlexiTableDataModel {
 	 * @param tableModel        non-flexi table data model
 	 * @param tableColumnModel  table-column-model (all columns)
 	 */
-	public FlexiTableDataModelImpl(TableDataModel<?> tableModel, FlexiTableColumnModel tableColumnModel ) {
+	public FlexiTableDataModelImpl(TableDataModel<T> tableModel, FlexiTableColumnModel tableColumnModel ) {
 		this.tableModel = tableModel;
 		this.tableColumnModel = tableColumnModel;
 	}
@@ -52,6 +52,15 @@ public class FlexiTableDataModelImpl implements FlexiTableDataModel {
 	 */
 	public int getRowCount() {
 		return tableModel.getRowCount();
+	}
+
+	public T getObject(int row) {
+		return tableModel.getObject(row);
+	}
+
+	@Override
+	public void load(int firstResult, int maxResults) {
+		//already loaded
 	}
 
 	/**

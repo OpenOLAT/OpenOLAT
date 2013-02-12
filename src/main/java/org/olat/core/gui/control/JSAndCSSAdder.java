@@ -35,7 +35,7 @@ package org.olat.core.gui.control;
  *
  * @author Felix Jost
  */
-public abstract class JSAndCSSAdder {
+public interface JSAndCSSAdder {
 	public static final int CSS_INDEX_BEFORE_THEME = 25;
 	// everything that must be loaded before the theme: 1 - 49
 	public static final int CSS_INDEX_THEME = 50;
@@ -43,8 +43,7 @@ public abstract class JSAndCSSAdder {
 	public static final int CSS_INDEX_AFTER_THEME = 65;
 
 	
-
-	public abstract void addRequiredStaticJsFile(String jsFileName);
+	public void addRequiredStaticJsFile(String jsFileName);
 	
 	/**
 	 * adds a js file to be served in the html header to the list of required
@@ -64,7 +63,7 @@ public abstract class JSAndCSSAdder {
 	 * @param baseClass
 	 * @param jsFileName
 	 */
-	public abstract void addRequiredJsFile(Class baseClass, String jsFileName);
+	public void addRequiredJsFile(Class<?> baseClass, String jsFileName);
 
 	/**
 	 * adds a js file to be served in the html header to the list of required
@@ -87,7 +86,7 @@ public abstract class JSAndCSSAdder {
 	 * @param fileEncoding the encoding of the js file or NULL to use the default
 	 *          encoding (utf-8)
 	 */
-	public abstract  void addRequiredJsFile(Class baseClass, String jsFileName, String fileEncoding);
+	public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding);
 
 	/**
 	 * adds a js file to be served in the html header to the list of required
@@ -110,7 +109,7 @@ public abstract class JSAndCSSAdder {
 	 * @param preAJAXAddJsCode A string containing some values to be eval()-ed
 	 *          right before the script itself is eval()-ed
 	 */
-	public abstract  void addRequiredJsFile(Class baseClass, String jsFileName, String fileEncoding, String preAJAXAddJsCode);
+	public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding, String preAJAXAddJsCode);
 
 	/**
 	 * 
@@ -124,7 +123,7 @@ public abstract class JSAndCSSAdder {
 	 * @param cssIndex position of the css in relation of the position of the
 	 *          theme. Use JSAndCSSAdder.CSS_INDEX_* variables to set this
 	 */
-	public abstract  void addRequiredCSSFile(Class baseClass, String cssFileName, boolean forceRemove, int cssLoadIndex);
+	public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove, Integer cssLoadIndex);
 	
 	/**
 	 * This method will add the CSS file before the theme. use the other method to change this behaviour
@@ -136,7 +135,7 @@ public abstract class JSAndCSSAdder {
 	 *          the validate method does not require it anymore. (e.g. when you
 	 *          leave the course edit mode)
 	 */
-	public abstract  void addRequiredCSSFile(Class baseClass, String cssFileName, boolean forceRemove);
+	public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove);
 
 	/**
 	 * 
@@ -158,28 +157,33 @@ public abstract class JSAndCSSAdder {
 	 * @param cssIndex position of the css in relation of the position of the
 	 *          theme. Use JSAndCSSAdder.CSS_INDEX_* variables to set this
 	 */
-	public abstract  void addRequiredCSSPath(String cssPath, boolean forceRemove, int cssLoadIndex);
+	public void addRequiredCSSPath(String cssPath, boolean forceRemove, Integer cssLoadIndex);
+	
+	
+	public void addStaticCSSPath(String cssPath);
+	
+	
 	
 	/**
 	 * 
 	 * @return true if there has been a new (never been added before) (or a deleted css which has been marked as to-be-removed) required css or js file's base since the previous call to this method, false otherwise (no new js or css libs needed)
 	 * 
 	 */
-	public abstract  boolean finishAndCheckChange();
+	public boolean finishAndCheckChange();
 	
 
 	/**
 	 * @param baseClass
 	 * @param rawHeader
 	 */
-	public abstract  void addRequiredRawHeader(Class baseClass, String rawHeader);
+	public void addRequiredRawHeader(Class<?> baseClass, String rawHeader);
 
 	/**
 	 *
 	 * @param refreshIntervall the time 
 	 * in miliseconds after which (in ajax mode) a refresh of the screen is needed. use small times with caution, since it generates server load. after the given time, a poll (comet, push, hanging get for future release) is issued to the server to collect the dirty components and rerender them. when more than one interval is requested in one validation phase (=on one browser window), then the minimum is taken.	
 	 */
-	public abstract  void setRequiredRefreshInterval(Class baseClass, int refreshIntervall);
+	public void setRequiredRefreshInterval(Class<?> baseClass, int refreshIntervall);
 
 	/**
 	 * 
@@ -193,7 +197,7 @@ public abstract class JSAndCSSAdder {
 	 * this is slower than a normal full page click (aka known as non-ajax mode). 
 	 * 
 	 */
-	public abstract  void requireFullPageRefresh();
+	public void requireFullPageRefresh();
 
 	/**
 	 * Get the mapper path for this class and file name, e.g. to use in a
@@ -207,7 +211,7 @@ public abstract class JSAndCSSAdder {
 	 *         a full page refresh. If fileName is null, the base path wihout
 	 *         trailing slash is returned.
 	 */
-	public abstract  String getMappedPathFor(Class baseClass, String fileName);
+	public String getMappedPathFor(Class<?> baseClass, String fileName);
 
 	
 	

@@ -21,29 +21,15 @@ package org.olat.modules.qpool.ui;
 
 import java.util.List;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.qpool.Pool;
-import org.olat.modules.qpool.QuestionItem;
-
 /**
  * 
- * Initial date: 22.01.2013<br>
+ * Initial date: 12.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PooledQuestionListController extends AbstractQuestionListController {
-
-	private final Pool pool;
-
-	public PooledQuestionListController(UserRequest ureq, WindowControl wControl, Pool pool) {
-		super(ureq, wControl);
-		
-		this.pool = pool;
-		List<QuestionItem> items = qpoolService.getItemsOfPool(pool);
-		setItems(items);
-	}
+public interface ItemRowsSource {
 	
+	public int getRowCount();
 	
-
+	public List<QuestionItemRow> getRows(int firstResult, int maxResults);
 }

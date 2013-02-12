@@ -62,6 +62,11 @@ public class ImportMemberOverviewDataModel extends DefaultTableDataModel<Identit
 	public int getColumnCount() {
 		return columnModel.getColumnCount();
 	}
+	
+	@Override
+	public void load(int firstResult, int maxResults) {
+		//already loaded
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {

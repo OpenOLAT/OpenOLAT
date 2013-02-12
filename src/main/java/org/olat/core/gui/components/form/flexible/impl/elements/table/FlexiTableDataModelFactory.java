@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import org.olat.core.gui.components.table.TableDataModel;
 
 /**
  * 
@@ -40,10 +39,10 @@ public class FlexiTableDataModelFactory {
 	 * @param tableColumnModel
 	 * @return
 	 */
-	public static FlexiTableDataModel createFlexiTableDataModel(TableDataModel<?> tableModel, FlexiTableColumnModel tableColumnModel ) {
+	/*public static FlexiTableDataModel createFlexiTableDataModel(TableDataModel tableModel, FlexiTableColumnModel tableColumnModel ) {
 		FlexiTableDataModelImpl flexiTableDataModel = new FlexiTableDataModelImpl(tableModel,tableColumnModel);
 		return flexiTableDataModel;
-	}
+	}*/
 
 	/**
 	 * Factory method to create an empty FlexiTableColumnModel.

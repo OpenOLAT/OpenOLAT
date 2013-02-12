@@ -59,7 +59,6 @@ class FlexiTableRenderer implements ComponentRenderer {
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		Form rootForm = ftE.getRootForm();
-
 		String id = ftC.getFormDispatchId();
 		//
 		if (!source.isEnabled()) {
@@ -80,7 +79,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 		// 1. build header links
 		target.append("<thead><tr>");
 
-		for (int i = 0; i < cols; i++) {
+		for (int i = 0; i<cols; i++) {
 				FlexiColumnModel fcm = ftE.getTableDataModel().getTableColumnModel().getColumnModel(i);
 				String header = translator.translate(fcm.getHeaderKey());
 
@@ -98,8 +97,8 @@ class FlexiTableRenderer implements ComponentRenderer {
 		target.append("<tbody>");
 		// the really selected rowid (from the tabledatamodel)
 		
-		int firstRow = 0;
-		int maxRows = 20;
+		int firstRow = ftE.getFirstRow();
+		int maxRows = ftE.getMaxRows();
 		int lastRow = Math.min(rows, firstRow + maxRows);
 		for (int i = firstRow; i < lastRow; i++) {
 			// use alternating css class
@@ -110,7 +109,8 @@ class FlexiTableRenderer implements ComponentRenderer {
 			if (i == 0) cssClass += " b_first_child";
 			if (i == rows-1) cssClass += " b_last_child";
 
-			target.append("<tr class=\"").append(cssClass).append("\">");
+			target.append("<tr id='row_").append(id).append("-").append(i)
+			      .append("' class=\"").append(cssClass).append("\">");
 			for (int j = 0; j < cols; j++) {
 				FlexiColumnModel fcm = ftE.getTableDataModel().getTableColumnModel().getColumnModel(j);
 				int alignment = fcm.getAlignment();
@@ -154,7 +154,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 			target.append(FormJSHelper.getSetFlexiFormDirty(ftE.getRootForm(), id));
 			target.append(FormJSHelper.getJSEnd());
 		}
-
+		
 		target.append("<script>")
 		  .append("jQuery(document).ready(function() {\n")
       .append("	jQuery('#").append(id).append("').dataTable( {\n")
@@ -180,13 +180,23 @@ class FlexiTableRenderer implements ComponentRenderer {
       .append("		]\n")
       .append("	});\n")
       //clic rows
-      .append("	jQuery('#").append(id).append(" tbody tr').click( function( e ) {\n")
-      .append("	  //").append(FormJSHelper.getXHRFnCallFor(rootForm, id, 1)).append(";\n")
+      .append("	jQuery('#").append(id).append(" tbody tr').live('click', function(event, ui) {\n")
+      .append("   var link = false;\n")
+      .append("   var rowId = null;\n")
+      .append("   jQuery(event.target).parents().each(function(index,el) {\n")
+      .append("     if(el.tagName == 'A') {")
+      .append("       link = true;\n")
+      .append("     } else if (el.tagName == 'TR' && rowId == null) {\n")
+      .append("       rowId = jQuery(el).attr('id');\n")
+      .append("     }\n")
+      .append("   });\n")
+      .append("	  if(!link) {\n")
+      .append(FormJSHelper.generateXHRFnCallVariables(rootForm, id, 1))
+      .append("    o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'select',rowId);")
+      .append("   };")
       .append("	});\n")
       .append("});\n")
 		  .append("</script>\n");
-
-
 	}
 
 	/**

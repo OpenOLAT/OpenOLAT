@@ -17,33 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
  * 
- * Initial date: 22.01.2013<br>
+ * Initial date: 12.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
  */
-public interface QuestionPoolService {
-	
-	public List<Pool> getPools(Identity identity);
-	
+public class SelectionEvent extends FormEvent {
 
-	public int getNumOfItemsInPool(Pool pool);
-	
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults);
-	
-	public int getNumOfFavoritItems(Identity identity);
-	
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults);
-	
-	public List<QuestionItem> getItems(Identity identity, int firstResult, int maxResults);
-	
-	
+	private static final long serialVersionUID = -2934902090663099737L;
+	private final int index;
 
+	public SelectionEvent(String command, int index, FormItem source, int action) {
+		super(command, source, action);
+		this.index = index;
+	}
+
+	public int getIndex() {
+		return index;
+	}
 }

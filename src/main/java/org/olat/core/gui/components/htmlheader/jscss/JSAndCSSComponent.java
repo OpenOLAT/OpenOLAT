@@ -53,7 +53,7 @@ public class JSAndCSSComponent extends Component {
 	private static final ComponentRenderer RENDERER = new JSAndCSSComponentRenderer();
 	private final String cssFileName;
 	private final String[] jsFileNames;
-	private final Class baseClass;
+	private final Class<?> baseClass;
 	private final boolean forceCssRemove;
 	private final int cssFileIndex;
 	private final String rawHeader;
@@ -72,7 +72,7 @@ public class JSAndCSSComponent extends Component {
 	 * @param rawHeader -only use if neither jsFileNames nor cssFileName can be used (only for dynamically created jslibs for example)-a string (e.g. "<script...." or "<link rel=...  those entries will be refreshed after each page, that is entries causes an full page reload in ajax mode
 	 * @param refreshIntervall the time in miliseconds after which (in ajax mode) a refresh of the screen is needed. -1 means infinity/no refresh. use small times with caution, since it generates server load. after the given time, a poll (comet, push, hanging get for future release) is issued to the server to collect the dirty components and rerender them. when more than one interval is requested, then the minimum is taken.
 	 */
-	public JSAndCSSComponent(String componentName, Class baseClass, String[] jsFileNames, String cssFileName, boolean forceCssRemove, String rawHeader, int refreshIntervall) {
+	public JSAndCSSComponent(String componentName, Class<?> baseClass, String[] jsFileNames, String cssFileName, boolean forceCssRemove, String rawHeader, int refreshIntervall) {
 		super(componentName);
 		this.baseClass = baseClass;
 		this.jsFileNames = jsFileNames;
@@ -96,7 +96,7 @@ public class JSAndCSSComponent extends Component {
 	 * @param forceCssRemove if true, the given css will be removed if no longer necessary (e.g. for a custom css as in the course), otherwise it will stay in the html-header for the whole usersession
 	 * @param rawHeader -only use if neither jsFileNames nor cssFileName can be used (only for dynamically created jslibs for example)-a string (e.g. "<script...." or "<link rel=...  those entries will be refreshed after each page, that is entries causes an full page reload in ajax mode
 	 */
-	public JSAndCSSComponent(String componentName, Class baseClass, String[] jsFileNames, String cssFileName, boolean forceCssRemove, String rawHeader) {
+	public JSAndCSSComponent(String componentName, Class<?> baseClass, String[] jsFileNames, String cssFileName, boolean forceCssRemove, String rawHeader) {
 		this (componentName, baseClass, jsFileNames, cssFileName, forceCssRemove, rawHeader, -1);
 	}
 
@@ -108,19 +108,50 @@ public class JSAndCSSComponent extends Component {
 	 * @param cssFileName maybe <code>null</code> the name of the cssFile to include: e.g. "style.css" will be resolved to loc of baseClass/_static/css/style.css
 	 * @param forceCssRemove if true, the given css will be removed if no longer necessary (e.g. for a custom css as in the course), otherwise it will stay in the html-header for the whole usersession
 	 */
-	public JSAndCSSComponent(String componentName, Class baseClass, String[] jsFileNames, String cssFileName, boolean forceCssRemove) {
+	public JSAndCSSComponent(String componentName, Class<?> baseClass, String[] jsFileNames, String cssFileName, boolean forceCssRemove) {
 		this(componentName, baseClass, jsFileNames, cssFileName, forceCssRemove, null);
 	}
-
 	
+	/**
+	 * 
+	 * @param componentName the name of the component
+	 * @param baseClass the class of the controller (or from the package's Manager) from where the resources will be fetched: e.g. org/olat/demo/_static/js or /css respectively.
+	 * @param jsFileNames maybe <code>null</code> An array of the jsFilenames, one entry is e.g. "script.js", which will then be resolved to baseClass/_static/js/script.js
+	 * @param cssFileName maybe <code>null</code> the name of the cssFile to include: e.g. "style.css" will be resolved to loc of baseClass/_static/css/style.css
+	 * @param forceCssRemove if true, the given css will be removed if no longer necessary (e.g. for a custom css as in the course), otherwise it will stay in the html-header for the whole usersession
+	 */
+	public JSAndCSSComponent(String componentName, String[] jsPath, String[] cssPath) {
+		super(componentName);
+
+		cssFileName = null;
+		baseClass = null;
+		forceCssRemove = false;
+		cssFileIndex = -1;
+		rawHeader = null;
+		jsFileNames = jsPath;
+		
+		if(cssPath != null) {
+			cssPathNames = new ArrayList<String>(cssPath.length);
+			for(String css:cssPath) {
+				cssPathNames.add(css);
+			}
+		}
+	}
+
+	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
-		super.validate(ureq, vr); // FIXME:fj:c think about a better solution, calling super will often be forgotten
+		super.validate(ureq, vr);
+		
 		JSAndCSSAdder jsadder = vr.getJsAndCSSAdder();
 		if (jsFileNames != null) {
 			int len = jsFileNames.length;
 			for (int i = 0; i < len; i++) {
 				String jsFileName = jsFileNames[i];
-				jsadder.addRequiredJsFile(baseClass, "js/"+jsFileName);
+				if(baseClass == null) {
+					jsadder.addRequiredStaticJsFile(jsFileName);
+				} else {
+					jsadder.addRequiredJsFile(baseClass, "js/"+jsFileName);
+				}
 			}
 		}
 		if(cssFileName != null) {
@@ -128,7 +159,12 @@ public class JSAndCSSComponent extends Component {
 		}
 		if (cssPathNames != null) {
 			for (String cssPath : cssPathNames) {
-				jsadder.addRequiredCSSPath(cssPath, true, cssPathNamesIndexes.get(cssPath));
+				Integer index = cssPathNamesIndexes != null ? cssPathNamesIndexes.get(cssPath) : null;
+				if(index == null && baseClass == null) {
+					jsadder.addStaticCSSPath(cssPath);
+				} else {
+					jsadder.addRequiredCSSPath(cssPath, true, index);
+				}
 			}
 		}
 		if (rawHeader != null) {
@@ -137,8 +173,8 @@ public class JSAndCSSComponent extends Component {
 		if (fullPageRefresh) {
 			jsadder.requireFullPageRefresh();
 		}
-		if (refreshIntervall != -1) {
-			jsadder.setRequiredRefreshInterval(baseClass,refreshIntervall);
+		if (refreshIntervall != -1 && baseClass != null) {
+			jsadder.setRequiredRefreshInterval(baseClass, refreshIntervall);
 		}
 	}
 

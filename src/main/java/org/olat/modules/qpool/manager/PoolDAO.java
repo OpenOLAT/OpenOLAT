@@ -22,6 +22,8 @@ package org.olat.modules.qpool.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
@@ -77,17 +79,27 @@ public class PoolDAO {
 		dbInstance.getCurrentEntityManager().persist(p2i);
 	}
 	
-	public List<QuestionItem> getItemsOfPool(Pool pool) {
+	public int getNumOfItemsInPool(Pool pool) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select pool2item.item from qpool2item pool2item where pool2item.pool.key=:poolKey");
+		sb.append("select count(pool2item.item) from qpool2item pool2item where pool2item.pool.key=:poolKey");
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItem.class)
+				.createQuery(sb.toString(), Number.class)
 				.setParameter("poolKey", pool.getKey())
-				.getResultList();
+				.getSingleResult().intValue();
 	}
 	
-	
-
-
-
+	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select pool2item.item from qpool2item pool2item where pool2item.pool.key=:poolKey");
+		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItem.class)
+				.setParameter("poolKey", pool.getKey());
+		if(firstResult >= 0) {
+			query.setFirstResult(0);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
+	}
 }

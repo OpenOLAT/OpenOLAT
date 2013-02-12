@@ -25,9 +25,7 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,8 +36,10 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 
 
@@ -48,32 +48,54 @@ import org.olat.core.util.ValidationStatus;
  * @author Christian Guretzki
  */
 public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection {
-  
+
+	private int rowCount = -1;
+	private int pageSize;
+	
 	private FlexiTableDataModel tableModel;
 	private FlexiTableComponent component;
 	private String mapperUrl;
 	
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
-	public FlexiTableElementImpl(String name, FlexiTableDataModel tableModel) {
-		super(name);
-		this.tableModel = tableModel;
-		component = new FlexiTableComponent(this);
+	public FlexiTableElementImpl(UserRequest ureq, String name, FlexiTableDataModel tableModel) {
+		this(ureq, name, null, tableModel, -1);
+	}
+	public FlexiTableElementImpl(UserRequest ureq, String name, Translator translator, FlexiTableDataModel tableModel) {
+		this(ureq, name, translator, tableModel, -1);
 	}
 	
-	public FlexiTableElementImpl(String name, Translator translator, FlexiTableDataModel tableModel) {
+	public FlexiTableElementImpl(UserRequest ureq, String name, Translator translator, FlexiTableDataModel tableModel, int pageSize) {
 		super(name);
 		this.tableModel = tableModel;
 		component = new FlexiTableComponent(this, translator);
-	}
-	
-	public String getMapperUrl() {
-		return mapperUrl;
-	}
-	
-	public void setMapper(UserRequest ureq) {
+		
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
 		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(this));
+		
+		this.pageSize = pageSize;
+		if(pageSize > 0) {
+			setPage(0);
+		}
+	}
+	
+	@Override
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	@Override
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
+	}
+	
+	@Override
+	public void setPage(int page) {
+		tableModel.load(0, getPageSize());
+	}
+
+	public String getMapperUrl() {
+		return mapperUrl;
 	}
 
 	@Override
@@ -95,13 +117,26 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		String paramId = String.valueOf(component.getFormDispatchId());
-		String value = getRootForm().getRequestParameter(paramId);
-		if (value != null) {
-			//TODO:cg:XXX do something with value TextElement e.g. setValue(value);
-			// mark associated component dirty, that it gets rerendered
-			component.setDirty(true);
+		String selectedIndex = getRootForm().getRequestParameter("select");
+		if(StringHelper.containsNonWhitespace(selectedIndex)) {
+			int index = selectedIndex.lastIndexOf('-');
+			if(index > 0 && index+1 < selectedIndex.length()) {
+				String pos = selectedIndex.substring(index+1);
+				doSelect(ureq, Integer.parseInt(pos));
+			}
+		} else {
+			String paramId = component.getFormDispatchId();
+			String value = getRootForm().getRequestParameter(paramId);
+			if (value != null) {
+				//TODO:cg:XXX do something with value TextElement e.g. setValue(value);
+				// mark associated component dirty, that it gets rerendered
+				component.setDirty(true);
+			}
 		}
+	}
+	
+	protected void doSelect(UserRequest ureq, int index) {
+		getRootForm().fireFormEvent(ureq, new SelectionEvent(ROM_SELECT_EVENT, index, this, FormEvent.ONCLICK));
 	}
 
 	@Override
@@ -131,33 +166,25 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return component;
 	}
 	
+	public int getRowCount() {
+		if(rowCount < 0) {
+			rowCount = tableModel.getRowCount();
+		}
+		return rowCount;
+	}
+	
+	public int getFirstRow() {
+		return 0;
+	}
+	
+	public int getMaxRows() {
+		if(pageSize > 0) {
+			return pageSize;
+		}
+		return getRowCount();
+	}
+	
 	public FlexiTableDataModel getTableDataModel() {
 		return tableModel;
-	}
-	
-	private class FormItemsIterable implements Iterable<FormItem> {
-		@Override
-		public Iterator<FormItem> iterator() {
-			return new FormItemsIterator();
-		}
-	}
-	
-	private class FormItemsIterator implements Iterator<FormItem> {
-		private Iterator<FormItem> delegate = new ArrayList<FormItem>().iterator();
-
-		@Override
-		public boolean hasNext() {
-			return delegate.hasNext();
-		}
-
-		@Override
-		public FormItem next() {
-			return delegate.next();
-		}
-
-		@Override
-		public void remove() {
-			//not implemented
-		}
 	}
 }

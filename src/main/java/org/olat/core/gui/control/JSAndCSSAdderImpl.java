@@ -21,6 +21,7 @@
 package org.olat.core.gui.control;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ import org.olat.core.util.StringHelper;
  *
  * @author Felix Jost
  */
-public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRenderer {
+public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 
 	private DelegatingComponent dc;
 	
@@ -67,11 +68,11 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 
 	private List<String> curCssList = new ArrayList<String>();
 	private List<String> prevCssList = new ArrayList<String>();
-	private Set<String> curCssForceSet = new HashSet<String>(3);
-	private Set<String> prevCssForceSet = new HashSet<String>(3);
+	private Collection<String> curCssForceSet = new ArrayList<String>(3);
+	private Collection<String> prevCssForceSet = new ArrayList<String>(3);
 
-	private Set<String> allCssKeepSet = new HashSet<String>(16);
-	private Set<String> allJsKeepSet = new HashSet<String>(16);
+	private Set<String> allCssKeepSet = new HashSet<String>();
+	private Set<String> allJsKeepSet = new HashSet<String>();
 	
 	private List<String> curJsList = new ArrayList<String>();
 	private List<String> prevJsList = new ArrayList<String>();
@@ -87,14 +88,14 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	// FIXME:fj: make the rawset deprecated; all raw includes can be replaced by a css or js include; the js calls can be moved to the velocity files.
 	// for QTIEditormaincontroller / Displaycontroller -> Autocomplete files which need are dynamic files to be included -> 
 	// simplest sol would be: get the content of the file (in utf-8) and put it into <script> tags of the appropriate velocitycontainer.
-	private Set<String> curRawSet = new HashSet<String>(2);
-	private Set<String> oldRawSet = new HashSet<String>(2);
+	private Collection<String> curRawSet = new ArrayList<String>(2);
+	private Collection<String> oldRawSet = new ArrayList<String>(2);
 	
 	private static final int MINIMAL_REFRESHINTERVAL = 1000;//in [ms] 
 	private int refreshInterval = -1;
 	private final WindowBackOfficeImpl wboImpl;
 
-	private Map<String, Class> jsPathToBaseClass = new HashMap<String, Class>();
+	private Map<String, Class<?>> jsPathToBaseClass = new HashMap<String, Class<?>>();
 	private Map<String,String> jsPathToJsFileName = new HashMap<String, String>();
 	private Map<String,String> jsPathToEvalBeforeAJAXAddJsCode = new HashMap<String, String>();
 	private Map<String,String> jsPathToEvalFileEncoding = new HashMap<String, String>();
@@ -134,7 +135,7 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Object,
 	 *      java.lang.String)
 	 */
-	public void addRequiredJsFile(Class baseClass, String jsFileName) {
+	public void addRequiredJsFile(Class<?> baseClass, String jsFileName) {
 		addRequiredJsFile(baseClass, jsFileName, ENCODING_DEFAULT, null);
 	}
 
@@ -142,7 +143,7 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Object,
 	 *      java.lang.String, java.lang.String)
 	 */
-	public void addRequiredJsFile(Class baseClass, String jsFileName, String fileEncoding) {
+	public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding) {
 		addRequiredJsFile(baseClass, jsFileName, fileEncoding, null);
 	}
 
@@ -150,7 +151,7 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Class,
 	 *      java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void addRequiredJsFile(Class baseClass, String jsFileName, String fileEncoding,
+	public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding,
 			String AJAXAddJsCode) {
 
 		String jsPath;
@@ -178,17 +179,24 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 		}		
 	}
 
+	@Override
+	public void addStaticCSSPath(String cssPath) {
+		addRequiredCSSFile(null, cssPath, false, JSAndCSSAdder.CSS_INDEX_BEFORE_THEME);
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredCSSFile(java.lang.Class, java.lang.String, boolean)
 	 */
-	public void addRequiredCSSFile(Class baseClass, String cssFileName, boolean forceRemove) {
+	@Override
+	public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove) {
 		addRequiredCSSFile(baseClass, cssFileName, forceRemove, JSAndCSSAdder.CSS_INDEX_BEFORE_THEME);
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredCSSFile(java.lang.Class, java.lang.String, boolean, int)
 	 */
-	public void addRequiredCSSFile(Class baseClass, String cssFileName, boolean forceRemove, int cssLoadIndex) {
+	@Override
+	public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove, Integer cssLoadIndex) {
 		String cssPath = getMappedPathFor(baseClass, cssFileName);
 		addRequiredCSSPath(cssPath, forceRemove, cssLoadIndex);
 	}
@@ -196,7 +204,8 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	/**
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredCSSPath(java.lang.String, boolean, int)
 	 */
-	public void addRequiredCSSPath(String cssPath, boolean forceRemove, int cssLoadIndex) {
+	@Override
+	public void addRequiredCSSPath(String cssPath, boolean forceRemove, Integer cssLoadIndex) {
 		if (!curCssList.contains(cssPath)) {
 			//System.out.println("reqCss:"+cssPath+" force "+forceRemove);
 			String id = cssPathToId.get(cssPath);
@@ -206,6 +215,9 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 			curCssList.add(cssPath);
 			if (forceRemove) {
 				curCssForceSet.add(cssPath);
+			}
+			if(cssLoadIndex == null) {
+				cssLoadIndex = JSAndCSSAdder.CSS_INDEX_BEFORE_THEME;
 			}
 			cssPathToIndex.put(cssPath, cssLoadIndex);
 			// sort css after index
@@ -275,7 +287,7 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 		allCssKeepSet.removeAll(curCssForceSet);
 		
 		// change current cssFrceSet and clear it for the next validate process
-		Set forceTmp = prevCssForceSet;
+		Collection<String> forceTmp = prevCssForceSet;
 		prevCssForceSet = curCssForceSet;
 		curCssForceSet = forceTmp;
 		curCssForceSet.clear();
@@ -289,7 +301,7 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 		curJsList = jsTmp;
 		jsToRender = prevJsList;
 		// raw set -> deprecated, see comments at variable declaration
-		Set<String> tmp = oldRawSet;
+		Collection<String> tmp = oldRawSet;
 		oldRawSet = curRawSet;
 		curRawSet = tmp;
 		curRawSet.clear();		
@@ -307,7 +319,7 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	/**
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#getMappedPathFor(java.lang.Class, java.lang.String)
 	 */
-	public String getMappedPathFor(Class baseClass, String fileName) {
+	public String getMappedPathFor(Class<?> baseClass, String fileName) {
 		//fxdiff make it possible to put absolute paths to js-files
 		// e.g. /olat/raw/fx-OLAT/themes/frentix/myjs.js FXOLAT-310
 		if(baseClass == null){
@@ -336,7 +348,7 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	 * @param baseClass
 	 * @return
 	 */
-	private String getKey(Class baseClass) {
+	private String getKey(Class<?> baseClass) {
 		String cla = baseClass.getName();
 		int ls = cla.lastIndexOf('.');
 		// post: ls != -1, since we don't use the java default package
@@ -357,7 +369,7 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	 * 
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		// The render argument is used to indicate rendering before and after themes loading
@@ -404,24 +416,15 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 				sb.append("\n").append(rawE);
 			}			
 		}
-		//sb.append("\n-->\n");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
+	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
 		//
 	}
 
+	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		//
 	}
@@ -429,14 +432,14 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	/**
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredRawHeader(java.lang.Class)
 	 */
-	public void addRequiredRawHeader(Class baseClass, String rawHeader) {
+	public void addRequiredRawHeader(Class<?> baseClass, String rawHeader) {
 		curRawSet.add(rawHeader);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#setRequiredRefreshInterval(java.lang.Class, int)
 	 */
-	public void setRequiredRefreshInterval(Class baseClass, int refreshIntervall) {
+	public void setRequiredRefreshInterval(Class<?> baseClass, int refreshIntervall) {
 		if(refreshIntervall < MINIMAL_REFRESHINTERVAL){
 			throw new AssertException("Poll refresh intervall is smaller then defined MINIMAL value " + MINIMAL_REFRESHINTERVAL);
 		}

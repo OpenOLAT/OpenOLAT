@@ -142,6 +142,7 @@ public class EPAddArtefactController extends BasicController {
 		if (source == addBtn) {
 			if (calloutCtr==null){
 				initAddLinkPopup(ureq);
+				addBtn.setDirty(false);
 			} else {
 				closeAddLinkPopup();
 			}

@@ -17,33 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.ui;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionPoolService;
 
 /**
  * 
- * Initial date: 22.01.2013<br>
+ * Initial date: 12.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionPoolService {
+public class MarkedItemsSource implements QuestionItemsSource {
 	
-	public List<Pool> getPools(Identity identity);
+	private final Identity me;
+	private final QuestionPoolService qpoolService;
 	
+	public MarkedItemsSource(Identity me) {
+		this.me = me;
+		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+	}
 
-	public int getNumOfItemsInPool(Pool pool);
-	
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults);
-	
-	public int getNumOfFavoritItems(Identity identity);
-	
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults);
-	
-	public List<QuestionItem> getItems(Identity identity, int firstResult, int maxResults);
-	
-	
+	@Override
+	public int getNumOfItems() {
+		return qpoolService.getNumOfFavoritItems(me);
+	}
 
+	@Override
+	public List<QuestionItem> getItems(int firstResult, int maxResults) {
+		return qpoolService.getFavoritItems(me, firstResult, maxResults);
+	}
 }

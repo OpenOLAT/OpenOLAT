@@ -31,5 +31,14 @@ import org.olat.core.gui.components.form.flexible.FormItem;
  * 
  */
 public interface FlexiTableElement extends FormItem {
+
+	public static final String ROM_SELECT_EVENT = "rSelect";
+	
+	
+	public int getPageSize();
+	
+	public void setPageSize(int pageSize);
+	
+	public void setPage(int page);
 	
 }

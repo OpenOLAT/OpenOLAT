@@ -17,33 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
-
-import java.util.List;
-
-import org.olat.core.id.Identity;
+package org.olat.core.gui.components.form.flexible.impl;
 
 /**
  * 
- * Initial date: 22.01.2013<br>
+ * Initial date: 12.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionPoolService {
+public class NameValuePair {
 	
-	public List<Pool> getPools(Identity identity);
+	private String name;
+	private String value;
 	
+	public NameValuePair(String name, String value) {
+		this.name = name;
+		this.value = value;
+	}
 
-	public int getNumOfItemsInPool(Pool pool);
-	
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults);
-	
-	public int getNumOfFavoritItems(Identity identity);
-	
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults);
-	
-	public List<QuestionItem> getItems(Identity identity, int firstResult, int maxResults);
-	
-	
+	public String getName() {
+		return name;
+	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
 }
+

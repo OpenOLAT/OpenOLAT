@@ -79,7 +79,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
 		
-		List<QuestionItem> favorits = questionDao.getFavoritItems(id);
+		List<QuestionItem> favorits = questionDao.getFavoritItems(id, 0, -1);
 		Assert.assertNotNull(favorits);
 		Assert.assertEquals(2, favorits.size());
 		Assert.assertTrue(favorits.contains(item1));

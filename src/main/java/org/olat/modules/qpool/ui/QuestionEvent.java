@@ -17,33 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.ui;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.qpool.QuestionItem;
 
 /**
  * 
- * Initial date: 22.01.2013<br>
+ * Initial date: 12.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionPoolService {
-	
-	public List<Pool> getPools(Identity identity);
-	
+public class QuestionEvent extends Event {
 
-	public int getNumOfItemsInPool(Pool pool);
-	
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults);
-	
-	public int getNumOfFavoritItems(Identity identity);
-	
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults);
-	
-	public List<QuestionItem> getItems(Identity identity, int firstResult, int maxResults);
-	
-	
+	private static final long serialVersionUID = 1868410260121125418L;
+	private final QuestionItem item;
 
+	public QuestionEvent(String cmd, QuestionItem item) {
+		super(cmd);
+		this.item = item;
+	}
+
+	public QuestionItem getItem() {
+		return item;
+	}
 }

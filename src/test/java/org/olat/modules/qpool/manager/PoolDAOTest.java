@@ -107,7 +107,7 @@ public class PoolDAOTest extends OlatTestCase {
 		poolDao.addItemToPool(item, pool);
 		dbInstance.commitAndCloseSession();
 		
-		List<QuestionItem> items = poolDao.getItemsOfPool(pool);
+		List<QuestionItem> items = poolDao.getItemsOfPool(pool, 0 , -1);
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
 		Assert.assertTrue(items.contains(item));
