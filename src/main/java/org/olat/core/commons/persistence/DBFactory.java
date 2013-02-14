@@ -37,15 +37,15 @@ public class DBFactory {
 	 * @return the DB instance.
 	 */
 	public static DB getInstance() {
-		return DBImpl.getInstance(true);
+		return DBImpl.getInstance();
 	}
 
     public static DB getInstance(boolean initialize) {
-        return DBImpl.getInstance(initialize);
+        return DBImpl.getInstance();
     }
 
     public static DB getInstanceForClosing() {
-      return DBImpl.getInstanceForClosing();
+      return DBImpl.getInstance();
   }
 
 

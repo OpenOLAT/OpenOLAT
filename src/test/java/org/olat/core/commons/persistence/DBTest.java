@@ -62,11 +62,11 @@ public class DBTest extends OlatTestCase {
 	@Test
 	public void testCloseOfUninitializedSession() {
 		// first get a initialized db
-		DB db = DBImpl.getInstance(false);
+		DB db = DBImpl.getInstance();
 		//close it
 		db.closeSession();
 		//then get a uninitialized db
-		db = DBImpl.getInstance(false);
+		db = DBImpl.getInstance();
 		// and close it.
 		db.closeSession();
 		

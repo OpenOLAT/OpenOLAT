@@ -44,7 +44,7 @@ public interface DB {
 	/**
 	 * Close the database session, clean threadlocal but only if necessary
 	 */
-	public void cleanUpSession();
+	//public void cleanUpSession();
 
 	/**
 	 * Create a DBQuery
