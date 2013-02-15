@@ -316,7 +316,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		// only here we know which translator to take for translating condition
 		// error messages
 		String translatorStr = Util.getPackageName(STCourseNodeEditController.class);
-		List sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

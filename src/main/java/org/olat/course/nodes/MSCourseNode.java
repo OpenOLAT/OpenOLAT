@@ -56,6 +56,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -198,7 +199,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 		// only here we know which translator to take for translating condition
 		// error messages
 		String translatorStr = Util.getPackageName(MSEditFormController.class);
-		List sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
@@ -227,7 +228,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
-		List list = cpm.listCourseNodeProperties(this, null, null, null);
+		List<Property> list = cpm.listCourseNodeProperties(this, null, null, null);
 		if (list.size() == 0) return null; // no properties created yet
 		Translator trans = new PackageTranslator(PACKAGE_MS, locale);
 		return trans.translate("warn.nodedelete");

@@ -140,8 +140,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	private Condition  conditionDrop, conditionScoring, conditionReturnbox;
 	private Condition  conditionProjectBroker;
 
-	private transient CourseGroupManager groupMgr;
-
 	/**
 	 * Default constructor.
 	 */
@@ -159,7 +157,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		updateModuleConfigDefaults(false);
 		ProjectBrokerCourseEditorController childTabCntrllr = ProjectBrokerControllerFactory.createCourseEditController(ureq, wControl, course, euce, this );
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		groupMgr = course.getCourseEnvironment().getCourseGroupManager();
+		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		NodeEditController editController = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, groupMgr, euce, childTabCntrllr);
 		editController.addControllerListener(childTabCntrllr);
 		return editController;
@@ -285,10 +283,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		// error messages
 		String translatorStr = Util.getPackageName(ProjectBrokerCourseEditorController.class);
 		// check if group-manager is already initialized
-		if (groupMgr == null) {
-			groupMgr = cev.getCourseGroupManager();
-		}
-		List sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
@@ -320,7 +315,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	public String informOnDelete(Locale locale, ICourse course) {
 		Translator trans = new PackageTranslator(PACKAGE_PROJECTBROKER, locale);
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
-		List list = cpm.listCourseNodeProperties(this, null, null, null);
+		List<Property> list = cpm.listCourseNodeProperties(this, null, null, null);
 		if (list.size() != 0) return trans.translate(NLS_WARN_NODEDELETE); // properties exist
 		File fDropboxFolder = new File(FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
 		if (fDropboxFolder.exists() && fDropboxFolder.list().length > 0) return trans.translate(NLS_WARN_NODEDELETE); // Dropbox folder contains files
@@ -654,7 +649,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		CoursePropertyManager propMgr = userCourseEnvironment.getCourseEnvironment().getCoursePropertyManager();
-		List samples = propMgr.findCourseNodeProperties(this, identity, null, TaskController.PROP_ASSIGNED);
+		List<Property> samples = propMgr.findCourseNodeProperties(this, identity, null, TaskController.PROP_ASSIGNED);
 		if (samples.size() == 0) return null; // no sample assigned yet
 		return ((Property) samples.get(0)).getStringValue();
 	}
@@ -811,13 +806,13 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpressions()
 	 */
 	@Override
-	public List getConditionExpressions() {
-		ArrayList retVal;
-		List parentsConditions = super.getConditionExpressions();
+	public List<ConditionExpression> getConditionExpressions() {
+		List<ConditionExpression> retVal;
+		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList(parentsConditions);
+			retVal = new ArrayList<ConditionExpression>(parentsConditions);
 		} else {
-			retVal = new ArrayList();
+			retVal = new ArrayList<ConditionExpression>();
 		}
 		//
 		String conditionProjectBroker = getConditionProjectBroker().getConditionExpression();

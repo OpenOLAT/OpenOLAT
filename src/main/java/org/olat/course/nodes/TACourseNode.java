@@ -160,8 +160,6 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 
 	private Condition conditionTask, conditionDrop, conditionReturnbox, conditionScoring, conditionSolution;
 
-	private transient CourseGroupManager groupMgr;
-	
 	private static final OLog log = Tracing.createLoggerFor(TACourseNode.class);
 
 	/**
@@ -181,7 +179,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 		updateModuleConfigDefaults(false);
 		TACourseNodeEditController childTabCntrllr = new TACourseNodeEditController(ureq, wControl, course, this, course.getCourseEnvironment().getCourseGroupManager(), euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		groupMgr = course.getCourseEnvironment().getCourseGroupManager();
+		CourseGroupManager groupMgr = course.getCourseEnvironment().getCourseGroupManager();
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, groupMgr, euce, childTabCntrllr);
 	}
 
@@ -289,9 +287,6 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 		// error messages
 		String translatorStr = Util.getPackageName(TACourseNodeEditController.class);
 		// check if group-manager is already initialized
-		if (groupMgr == null) {
-			groupMgr = cev.getCourseGroupManager();
-		}
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;

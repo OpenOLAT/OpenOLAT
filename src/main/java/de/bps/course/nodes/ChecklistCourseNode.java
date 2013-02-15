@@ -197,7 +197,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
-		List statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
 		return oneClickStatusCache;
 	}

@@ -150,7 +150,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode {
 		// only here we know which translator to take for translating condition
 		// error messages
 		String translatorStr = Util.getPackageName(IQEditController.class);
-		List sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

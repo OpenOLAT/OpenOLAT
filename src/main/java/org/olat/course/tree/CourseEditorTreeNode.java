@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -40,6 +41,8 @@ import org.olat.course.nodes.CourseNodeFactory;
  * @author Felix Jost
  */
 public class CourseEditorTreeNode extends GenericTreeNode {
+
+	private static final long serialVersionUID = 3324118582289106497L;
 
 	/*
 	 * The course node... Important: coursenode's structure is not updated!
@@ -173,7 +176,7 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		//do not show errors if marked for deletion
 		if(deleted) return null;
 		//
-		List conditions = cn.getConditionExpressions();
+		List<ConditionExpression> conditions = cn.getConditionExpressions();
 		if (conditions.size() > 0) return "o_midlock";
 		return null;
 	}
