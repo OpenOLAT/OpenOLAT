@@ -106,7 +106,8 @@ public class MenuTree extends Component {
 	private String selectedNodeId = null;
 	private Set<String> openNodeIds = new HashSet<String>();
 	private boolean expandServerOnly = true; // default is serverside menu
-	private boolean dragAndDropEnabled = false; 
+	private boolean dragEnabled = false;
+	private boolean dropEnabled = false;
 	private boolean expandSelectedNode = true;
 	private boolean rootVisible = true;
 	//fxdiff VCRP-9: drag and drop in menu tree
@@ -172,7 +173,7 @@ public class MenuTree extends Component {
 			String sneValue = ureq.getParameter(SIBLING_NODE);
 			boolean sibling = StringHelper.containsNonWhitespace(sneValue);
 			boolean atTheEnd = "end".equals(sneValue);
-			handleDropped(ureq, nodeId, targetNodeId, sibling, atTheEnd);
+			handleDropped(ureq, targetNodeId, nodeId, sibling, atTheEnd);
 		}
 	}
 	
@@ -305,9 +306,8 @@ public class MenuTree extends Component {
 	}
 	
 	@Override
-	//fxdiff VCRP-9: drag and drop in menu tree
 	public void validate(UserRequest ureq, ValidationResult vr) {
-		if(dragAndDropEnabled) {
+		if(dragEnabled || dropEnabled) {
 			dragAndDropCmp.validate(ureq, vr);
 			if(dndFeedbackUri == null && treeModel instanceof DnDTreeModel) {
 				dndFeedbackUri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), new DnDFeedbackMapper(this));
@@ -399,18 +399,26 @@ public class MenuTree extends Component {
 		this.expandServerOnly = expandServerOnly;
 	}
 	
-	/**
-	 * @return Is Drag & Drop enable for the tree
-	 */
-	public boolean isDragAndDropEnabled() {
-		return dragAndDropEnabled;
+	public boolean isDragEnabled() {
+		return dragEnabled;
 	}
 
 	/**
 	 * @param enableDragAndDrop Enable or not drag and drop
 	 */
-	public void setDragAndDropEnabled(boolean dragAndDropEnabled) {
-		this.dragAndDropEnabled = dragAndDropEnabled;
+	public void setDragEnabled(boolean enabled) {
+		dragEnabled = enabled;
+	}
+
+	/**
+	 * @return Is Drag & Drop enable for the tree
+	 */
+	public boolean isDropEnabled() {
+		return dropEnabled;
+	}
+	
+	public void setDropEnabled(boolean enabled) {
+		dropEnabled = enabled;
 	}
 	
 	/**

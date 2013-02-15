@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.table.TableDataModel;
@@ -69,7 +70,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 	}
 
 	@Override
-	public void load(int firstResult, int maxResults) {
+	public void load(int firstResult, int maxResults, SortKey... orderBy) {
 		if(rows == null) {
 			rows = new ArrayList<QuestionItemRow>();
 		}
@@ -77,8 +78,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 		for(int i=rows.size(); i<firstResult; i++) {
 			rows.add(null);
 		}
-		
-		List<QuestionItemRow> newRows = source.getRows(firstResult, maxResults);
+		List<QuestionItemRow> newRows = source.getRows(firstResult, maxResults, orderBy);
 		for(int i=0; i<newRows.size(); i++) {
 			int rowIndex = i + firstResult;
 			if(rowIndex < rows.size()) {
@@ -88,6 +88,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 			}
 		}
 	}
+
 
 	@Override
 	public int getColumnCount() {

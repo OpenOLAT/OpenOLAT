@@ -17,21 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
-
-import java.util.List;
-
-import org.olat.core.commons.persistence.SortKey;
+package org.olat.core.commons.persistence;
 
 /**
  * 
- * Initial date: 12.02.2013<br>
+ * Initial date: 13.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ItemRowsSource {
+public class SortKey {
+
+	private boolean asc;
+	private String key;
 	
-	public int getRowCount();
+	public SortKey() {
+		//
+	}
 	
-	public List<QuestionItemRow> getRows(int firstResult, int maxResults, SortKey... orderBy);
+	public SortKey(String key, boolean asc) {
+		this.key = key;
+		this.asc = asc;
+	}
+	
+	public boolean isAsc() {
+		return asc;
+	}
+	
+	public void setAsc(boolean asc) {
+		this.asc = asc;
+	}
+	
+	public String getKey() {
+		return key;
+	}
+	
+	public void setKey(String key) {
+		this.key = key;
+	}
 }

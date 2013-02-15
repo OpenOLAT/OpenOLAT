@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.table.TableDataModel;
 
 /**
@@ -59,7 +60,7 @@ public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel {
 	}
 
 	@Override
-	public void load(int firstResult, int maxResults) {
+	public void load(int firstResult, int maxResults, SortKey... orderby) {
 		//already loaded
 	}
 

@@ -71,6 +71,10 @@ public class QuestionsController extends BasicController implements StackedContr
 	protected void doDispose() {
 		//
 	}
+	
+	public QuestionItem getQuestionAt(int index) {
+		return listCtrl.getQuestionItemAt(index);
+	}
 
 	@Override
 	public void setStackedController(StackedController stackPanel) {

@@ -39,6 +39,9 @@ jQuery(function(){
 				}
 	    });
 	  },
+	  open: function() {
+		  jQuery(this).autocomplete('widget').css('z-index', 10000);
+	  },
 		select: function( event, ui ) {
 			$r.javaScriptBgCommand("select") + '?key=' + ui.item.value;
 			return false;

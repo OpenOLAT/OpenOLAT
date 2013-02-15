@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
@@ -58,7 +59,7 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<UserResultW
 	}
 	
 	@Override
-	public void load(int firstResult, int maxResults) {
+	public void load(int firstResult, int maxResults, SortKey... sortedCol) {
 		//already loaded
 	}
 

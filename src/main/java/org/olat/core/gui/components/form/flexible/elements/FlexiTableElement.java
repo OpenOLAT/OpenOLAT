@@ -25,6 +25,8 @@
 */ 
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.Set;
+
 import org.olat.core.gui.components.form.flexible.FormItem;
 
 /**
@@ -33,6 +35,19 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 public interface FlexiTableElement extends FormItem {
 
 	public static final String ROM_SELECT_EVENT = "rSelect";
+	
+
+	public boolean isMultiSelect();
+	
+	public Set<Integer> getMultiSelectedIndex();
+	
+	public boolean isMultiSelectedIndex(int index);
+	
+	/**
+	 * Enable multi-selection
+	 * @return
+	 */
+	public void setMultiSelect(boolean enable);
 	
 	
 	public int getPageSize();

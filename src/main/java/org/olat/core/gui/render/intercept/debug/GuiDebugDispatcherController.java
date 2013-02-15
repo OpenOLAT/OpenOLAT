@@ -193,7 +193,7 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 									+ "<div>"
 									+ "  <span id=\"o_guidebugst"
 									+ did
-									+ "\" onmouseover=\"o_debu_show(this.parentNode.parentNode, $('o_guidebugtt"
+									+ "\" onmouseover=\"o_debu_show(this.parentNode.parentNode, jQuery('#o_guidebugtt"
 									+ did
 									+ "'))\" "
 									+

@@ -19,19 +19,22 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.util.List;
-
-import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.tree.DnDTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 
 /**
  * 
- * Initial date: 12.02.2013<br>
+ * Initial date: 15.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ItemRowsSource {
-	
-	public int getRowCount();
-	
-	public List<QuestionItemRow> getRows(int firstResult, int maxResults, SortKey... orderBy);
+public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTreeModel{
+
+	private static final long serialVersionUID = -665560407090871912L;
+
+	@Override
+	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode,	boolean sibling) {
+		return !sibling;
+	}
 }

@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -53,6 +54,8 @@ import org.olat.modules.qpool.QuestionPoolService;
  */
 public class QuestionListController extends FormBasicController implements StackedControllerAware, ItemRowsSource {
 
+	private FormLink createList;
+	
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
 	private StackedController stackPanel;
@@ -81,13 +84,17 @@ public class QuestionListController extends FormBasicController implements Stack
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("item.key"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("item.subject"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("item.key", true, "key"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("item.subject", true, "subject"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("mark"));
 
 		model = new QuestionItemDataModel(columnsModel, this);
 		itemsTable = uifactory.addTableElement(ureq, "items", model, 20, getTranslator(), formLayout);
+		itemsTable.setMultiSelect(true);
+		
+		createList = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
+		
 	}
 
 	@Override
@@ -104,7 +111,11 @@ public class QuestionListController extends FormBasicController implements Stack
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
-			if("select".equals(link.getCmd())) {
+			if(link == createList) {
+				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				System.out.println(selections.size());
+				
+			} else if("select".equals(link.getCmd())) {
 				QuestionItemRow row = (QuestionItemRow)link.getUserObject();
 				doSelect(ureq, row.getItem());
 			} else if("mark".equals(link.getCmd())) {
@@ -125,6 +136,14 @@ public class QuestionListController extends FormBasicController implements Stack
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	public QuestionItem getQuestionItemAt(int index) {
+		QuestionItemRow row = model.getObject(index);
+		if(row != null) {
+			return row.getItem();
+		}
+		return null;
 	}
 	
 	protected void doSelect(UserRequest ureq, QuestionItem item) {
@@ -150,11 +169,11 @@ public class QuestionListController extends FormBasicController implements Stack
 	}
 
 	@Override
-	public List<QuestionItemRow> getRows(int firstResult, int maxResults) {
+	public List<QuestionItemRow> getRows(int firstResult, int maxResults, SortKey... orderBy) {
 		Set<Long> marks = markManager.getMarkResourceIds(getIdentity(), "QuestionItem", Collections.<String>emptyList());
 		
 		
-		List<QuestionItem> items = source.getItems(firstResult, maxResults);
+		List<QuestionItem> items = source.getItems(firstResult, maxResults, orderBy);
 		List<QuestionItemRow> rows = new ArrayList<QuestionItemRow>(items.size());
 		for(QuestionItem item:items) {
 			QuestionItemRow row = forgeRow(item, marks);

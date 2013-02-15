@@ -950,19 +950,18 @@ function o_ffRegisterSubmit(formId, submElmId){
 function showInfoBox(title, content){
 	// Factory method to create message box
 	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
-	var info = '<div id="' + uuid + '" class="b_msg-div msg"><div class="b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>'
+	var info = '<div id="' + uuid + '" class="b_msg-div msg" style="display:none;"><div class="b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>'
 		 + title + '</h3>' + content + '<br/><br/></div></div>';
     var msgCt = jQuery('#b_page').prepend(info);
     // Hide message automatically
-    var time = (content.length > 70) ? 6000 : 4000;
-    time = (content.length > 150) ? 8000 : time;
+    var time = (content.length > 150) ? 8000 : ((content.length > 70) ? 6000 : 4000);
     jQuery('#' + uuid).slideDown(300).delay(time).slideUp(300);
     // Visually remove message box immediately when user clicks on it
     // The ghost event from above is triggered anyway. 
     jQuery('#' + uuid).click(function(e) {
     	jQuery('#' + uuid).remove();
     });
-    // 	
+	
     // Help GC, prevent cyclic reference from on-click closure (OLAT-5755)
     title = null;
     content = null;
@@ -978,12 +977,21 @@ function showMessageBox(type, title, message, buttonCallback){
 	if(type == 'info'){
 		showInfoBox(title, message)
 	} else {
-		jQuery('<p>' + message + '</p>').dialog({
-			height: 140,
+		var prefix;
+		if("warn" == type) {
+			prefix = '<div><div class="b_msg_info_content b_msg_warn_winicon">';
+		} else if("error" == type) {
+			prefix = '<div><div class="b_msg_info_content b_msg_error_winicon">';
+		} else {
+			prefix = '<div><div>';
+		}
+		jQuery(prefix + '<p>' + message + '</p></div></div>').dialog({
+			height: 170,
+			width: 400,
 			modal: true,
 			title: title,
 			resizable:false
-		});
+		}).dialog('open');
 	}
 }
 

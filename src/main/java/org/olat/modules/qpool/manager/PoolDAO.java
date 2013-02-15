@@ -25,6 +25,8 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.PoolImpl;
@@ -88,9 +90,11 @@ public class PoolDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults) {
+	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select pool2item.item from qpool2item pool2item where pool2item.pool.key=:poolKey");
+		PersistenceHelper.appendGroupBy(sb, "pool2item.item", orderBy);
+		
 		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("poolKey", pool.getKey());

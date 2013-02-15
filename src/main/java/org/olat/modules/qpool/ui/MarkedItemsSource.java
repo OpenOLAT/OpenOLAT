@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
@@ -48,7 +49,7 @@ public class MarkedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public List<QuestionItem> getItems(int firstResult, int maxResults) {
+	public List<QuestionItem> getItems(int firstResult, int maxResults, SortKey... orderBy) {
 		return qpoolService.getFavoritItems(me, firstResult, maxResults);
 	}
 }

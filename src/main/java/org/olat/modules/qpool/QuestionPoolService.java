@@ -21,6 +21,7 @@ package org.olat.modules.qpool;
 
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 
 /**
@@ -36,7 +37,7 @@ public interface QuestionPoolService {
 
 	public int getNumOfItemsInPool(Pool pool);
 	
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults);
+	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults, SortKey... orderBy);
 	
 	public int getNumOfFavoritItems(Identity identity);
 	

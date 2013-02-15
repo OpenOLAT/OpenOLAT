@@ -40,9 +40,11 @@ import org.olat.course.nodes.CourseNode;
  * Description:<br>
  * 
  * @author Felix Jost
+ * @Author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff VCRP-9: drag and drop in menu tree
 public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeModel {
+
+	private static final long serialVersionUID = 7021325125068249016L;
 	private long latestPublishTimestamp = -1;
 	private long highestNodeId; // start at Long.MAX_VALUE - 1000000; if set to
 															// zero -> meaning we read from an old
@@ -233,14 +235,12 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 			}
 		}
 		return cloneCn;
-
 	}
 	
-	//fxdiff VCRP-9: drag and drop in menu tree
 	@Override
 	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode, boolean sibling) {
 		if(droppedNode == null || targetNode == null) return false;
-
+		
 		CourseEditorTreeNode selectedNode = getCourseEditorNodeById(droppedNode.getIdent());
 		CourseEditorTreeNode parentNode = getCourseEditorNodeById(targetNode.getIdent());
 		if(selectedNode == null || parentNode == null) return false;
@@ -255,7 +255,6 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 		return true;
 	}
 	
-	//fxdiff VCRP-9: drag and drop in menu tree
 	public boolean checkIfIsChild(CourseEditorTreeNode prospectChild, CourseEditorTreeNode sourceTree) {
 		if (sourceTree.getIdent().equals(prospectChild.getIdent())) {
 			return true;

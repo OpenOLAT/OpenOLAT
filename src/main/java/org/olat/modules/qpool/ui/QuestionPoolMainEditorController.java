@@ -28,9 +28,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerAware;
-import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeDropEvent;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Event;
@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
 
 /**
@@ -57,6 +58,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private QuestionsController myQuestionsCtrl;
 	private QuestionsController markedQuestionsCtrl;
 	private QuestionsController selectedPoolCtrl;
+	private QuestionsController currentCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 	
 	private final QuestionPoolService qpoolService;
@@ -69,6 +71,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree = new MenuTree("qpoolTree");
 		menuTree.setTreeModel(buildTreeModel());
 		menuTree.setSelectedNode(menuTree.getTreeModel().getRootNode());
+		menuTree.setDropEnabled(true);
 		menuTree.addListener(this);
 		menuTree.setRootVisible(false);
 		
@@ -94,15 +97,23 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(menuTree == source) {
-			TreeNode node = menuTree.getSelectedNode();
-			Object uNode = node.getUserObject();
-			if("menu.database.my".equals(uNode)) {
-				doSelectMyQuestions(ureq);
-			} else if("menu.database.favorit".equals(uNode)) {
-				doSelectMarkedQuestions(ureq);
-			} else if(uNode instanceof Pool) {
-				Pool pool = (Pool)uNode;
-				doSelect(ureq, pool);
+			if(event instanceof TreeDropEvent) {
+				TreeDropEvent e = (TreeDropEvent)event;
+				String targetId = e.getTargetNodeId();
+				String dropId = e.getDroppedNodeId();
+				//drop id w_o_fi1000002357-4
+				doDrop(targetId, dropId);
+			} else {
+				TreeNode node = menuTree.getSelectedNode();
+				Object uNode = node.getUserObject();
+				if("menu.database.my".equals(uNode)) {
+					doSelectMyQuestions(ureq);
+				} else if("menu.database.favorit".equals(uNode)) {
+					doSelectMarkedQuestions(ureq);
+				} else if(uNode instanceof Pool) {
+					Pool pool = (Pool)uNode;
+					doSelect(ureq, pool);
+				}
 			}
 		}
 	}
@@ -112,12 +123,26 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		//
 	}
 	
+	private void doDrop(String targetId, String dropId) {
+		try {
+			int lastIndex = dropId.lastIndexOf('-');
+			String rowStr = dropId.substring(lastIndex+1, dropId.length());
+			int row = Integer.parseInt(rowStr);
+			
+			QuestionItem item = currentCtrl.getQuestionAt(row);
+			System.out.println("Item: " + item);
+		} catch (Exception e) {
+			logError("Cannot drop with id: " + dropId, e);
+		}
+	}
+	
 	private void doSelectMyQuestions(UserRequest ureq) {
 		if(myQuestionsCtrl == null) {
 			myQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), new MyQuestionItemsSource(getIdentity()));
 			myQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(myQuestionsCtrl);
 		}
+		currentCtrl = myQuestionsCtrl;
 		content.setContent(myQuestionsCtrl.getInitialComponent());
 	}
 	
@@ -127,6 +152,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			markedQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(markedQuestionsCtrl);
 		}
+		currentCtrl = markedQuestionsCtrl;
 		content.setContent(markedQuestionsCtrl.getInitialComponent());
 	}
 	
@@ -136,11 +162,12 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			selectedPoolCtrl.setStackedController(stackPanel);
 			listenTo(selectedPoolCtrl);
 		}
+		currentCtrl = selectedPoolCtrl;
 		content.setContent(selectedPoolCtrl.getInitialComponent());
 	}
 	
 	private TreeModel buildTreeModel() {
-		GenericTreeModel gtm = new GenericTreeModel();
+		QuestionPoolMenuTreeModel gtm = new QuestionPoolMenuTreeModel();
 		GenericTreeNode rootNode = new GenericTreeNode(translate("topnav.qpool"), "topnav.qpool.alt");
 		rootNode.setCssClass("o_sel_qpool_home");
 		gtm.setRootNode(rootNode);

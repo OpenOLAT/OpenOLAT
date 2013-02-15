@@ -33,19 +33,52 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
  */
 public class DefaultFlexiColumnModel implements FlexiColumnModel {
 
-	
 	private String headerKey;
+
+	private boolean sortable;
+	private String sortedKey;
+	
 	private int alignment;
 	private FlexiCellRenderer cellRenderer;
 
 	public DefaultFlexiColumnModel(String headerKey) {
+		this(headerKey, false, null);
+	}
+	
+	public DefaultFlexiColumnModel(String headerKey, boolean sortable, String sortKey) {
+		this(headerKey, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
+	}
+	
+	public DefaultFlexiColumnModel(String headerKey, boolean sortable, String sortKey, int alignment, FlexiCellRenderer cellRenderer) {
+		this.sortable = sortable;
+		this.sortedKey = sortKey;
 		this.headerKey = headerKey;
-		this.alignment = FlexiColumnModel.ALIGNMENT_LEFT;
-		this.cellRenderer = new TextFlexiCellRenderer();
+		this.alignment = alignment;
+		this.cellRenderer = cellRenderer;
 	}
 	
 	public String getHeaderKey() {
 		return headerKey;
+	}
+
+	@Override
+	public boolean isSortable() {
+		return sortable;
+	}
+
+	@Override
+	public void setSortable(boolean enable) {
+		sortable = enable;
+	}
+
+	@Override
+	public String getSortKey() {
+		return sortedKey;
+	}
+
+	@Override
+	public void setSortKey(String sortedKey) {
+		this.sortedKey = sortedKey;
 	}
 
 	public int getAlignment() {

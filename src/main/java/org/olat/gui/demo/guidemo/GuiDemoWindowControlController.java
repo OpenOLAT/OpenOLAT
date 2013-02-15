@@ -38,8 +38,8 @@ import org.olat.core.gui.dev.controller.SourceViewController;
 
 public class GuiDemoWindowControlController extends BasicController {
 	
-	VelocityContainer vcMain;
-	GuiDemoPushPopController pushpop;
+	private VelocityContainer vcMain;
+	private GuiDemoPushPopController pushpop;
 	private Link infoButton;
 	private Link warnButton;
 	private Link errorButton;
@@ -57,21 +57,17 @@ public class GuiDemoWindowControlController extends BasicController {
 		//add source view control
     Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), vcMain);
     vcMain.put("sourceview", sourceview.getInitialComponent());
-				
-		this.putInitialPanel(vcMain);
+		putInitialPanel(vcMain);
 	}
 
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == infoButton){
-			this.showInfo("guidemo.window.control.info.message", "");			
-		}
-		else if (source == warnButton){
-			this.showWarning("guidemo.window.control.warn.message", "");			
-		}
-		else if (source == errorButton){
-			this.showError("guidemo.window.control.error.message", "");			
-		}
-		else if (source == pushButton){
+			showInfo("guidemo.window.control.info.message", "");			
+		} else if (source == warnButton){
+			showWarning("guidemo.window.control.warn.message", "");			
+		} else if (source == errorButton){
+			showError("guidemo.window.control.error.message", "");			
+		} else if (source == pushButton){
 			pushpop = new GuiDemoPushPopController(ureq, getWindowControl());
 			pushpop.addControllerListener(this);
 			getWindowControl().pushToMainArea(pushpop.getInitialComponent());
@@ -81,10 +77,9 @@ public class GuiDemoWindowControlController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == pushpop) {
 			getWindowControl().pop();
-			this.showInfo("guidemo.window.control.pushpop", "");			
+			showInfo("guidemo.window.control.pushpop", "");			
 		}
 	}
 
 	protected void doDispose() {}
-
 }

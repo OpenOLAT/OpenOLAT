@@ -582,7 +582,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormComponent#validate(java.util.List)
 	 */
-	public abstract void validate(List<ValidationStatus> validationResults);
+	public void validate(List<ValidationStatus> validationResults) {
+		
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItem#reset()

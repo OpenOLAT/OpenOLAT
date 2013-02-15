@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -384,7 +385,7 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 		
 		@Override
-		public void load(int firstResult, int maxResults) {
+		public void load(int firstResult, int maxResults, SortKey... orderBy) {
 			//already loaded
 		}
 

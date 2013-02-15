@@ -25,9 +25,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.Windows;
-import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.media.JSONMediaResource;
@@ -61,10 +61,26 @@ public class FlexiTableModelMapper implements Mapper {
 		String firstRowStr = request.getParameter("iDisplayStart");
 		String maxRowStr = request.getParameter("iDisplayLength");
 		String echo = request.getParameter("sEcho");
-
+		String sortCol = request.getParameter("iSortCol_0");
+		String sortDir = request.getParameter("sSortDir_0");
 		
+		int sortedColIndex = -1;
+		if(StringHelper.containsNonWhitespace(sortCol)) {
+			sortedColIndex = Integer.parseInt(sortCol);
+			if(ftE.isMultiSelect()) {
+				sortedColIndex--;
+			}
+		}
+
 		if(StringHelper.isLong(firstRowStr) && StringHelper.isLong(maxRowStr)) {
 			FlexiTableDataModel model = ftE.getTableDataModel();
+			FlexiTableColumnModel columnModel = model.getTableColumnModel();
+			
+			SortKey orderBy = null;
+			if(sortedColIndex >= 0 && sortedColIndex < columnModel.getColumnCount()) {
+				FlexiColumnModel sortedColumn = model.getTableColumnModel().getColumnModel(sortedColIndex);
+				orderBy = new SortKey(sortedColumn.getSortKey(), "asc".equals(sortDir));
+			}
 
 			int rows = ftE.getTableDataModel().getRowCount();
 			String dispatchId = ftE.getComponent().getDispatchID();
@@ -83,8 +99,8 @@ public class FlexiTableModelMapper implements Mapper {
 				int maxRows = Integer.parseInt(maxRowStr);
 				int lastRow = Math.min(rows, firstRow + maxRows);
 				//paged loading
-				model.load(firstRow, maxRows);
-				
+				model.load(firstRow, maxRows, orderBy);
+
 				for (int i = firstRow; i < lastRow; i++) {
 					JSONObject row = new JSONObject();
 					
@@ -100,6 +116,16 @@ public class FlexiTableModelMapper implements Mapper {
 					}
 					ftE.addFormItem(select);
 					ftE.addFormItem(mark);
+					
+					if(ftE.isMultiSelect()) {
+						StringBuilder sb = new StringBuilder();
+						sb.append("<input type='checkbox' name='ftb_ms' value='").append(rowIdPrefix).append(i).append("'");
+						if(ftE.isMultiSelectedIndex(i)) {
+							sb.append(" checked='checked'");
+						}   
+						sb.append(">");
+						row.put("choice", sb.toString());
+					}
 
 					row.put("key", key);
 					row.put("subject", subject);
@@ -125,7 +151,6 @@ public class FlexiTableModelMapper implements Mapper {
 	private String renderFormItem(FormItem item, HttpServletRequest request, Translator translator) {
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		ChiefController cc = (ChiefController)Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
-		Window w = cc.getWindow();
-		return w.renderComponent(item.getComponent());
+		return cc.getWindow().renderComponent(item.getComponent());
 	}
 }

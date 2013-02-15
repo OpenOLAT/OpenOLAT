@@ -58,105 +58,30 @@ class FlexiTableRenderer implements ComponentRenderer {
 		//
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableDataModel dataModel = ftE.getTableDataModel();
+		
 		Form rootForm = ftE.getRootForm();
 		String id = ftC.getFormDispatchId();
-		//
-		if (!source.isEnabled()) {
-			// read only view
-			// ...
-		} else {
-			// read write view
-			// ...
-		}
-		target.append("<div class=\"b_table_wrapper b_floatscrollbox\">");// TODO:cg: ev add $!tableConfig.getCustomCssClass()
-		
-		// starting real table table
-		target.append("<table id=\"").append(id).append("\">");
 
-		int rows = ftE.getTableDataModel().getRowCount();
-		int cols = ftE.getTableDataModel().getTableColumnModel().getColumnCount();
+		target.append("<div class=\"b_table_wrapper b_floatscrollbox\">")
+		      .append("<table id=\"").append(id).append("\">");
+		      
+		renderTHead(target, ftE, translator);
+		renderTBody(renderer, target, ftC, ubu, translator, renderResult);
 
-		// 1. build header links
-		target.append("<thead><tr>");
-
-		for (int i = 0; i<cols; i++) {
-				FlexiColumnModel fcm = ftE.getTableDataModel().getTableColumnModel().getColumnModel(i);
-				String header = translator.translate(fcm.getHeaderKey());
-
-				target.append("<th class=\"");
-				// add css class for first and last column to support older browsers
-				if (i == 0) target.append(" b_first_child");
-				if (i == cols-1) target.append(" b_last_child");
-				target.append("\">");
-				target.append(header);
-				target.append("</th>");
-  	}
-		target.append("</tr></thead>");
-
-		// build rows
-		target.append("<tbody>");
-		// the really selected rowid (from the tabledatamodel)
-		
-		int firstRow = ftE.getFirstRow();
-		int maxRows = ftE.getMaxRows();
-		int lastRow = Math.min(rows, firstRow + maxRows);
-		for (int i = firstRow; i < lastRow; i++) {
-			// use alternating css class
-			String cssClass;
-			if (i % 2 == 0) cssClass = "";
-			else cssClass = "b_table_odd";
-			// add css class for first and last column to support older browsers
-			if (i == 0) cssClass += " b_first_child";
-			if (i == rows-1) cssClass += " b_last_child";
-
-			target.append("<tr id='row_").append(id).append("-").append(i)
-			      .append("' class=\"").append(cssClass).append("\">");
-			for (int j = 0; j < cols; j++) {
-				FlexiColumnModel fcm = ftE.getTableDataModel().getTableColumnModel().getColumnModel(j);
-				int alignment = fcm.getAlignment();
-				cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "b_align_normal" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "b_align_inverse" : "b_align_center"));
-				// add css class for first and last column to support older browsers
-				if (j == 0) cssClass += " b_first_child";
-				if (j == cols-1) cssClass += " b_last_child";				
-				target.append("<td class=\"").append(cssClass).append("\">");
-				if (j == 0) target.append("<a name=\"table\"></a>"); //add once for accessabillitykey
-				
-				Object cellValue = ftE.getTableDataModel().getValueAt(i, j);
-				if (cellValue instanceof FormItem) {
-					FormItem formItem = (FormItem)cellValue;
-					formItem.setTranslator(translator);
-					if(ftE.getRootForm() != formItem.getRootForm()) {
-						formItem.setRootForm(ftE.getRootForm());
-					}
-					formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(), ubu, translator, renderResult, args);
-					ftE.addFormItem(formItem);
-				} else {
-					ftE.getTableDataModel().getTableColumnModel().getColumnModel(j).
-						getCellRenderer().render(target, cellValue, translator);
-				}
-				target.append("</td>");
-			}
-			target.append("</tr>");
-			
-		}				
-		// end of table table
-		target.append("</tbody></table>");
-		target.append("</div>");
+		target.append("</table>")
+		       .append("</div>");
 		
 		if (source.isEnabled()) {
-			// add set dirty form only if enabled
 			target.append(FormJSHelper.getJSStartWithVarDeclaration(id));
-			/* deactivated due OLAT-3094 and OLAT-3040
-			if (ftE.hasFocus()) {
-				target.append(FormJSHelper.getFocusFor(id));
-			}
-			*/
 			target.append(FormJSHelper.getSetFlexiFormDirty(ftE.getRootForm(), id));
 			target.append(FormJSHelper.getJSEnd());
 		}
 		
+		int rows = dataModel.getRowCount();
+		
 		target.append("<script>")
-		  .append("jQuery(document).ready(function() {\n")
+		  .append("jQuery(function() {\n")
       .append("	jQuery('#").append(id).append("').dataTable( {\n")
       .append("		'bScrollInfinite': true,\n")
       .append("		'bScrollCollapse': true,\n")
@@ -168,26 +93,36 @@ class FlexiTableRenderer implements ComponentRenderer {
       .append("		'sAjaxSource': '").append(ftE.getMapperUrl()).append("',\n")
       .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex ) {\n")
       .append("			jQuery(nRow).draggable({ ")
+      .append("				containment: '#b_main',")
+      .append("				accept: function(event,ui){ console.log('Accept'); return true; },\n")
+      .append("				helper: function(event) {\n")
+      .append("				  return jQuery(\"<div class='ui-widget-header' style='z-index:10000;'>I'm a custom helper</div>\");\n")
+      .append("				},\n")
       .append("				start: function(event,ui){ console.log('Start'); },\n")
       .append("				stop: function(event,ui){ console.log('Stop'); }\n")
       .append("			});\n")
       .append("		},\n")
       .append("		'aoColumns': [\n")
+      .append("			{'mData':'choice', bSortable: false },\n")
       .append("			{'mData':'key'},\n")
       .append("			{'mData':'subject'},\n")
-      .append("			{'mData':'select'},\n")
-      .append("			{'mData':'mark'}\n")
+      .append("			{'mData':'select', bSortable: false },\n")
+      .append("			{'mData':'mark', bSortable: false }\n")
       .append("		]\n")
       .append("	});\n")
       //clic rows
       .append("	jQuery('#").append(id).append(" tbody tr').live('click', function(event, ui) {\n")
       .append("   var link = false;\n")
       .append("   var rowId = null;\n")
+      .append("   if(event.target.tagName == 'A' || event.target.tagName == 'INPUT') {\n")
+      .append("     return;\n")
+      .append("   }\n")
       .append("   jQuery(event.target).parents().each(function(index,el) {\n")
-      .append("     if(el.tagName == 'A') {")
+      .append("     if(el.tagName == 'A' || el.tagName == 'INPUT') {\n")
       .append("       link = true;\n")
       .append("     } else if (el.tagName == 'TR' && rowId == null) {\n")
       .append("       rowId = jQuery(el).attr('id');\n")
+      .append("       return false;\n")
       .append("     }\n")
       .append("   });\n")
       .append("	  if(!link) {\n")
@@ -197,6 +132,115 @@ class FlexiTableRenderer implements ComponentRenderer {
       .append("	});\n")
       .append("});\n")
 		  .append("</script>\n");
+	}
+	
+	/**
+	 * 
+	 * @param target
+	 * @param ftE
+	 * @param translator
+	 */
+	private void renderTHead(StringOutput target, FlexiTableElementImpl ftE, Translator translator) {
+		FlexiTableDataModel dataModel = ftE.getTableDataModel();
+		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
+		      
+		target.append("<thead><tr>");
+
+		int col = 0;
+		if(ftE.isMultiSelect()) {
+			target.append("<th class='b_first_child'>").append("choice").append("</th>");
+			col++;
+		}
+		
+		int cols = columnModel.getColumnCount();
+		for(int i=0; i<cols; i++) {
+			FlexiColumnModel fcm = columnModel.getColumnModel(i);
+			String header = translator.translate(fcm.getHeaderKey());
+				
+			target.append("<th class=\"");
+			// add css class for first and last column to support older browsers
+			if (col == 0) target.append(" b_first_child");
+			if (col == cols-1) target.append(" b_last_child");
+			target.append("\">").append(header).append("</th>");
+			col++;
+  	}
+		target.append("</tr></thead>");
+	}
+	
+	public void renderTBody(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
+			URLBuilder ubu, Translator translator, RenderResult renderResult) {
+		
+		String id = ftC.getFormDispatchId();
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableDataModel dataModel = ftE.getTableDataModel();
+		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
+
+		// build rows
+		target.append("<tbody>");
+		
+		// the really selected rowid (from the tabledatamodel)
+		int firstRow = ftE.getFirstRow();
+		int maxRows = ftE.getMaxRows();
+		int rows = dataModel.getRowCount();
+		int lastRow = Math.min(rows, firstRow + maxRows);
+		int cols = columnModel.getColumnCount();
+		
+		String rowIdPrefix = "row_" + id + "-";
+		
+		for (int i = firstRow; i < lastRow; i++) {
+			// use alternating css class
+			String cssClass;
+			if (i % 2 == 0) cssClass = "";
+			else cssClass = "b_table_odd";
+			// add css class for first and last column to support older browsers
+			if (i == 0) cssClass += " b_first_child";
+			if (i == rows-1) cssClass += " b_last_child";
+
+			target.append("<tr id='").append(rowIdPrefix).append(i)
+			      .append("' class=\"").append(cssClass).append("\">");
+			
+			int col = 0;
+			if(ftE.isMultiSelect()) {
+				target.append("<td class='b_first_child'>")
+				      .append("<input type='checkbox' name='ftb_ms' value='").append(rowIdPrefix).append(i).append("'");
+				if(ftE.isMultiSelectedIndex(i)) {
+					target.append(" checked='checked'");
+				}   
+				target.append("/></td>");
+				col++;
+			}
+			
+			for (int j = 0; j < cols; j++) {
+				FlexiColumnModel fcm = ftE.getTableDataModel().getTableColumnModel().getColumnModel(j);
+				int alignment = fcm.getAlignment();
+				cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "b_align_normal" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "b_align_inverse" : "b_align_center"));
+				// add css class for first and last column to support older browsers
+				if (col == 0) cssClass += " b_first_child";
+				if (col == cols-1) cssClass += " b_last_child";				
+				target.append("<td class=\"").append(cssClass).append("\">");
+				if (col == 0) target.append("<a name=\"table\"></a>"); //add once for accessabillitykey
+				
+				Object cellValue = ftE.getTableDataModel().getValueAt(i, j);
+				if (cellValue instanceof FormItem) {
+					FormItem formItem = (FormItem)cellValue;
+					formItem.setTranslator(translator);
+					if(ftE.getRootForm() != formItem.getRootForm()) {
+						formItem.setRootForm(ftE.getRootForm());
+					}
+					formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(),
+							ubu, translator, renderResult, null);
+					ftE.addFormItem(formItem);
+				} else {
+					ftE.getTableDataModel().getTableColumnModel().getColumnModel(j).
+						getCellRenderer().render(target, cellValue, translator);
+				}
+				target.append("</td>");
+			}
+			target.append("</tr>");
+			
+		}				
+		// end of table table
+		target.append("</tbody>");
 	}
 
 	/**

@@ -304,6 +304,11 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private void appendToMessageHistory(InstantMessage message, boolean focus) {
+		if(message == null || message.getBody() == null) {
+			System.out.println();
+		}
+		
+		
 		String m = message.getBody().replaceAll("<br/>\n", "\r\n");
 		m = prepareMsgBody(m.replaceAll("<", "&lt;").replaceAll(">", "&gt;")).replaceAll("\r\n", "<br/>\n");
 		String creationDate = formatter.formatTime(message.getCreationDate());

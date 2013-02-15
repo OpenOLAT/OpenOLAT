@@ -30,7 +30,8 @@ $r.render("tmComponent")
 				var url = b_glossaryTermMapperPath + "/" + glossaryId + "/terms.js";
 				jQuery.ajax(url, {
 					async: false, 
-					encoding : 'UTF-8', method : 'get', 
+					encoding : 'UTF-8',
+					method : 'get', 
 				 	success: function(data, textStatus, jqXHR) {
 				 		jQuery(document).data("o_glossaries")[glossaryId] = eval(jqXHR.responseText);
 				  }

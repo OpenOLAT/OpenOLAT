@@ -106,6 +106,20 @@ public class PersistenceHelper {
 		}
 		return result;
 	}
+	
+	public static void appendGroupBy(StringBuilder sb, String dbRef, SortKey... orderBy) {
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			sb.append(" order by ");
+			for(SortKey sort:orderBy) {
+				sb.append(dbRef).append(".").append(sort.getKey());
+				if(sort.isAsc()) {
+					sb.append(" asc ");
+				} else {
+					sb.append(" desc ");
+				}
+			}
+		}
+	}
 
 	/**
 	 * 

@@ -14,7 +14,13 @@
 		jQuery('#${panelName}').dialog({
 			title: '$title',
 			width: ${width},
-			height: ${height}
+			height: ${height},
+			position: [$offsetX, $offsetY],
+			stack: true,
+			close: function() {
+				o_beforeserver();
+				$r.javaScriptBgCommand("close")
+			}
 		});
 	});
 /* ]]> */

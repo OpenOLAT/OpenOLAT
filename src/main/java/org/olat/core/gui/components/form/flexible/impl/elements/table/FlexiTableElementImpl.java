@@ -25,9 +25,12 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -49,6 +52,9 @@ import org.olat.core.util.ValidationStatus;
  */
 public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection {
 
+	//settings
+	private boolean multiSelect;
+	
 	private int rowCount = -1;
 	private int pageSize;
 	
@@ -56,6 +62,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableComponent component;
 	private String mapperUrl;
 	
+	private Set<Integer> multiSelectedIndex;
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
 	public FlexiTableElementImpl(UserRequest ureq, String name, FlexiTableDataModel tableModel) {
@@ -77,6 +84,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(pageSize > 0) {
 			setPage(0);
 		}
+	}
+	
+	public boolean isMultiSelect() {
+		return multiSelect;
+	}
+	public void setMultiSelect(boolean multiSelect) {
+		this.multiSelect = multiSelect;
 	}
 	
 	@Override
@@ -117,6 +131,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
+		String[] selectedIndexArr = getRootForm().getRequestParameterValues("ftb_ms");
+		if(selectedIndexArr != null) {
+			setMultiSelectIndex(selectedIndexArr);
+		}
+
 		String selectedIndex = getRootForm().getRequestParameter("select");
 		if(StringHelper.containsNonWhitespace(selectedIndex)) {
 			int index = selectedIndex.lastIndexOf('-');
@@ -137,6 +156,37 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	protected void doSelect(UserRequest ureq, int index) {
 		getRootForm().fireFormEvent(ureq, new SelectionEvent(ROM_SELECT_EVENT, index, this, FormEvent.ONCLICK));
+	}
+	
+	public Set<Integer> getMultiSelectedIndex() {
+		return multiSelectedIndex == null ? Collections.<Integer>emptySet() : multiSelectedIndex;
+	}
+	
+	public boolean isMultiSelectedIndex(int index) {
+		if(multiSelectedIndex == null) {
+			return false;
+		}
+		return multiSelectedIndex.contains(new Integer(index));
+	}
+	
+	protected void setMultiSelectIndex(String[] selections) {
+		if(multiSelectedIndex == null) {
+			multiSelectedIndex = new HashSet<Integer>();
+		}
+		multiSelectedIndex.clear();
+		//selection format row_{formDispId}-{index}
+		if(selections.length > 0) {
+			int index = selections[0].lastIndexOf('-');
+			if(index > 0) {
+				for(String selection:selections) {	
+					if(index > 0 && index+1 < selection.length()) {
+						String rowStr = selection.substring(index+1);
+						int row = Integer.parseInt(rowStr);
+						multiSelectedIndex.add(new Integer(row));
+					}
+				}
+			}
+		}
 	}
 
 	@Override

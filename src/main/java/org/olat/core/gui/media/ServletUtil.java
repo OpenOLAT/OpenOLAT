@@ -36,6 +36,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -60,6 +61,17 @@ import org.olat.core.util.session.UserSessionManager;
 public class ServletUtil {
 	private static final OLog log = Tracing.createLoggerFor(ServletUtil.class);
 
+	
+	
+	public static void printOutRequestParameter(HttpServletRequest request) {
+		for(Enumeration<String> names=request.getParameterNames(); names.hasMoreElements(); ) {
+			String name = names.nextElement();
+			System.out.println(name + " :: " + request.getParameter(name));
+		}
+	}
+	
+	
+	
 	/**
 	 * @param httpReq
 	 * @param httpResp

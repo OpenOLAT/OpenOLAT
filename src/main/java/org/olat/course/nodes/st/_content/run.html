@@ -77,7 +77,7 @@
 ## Add event JS event listeners for click and keydown events on all the gotonodes links
 <script type="text/javascript">
 /* <![CDATA[ */ 
-jQuery(document).ready(function() {
+jQuery(function() {
 	jQuery('div.o_course_run_toc a.o_gotoNode').each(function(n,m) {
 		jQuery(m).on('keydown click', function(){window.scrollTo(0,0);});
 	});

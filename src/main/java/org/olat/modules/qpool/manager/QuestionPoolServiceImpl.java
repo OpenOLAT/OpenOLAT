@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
@@ -83,8 +84,8 @@ public class QuestionPoolServiceImpl implements QuestionPoolService, Application
 	}
 
 	@Override
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults) {
-		return poolDao.getItemsOfPool(pool, firstResult, maxResults);
+	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults, SortKey... orderBy) {
+		return poolDao.getItemsOfPool(pool, firstResult, maxResults, orderBy);
 	}
 
 	@Override

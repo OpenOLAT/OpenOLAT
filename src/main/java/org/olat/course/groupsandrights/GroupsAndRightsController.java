@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -266,7 +267,7 @@ public class GroupsAndRightsController extends FormBasicController {
 		}
 
 		@Override
-		public void load(int firstResult, int maxResults) {
+		public void load(int firstResult, int maxResults, SortKey... sortedCol) {
 			//already loaded
 		}
 
