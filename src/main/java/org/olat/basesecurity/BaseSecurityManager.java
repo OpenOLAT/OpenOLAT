@@ -911,7 +911,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	private void notifyNewIdentityCreated(Identity newIdentity) {
 		//Save the identity on the DB. So can the listeners of the event retrieve it
 		//in cluster mode
-		DBFactory.getInstance().intermediateCommit();
+		DBFactory.getInstance().commit();
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new NewIdentityCreatedEvent(newIdentity), IDENTITY_EVENT_CHANNEL);
 	}
 

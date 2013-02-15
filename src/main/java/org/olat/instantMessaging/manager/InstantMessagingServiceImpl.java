@@ -165,9 +165,10 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
 		InstantMessage message = imDao.createMessage(from, fromNickName, anonym, body, chatResource);
+		dbInstance.commit();//commit before sending event
+		
 		InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
 		event.setFromId(from.getKey());
 		event.setName(fromNickName);
@@ -178,11 +179,11 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	@Override
-	@Transactional
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey, String body, OLATResourceable chatResource) {
 		String name = userManager.getUserDisplayName(from.getUser());
 		InstantMessage message = imDao.createMessage(from, name, false, body, chatResource);
 		imDao.createNotification(from.getKey(), toIdentityKey, chatResource);
+		dbInstance.commit();//commit before sending event
 		
 		InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
 		event.setFromId(from.getKey());
@@ -204,7 +205,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public void sendPresence(Identity me, String nickName, boolean anonym, boolean vip, OLATResourceable chatResource) {
 		InstantMessagingEvent event = new InstantMessagingEvent("participant", chatResource);
 		event.setAnonym(anonym);
@@ -215,6 +215,8 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		}
 		String fullName = userManager.getUserDisplayName(me.getUser());
 		rosterDao.updateRosterEntry(chatResource, me, fullName, nickName, anonym, vip);
+		dbInstance.commit();//commit before sending event
+		
 		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 	}
 	

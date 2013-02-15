@@ -849,6 +849,9 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		}
 		
 		if(sendEvents) {
+			//commit all things on the database
+			DBFactory.getInstance().commit();
+			
 			// channel-notify all interested listeners (e.g. the pnotificationsportletruncontroller)
 			// 1. find all subscribers which can be affected
 			List<Subscriber> subscribers = getValidSubscribersOf(publisher);

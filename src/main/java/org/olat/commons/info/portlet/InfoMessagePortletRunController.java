@@ -127,6 +127,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	@Override
 	public void event(Event event) {
 		if("new_info_message".equals(event.getCommand())) {
+			System.out.println(this.getIdentity().getName());
 			reloadModel(sortingCriteria);
 		}
 	}
