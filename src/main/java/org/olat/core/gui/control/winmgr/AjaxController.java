@@ -272,7 +272,7 @@ public class AjaxController extends DefaultController {
 		if (wrapHTML) {
 			// most ajax responses are a lot smaller than 16k
 			StringBuilder sb = new StringBuilder(16384);
-			sb.append("<html><head><script type=\"text/javascript\">\n/* <![CDATA[ *//*\nfunction invoke(){var r=")
+			sb.append("<html><head><script type=\"text/javascript\">\n/* <![CDATA[ */\nfunction invoke(){var r=")
 				.append(jsonText).append("; ") 
 				.append("if (parent!=self&&parent.window.o_info){")
 				.append("parent.window.o_ainvoke(r);")
@@ -293,7 +293,7 @@ public class AjaxController extends DefaultController {
 					//.append("window.open(self.location+\"?o_win_jsontop=1\"); this.close();")
 					//.append("this.document.location=self.location+\"?o_win_jsontop=1\";")
 				.append("}}")
-				.append("\n/* ]]> *//*\n</script></head><body onLoad=\"invoke()\">");
+				.append("\n/* ]]> */\n</script></head><body onLoad=\"invoke()\">");
 					if (showJSON) {
 						try {
 							sb.append("<pre style=\"font-size:12px;\">len:").append(jsonText.length()).append(":\n").append(StringEscapeUtils.escapeHtml(json.toString(2))).append("</pre>");
