@@ -23,6 +23,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -367,7 +368,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}	
 	}
 	
-	public static FolderVO createFolderVO(IdentityEnvironment ienv, ICourse course, BCCourseNode bcNode, Set<String> subscribed) {
+	public static FolderVO createFolderVO(IdentityEnvironment ienv, ICourse course, BCCourseNode bcNode, Collection<String> subscribed) {
 		OlatNamedContainerImpl container = BCCourseNode.getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ienv);
 		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
 		

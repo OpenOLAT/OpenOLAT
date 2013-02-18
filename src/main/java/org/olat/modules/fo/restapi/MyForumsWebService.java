@@ -26,6 +26,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,11 +68,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchRepositoryEntryParameters;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.group.LearningGroupWebService;
 
 /**
@@ -161,7 +157,7 @@ public class MyForumsWebService {
 		}
 
 		Map<Long,Long> groupNotified = new HashMap<Long,Long>();
-		Map<Long,Long> courseNotified = new HashMap<Long,Long>();
+		Map<Long,Collection<Long>> courseNotified = new HashMap<Long,Collection<Long>>();
 		final Set<Long> subscriptions = new HashSet<Long>();
 		
 		NotificationsManager man = NotificationsManager.getInstance();
@@ -178,13 +174,35 @@ public class MyForumsWebService {
 					groupNotified.put(groupKey, forumKey);
 				} else if("CourseModule".equals(resName)) {
 					Long courseKey = sub.getPublisher().getResId();
-					courseNotified.put(courseKey, forumKey);
+					if(!courseNotified.containsKey(courseKey)) {
+						courseNotified.put(courseKey, new ArrayList<Long>());
+					}
+					courseNotified.get(courseKey).add(forumKey);
 				}
 			}
 		}
 		
 		final List<ForumVO> forumVOs = new ArrayList<ForumVO>();
-		
+		final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
+		for(Map.Entry<Long, Collection<Long>> e:courseNotified.entrySet()) {
+			final Long courseKey = e.getKey();
+			final Collection<Long> forumKeys = e.getValue();
+			final ICourse course = CourseFactory.loadCourse(courseKey);
+			new CourseTreeVisitor(course, ienv).visit(new Visitor() {
+				@Override
+				public void visit(INode node) {
+					if(node instanceof FOCourseNode) {
+						FOCourseNode forumNode = (FOCourseNode)node;
+						ForumVO forumVo = ForumCourseNodeWebService.createForumVO(course, forumNode, subscriptions);
+						if(forumKeys.contains(forumVo.getForumKey())) {
+							forumVOs.add(forumVo);
+						}
+					}
+				}
+			});
+		}
+
+		/*
 		RepositoryManager rm = RepositoryManager.getInstance();
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
@@ -210,7 +228,7 @@ public class MyForumsWebService {
 					log.error("", e);
 				}
 			}
-		}
+		}*/
 		
 		//start found forums in groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
