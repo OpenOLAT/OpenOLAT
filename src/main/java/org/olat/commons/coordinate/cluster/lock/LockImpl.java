@@ -39,6 +39,7 @@ import org.olat.core.logging.AssertException;
  */
 public class LockImpl extends PersistentObject {
 
+	private static final long serialVersionUID = 1978265978735682673L;
 	private Identity owner;
 	private String asset;
 	private String nodeId;
@@ -91,4 +92,20 @@ public class LockImpl extends PersistentObject {
 		this.nodeId = nodeId;
 	}
 
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 39746 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof LockImpl) {
+			LockImpl lock = (LockImpl)obj;
+			return getKey() != null && getKey().equals(lock.getKey());
+		}
+		return false;
+	}
 }

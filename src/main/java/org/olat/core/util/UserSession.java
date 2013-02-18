@@ -380,7 +380,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		// called by tomcat's timer thread -> we need to close!! since the next unbound will be called from the same tomcat-thread
 		finally {
 			//o_clusterNOK: put into managed transaction wrapper
-			DBFactory.getInstance(false).commitAndCloseSession();
+			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
 

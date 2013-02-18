@@ -33,6 +33,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
@@ -84,6 +85,8 @@ public class UserSessionManager implements GenericEventListener {
 	private static final AtomicInteger sessionCountRest = new AtomicInteger();
 	private static final AtomicInteger sessionCountDav = new AtomicInteger();
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserSessionModule sessionModule;
 	@Autowired
@@ -465,6 +468,9 @@ public class UserSessionManager implements GenericEventListener {
 			}
 		}
 		
+		//commit all changes after sign off, especially commit lock which were
+		//deleted by dispose methods
+		dbInstance.commit();
 		if (isDebug) log.debug("signOffAndClearWithout() END");
 	}
 
