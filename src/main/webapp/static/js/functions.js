@@ -452,6 +452,7 @@ function o_ainvoke(r) {
 					case 3:  // createParentRedirectTo leads to a full page reload
 						wi.o2c = 0;//??
 						var rurl = cda["rurl"];
+						wi.o_afterserver();
 						wi.document.location.replace(rurl);
 						break;
 					case 5: // create redirect for external resource mapper
@@ -549,6 +550,21 @@ function o_ainvoke(r) {
 	BDebugger.logGlobalOLATObjects();
 	BDebugger.logManagedOLATObjects();
 */
+}
+
+/**
+ * Method to remove the ajax-busy stuff and let the user click links again. This
+ * should only be called from the ajax iframe onload method to make sure the UI
+ * does not freeze when the server for whatever reason does not respond as expected.
+ */
+function clearAfterAjaxIframeCall() {
+	if (o_info.linkbusy) {
+		// A normal ajax call will clear the linkbusy, so something went wrong in 
+		// the ajax channel, e.g. error message from apache or no response from server
+		// Call afterserver to remove busy icon clear the linkbusy flag
+		o_afterserver();
+		showMessageBox('info', o_info.i18n_noresponse_title, o_info.i18n_noresponse, undefined);
+	}
 }
 
 function showAjaxBusy() {

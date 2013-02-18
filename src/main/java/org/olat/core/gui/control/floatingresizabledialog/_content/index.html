@@ -113,7 +113,17 @@
 					$r.javaScriptBgCommand("close")
 				}		
 			});
+						
+			if(winPosition != null) {
+				${panelName}.setPosition(winPosition[0],winPosition[1]);
+			} else {
+				${panelName}.setPosition(${offsetX},${offsetY});
+			}
+			${panelName}.show(this);
 			
+			## Add resize and move listeners after window positioning is finished, otherwhise the callbacks are 
+			## triggered right away which is not necessary (start width/height/posiiton must not be reported back 
+			## to server, only user initiated changes)
 			${panelName}.on('resize', function(win, width, height){
 				#if ($ajaxFlags.isIframePostEnabled())
 				if (!o_info.linkbusy) {
@@ -145,13 +155,6 @@
 					//
 				}
 			});
-			
-			if(winPosition != null) {
-				${panelName}.setPosition(winPosition[0],winPosition[1]);
-			} else {
-				${panelName}.setPosition(${offsetX},${offsetY});
-			}
-			${panelName}.show(this);
 		}
 	//delay is needed for IE to solve timing problem
 	},{delay:1000});
