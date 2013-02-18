@@ -114,7 +114,7 @@ public class BusinessGroupMailing {
 			context = new MailContextImpl(null, null, "[BusinessGroup:" + group.getKey() + "]");
 		}
 
-		MailerResult result = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, ureqIdentity);
+		MailerResult result = mailer.sendMailAsSeparateMails(context, Collections.singletonList(identity), null, template, ureqIdentity, mailing.getUuid());
 		if(mailing != null) {
 			mailing.appendResult(result);
 		}

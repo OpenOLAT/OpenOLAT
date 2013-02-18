@@ -62,13 +62,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailContextImpl;
-import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
@@ -77,7 +71,6 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
-import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -433,7 +426,6 @@ public abstract class AbstractMemberListController extends BasicController imple
 	}
 	
 	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members, boolean sendMail) {
-
 		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
 			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
@@ -443,44 +435,8 @@ public abstract class AbstractMemberListController extends BasicController imple
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
-		DBFactory.getInstance().commitAndCloseSession();
-		
-		/*if(sendMail && allModifications != null && !allModifications.isEmpty()) {
-			for (BusinessGroupMembershipChange mod : allModifications) {
-				sendMailAfterChangePermission(mod);
-			}
-		}
 
-		//make sure all is committed before loading the model again (I see issues without)
-		//DBFactory.getInstance().commitAndCloseSession();
-		*/
 		reloadModel();
-	}
-	
-	protected void sendMailAfterChangePermission(BusinessGroupMembershipChange mod) {
-		MailTemplate template = null;
-		if(mod.getParticipant() != null) {
-			if(mod.getParticipant().booleanValue()) {
-				 template = BGMailHelper.createAddParticipantMailTemplate(mod.getGroup(), mod.getMember());
-			} else {
-				 template = BGMailHelper.createRemoveParticipantMailTemplate(mod.getGroup(), mod.getMember());
-			}
-		}
-		
-		if(mod.getWaitingList() != null) {
-			if(mod.getWaitingList().booleanValue()) {
-				template = BGMailHelper.createAddWaitinglistMailTemplate(mod.getGroup(), mod.getMember());
-			} else {
-				template = BGMailHelper.createRemoveWaitinglistMailTemplate(mod.getGroup(), mod.getMember());
-			}
-		}
-		
-		if(template != null) {	
-			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			MailContext ctx = new MailContextImpl(null, null, getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(ctx, Collections.singletonList(mod.getMember()), null, template, getIdentity());
-			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), getLocale());
-		}
 	}
 	
 	protected void doLeave(List<Identity> members, boolean sendMail) {

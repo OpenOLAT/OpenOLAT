@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -620,6 +621,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 			//release lock
 			dbInstance.commit();
+			dbInstance.begin();
 		}
 	}
 
@@ -798,9 +800,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		MailTemplate mailTemplate = BGMailHelper.createDeleteGroupMailTemplate(businessGroupTodelete, deletedBy);
 		if (mailTemplate != null) {
-			//fxdiff VCRP-16: intern mail system
+			String metaId = UUID.randomUUID().toString();
 			MailContext context = new MailContextImpl(businessPath);
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, users, null, mailTemplate, null);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, users, null, mailTemplate, null, metaId);
 			//MailHelper.printErrorsAndWarnings(mailerResult, wControl, locale);
 			return mailerResult;
 		}
@@ -1059,6 +1061,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			nextGroupMembership = removeGroupMembers(ureqIdentity, currentMembership, nextGroup, keyToIdentityMap, itMembership, mailing);
 			//release the lock
 			dbInstance.commit();
+			dbInstance.begin();
 		}
 
 		List<ResourceReservation> reservations = acService.getReservations(groupResources);
@@ -1513,6 +1516,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
 			if(count++ % 20 == 0) {
 				dbInstance.commit();
+				dbInstance.begin();
 			}
 		}
 	}

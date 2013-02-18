@@ -269,7 +269,6 @@ public class GroupOverviewController extends BasicController {
 		
 		MailPackage mailing = new MailPackage();
 		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
-		DBFactory.getInstance().commit();
 	}
 	
 	private void doLeave(UserRequest ureq, List<BusinessGroup> groupsToLeave) {

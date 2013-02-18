@@ -754,6 +754,12 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		}
 	}
 
+	@Override
+	public void begin() {
+		//this will begin a new transaction
+		getCurrentEntityManager();
+	}
+
 	/**
 	 * Call this to commit a transaction opened by beginTransaction().
 	 */

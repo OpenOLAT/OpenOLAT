@@ -162,6 +162,17 @@ public interface DB {
 	 */
 	public Persistable loadObject(Persistable persistable, boolean forceReloadFromDB);
 
+
+	/**
+	 * Begin a new transaction (don't forget to commit the last one)
+	 */
+	public void begin();
+	
+	/**
+	 * Call this to commit current changes.
+	 */
+	public void commit();
+	
 	/**
 	 * Checks if the transaction needs to be committed and does so if this is the case,
 	 * plus closes the connection in any case guaranteed.
@@ -169,11 +180,6 @@ public interface DB {
 	 * Use this rather than commit() directly wherever possible!
 	 */
 	public void commitAndCloseSession();
-	
-	/**
-	 * Call this to commit current changes.
-	 */
-	public void commit();
   
 	/**
 	 * Calls rollback and closes the connection guaranteed.
