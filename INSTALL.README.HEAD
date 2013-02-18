@@ -60,7 +60,9 @@ Preconditions:
   7.6 Open the generated server.xml file and manually set the following parameters: 
       In the "Context" element set parameter reloadable="false" 
       In all "Connector" elements set paramter URIEncoding="UTF-8"
-
+  7.7 Option: to use the application server database connection pool configure a jdbc data resource in the the 
+      "Context" element, set db.source=jndi in the olat.local.properties and  db.jndi to the name of the data soruce
+      If unsure, set db.source=local to use the bundled data connection pool (not recommendet for production)
 8. In Eclipse: start the server
 
 9. In your browser open URL http://localhost:8080/olat
@@ -100,4 +102,4 @@ Background (optional for further interest)
 o There is only one spring context for the whole OpenOLAT which you can access via CoreSpringFactory. The context 
   is configured with the files serviceconfig/olat.properies and can be overwritten with olat.local.properties. 
   changes in olat.local.properties are reflected upon each restart of Tomcat.
-
+  
