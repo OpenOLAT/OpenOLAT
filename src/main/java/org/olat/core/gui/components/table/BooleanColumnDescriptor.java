@@ -76,28 +76,29 @@ public class BooleanColumnDescriptor extends DefaultColumnDescriptor {
 	 * @see org.olat.core.gui.components.table.ColumnDescriptor#renderValue(org.olat.core.gui.render.StringOutput,
 	 *      int, org.olat.core.gui.render.Renderer)
 	 */
+	@Override
 	public void renderValue(final StringOutput sb, final int row, final Renderer renderer) {
-		Boolean bool = (Boolean) getModelData(row);
-		boolean appendNothing = bool == null;
-		if (appendNothing){
-			return;
-		}
-		String val = (bool.booleanValue() ? trueValue : falseValue);
-		if(StringHelper.containsNonWhitespace(val)) {
-			sb.append(val);
+		Object obj = getModelData(row);
+		if(obj instanceof Boolean) {
+			Boolean bool = (Boolean)obj;
+			String val = (bool.booleanValue() ? trueValue : falseValue);
+			if(StringHelper.containsNonWhitespace(val)) {
+				sb.append(val);
+			}
 		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getAction(int)
 	 */
+	@Override
 	public String getAction(final int row) {
 		if (!hasAction) {
 			return null;
 		} else {
-			Boolean bool = (Boolean) getModelData(row);
+			Object bool = getModelData(row);
 			// make sure the bool is not null before checkings its value
-			if (bool != null && bool.booleanValue()) {
+			if (bool instanceof Boolean && ((Boolean)bool).booleanValue()) {
 				return super.getAction(row);
 			} else {
 				return null;
