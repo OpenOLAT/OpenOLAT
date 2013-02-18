@@ -42,8 +42,10 @@ public class FunctionalGroupsSiteUtil {
 	
 	public final static String SEARCH_GROUP_BUTTONS_CSS = "o_sel_group_search_groups_buttons";
 	
-	public final static String IMPORT_USER_CSS = "o_sel_group_import_users";
-	public final static String ADD_USER_CSS = "o_sel_group_add_user";
+	public final static String ADD_MEMBER_CSS = "o_sel_group_add_member";
+	public final static String IMPORT_MEMBERS_CSS = "o_sel_group_import_members";
+	
+	public final static String GROUP_IMPORT_1_WIZARD_CSS = "o_sel_group_import_1_wizard";
 	
 	public final static String USERSEARCH_AUTOCOMPLETION_CSS = "o_sel_usersearch_autocompletion";
 	public final static String USERSEARCH_SEARCHFORM_CSS = "o_sel_usersearch_searchform";
@@ -215,8 +217,10 @@ public class FunctionalGroupsSiteUtil {
 	
 	private String searchGroupButtonsCss;
 	
-	private String importUserCss;
-	private String addUserCss;
+	private String addMemberCss;
+	private String importMembersCss;
+	
+	private String groupImport1WizardCss;
 	
 	private String usersearchAutocompletionCss;
 	private String usersearchSearchformCss;
@@ -244,8 +248,10 @@ public class FunctionalGroupsSiteUtil {
 		
 		this.searchGroupButtonsCss = SEARCH_GROUP_BUTTONS_CSS;
 		
-		this.importUserCss = IMPORT_USER_CSS;
-		this.addUserCss = ADD_USER_CSS;
+		this.addMemberCss = ADD_MEMBER_CSS;
+		this.importMembersCss = IMPORT_MEMBERS_CSS;
+		
+		this.groupImport1WizardCss = GROUP_IMPORT_1_WIZARD_CSS;
 		
 		this.usersearchAutocompletionCss = USERSEARCH_AUTOCOMPLETION_CSS;
 		this.usersearchSearchformCss = USERSEARCH_SEARCHFORM_CSS;
@@ -272,8 +278,6 @@ public class FunctionalGroupsSiteUtil {
 	 * @return true on success otherwise false
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){
-		functionalUtil.idle(browser);
-		
 		StringBuffer selectorBuffer;
 		
 		if(action instanceof GroupsSiteAction){
@@ -544,6 +548,8 @@ public class FunctionalGroupsSiteUtil {
 	 * @return
 	 */
 	public boolean openGroupsTabActionByMenuTree(Selenium browser, GroupsTabAction action){
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//ul[contains(@class, '")
@@ -579,37 +585,30 @@ public class FunctionalGroupsSiteUtil {
 		
 		if(ArrayUtils.contains(tools, GroupTools.INFORMATION)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.INFORMATION.ordinal()));
-			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.EMAIL)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.EMAIL.ordinal()));
-			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.CALENDAR)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.CALENDAR.ordinal()));
-			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.FOLDER)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.FOLDER.ordinal()));
-			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.FORUM)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.FORUM.ordinal()));
-			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.WIKI)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.WIKI.ordinal()));
-			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(tools, GroupTools.EPORTFOLIO)){
 			functionalUtil.clickCheckbox(browser, null, Integer.toString(GroupTools.EPORTFOLIO.ordinal()));
-			functionalUtil.idle(browser);
 		}
 		
 		return(true);
@@ -668,27 +667,22 @@ public class FunctionalGroupsSiteUtil {
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.CAN_SEE_COACHES)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.CAN_SEE_COACHES.getValue());
-			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.CAN_SEE_PARTICIPANTS)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.CAN_SEE_PARTICIPANTS.getValue());
-			functionalUtil.idle(browser);
 		}
 
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_SEE_COACHES)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_SEE_COACHES.getValue());
-			functionalUtil.idle(browser);
 		}
 
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS.getValue());
-			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS.getValue());
-			functionalUtil.idle(browser);
 		}
 		
 		return(true);
@@ -701,7 +695,7 @@ public class FunctionalGroupsSiteUtil {
 	 * @param userName
 	 * @return
 	 */
-	public boolean addUser(Selenium browser, String userName){
+	public boolean addUser(Selenium browser, String userName, boolean coach, boolean participant, boolean waitingList){
 		if(!openGroupsTabActionByMenuTree(browser, GroupsTabAction.ADMINISTRATION)){
 			return(false);
 		}
@@ -717,9 +711,9 @@ public class FunctionalGroupsSiteUtil {
 		/* click add User(s) */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=(//a[contains(@class, '")
-		.append(getAddUserCss())
-		.append("')])[2]");
+		selectorBuffer.append("xpath=//a[contains(@class, '")
+		.append(getAddMemberCss())
+		.append("')]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
@@ -729,7 +723,7 @@ public class FunctionalGroupsSiteUtil {
 		
 		selectorBuffer.append("xpath=(//fieldset[contains(@class, '")
 		.append(getUsersearchSearchformCss())
-		.append("')]//form//input[@type='text'])[1]");
+		.append("')]//input[@type='text'])[1]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.type(selectorBuffer.toString(), userName);
@@ -739,7 +733,7 @@ public class FunctionalGroupsSiteUtil {
 		
 		selectorBuffer.append("xpath=(//fieldset[contains(@class, '")
 		.append(getUsersearchSearchformCss())
-		.append("')]//form//a[contains(@class, '")
+		.append("')]//a[contains(@class, '")
 		.append(functionalUtil.getButtonCss())
 		.append("')])[1]");
 		
@@ -751,32 +745,53 @@ public class FunctionalGroupsSiteUtil {
 		
 		selectorBuffer.append("xpath=(//fieldset[contains(@class, '")
 		.append(getUsersearchSearchformCss())
-		.append("')]//form//tr//td//input[@type='checkbox'])[1]");
+		.append("')]//tr//td//input[@type='checkbox'])[1]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
 		
-		/* click choose */
-		selectorBuffer = new StringBuffer();
+		/* click next */
+		functionalUtil.clickWizardNext(browser, getGroupImport1WizardCss());
+		functionalUtil.clickWizardNext(browser, getGroupImport1WizardCss());
 		
-		selectorBuffer.append("xpath=(//fieldset[contains(@class, '")
-		.append(getUsersearchSearchformCss())
-		.append("')]//form//input[@type='submit' and contains(@class, '")
-		.append(functionalUtil.getButtonCss())
-		.append("')])[1]");
+		/* grant rights */
+		StringBuffer templateBuffer = new StringBuffer();
+		
+		templateBuffer.append("xpath=(//div[contains(@class, '")
+		.append(getGroupImport1WizardCss())
+		.append("')]//fieldset//tr//td//input[@type='checkbox'])");
+		
+		if(coach){
+			selectorBuffer = new StringBuffer(templateBuffer);
+			
+			selectorBuffer.append("[1]");
+			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.click(selectorBuffer.toString());
+		}
+		
+		if(participant){
+			selectorBuffer = new StringBuffer(templateBuffer);
+			
+			selectorBuffer.append("[2]");
+			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.click(selectorBuffer.toString());
+		}
+		
+		if(waitingList){
+			selectorBuffer = new StringBuffer(templateBuffer);
+			
+			selectorBuffer.append("[3]");
+			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.click(selectorBuffer.toString());
+		}
 
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		browser.click(selectorBuffer.toString());
+		functionalUtil.clickWizardNext(browser, getGroupImport1WizardCss());
 		
-		/* no mail just next */
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//fieldset//form//div[contains(@class, 'b_button_group')]//button[contains(@class, '")
-		.append(functionalUtil.getButtonCss())
-		.append("')])[1]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		browser.click(selectorBuffer.toString());
+		/* will send mail by clicking finish */
+		functionalUtil.clickWizardFinish(browser, getGroupImport1WizardCss());
 		
 		return(true);
 	}
@@ -1053,22 +1068,30 @@ public class FunctionalGroupsSiteUtil {
 		this.searchGroupButtonsCss = searchGroupButtonsCss;
 	}
 
-	public String getImportUserCss() {
-		return importUserCss;
+	public String getAddMemberCss() {
+		return addMemberCss;
 	}
 
-	public void setImportUserCss(String importUserCss) {
-		this.importUserCss = importUserCss;
+	public void setAddMemberCss(String addMemberCss) {
+		this.addMemberCss = addMemberCss;
 	}
 
-	public String getAddUserCss() {
-		return addUserCss;
+	public String getImportMembersCss() {
+		return importMembersCss;
 	}
 
-	public void setAddUserCss(String addUserCss) {
-		this.addUserCss = addUserCss;
+	public void setImportMembersCss(String importMembersCss) {
+		this.importMembersCss = importMembersCss;
 	}
 
+	public String getGroupImport1WizardCss() {
+		return groupImport1WizardCss;
+	}
+
+	public void setGroupImport1WizardCss(String groupImport1WizardCss) {
+		this.groupImport1WizardCss = groupImport1WizardCss;
+	}
+	
 	public String getUsersearchAutocompletionCss() {
 		return usersearchAutocompletionCss;
 	}

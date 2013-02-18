@@ -767,7 +767,7 @@ public class FunctionalUtil {
 		break;
 		case ADMINISTRATION:
 		{
-			retval = functionalAdministrationSiteUtil.openActionByMenuTree(browser, AdministrationSiteAction.INFORMATION);
+			retval = functionalAdministrationSiteUtil.openActionByMenuTree(browser, AdministrationSiteAction.SYSTEM);
 		}
 		break;
 		}
