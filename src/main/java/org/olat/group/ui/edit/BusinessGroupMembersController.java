@@ -97,8 +97,10 @@ public class BusinessGroupMembersController extends BasicController {
 		mainVC.put("members", membersController.getInitialComponent());
 		
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
+		addMemberLink.setElementCssClass("o_sel_group_add_member");
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
+		importMemberLink.setElementCssClass("o_sel_group_import_members");
 		mainVC.put("importMembers", importMemberLink);
 	}
 	
