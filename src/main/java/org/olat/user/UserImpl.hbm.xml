@@ -2,12 +2,8 @@
 <!DOCTYPE hibernate-mapping PUBLIC 
         "-//Hibernate/Hibernate Mapping DTD//EN"
         "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
-
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.user.UserImpl" table="o_user">  
-  
-		<cache usage="transactional" />
-
     <id name="key" column="user_id" type="long" unsaved-value="null">
       <generator class="hilo"/>
     </id>
