@@ -46,8 +46,6 @@ public class FunctionalUtil {
 	
 	public final static String LOGIN_PAGE = "dmz";
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
-	
-	public final static String INFO_DIALOG = "o_interceptionPopup";
 
 	public final static long TIMEOUT = 60000;
 	public final static long POLL_INTERVAL = 100;
@@ -146,7 +144,8 @@ public class FunctionalUtil {
 	public final static String WINDOW_CLOSE_LINK_CSS = "b_link_close";
 	
 	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
-	
+
+	public final static String INFO_CSS = "b_info";
 	public final static String INFO_MESSAGE_BOX_CSS = "o_sel_info_message";
 	
 	private String username;
@@ -157,8 +156,6 @@ public class FunctionalUtil {
 	
 	private String loginPage;
 	private String acknowledgeCheckbox;
-	
-	private String infoDialog;
 	
 	private String olatTopNavigationLogoutCss;
 	
@@ -190,6 +187,8 @@ public class FunctionalUtil {
 	private String mceContentBodyCss;
 	
 	private String windowCloseLinkCss;
+	
+	private String infoCss;
 	
 	private String buttonCss;
 	private String buttonDirtyCss;
@@ -240,8 +239,6 @@ public class FunctionalUtil {
 		loginPage = LOGIN_PAGE;
 		acknowledgeCheckbox = ACKNOWLEDGE_CHECKBOX;
 		
-		infoDialog = INFO_DIALOG;
-		
 		olatTopNavigationLogoutCss = OLAT_TOP_NAVIGATION_LOGOUT_CSS;
 		
 		olatNavigationSiteCss = OLAT_NAVIGATION_SITE_CSS;
@@ -272,6 +269,8 @@ public class FunctionalUtil {
 		mceContentBodyCss = MCE_CONTENT_BODY_CSS;
 		
 		windowCloseLinkCss = WINDOW_CLOSE_LINK_CSS;
+		
+		infoCss = INFO_CSS;
 		
 		buttonCss = BUTTON_CSS;
 		buttonDirtyCss = BUTTON_DIRTY_CSS;
@@ -879,8 +878,8 @@ public class FunctionalUtil {
 	    	//TODO:JK: find a way to solve endless loop
 	    	//while(browser.isElementPresent("class="+ getInfoDialog())){
 	    		/* click last button */
-	    	if(browser.isElementPresent("id="+ getInfoDialog())){
-	    		browser.click("xpath=//form//div//button[@type='button']/../../span/a[@class='b_button']");
+	    	if(browser.isElementPresent("//div[contains(@class, '"+ getInfoCss() + "')]")){
+	    		browser.click("xpath=//form//div//button[@type='button']/../../span/a[contains(@class, '" + getButtonCss() + "')]");
 	    		waitForPageToLoad(browser);
 	    	}
 	    	//}
@@ -1438,14 +1437,6 @@ public class FunctionalUtil {
 		this.acknowledgeCheckbox = acknowledgeCheckbox;
 	}
 
-	public String getInfoDialog() {
-		return infoDialog;
-	}
-
-	public void setInfoDialog(String infoDialog) {
-		this.infoDialog = infoDialog;
-	}
-
 	public String getOlatTopNavigationLogoutCss() {
 		return olatTopNavigationLogoutCss;
 	}
@@ -1669,6 +1660,14 @@ public class FunctionalUtil {
 
 	public void setWindowCloseLinkCss(String windowCloseLinkCss) {
 		this.windowCloseLinkCss = windowCloseLinkCss;
+	}
+
+	public String getInfoCss() {
+		return infoCss;
+	}
+
+	public void setInfoCss(String infoCss) {
+		this.infoCss = infoCss;
 	}
 
 	public String getButtonCss() {
