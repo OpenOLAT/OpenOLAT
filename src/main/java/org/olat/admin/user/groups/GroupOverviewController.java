@@ -49,12 +49,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BusinessGroupMembershipChange;
@@ -83,11 +86,13 @@ public class GroupOverviewController extends BasicController {
 	private BusinessGroupTableModelWithType tableDataModel;
 	
 	private Link addGroups;
+	private DialogBoxController confirmSendMailBox;
 	private CloseableModalController cmc;
 	private GroupSearchController groupsCtrl;
 	private GroupLeaveDialogBoxController removeFromGrpDlg;
 
 	private final BaseSecurity securityManager;
+	private final BusinessGroupModule groupModule;
 	private final BusinessGroupService businessGroupService;
 	
 	private final Identity identity;
@@ -97,6 +102,7 @@ public class GroupOverviewController extends BasicController {
 		
 		this.identity = identity;
 		securityManager = BaseSecurityManager.getInstance();
+		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		vc = createVelocityContainer("groupoverview");
@@ -216,17 +222,29 @@ public class GroupOverviewController extends BasicController {
 			}
 		}	else if (source == groupsCtrl && event instanceof AddToGroupsEvent){
 			AddToGroupsEvent groupsEv = (AddToGroupsEvent) event;
-			if (groupsEv.getOwnerGroupKeys().isEmpty() && groupsEv.getParticipantGroupKeys().isEmpty()) {
+			if (groupsEv.isEmpty()) {
 				// no groups selected
 				showWarning("group.add.result.none");
 			} else {
 				if (cmc != null) {
 					cmc.deactivate();				
 				}
-				doAddToGroups(groupsEv);
-				updateModel(ureq);
+				
+				boolean mailMandatory = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+				if(mailMandatory) {
+					doAddToGroups(groupsEv, true);
+					updateModel(ureq);
+				} else {
+					confirmSendMailBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailBox);
+					confirmSendMailBox.setUserObject(groupsEv);
+				}
 			}
 			cleanUpPopups();
+		} else if(source == confirmSendMailBox) {
+			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
+			AddToGroupsEvent groupsEv = (AddToGroupsEvent)confirmSendMailBox.getUserObject();
+			doAddToGroups(groupsEv, sendMail);
+			updateModel(ureq);
 		} else if (source == removeFromGrpDlg){
 			if(event == Event.DONE_EVENT) {
 				boolean sendMail = removeFromGrpDlg.isSendMail();
@@ -250,7 +268,7 @@ public class GroupOverviewController extends BasicController {
 		removeFromGrpDlg = null;
 	}
 	
-	private void doAddToGroups(AddToGroupsEvent e) {
+	private void doAddToGroups(AddToGroupsEvent e, boolean sendMail) {
 		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
 		if(e.getOwnerGroupKeys() != null && !e.getOwnerGroupKeys().isEmpty()) {
 			for(Long tutorGroupKey:e.getOwnerGroupKeys()) {
@@ -267,7 +285,7 @@ public class GroupOverviewController extends BasicController {
 			}
 		}
 		
-		MailPackage mailing = new MailPackage();
+		MailPackage mailing = new MailPackage(sendMail);
 		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
 		DBFactory.getInstance().commit();
 	}

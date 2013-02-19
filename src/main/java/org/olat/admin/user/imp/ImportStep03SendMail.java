@@ -19,42 +19,29 @@
  */
 package org.olat.admin.user.imp;
 
-import org.olat.admin.user.groups.GroupSearchController;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.group.BusinessGroupModule;
 
 /**
  * 
- * Description:<br>
- * have another step to define groups where new identities should be added to.
+ * Step to choose if mails are send or not
  * 
- * <P>
- * Initial Date:  09.05.2011 <br>
- * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
+ * Initial date: 19.02.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ImportStep02 extends BasicStep {
-	
-	private final boolean mandatoryEmail;
+public class ImportStep03SendMail extends BasicStep {
 
-	public ImportStep02(UserRequest ureq) {
+	public ImportStep03SendMail(UserRequest ureq) {
 		super(ureq);
-		setI18nTitleAndDescr("step2.description", "step2.short.description");
-
-		mandatoryEmail = CoreSpringFactory.getImpl(BusinessGroupModule.class).isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
-		if(mandatoryEmail) {
-			setNextStep(Step.NOSTEP);
-		} else {
-			setNextStep(new ImportStep03SendMail(ureq));
-		}
+		setI18nTitleAndDescr("step3.description", "step3.short.description");
+		setNextStep(Step.NOSTEP);
 	}
 
 	/**
@@ -62,9 +49,7 @@ public class ImportStep02 extends BasicStep {
 	 */
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		boolean next = !mandatoryEmail;
-		boolean finish = mandatoryEmail;
-		return new PrevNextFinishConfig(true, next, finish);
+		return new PrevNextFinishConfig(true, false, true);
 	}
 
 	/**
@@ -72,7 +57,7 @@ public class ImportStep02 extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new GroupSearchController(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_VERTICAL, null);
+		StepFormController stepI = new SendMailConfirmationController(ureq, windowControl, form, stepsRunContext);
 		return stepI;
 	}
 
