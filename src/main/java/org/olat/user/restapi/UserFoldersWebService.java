@@ -52,8 +52,6 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
@@ -65,7 +63,6 @@ import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
-import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.bc.BCWebService;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
@@ -87,7 +84,7 @@ import org.olat.restapi.support.vo.FolderVOes;
 @Path("users/{identityKey}/folders")
 public class UserFoldersWebService {
 	
-	private OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
+	//private static final OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
 
 	@Path("personal")
 	public VFSWebservice getFolder(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
@@ -214,13 +211,11 @@ public class UserFoldersWebService {
 			new CourseTreeVisitor(course, ienv).visit(new Visitor() {
 				@Override
 				public void visit(INode node) {
-					if(node instanceof FOCourseNode) {
-						if(node instanceof BCCourseNode) {
-							BCCourseNode bcNode = (BCCourseNode)node;
-							if(nodeKeys.contains(bcNode.getIdent())) {
-								FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
-								folderVOs.add(folder);
-							}
+					if(node instanceof BCCourseNode) {
+						BCCourseNode bcNode = (BCCourseNode)node;
+						if(nodeKeys.contains(bcNode.getIdent())) {
+							FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
+							folderVOs.add(folder);
 						}
 					}
 				}

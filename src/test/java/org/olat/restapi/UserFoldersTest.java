@@ -100,7 +100,7 @@ public class UserFoldersTest extends OlatJerseyTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void myForums() throws IOException, URISyntaxException {
+	public void myFolders() throws IOException, URISyntaxException {
 		final Identity id = JunitTestHelper.createAndPersistIdentityAsUser("my-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
 		
