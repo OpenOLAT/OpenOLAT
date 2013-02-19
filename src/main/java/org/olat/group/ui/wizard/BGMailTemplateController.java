@@ -139,14 +139,16 @@ public class BGMailTemplateController extends FormBasicController {
 				}
 			}
 			
-			bodyElem.clearError();
-			if (bodyElem.getValue().trim().length() == 0) {
-				bodyElem.setErrorKey("mailtemplateform.error.emptyfield", null);
-				allOk &= false;
-			}
-			if (bodyElem.getValue().indexOf("#") != -1) {
-				bodyElem.setErrorKey("mailtemplateform.error.velocity", null);
-				allOk &= false;
+			if(bodyElem != null) {
+				bodyElem.clearError();
+				if (bodyElem.getValue().trim().length() == 0) {
+					bodyElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+					allOk &= false;
+				}
+				if (bodyElem.getValue().indexOf("#") != -1) {
+					bodyElem.setErrorKey("mailtemplateform.error.velocity", null);
+					allOk &= false;
+				}
 			}
 		}
 		return allOk && super.validateFormLogic(ureq);
