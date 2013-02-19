@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.components.stack.StackedControllerAware;
@@ -86,7 +87,7 @@ public class QuestionListController extends FormBasicController implements Stack
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("item.key", true, "key"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("item.subject", true, "subject"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select"));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", "Selectoo", "select-item"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("mark"));
 
 		model = new QuestionItemDataModel(columnsModel, this);
@@ -130,9 +131,13 @@ public class QuestionListController extends FormBasicController implements Stack
 		} else if(source == itemsTable) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				QuestionItemRow row = model.getObject(se.getIndex());
-				QuestionItem item = row.getItem();
-				fireEvent(ureq, new QuestionEvent(se.getCommand(), item));
+				if("rSelect".equals(se.getCommand())) {
+					QuestionItemRow row = model.getObject(se.getIndex());
+					fireEvent(ureq, new QuestionEvent(se.getCommand(), row.getItem()));
+				} else if("select-item".equals(se.getCommand())) {
+					QuestionItemRow row = model.getObject(se.getIndex());
+					doSelect(ureq, row.getItem());
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

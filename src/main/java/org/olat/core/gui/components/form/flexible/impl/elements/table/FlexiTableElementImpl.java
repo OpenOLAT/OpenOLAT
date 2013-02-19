@@ -35,7 +35,6 @@ import java.util.Set;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -136,7 +135,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			setMultiSelectIndex(selectedIndexArr);
 		}
 
-		String selectedIndex = getRootForm().getRequestParameter("select");
+		String selectedIndex = getRootForm().getRequestParameter("rSelect");
 		if(StringHelper.containsNonWhitespace(selectedIndex)) {
 			int index = selectedIndex.lastIndexOf('-');
 			if(index > 0 && index+1 < selectedIndex.length()) {
@@ -144,18 +143,38 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				doSelect(ureq, Integer.parseInt(pos));
 			}
 		} else {
-			String paramId = component.getFormDispatchId();
-			String value = getRootForm().getRequestParameter(paramId);
-			if (value != null) {
-				//TODO:cg:XXX do something with value TextElement e.g. setValue(value);
-				// mark associated component dirty, that it gets rerendered
-				component.setDirty(true);
+			
+			boolean actionEvent = false;
+			FlexiTableColumnModel colModel = tableModel.getTableColumnModel();
+			for(int i=colModel.getColumnCount(); i-->0; ) {
+				FlexiColumnModel col = colModel.getColumnModel(i);
+				if(col.getAction() != null) {
+					String selectedRowIndex = getRootForm().getRequestParameter(col.getAction());
+					if(StringHelper.containsNonWhitespace(selectedRowIndex)) {
+						doSelect(ureq, col.getAction(), Integer.parseInt(selectedRowIndex));
+						actionEvent = true;
+					}
+				}
+			}
+			
+			if(!actionEvent) {
+				String paramId = component.getFormDispatchId();
+				String value = getRootForm().getRequestParameter(paramId);
+				if (value != null) {
+					//TODO:cg:XXX do something with value TextElement e.g. setValue(value);
+					// mark associated component dirty, that it gets rerendered
+					component.setDirty(true);
+				}
 			}
 		}
 	}
 	
 	protected void doSelect(UserRequest ureq, int index) {
 		getRootForm().fireFormEvent(ureq, new SelectionEvent(ROM_SELECT_EVENT, index, this, FormEvent.ONCLICK));
+	}
+	
+	protected void doSelect(UserRequest ureq, String action, int index) {
+		getRootForm().fireFormEvent(ureq, new SelectionEvent(action, index, this, FormEvent.ONCLICK));
 	}
 	
 	public Set<Integer> getMultiSelectedIndex() {
@@ -212,7 +231,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		//root form not interesting for Static text
 	}
 
-	protected Component getFormItemComponent() {
+	protected FlexiTableComponent getFormItemComponent() {
 		return component;
 	}
 	

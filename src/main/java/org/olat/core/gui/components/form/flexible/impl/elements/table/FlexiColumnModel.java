@@ -46,6 +46,8 @@ public interface FlexiColumnModel {
 	public void setSortKey(String sortedKey);
 
 	public String getHeaderKey();
+	
+	public String getAction();
 
 	public int getAlignment();
 

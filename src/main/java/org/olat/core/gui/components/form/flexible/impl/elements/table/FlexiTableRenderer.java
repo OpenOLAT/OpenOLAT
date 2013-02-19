@@ -92,14 +92,13 @@ class FlexiTableRenderer implements ComponentRenderer {
       .append("		'iDeferLoading': ").append(rows).append(",\n")
       .append("		'sAjaxSource': '").append(ftE.getMapperUrl()).append("',\n")
       .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex ) {\n")
-      .append("			jQuery(nRow).draggable({ ")
-      .append("				containment: '#b_main',")
+      .append("			jQuery(nRow).draggable({ \n")
+      .append("				containment: '#b_main',\n")
+      .append("				cursorAt: {left: 0, top: 0},\n")
       .append("				accept: function(event,ui){ console.log('Accept'); return true; },\n")
       .append("				helper: function(event) {\n")
-      .append("				  return jQuery(\"<div class='ui-widget-header' style='z-index:10000;'>I'm a custom helper</div>\");\n")
-      .append("				},\n")
-      .append("				start: function(event,ui){ console.log('Start'); },\n")
-      .append("				stop: function(event,ui){ console.log('Stop'); }\n")
+      .append("				  return jQuery(\"<div class='ui-widget-header' style='z-index:1000;'>I'm a custom helper</div>\");\n")
+      .append("				}\n")
       .append("			});\n")
       .append("		},\n")
       .append("		'aoColumns': [\n")
@@ -127,7 +126,7 @@ class FlexiTableRenderer implements ComponentRenderer {
       .append("   });\n")
       .append("	  if(!link) {\n")
       .append(FormJSHelper.generateXHRFnCallVariables(rootForm, id, 1))
-      .append("    o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'select',rowId);")
+      .append("    o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'rSelect',rowId);")
       .append("   };")
       .append("	});\n")
       .append("});\n")
@@ -232,7 +231,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 					ftE.addFormItem(formItem);
 				} else {
 					ftE.getTableDataModel().getTableColumnModel().getColumnModel(j).
-						getCellRenderer().render(target, cellValue, translator);
+						getCellRenderer().render(target, cellValue, i, ftC, ubu, translator);
 				}
 				target.append("</td>");
 			}

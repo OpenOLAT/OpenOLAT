@@ -106,7 +106,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 		switch(Cols.values()[col]) {
 			case id: return item.getKey();
 			case subject: return item.getSubject();
-			case select: return item.getSelectLink();
+			case select: return null;//item.getSelectLink();
 			case mark: return item.getMarkLink();
 			default: {
 				return "-";

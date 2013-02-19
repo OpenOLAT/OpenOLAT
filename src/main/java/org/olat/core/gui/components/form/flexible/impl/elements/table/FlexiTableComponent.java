@@ -38,7 +38,7 @@ import org.olat.core.gui.translator.Translator;
 /**
  * @author Christian Guretzki
  */
-class FlexiTableComponent extends FormBaseComponentImpl implements ComponentCollection {
+public class FlexiTableComponent extends FormBaseComponentImpl implements ComponentCollection {
 
 	private ComponentRenderer RENDERER = new FlexiTableRenderer();
 	private FlexiTableElementImpl element;

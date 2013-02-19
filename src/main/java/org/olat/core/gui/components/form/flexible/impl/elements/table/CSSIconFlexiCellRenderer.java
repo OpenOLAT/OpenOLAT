@@ -44,10 +44,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;/**
  */
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.render.RenderResult;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -62,44 +58,6 @@ import org.olat.core.util.StringHelper;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public abstract class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
-		/**
-		 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-		 *      org.olat.core.gui.render.StringOutput,
-		 *      org.olat.core.gui.components.Component,
-		 *      org.olat.core.gui.render.URLBuilder,
-		 *      org.olat.core.gui.translator.Translator,
-		 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-		 */
-		public void render(Renderer renderer, StringOutput target, Component source,
-				URLBuilder ubu, Translator translator, RenderResult renderResult,
-				String[] args) {
-
-		}
-
-		/**
-		 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-		 *      org.olat.core.gui.render.StringOutput,
-		 *      org.olat.core.gui.components.Component,
-		 *      org.olat.core.gui.render.RenderingState)
-		 */
-		public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
-				StringOutput sb, Component source, RenderingState rstate) {
-			// no body on load to render
-		}
-
-		/**
-		 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-		 *      org.olat.core.gui.render.StringOutput,
-		 *      org.olat.core.gui.components.Component,
-		 *      org.olat.core.gui.render.URLBuilder,
-		 *      org.olat.core.gui.translator.Translator,
-		 *      org.olat.core.gui.render.RenderingState)
-		 */
-		public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
-				Component source, URLBuilder ubu, Translator translator,
-				RenderingState rstate) {
-			// no header needed
-		}
 
 	  /**
 	   * Render Date type with Formatter depending on locale. Render all other types with toString. 
@@ -107,20 +65,22 @@ public abstract class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
 	   * @param cellValue
 	   * @param translator
 	   */	
-		public void render(StringOutput target, Object cellValue, Translator translator) {
-			target.append("<span class=\"b_small_icon ");
-			target.append(getCssClass(cellValue));
-			String hoverText = getHoverText(cellValue, translator);
-			if (StringHelper.containsNonWhitespace(hoverText)) {
-				target.append("\" title=\"");
-				target.append(StringEscapeUtils.escapeHtml(hoverText));
-			}
-			target.append("\">");
-			target.append(getCellValue(cellValue));
-			target.append("</span>");			
+	@Override
+	public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+				URLBuilder ubu, Translator translator) {
+		target.append("<span class=\"b_small_icon ");
+		target.append(getCssClass(cellValue));
+		String hoverText = getHoverText(cellValue, translator);
+		if (StringHelper.containsNonWhitespace(hoverText)) {
+			target.append("\" title=\"");
+			target.append(StringEscapeUtils.escapeHtml(hoverText));
 		}
+		target.append("\">");
+		target.append(getCellValue(cellValue));
+		target.append("</span>");			
+	}
 		
-		protected abstract String getCssClass(Object val);
-		protected abstract String getCellValue(Object val);
-		protected abstract String getHoverText(Object val, Translator translator);	
+	protected abstract String getCssClass(Object val);
+	protected abstract String getCellValue(Object val);
+	protected abstract String getHoverText(Object val, Translator translator);	
 }

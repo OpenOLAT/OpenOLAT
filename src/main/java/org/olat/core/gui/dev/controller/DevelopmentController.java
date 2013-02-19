@@ -343,8 +343,8 @@ public class DevelopmentController extends BasicController {
 		String pcid = Renderer.getComponentPrefix(current);
 		sb.append("<div");
 		if (current.isVisible() && current.isDomReplaceable()) {
-			sb.append(" onMouseOver=\"this.style.background='#FFF';o_dbg_mark('").append(pcid)
-			.append("')\" onMouseOut=\"this.style.background='';o_dbg_unmark('").append(pcid).append("')\"");
+			sb.append(" onMouseOver=\"jQuery(this).css('background-color','#f3feff');o_dbg_mark('").append(pcid)
+			.append("')\" onMouseOut=\"jQuery(this).css('background-color','');o_dbg_unmark('").append(pcid).append("')\"");
 		}
 		sb.append(" style=\"color:blue; padding-bottom:2px; font-size:10px\"><div style=\"margin-left:"+marginLeft+"px\">");
 		
@@ -370,10 +370,10 @@ public class DevelopmentController extends BasicController {
 		
 		int pxInd = indent * 25;
 		String pcid = Renderer.getComponentPrefix(current);
-		sb.append("<div");
+		sb.append("<div id='dmt_").append(pcid).append("' ");
 		if (current.isVisible() && current.isDomReplaceable()) {
-			sb.append(" onMouseOver=\"this.style.background='#FFF';o_dbg_mark('").append(pcid)
-			.append("')\" onMouseOut=\"this.style.background='';o_dbg_unmark('").append(pcid).append("')\"");
+			sb.append(" onMouseOver=\"jQuery(this).css('background-color','#f3feff');o_dbg_mark('").append(pcid)
+			.append("')\" onMouseOut=\"jQuery(this).css('background-color','');o_dbg_unmark('").append(pcid).append("')\"");
 		}
 		sb.append(" style=\"color:blue; padding-bottom:2px; font-size:10px\"><div style=\"margin-left:"+pxInd+"px\">");
 		

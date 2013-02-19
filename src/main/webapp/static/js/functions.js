@@ -792,37 +792,34 @@ function b_resizeIframeToMainMaxHeight(iframeId) {
 var o_debu_oldcn, o_debu_oldtt;
 
 function o_debu_show(cn, tt) {
-	if (o_debu_oldcn) o_debu_hide(o_debu_oldcn, o_debu_oldtt);
-	cn.style.border='3px solid #00F'; 
-	cn.style.margin='0px';
-	cn.style.background='#FCFCB8';
-	Element.show(tt);
+	if (o_debu_oldcn){
+		o_debu_hide(o_debu_oldcn, o_debu_oldtt);
+	}
+	jQuery(cn).css('border','3px solid #00F').css('margin','0px').css('background-color','#FCFCB8');
+	jQuery(tt).show();
+
 	o_debu_oldtt = tt;
 	o_debu_oldcn = cn;
 }
 
 function o_debu_hide(cn, tt) {
-	Element.hide(tt);
-	cn.style.border='1px dotted black'; 
-	cn.style.margin='2px';
-	cn.style.background='';
+	jQuery(tt).hide();
+	jQuery(cn).css('border','1px dotted black').css('margin','2px').css('background-color','');
 }
 
 function o_dbg_mark(elid) {
-	var el = $(elid);
-	if (el) { 
-		//el.style.margin='0px';
-		el.style.background='#FCFCB8';
-		el.style.border='3px solid #00F'; 
+	var el = jQuery('#' + elid);
+	if (el) {
+		el.css('background-color','#FCFCB8');
+		el.css('border','3px solid #00F'); 
 	}
 }
 
 function o_dbg_unmark(elid) {
-	var el = $(elid);
+	var el = jQuery('#' + elid);
 	if (el) {
-		//el.style.margin='0px';
-		el.style.border=''; 
-		el.style.background='';
+		el.css('border',''); 
+		el.css('background-color','');
 	}
 }
 
@@ -903,6 +900,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 			}
 		}
 	}
+	
 	
 	var targetUrl = jQuery('#' + formNam).attr("action");
 	jQuery.ajax(targetUrl,{

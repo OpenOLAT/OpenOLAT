@@ -56,7 +56,12 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this.alignment = alignment;
 		this.cellRenderer = cellRenderer;
 	}
-	
+
+	@Override
+	public String getAction() {
+		return null;
+	}
+
 	public String getHeaderKey() {
 		return headerKey;
 	}

@@ -30,13 +30,12 @@ function onTreeDrop(event, ui) {
 function treeAcceptDrop(el) {
 	var dragEl = jQuery(el);
 	var dragElId = dragEl.attr('id');
-	var dropEl = jQuery(this)
-	var dropElId = dropEl.attr('id');//dropped
+	if(dragElId != undefined && (dragElId.indexOf('dd') == 0 ||
+		dragElId.indexOf('ds') == 0 || dragElId.indexOf('dt') == 0 ||
+		dragElId.indexOf('da') == 0 || dragElId.indexOf('row') == 0)) {
 
-	if(dragElId.indexOf('dd') == 0 || dragElId.indexOf('ds') == 0 ||
-		 dragElId.indexOf('dt') == 0 || dragElId.indexOf('da') == 0 ||
-		 dragElId.indexOf('row') == 0) {
-		
+		var dropEl = jQuery(this)
+		var dropElId = dropEl.attr('id');//dropped
 		var dragNodeId = dragElId.substring(2, dragElId.length);
 		var dropId = dropElId.substring(2, dropElId.length);
 		if(dragNodeId == dropId) {
@@ -54,10 +53,10 @@ function treeAcceptDrop(el) {
 			var url = dropEl.droppable('option', 'fbUrl');
 			//use prototype for the Ajax call
 			jQuery.ajax(url, { 
-				method:'GET',
+				async: false,
 				data: { nidle:dragNodeId, tnidle:dropId, sne:sibling },
 				dataType: "json",
-				async: false,
+				method:'GET',
 				success: function(data) {
 					dropAllowed = data.dropAllowed;
 				}

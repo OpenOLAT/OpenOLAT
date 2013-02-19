@@ -136,7 +136,7 @@ public class TableRenderer implements ComponentRenderer {
 		// Comment CDATA section to make it work with prototype's stripScripts method !
 		if (!usePageing && rows > 1000) {
 			target.append("<script type=\"text/javascript\">/* <![CDATA[ */\n ");
-			target.append("Ext.onReady(function() { $('b_overflowscrollbox_").append(source.hashCode()).append("').setStyle({'height': b_viewportHeight()/3*2 + 'px'});});");
+			target.append("jQuery(function() { jQuery('#b_overflowscrollbox_").append(source.hashCode()).append("').height(b_viewportHeight()/3*2);});");
 			target.append("/* ]]> */\n</script>");
 		}
 	}
@@ -252,7 +252,7 @@ public class TableRenderer implements ComponentRenderer {
 
 			cssClass = defineCssClassDependingOnRow(startRowId, lastVisibleRowId, i);
 			// VCRP-16
-			TableDataModel model = table.getTableDataModel();
+			TableDataModel<?> model = table.getTableDataModel();
 			if (model instanceof TableDataModelWithMarkableRows) {
 				TableDataModelWithMarkableRows markableModel = (TableDataModelWithMarkableRows) model;
 				String rowCss = markableModel.getRowCssClass(i);

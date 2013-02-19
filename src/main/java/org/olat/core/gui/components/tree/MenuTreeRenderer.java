@@ -145,7 +145,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		}
 		String ident = curRoot.getIdent();
 		target.append("\"><div id='dd").append(ident).append("' class=\"b_tree_item_wrapper");
-		if(tree.isDragEnabled() || tree.isDropEnabled()) {
+		if(tree.isDragEnabled()) {
 			target.append(" b_dd_item");
 		}
 		if(selected) {
@@ -266,7 +266,10 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		// display title and close menu item
 		target.append("<span");
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
-			target.append(" class='b_dd_item' id='da").append(ident).append("'");
+			if(tree.isDragEnabled()) {
+				target.append(" class='b_dd_item'");
+			}
+			target.append(" id='da").append(ident).append("'");
 		}
 		target.append(">");
 		if(title != null && title.equals("")) title = "&nbsp;";

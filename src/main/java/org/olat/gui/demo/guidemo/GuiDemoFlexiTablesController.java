@@ -38,19 +38,22 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.CustomFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -231,8 +234,10 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 	 * boolean value.
 	 * @author guretzki
 	 */
-	private class ExampleCustomFlexiCellRenderer extends CustomFlexiCellRenderer {
-		public void render(StringOutput target, Object cellValue, Translator translator) {
+	private class ExampleCustomFlexiCellRenderer implements FlexiCellRenderer {
+		@Override
+		public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+				URLBuilder ubu, Translator translator) {
 			if (cellValue instanceof Boolean) {
 				if ( ((Boolean)cellValue).booleanValue() ) {
 					target.append("<img src=\"");
