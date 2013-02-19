@@ -51,7 +51,6 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="enabled" value="${instantMessaging.enable}"/>
 		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 	</bean>
 	
