@@ -210,8 +210,8 @@ public class FunctionalBlogTest {
 		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
 		Assert.assertTrue(functionalAdministrationSiteUtil.clearCache(browser,
 				new String[]{
-				"SingleVMCacher@org.olat.modules.webFeed.dispatching.Path_feed__0",
-				"SingleVMCacher@org.olat.modules.webFeed.managers.FeedManagerImpl_feed__0"
+				"FeedManager@feed",
+				"Path@feed"
 				}
 		));
 

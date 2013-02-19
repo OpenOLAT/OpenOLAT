@@ -33,12 +33,11 @@ public class FunctionalAdministrationSiteUtil {
 	private final static OLog log = Tracing.createLoggerFor(FunctionalAdministrationSiteUtil.class);
 	
 	public enum AdministrationSiteAction {
-		INFORMATION("o_sel_sysinfo"),
-		CONFIGURATION("o_sel_sysconfig"),
-		MAINTENANCE("o_sel_sysadmin"),
+		SYSTEM("o_sel_system"),
+		CORE_FUNCTIONS("o_sel_sysconfig"),
+		MODULES("o_sel_modules"),
 		CUSTOMIZATION("o_sel_customizing"),
-		ADVANCED_PROPERTIES("o_sel_advancedproperties"),
-		BOOKINGS("o_sel_booking");
+		DEVELOPMENT("o_sel_devel");
 		
 		private String actionCss;
 		
@@ -55,24 +54,18 @@ public class FunctionalAdministrationSiteUtil {
 		}
 	}
 	
-	public enum SystemConfigurationAction {
-		LAYOUT("o_sel_layout"),
-		LANGUAGES("o_sel_i18n"),
-		QUOTA("o_sel_quota"),
-		VERSIONIG("o_sel_versioning"),
-		PORTFOLIO("o_sel_portfolio"),
-		RESAPI("o_sel_restapi"),
-		EXTENSIONS("o_sel_extensions"),
-		EMAIL("o_sel_mail"),
-		VITERO("o_sel_vitero"),
-		SETUP("o_sel_properties"),
-		SELF_REGISTRATION("o_sel_selfregistration"),
-		PAYPAL("o_sel_paypal"),
-		GROUP("o_sel_group");
+	public enum SystemAction {
+		SYSTEM_INFO("o_sel_sysinfo"),
+		SESSIONS("o_sel_sessions"),
+		ERRORS("o_sel_errors"),
+		CACHES("o_sel_caches"),
+		LOCKS("o_sel_locks"),
+		HIBERNATE("o_sel_hibernate"),
+		JAVAVM("o_sel_javavm");
 		
 		private String actionCss;
 		
-		SystemConfigurationAction(String actionCss){
+		SystemAction(String actionCss){
 			setActionCss(actionCss);
 		}
 
@@ -85,7 +78,13 @@ public class FunctionalAdministrationSiteUtil {
 		}
 	}
 	
-	public enum SystemMaintenanceAction {
+	public enum CoreFunctionsAction {
+		LANGUAGES("o_sel_i18n"),
+		QUOTA("o_sel_quota"),
+		VERSIONIG("o_sel_versioning"),
+		RESTAPI("o_sel_restapi"),
+		EMAIL("o_sel_mail"),
+		SELF_REGISTRATION("o_sel_selfregistration"),
 		STATISTICS("o_sel_statistics"),
 		SEARCH("o_sel_search"),
 		NOTIFICATIONS("o_sel_notifications"),
@@ -93,7 +92,7 @@ public class FunctionalAdministrationSiteUtil {
 		
 		private String actionCss;
 		
-		SystemMaintenanceAction(String actionCss){
+		CoreFunctionsAction(String actionCss){
 			setActionCss(actionCss);
 		}
 
@@ -106,13 +105,59 @@ public class FunctionalAdministrationSiteUtil {
 		}
 	}
 	
-	public enum CustomizingAction {
+	public enum ModulesAction {
+		PORTFOLIO("o_sel_portfolio"),
+		VITERO("o_sel_vitero"),
+		OPENMEETINGS("o_sel_openmeetings"),
+		PAYPAL("o_sel_paypal"),
+		BOOKING("o_sel_booking"),
+		GROUP("o_sel_group"),
+		CATALOG("o_sel_catalog");
+		
+		private String actionCss;
+		
+		ModulesAction(String actionCss){
+			setActionCss(actionCss);
+		}
+
+		public String getActionCss() {
+			return actionCss;
+		}
+
+		public void setActionCss(String actionCss) {
+			this.actionCss = actionCss;
+		}
+	}
+	
+	public enum CustomizationAction {
+		LAYOUT("o_sel_layout"),
 		TRANSLATION("o_sel_translation"),
 		REGISTRATION("o_sel_registration");
 		
 		private String actionCss;
 		
-		CustomizingAction(String actionCss){
+		CustomizationAction(String actionCss){
+			setActionCss(actionCss);
+		}
+
+		public String getActionCss() {
+			return actionCss;
+		}
+
+		public void setActionCss(String actionCss) {
+			this.actionCss = actionCss;
+		}
+	}
+	
+	public enum DevelopmentAction {
+		EXTENSIONS("o_sel_extensions"),
+		PROPERTIES("o_sel_properties"),
+		ADVANCED_PROPERTIES("o_sel_advancedproperties"),
+		SNOOP("o_sel_snoop");
+		
+		private String actionCss;
+		
+		DevelopmentAction(String actionCss){
 			setActionCss(actionCss);
 		}
 
@@ -155,27 +200,49 @@ public class FunctionalAdministrationSiteUtil {
 	 */
 	public boolean openActionByMenuTree(Selenium browser, Object action){
 		functionalUtil.idle(browser);
-		
+
 		StringBuffer selectorBuffer;
-		
+
 		if(action instanceof AdministrationSiteAction){
-			 selectorBuffer = new StringBuffer();
-			
+			selectorBuffer = new StringBuffer();
+
 			selectorBuffer.append("xpath=//li[contains(@class, '")
 			.append(((AdministrationSiteAction) action).getActionCss())
 			.append("')]//a[contains(@class, '")
 			.append(functionalUtil.getTreeLevel1Css())
 			.append("')]");
-		}else if(action instanceof SystemConfigurationAction){
-			/* check if not collapsed */
-			 selectorBuffer = new StringBuffer();
+		}else{
+			String actionL1Css = null;
+			String actionL2Css = null;
 			
-			 selectorBuffer.append("xpath=//li[contains(@class, '")
-			 .append(AdministrationSiteAction.CONFIGURATION.getActionCss())
-			 .append("')]//a[contains(@class, '")
-			 .append(functionalUtil.getTreeLevelOpenCss())
-			 .append("')]");
-			 
+			if(action instanceof SystemAction){
+				actionL1Css = AdministrationSiteAction.SYSTEM.getActionCss();
+				actionL2Css = ((SystemAction) action).getActionCss();
+			}else if(action instanceof CoreFunctionsAction){
+				actionL1Css = AdministrationSiteAction.CORE_FUNCTIONS.getActionCss();
+				actionL2Css = ((CoreFunctionsAction) action).getActionCss();
+			}else if(action instanceof ModulesAction){
+				actionL1Css = AdministrationSiteAction.MODULES.getActionCss();
+				actionL2Css = ((ModulesAction) action).getActionCss();
+			}else if(action instanceof CustomizationAction){
+				actionL1Css = AdministrationSiteAction.CUSTOMIZATION.getActionCss();
+				actionL2Css = ((SystemAction) action).getActionCss();
+			}else if(action instanceof DevelopmentAction){
+				actionL1Css = AdministrationSiteAction.DEVELOPMENT.getActionCss();
+				actionL2Css = ((DevelopmentAction) action).getActionCss();
+			}else{
+				return(false);
+			}
+			
+			/* check if not collapsed */
+			selectorBuffer = new StringBuffer();
+
+			selectorBuffer.append("xpath=//li[contains(@class, '")
+			.append(actionL1Css)
+			.append("')]//a[contains(@class, '")
+			.append(functionalUtil.getTreeLevelOpenCss())
+			.append("')]");
+
 			if(browser.isElementPresent(selectorBuffer.toString())){
 				browser.click(selectorBuffer.toString());
 				functionalUtil.idle(browser);
@@ -183,56 +250,12 @@ public class FunctionalAdministrationSiteUtil {
 
 			/* click */
 			selectorBuffer = new StringBuffer();
-			
-			selectorBuffer.append("xpath=//li[contains(@class, '")
-			.append(((SystemConfigurationAction) action).getActionCss())
-			.append("')]//a[contains(@class, '")
-			.append(functionalUtil.getTreeLevel2Css())
-			.append("')]");
-		}else if(action instanceof SystemMaintenanceAction){
-			/* check if not collapsed */
-			 selectorBuffer = new StringBuffer();
-			
-			 selectorBuffer.append("xpath=//li[contains(@class, '")
-			 .append(AdministrationSiteAction.MAINTENANCE.getActionCss())
-			 .append("')]//a[contains(@class, '")
-			 .append(functionalUtil.getTreeLevelOpenCss())
-			 .append("')]");
-			 
-			if(browser.isElementPresent(selectorBuffer.toString())){
-				browser.click(selectorBuffer.toString());
-				functionalUtil.idle(browser);
-			}
 
-			/* click */
 			selectorBuffer.append("xpath=//li[contains(@class, '")
-			.append(((SystemMaintenanceAction) action).getActionCss())
+			.append(actionL2Css)
 			.append("')]//a[contains(@class, '")
 			.append(functionalUtil.getTreeLevel2Css())
 			.append("')]");
-		}else if(action instanceof CustomizingAction){
-			/* check if not collapsed */
-			 selectorBuffer = new StringBuffer();
-			
-			 selectorBuffer.append("xpath=//li[contains(@class, '")
-			 .append(AdministrationSiteAction.CUSTOMIZATION.getActionCss())
-			 .append("')]//a[contains(@class, '")
-			 .append(functionalUtil.getTreeLevelOpenCss())
-			 .append("')]");
-			 
-			if(browser.isElementPresent(selectorBuffer.toString())){
-				browser.click(selectorBuffer.toString());
-				functionalUtil.idle(browser);
-			}
-
-			/* click */
-			selectorBuffer.append("xpath=//li[contains(@class, '")
-			.append(((CustomizingAction) action).getActionCss())
-			.append("')]//a[contains(@class, '")
-			.append(functionalUtil.getTreeLevel2Css())
-			.append("')]");
-		}else{
-			return(false);
 		}
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
@@ -253,15 +276,13 @@ public class FunctionalAdministrationSiteUtil {
 			return(false);
 		}
 		
-		if(!openActionByMenuTree(browser, AdministrationSiteAction.INFORMATION)){
+		if(!openActionByMenuTree(browser, AdministrationSiteAction.SYSTEM)){
 			return(false);
 		}
 		
-		if(!functionalUtil.openContentTab(browser, SystemInformationTabs.CACHES.ordinal())){
+		if(!openActionByMenuTree(browser, SystemAction.CACHES)){
 			return(false);
 		}
-		
-		functionalUtil.idle(browser);
 		
 		/* click show all*/
 		StringBuffer selectorBuffer = new StringBuffer();
