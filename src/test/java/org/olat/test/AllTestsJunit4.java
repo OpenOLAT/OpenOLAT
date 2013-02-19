@@ -45,7 +45,6 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
 	org.olat.core.util.i18n.I18nTest.class,
 	// org.olat.core.util.mail.MailTest.class, // redisabled since mails are sent despite the fact that the whitelist is enabled
-	org.olat.core.util.locks.SynchManagerTest.class,
 	org.olat.core.gui.components.table.MultiSelectColumnDescriptorTest.class,
 	org.olat.core.gui.components.table.TableEventTest.class,
 	org.olat.core.gui.components.table.TableMultiSelectEventTest.class,

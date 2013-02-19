@@ -38,7 +38,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
@@ -55,9 +54,7 @@ public class PLockTest extends OlatTestCase {
 
 	private static final int MAX_COUNT = 5; //5; //30;
 	private static final int MAX_USERS_MORE = 20; //20; //100;
-	
-	private static Logger log = Logger.getLogger(PLockTest.class.getName());
-	
+
 	
 	@Test public void testReentrantLock() {
 		long start = System.currentTimeMillis();
@@ -439,7 +436,7 @@ public class PLockTest extends OlatTestCase {
 			};
 			new Thread(r).start();
 		}	
-		int i;
+
 		// 4. wait till all are finished or it takes too long
 		try {
 			boolean interrupt = doneSignal.await(20, TimeUnit.SECONDS);
