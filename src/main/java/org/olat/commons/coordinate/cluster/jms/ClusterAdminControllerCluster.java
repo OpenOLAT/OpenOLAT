@@ -193,7 +193,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 		releaseAllLocksFor = LinkFactory.createButtonSmall("releaseAllLocksFor", mainVc, this);
 		
 		mainVc.contextPut("eventBusListener", clusBus.toString());
-		mainVc.contextPut("busListenerInfos", clusBus.busInfos.getAsString());
+		mainVc.contextPut("busListenerInfos", clusBus.getBusInfosAsString());
 		
 		putInitialPanel(mainVc);
 	}
@@ -208,7 +208,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 		nodeInfoVc.contextPut("stats",li);
 		nodeInfoVc.contextPut("thisNodeId", clusBus.clusterConfig.getNodeId());
 		mainVc.contextPut("eventBusListener", clusBus.toString());
-		mainVc.contextPut("busListenerInfos", clusBus.busInfos.getAsString());
+		mainVc.contextPut("busListenerInfos", clusBus.getBusInfosAsString());
 	}
 	
 	void updatePerfInfos() {

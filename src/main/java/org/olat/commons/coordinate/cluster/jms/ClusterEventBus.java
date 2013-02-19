@@ -26,7 +26,6 @@ package org.olat.commons.coordinate.cluster.jms;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +52,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.cluster.ClusterConfig;
 import org.olat.core.util.event.AbstractEventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -69,7 +67,7 @@ import org.olat.core.util.resource.OresHelper;
  * @author Felix Jost
  */
 public class ClusterEventBus extends AbstractEventBus implements MessageListener, GenericEventListener {
-	static OLog log = Tracing.createLoggerFor(ClusterEventBus.class);
+	private static final OLog log = Tracing.createLoggerFor(ClusterEventBus.class);
 	//ores helper is limited to 50 character, so truncate it
 	static final OLATResourceable CLUSTER_CHANNEL = OresHelper.createOLATResourceableType(ClusterEventBus.class.getName().substring(0, 50));
 
@@ -95,7 +93,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	private int maxListSize = 10; // how many entries are kept in the outbound/inbound history. Just for administrative purposes
 	
 	// for bookkeeping how many resources have how many listeners
-	BusListenerInfos busInfos = new BusListenerInfos();
+	private final BusListenerInfos busInfos = new BusListenerInfos();
 	protected boolean isClusterInfoEventThreadRunning = true;
 	private ConnectionFactory connectionFactory;
 	private Topic destination;
@@ -110,9 +108,8 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	private final SimpleProbe mrtgProbeJMSProcessingTime_ = new SimpleProbe();
 	
 	private final SimpleProbe mrtgProbeJMSEnqueueTime_ = new SimpleProbe();
-	final LinkedList<Object> incomingMessagesQueue_ = new LinkedList<Object>();
-	
-	private final static int LIMIT_ON_INCOMING_MESSAGE_QUEUE = 200;
+	//final LinkedList<Object> incomingMessagesQueue_ = new LinkedList<Object>();
+	//private final static int LIMIT_ON_INCOMING_MESSAGE_QUEUE = 200;
 	
 	/**
 	 * [used by spring]
@@ -166,9 +163,9 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		t.setDaemon(true); // VM can shutdown even when this thread is still running
 		t.start();
 		// register to listen for other nodes' clusterinfoevents
-		this.registerFor(this, null, CLUSTER_CHANNEL);
+		registerFor(this, null, CLUSTER_CHANNEL);
 		
-		
+		/*
 		Thread serveThread = new Thread(new Runnable() {
 
 			public void run() {
@@ -210,6 +207,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		});
 		serveThread.setDaemon(true);
 		serveThread.start();
+		*/
 	}
 	
 	public SimpleProbe getMrtgProbeJMSDeliveryTime() {
@@ -272,12 +270,12 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		nodeId = clusterConfig.getNodeId();
 		try {
 			//<XXX> TODO: cg/18.11.2008 ev JMS performance bottleneck; Do not check message-sequence => remove sync-block
-			synchronized (this) { //cluster_ok needed, not atomar read in one vm
+			//TODO jms synchronized (this) { //cluster_ok needed, not atomar read in one vm
 				msgId = ++latestSentMsgId;
 				ObjectMessage message = session.createObjectMessage();
 				message.setObject(new JMSWrapper(nodeId, msgId, ores, event));
 				producer.send(message);
-			}
+			//TODO jms }
 		} catch (Exception e) {
 			// cluster:::: what shall we do here: the JMS bus is broken! and we thus cannot know if other nodes are alive.
 			// if we are the only node running, then we could continue.
@@ -303,7 +301,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 * we receive a message here on the topic reserved for olat system bus messages. 
 	 */
 	public void onMessage(Message message) {
-		synchronized(incomingMessagesQueue_) {
+		/*synchronized(incomingMessagesQueue_) {
 			while(incomingMessagesQueue_.size()>LIMIT_ON_INCOMING_MESSAGE_QUEUE) {
 				try {
 					incomingMessagesQueue_.wait();
@@ -314,6 +312,20 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			incomingMessagesQueue_.addFirst(message);
 			incomingMessagesQueue_.addFirst(System.currentTimeMillis());
 			incomingMessagesQueue_.notifyAll();
+		}*/
+		
+		try{
+			serveMessage(message, -1);
+		} catch(RuntimeException re) {
+			log.error("RuntimeException enountered by serve-thread:", re);
+		} catch(Error er) {
+			log.error("Error enountered by serve-thread:", er);
+		} finally {
+			try {
+				DBFactory.getInstance().commitAndCloseSession();
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 	}
 	
@@ -382,7 +394,6 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			//TODO jms if (!fromSameNode) {
 				// distribute the unmarshalled event to all JVM wide listeners for this channel.
 				doFire(event, ores);
-				DBFactory.getInstance(false).commitAndCloseSession();
 			//TODO jms } // else message already sent "in-vm"
 			
 			// stats
@@ -514,6 +525,10 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 				msgsReceived.remove(0);
 			}
 		}
+	}
+	
+	public String getBusInfosAsString() {
+		return busInfos.getAsString();
 	}
 	
 	/**

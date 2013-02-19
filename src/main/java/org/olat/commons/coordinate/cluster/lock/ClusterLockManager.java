@@ -114,12 +114,12 @@ public class ClusterLockManager extends BasicManager {
 		log.info("releaseAllLocksFor: " + identityKey + " START");	
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete from org.olat.commons.coordinate.cluster.lock.LockImpl alock where alock.owner.key=:ownerKey");
-		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+		int locks = dbInstance.getCurrentEntityManager().createQuery(sb.toString())
 			.setParameter("ownerKey", identityKey)
 			.executeUpdate();
 		// cluster:: can we save a query (and is it appropriate considering encapsulation) 
 		// here by saying: alock.owner as owner where owner.name = ? (using identName parameter)
-		log.info("releaseAllLocksFor: "+identityKey+" END");
+		log.info("releaseAllLocksFor: "+identityKey+" END (" + locks + " locks deleted)");
 	}
 
 }

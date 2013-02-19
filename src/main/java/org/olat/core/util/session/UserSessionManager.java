@@ -343,10 +343,16 @@ public class UserSessionManager implements GenericEventListener {
 	 * called to make sure the current authenticated user (if there is one at all)
 	 * is cleared and signed off. This method is firing the SignOnOffEvent Multiuserevent.
 	 */
-	public synchronized void signOffAndClear(UserSession usess) {  //o_clusterOK by:fj
+	public void signOffAndClear(UserSession usess) {  //o_clusterOK by:fj
+		internSignOffAndClear(usess);
+		//commit all changes after sign off, especially commit lock which were
+		//deleted by dispose methods
+		dbInstance.commit();
+	}
+	
+	private void internSignOffAndClear(UserSession usess) {
 		boolean isDebug = log.isDebug();
 		if(isDebug) log.debug("signOffAndClear() START");
-		//
 		
 		signOffAndClearWithout(usess);
 		// handle safely
@@ -468,9 +474,6 @@ public class UserSessionManager implements GenericEventListener {
 			}
 		}
 		
-		//commit all changes after sign off, especially commit lock which were
-		//deleted by dispose methods
-		dbInstance.commit();
 		if (isDebug) log.debug("signOffAndClearWithout() END");
 	}
 
@@ -539,7 +542,7 @@ public class UserSessionManager implements GenericEventListener {
 			if (userRoles != null && !userRoles.isOLATAdmin()) {
 				//do not logout administrators
 				try {
-					signOffAndClear(userSession);
+					internSignOffAndClear(userSession);
 					if(userSession.getSessionInfo() != null && userSession.getSessionInfo().getSession() != null) {
 						userSession.getSessionInfo().getSession().invalidate();
 					}
@@ -577,7 +580,7 @@ public class UserSessionManager implements GenericEventListener {
 			try {
 				UserSession userSession = (UserSession) iterator.next();
 				if (!userSession.getRoles().isOLATAdmin() && !userSession.getSessionInfo().isWebDAV()) {
-					signOffAndClear(userSession);
+					internSignOffAndClear(userSession);
 					invalidateCounter++;
 				}
 			} catch (Throwable th) {
