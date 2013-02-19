@@ -51,10 +51,10 @@ public class FunctionalUtil {
 	public final static long POLL_INTERVAL = 100;
 	
 	public enum WaitLimitAttribute {
-		NORMAL("0"),
-		EXTENDED("5000"),
-		SAVE("10000"),
-		VERY_SAVE("20000");
+		NORMAL("10000"),
+		EXTENDED("20000"),
+		SAVE("30000"),
+		VERY_SAVE("60000");
 		
 		private String extend;
 		private long extendAsLong;

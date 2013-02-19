@@ -1037,7 +1037,9 @@ public class FunctionalRepositorySiteUtil {
 		.append(getRepositoryPopupCss())
 		.append("')]//form//div[contains(@class, '")
 		.append(getRepositorySaveDetailsCss())
-		.append("')]//button)[1]");
+		.append("')]//button[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')])[1]");
 		
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
@@ -1055,7 +1057,7 @@ public class FunctionalRepositorySiteUtil {
 		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		
 		browser.click(selectorBuffer.toString());
-		
+
 		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
 		
 		return(true);

@@ -422,4 +422,18 @@ public class FunctionalGroupTest {
 		functionalUtil.idle(student0);
 		functionalUtil.logout(student0);
 	}
+	
+	@Ignore
+	@Test
+	@RunAsClient
+	public void checkInvitation(){
+		//TODO:JK: implement me
+	}
+	
+	@Ignore
+	@Test
+	@RunAsClient
+	public void checkVisitingCard(){
+		//TODO:JK: implement me
+	}
 }
