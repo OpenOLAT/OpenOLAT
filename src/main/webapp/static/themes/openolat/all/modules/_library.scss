@@ -32,9 +32,9 @@ div.f_library_catalog {
 			@include o-border-radius(4px);
 			@include o-box-shadow(0,1px,2px,#D3D3D3);
 			
-			div.f_thumbnail {float:left; border-right:1px solid #eeeeee; }
+			div.f_thumbnail {float:left; border-right:1px solid #eeeeee; margin-right: 1em;}
 			div.f_thumbnail_inner { width:200px; height:200px; }
-			div.f_thumbnail_unavailable { width:200px; height:200px; background-image:url(../openolat/images/no_preview.png); background-repeat:no-repeat; background-position:50% 50%;  }
+			div.f_thumbnail_unavailable { width:200px; height:200px; background-repeat:no-repeat; background-position:50% 50%;  }
 			
 			div.f_metadata_text { padding-bottom: 35px; }
 			div.f_metadata_text_inner { width:100%; }
@@ -65,15 +65,30 @@ div.f_library_catalog {
 div.f_library_overview {
 	img { float: right; max-width: 50%; }
 	p {padding-left: 20px;}
-	div.f_library_big_icon { float:right; width: 425px; height: 282px; background: url(../openolat/images/library_image.png) no-repeat;}
-	
+	div.f_library_big_icon { 
+		float:right; 
+		background-repeat:  no-repeat;
+	   	background-size: 100%;
+		/*
+		width: 425px; 
+		height: 282px; 
+		*/
+		width: 45%; /* scale dynamically */
+		height: 300px; /* can not scale dynamically, thus make large enough */
+		margin: 0 20px 0 20px;
+	}
+		
 	div.f_library_newest_files ul li {
 		white-space: normal; padding-bottom: 0.3em;
 		a { background-position: top left; min-height: 16px; }
 	}
 }
 
-.f_library_icon { background-image: url(../openolat/images/library.png) }
+
+/* icons */
+.f_library_big_icon { background-image: url(../openolat/images/library_image.png); }
+.f_library_icon { background-image: url(../openolat/images/library.png); }
+.f_thumbnail_unavailable { background-image:url(../openolat/images/no_preview.png); }
 	
 	
 	
