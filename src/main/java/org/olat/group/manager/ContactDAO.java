@@ -19,7 +19,10 @@
  */
 package org.olat.group.manager;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
@@ -46,6 +49,29 @@ public class ContactDAO {
 
 	@Autowired
 	private DB dbInstance;
+	
+	
+	public Collection<Long> getDistinctGroupOwnersParticipants(Identity me) {
+		List<Long> owners = getMembersForCount(me, BusinessGroupOwnerViewImpl.class);
+		List<Long> participants = getMembersForCount(me, BusinessGroupParticipantViewImpl.class);
+		Set<Long> contacts = new HashSet<Long>(participants);
+		contacts.addAll(owners);
+		return contacts;
+	}
+	
+	private List<Long> getMembersForCount(Identity me, Class<?> cl) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(memv.identityKey) from ").append(cl.getName()).append(" memv ")
+		  .append(" where memv.ownerSecGroupKey in (")
+		  .append("   select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey")
+		  .append(" ) or memv.participantSecGroupKey in (")
+		  .append("   select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey")
+		  .append(" )");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("identKey", me.getKey())
+				.getResultList();
+	}
 
 	public List<BusinessGroupOwnerViewImpl> getGroupOwners(Identity me) {
 		return getMembers(me, BusinessGroupOwnerViewImpl.class);
@@ -60,8 +86,7 @@ public class ContactDAO {
 		sb.append("select memv from ").append(cl.getName()).append(" memv ")
 		  .append(" where memv.ownerSecGroupKey in (")
 		  .append("   select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey")
-		  .append(" ) or")
-		  .append(" memv.participantSecGroupKey in (")
+		  .append(" ) or memv.participantSecGroupKey in (")
 		  .append("   select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey")
 		  .append(" )");
 		

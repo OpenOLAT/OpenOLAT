@@ -55,8 +55,6 @@ public interface InstantMessagingService {
 	
 	public Buddy getBuddyById(Long identityKey);
 	
-	public List<Buddy> getOnlineBuddies();
-	
 	/**
 	 * Return the list of users who are chating
 	 * @param chatResource
