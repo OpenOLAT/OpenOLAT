@@ -764,7 +764,10 @@ public class CourseFactory extends BasicManager {
 			 StatusDescription[] status = publishProcess.testPublishSet(locale);
 			 //publish not possible when there are errors
 			 for(int i = 0; i < status.length; i++) {
-				 if(status[i].isError()) return;
+				 if(status[i].isError()) {
+					 log.error("Status error by publish: " + status[i].getLongDescription(locale));
+					 return;
+				 }
 			 }
 		 }
 

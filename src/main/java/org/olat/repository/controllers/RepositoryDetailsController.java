@@ -205,11 +205,15 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		main = createVelocityContainer("details");
 		
 		downloadButton = LinkFactory.createButton("details.download", main, this);
+		downloadButton.setElementCssClass("o_sel_repo_download_button");
 		LinkFactory.markDownloadLink(downloadButton);
 		launchButton = LinkFactory.createButton("details.launch", main, this);
+		launchButton.setElementCssClass("o_sel_repo_launch_button");
 		
 		backLink = LinkFactory.createLinkBack(main, this);
+		backLink.setElementCssClass("o_sel_repo_back_button");
 		loginLink = LinkFactory.createLink("repo.login", main, this);
+		loginLink.setElementCssClass("o_sel_repo_login_button");
 		
 		putInitialPanel(main);
 	}
@@ -448,14 +452,15 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		if (isNewController) {
 			detailsToolC.addHeader(translate("tools.details.header"));
-			detailsToolC.addLink(ACTION_LAUNCH, translate("details.launch"), TOOL_LAUNCH, null);
+			detailsToolC.addLink(ACTION_LAUNCH, translate("details.launch"), TOOL_LAUNCH, null, "o_sel_repo_launch", false);
 		}
 		detailsToolC.setEnabled(TOOL_LAUNCH, checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
 		if (!isGuestOnly) {
 			if (isNewController) {
 				//mark as download link
-				detailsToolC.addLink(ACTION_DOWNLOAD, translate("details.download"), TOOL_DOWNLOAD, null, true);
-				detailsToolC.addLink(ACTION_DOWNLOAD_BACKWARD_COMPAT, translate("details.download.compatible"), TOOL_DOWNLOAD_BACKWARD_COMPAT, null, true);
+				detailsToolC.addLink(ACTION_DOWNLOAD, translate("details.download"), TOOL_DOWNLOAD, null, "o_sel_repo_download", true);
+				detailsToolC.addLink(ACTION_DOWNLOAD_BACKWARD_COMPAT, translate("details.download.compatible"), TOOL_DOWNLOAD_BACKWARD_COMPAT,
+						null, "o_sel_repo_download_backward", true);
 				//bookmark
 				boolean marked = markManager.isMarked(repositoryEntry, getIdentity(), null);
 				String css = marked ? "b_mark_set" : "b_mark_not_set";
@@ -490,11 +495,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 						detailsToolC.addLink(ACTION_EDITDESC, translate("details.chdesc"), TOOL_CHDESC, null, "o_sel_repo_edit_descritpion", false);
 						detailsToolC.addLink(ACTION_EDITPROP, translate("details.chprop"), TOOL_CHPROP, null, "o_sel_repor_edit_properties", false);
 					}
-					detailsToolC.addLink(ACTION_ADD_CATALOG, translate("details.catadd"), TOOL_CATALOG, null);
+					detailsToolC.addLink(ACTION_ADD_CATALOG, translate("details.catadd"), TOOL_CATALOG, null, "o_sel_repo_add_to_catalog", false);
 					
 					detailsToolC.addHeader(translate("table.action"));
 					if ((OresHelper.isOfType(repositoryEntry.getOlatResource(), CourseModule.class)) && (!RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed())) {
-						detailsToolC.addLink(ACTION_CLOSE_RESSOURCE, translate("details.close.ressoure"), TOOL_CLOSE_RESSOURCE, null);
+						detailsToolC.addLink(ACTION_CLOSE_RESSOURCE, translate("details.close.ressoure"), TOOL_CLOSE_RESSOURCE, null, "o_sel_repo_close_resource", false);
 						if(corrupted) {
 							detailsToolC.setEnabled(TOOL_CLOSE_RESSOURCE, false);
 						}
@@ -508,15 +513,15 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			}
 			if (isNewController) {
 				if(isAuthor) {
-					detailsToolC.addLink(ACTION_COPY, translate("details.copy"), TOOL_COPY, null);
+					detailsToolC.addLink(ACTION_COPY, translate("details.copy"), TOOL_COPY, null, "o_sel_repo_copy", false);
 				}
 			}
 			if (isOwner) {
 				if (isNewController) {
-					detailsToolC.addLink(ACTION_DELETE, translate("details.delete"));
+					detailsToolC.addLink(ACTION_DELETE, translate("details.delete"), null, null, "o_sel_repo_delete", false);
 					detailsToolC.addHeader(translate("details.members"));
-					detailsToolC.addLink(ACTION_MEMBERS, translate("details.members"));
-					detailsToolC.addLink(ACTION_ORDERS, translate("details.orders"));
+					detailsToolC.addLink(ACTION_MEMBERS, translate("details.members"), null, null, "o_sel_repo_members", false);
+					detailsToolC.addLink(ACTION_ORDERS, translate("details.orders"), null, null, "o_sel_repo_booking", false);
 				}
 				// enable
 				if(isAuthor) {
