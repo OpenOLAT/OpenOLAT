@@ -125,12 +125,12 @@ public class GroupSearchController extends StepFormBasicController {
 
 		//group rights
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groupName.i18n()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.description.i18n()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.courses.i18n()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tutor.i18n()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.participant.i18n()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mail.i18n()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groupName.i18n(), Cols.groupName.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.description.i18n(), Cols.description.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.courses.i18n(), Cols.courses.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tutor.i18n(), Cols.tutor.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.participant.i18n(), Cols.participant.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mail.i18n(), Cols.mail.ordinal()));
 		
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
 		FlexiTableElement table = uifactory.addTableElement(ureq, "groupList", tableDataModel, tableCont);

@@ -53,6 +53,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	//settings
 	private boolean multiSelect;
+	private FlexiTableRendererType rendererType = FlexiTableRendererType.classic;
 	
 	private int rowCount = -1;
 	private int pageSize;
@@ -77,17 +78,28 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		component = new FlexiTableComponent(this, translator);
 		
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
-		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(this));
+		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(component));
 		
 		this.pageSize = pageSize;
 		if(pageSize > 0) {
 			setPage(0);
 		}
 	}
+
+	public FlexiTableRendererType getRendererType() {
+		return rendererType;
+	}
 	
+	public void setRendererType(FlexiTableRendererType rendererType) {
+		this.rendererType = rendererType;
+	}
+	
+	@Override
 	public boolean isMultiSelect() {
 		return multiSelect;
 	}
+	
+	@Override
 	public void setMultiSelect(boolean multiSelect) {
 		this.multiSelect = multiSelect;
 	}

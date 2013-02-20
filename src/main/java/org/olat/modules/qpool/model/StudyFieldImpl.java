@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.model;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -33,30 +32,28 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
-import org.olat.core.util.StringHelper;
-import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.StudyField;
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 20.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-@Entity(name="questionitem")
-@Table(name="o_qp_item")
+@Entity(name="qstudyfield")
+@Table(name="o_qp_study_field")
 @NamedQueries({
-	@NamedQuery(name="loadQuestionItemByKey", query="select item from questionitem item where item.key=:itemKey")
+	@NamedQuery(name="loadStudyFieldByKey", query="select f from qstudyfield f where f.key=:key")
+	
 })
-public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo, Persistable {
+public class StudyFieldImpl implements StudyField, CreateInfo, ModifiedInfo, Persistable  {
 
-	private static final long serialVersionUID = 6264601750280239307L;
+	private static final long serialVersionUID = -1150399691749897973L;
 
 	@Id
   @GeneratedValue(generator = "system-uuid")
@@ -72,39 +69,20 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	@Column(name="q_subject", nullable=false, insertable=true, updatable=true)
-	private String subject;
+	@Column(name="q_field", nullable=false, insertable=true, updatable=true)
+	private String field;
 	
-	@Column(name="q_point", nullable=true, insertable=true, updatable=true)
-	private BigDecimal point;
-	
-	@Column(name="q_type", nullable=false, insertable=true, updatable=true)
-	private String type;
-	
-	@Column(name="q_status", nullable=false, insertable=true, updatable=true)
-	private String status;
-
 	@ManyToOne(targetEntity=StudyFieldImpl.class)
-	@JoinColumn(name="fk_study_field", nullable=true, insertable=true, updatable=true)
-	private StudyField studyField;
-
+  @JoinColumn(name="fk_parent_field", nullable=true, insertable=true, updatable=true)
+	private StudyField parentField;
+	
 	@Override
 	public Long getKey() {
 		return key;
 	}
-
+	
 	public void setKey(Long key) {
 		this.key = key;
-	}
-
-	@Override
-	public String getResourceableTypeName() {
-		return "QuestionItem";
-	}
-
-	@Override
-	public Long getResourceableId() {
-		return getKey();
 	}
 
 	@Override
@@ -115,7 +93,7 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
-	
+
 	@Override
 	public Date getLastModified() {
 		return lastModified;
@@ -123,56 +101,23 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 
 	@Override
 	public void setLastModified(Date date) {
-		lastModified = date;
-	}
-
-	public String getSubject() {
-		return subject;
-	}
-
-	public void setSubject(String subject) {
-		this.subject = subject;
+		this.lastModified = date;
 	}
 	
-	public BigDecimal getPoint() {
-		return point;
+	public String getField() {
+		return field;
 	}
 
-	public void setPoint(BigDecimal point) {
-		this.point = point;
+	public void setField(String field) {
+		this.field = field;
 	}
 
-	public String getType() {
-		return type;
+	public StudyField getParentField() {
+		return parentField;
 	}
 
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	@Override
-	@Transient
-	public QuestionStatus getQuestionStatus() {
-		if(StringHelper.containsNonWhitespace(status)) {
-			return QuestionStatus.valueOf(status);
-		}
-		return null;
-	}
-
-	public StudyField getStudyField() {
-		return studyField;
-	}
-
-	public void setStudyField(StudyField studyField) {
-		this.studyField = studyField;
+	public void setParentField(StudyField parentField) {
+		this.parentField = parentField;
 	}
 
 	@Override
@@ -185,9 +130,9 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof QuestionItemImpl) {
-			QuestionItemImpl q = (QuestionItemImpl)obj;
-			return key != null && key.equals(q.key);
+		if(obj instanceof StudyFieldImpl) {
+			StudyFieldImpl f = (StudyFieldImpl)obj;
+			return key != null && key.equals(f.key);
 		}
 		return false;
 	}
@@ -200,7 +145,7 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("question[key=").append(this.key)
+		sb.append("studyField[key=").append(this.key)
 			.append("]").append(super.toString());
 		return sb.toString();
 	}

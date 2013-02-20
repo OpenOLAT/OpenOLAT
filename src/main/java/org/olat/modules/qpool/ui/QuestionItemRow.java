@@ -19,10 +19,12 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionStatus;
 
 /**
  * 
@@ -33,7 +35,7 @@ public class QuestionItemRow implements QuestionItem {
 	
 	private final QuestionItem delegate;
 	
-	private FormLink selectLink, markLink;
+	private FormLink markLink;
 	
 	public QuestionItemRow(QuestionItem item) {
 		this.delegate = item;
@@ -58,22 +60,34 @@ public class QuestionItemRow implements QuestionItem {
 	public Date getCreationDate() {
 		return delegate.getCreationDate();
 	}
+	
+	@Override
+	public Date getLastModified() {
+		return delegate.getLastModified();
+	}
 
 	@Override
 	public String getSubject() {
 		return delegate.getSubject();
 	}
-	
+
+	@Override
+	public QuestionStatus getQuestionStatus() {
+		return delegate.getQuestionStatus();
+	}
+
+	@Override
+	public BigDecimal getPoint() {
+		return delegate.getPoint();
+	}
+
+	@Override
+	public String getType() {
+		return delegate.getType();
+	}
+
 	public QuestionItem getItem() {
 		return delegate;
-	}
-
-	public FormLink getSelectLink() {
-		return selectLink;
-	}
-
-	public void setSelectLink(FormLink selectLink) {
-		this.selectLink = selectLink;
 	}
 
 	public FormLink getMarkLink() {
@@ -83,5 +97,4 @@ public class QuestionItemRow implements QuestionItem {
 	public void setMarkLink(FormLink markLink) {
 		this.markLink = markLink;
 	}
-
 }

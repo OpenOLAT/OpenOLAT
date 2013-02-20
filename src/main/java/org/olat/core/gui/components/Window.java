@@ -1039,6 +1039,11 @@ public class Window extends Container {
 		return buildURIFor(win, null, null);
 	}
 	
+	public URLBuilder getURLBuilder() {
+		URLBuilder ubu = new URLBuilder(getUriPrefix(), getInstanceId(), getTimestamp(), wbackofficeImpl);
+		return ubu;
+	}
+	
 	/**
 	 * @param ureq
 	 * @return true if the event was indeed dispatched to the component, false

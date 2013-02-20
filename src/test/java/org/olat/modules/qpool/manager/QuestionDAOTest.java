@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionType;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,17 +51,20 @@ public class QuestionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createQuestion() {
-		QuestionItem item = questionDao.create("Stars");
+		QuestionItem item = questionDao.create("Stars", QuestionType.FIB);
 		Assert.assertNotNull(item);
 		Assert.assertNotNull(item.getKey());
 		Assert.assertNotNull(item.getCreationDate());
+		Assert.assertNotNull(item.getLastModified());
+		Assert.assertNotNull(item.getType());
+		Assert.assertNotNull(item.getQuestionStatus());
 		Assert.assertEquals("Stars", item.getSubject());
 		dbInstance.commitAndCloseSession();
 	}
 
 	@Test
 	public void getNumOfQuestions() {
-		QuestionItem item = questionDao.create("NGC 1277");
+		QuestionItem item = questionDao.create("NGC 1277", QuestionType.MC);
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
 		
@@ -72,9 +76,9 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Test
 	public void getFavoritItems() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.create("NGC 55");
-		QuestionItem item2 = questionDao.create("NGC 253");
-		QuestionItem item3 = questionDao.create("NGC 292");
+		QuestionItem item1 = questionDao.create("NGC 55", QuestionType.MC);
+		QuestionItem item2 = questionDao.create("NGC 253", QuestionType.MC);
+		QuestionItem item3 = questionDao.create("NGC 292", QuestionType.MC);
 		markManager.setMark(item1, id, null, "[QuestionItem:" + item1 + "]");
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();

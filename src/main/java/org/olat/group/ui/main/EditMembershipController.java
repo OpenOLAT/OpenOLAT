@@ -217,13 +217,13 @@ public class EditMembershipController extends FormBasicController {
 
 		//group rights
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.tutorsCount"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.participantsCount"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.freePlace"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.tutors"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.participants"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.waitingList"));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups", 0));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.tutorsCount", 1));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.participantsCount", 2));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.freePlace", 3));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.tutors", 4));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.participants", 5));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.waitingList", 6));
 		
 		tableDataModel = new EditMemberTableDataModel(Collections.<MemberOption>emptyList(), tableColumnModel);
 		uifactory.addTableElement(ureq, "groupList", tableDataModel, formLayout);

@@ -34,25 +34,30 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 public class DefaultFlexiColumnModel implements FlexiColumnModel {
 
 	private String headerKey;
+	private String columnKey;
+	private int columnIndex;
 
 	private boolean sortable;
 	private String sortedKey;
+
 	
 	private int alignment;
 	private FlexiCellRenderer cellRenderer;
 
-	public DefaultFlexiColumnModel(String headerKey) {
-		this(headerKey, false, null);
+	public DefaultFlexiColumnModel(String headerKey, int columnIndex) {
+		this(headerKey, columnIndex, false, null);
 	}
 	
-	public DefaultFlexiColumnModel(String headerKey, boolean sortable, String sortKey) {
-		this(headerKey, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
+	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {
+		this(headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
 	}
 	
-	public DefaultFlexiColumnModel(String headerKey, boolean sortable, String sortKey, int alignment, FlexiCellRenderer cellRenderer) {
+	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey, int alignment, FlexiCellRenderer cellRenderer) {
 		this.sortable = sortable;
 		this.sortedKey = sortKey;
 		this.headerKey = headerKey;
+		this.columnIndex = columnIndex;
+		this.columnKey = headerKey.replace(".", "").toLowerCase();
 		this.alignment = alignment;
 		this.cellRenderer = cellRenderer;
 	}
@@ -62,8 +67,19 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		return null;
 	}
 
+	@Override
 	public String getHeaderKey() {
 		return headerKey;
+	}
+
+	@Override
+	public String getColumnKey() {
+		return columnKey;
+	}
+
+	@Override
+	public int getColumnIndex() {
+		return columnIndex;
 	}
 
 	@Override

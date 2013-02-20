@@ -1,28 +1,22 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.  
-* <p>
-*/ 
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 
@@ -39,10 +33,10 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Render hole flexi table.
- * @author Christian Guretzki
+ * Render the table using the jQuery plugin DataTables
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-class FlexiTableRenderer implements ComponentRenderer {
+class FlexiDataTablesRenderer implements ComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -59,6 +53,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableDataModel dataModel = ftE.getTableDataModel();
+		FlexiTableColumnModel columnsModel = dataModel.getTableColumnModel();
 		
 		Form rootForm = ftE.getRootForm();
 		String id = ftC.getFormDispatchId();
@@ -101,13 +96,16 @@ class FlexiTableRenderer implements ComponentRenderer {
       .append("				}\n")
       .append("			});\n")
       .append("		},\n")
-      .append("		'aoColumns': [\n")
-      .append("			{'mData':'choice', bSortable: false },\n")
-      .append("			{'mData':'key'},\n")
-      .append("			{'mData':'subject'},\n")
-      .append("			{'mData':'select', bSortable: false },\n")
-      .append("			{'mData':'mark', bSortable: false }\n")
-      .append("		]\n")
+      .append("		'aoColumns': [\n");
+		if(ftE.isMultiSelect()) {
+			target.append("			{'mData':'choice', bSortable: false },\n");
+		}
+		for(int i=0; i<columnsModel.getColumnCount(); i++) {
+			FlexiColumnModel col = columnsModel.getColumnModel(i);
+			target.append("			{'mData':'").append(col.getColumnKey())
+			  .append("', bSortable: ").append(col.isSortable()).append(" },\n");
+		}
+    target.append("		]\n")
       .append("	});\n")
       //clic rows
       .append("	jQuery('#").append(id).append(" tbody tr').live('click', function(event, ui) {\n")
@@ -172,7 +170,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 		String id = ftC.getFormDispatchId();
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableDataModel dataModel = ftE.getTableDataModel();
-		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
+		FlexiTableColumnModel columnsModel = dataModel.getTableColumnModel();
 
 		// build rows
 		target.append("<tbody>");
@@ -182,7 +180,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 		int maxRows = ftE.getMaxRows();
 		int rows = dataModel.getRowCount();
 		int lastRow = Math.min(rows, firstRow + maxRows);
-		int cols = columnModel.getColumnCount();
+		int cols = columnsModel.getColumnCount();
 		
 		String rowIdPrefix = "row_" + id + "-";
 		
@@ -210,7 +208,7 @@ class FlexiTableRenderer implements ComponentRenderer {
 			}
 			
 			for (int j = 0; j < cols; j++) {
-				FlexiColumnModel fcm = ftE.getTableDataModel().getTableColumnModel().getColumnModel(j);
+				FlexiColumnModel fcm = columnsModel.getColumnModel(j);
 				int alignment = fcm.getAlignment();
 				cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "b_align_normal" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "b_align_inverse" : "b_align_center"));
 				// add css class for first and last column to support older browsers
@@ -219,19 +217,21 @@ class FlexiTableRenderer implements ComponentRenderer {
 				target.append("<td class=\"").append(cssClass).append("\">");
 				if (col == 0) target.append("<a name=\"table\"></a>"); //add once for accessabillitykey
 				
-				Object cellValue = ftE.getTableDataModel().getValueAt(i, j);
+				
+				int columnIndex = fcm.getColumnIndex();
+				Object cellValue = columnIndex >= 0 ? 
+						dataModel.getValueAt(i, columnIndex) : null;
 				if (cellValue instanceof FormItem) {
 					FormItem formItem = (FormItem)cellValue;
 					formItem.setTranslator(translator);
 					if(ftE.getRootForm() != formItem.getRootForm()) {
 						formItem.setRootForm(ftE.getRootForm());
 					}
+					ftE.addFormItem(formItem);
 					formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(),
 							ubu, translator, renderResult, null);
-					ftE.addFormItem(formItem);
 				} else {
-					ftE.getTableDataModel().getTableColumnModel().getColumnModel(j).
-						getCellRenderer().render(target, cellValue, i, ftC, ubu, translator);
+					fcm.getCellRenderer().render(target, cellValue, i, ftC, ubu, translator);
 				}
 				target.append("</td>");
 			}

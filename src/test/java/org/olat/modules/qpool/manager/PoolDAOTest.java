@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionType;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,7 +90,7 @@ public class PoolDAOTest extends OlatTestCase {
 		String name = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(name);
 		Assert.assertNotNull(pool);
-		QuestionItem item = questionItemDao.create("Galaxy");
+		QuestionItem item = questionItemDao.create("Galaxy", QuestionType.MC);
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
 		
@@ -103,7 +104,7 @@ public class PoolDAOTest extends OlatTestCase {
 		//create a pool
 		String name = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(name);
-		QuestionItem item = questionItemDao.create("Galaxy");
+		QuestionItem item = questionItemDao.create("Galaxy", QuestionType.MC);
 		poolDao.addItemToPool(item, pool);
 		dbInstance.commitAndCloseSession();
 		

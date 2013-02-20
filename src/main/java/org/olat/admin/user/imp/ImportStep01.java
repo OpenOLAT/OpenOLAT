@@ -126,28 +126,24 @@ class ImportStep01 extends BasicStep {
 			int colPos = 0;
 			// add special column with information about whether this user
 			// exists already or not
-			FlexiColumnModel newUserCustomColumnModel = new DefaultFlexiColumnModel("table.user.existing");
+			FlexiColumnModel newUserCustomColumnModel = new DefaultFlexiColumnModel("table.user.existing", colPos++);
 			newUserCustomColumnModel.setCellRenderer(new UserNewOldCustomFlexiCellRenderer());
 			newUserCustomColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_CENTER);
 			tableColumnModel.addFlexiColumnModel(newUserCustomColumnModel);
-			colPos++;
 			
 			// fixed fields:
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login"));
-			colPos++;
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++));
 			if (canCreateOLATPassword) {
-				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.pwd"));
+				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.pwd", colPos++));
 			}
-			colPos++;
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.lang"));
-			colPos++;
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.lang", colPos++));
+
 			// followed by all properties configured
 			// if only mandatory required: check for um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
 			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
 			for (int i = 0; i < userPropertyHandlers.size(); i++) {
 				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
-					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey()));
-					colPos++;
+					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
 			}
 
 

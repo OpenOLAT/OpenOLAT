@@ -17,33 +17,15 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
-
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.olat.core.id.OLATResourceable;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 20.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
  */
-public interface QuestionItem extends OLATResourceable {
-	
-	public Long getKey();
-	
-	public Date getCreationDate();
-	
-	public Date getLastModified();
-	
-	public String getSubject();
-	
-	public BigDecimal getPoint();
-	
-	public String getType();
-	
-	public QuestionStatus getQuestionStatus();
+public enum FlexiTableRendererType {
+	classic,
+	dataTables,
 
 }

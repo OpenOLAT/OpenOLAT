@@ -83,12 +83,14 @@ public class GroupsAndRightsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//group rights
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.role"));
+		
+		int colIndex = 0;
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups", colIndex++));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.role", colIndex++));
 		for(String right : CourseRights.getAvailableRights()) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(right));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(right, colIndex++));
 		}
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.remove"));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.remove", colIndex++));
 
 		List<BGRightsOption> groupRights = loadModel();
 		tableDataModel = new GroupsAndRightsDataModel(groupRights, tableColumnModel);

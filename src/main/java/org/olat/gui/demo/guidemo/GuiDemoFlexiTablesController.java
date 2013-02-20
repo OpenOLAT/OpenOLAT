@@ -73,18 +73,18 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header1"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header2"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header3"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header4"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header5"));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header1", 0));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header2", 1));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header3", 2));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header4", 3));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header5", 4));
 		// column 6 : Image depending on True/False value / center alignment
-		FlexiColumnModel exampleCustomColumnModel = new DefaultFlexiColumnModel("guidemo.table.header6");
+		FlexiColumnModel exampleCustomColumnModel = new DefaultFlexiColumnModel("guidemo.table.header6", 5);
 		exampleCustomColumnModel.setCellRenderer(new ExampleCustomFlexiCellRenderer() );
 		exampleCustomColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_CENTER);
 		tableColumnModel.addFlexiColumnModel(exampleCustomColumnModel);
     // column 7 : Link
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7"));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7", 6));
 
 		tableDataModel = new FlexiTableDataModelImpl(new SampleFlexiTableModel(this, formLayout), tableColumnModel);
 		uifactory.addTableElement(ureq, "gui-demo", tableDataModel, formLayout);

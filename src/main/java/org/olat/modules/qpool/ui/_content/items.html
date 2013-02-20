@@ -7,6 +7,9 @@
 jQuery(function() {
 	var width = jQuery('#b_col3_content_inner').width();
 	var height = jQuery('#b_col3_content_inner').height();
-	jQuery('#container').width(width).height(height).layout();
+	jQuery('#container').width(width).height(height).layout({
+		center: { size: '50%' },
+		west: { size: '50%' }
+	});
 });
 </script>

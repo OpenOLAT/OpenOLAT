@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
@@ -47,6 +48,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
 
 /**
  * 
@@ -85,17 +87,21 @@ public class QuestionListController extends FormBasicController implements Stack
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("item.key", true, "key"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("item.subject", true, "subject"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", "Selectoo", "select-item"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("mark"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.subject.i18nKey(), Cols.subject.ordinal(), true, "subject"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.studyField.i18nKey(), Cols.studyField.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.point.i18nKey(), Cols.point.ordinal(), true, "point"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18nKey(), Cols.type.ordinal(), true, "type"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(), true, "status"));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select-item"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal()));
 
-		model = new QuestionItemDataModel(columnsModel, this);
+		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
 		itemsTable = uifactory.addTableElement(ureq, "items", model, 20, getTranslator(), formLayout);
 		itemsTable.setMultiSelect(true);
+		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
 		
 		createList = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
-		
 	}
 
 	@Override
@@ -176,8 +182,7 @@ public class QuestionListController extends FormBasicController implements Stack
 	@Override
 	public List<QuestionItemRow> getRows(int firstResult, int maxResults, SortKey... orderBy) {
 		Set<Long> marks = markManager.getMarkResourceIds(getIdentity(), "QuestionItem", Collections.<String>emptyList());
-		
-		
+
 		List<QuestionItem> items = source.getItems(firstResult, maxResults, orderBy);
 		List<QuestionItemRow> rows = new ArrayList<QuestionItemRow>(items.size());
 		for(QuestionItem item:items) {
@@ -194,9 +199,6 @@ public class QuestionListController extends FormBasicController implements Stack
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "Mark_" + marked, null, null, Link.NONTRANSLATED);
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
-		FormLink selectLink = uifactory.addFormLink("select_" + row.getKey(), "select", "Select", null, null, Link.NONTRANSLATED);
-		selectLink.setUserObject(row);
-		row.setSelectLink(selectLink);
 		return row;
 	}
 }

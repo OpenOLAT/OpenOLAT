@@ -390,6 +390,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		return formLayoutContainer.getComponent(name);
 	}
 	
+	public void setFormTitle(String title) {
+		formLayoutContainer.contextPut("off_title", title);
+	}
+	
 
 	/**
 	 * 

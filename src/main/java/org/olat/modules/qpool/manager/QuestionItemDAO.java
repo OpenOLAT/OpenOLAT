@@ -28,6 +28,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,11 +46,13 @@ public class QuestionItemDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public QuestionItem create(String subject) {
+	public QuestionItem create(String subject, QuestionType type) {
 		QuestionItemImpl item = new QuestionItemImpl();
 		item.setCreationDate(new Date());
 		item.setLastModified(new Date());
 		item.setSubject(subject);
+		item.setStatus(QuestionStatus.inWork.name());
+		item.setType(type.name());
 		dbInstance.getCurrentEntityManager().persist(item);
 		return item;
 	}

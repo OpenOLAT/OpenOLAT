@@ -26,6 +26,8 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.translator.Translator;
+import org.olat.modules.qpool.QuestionStatus;
 
 /**
  * 
@@ -38,10 +40,12 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 	private List<QuestionItemRow> rows;
 	private FlexiTableColumnModel columnModel;
 	private final ItemRowsSource source;
+	private final Translator translator;
 	
-	public QuestionItemDataModel(FlexiTableColumnModel columnModel, ItemRowsSource source) {
+	public QuestionItemDataModel(FlexiTableColumnModel columnModel, ItemRowsSource source, Translator translator) {
 		this.columnModel = columnModel;
 		this.source = source;
+		this.translator = translator;
 	}
 	
 	@Override
@@ -97,7 +101,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 	
 	@Override
 	public QuestionItemDataModel createCopyWithEmptyList() {
-		return new QuestionItemDataModel(columnModel, source);
+		return new QuestionItemDataModel(columnModel, source, translator);
 	}
 
 	@Override
@@ -106,8 +110,19 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 		switch(Cols.values()[col]) {
 			case id: return item.getKey();
 			case subject: return item.getSubject();
-			case select: return null;//item.getSelectLink();
-			case mark: return item.getMarkLink();
+			case studyField: return null;
+			case point: return item.getPoint();
+			case type: return item.getType();
+			case status: {
+				QuestionStatus s = item.getQuestionStatus();
+				if(s == null) {
+					return "";
+				}
+				return translator.translate(s.name());
+			}
+			case mark: {
+				return item.getMarkLink();
+			}
 			default: {
 				return "-";
 			}
@@ -115,9 +130,12 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 	}
 	
 	public enum Cols {
-		id("table.header.id"),
-		subject("table.header.subject"),
-		select("select"),
+		id("item.key"),
+		subject("item.subject"),
+		studyField("item.studyField"),
+		point("item.point"),
+		type("item.type"),
+		status("item.status"),
 		mark("mark");
 		
 		private final String i18nKey;

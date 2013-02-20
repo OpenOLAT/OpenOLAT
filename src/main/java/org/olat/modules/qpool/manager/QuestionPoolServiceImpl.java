@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QuestionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -63,7 +64,7 @@ public class QuestionPoolServiceImpl implements QuestionPoolService, Application
 		if(numOfQuestions < 3) {
 			List<Pool> pools = poolDao.getPools();
 			for(int i=0; i<200; i++) {
-				QuestionItem item = questionItemDao.create("NGC " + i);
+				QuestionItem item = questionItemDao.create("NGC " + i, QuestionType.MC);
 				poolDao.addItemToPool(item, pools.get(0));
 				if(i % 20 == 0) {
 					dbInstance.intermediateCommit();

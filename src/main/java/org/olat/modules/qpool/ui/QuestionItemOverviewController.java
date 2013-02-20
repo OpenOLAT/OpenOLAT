@@ -36,6 +36,13 @@ import org.olat.modules.qpool.QuestionItem;
 public class QuestionItemOverviewController extends FormBasicController {
 	
 	private StaticTextElement keyEl;
+	private StaticTextElement subjectEl;
+	private StaticTextElement studyFieldEl;
+	private StaticTextElement keywordsEl;
+	private StaticTextElement selectivityEl;
+	private StaticTextElement usageEl;
+	private StaticTextElement descriptionEl;
+	
 
 	private QuestionItem item;
 	
@@ -47,7 +54,15 @@ public class QuestionItemOverviewController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		keyEl =uifactory.addStaticTextElement("item.key", "", formLayout);
+		setFormTitle("metadatas");
+		
+		keyEl = uifactory.addStaticTextElement("item.key", "", formLayout);
+		subjectEl = uifactory.addStaticTextElement("item.subject", "", formLayout);
+		studyFieldEl = uifactory.addStaticTextElement("item.studyField", "", formLayout);
+		keywordsEl = uifactory.addStaticTextElement("item.keywords", "", formLayout);
+		selectivityEl = uifactory.addStaticTextElement("item.selectivity", "", formLayout);
+		usageEl = uifactory.addStaticTextElement("item.usage", "", formLayout);
+		descriptionEl = uifactory.addStaticTextElement("item.description", "", formLayout);
 	}
 	
 	@Override
@@ -63,17 +78,16 @@ public class QuestionItemOverviewController extends FormBasicController {
 		this.item = item;
 
 		keyEl.setValue(item.getKey().toString());
+		subjectEl.setValue(item.getSubject());
+		studyFieldEl.setValue("");
+		keywordsEl.setValue("");
+		selectivityEl.setValue("");
+		usageEl.setValue("");
+		descriptionEl.setValue("");
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-
-	
-	
-
-
-
 }

@@ -86,6 +86,7 @@
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.QuestionItemImpl</class>
+		<class>org.olat.modules.qpool.model.StudyFieldImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>

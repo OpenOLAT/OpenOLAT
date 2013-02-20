@@ -63,11 +63,12 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 	private Date creationDate;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lastmodified", nullable=false, insertable=true, updatable=false)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
 	@Column(name="q_name", nullable=false, insertable=true, updatable=true)
 	private String name;
+	
 	
 	public Long getKey() {
 		return key;

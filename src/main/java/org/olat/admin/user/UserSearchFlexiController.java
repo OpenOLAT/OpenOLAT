@@ -157,9 +157,10 @@ public class UserSearchFlexiController extends FormBasicController {
 
 			//add the table
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.select"));
+			int colPos = 0;
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.select", colPos++));
 			if(isAdministrativeUser) {
-				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login"));
+				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++));
 			}
 			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 			List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<UserPropertyHandler>();
@@ -169,10 +170,10 @@ public class UserSearchFlexiController extends FormBasicController {
 				boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
 				if(visible) {
 					resultingPropertyHandlers.add(userPropertyHandler);
-					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey()));
+					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
 				}
 			}
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select"));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", colPos++));
 			
 			Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 			userTableModel = new UserSearchFlexiTableModel(Collections.<UserResultWrapper>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);

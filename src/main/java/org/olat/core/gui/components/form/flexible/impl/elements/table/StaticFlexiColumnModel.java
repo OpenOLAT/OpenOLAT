@@ -30,7 +30,7 @@ public class StaticFlexiColumnModel extends AbstractFlexiColumnModel {
 	private final String action;
 	
 	public StaticFlexiColumnModel(String headerKey, String label, String action) {
-		super(headerKey, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action));
+		super(headerKey, -1, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action));
 		this.action = action;
 	}
 

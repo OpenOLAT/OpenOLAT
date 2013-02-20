@@ -29,10 +29,14 @@ public class AbstractFlexiColumnModel implements FlexiColumnModel {
 
 	private int alignment;
 	private String headerKey;
+	private String columnKey;
+	private int columnIndex;
 	private FlexiCellRenderer cellRenderer;
 
-	public AbstractFlexiColumnModel(String headerKey, int alignment, FlexiCellRenderer cellRenderer) {
+	public AbstractFlexiColumnModel(String headerKey, int columnIndex, int alignment, FlexiCellRenderer cellRenderer) {
 		this.headerKey = headerKey;
+		this.columnIndex = columnIndex;
+		this.columnKey = headerKey.replace(".", "").toLowerCase();
 		this.alignment = alignment;
 		this.cellRenderer = cellRenderer;
 	}
@@ -44,6 +48,16 @@ public class AbstractFlexiColumnModel implements FlexiColumnModel {
 
 	public String getHeaderKey() {
 		return headerKey;
+	}
+
+	@Override
+	public String getColumnKey() {
+		return columnKey;
+	}
+
+	@Override
+	public int getColumnIndex() {
+		return columnIndex;
 	}
 
 	@Override
