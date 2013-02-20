@@ -88,7 +88,7 @@ public class GroupLeaveDialogBoxController extends FormBasicController {
 			groupDeleteEl.select(keys[0], true);
 		}
 		
-		;FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("deleteButton", "ok", buttonsContainer);

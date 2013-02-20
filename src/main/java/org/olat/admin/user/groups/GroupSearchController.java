@@ -129,7 +129,6 @@ public class GroupSearchController extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.courses.i18n()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tutor.i18n()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.participant.i18n()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mail.i18n()));
 		
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
 		FlexiTableElment table = uifactory.addTableElement("groupList", tableDataModel, tableCont);
@@ -206,7 +205,6 @@ public class GroupSearchController extends StepFormBasicController {
 				GroupWrapper wrapper = new GroupWrapper(group, sb.toString());
 				wrapper.setTutor(createSelection("tutor_" + group.getKey()));
 				wrapper.setParticipant(createSelection("participant_" + group.getKey()));
-				wrapper.setMail(createSelection("mail_" + group.getKey()));
 				groups.add(wrapper);
 			}
 
@@ -251,13 +249,11 @@ public class GroupSearchController extends StepFormBasicController {
 	private void doSave(UserRequest ureq) {
 		List<Long> ownerGroups = getCheckedTutorKeys();
 		List<Long> partGroups = getCheckedParticipantKeys();
-		List<Long> mailGroups = getCheckedMailKeys();
 		
 		if (isUsedInStepWizzard()){
 			// might be used in wizzard during user import or user bulk change. allow next/finish according to previous steps.
 			addToRunContext("ownerGroups", ownerGroups);
 			addToRunContext("partGroups", partGroups);
-			addToRunContext("mailGroups", mailGroups);
 			boolean groupsChoosen = (ownerGroups.size() !=0 || partGroups.size() != 0);
 			boolean validImport = getFromRunContext("validImport") != null && ((Boolean) getFromRunContext("validImport"));
 			boolean validBulkChange = getFromRunContext("validChange") != null && ((Boolean) getFromRunContext("validChange"));
@@ -268,7 +264,7 @@ public class GroupSearchController extends StepFormBasicController {
 			addToRunContext("validChange",isValid );
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
-			fireEvent(ureq, new AddToGroupsEvent(ownerGroups, partGroups, mailGroups));
+			fireEvent(ureq, new AddToGroupsEvent(ownerGroups, partGroups));
 		}	
 	}
 
@@ -291,16 +287,6 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 		return selected;		
 	}
-	
-	private List<Long> getCheckedMailKeys() {
-		List<Long> selected = new ArrayList<Long>();
-		for(GroupWrapper wrapper:tableDataModel.getObjects()) {
-			if(wrapper.getMail().isSelected(0)) {
-				selected.add(wrapper.getGroupKey());
-			}
-		}
-		return selected;		
-	}
 
 	@Override
 	protected void doDispose() {
@@ -315,7 +301,6 @@ public class GroupSearchController extends StepFormBasicController {
 		
 		private MultipleSelectionElement tutor;
 		private MultipleSelectionElement participant;
-		private MultipleSelectionElement mail;
 		
 		public GroupWrapper(BusinessGroup group, String courses) {
 			groupKey = group.getKey();
@@ -355,14 +340,6 @@ public class GroupSearchController extends StepFormBasicController {
 		public void setParticipant(MultipleSelectionElement participant) {
 			this.participant = participant;
 		}
-		
-		public MultipleSelectionElement getMail() {
-			return mail;
-		}
-		
-		public void setMail(MultipleSelectionElement mail) {
-			this.mail = mail;
-		}
 	}
 	
 	private static class GroupTableDataModel extends DefaultTableDataModel<GroupWrapper> implements FlexiTableDataModel {
@@ -397,7 +374,6 @@ public class GroupSearchController extends StepFormBasicController {
 				case courses: return option.getCourses();
 				case tutor: return option.getTutor();
 				case participant: return option.getParticipant();
-				case mail: return option.getMail();
 				default: return option;
 			}
 		}
@@ -413,8 +389,7 @@ public class GroupSearchController extends StepFormBasicController {
 		description("description"),
 		courses("table.header.resources"),
 		tutor("table.group.add.tutor"),
-		participant("table.group.add.participant"),
-		mail("send.email");
+		participant("table.group.add.participant");
 		
 		private final String i18n;
 		
