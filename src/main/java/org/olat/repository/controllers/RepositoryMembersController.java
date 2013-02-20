@@ -151,20 +151,18 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	protected void addMembers(UserRequest ureq, StepsRunContext runContext) {
 		@SuppressWarnings("unchecked")
 		List<Identity> members = (List<Identity>)runContext.get("members");
-		
+		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
 		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
 		
 		//commit changes to the repository entry
 		MailerResult result = new MailerResult();
-		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
+		MailPackage reMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
 		repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
-
-		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
-		MailPackage bgMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), true);
+		MailPackage bgMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, bgMailing);
 		MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
 	}
