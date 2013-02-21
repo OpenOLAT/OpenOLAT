@@ -39,16 +39,10 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.OpenType;
-import javax.management.openmbean.SimpleType;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -269,7 +263,6 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		
 		nodeId = clusterConfig.getNodeId();
 		try {
-			//<XXX> TODO: cg/18.11.2008 ev JMS performance bottleneck; Do not check message-sequence => remove sync-block
 			//TODO jms synchronized (this) { //cluster_ok needed, not atomar read in one vm
 				msgId = ++latestSentMsgId;
 				ObjectMessage message = session.createObjectMessage();
@@ -365,11 +358,12 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			OLATResourceable ores = jmsWrapper.getOres();
 			boolean fromSameNode = clusterConfig.getNodeId().equals(nodeId);
 
-			// update nodeinfo statistics
-			NodeInfo nodeInfo = getNodeInfoFor(nodeId);
-			if (!nodeInfo.update(jmsWrapper)) {
-				log.warn("onMessage: update failed. clustereventbus: "+this);
-			}
+			//TODO jms update nodeinfo statistics, this doesn't work because we remove
+			//all the synchronization in the event bus
+			/* NodeInfo nodeInfo = getNodeInfoFor(nodeId);
+			if (log.isDebug() && !nodeInfo.update(jmsWrapper)) {
+				log.debug("onMessage: update failed. clustereventbus: "+this);
+			}*/
 
 			String recMsg = "received msg: "+(fromSameNode? "[same node]":"")+" from node:" + 
 			nodeId + ", olat-id:" + jmsWrapper.getMsgId() + ", ores:" + ores.getResourceableTypeName() + ":" + ores.getResourceableId() +
@@ -462,7 +456,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 * cluster:::: to be improved: this is just a quick solution to output all data from all nodes
 	 * @return jmx-readable data of all statistics of all foreign cluster nodes
 	 */
-	public CompositeDataSupport getForeignClusterNodeStatistics() {
+	/*public CompositeDataSupport getForeignClusterNodeStatistics() {
 		Map<String, String> p = new HashMap<String, String>();
 		for (Integer key : nodeInfos.keySet()) {
 			NodeInfo fns = nodeInfos.get(key);
@@ -489,7 +483,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		} catch (OpenDataException e) {
 			throw new AssertException("problem with jmx data generation", e);
 		}
-	}
+	}*/
 	
 	Map<Integer, NodeInfo> getNodeInfos() {
 		return nodeInfos;

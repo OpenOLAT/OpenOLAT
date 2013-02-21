@@ -3,7 +3,7 @@
             xmlns="urn:infinispan:config:5.1"
             xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd">
    <global>
-      <globalJmxStatistics allowDuplicateDomains="false" />
+      <globalJmxStatistics allowDuplicateDomains="true" />
    </global>
 
    <default>
@@ -12,24 +12,28 @@
    </default>
    
 	<namedCache name="MapperService@mapper">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
 		<eviction maxEntries="1000" strategy="LRU"/>
 		<expiration maxIdle="300000" wakeUpInterval="5000"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
    
 	<namedCache name="OpenMeetingsManager@session">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
 		<eviction maxEntries="1000" strategy="LRU"/>
 		<expiration maxIdle="900000" wakeUpInterval="5000"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
 	
 	<namedCache name="UserSessionManager@usersession">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
 		<eviction strategy="NONE"/>
 		<expiration lifespan="-1" maxIdle="-1" wakeUpInterval="0"/>
 		<transaction transactionMode="TRANSACTIONAL" />
 	</namedCache>
 	
 	<namedCache name="CalendarManager@calendar">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
 		<eviction maxEntries="500" strategy="LRU"/>
 		<expiration maxIdle="900000" wakeUpInterval="5000"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
