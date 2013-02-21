@@ -1757,20 +1757,20 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#saveIdentityStatus(org.olat.core.id.Identity)
 	 */
 	@Override
-	@Transactional
 	public Identity saveIdentityStatus(Identity identity, Integer status) {
 		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
 		reloadedIdentity.setStatus(status);
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		dbInstance.commit();
 		return reloadedIdentity;
 	}
 	
 	@Override
-	@Transactional
 	public Identity setIdentityLastLogin(Identity identity) {
 		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
 		reloadedIdentity.setLastLogin(new Date());
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		dbInstance.commit();
 		return reloadedIdentity;
 	}
 	

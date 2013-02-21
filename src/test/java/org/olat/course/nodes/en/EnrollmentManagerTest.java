@@ -294,6 +294,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 		@Override
 		public void run() {
 			try {
+				sleep(10);
 				IdentityEnvironment ienv = new IdentityEnvironment();
 				ienv.setIdentity(identity);
 				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);

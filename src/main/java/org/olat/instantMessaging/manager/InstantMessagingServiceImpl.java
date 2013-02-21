@@ -106,9 +106,9 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public boolean deleteGroupDataFor(BusinessGroup group) {
 		imDao.deleteMessages(group);
+		dbInstance.commit();
 		return true;
 	}
 
@@ -118,21 +118,22 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public ImPreferences getImPreferences(Identity identity) {
-		return prefsDao.getPreferences(identity);
+		ImPreferences prefs = prefsDao.getPreferences(identity);
+		dbInstance.commit();
+		return prefs;
 	}
 
 	@Override
-	@Transactional
 	public void updateImPreferences(Identity identity, boolean visible) {
 		prefsDao.updatePreferences(identity, visible);
+		dbInstance.commit();
 	}
 
 	@Override
-	@Transactional
 	public void updateStatus(Identity identity, String status) {
 		prefsDao.updatePreferences(identity, status);
+		dbInstance.commit();
 	}
 
 	@Override
@@ -375,18 +376,18 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public void listenChat(Identity identity, OLATResourceable chatResource,
 			boolean anonym, boolean vip, GenericEventListener listener) {
 		String fullName = userManager.getUserDisplayName(identity.getUser());
 		rosterDao.updateRosterEntry(chatResource, identity, fullName, null, anonym, vip);
+		dbInstance.commit();
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);
 	}
 
 	@Override
-	@Transactional
 	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener) {
 		rosterDao.deleteEntry(identity, chatResource);
+		dbInstance.commit();
 		coordinator.getCoordinator().getEventBus().deregisterFor(listener, chatResource);
 	}
 
