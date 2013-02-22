@@ -22,7 +22,6 @@ package org.olat.instantMessaging.manager;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;

@@ -304,6 +304,10 @@ public class InstantMessagingMainController extends BasicController implements G
 		} else {
 			imStatus = status;
 		}
+		if(imStatus == null) {
+			imStatus = Presence.available.name();
+		  imService.updateStatus(getIdentity(), imStatus);
+		}
 		String cssClass = "o_instantmessaging_" + imStatus + "_icon";
 		statusChangerLink.setCustomEnabledLinkCSS("b_small_icon " + cssClass);
 	}

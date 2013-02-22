@@ -37,6 +37,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.ejb.HibernateEntityManager;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.stat.Statistics;
 import org.hibernate.type.Type;
@@ -64,8 +68,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	private static final int MAX_DB_ACCESS_COUNT = 500;
 	private static DBImpl INSTANCE;
 	
-	private final DBManager dbManagerDelegate = new DBManager();
-	
+	private String dbVendor;
 	private EntityManagerFactory emf;
 	private PlatformTransactionManager txManager;
 
@@ -78,6 +81,22 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 */
 	private DBImpl() {
 		INSTANCE = this;
+	}
+	
+	protected static DBImpl getInstance() {
+		return INSTANCE;
+	}
+	
+	@Override
+	public String getDbVendor() {
+		return dbVendor;
+	}
+	/**
+	 * [used by spring]
+	 * @param dbVendor
+	 */
+	public void setDbVendor(String dbVendor) {
+		this.dbVendor = dbVendor;
 	}
     
 	public void setEntityManagerFactory(EntityManagerFactory emf) {
@@ -194,6 +213,14 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		return em;
 	}
 	
+	private Session getSession(EntityManager em) {
+		return em.unwrap(HibernateEntityManager.class).getSession();
+	}
+	
+	private boolean unusableTrx(EntityTransaction trx) {
+		return trx == null || !trx.isActive() || trx.getRollbackOnly();
+	}
+	
 	private EntityManager getEntityManager() {
 		EntityManager txEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
 		if(txEm == null) {
@@ -273,9 +300,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	/**
 	 * Close the database session.
 	 */
+	@Override
 	public void closeSession() {
-		
-
 		getData().resetAccessCounter();
 		// Note: closeSession() now also checks if the connection is open at all
 		//  in OLAT-4318 a situation is described where commit() fails and closeSession()
@@ -312,68 +338,10 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		}
 		data.remove();
 	}
-	
-	public void cleanUpSession() {
-		closeSession();
-	}
-
-	protected static DBImpl getInstance() {
-	  return getInstance(true);
-  }
-	/**
-	 * Get the DB instance. Initialisation is performed if flag is true.
-	 * 
-	 * @param initialize
-	 * @return the DB instance.
-	 */
-	protected static DBImpl getInstance(boolean initialize) {
-		/*
-		//OLAT-3621: paranoia check for error state: we need to catch errors at the earliest point possible. OLAT-3621 has a suspected situation
-		//           where an earlier transaction failed and didn't clean up nicely. To check this, we introduce error checking in getInstance here
-		EntityTransaction transaction = INSTANCE.getTransaction();
-		if (transaction!=null) {		
-			// Filter Exception form async TaskExecutorThread, there are exception allowed
-			if (transaction.isActive() && transaction.getRollbackOnly() && !Thread.currentThread().getName().equals("TaskExecutorThread")) {
-				INSTANCE.logWarn("getInstance: Transaction (still?) in Error state: "+transaction, new Exception("DBImpl begin transaction)"));
-			}
-		}  
-		
-		// if module is not active we return a non-initialized instance and take
-		// care that
-		// the only cleanup-calls to db.closeSession do nothing
-		if (initialize) {
-			INSTANCE.createSession();
-		}*/
-		return INSTANCE;
-	}
-
-	/**
-	 * Get db instance without checking transaction state
-	 * @return
-	 */
-	protected static DBImpl getInstanceForClosing() {
-		return INSTANCE;
-	}
-
-	/**
-	 * @return true if tread is initialized.
-	 */
-	boolean threadLocalsInitialized() {
-		return getData().isInitialized();
-	}
-
-	private void setInitialized(boolean initialized) {
-		getData().setInitialized(initialized);
-
-	}
-
-	boolean isInitialized() {
-		return getData().isInitialized();
-	}
   
 	private boolean contains(Object object) {
 		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.contains(em, object);
+		return em.contains(object);
 	}
 
 	/**
@@ -382,9 +350,16 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param query
 	 * @return DBQuery
 	 */
+	@Override
 	public DBQuery createQuery(String query) {
-		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.createQuery(em, query, getData());
+		try {
+			EntityManager em = getCurrentEntityManager();
+			Query q = getSession(em).createQuery(query);
+			return new DBQueryImpl(q);
+		} catch (HibernateException he) {
+			getData().setError(he);
+			throw new DBRuntimeException("Error while creating DBQueryImpl: ", he);
+		}
 	}
 
 	/**
@@ -392,9 +367,24 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * 
 	 * @param object
 	 */
+	@Override
 	public void deleteObject(Object object) {
 		EntityManager em = getCurrentEntityManager();
-		dbManagerDelegate.deleteObject(em, object, getData());
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
+			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + object);
+		}
+		try {
+			Object relaoded = em.merge(object);
+			em.remove(relaoded);
+			if (isLogDebugEnabled()) {
+				logDebug("delete (trans "+trx.hashCode()+") class "+object.getClass().getName()+" = "+object.toString());	
+			}
+		} catch (HibernateException e) { // we have some error
+			trx.setRollbackOnly();
+			getData().setError(e);
+			throw new DBRuntimeException("Delete of object failed: " + object, e);
+		}
 	}
 
 	/**
@@ -405,9 +395,29 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param type
 	 * @return nr of deleted rows
 	 */
+	@Override
 	public int delete(String query, Object value, Type type) {
+		int deleted = 0;
 		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.delete(em, query, value, type);
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
+			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + value);
+		}
+		try {
+			//old: deleted = getSession().delete(query, value, type);
+			Session si = getSession(em);
+			Query qu = si.createQuery(query);
+			qu.setParameter(0, value, type);
+			List foundToDel = qu.list();
+			int deletionCount = foundToDel.size();
+			for (int i = 0; i < deletionCount; i++ ) {
+				si.delete( foundToDel.get(i) );
+			}
+		} catch (HibernateException e) { // we have some error
+			trx.setRollbackOnly();
+			throw new DBRuntimeException ("Could not delete object: " + value, e);
+		}
+		return deleted;
 	}
 
 	/**
@@ -418,9 +428,28 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param types
 	 * @return nr of deleted rows
 	 */
+	@Override
 	public int delete(String query, Object[] values, Type[] types) {
 		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.delete(em, query, values, types);
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
+			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + values);
+		}
+		try {
+			//old: deleted = getSession().delete(query, values, types);
+			Session si = getSession(em);
+			Query qu = si.createQuery(query);
+			qu.setParameters(values, types);
+			List foundToDel = qu.list();
+			int deleted = foundToDel.size();
+			for (int i = 0; i < deleted; i++ ) {
+				si.delete( foundToDel.get(i) );
+			}	
+			return deleted;
+		} catch (HibernateException e) { // we have some error
+			trx.setRollbackOnly();
+			throw new DBRuntimeException ("Could not delete object: " + values, e);
+		}
 	}
 
 	/**
@@ -431,9 +460,20 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param type
 	 * @return List of results.
 	 */
+	@Override
 	public List find(String query, Object value, Type type) {
 		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.find(em, query, value, type, getData());
+		EntityTransaction trx = em.getTransaction();
+		try {
+			Query qu = getSession(em).createQuery(query);
+			qu.setParameter(0, value, type);
+			return qu.list();
+		} catch (HibernateException e) {
+			trx.setRollbackOnly();
+			String msg = "Find failed in transaction. Query: " +  query + " " + e;
+			getData().setError(e);
+			throw new DBRuntimeException(msg, e);
+		}
 	}
 
 	/**
@@ -444,9 +484,19 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param types
 	 * @return List of results.
 	 */
+	@Override
 	public List find(String query, Object[] values, Type[] types) {
 		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.find(em , query, values, types, getData());
+		try {
+			// old: li = getSession().find(query, values, types);
+			Query qu = getSession(em).createQuery(query);
+			qu.setParameters(values, types);
+			return qu.list();
+		} catch (HibernateException e) {
+			em.getTransaction().setRollbackOnly();
+			getData().setError(e);
+			throw new DBRuntimeException("Find failed in transaction. Query: " +  query + " " + e, e);
+		}
 	}
 
 	/**
@@ -455,9 +505,16 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param query
 	 * @return List of results.
 	 */
+	@Override
 	public List find(String query) {
 		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.find(em , query, getData());
+		try {
+			return em.createQuery(query).getResultList();
+		} catch (HibernateException e) {
+			em.getTransaction().setRollbackOnly();
+			getData().setError(e);
+			throw new DBRuntimeException("Find in transaction failed: " + query + " " + e, e);
+		}
 	}
 
 	/**
@@ -467,6 +524,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param key
 	 * @return Object, if any found. Null, if non exist. 
 	 */
+	@Override
 	public <U> U findObject(Class<U> theClass, Long key) {
 		return getCurrentEntityManager().find(theClass, key);
 	}
@@ -478,9 +536,13 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param key
 	 * @return Object.
 	 */
+	@Override
 	public <U> U loadObject(Class<U> theClass, Long key) {
-		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.loadObject(em , theClass, key);
+		try {
+			return getCurrentEntityManager().find(theClass, key);
+		} catch (Exception e) {
+			throw new DBRuntimeException("loadObject error: " + theClass + " " + key + " ", e);
+		}
 	}
 
 	/**
@@ -488,9 +550,20 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * 
 	 * @param object
 	 */
+	@Override
 	public void saveObject(Object object) {
 		EntityManager em = getCurrentEntityManager();
-		dbManagerDelegate.saveObject(em, object, getData());
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
+			throw new DBRuntimeException("cannot save in a transaction that is rolledback or committed: " + object);
+		}
+		try {
+			em.persist(object);					
+		} catch (Exception e) { // we have some error
+			trx.setRollbackOnly();
+			getData().setError(e);
+			throw new DBRuntimeException("Save failed in transaction. object: " +  object, e);
+		}
 	}
 
 	/**
@@ -498,9 +571,20 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * 
 	 * @param object
 	 */
+	@Override
 	public void updateObject(Object object) {
 		EntityManager em = getCurrentEntityManager();
-		dbManagerDelegate.updateObject(em, object, getData());
+		EntityTransaction trx = em.getTransaction();
+		if (unusableTrx(trx)) { // some program bug
+			throw new DBRuntimeException("cannot update in a transaction that is rolledback or committed " + object);
+		}
+		try {
+			getSession(em).update(object);								
+		} catch (HibernateException e) { // we have some error
+			trx.setRollbackOnly();
+			getData().setError(e);
+			throw new DBRuntimeException("Update object failed in transaction. Query: " +  object, e);
+		}
 	}
 
 	/**
@@ -515,6 +599,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	/**
 	 * @return True if any errors occured in the previous DB call.
 	 */
+	@Override
 	public boolean isError() {
 		//EntityTransaction trx = getCurrentEntityManager().getTransaction();
 		EntityManager em = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
@@ -527,8 +612,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		return getData() == null ? false : getData().isError();
 	}
 
-	boolean hasTransaction() {
-		//EntityManager em = getCurrentEntityManager();
+	private boolean hasTransaction() {
 		EntityManager em = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
 		if(em != null && em.isOpen()) {
 			EntityTransaction trx = em.getTransaction();
@@ -543,9 +627,49 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param persistable
 	 * @return the loaded object
 	 */
+	@Override
 	public Persistable loadObject(Persistable persistable) {
 		return loadObject(persistable, false);
 	}
+	
+
+	/**
+	 * Create a named hibernate query for the given name. Optionally the database
+	 * vendor is prepended to load database specific queries if available. Use
+	 * this only when absolutely necessary.
+	 * 
+	 * @param queryName The query name
+	 * @param vendorSpecific true: prepend the database vendor name to the query
+	 *          name, e.g. mysql_queryName; false: use queryName as is
+	 * @return the query or NULL if no such named query exists
+	 */
+	@Override
+	public DBQuery createNamedQuery(final String queryName, boolean vendorSpecific) {
+		if (queryName == null) {
+			throw new AssertException("queryName must not be NULL");
+		}
+		DBQuery dbq = null;
+		if (vendorSpecific) {
+			String finalQueryName = vendorSpecific ? dbVendor + "_" + queryName : queryName;
+			Session session = getSession(getCurrentEntityManager());
+			Query q = session.getNamedQuery(finalQueryName);
+			if (q == null) { 
+				// try fallback with normal query
+				q = session.getNamedQuery(queryName);
+			}
+			if (q == null) {
+				String msg = "Can not create namedQuery::" + finalQueryName;
+				if (vendorSpecific) {
+					msg += " for dbvendor::" + dbVendor + " and non db specific::" + queryName;
+				}
+				msg += ", named query does not exist";
+				logError(msg, null);
+			}	else {
+				dbq = new DBQueryImpl(q);
+			}
+		}
+		return dbq;
+	}	
 
 	/**
 	 * loads an object if needed. this makes sense if you have an object which had
@@ -558,6 +682,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 *          thread's session cache
 	 * @return the loaded Object
 	 */
+	@Override
 	public Persistable loadObject(Persistable persistable, boolean forceReloadFromDB) {
 		if (persistable == null) throw new AssertException("persistable must not be null");
 
@@ -572,14 +697,14 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			
 			if (contains(persistable)) {
 				// case b - then we can use evict and load
-				dbManagerDelegate.evict(em, persistable, getData());
+				evict(em, persistable, getData());
 				return loadObject(theClass, persistable.getKey());
 			} else {
 				// case a or c - unfortunatelly we can't distinguish these two cases
 				// and session.refresh(Object) doesn't work.
 				// the only scenario that works is load/evict/load
 				Persistable attachedObj = (Persistable) loadObject(theClass, persistable.getKey());
-				dbManagerDelegate.evict(em, attachedObj, getData());
+				evict(em, attachedObj, getData());
 				return loadObject(theClass, persistable.getKey());
 			}
 		} else if (!contains(persistable)) { 
@@ -591,6 +716,15 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		} else { 
 			// nothing to do, return the same object
 			return persistable;
+		}
+	}
+	
+	private void evict(EntityManager em, Object object, ThreadLocalData data) {
+		try {
+			getSession(em).evict(object);			
+		} catch (Exception e) {
+			data.setError(e);
+			throw new DBRuntimeException("Error in evict() Object from Database. ", e);
 		}
 	}
 
@@ -620,9 +754,16 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		}
 	}
 
+	@Override
+	public void begin() {
+		//this will begin a new transaction
+		getCurrentEntityManager();
+	}
+
 	/**
 	 * Call this to commit a transaction opened by beginTransaction().
 	 */
+	@Override
 	public void commit() {
 		if (isLogDebugEnabled()) logDebug("commit start...", null);
 		try {
@@ -673,6 +814,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	/**
 	 * Call this to rollback current changes.
 	 */
+	@Override
 	public void rollback() {
 		if (isLogDebugEnabled()) logDebug("rollback start...", null);
 		try {
@@ -693,6 +835,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * Statistics must be enabled first, when you want to use it. 
 	 * @return Return Hibernates statistics object.
 	 */
+	@Override
 	public Statistics getStatistics() {
 		if(emf instanceof HibernateEntityManagerFactory) {
 			return ((HibernateEntityManagerFactory)emf).getSessionFactory().getStatistics();
@@ -703,6 +846,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	/**
 	 * @see org.olat.core.commons.persistence.DB#intermediateCommit()
 	 */
+	@Override
 	public void intermediateCommit() {
 		commit();
 		closeSession();
@@ -721,41 +865,4 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			}
 		}
 	}
-	
-	//
-	// fxdiff qti-statistics (praktikum MK)
-	// Extensions used for native SQL queries
-	//
-	private String dbVendor = null;
-	
-	@Override
-	public String getDbVendor() {
-		return dbVendor;
-	}
-	/**
-	 * [used by spring]
-	 * @param dbVendor
-	 */
-	public void setDbVendor(String dbVendor) {
-		this.dbVendor = dbVendor;
-	}
-
-	/**
-	 * Create a named hibernate query for the given name. Optionally the database
-	 * vendor is prepended to load database specific queries if available. Use
-	 * this only when absolutely necessary.
-	 * 
-	 * @param queryName The query name
-	 * @param vendorSpecific true: prepend the database vendor name to the query
-	 *          name, e.g. mysql_queryName; false: use queryName as is
-	 * @return the query or NULL if no such named query exists
-	 */
-	public DBQuery createNamedQuery(final String queryName, boolean vendorSpecific) {
-		if (queryName == null) {
-			throw new AssertException("queryName must not be NULL");
-		}
-		
-		EntityManager em = getCurrentEntityManager();
-		return dbManagerDelegate.createNamedQuery(em, queryName, dbVendor, vendorSpecific);
-	}	
 }

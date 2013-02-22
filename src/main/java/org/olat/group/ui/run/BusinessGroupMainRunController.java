@@ -209,7 +209,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private Controller accessController;
 	
 	private boolean needActivation;
-	private final boolean chatAvailable;
+	private boolean chatAvailable;
 
 	/**
 	 * Do not use this constructor! Use the BGControllerFactory instead!
@@ -253,10 +253,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
 		
-		chatAvailable = CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() &&
-				CoreSpringFactory.getImpl(InstantMessagingModule.class).isGroupEnabled() && 
-				CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).isToolEnabled(CollaborationTools.TOOL_CHAT);
-
+		chatAvailable = isChatAvailable();
 		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin()
 				|| ureq.getUserSession().getRoles().isGroupManager()
 				|| securityManager.isIdentityPermittedOnResourceable(getIdentity(), Constants.PERMISSION_ACCESS, businessGroup);
@@ -328,6 +325,13 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			ureq.getUserSession().removeEntryFromNonClearedStore("wild_card_" + businessGroup.getKey());
 			needActivation = false;
 		}
+	}
+	
+	private boolean isChatAvailable() {
+		return CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() &&
+				CoreSpringFactory.getImpl(InstantMessagingModule.class).isGroupEnabled() && 
+				CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).isToolEnabled(CollaborationTools.TOOL_CHAT);
+
 	}
 	
 	private Component getOnWaitingListMessage(UserRequest ureq, BusinessGroup group) {
@@ -908,7 +912,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (event.getCommand().equals(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT)) {
 				// reset business group property manager
 				// update reference to update business group object
-				businessGroup = businessGroupService.loadBusinessGroup(this.businessGroup);
+				businessGroup = businessGroupService.loadBusinessGroup(businessGroup);
+				chatAvailable = isChatAvailable();
+				
 				main.contextPut("BuddyGroup", businessGroup);
 				TreeModel trMdl = buildTreeModel();
 				bgTree.setTreeModel(trMdl);

@@ -26,13 +26,12 @@ package org.olat.commons.coordinate.cluster.lock;
 
 import java.util.List;
 
-import org.hibernate.type.StandardBasicTypes;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -47,6 +46,9 @@ public class ClusterLockManager extends BasicManager {
 	private static ClusterLockManager INSTANCE;
 	
 	private static final OLog log = Tracing.createLoggerFor(ClusterLockManager.class);
+	
+	@Autowired
+	private DB dbInstance;
 	
 	/**
 	 * [spring]
@@ -65,16 +67,17 @@ public class ClusterLockManager extends BasicManager {
 	
 	LockImpl findLock(String asset) {
 		log.info("findLock: "+asset+" START");
-		DBQuery q = DBFactory.getInstance().createQuery(
-				"select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner where alock.asset = :asset");
-		q.setParameter("asset", asset);
-		List res = q.list();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner where alock.asset=:asset");
+
+		List<LockImpl> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), LockImpl.class)
+				.setParameter("asset", asset).getResultList();
 		if (res.size() == 0) {
 			log.info("findLock: null END");
 			return null; 
 		} else {
 			log.info("findLock: "+res.get(0)+" END");
-			return (LockImpl) res.get(0);
+			return res.get(0);
 		}
 	}
 		
@@ -85,22 +88,21 @@ public class ClusterLockManager extends BasicManager {
 	
 	void saveLock(LockImpl alock) {
 		log.info("saveLock: "+alock+" START");
-		DBFactory.getInstance().saveObject(alock);
+		dbInstance.getCurrentEntityManager().persist(alock);
 		log.info("saveLock: "+alock+" END");
 	}
 
 	void deleteLock(LockImpl li) {
 		log.info("deleteLock: "+li+" START");
-		DBFactory.getInstance().deleteObject(li);		
+		dbInstance.getCurrentEntityManager().remove(li);		
 		log.info("deleteLock: "+li+" END");
 	}
 	
-	@SuppressWarnings("unchecked")
 	List<LockImpl> getAllLocks() {
 		log.info("getAllLocks START");
-		DBQuery q = DBFactory.getInstance().createQuery(
-				"select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner");
-		List<LockImpl> res = q.list();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner");
+		List<LockImpl> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), LockImpl.class).getResultList();
 		log.info("getAllLocks END. res.length:"+ (res==null ? "null" : res.size()));
 		return res;
 	}
@@ -110,11 +112,14 @@ public class ClusterLockManager extends BasicManager {
 	 */
 	public void releaseAllLocksFor(Long identityKey) {
 		log.info("releaseAllLocksFor: " + identityKey + " START");	
-		DBFactory.getInstance().delete("from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch " +
-				"alock.owner as owner where owner.key = ?", identityKey, StandardBasicTypes.LONG);
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from org.olat.commons.coordinate.cluster.lock.LockImpl alock where alock.owner.key=:ownerKey");
+		int locks = dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+			.setParameter("ownerKey", identityKey)
+			.executeUpdate();
 		// cluster:: can we save a query (and is it appropriate considering encapsulation) 
 		// here by saying: alock.owner as owner where owner.name = ? (using identName parameter)
-		log.info("releaseAllLocksFor: "+identityKey+" END");
+		log.info("releaseAllLocksFor: "+identityKey+" END (" + locks + " locks deleted)");
 	}
 
 }

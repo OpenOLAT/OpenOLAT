@@ -653,7 +653,7 @@ public class I18nTest extends OlatTestCase {
 		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("Eingaben</i> </br >*<b>bold</b>*<br>_<i>italic</i>_<br>* Listen", testLocale, testLocale, null, true).size());
 		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("dargestellt werden. Bitte rufen Sie", testLocale, testLocale, null, true).size());
 		// multi line value search
-		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("Die Seite wird nun neu geladen.", testLocale, testLocale, null, true).size());
+		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("Die Aktion konnte nicht ausgef\u00FChrt werden", testLocale, testLocale, null, true).size());
 	}
 
 	/**

@@ -307,7 +307,7 @@ public class BCCourseNode extends GenericCourseNode {
 		//only here we know which translator to take for translating condition error messages
 		oneClickStatusCache = null;
 		String translatorStr = Util.getPackageName(BCCourseNodeEditController.class);
-		List statusDescs =isConfigValidWithTranslator(cev, translatorStr,getConditionExpressions());
+		List<StatusDescription> statusDescs =isConfigValidWithTranslator(cev, translatorStr,getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
 		return oneClickStatusCache;
 	}

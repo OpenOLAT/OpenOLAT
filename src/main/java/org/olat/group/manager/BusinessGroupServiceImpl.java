@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -211,7 +212,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
 			Integer minParticipants, Integer maxParticipants) {
 		
@@ -226,12 +226,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		//auto rank if possible
 		autoRankCheck(ureqIdentity, bg, previousMaxParticipants);
 		BusinessGroup updatedGroup = businessGroupDAO.merge(bg);
-
+		dbInstance.commit();
 		return updatedGroup;
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup updateBusinessGroup(Identity ureqIdentity, BusinessGroup group, String name, String description,
 			Integer minParticipants, Integer maxParticipants, Boolean waitingList, Boolean autoCloseRanks) {
 		
@@ -252,7 +251,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		bg.setLastUsage(new Date(System.currentTimeMillis()));
 		//auto rank if possible
 		autoRankCheck(ureqIdentity, bg, previousMaxParticipants);
-		return businessGroupDAO.merge(bg);
+		BusinessGroup mergedGroup = businessGroupDAO.merge(bg);
+		dbInstance.commit();
+		return mergedGroup;
 	}
 	
 	private void autoRankCheck(Identity identity, BusinessGroup updatedGroup, Integer previousMaxParticipants) {
@@ -301,7 +302,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup setLastUsageFor(final Identity identity, final BusinessGroup group) {
 		BusinessGroup reloadedBusinessGroup = businessGroupDAO.loadForUpdate(group.getKey());
 		reloadedBusinessGroup.setLastUsage(new Date());
@@ -318,7 +318,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 			securityManager.touchMembership(identity, secGroups);
 		}
-		return businessGroupDAO.merge(reloadedBusinessGroup);
+		BusinessGroup mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
+		dbInstance.commit();
+		return mergedGroup;
 	}
 
 	@Override
@@ -347,13 +349,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public List<BusinessGroup> loadAllBusinessGroups() {
 		return businessGroupDAO.loadAll();
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, String targetName, String targetDescription,
 			Integer targetMin, Integer targetMax,  boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
 			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations) {
@@ -441,7 +441,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroup mergeBusinessGroups(final Identity ureqIdentity, BusinessGroup targetGroup,
 			final List<BusinessGroup> groupsToMerge, MailPackage mailing) {
 		groupsToMerge.remove(targetGroup);//to be sure
@@ -501,6 +500,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		for(BusinessGroup group:groupsToMerge) {
 			deleteBusinessGroup(group);
 		}
+		dbInstance.commit();
 		return targetGroup;
 	}
 
@@ -552,6 +552,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 		}
 		removeOwners(ureqIdentity, ownerToRemove, group);
+		dbInstance.commit();
 	}
 
 	@Override
@@ -700,7 +701,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public void deleteBusinessGroup(BusinessGroup group) {
 		try{
 			OLATResourceableJustBeforeDeletedEvent delEv = new OLATResourceableJustBeforeDeletedEvent(group);
@@ -750,6 +750,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			// delete the publisher attached to this group (e.g. the forum and folder
 			// publisher)
 			notificationsManager.deletePublishersOf(group);
+
+			dbInstance.commit();
 	
 			log.audit("Deleted Business Group", group.toString());
 		} catch(DBRuntimeException dbre) {
@@ -770,7 +772,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public MailerResult deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, String businessPath, Identity deletedBy, Locale locale) {
 		Codepoint.codepoint(this.getClass(), "deleteBusinessGroupWithMail");
 			
@@ -794,13 +795,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		}
 		// now delete the group first
 		deleteBusinessGroup(businessGroupTodelete);
+		dbInstance.commit();
 		// finally send email
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		MailTemplate mailTemplate = BGMailHelper.createDeleteGroupMailTemplate(businessGroupTodelete, deletedBy);
 		if (mailTemplate != null) {
-			//fxdiff VCRP-16: intern mail system
+			String metaId = UUID.randomUUID().toString();
 			MailContext context = new MailContextImpl(businessPath);
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, users, null, mailTemplate, null);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, users, null, mailTemplate, null, metaId);
 			//MailHelper.printErrorsAndWarnings(mailerResult, wControl, locale);
 			return mailerResult;
 		}
@@ -818,7 +820,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, Roles ureqRoles, List<Identity> addIdentities,
 			BusinessGroup group, MailPackage mailing) {
 		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
@@ -929,7 +930,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, Roles ureqRoles, List<Identity> addIdentities,
 			BusinessGroup group, MailPackage mailing) {	
 		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
@@ -945,21 +945,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				response.getIdentitiesAlreadyInGroup().add(identity);
 			}
 		}
-
+		dbInstance.commit();
 		return response;
 	}
 	
 	@Override
-	@Transactional
 	public void cancelPendingParticipation(Identity ureqIdentity, ResourceReservation reservation) {
 		if(reservation != null && "BusinessGroup".equals(reservation.getResource().getResourceableTypeName())) {
 			BusinessGroup group = businessGroupDAO.loadForUpdate(reservation.getResource().getResourceableId());
 			transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, null);
+			dbInstance.commit();
 		}
 	}
 
 	@Override
-	@Transactional
 	public void acceptPendingParticipation(Identity ureqIdentity, Identity reservationOwner, OLATResource resource) {
 		ResourceReservation reservation = acService.getReservation(reservationOwner, resource);
 		if(reservation != null && "BusinessGroup".equals(resource.getResourceableTypeName())) {
@@ -977,6 +976,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 			
 			reservationDao.deleteReservation(reservation);
+			dbInstance.commit();
 		}
 	}
 
@@ -1002,17 +1002,16 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	@Transactional
 	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, MailPackage mailing) {
 		group = businessGroupDAO.loadForUpdate(group.getKey());
 		for (Identity identity : identities) {
 		  removeParticipant(ureqIdentity, identity, group, mailing);
 		  log.audit("removed identiy '" + identity.getName() + "' from securitygroup with key " + group.getPartipiciantGroup().getKey());
 		}
+		dbInstance.commit();
 	}
 
 	@Override
-	@Transactional
 	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource, MailPackage mailing) {
 		if(identities == null || identities.isEmpty() || resource == null) return;//nothing to do
 		
@@ -1067,6 +1066,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				reservationDao.deleteReservation(reservation);
 			}
 		}
+		dbInstance.commit();
 	}
 	
 	private final BusinessGroupMembershipViewImpl removeGroupMembers(Identity ureqIdentity, BusinessGroupMembershipViewImpl currentMembership,
@@ -1139,6 +1139,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey());
 			}
 		}
+		dbInstance.commit();
 		return response;
 	}
 
@@ -1155,11 +1156,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public void removeFromWaitingList(Identity ureqIdentity, List<Identity> identities, BusinessGroup businessGroup, MailPackage mailing) {
 		businessGroup = businessGroupDAO.loadForUpdate(businessGroup.getKey());
-		
 		for (Identity identity : identities) {
 		  removeFromWaitingList(ureqIdentity, identity, businessGroup, mailing);
 		  log.audit("removed identiy '" + identity.getName() + "' from securitygroup with key " + businessGroup.getOwnerGroup().getKey());
 		}
+		dbInstance.commit();
 	}
 	
 	@Override
@@ -1177,7 +1178,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(Identity ureqIdentity, List<Identity> identities, 
 			BusinessGroup currBusinessGroup, MailPackage mailing) {
 		
@@ -1198,7 +1198,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				response.getIdentitiesAlreadyInGroup().add(identity);
 			}
 		}
-		
+
+		dbInstance.commit();
 		return response;
 	}
 	
@@ -1255,7 +1256,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			enrollStatus.setEnrolled(BGMembership.participant);						
 			if (log.isDebug()) log.debug("doEnroll as participant committed");
 		}
-		
+
+		dbInstance.commit();
 		log.info("doEnroll end", identity.getName());
 		return enrollStatus;
 	}
@@ -1362,7 +1364,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public void addResourceTo(BusinessGroup group, RepositoryEntry re) {
 		businessGroupRelationDAO.addRelationToResource(group, re.getOlatResource());
 		//add author permission
@@ -1373,7 +1374,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public void addResourcesTo(List<BusinessGroup> groups, List<RepositoryEntry> resources) {
 		if(groups == null || groups.isEmpty()) return;
 		if(resources == null || resources.isEmpty()) return;
@@ -1439,13 +1439,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public void dedupMembers(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants) {
 		dedupSingleRepositoryentry(ureqIdentity, entry, coaches, participants, false);
+		dbInstance.commit();
 	}
 	
 	@Override
-	@Transactional
 	public int countDuplicateMembers(RepositoryEntry entry, boolean coaches, boolean participants) {
 		return dedupSingleRepositoryentry(null, entry, coaches, participants, true);
 	}
@@ -1497,7 +1496,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public void removeResourceFrom(List<BusinessGroup> groups, RepositoryEntry re) {
 		if(groups == null || groups.isEmpty()) {
 			return; // nothing to do
@@ -1515,10 +1513,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				dbInstance.commit();
 			}
 		}
+		dbInstance.commit();
 	}
 	
 	@Override
-	@Transactional
 	public void removeResource(OLATResource resource) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		List<BusinessGroup> groups = findBusinessGroups(params, resource, 0, -1);
@@ -1530,6 +1528,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, resource);
 			securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
 		}
+		dbInstance.commit();
 	}
 
 	@Override

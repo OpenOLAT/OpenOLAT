@@ -170,17 +170,19 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 		
 		StatusDescription sd = StatusDescription.NOERROR;
-		OpenMeetingsManager openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
-		Long roomId = openMeetingsManager.getRoomId(null, groupMgr.getCourseResource(), getIdent());
-		if(roomId == null) {
-			String shortKey = "error.noroom.short";
-			String longKey = "error.noroom.long";
-			String[] params = new String[] { getShortTitle() };
-			String translPackage = Util.getPackageName(OpenMeetingsRoomEditController.class);
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
-			sd.setDescriptionForUnit(getIdent());
-			// set which pane is affected by error
-			sd.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG);
+		if(groupMgr != null) {
+			OpenMeetingsManager openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
+			Long roomId = openMeetingsManager.getRoomId(null, groupMgr.getCourseResource(), getIdent());
+			if(roomId == null) {
+				String shortKey = "error.noroom.short";
+				String longKey = "error.noroom.long";
+				String[] params = new String[] { getShortTitle() };
+				String translPackage = Util.getPackageName(OpenMeetingsRoomEditController.class);
+				sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+				sd.setDescriptionForUnit(getIdent());
+				// set which pane is affected by error
+				sd.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG);
+			}
 		}
 		return sd;
 	}

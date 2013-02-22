@@ -32,9 +32,18 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+
+import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.core.logging.DBRuntimeException;
@@ -42,7 +51,13 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.jpa.EntityManagerFactoryUtils;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 
 /**
@@ -53,8 +68,12 @@ import org.olat.test.OlatTestCase;
  */
 public class DBTest extends OlatTestCase {
 	
-	private final OLog log = Tracing.createLoggerFor(DBTest.class);
-
+	private static final OLog log = Tracing.createLoggerFor(DBTest.class);
+	
+	@Autowired
+ 	private RepositoryManager repositoryManager;
+	@Autowired
+ 	private EntityManagerFactory emf;
 		
 	/**
 	 * testCloseOfUninitializedSession
@@ -62,15 +81,98 @@ public class DBTest extends OlatTestCase {
 	@Test
 	public void testCloseOfUninitializedSession() {
 		// first get a initialized db
-		DB db = DBImpl.getInstance(false);
+		DB db = DBImpl.getInstance();
 		//close it
 		db.closeSession();
 		//then get a uninitialized db
-		db = DBImpl.getInstance(false);
+		db = DBImpl.getInstance();
 		// and close it.
 		db.closeSession();
-		
 	}
+	
+	@Test
+	public void testMergeEntityManager() {	
+ 		EntityManager em1 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+ 		Assert.assertNull(em1);
+ 		List<RepositoryEntryShortImpl> res = repositoryManager.loadRepositoryEntryShortsByResource(Collections.singletonList(27l), "CourseModule");
+ 		Assert.assertNotNull(res);
+ 		EntityManager em2 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+ 		Assert.assertNotNull(em2);
+ 		
+ 		EntityTransaction trx = em2.getTransaction();
+ 		Assert.assertTrue(trx.isActive());
+ 		trx.commit();
+ 		
+ 		EntityManagerFactoryUtils.closeEntityManager(em2);
+ 		
+ 		EntityManager em3 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+ 		Assert.assertNotNull(em3);
+
+ 		//search in the thread local used by Spring
+ 		List<TransactionSynchronization> syncs = TransactionSynchronizationManager.getSynchronizations();
+ 		Assert.assertNotNull(syncs);
+ 		TransactionSynchronizationManager.clear();
+ 		Map<Object,Object> map = TransactionSynchronizationManager.getResourceMap();
+ 		Assert.assertNotNull(map);
+ 		EntityManager em4 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+ 		Assert.assertNotNull(em4);
+ 		
+ 		//unbind the entity manager
+ 		if(map.containsKey(emf)) {
+			TransactionSynchronizationManager.unbindResource(emf);
+		}
+ 		
+ 		//no entity manager anymore
+ 		EntityManager em5 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+ 		Assert.assertNull(em5);
+ 	}
+	
+	@Test
+	public void testMergeEntityManager_transactional() {
+		CountDownLatch latch = new CountDownLatch(1);
+		TestThread test = new TestThread(repositoryManager, latch);
+		test.start();
+ 
+		try {
+			latch.await(20, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.error("", e);
+			fail("Takes too long");
+		}
+		
+		Assert.assertFalse(test.hasError());
+ 	}
+	
+ 	private class TestThread extends Thread {
+ 		private boolean error;
+ 		private final CountDownLatch latch;
+ 		private final RepositoryManager repositoryManager;
+ 		
+ 		public TestThread(RepositoryManager repositoryManager, CountDownLatch latch) {
+ 			this.latch = latch;
+ 			this.repositoryManager = repositoryManager;
+ 		}
+ 		
+ 		public boolean hasError() {
+ 			return error;
+ 		}
+		
+ 		public void run() {
+ 			try {
+				EntityManager em1 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+				Assert.assertNull(em1);
+				repositoryManager.lookupRepositoryEntry(27l, false);
+				EntityManager em2 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+				//Transactional annotation must clean-up the entity manager
+				Assert.assertNull(em2);
+			} catch (Exception e) {
+				error = true;
+				log.error("", e);
+			} finally {
+				latch.countDown();
+			}
+ 		}
+ 	}
 	
 	/**
 	 * testErrorHandling

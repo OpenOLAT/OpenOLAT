@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
@@ -97,7 +96,6 @@ import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Initial Date:  Mar 31, 2004
@@ -461,7 +459,6 @@ public class RepositoryManager extends BasicManager {
 	 * @param the repository entry key (not the olatresourceable key)
 	 * @return Repo entry represented by key or null if no such entry or key is null.
 	 */
-	@Transactional(readOnly=true)
 	public RepositoryEntry lookupRepositoryEntry(Long key) {
 		if (key == null) return null;
 		return lookupRepositoryEntry(key, false) ;
@@ -472,7 +469,6 @@ public class RepositoryManager extends BasicManager {
 	 * @param the repository entry key (not the olatresourceable key)
 	 * @return Repo entry represented by key or null if no such entry or key is null.
 	 */
-	@Transactional(readOnly=true)
 	public RepositoryEntry lookupRepositoryEntry(Long key, boolean strict) {
 		if (key == null) return null;
 		if(strict) {
@@ -758,7 +754,6 @@ public class RepositoryManager extends BasicManager {
 	 * Increment the launch counter.
 	 * @param re
 	 */
-	@Transactional
 	public RepositoryEntry incrementLaunchCounter(RepositoryEntry re) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		if(reloadedRe == null) return null;//deleted
@@ -768,6 +763,7 @@ public class RepositoryManager extends BasicManager {
 		updateLifeCycle(reloadedRe);
 		
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commit();
 		return updatedRe;
 	}
 
@@ -775,7 +771,6 @@ public class RepositoryManager extends BasicManager {
 	 * Increment the download counter.
 	 * @param re
 	 */
-	@Transactional
 	public RepositoryEntry incrementDownloadCounter( final RepositoryEntry re) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		if(reloadedRe == null) return null;//deleted
@@ -784,6 +779,7 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setLastUsage(new Date());
 		updateLifeCycle(reloadedRe);
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commit();
 		return updatedRe;
 	}
 
@@ -791,22 +787,22 @@ public class RepositoryManager extends BasicManager {
 	 * Set last-usage date to to now for certain repository-entry.
 	 * @param 
 	 */
-	@Transactional
 	public RepositoryEntry setLastUsageNowFor(final RepositoryEntry re) {
 		if (re == null) return null;
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		reloadedRe.setLastUsage(new Date());
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commit();
 		return updatedRe;
 	}
 
-	@Transactional
 	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly ) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		reloadedRe.setAccess(access);
 		reloadedRe.setMembersOnly(membersOnly);//fxdiff VCRP-1,2: access control of resources
 		
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commit();
 		return updatedRe;
 	}
 
@@ -817,7 +813,6 @@ public class RepositoryManager extends BasicManager {
 	 * @param description If null, nothing happen
 	 * @return
 	 */
-	@Transactional
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description ) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		if(StringHelper.containsNonWhitespace(displayName)) {
@@ -827,10 +822,10 @@ public class RepositoryManager extends BasicManager {
 			reloadedRe.setDescription(description);
 		}
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commit();
 		return updatedRe;
 	}
 
-	@Transactional
 	public RepositoryEntry setProperties(final RepositoryEntry re, boolean canCopy, boolean canReference, boolean canLaunch, boolean canDownload ) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		reloadedRe.setCanCopy(canCopy);
@@ -838,6 +833,7 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setCanLaunch(canLaunch);
 		reloadedRe.setCanDownload(canDownload);
 		RepositoryEntry updatedRe = DBFactory.getInstance().getCurrentEntityManager().merge(reloadedRe);
+		DBFactory.getInstance().commit();
 		return updatedRe;
 	}
 	

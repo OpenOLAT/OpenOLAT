@@ -19,6 +19,8 @@
  */
 package org.olat.core.util.mail;
 
+import java.util.UUID;
+
 /**
  * A mail package is the sum of the template, the context and it's result.
  * All or part of thesse can be null.
@@ -29,52 +31,43 @@ package org.olat.core.util.mail;
  */
 public class MailPackage {
 	
+	private final String uuid;
 	private final boolean sendEmail;
 	private final MailTemplate template;
 	private final MailContext context;
 	private final MailerResult result;
 	
 	public MailPackage() {
-		this.sendEmail = true;
-		this.template = null;
-		this.context = null;
-		this.result = new MailerResult();
+		this(true);
 	}
 	
 	public MailPackage(boolean sendMail) {
-		this.sendEmail = sendMail;
-		this.template = null;
-		this.context = null;
-		this.result = new MailerResult();
+		this(null, new MailerResult(), (MailContext)null, sendMail);
 	}
 	
 	public MailPackage(MailTemplate template, MailContext context) {
-		this.sendEmail = true;
-		this.template = template;
-		this.context = context;
-		this.result = new MailerResult();
+		this(template, new MailerResult(), context, true);
 	}
 	
 	public MailPackage(MailTemplate template, String businessPath, boolean sendMail) {
-		this.sendEmail = sendMail;
-		this.template = template;
-		this.context = new MailContextImpl(null, null, businessPath);
-		this.result = new MailerResult();
+		this(template, new MailerResult(), new MailContextImpl(null, null, businessPath), sendMail);
 	}
 	
 	public MailPackage(MailerResult result, String businessPath, boolean sendMail) {
-		this.sendEmail = sendMail;
-		this.template = null;
-		this.context = new MailContextImpl(null, null, businessPath);
-		this.result = result;
+		this(null, result, new MailContextImpl(null, null, businessPath), sendMail);
 	}
 	
 	public MailPackage(MailTemplate template, MailerResult result, String businessPath, boolean sendMail) {
+		this(template, result, new MailContextImpl(null, null, businessPath), sendMail);
+	}
+	
+	public MailPackage(MailTemplate template, MailerResult result, MailContext context, boolean sendMail) {
 		this.sendEmail = sendMail;
 		this.template = template;
-		this.context = new MailContextImpl(null, null, businessPath);
+		this.context = context;
 		this.result = result;
-	}
+		this.uuid = UUID.randomUUID().toString();
+	} 
 
 
 	/**
@@ -84,6 +77,10 @@ public class MailPackage {
 	 */
 	public boolean isSendEmail() {
 		return sendEmail;
+	}
+
+	public String getUuid() {
+		return uuid;
 	}
 
 	public MailTemplate getTemplate() {

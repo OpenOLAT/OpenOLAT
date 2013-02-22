@@ -186,8 +186,8 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		// error messages
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
 
-		List condErrs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
-		List missingNames = new ArrayList();
+		List<StatusDescription> condErrs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> missingNames = new ArrayList<StatusDescription>();
 		/*
 		 * check group and area names for existence
 		 */

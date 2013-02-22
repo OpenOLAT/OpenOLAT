@@ -77,6 +77,8 @@ public class FeedViewHelper {
 	private int page = 0;
 	private List<Item> cachedItems;
 	private FeedSecurityCallback callback;
+	//
+	private FeedManager feedManager = FeedManager.getInstance();
 
 	/**
 	 * Use this constructor for localized content (like e.g. date formats)
@@ -175,6 +177,10 @@ public class FeedViewHelper {
 	 * @return The media url of the item
 	 */
 	public String getMediaUrl(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		String file = null;
 		Enclosure enclosure = item.getEnclosure();
 		if (enclosure != null) {
@@ -225,6 +231,10 @@ public class FeedViewHelper {
 	 * @return The formatted last modified date string of the item
 	 */
 	public String getLastModified(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		String lastModified = null;
 		Date date = item.getLastModified();
 		if (date != null) {
@@ -238,6 +248,10 @@ public class FeedViewHelper {
 	 * @return The formatted last modified date string of the item
 	 */
 	private String getPublishDate(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		String publishDate = null;
 		Date date = item.getPublishDate();
 		if (date != null) {
@@ -251,6 +265,10 @@ public class FeedViewHelper {
 	 * @return Information about publication date and author
 	 */
 	private String getPublishInfo(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		String info = null;
 		String date = getPublishDate(item);
 		String author = item.getAuthor();
@@ -275,6 +293,10 @@ public class FeedViewHelper {
 	 * @return Information about the item. Is it draft, scheduled or published?
 	 */
 	public String getInfo(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		String info = null;
 		if (item.isDraft()) {
 			info = translator.translate("feed.item.draft");
@@ -287,6 +309,10 @@ public class FeedViewHelper {
 	}
 	
 	public boolean isModified(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		return item.getModifierKey() > 0 && StringHelper.containsNonWhitespace(item.getModifier());
 	}
 	
@@ -295,6 +321,10 @@ public class FeedViewHelper {
 	 * @return Information about the item. Is it draft, scheduled or published?
 	 */
 	public String getModifierInfo(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		if (isModified(item)) {
 			String date = getLastModified(item);
 			String modifier = item.getModifier();
@@ -315,8 +345,11 @@ public class FeedViewHelper {
 		return lastModified;
 	}
 	
-	//fxdiff FXOLAT-118: size for video podcast
 	public String getWidth(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		int width = item.getWidth();
 		if(width > 0 && width < 2000) {
 			return Integer.toString(width);
@@ -324,8 +357,11 @@ public class FeedViewHelper {
 		return "400";
 	}
 	
-	//fxdiff FXOLAT-118: size for video podcast
 	public String getHeight(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+
 		int height = item.getHeight();
 		if(height > 0 && height < 2000) {
 			return Integer.toString(height);
@@ -369,6 +405,10 @@ public class FeedViewHelper {
 	 *         the FeedMediaDispatcher
 	 */
 	public String getItemDescriptionForBrowser(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+		
 		String itemDescription = item.getDescription();
 		if (itemDescription != null) {
 			if (feed.isExternal()) {
@@ -393,6 +433,10 @@ public class FeedViewHelper {
 	 *         the FeedMediaDispatcher
 	 */
 	public String getItemContentForBrowser(Item item) {
+		// Reload item to prevent displaying of stale content
+		feed = feedManager.getFeed(feed);
+		item = feedManager.getItem(feed, item.getGuid());
+		
 		String itemContent = item.getContent();
 		if (itemContent != null) {
 			if (feed.isExternal()) {
@@ -543,6 +587,7 @@ public class FeedViewHelper {
 	 * @param callback
 	 */
 	public void resetItems(FeedSecurityCallback callback) {
+		feed = feedManager.getFeed(feed);
 		cachedItems = feed.getFilteredItems(callback, identity);
 	}
 

@@ -28,6 +28,7 @@ package org.olat.admin.securitygroup.gui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.admin.securitygroup.gui.multi.UsersToGroupWizardController;
 import org.olat.admin.user.UserSearchController;
@@ -502,8 +503,9 @@ public class GroupController extends BasicController {
 				ccIdentities = null;	
 			}
 			//fxdiff VCRP-16: intern mail system
+			String metaId = UUID.randomUUID().toString();
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, toBeRemoved, ccIdentities, mailTemplate, sender);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, toBeRemoved, ccIdentities, mailTemplate, sender, metaId);
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 		}
 	}
@@ -556,8 +558,9 @@ public class GroupController extends BasicController {
 				ccIdentities = null;	
 			}
 			//fxdiff VCRP-16: intern mail system
+			String metaId = UUID.randomUUID().toString();
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesAddedEvent.getAddedIdentities(), ccIdentities, mailTemplate, sender);
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesAddedEvent.getAddedIdentities(), ccIdentities, mailTemplate, sender, metaId);
 			MailHelper.appendErrorsAndWarnings(mailerResult, errorMessage, infoMessage, ureq.getLocale());
 		}
 		// report any errors on screen

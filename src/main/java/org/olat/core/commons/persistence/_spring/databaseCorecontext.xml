@@ -5,12 +5,8 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-		
-	<bean id="collectingAdditionalDBMappings" class="org.olat.core.commons.persistence.AdditionalMappingsListFactoryBean"/>
-	
 	<!-- Persistence unit manager -->
-	<bean id="pum" class="org.olat.core.commons.persistence.OLATPersistenceUnitManager" depends-on="databaseUpgrader">
-		<property name="additionalDBMappings" ref="collectingAdditionalDBMappings" />
+	<bean id="pum" class="org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager" depends-on="databaseUpgrader">
   		<property name="persistenceXmlLocations">
     		<list>
      			<value>classpath:/org/olat/core/commons/persistence/_spring/core_persistence.xml</value>

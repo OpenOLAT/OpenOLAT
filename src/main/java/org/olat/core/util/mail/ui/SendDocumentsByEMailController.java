@@ -59,6 +59,7 @@ import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
@@ -570,6 +571,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	}
 
 	private class EMailIdentity implements Identity {
+
+		private static final long serialVersionUID = -2899896628137672419L;
 		private final String email;
 		private final User user;
 
@@ -626,7 +629,9 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		}
 	}
 
-	private class EMailUser implements User {
+	private class EMailUser implements User, ModifiedInfo {
+
+		private static final long serialVersionUID = 7260225880639460228L;
 		private final EMailPreferences prefs = new EMailPreferences();
 		private Map<String, String> data = new HashMap<String, String>();
 
@@ -640,7 +645,6 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			return null;
 		}
 
-		@SuppressWarnings("unused")
 		public boolean equalsByPersistableKey(Persistable persistable) {
 			return this == persistable;
 		}
@@ -649,19 +653,23 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			return null;
 		}
 
+		@Override
+		public void setLastModified(Date date) {
+			//
+		}
+
 		public Date getCreationDate() {
 			return null;
 		}
 
-		@SuppressWarnings("unused")
-		public void setProperty(String propertyName, String propertyValue) {/**/
+		public void setProperty(String propertyName, String propertyValue) {
+			//
 		}
 
-		@SuppressWarnings("unused")
-		public void setPreferences(Preferences prefs) {/**/
+		public void setPreferences(Preferences prefs) {
+			//
 		}
 
-		@SuppressWarnings("unused")
 		public String getProperty(String propertyName, Locale locale) {
 			return data.get(propertyName);
 		}
@@ -679,6 +687,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	}
 
 	private class EMailPreferences implements Preferences {
+		private static final long serialVersionUID = 7039109437910126584L;
+
 		@Override
 		public String getLanguage() {
 			return getLocale().getLanguage();

@@ -20,7 +20,11 @@
 package org.olat.instantMessaging.manager;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -52,10 +56,6 @@ public class InstantMessagePreferencesDAO {
 	}
 	
 	public String getStatus(Long identityKey) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select msg.rosterDefaultStatus from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
-		  .append(" where msg.identity.key=:identityKey");
-		
 		List<String> msgs = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadIMRosterStatusByIdentity", String.class)
 				.setParameter("identityKey", identityKey)
@@ -66,6 +66,58 @@ public class InstantMessagePreferencesDAO {
 		}
 		return msgs.get(0);
 	}
+	
+	public int countAvailableBuddies(List<Long> buddies) {
+		if(buddies == null || buddies.isEmpty()) {
+			return 0;
+		}
+		
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("countAvailableBuddiesIn", Number.class);
+
+		int hibernateInBatch = 500;
+		int firstResult = 0;
+		int total = 0;
+		do {
+			int toIndex = Math.min(firstResult + hibernateInBatch, buddies.size());
+			List<Long> inParameter = buddies.subList(firstResult, toIndex);
+			query.setParameter("buddyKeys", inParameter);
+			firstResult += inParameter.size();
+			
+			Number count = query.getSingleResult();
+			total += count.intValue();
+		} while(firstResult < buddies.size());
+
+		return total;
+	}
+	
+	public Map<Long,String> getBuddyStatus(List<Long> buddies) {
+		if(buddies == null || buddies.isEmpty()) {
+			return new HashMap<Long,String>();
+		}
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("mapStatusByBuddiesIn", Object[].class);
+
+		int hibernateInBatch = 250;
+		int firstResult = 0;
+		Map<Long,String> statusMap = new HashMap<Long,String>();
+		do {
+			int toIndex = Math.min(firstResult + hibernateInBatch, buddies.size());
+			List<Long> inParameter = buddies.subList(firstResult, toIndex);
+			query.setParameter("buddyKeys", inParameter);
+			firstResult += inParameter.size();
+			
+			List<Object[]> statusList = query.getResultList();
+			for(Object[] status:statusList) {
+				Long identityKey = (Long)status[0];
+				String state = (String)status[1];
+				statusMap.put(identityKey, state);
+			}
+		} while(firstResult < buddies.size());
+
+		return statusMap;
+	}
 
 	/**
 	 * Synchronized to prevent
@@ -73,10 +125,6 @@ public class InstantMessagePreferencesDAO {
 	 * @return
 	 */
 	public synchronized ImPreferencesImpl getPreferences(Identity identity) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select msg from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
-		  .append(" where msg.identity.key=:identityKey");
-		
 		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadIMPreferencesByIdentity", ImPreferencesImpl.class)
 				.setParameter("identityKey", identity.getKey())
@@ -111,10 +159,6 @@ public class InstantMessagePreferencesDAO {
 	}
 	
 	private ImPreferencesImpl loadForUpdate(Identity from) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select msg from ").append(ImPreferencesImpl.class.getName()).append(" msg ")
-		  .append(" where msg.identity.key=:identityKey");
-		
 		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadIMPreferencesForUpdate", ImPreferencesImpl.class)
 				.setParameter("identityKey", from.getKey())

@@ -20,6 +20,7 @@
 package org.olat.admin.user.imp;
 
 import org.olat.admin.user.groups.GroupSearchController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -29,6 +30,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.group.BusinessGroupModule;
 
 /**
  * 
@@ -40,11 +42,19 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
 public class ImportStep02 extends BasicStep {
+	
+	private final boolean mandatoryEmail;
 
 	public ImportStep02(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("step2.description", "step2.short.description");
-		setNextStep(Step.NOSTEP);
+
+		mandatoryEmail = CoreSpringFactory.getImpl(BusinessGroupModule.class).isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		if(mandatoryEmail) {
+			setNextStep(Step.NOSTEP);
+		} else {
+			setNextStep(new ImportStep03SendMail(ureq));
+		}
 	}
 
 	/**
@@ -52,7 +62,9 @@ public class ImportStep02 extends BasicStep {
 	 */
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, false, true);
+		boolean next = !mandatoryEmail;
+		boolean finish = mandatoryEmail;
+		return new PrevNextFinishConfig(true, next, finish);
 	}
 
 	/**

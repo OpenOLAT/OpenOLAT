@@ -24,12 +24,11 @@ import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -53,8 +52,6 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
@@ -71,11 +68,6 @@ import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchRepositoryEntryParameters;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.group.LearningGroupWebService;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
@@ -92,7 +84,7 @@ import org.olat.restapi.support.vo.FolderVOes;
 @Path("users/{identityKey}/folders")
 public class UserFoldersWebService {
 	
-	private OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
+	//private static final OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
 
 	@Path("personal")
 	public VFSWebservice getFolder(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
@@ -190,7 +182,7 @@ public class UserFoldersWebService {
 		}
 
 		final Map<Long,Long> groupNotified = new HashMap<Long,Long>();
-		final Map<Long,Set<String>> courseNotified = new HashMap<Long,Set<String>>();
+		final Map<Long,Collection<String>> courseNotified = new HashMap<Long,Collection<String>>();
 		NotificationsManager man = NotificationsManager.getInstance();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("FolderModule");
@@ -203,7 +195,7 @@ public class UserFoldersWebService {
 				} else if("CourseModule".equals(resName)) {
 					Long courseKey = sub.getPublisher().getResId();
 					if(!courseNotified.containsKey(courseKey)) {
-						courseNotified.put(courseKey,new HashSet<String>());
+						courseNotified.put(courseKey,new ArrayList<String>());
 					}
 					courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
 				}
@@ -211,7 +203,26 @@ public class UserFoldersWebService {
 		}
 
 		final List<FolderVO> folderVOs = new ArrayList<FolderVO>();
+		final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
+		for(Map.Entry<Long, Collection<String>> e:courseNotified.entrySet()) {
+			final Long courseKey = e.getKey();
+			final Collection<String> nodeKeys = e.getValue();
+			final ICourse course = CourseFactory.loadCourse(courseKey);
+			new CourseTreeVisitor(course, ienv).visit(new Visitor() {
+				@Override
+				public void visit(INode node) {
+					if(node instanceof BCCourseNode) {
+						BCCourseNode bcNode = (BCCourseNode)node;
+						if(nodeKeys.contains(bcNode.getIdent())) {
+							FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
+							folderVOs.add(folder);
+						}
+					}
+				}
+			});
+		}
 		
+		/*
 		RepositoryManager rm = RepositoryManager.getInstance();
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
@@ -238,7 +249,7 @@ public class UserFoldersWebService {
 					log.error("", e);
 				}
 			}
-		}
+		}*/
 		
 		//start found forums in groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);

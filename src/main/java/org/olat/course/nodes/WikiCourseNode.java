@@ -168,7 +168,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		oneClickStatusCache = null;
 		//only here we know which translator to take for translating condition error messages
 		String translatorStr = Util.getPackageName(WikiEditController.class);
-		List sds = isConfigValidWithTranslator(cev, translatorStr,getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr,getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

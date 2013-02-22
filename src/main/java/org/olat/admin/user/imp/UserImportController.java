@@ -27,7 +27,6 @@ package org.olat.admin.user.imp;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -53,13 +52,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.MailerWithTemplate;
-import org.olat.group.BusinessGroup;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
-import org.olat.group.ui.BGMailHelper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -75,7 +70,6 @@ public class UserImportController extends BasicController {
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
-	private List<List<String>> newIdents;
 	private boolean canCreateOLATPassword;
 	private VelocityContainer mainVC;
 	private Link startLink;
@@ -176,8 +170,9 @@ public class UserImportController extends BasicController {
 				boolean hasChanges = false;
 				try {
 					if (runContext.containsKey("validImport") && ((Boolean) runContext.get("validImport")).booleanValue()) {
-						// create new users and persist 
-						newIdents = (List<List<String>>) runContext.get("newIdents");
+						// create new users and persist
+						@SuppressWarnings("unchecked")
+						List<List<String>> newIdents = (List<List<String>>) runContext.get("newIdents");
 						for (Iterator<List<String>> it_news = newIdents.iterator(); it_news.hasNext();) {
 							List<String> singleUser = it_news.next();
 							doCreateAndPersistIdentity(singleUser);
@@ -187,12 +182,13 @@ public class UserImportController extends BasicController {
 						List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
 						@SuppressWarnings("unchecked")
 						List<Long> partGroups = (List<Long>) runContext.get("partGroups");
-						@SuppressWarnings("unchecked")
-						List<Long> mailGroups = (List<Long>) runContext.get("mailGroups");
 
-						if (ownGroups.size() != 0 || partGroups.size() != 0){
+						if (ownGroups.size() > 0 || partGroups.size() > 0){
+							@SuppressWarnings("unchecked")
 							List<Object> allIdents = (List<Object>) runContext.get("idents");
-							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, mailGroups);
+							Boolean sendMailObj = (Boolean)runContext.get("sendMail");
+							boolean sendmail = sendMailObj == null ? true : sendMailObj.booleanValue();
+							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, sendmail);
 						}
 						hasChanges = true;
 					}
@@ -230,7 +226,7 @@ public class UserImportController extends BasicController {
 		return identities;
 	}
 
-	private void processGroupAdditionForAllIdents(List<Object> allIdents, List<Long> tutorGroups, List<Long> partGroups, List<Long> mailGroups) {
+	private void processGroupAdditionForAllIdents(List<Object> allIdents, List<Long> tutorGroups, List<Long> partGroups, boolean sendmail) {
 		Collection<Identity> identities = getIdentities(allIdents);
 		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
 		for(Identity identity:identities) {
@@ -249,22 +245,9 @@ public class UserImportController extends BasicController {
 				}
 			}
 		}
-		businessGroupService.updateMemberships(getIdentity(), changes, null);
-		DBFactory.getInstance().commit();
 		
-		if(mailGroups != null && !mailGroups.isEmpty()) {
-			List<BusinessGroup> notifGroups = businessGroupService.loadBusinessGroups(mailGroups);
-			for (BusinessGroup group : notifGroups) {
-				for(Identity identity:identities) {
-					MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, getIdentity());
-					MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-					MailerResult mailerResult = mailer.sendMailAsSeparateMails(null, Collections.singletonList(identity), null, mailTemplate, null);
-					if (mailerResult.getReturnCode() != MailerResult.OK && isLogDebugEnabled()) {
-						logDebug("Problems sending Group invitation mail for identity: " + identity.getName() + " and group: " 
-								+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
-					}
-				}
-			}
-		}
+		MailPackage mailing = new MailPackage(sendmail);
+		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
+		DBFactory.getInstance().commit();
 	}
 }

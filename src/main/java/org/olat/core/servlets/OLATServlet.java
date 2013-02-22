@@ -141,7 +141,7 @@ public class OLATServlet extends HttpServlet {
 			I18nManager.remove18nInfoFromThread();
 			Tracing.setUreq(null);
 			GUIInterna.end(request);
-			DBFactory.getInstanceForClosing().cleanUpSession();
+			DBFactory.getInstanceForClosing().closeSession();
 		}
 	}
 

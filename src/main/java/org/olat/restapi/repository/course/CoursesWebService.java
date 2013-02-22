@@ -264,6 +264,8 @@ public class CoursesWebService {
 	public static ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP,
 			String displayName, String softKey, int access) {
 		
+		log.info("REST Import course " + displayName + " START");
+		
 		OLATResource newCourseResource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, fCourseImportZIP);
 		if (course == null) {
@@ -313,9 +315,12 @@ public class CoursesWebService {
 		editorRootNode.setNewnode(false);
 		
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), false);
+		log.info("REST Import course " + displayName + " END");
 		
 		//publish
+		log.info("REST Publish course " + displayName + " START");
 		CourseFactory.publishCourse(course, identity, ureq.getLocale());
+		log.info("REST Publish course " + displayName + " END");
 
 		return course;
 	}

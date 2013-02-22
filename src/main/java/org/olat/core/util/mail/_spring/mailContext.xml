@@ -64,16 +64,6 @@
 		<property name="notificationsManager" ref="org.olat.core.util.notifications.NotificationsManager"/>
 	</bean>
 	
-	<bean id="mailDBMappings" class="org.olat.core.commons.persistence.AdditionalDBMappings">
-		<property name="xmlFiles">
-			<list>								
-				<value>org/olat/core/util/mail/model/DBMail.hbm.xml</value>
-				<value>org/olat/core/util/mail/model/DBMailAttachment.hbm.xml</value>
-				<value>org/olat/core/util/mail/model/DBMailRecipient.hbm.xml</value>
-			</list>
-		</property>
-	</bean>
-	
 	<bean id="org.olat.core.util.mail.manager.MailNotificationsHandler" class="org.olat.core.util.mail.manager.MailNotificationsHandler">
 		<property name="mailModule" ref="mailModule"/>
 	</bean>

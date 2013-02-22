@@ -665,7 +665,7 @@ public class TableController extends BasicController {
 		for (int i = objectMarkers.nextSetBit(0); i >= 0; i = objectMarkers.nextSetBit(i + 1)) {
 			sortedIndexes.add(i);
 		}
-		Collections.sort(sortedIndexes, table);
+		Collections.sort(sortedIndexes, table.getComparator());
 		Iterator<Integer> indexesIterator = sortedIndexes.iterator();
 		while (indexesIterator.hasNext()) {
 			results.add(defaultTableDataModel.getObject(indexesIterator.next()));

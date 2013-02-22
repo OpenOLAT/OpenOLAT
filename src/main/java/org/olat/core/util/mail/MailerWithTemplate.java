@@ -153,8 +153,13 @@ public class MailerWithTemplate {
 	 */
 	public MailerResult sendMailAsSeparateMails(MailContext mCtxt, List<Identity> recipientsTO, List<Identity> recipientsCC,
 			MailTemplate template, Identity sender) {
+		return sendMailAsSeparateMails(mCtxt, recipientsTO, recipientsCC, template, sender, null);
+	}
+	
+	public MailerResult sendMailAsSeparateMails(MailContext mCtxt, List<Identity> recipientsTO, List<Identity> recipientsCC,
+			MailTemplate template, Identity sender, String uuid) {
 		
-		String metaId = UUID.randomUUID().toString().replace("-", "");
+		String metaId = uuid == null ? UUID.randomUUID().toString().replace("-", "") : uuid;
 		MailerResult result = new MailerResult();
 		if (CoreSpringFactory.getImpl(MailModule.class).getMailhost() == null) {
 			result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);

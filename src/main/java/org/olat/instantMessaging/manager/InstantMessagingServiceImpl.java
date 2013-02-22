@@ -24,8 +24,11 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
@@ -103,9 +106,9 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public boolean deleteGroupDataFor(BusinessGroup group) {
 		imDao.deleteMessages(group);
+		dbInstance.commit();
 		return true;
 	}
 
@@ -115,21 +118,22 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public ImPreferences getImPreferences(Identity identity) {
-		return prefsDao.getPreferences(identity);
+		ImPreferences prefs = prefsDao.getPreferences(identity);
+		dbInstance.commit();
+		return prefs;
 	}
 
 	@Override
-	@Transactional
 	public void updateImPreferences(Identity identity, boolean visible) {
 		prefsDao.updatePreferences(identity, visible);
+		dbInstance.commit();
 	}
 
 	@Override
-	@Transactional
 	public void updateStatus(Identity identity, String status) {
 		prefsDao.updatePreferences(identity, status);
+		dbInstance.commit();
 	}
 
 	@Override
@@ -165,9 +169,10 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
 		InstantMessage message = imDao.createMessage(from, fromNickName, anonym, body, chatResource);
+		dbInstance.commit();//commit before sending event
+		
 		InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
 		event.setFromId(from.getKey());
 		event.setName(fromNickName);
@@ -178,11 +183,11 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	@Override
-	@Transactional
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey, String body, OLATResourceable chatResource) {
 		String name = userManager.getUserDisplayName(from.getUser());
 		InstantMessage message = imDao.createMessage(from, name, false, body, chatResource);
 		imDao.createNotification(from.getKey(), toIdentityKey, chatResource);
+		dbInstance.commit();//commit before sending event
 		
 		InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
 		event.setFromId(from.getKey());
@@ -204,7 +209,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	@Transactional
 	public void sendPresence(Identity me, String nickName, boolean anonym, boolean vip, OLATResourceable chatResource) {
 		InstantMessagingEvent event = new InstantMessagingEvent("participant", chatResource);
 		event.setAnonym(anonym);
@@ -215,6 +219,8 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		}
 		String fullName = userManager.getUserDisplayName(me.getUser());
 		rosterDao.updateRosterEntry(chatResource, me, fullName, nickName, anonym, vip);
+		dbInstance.commit();//commit before sending event
+		
 		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 	}
 	
@@ -230,20 +236,52 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		String status = getOnlineStatus(identityKey);
 		return new Buddy(identity.getKey(), identity.getName(), fullname, false, status);
 	}
+	
+
+	@Override
+	public BuddyStats getBuddyStats(Identity me) {
+		BuddyStats stats = new BuddyStats();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.YEAR, -1);
+		//count all my buddies
+		Collection<Long> buddiesColl = contactDao.getDistinctGroupOwnersParticipants(me);
+		List<Long> buddies = new ArrayList<Long>(buddiesColl);
+		buddies.remove(me.getKey());
+		stats.setOfflineBuddies(buddies.size());
+
+		//filter online users
+		for(Iterator<Long> buddyIt=buddies.iterator(); buddyIt.hasNext(); ) {
+			Long buddyKey = buddyIt.next();
+			boolean online = isOnline(buddyKey);
+			if(!online) {
+				buddyIt.remove();
+			}
+		}
+		
+		//count online users which are available
+		int online = prefsDao.countAvailableBuddies(buddies);
+		stats.setOnlineBuddies(online);
+		return stats;
+	}
 
 	@Override
 	public List<BuddyGroup> getBuddyGroups(Identity me, boolean offlineUsers) {
 		List<BuddyGroup> groups = new ArrayList<BuddyGroup>(25);
 		Map<Long,BuddyGroup> groupMap = new HashMap<Long,BuddyGroup>();
-		Map<Long, String> identityKeys = new HashMap<Long, String>();
-		for(BusinessGroupOwnerViewImpl owner:contactDao.getGroupOwners(me)) {
-			addBuddyToGroupList(owner, me, groupMap, groups, identityKeys, true, offlineUsers);
+		Map<Long, String> identityKeyToStatus = new HashMap<Long, String>();
+		List<BusinessGroupOwnerViewImpl> ownerList = contactDao.getGroupOwners(me);
+		collectMembersStatus(ownerList, identityKeyToStatus);
+		List<BusinessGroupParticipantViewImpl> participantList = contactDao.getParticipants(me);
+		collectMembersStatus(participantList, identityKeyToStatus);
+		for(BusinessGroupOwnerViewImpl owner:ownerList) {
+			addBuddyToGroupList(owner, me, groupMap, groups, identityKeyToStatus, true, offlineUsers);
 		}
-		for(BusinessGroupParticipantViewImpl participant:contactDao.getParticipants(me)) {
-			addBuddyToGroupList(participant, me, groupMap, groups, identityKeys, false, offlineUsers);
+		for(BusinessGroupParticipantViewImpl participant:participantList) {
+			addBuddyToGroupList(participant, me, groupMap, groups, identityKeyToStatus, false, offlineUsers);
 		}
 		
-		Map<Long,String> nameMap = userManager.getUserDisplayNames(identityKeys.keySet());
+		Map<Long,String> nameMap = userManager.getUserDisplayNames(identityKeyToStatus.keySet());
 		for(BuddyGroup group:groups) {
 			for(Buddy buddy:group.getBuddy()) {
 				buddy.setName(nameMap.get(buddy.getIdentityKey()));	
@@ -251,15 +289,52 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		}
 		return groups;
 	}
+	
+	private void collectMembersStatus(List<? extends BusinessGroupMemberView> members, Map<Long, String> identityKeyToStatus) {
+		Set<Long> loadStatus = new HashSet<Long>();
+		for(BusinessGroupMemberView member:members) {
+			Long identityKey = member.getIdentityKey();
+			if(!identityKeyToStatus.containsKey(identityKey) && !loadStatus.contains(identityKey)) {
+				boolean online = isOnline(member.getIdentityKey());
+				if(online) {
+					loadStatus.add(identityKey);
+				} else {
+					identityKeyToStatus.put(identityKey, Presence.unavailable.name());
+				}
+			}
+		}
+		
+		if(loadStatus.size() > 0) {
+			List<Long> statusToLoadList = new ArrayList<Long>(loadStatus);
+			Map<Long,String> statusMap = prefsDao.getBuddyStatus(statusToLoadList);
+			for(Long toLoad:statusToLoadList) {
+				String status = statusMap.get(toLoad);
+				if(status == null) {
+					identityKeyToStatus.put(toLoad, Presence.available.name());	
+				} else {
+					identityKeyToStatus.put(toLoad, status);	
+				}
+			}
+		}	
+	}
+	
 	private void addBuddyToGroupList(BusinessGroupMemberView member, Identity me, Map<Long,BuddyGroup> groupMap,
-			List<BuddyGroup> groups, Map<Long, String> identityKeys, boolean vip, boolean offlineUsers) {
+			List<BuddyGroup> groups, Map<Long, String> identityKeyToStatus, boolean vip, boolean offlineUsers) {
 		if(me != null && me.getKey().equals(member.getIdentityKey())) {
 			return;
 		}
-		String status = identityKeys.get(member.getIdentityKey());
+		String status = identityKeyToStatus.get(member.getIdentityKey());
 		if(status == null) {
-			status = getOnlineStatus(member.getIdentityKey());
-			identityKeys.put(member.getIdentityKey(), status);
+			boolean online = isOnline(member.getIdentityKey());
+			if(online) {
+				status = prefsDao.getStatus(member.getIdentityKey());
+				if(status == null) {
+					status = Presence.available.name();
+				}
+			} else {
+				status = Presence.unavailable.name();
+			}
+			identityKeyToStatus.put(member.getIdentityKey(), status);
 		}
 		
 		if(offlineUsers || Presence.available.name().equals(status)) {
@@ -271,30 +346,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 			}
 			group.addBuddy(new Buddy(member.getIdentityKey(), member.getUsername(), null, false, vip, status));	
 		}
-	}
-
-	@Override
-	public List<Buddy> getOnlineBuddies() {
-		Collection<Long> ids = sessionManager.getUsersOnline();
-		List<IdentityShort> contacts = securityManager.loadIdentityShortByKeys(ids);
-		List<Buddy> buddies = new ArrayList<Buddy>(contacts.size());
-		for(IdentityShort contact:contacts) {
-			String fullname = userManager.getUserDisplayName(contact);
-			String status = getOnlineStatus(contact.getKey());
-			buddies.add(new Buddy(contact.getKey(), contact.getName(), fullname, false, status));
-		}
-		return buddies;
-	}
-
-	@Override
-	public BuddyStats getBuddyStats(Identity me) {
-		BuddyStats stats = new BuddyStats();
-		
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.YEAR, -1);
-		stats.setOfflineBuddies(securityManager.countUniqueUserLoginsSince(cal.getTime()));
-		stats.setOnlineBuddies(sessionManager.getUserSessionsCnt());
-		return stats;
 	}
 
 	@Override
@@ -312,23 +363,31 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	private String getOnlineStatus(Long identityKey) {
-		boolean online = sessionManager.isOnline(identityKey);
-		return online ? Presence.available.name() : Presence.unavailable.name();
+		return isOnline(identityKey) ? Presence.available.name() : Presence.unavailable.name();
+	}
+	
+	/**
+	 * Return true if the identity is logged in on the instance
+	 * @param identityKey
+	 * @return
+	 */
+	private boolean isOnline(Long identityKey) {
+		return sessionManager.isOnline(identityKey);
 	}
 
 	@Override
-	@Transactional
 	public void listenChat(Identity identity, OLATResourceable chatResource,
 			boolean anonym, boolean vip, GenericEventListener listener) {
 		String fullName = userManager.getUserDisplayName(identity.getUser());
 		rosterDao.updateRosterEntry(chatResource, identity, fullName, null, anonym, vip);
+		dbInstance.commit();
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);
 	}
 
 	@Override
-	@Transactional
 	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener) {
 		rosterDao.deleteEntry(identity, chatResource);
+		dbInstance.commit();
 		coordinator.getCoordinator().getEventBus().deregisterFor(listener, chatResource);
 	}
 

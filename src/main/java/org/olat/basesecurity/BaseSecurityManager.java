@@ -911,7 +911,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	private void notifyNewIdentityCreated(Identity newIdentity) {
 		//Save the identity on the DB. So can the listeners of the event retrieve it
 		//in cluster mode
-		DBFactory.getInstance().intermediateCommit();
+		DBFactory.getInstance().commit();
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new NewIdentityCreatedEvent(newIdentity), IDENTITY_EVENT_CHANNEL);
 	}
 
@@ -1757,20 +1757,20 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#saveIdentityStatus(org.olat.core.id.Identity)
 	 */
 	@Override
-	@Transactional
 	public Identity saveIdentityStatus(Identity identity, Integer status) {
 		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
 		reloadedIdentity.setStatus(status);
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		dbInstance.commit();
 		return reloadedIdentity;
 	}
 	
 	@Override
-	@Transactional
 	public Identity setIdentityLastLogin(Identity identity) {
 		Identity reloadedIdentity = loadForUpdate(identity.getKey()); 
 		reloadedIdentity.setLastLogin(new Date());
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		dbInstance.commit();
 		return reloadedIdentity;
 	}
 	

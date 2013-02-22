@@ -34,6 +34,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;
+import org.infinispan.util.concurrent.IsolationLevel;
 import org.olat.core.util.cache.CacheConfig;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.Cacher;
@@ -88,6 +89,10 @@ public class InfinispanCacher implements Cacher {
 			builder.expiration().maxIdle(maxIdle);
 			builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
 			builder.dataContainer().storeAsBinary().storeValuesAsBinary(false);
+			builder.locking().concurrencyLevel(1000);
+			builder.locking().useLockStriping(false);
+			builder.locking().lockAcquisitionTimeout(15000);
+			builder.locking().isolationLevel(IsolationLevel.READ_COMMITTED);
 			Configuration configurationOverride = builder.build();
 			cacheManager.defineConfiguration(cacheName, configurationOverride);
 		}

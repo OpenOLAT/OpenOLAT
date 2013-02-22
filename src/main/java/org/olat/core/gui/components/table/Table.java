@@ -29,7 +29,6 @@ package org.olat.core.gui.components.table;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -53,7 +52,7 @@ import org.olat.core.util.filter.FilterFactory;
  * 
  * @author Felix Jost
  */
-public class Table extends Component implements Comparator {
+public class Table extends Component {
 	private static final int NO_ROW_SELECTED = -1;
 	private static final int DEFAULT_RESULTS_PER_PAGE = 20;
 	private static final int INITIAL_COLUMNSIZE = 5;
@@ -127,7 +126,6 @@ public class Table extends Component implements Comparator {
 	private List<Integer> sorter;
 
 	private int sortColumn = 0;
-	private ColumnDescriptor currentSortingCd;
 	private boolean sortAscending = true;
 
 	// config
@@ -557,7 +555,7 @@ public class Table extends Component implements Comparator {
 
 	protected void resort() {
 		if (isSortingEnabled()) {
-			currentSortingCd = getColumnDescriptor(sortColumn); // we sort after this
+			ColumnDescriptor currentSortingCd = getColumnDescriptor(sortColumn); // we sort after this
 			// column descriptor
 			// notify all nonactive ColumnDescriptors about their state
 			int cdcnt = getColumnCount();
@@ -574,31 +572,13 @@ public class Table extends Component implements Comparator {
 						+ " in sorting process, maybe you have set the tabledatamodel before the columndescriptors?");
 			}
 			currentSortingCd.sortingAboutToStart();
-			long start = 0;
-			boolean logDebug = Tracing.isDebugEnabled(Table.class);
-			if (logDebug){
-				start = System.currentTimeMillis();
-			}
-			Collections.sort(sorter, this);
-			if (logDebug) {
-				long stop = System.currentTimeMillis();
-				TableDataModel model = getTableDataModel();
-				Tracing.logDebug("sorting time for " + (model==null ? "null" : model.getRowCount()) + " rows:" + (stop - start) + " ms", Table.class);
-			}
-			// do not reset paging to first page (see OLAT-1340)			
-			//if (currentPageId != null) currentPageId = new Integer(1); 
+			Collections.sort(sorter, new TableComparator(currentSortingCd, sortAscending));
 		}
 	}
-
-	/**
-	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-	 */
-	public int compare(final Object a, final Object b) {
-		// the objects to come in are Integers of the sorter List, meaning the
-		// original row in the datatablemodel
-		int rowa = ((Integer) a).intValue();
-		int rowb = ((Integer) b).intValue();
-		return (sortAscending ? currentSortingCd.compareTo(rowa, rowb) : currentSortingCd.compareTo(rowb, rowa));
+	
+	public TableComparator getComparator() {
+		ColumnDescriptor currentSortingCd = getColumnDescriptor(sortColumn);
+		return new TableComparator(currentSortingCd, sortAscending);
 	}
 
 	/**

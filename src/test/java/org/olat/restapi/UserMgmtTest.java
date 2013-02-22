@@ -930,7 +930,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testPortrait() throws IOException, URISyntaxException {
-		URL portraitUrl = CoursesElementsTest.class.getResource("portrait.jpg");
+		URL portraitUrl = UserMgmtTest.class.getResource("portrait.jpg");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
 		RestConnection conn = new RestConnection();

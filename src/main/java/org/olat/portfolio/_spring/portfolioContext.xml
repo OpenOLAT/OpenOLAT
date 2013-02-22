@@ -147,25 +147,6 @@
 	<bean id="org.olat.portfolio.manager.EPNotificationsHandler" class="org.olat.portfolio.manager.EPNotificationsHandler">
 	</bean>
 
-	<!-- add the db-mappings here or in the module-context where your XYArtefactHandler for the appropriate type is. 
-	this allows real decoupling of the ePortfolio-Module from olatcore.
-	-->
-	<bean id="portfolioDBMappings" class="org.olat.core.commons.persistence.AdditionalDBMappings">
-		<property name="xmlFiles">
-			<list>								
-				<value>org/olat/portfolio/model/artefacts/AbstractArtefact.hbm.xml</value>
-				<value>org/olat/modules/fo/portfolio/ForumArtefact.hbm.xml</value>
-				<value>org/olat/modules/wiki/portfolio/WikiArtefact.hbm.xml</value>
-				<value>org/olat/modules/webFeed/portfolio/BlogArtefact.hbm.xml</value>
-				<value>org/olat/modules/webFeed/portfolio/LiveBlogArtefact.hbm.xml</value>
-				<value>org/olat/course/assessment/portfolio/EfficiencyStatementArtefact.hbm.xml</value>
-				<value>org/olat/portfolio/model/structel/StructureElement.hbm.xml</value>
-				<value>org/olat/portfolio/model/notification/Notifications.hbm.xml</value>
-				<value>org/olat/portfolio/model/restriction/CollectRestriction.hbm.xml</value>
-			</list>
-		</property>
-	</bean>
-
 	<!-- wrapper for add-link in folder -->
 	<bean name="folderCMDAddToEPortfolio" class="org.olat.core.gui.control.creator.AutoCreator" >
 		<property name="className" value="org.olat.portfolio.ui.artefacts.collect.CmdAddToEPortfolioImpl"/>

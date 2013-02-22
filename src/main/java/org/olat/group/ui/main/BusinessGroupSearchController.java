@@ -322,8 +322,8 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		}
 		
 		if(rolesEl != null && rolesEl.isOneSelected()) {
-			e.setAttendee(rolesEl.isSelected(0) || rolesEl.isSelected(1));
-			e.setOwner(rolesEl.isSelected(0) || rolesEl.isSelected(2));
+			e.setOwner(rolesEl.isSelected(0) || rolesEl.isSelected(1));
+			e.setAttendee(rolesEl.isSelected(0) || rolesEl.isSelected(2));
 			e.setWaiting(rolesEl.isSelected(0) || rolesEl.isSelected(3));
 		}
 		

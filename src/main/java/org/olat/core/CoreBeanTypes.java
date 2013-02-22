@@ -26,7 +26,6 @@
 
 package org.olat.core;
 
-import org.olat.core.commons.persistence.AdditionalDBMappings;
 import org.olat.core.extensions.Extension;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.navigation.SiteDefinition;
@@ -43,8 +42,7 @@ public enum CoreBeanTypes implements BeanType {
 	siteDefinition(SiteDefinition.class),
 	basicManager(BasicManager.class),
 	portlet(Portlet.class),
-	notificationsHandler(NotificationsHandler.class),
-	additionalDBMappings(AdditionalDBMappings.class);
+	notificationsHandler(NotificationsHandler.class);
 
 	
 	private Class extensionType;

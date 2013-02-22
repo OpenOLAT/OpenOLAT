@@ -73,9 +73,7 @@ public class InfinispanCacheWrapper<U,V extends Serializable> implements CacheWr
 	public V get(U key) {
 		V elem;
 		try {
-			synchronized (cache) {//cluster_ok by definition of this class as used in single vm
-				elem = cache.get(key);				
-			}
+			elem = cache.get(key);				
 		} catch (IllegalStateException e) {
 			throw new OLATRuntimeException("cache state error for cache " + cache.getName(), e);
 		} catch (CacheException e) {
@@ -86,30 +84,23 @@ public class InfinispanCacheWrapper<U,V extends Serializable> implements CacheWr
 
 	@Override
 	public void remove(Object key) {
-		synchronized (cache) {//cluster_ok by definition of this class as used in single vm
-			cache.remove(key);
-		}
+		cache.remove(key);
 	}
 	
 	@Override
 	public V update(U key, V value) {
 		V reloaded;
-		synchronized (cache) {
-			if(cache.containsKey(key)) {
-				reloaded = cache.replace(key, value);
-			} else {
-				reloaded = cache.put(key, value);
-			}
-		}	
+		if(cache.containsKey(key)) {
+			reloaded = cache.replace(key, value);
+		} else {
+			reloaded = cache.put(key, value);
+		}
 		return reloaded;
 	}
 
 	@Override
 	public V put(U key, V value) {
-		V reloaded;
-		synchronized (cache) {
-			reloaded = cache.put(key, value);
-		}
-		return reloaded;
+		V oldOne = cache.put(key, value);
+		return oldOne;
 	}
 }

@@ -1,0 +1,151 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.  
+* <p>
+*/
+
+package org.olat.restapi;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.UUID;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.PublisherData;
+import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.Visitor;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.FOCourseNode;
+import org.olat.course.run.userview.CourseTreeVisitor;
+import org.olat.modules.fo.Forum;
+import org.olat.modules.fo.restapi.ForumVOes;
+import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class MyForumsTest extends OlatJerseyTestCase {
+
+	private static boolean setup;
+	private static ICourse myCourse;
+	private static RepositoryEntry myCourseRe;
+	
+	@Autowired
+	private DB dbInstance;
+	
+	@Before
+	public void setUp() throws Exception {
+		super.setUp();
+		
+		if(setup) return;
+		
+		URL courseWithForumsUrl = MyForumsTest.class.getResource("myCourseWS.zip");
+		Assert.assertNotNull(courseWithForumsUrl);
+		File courseWithForums = new File(courseWithForumsUrl.toURI());
+		myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, 4);	
+		Assert.assertNotNull(myCourseRe);
+		myCourse = CourseFactory.loadCourse(myCourseRe.getOlatResource().getResourceableId());
+
+		setup = true;
+	}
+	
+	/**
+	 * Test retrieve the forum which the user subscribe in a course.
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void myForums() throws IOException, URISyntaxException {
+		final Identity id = JunitTestHelper.createAndPersistIdentityAsUser("my-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		
+		//load my forums
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id.getName(), "A6B7C8"));
+		
+		//subscribed to nothing
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString()).path("forums").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		ForumVOes forums = conn.parse(body, ForumVOes.class);
+		Assert.assertNotNull(forums);
+		Assert.assertNotNull(forums.getForums());
+		Assert.assertEquals(0, forums.getForums().length);
+		
+		//subscribe to the forum
+		IdentityEnvironment ienv = new IdentityEnvironment(id, new Roles(false, false, false, false, false, false, false));
+		new CourseTreeVisitor(myCourse, ienv).visit(new Visitor() {
+			@Override
+			public void visit(INode node) {
+				if(node instanceof FOCourseNode) {
+					FOCourseNode forumNode = (FOCourseNode)node;	
+					Forum forum = forumNode.loadOrCreateForum(myCourse.getCourseEnvironment());
+					String businessPath = "[RepositoryEntry:" + myCourseRe.getKey() + "][CourseNode:" + forumNode.getIdent() + "]";
+					SubscriptionContext forumSubContext = new SubscriptionContext("CourseModule", myCourse.getResourceableId(), forumNode.getIdent());
+					PublisherData forumPdata = new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), businessPath);
+					NotificationsManager.getInstance().subscribe(id, forumSubContext, forumPdata);
+				}
+			}
+		});
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve my forums
+		HttpGet method2 = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response2 = conn.execute(method2);
+		assertEquals(200, response2.getStatusLine().getStatusCode());
+		InputStream body2 = response2.getEntity().getContent();
+		ForumVOes forums2 = conn.parse(body2, ForumVOes.class);
+		Assert.assertNotNull(forums2);
+		Assert.assertNotNull(forums2.getForums());
+		Assert.assertEquals(1, forums2.getForums().length);
+	}
+}

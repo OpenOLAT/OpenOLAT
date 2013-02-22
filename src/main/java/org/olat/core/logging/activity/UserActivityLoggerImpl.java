@@ -379,9 +379,10 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			throw new IllegalArgumentException("resourceInfo must not be null");
 		}
 
-		int existingPos = getLoggingResourceableList().indexOf(loggingResourceable);
+		List<ILoggingResourceable> loggingResourceableList = getLoggingResourceableList();
+		int existingPos = loggingResourceableList.indexOf(loggingResourceable);
 		if (existingPos!=-1) {
-			ILoggingResourceable existingRI = getLoggingResourceableList().get(existingPos);
+			ILoggingResourceable existingRI = loggingResourceableList.get(existingPos);
 			if (existingRI.getName()!=null && loggingResourceable.getName()!=null &&
 					existingRI.getName().equals(loggingResourceable.getName())) {
 				// ignore - already set
@@ -393,10 +394,19 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			}
 			// otherwise we have a matching resourceInfo already registered (same type,id) but with a different name
 			// let's update it
-			getLoggingResourceableList().remove(existingPos);
+			loggingResourceableList.remove(existingPos);
 		}
 		
-		getLoggingResourceableList().add(loggingResourceable);
+		if(OlatResourceableType.node.equals(loggingResourceable.getResourceableType())) {
+			//remove other node resource
+			for(Iterator<ILoggingResourceable> logIt=loggingResourceableList.iterator(); logIt.hasNext(); ) {
+				if(OlatResourceableType.node.equals(logIt.next().getResourceableType())) {
+					logIt.remove();
+				}
+			}
+		}
+		
+		loggingResourceableList.add(loggingResourceable);
 
 		if (runtimeParent_!=null) {
 			runtimeParent_.addLoggingResourceInfo(loggingResourceable);

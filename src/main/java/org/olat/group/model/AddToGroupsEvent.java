@@ -38,13 +38,11 @@ public class AddToGroupsEvent extends Event {
 	
 	private List<Long> ownerList;
 	private List<Long> participantList;
-	private List<Long> mailForGroupsList;
 
-	public AddToGroupsEvent(List<Long> ownLong, List<Long> partLong, List<Long> mailLong) {
+	public AddToGroupsEvent(List<Long> ownLong, List<Long> partLong) {
 		super("addToGroups");
 		this.ownerList = ownLong;
 		this.participantList = partLong;
-		this.mailForGroupsList = mailLong;
 	}
 
 	public List<Long> getOwnerGroupKeys() {
@@ -54,9 +52,9 @@ public class AddToGroupsEvent extends Event {
 	public List<Long> getParticipantGroupKeys() {
 		return participantList;
 	}
-
-	public List<Long> getMailForGroupsList() {
-		return mailForGroupsList;
+	
+	public boolean isEmpty() {
+		return (ownerList == null || ownerList.isEmpty())
+				&& (participantList == null || participantList.isEmpty());
 	}
-
 }
