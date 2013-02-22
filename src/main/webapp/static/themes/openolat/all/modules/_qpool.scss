@@ -1,9 +1,12 @@
 div.b_tree ul.b_tree_l0 {
- 	li.o_sel_qpool_pools a.b_tree_l0, li.o_sel_qpool_database a.b_tree_l0 {
+ 	li.o_sel_qpool_pools a.b_tree_l0, li.o_sel_qpool_database a.b_tree_l0,
+ 	li.o_sel_qpool_admin a.b_tree_l0, li.o_sel_qpool_shares a.b_tree_l0 {
 		padding-left:0;
 	}
 }
 
+div.o_qpool_button_bar { padding: 15px; text-align:center; } 
 .o_sel_qpool_pool { background-image: url('../openolat/images/database.png')!important; }
 .o_sel_qpool_my_items { background-image: url('../openolat/images/user.png')!important; }
 .o_sel_qpool_favorits { background-image: url('../openolat/images/flag.png')!important; }
+.o_sel_qpool_share { background-image: url('../openolat/images/users.png')!important; }

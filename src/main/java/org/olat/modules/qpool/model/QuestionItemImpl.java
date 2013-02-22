@@ -42,6 +42,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.StudyField;
 
 /**
@@ -63,30 +64,57 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
   @GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
-	private Date creationDate;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
-	private Date lastModified;
-	
+
+	//general
 	@Column(name="q_subject", nullable=false, insertable=true, updatable=true)
 	private String subject;
-	
-	@Column(name="q_point", nullable=true, insertable=true, updatable=true)
-	private BigDecimal point;
-	
-	@Column(name="q_type", nullable=false, insertable=true, updatable=true)
-	private String type;
-	
-	@Column(name="q_status", nullable=false, insertable=true, updatable=true)
-	private String status;
-
 	@ManyToOne(targetEntity=StudyFieldImpl.class)
 	@JoinColumn(name="fk_study_field", nullable=true, insertable=true, updatable=true)
 	private StudyField studyField;
+	@Column(name="q_keywords", nullable=true, insertable=true, updatable=true)
+	private String keywords;
+	@Column(name="q_type", nullable=false, insertable=true, updatable=true)
+	private String type;
+	@Column(name="q_language", nullable=false, insertable=true, updatable=true)
+	private String language;
+	@Column(name="q_status", nullable=false, insertable=true, updatable=true)
+	private String status;
+	@Column(name="q_description", nullable=true, insertable=true, updatable=true)
+	private String description;
+	
+	//rights
+	@Column(name="q_copyright", nullable=true, insertable=true, updatable=true)
+	private String copyright;
+	
+	//usage
+	@Column(name="q_point", nullable=true, insertable=true, updatable=true)
+	private BigDecimal point;
+	@Column(name="q_difficulty", nullable=true, insertable=true, updatable=true)
+	private BigDecimal difficulty;
+	@Column(name="q_selectivity", nullable=true, insertable=true, updatable=true)
+	private BigDecimal selectivity;
+	@Column(name="q_usage", nullable=false, insertable=true, updatable=true)
+	private int usage;
+	@Column(name="q_test_type", nullable=false, insertable=true, updatable=true)
+	private String testType;
+	@Column(name="q_level", nullable=false, insertable=true, updatable=true)
+	private String level;
+
+	//technics
+	@Column(name="q_format", nullable=false, insertable=true, updatable=true)
+	private String format;
+	@Column(name="q_editor", nullable=true, insertable=true, updatable=true)
+	private String editor;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
+	private Date lastModified;
+	@Column(name="q_version", nullable=true, insertable=true, updatable=true)
+	private String itemVersion;
+
+
 
 	@Override
 	public Long getKey() {
@@ -134,6 +162,22 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.subject = subject;
 	}
 	
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
 	public BigDecimal getPoint() {
 		return point;
 	}
@@ -149,6 +193,13 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	public void setType(String type) {
 		this.type = type;
 	}
+	
+	public QuestionType getQuestionType() {
+		if(StringHelper.containsNonWhitespace(type)) {
+			return QuestionType.valueOf(type);
+		}
+		return null;
+	}
 
 	public String getStatus() {
 		return status;
@@ -156,6 +207,38 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public int getUsage() {
+		return usage;
+	}
+
+	public void setUsage(int usage) {
+		this.usage = usage;
+	}
+
+	public String getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(String keywords) {
+		this.keywords = keywords;
+	}
+
+	public BigDecimal getSelectivity() {
+		return selectivity;
+	}
+
+	public void setSelectivity(BigDecimal selectivity) {
+		this.selectivity = selectivity;
 	}
 
 	@Override
@@ -173,6 +256,54 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 
 	public void setStudyField(StudyField studyField) {
 		this.studyField = studyField;
+	}
+
+	public String getCopyright() {
+		return copyright;
+	}
+
+	public void setCopyright(String copyright) {
+		this.copyright = copyright;
+	}
+
+	public BigDecimal getDifficulty() {
+		return difficulty;
+	}
+
+	public void setDifficulty(BigDecimal difficulty) {
+		this.difficulty = difficulty;
+	}
+
+	public String getTestType() {
+		return testType;
+	}
+
+	public void setTestType(String testType) {
+		this.testType = testType;
+	}
+
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
+	}
+
+	public String getEditor() {
+		return editor;
+	}
+
+	public void setEditor(String editor) {
+		this.editor = editor;
+	}
+
+	public String getItemVersion() {
+		return itemVersion;
+	}
+
+	public void setItemVersion(String itemVersion) {
+		this.itemVersion = itemVersion;
 	}
 
 	@Override

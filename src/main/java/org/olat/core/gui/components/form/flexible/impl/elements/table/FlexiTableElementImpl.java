@@ -227,7 +227,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void reset() {
-		// static text can not be resetted
+		rowCount = -1;
+		component.setDirty(true);
+		multiSelectedIndex = null;
 	}
 	
 	/**

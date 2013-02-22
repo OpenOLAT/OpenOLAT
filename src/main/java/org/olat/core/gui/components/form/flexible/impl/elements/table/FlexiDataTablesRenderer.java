@@ -183,7 +183,7 @@ class FlexiDataTablesRenderer implements ComponentRenderer {
 		int cols = columnsModel.getColumnCount();
 		
 		String rowIdPrefix = "row_" + id + "-";
-		
+		dataModel.load(firstRow, maxRows);//load needed rows
 		for (int i = firstRow; i < lastRow; i++) {
 			// use alternating css class
 			String cssClass;

@@ -24,14 +24,16 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.QuestionType;
 
 /**
  * 
  * Initial date: 23.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class QuestionItemRow implements QuestionItem {
+public class QuestionItemRow implements QuestionItemShort {
 	
 	private final QuestionItem delegate;
 	
@@ -72,6 +74,26 @@ public class QuestionItemRow implements QuestionItem {
 	}
 
 	@Override
+	public String getFormat() {
+		return delegate.getFormat();
+	}
+
+	@Override
+	public String getLanguage() {
+		return delegate.getLanguage();
+	}
+
+	@Override
+	public BigDecimal getSelectivity() {
+		return delegate.getSelectivity();
+	}
+
+	@Override
+	public int getUsage() {
+		return delegate.getUsage();
+	}
+
+	@Override
 	public QuestionStatus getQuestionStatus() {
 		return delegate.getQuestionStatus();
 	}
@@ -82,8 +104,13 @@ public class QuestionItemRow implements QuestionItem {
 	}
 
 	@Override
-	public String getType() {
-		return delegate.getType();
+	public QuestionType getQuestionType() {
+		return delegate.getQuestionType();
+	}
+	
+	@Override
+	public BigDecimal getDifficulty() {
+		return delegate.getDifficulty();
 	}
 
 	public QuestionItem getItem() {

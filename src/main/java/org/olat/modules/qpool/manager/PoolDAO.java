@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -45,6 +46,8 @@ public class PoolDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QuestionItemDAO questionItemDao;
 	
 	
 	public Pool createPool(String name) {
@@ -54,6 +57,20 @@ public class PoolDAO {
 		pool.setName(name);
 		dbInstance.getCurrentEntityManager().persist(pool);
 		return pool;
+	}
+	
+	public int deleteFromPools(List<QuestionItem> items) {
+		List<Long> keys = new ArrayList<Long>();
+		for(QuestionItem item:items) {
+			keys.add(item.getKey());
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from qpool2item pool2item where pool2item.item.key in (:itemKeys)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("itemKeys", keys)
+				.executeUpdate();
 	}
 	
 	public int getNumOfPools() {
@@ -74,11 +91,26 @@ public class PoolDAO {
 	}
 	
 	public void addItemToPool(QuestionItem item, Pool pool) {
-		PoolToItem p2i = new PoolToItem();
-		p2i.setCreationDate(new Date());
-		p2i.setItem(item);
-		p2i.setPool(pool);
-		dbInstance.getCurrentEntityManager().persist(p2i);
+		QuestionItem lockedItem = questionItemDao.loadForUpdate(item.getKey());
+		if(!isInPool(lockedItem, pool)) {
+			PoolToItem p2i = new PoolToItem();
+			p2i.setCreationDate(new Date());
+			p2i.setItem(lockedItem);
+			p2i.setPool(pool);
+			dbInstance.getCurrentEntityManager().persist(p2i);
+		}
+		dbInstance.commit();//release lock asap
+	}
+	
+	public boolean isInPool(QuestionItem item, Pool pool) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(pool2item.item) from qpool2item pool2item where pool2item.pool.key=:poolKey and pool2item.item.key=:itemKey");
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("poolKey", pool.getKey())
+				.setParameter("itemKey", item.getKey())
+				.getSingleResult().intValue();
+		return count.intValue() > 0;
 	}
 	
 	public int getNumOfItemsInPool(Pool pool) {

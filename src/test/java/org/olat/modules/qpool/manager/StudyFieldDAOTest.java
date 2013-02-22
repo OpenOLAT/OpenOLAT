@@ -19,11 +19,14 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.qpool.StudyField;
+import org.olat.modules.qpool.model.StudyFieldImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,5 +65,54 @@ public class StudyFieldDAOTest extends OlatTestCase {
 		Assert.assertEquals("Astronautics", reloadedField.getField());
 		Assert.assertEquals(studyField.getKey(), reloadedField.getKey());
 	}
+	
+	@Test
+	public void loadAllStudyFields() {
+		StudyField studyField = studyFieldDao.createAndPersist(null, "Mechanics");
+		dbInstance.commitAndCloseSession();
+
+		List<StudyField> fields = studyFieldDao.loadAllFields();
+		Assert.assertNotNull(fields);
+		Assert.assertTrue(fields.size() >= 1);
+		Assert.assertTrue(fields.contains(studyField));
+	}
+	
+	@Test
+	public void buildHierarchyStudyField() {
+		StudyField science = studyFieldDao.createAndPersist(null, "Science");
+		StudyField mathematics = studyFieldDao.createAndPersist(science, "Mathematics");
+		StudyField physics = studyFieldDao.createAndPersist(science, "Physics");
+		StudyField chemistry = studyFieldDao.createAndPersist(science, "Chemistry");
+		dbInstance.commitAndCloseSession();
+		
+		//reload and check parents
+		StudyFieldImpl reloadPhysics = (StudyFieldImpl)studyFieldDao.loadStudyFieldById(physics.getKey());
+		Assert.assertNotNull(reloadPhysics);
+		Assert.assertEquals(science, reloadPhysics.getParentField());
+
+		List<StudyField> subFields = studyFieldDao.loadFields(science);
+		Assert.assertNotNull(subFields);
+		Assert.assertEquals(3, subFields.size());
+		Assert.assertTrue(subFields.contains(mathematics));
+		Assert.assertTrue(subFields.contains(physics));
+		Assert.assertTrue(subFields.contains(chemistry));
+	}
+	
+	@Test
+	public void getMateriliazedPath() {
+		StudyField science = studyFieldDao.createAndPersist(null, "Science");
+		StudyField mathematics = studyFieldDao.createAndPersist(science, "Mathematics");
+		StudyField topology = studyFieldDao.createAndPersist(mathematics, "Topology");
+		StudyField graph = studyFieldDao.createAndPersist(topology, "Graph theory");
+		dbInstance.commitAndCloseSession();
+		
+		//reload and check parents
+		String path = studyFieldDao.getMaterializedPath(graph);
+		Assert.assertNotNull(path);
+		
+		Assert.assertEquals("/Science/Mathematics/Topology/Graph theory", path);
+		
+	}
+	
 
 }

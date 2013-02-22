@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.commons.services.search.OlatDocument;
@@ -228,9 +227,9 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	 */
 	public void deleteGlossary(OLATResourceable res) {
 		// first remove all references
-		List repoRefs = referenceManager.getReferencesTo(res);
-		for (Iterator iter = repoRefs.iterator(); iter.hasNext();) {
-			ReferenceImpl ref = (ReferenceImpl) iter.next();
+		List<ReferenceImpl> repoRefs = referenceManager.getReferencesTo(res);
+		for (Iterator<ReferenceImpl> iter = repoRefs.iterator(); iter.hasNext();) {
+			ReferenceImpl ref = iter.next();
 			if (ref.getUserdata().equals(GLOSSARY_REPO_REF_IDENTIFYER)) {
 				// remove the reference from the course configuration
 				// TODO:RH:improvement: this should use a callback method or send a general delete

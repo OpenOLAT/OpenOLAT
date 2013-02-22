@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -41,6 +42,7 @@ public class QTIModule extends AbstractOLATModule {
 	private static boolean isValidating = false;
 	private static final String CONFIG_VALIDATING = "validating";
 	private List<RepositoryHandler> qtiRepositoryHandlers;
+	private QuestionPoolModule poolModule;
 	
 	/**
 	 * @return true if qti xml files should be validated
@@ -60,6 +62,8 @@ public class QTIModule extends AbstractOLATModule {
 		for (RepositoryHandler qtiRepositoryHandler : qtiRepositoryHandlers) {
 			RepositoryHandlerFactory.registerHandler(qtiRepositoryHandler);
 		}
+		
+		poolModule.addQuestionPoolProvider(new QTIQuestionPoolServiceProvider());
 	}
 
 	@Override
@@ -70,8 +74,15 @@ public class QTIModule extends AbstractOLATModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		//
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param poolModule
+	 */
+	public void setPoolModule(QuestionPoolModule poolModule) {
+		this.poolModule = poolModule;
 	}
 
 	@Override

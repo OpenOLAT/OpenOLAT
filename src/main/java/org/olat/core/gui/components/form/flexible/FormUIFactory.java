@@ -465,7 +465,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public StaticTextElement addStaticTextElement(String name, String i18nLabel,String translatedText, FormItemContainer formLayout) {
-		StaticTextElement ste = new StaticTextElementImpl(name,translatedText);
+		StaticTextElement ste = new StaticTextElementImpl(name, translatedText == null ? "" : translatedText);
 		setLabelIfNotNull(i18nLabel, ste);
 		formLayout.add(ste);
 		return ste;

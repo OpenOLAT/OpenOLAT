@@ -19,14 +19,18 @@
  */
 package org.olat.modules.qpool.ui;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.QuestionPoolSPI;
 
 /**
  * 
@@ -37,11 +41,14 @@ import org.olat.modules.qpool.QuestionItem;
 public class QuestionItemPreviewController extends BasicController {
 
 	private QuestionItem item;
+	private Controller previewCtrl;
 	private final Panel previewPanel;
+	private final QuestionPoolModule poolModule;
 	
 	public QuestionItemPreviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
+		poolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 		previewPanel = new Panel("preview.container");
 		putInitialPanel(previewPanel);
 	}
@@ -55,11 +62,38 @@ public class QuestionItemPreviewController extends BasicController {
 		return item;
 	}
 	
-	public void updateItem(QuestionItem item) {
+	public void reset() {
+		this.item = null;
+		removeAsListenerAndDispose(previewCtrl);
+		previewCtrl = null;
+		previewPanel.setContent(null);
+	}
+	
+	public void updateItem(UserRequest ureq, QuestionItem item) {
 		this.item = item;
+		removeAsListenerAndDispose(previewCtrl);
+
+		Component content;
+		QuestionPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+		if(spi == null) {
+			content = getRawContent(item);
+		} else {
+			previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item);
+			if(previewCtrl == null) {
+				content = getRawContent(item);
+			} else {
+				listenTo(previewCtrl);
+				content = previewCtrl.getInitialComponent();
+			}
+		}
 		
-		VelocityContainer rawContent = createVelocityContainer("raw_content");
-		previewPanel.setContent(rawContent);
+		previewPanel.setContent(content);
+	}
+	
+	private Component getRawContent(QuestionItem item) {
+		VelocityContainer content = createVelocityContainer("raw_content");
+		
+		return content;
 	}
 
 	@Override

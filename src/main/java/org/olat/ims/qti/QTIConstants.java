@@ -76,4 +76,7 @@ public class QTIConstants {
 	public static final String ATTR_AIID = "aiid";
 	public static final String ATTR_PREVIEWDOC = "previewDoc";
 	
+	// question pool
+	public static final String QTI_12_FORMAT = "IMS QTI 1.2";
+	
 }

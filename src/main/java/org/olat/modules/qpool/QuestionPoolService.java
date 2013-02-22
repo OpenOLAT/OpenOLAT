@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -32,12 +34,19 @@ import org.olat.core.id.Identity;
  */
 public interface QuestionPoolService {
 	
+	public String getMateriliazedPathOfStudyFields(QuestionItem item);
+	
+	public void deleteItems(List<QuestionItem> items);
+	
+	
 	public List<Pool> getPools(Identity identity);
 	
-
 	public int getNumOfItemsInPool(Pool pool);
 	
 	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults, SortKey... orderBy);
+	
+	public void addItemToPool(QuestionItem item, Pool pool);
+	
 	
 	public int getNumOfFavoritItems(Identity identity);
 	
@@ -46,5 +55,13 @@ public interface QuestionPoolService {
 	public List<QuestionItem> getItems(Identity identity, int firstResult, int maxResults);
 	
 	
+	public void shareItems(List<QuestionItem> items, List<BusinessGroup> groups);
+	
+	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity);
+	
+	public int countSharedItemByResource(OLATResource resource);
+	
+	public List<QuestionItem> getSharedItemByResource(OLATResource resource, int firstResult, int maxResults, SortKey... orderBy);
+		
 
 }

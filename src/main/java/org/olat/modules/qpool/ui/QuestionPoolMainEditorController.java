@@ -19,10 +19,12 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -33,12 +35,14 @@ import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeDropEvent;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
@@ -52,20 +56,25 @@ import org.olat.modules.qpool.QuestionPoolService;
 public class QuestionPoolMainEditorController extends BasicController implements Activateable2, StackedControllerAware {
 
 	private final MenuTree menuTree;
+	private GenericTreeNode sharesNode;
+	
 	private final Panel content;
 	private StackedController stackPanel;
 
 	private QuestionsController myQuestionsCtrl;
 	private QuestionsController markedQuestionsCtrl;
 	private QuestionsController selectedPoolCtrl;
+	private QuestionsController sharedItemsCtrl;
 	private QuestionsController currentCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
-	
+
+	private final MarkManager markManager;
 	private final QuestionPoolService qpoolService;
 	
 	public QuestionPoolMainEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
+
+		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 		
 		menuTree = new MenuTree("qpoolTree");
@@ -106,16 +115,34 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			} else {
 				TreeNode node = menuTree.getSelectedNode();
 				Object uNode = node.getUserObject();
-				if("menu.database.my".equals(uNode)) {
+				if("menu.admin".equals(uNode)) {
+					doSelectAdmin(ureq);
+				} else if("menu.admin.studyfields".equals(uNode)) {
+					doSelectAdminStudyFields(ureq);
+				} else if("menu.database.my".equals(uNode)) {
 					doSelectMyQuestions(ureq);
 				} else if("menu.database.favorit".equals(uNode)) {
 					doSelectMarkedQuestions(ureq);
 				} else if(uNode instanceof Pool) {
 					Pool pool = (Pool)uNode;
 					doSelect(ureq, pool);
+				} else if(uNode instanceof BusinessGroup) {
+					BusinessGroup group = (BusinessGroup)uNode;
+					doSelect(ureq, group);
 				}
 			}
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof QPoolEvent) {
+			if(QPoolEvent.ITEM_SHARED.equals(event.getCommand())) {
+				buildShareSubTreeModel(sharesNode);
+				menuTree.setDirty(true);
+			}	
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -128,12 +155,44 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			int lastIndex = dropId.lastIndexOf('-');
 			String rowStr = dropId.substring(lastIndex+1, dropId.length());
 			int row = Integer.parseInt(rowStr);
-			
 			QuestionItem item = currentCtrl.getQuestionAt(row);
-			System.out.println("Item: " + item);
+			TreeNode node = menuTree.getTreeModel().getNodeById(targetId);
+			if(node != null) {
+				Object userObj = node.getUserObject();
+				if(userObj instanceof BusinessGroup) {
+					qpoolService.shareItems(Collections.singletonList(item), Collections.singletonList((BusinessGroup)userObj));
+					showInfo("item.shared", item.getSubject());
+				} else if(userObj instanceof Pool) {
+					qpoolService.addItemToPool(item, (Pool)userObj);
+					showInfo("item.pooled", item.getSubject());
+				} else if("menu.database.favorit".equals(userObj)) {
+					String businessPath = "[QuestionItem:" + item.getKey() + "]";
+					markManager.setMark(item, getIdentity(), null, businessPath);
+				}
+			}
+			
 		} catch (Exception e) {
 			logError("Cannot drop with id: " + dropId, e);
 		}
+	}
+	
+	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
+	private StudyFieldAdminController studyFieldCtrl;
+	
+	private void doSelectAdmin(UserRequest ureq) {
+		if(adminStatisticsCtrl == null) {
+			adminStatisticsCtrl = new QuestionPoolAdminStatisticsController(ureq, getWindowControl());
+			listenTo(adminStatisticsCtrl);
+		}
+		content.setContent(adminStatisticsCtrl.getInitialComponent());
+	}
+	
+	private void doSelectAdminStudyFields(UserRequest ureq) {
+		if(studyFieldCtrl == null) {
+			studyFieldCtrl = new StudyFieldAdminController(ureq, getWindowControl());
+			listenTo(studyFieldCtrl);
+		}
+		content.setContent(studyFieldCtrl.getInitialComponent());
 	}
 	
 	private void doSelectMyQuestions(UserRequest ureq) {
@@ -151,6 +210,8 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			markedQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), new MarkedItemsSource(getIdentity()));
 			markedQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(markedQuestionsCtrl);
+		} else {
+			markedQuestionsCtrl.updateSource(new MarkedItemsSource(getIdentity()));
 		}
 		currentCtrl = markedQuestionsCtrl;
 		content.setContent(markedQuestionsCtrl.getInitialComponent());
@@ -161,9 +222,23 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			selectedPoolCtrl = new QuestionsController(ureq, getWindowControl(), new PooledItemsSource(pool));
 			selectedPoolCtrl.setStackedController(stackPanel);
 			listenTo(selectedPoolCtrl);
+		} else {
+			selectedPoolCtrl.updateSource(new PooledItemsSource(pool));
 		}
 		currentCtrl = selectedPoolCtrl;
 		content.setContent(selectedPoolCtrl.getInitialComponent());
+	}
+	
+	private void doSelect(UserRequest ureq, BusinessGroup group) {
+		if(sharedItemsCtrl == null) {
+			sharedItemsCtrl = new QuestionsController(ureq, getWindowControl(), new SharedItemsSource(group));
+			sharedItemsCtrl.setStackedController(stackPanel);
+			listenTo(sharedItemsCtrl);
+		} else {
+			sharedItemsCtrl.updateSource(new SharedItemsSource(group));
+		}
+		currentCtrl = sharedItemsCtrl;
+		content.setContent(sharedItemsCtrl.getInitialComponent());
 	}
 	
 	private TreeModel buildTreeModel() {
@@ -196,6 +271,33 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			node.setIconCssClass("o_sel_qpool_pool");
 			poolNode.addChild(node);
 		}
+		
+		//shares
+		sharesNode = new GenericTreeNode(translate("menu.share"), "menu.share");
+		sharesNode.setCssClass("o_sel_qpool_shares");
+		rootNode.addChild(sharesNode);	
+		buildShareSubTreeModel(sharesNode);
+		
+		//administration
+		GenericTreeNode adminNode = new GenericTreeNode(translate("menu.admin"), "menu.admin");
+		adminNode.setCssClass("o_sel_qpool_admin");
+		rootNode.addChild(adminNode);
+		
+		node = new GenericTreeNode(translate("menu.admin.studyfields"), "menu.admin.studyfields");
+		node.setIconCssClass("o_sel_qpool_study_fields");
+		adminNode.addChild(node);
+
 		return gtm;
+	}
+	
+	private void buildShareSubTreeModel(GenericTreeNode sharesNode) {
+		sharesNode.removeAllChildren();
+
+		List<BusinessGroup> groups = qpoolService.getResourcesWithSharedItems(getIdentity());
+		for(BusinessGroup group:groups) {
+			GenericTreeNode node = new GenericTreeNode(group.getName(), group);
+			node.setIconCssClass("o_sel_qpool_share");
+			sharesNode.addChild(node);
+		}
 	}
 }

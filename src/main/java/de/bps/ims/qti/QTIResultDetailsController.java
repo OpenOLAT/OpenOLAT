@@ -51,7 +51,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti.QTIResultManager;
@@ -62,8 +61,6 @@ import org.olat.ims.qti.render.LocalizedXSLTransformer;
 import org.olat.repository.RepositoryEntry;
 
 import de.bps.onyx.plugin.OnyxModule;
-import de.bps.onyx.plugin.OnyxResultManager;
-import de.bps.onyx.plugin.course.nodes.iq.IQEditController;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
 

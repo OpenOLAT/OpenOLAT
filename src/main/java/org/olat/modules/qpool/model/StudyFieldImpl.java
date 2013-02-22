@@ -48,8 +48,8 @@ import org.olat.modules.qpool.StudyField;
 @Entity(name="qstudyfield")
 @Table(name="o_qp_study_field")
 @NamedQueries({
-	@NamedQuery(name="loadStudyFieldByKey", query="select f from qstudyfield f where f.key=:key")
-	
+	@NamedQuery(name="loadStudyFieldByKey", query="select f from qstudyfield f where f.key=:key"),
+	@NamedQuery(name="loadStudyFieldsByparent", query="select f from qstudyfield f where f.parentField.key=:parentKey")
 })
 public class StudyFieldImpl implements StudyField, CreateInfo, ModifiedInfo, Persistable  {
 

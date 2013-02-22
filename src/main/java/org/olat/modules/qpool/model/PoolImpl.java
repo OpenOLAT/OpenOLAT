@@ -131,6 +131,4 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 			.append("]").append(super.toString());
 		return sb.toString();
 	}
-	
-
 }

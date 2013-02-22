@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +28,8 @@ import org.olat.modules.qpool.StudyField;
 import org.olat.modules.qpool.model.StudyFieldImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -50,8 +53,10 @@ public class StudyFieldDAO {
 		return newStudyField;
 	}
 	
-	public StudyField update(StudyField studyField) {
-		return dbInstance.getCurrentEntityManager().merge(studyField);
+	public StudyField update(String name, StudyField field) {
+		StudyField reloadedField = loadStudyFieldById(field.getKey());
+		((StudyFieldImpl)reloadedField).setField(name);
+		return dbInstance.getCurrentEntityManager().merge(reloadedField);
 	}
 	
 	public StudyField loadStudyFieldById(Long key) {
@@ -65,5 +70,56 @@ public class StudyFieldDAO {
 		}
 		return fields.get(0);
 	}
+	
+	public List<StudyField> loadAllFields() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select f from qstudyfield f ");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), StudyField.class)
+				.getResultList();
+	}
+	
+	public List<StudyField> loadFields(StudyField parent) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadStudyFieldsByparent", StudyField.class)
+				.setParameter("parentKey", parent.getKey())
+				.getResultList();
+	}
 
+	public String getMaterializedPath(StudyField field) {
+		List<StudyField> parentLine = new ArrayList<StudyField>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select f from qstudyfield f ")
+		  .append(" left join fetch f.parentField pf ")
+		  .append(" left join fetch pf.parentField ppf ")
+		  .append(" left join fetch ppf.parentField pppf ")
+		  .append(" where f.key=:key");
+
+		StudyFieldImpl fetchedField = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), StudyFieldImpl.class)
+				.setParameter("key", field.getKey())
+				.getSingleResult();
+		
+		parentLine.add(fetchedField);
+		if(fetchedField.getParentField() != null) {
+			StudyFieldImpl pf = (StudyFieldImpl)fetchedField.getParentField();
+			parentLine.add(pf);
+			if(pf.getParentField() != null) {
+				StudyFieldImpl ppf = (StudyFieldImpl)pf.getParentField();
+				parentLine.add(ppf);
+				if(ppf.getParentField() != null) {
+					StudyFieldImpl pppf = (StudyFieldImpl)ppf.getParentField();
+					parentLine.add(pppf);
+				}
+			}
+		}
+		
+		Collections.reverse(parentLine);
+		StringBuilder path = new StringBuilder();
+		for(StudyField f:parentLine) {
+			path.append("/").append(f.getField());
+		}
+		return path.toString();
+	}
 }

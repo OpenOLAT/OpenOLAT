@@ -119,6 +119,11 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.persistence.DBTest.class,
 	org.olat.modules.ims.cp.CPManagerTest.class,
 	org.olat.modules.webFeed.FeedManagerImplTest.class,
+	org.olat.modules.qpool.manager.QuestionDAOTest.class,
+	org.olat.modules.qpool.manager.CollectionDAOTest.class,
+	org.olat.modules.qpool.manager.PoolDAOTest.class,
+	org.olat.modules.qpool.manager.StudyFieldDAOTest.class,
+	org.olat.modules.qpool.manager.QuestionPoolServiceTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
 	org.olat.core.commons.service.mark.MarksTest.class,
 //	org.olat.test.OlatJerseyTestCase.class, // NO TEST METHODS 

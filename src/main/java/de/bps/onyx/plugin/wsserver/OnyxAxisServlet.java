@@ -25,8 +25,6 @@ import org.apache.axis2.addressing.EndpointReference;
 import org.apache.axis2.transport.http.AxisServlet;
 import org.olat.core.helpers.Settings;
 
-import de.bps.onyx.plugin.OnyxModule;
-
 /**
  * Description:<br>
  * This class extends the AxisServlet class to provide an alternate

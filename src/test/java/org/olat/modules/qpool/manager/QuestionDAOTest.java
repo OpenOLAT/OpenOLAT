@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.manager;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import junit.framework.Assert;
@@ -28,6 +29,9 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.test.JunitTestHelper;
@@ -45,18 +49,20 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private BusinessGroupDAO businessGroupDao;
+	@Autowired
 	private QuestionItemDAO questionDao;
 	@Autowired
 	private MarkManager markManager;
 	
 	@Test
 	public void createQuestion() {
-		QuestionItem item = questionDao.create("Stars", QuestionType.FIB);
+		QuestionItem item = questionDao.create("Stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.FIB);
 		Assert.assertNotNull(item);
 		Assert.assertNotNull(item.getKey());
 		Assert.assertNotNull(item.getCreationDate());
 		Assert.assertNotNull(item.getLastModified());
-		Assert.assertNotNull(item.getType());
+		Assert.assertNotNull(item.getQuestionType());
 		Assert.assertNotNull(item.getQuestionStatus());
 		Assert.assertEquals("Stars", item.getSubject());
 		dbInstance.commitAndCloseSession();
@@ -64,7 +70,7 @@ public class QuestionDAOTest extends OlatTestCase {
 
 	@Test
 	public void getNumOfQuestions() {
-		QuestionItem item = questionDao.create("NGC 1277", QuestionType.MC);
+		QuestionItem item = questionDao.create("NGC 1277", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
 		
@@ -76,9 +82,9 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Test
 	public void getFavoritItems() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.create("NGC 55", QuestionType.MC);
-		QuestionItem item2 = questionDao.create("NGC 253", QuestionType.MC);
-		QuestionItem item3 = questionDao.create("NGC 292", QuestionType.MC);
+		QuestionItem item1 = questionDao.create("NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item2 = questionDao.create("NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item3 = questionDao.create("NGC 292", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		markManager.setMark(item1, id, null, "[QuestionItem:" + item1 + "]");
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
@@ -90,6 +96,88 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertTrue(favorits.contains(item2));
 		Assert.assertFalse(favorits.contains(item3));
 	}
+
+	@Test
+	public void shareItems() {
+		//create a group to share 2 items
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		QuestionItem item1 = questionDao.create("Share-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item2 = questionDao.create("Share-Item-2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		dbInstance.commit();
+		
+		//share them
+		questionDao.share(item1, group.getResource());
+		questionDao.share(item2, group.getResource());
+		
+		//retrieve them
+		List<QuestionItem> sharedItems = questionDao.getSharedItemByResource(group.getResource(), 0, -1);
+		Assert.assertNotNull(sharedItems);
+		Assert.assertEquals(2, sharedItems.size());
+		Assert.assertTrue(sharedItems.contains(item1));
+		Assert.assertTrue(sharedItems.contains(item2));
+	}
+	
+	@Test
+	public void shareItems_avoidDuplicates() {
+		//create a group to share 2 items
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		QuestionItem item = questionDao.create("Share-Item-Dup-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		dbInstance.commit();
+		
+		//share them
+		questionDao.share(item, group.getResource());
+		questionDao.share(item, group.getResource());
+		questionDao.share(item, group.getResource());
+		
+		//retrieve them
+		List<QuestionItem> sharedItems = questionDao.getSharedItemByResource(group.getResource(), 0, -1);
+		Assert.assertNotNull(sharedItems);
+		Assert.assertEquals(1, sharedItems.size());
+		Assert.assertTrue(sharedItems.contains(item));
+	}
+	
+	@Test
+	public void shareItems_resources() {
+		//create a group to share 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-item-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		QuestionItem item = questionDao.create("Share-Item-Dup-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		dbInstance.commit();
+		
+		//share them
+		questionDao.share(item, group.getResource());
+		questionDao.share(item, group.getResource());
+		questionDao.share(item, group.getResource());
+		
+		//retrieve them
+		List<BusinessGroup> shared = questionDao.getResourcesWithSharedItems(id);
+		Assert.assertNotNull(shared);
+		Assert.assertEquals(1, shared.size());
+		Assert.assertTrue(shared.contains(group));
+	}
+	
+	@Test
+	public void removeFromShare() {
+		//create a group to share 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", -1, -1, false, false, false, false, false);
+		QuestionItem item = questionDao.create("Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		dbInstance.commit();
+		//share them
+		questionDao.share(item, group.getResource());
+		
+		//retrieve them as a check
+		List<QuestionItem> shared = questionDao.getSharedItemByResource(group.getResource(), 0, -1);
+		Assert.assertEquals(1, shared.size());
+		//and remove the items
+		int count = questionDao.deleteFromShares(shared);
+		Assert.assertEquals(1, count);
+		dbInstance.commit();//make sure that changes are committed
+	}
+	
+
+	
+	
 	
 	
 

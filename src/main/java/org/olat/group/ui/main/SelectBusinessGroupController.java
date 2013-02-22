@@ -55,6 +55,8 @@ public class SelectBusinessGroupController extends BasicController {
 	private SelectSearchBusinessGroupController searchGroupsCtrl;
 	private SelectSearchBusinessGroupController searchAdminGroupsCtrl;
 	
+	private Object userObject;
+	
 	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
@@ -90,6 +92,14 @@ public class SelectBusinessGroupController extends BasicController {
 						&& CoreSpringFactory.getImpl(BusinessGroupModule.class).isResourceManagersAllowedToLinkGroups());
 	}
 	
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	@Override
 	protected void doDispose() {
 		//

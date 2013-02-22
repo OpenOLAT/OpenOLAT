@@ -19,12 +19,15 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItem;
 
 /**
@@ -33,7 +36,7 @@ import org.olat.modules.qpool.QuestionItem;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemOverviewController extends FormBasicController {
+public class QuestionItemSummaryController extends FormBasicController {
 	
 	private StaticTextElement keyEl;
 	private StaticTextElement subjectEl;
@@ -46,7 +49,7 @@ public class QuestionItemOverviewController extends FormBasicController {
 
 	private QuestionItem item;
 	
-	public QuestionItemOverviewController(UserRequest ureq, WindowControl wControl) {
+	public QuestionItemSummaryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		initForm(ureq);
@@ -79,6 +82,40 @@ public class QuestionItemOverviewController extends FormBasicController {
 
 		keyEl.setValue(item.getKey().toString());
 		subjectEl.setValue(item.getSubject());
+		studyFieldEl.setValue("");
+		
+		String keywords = item.getKeywords();
+		if(StringHelper.containsNonWhitespace(keywords)) {
+			keywordsEl.setValue(keywords);
+		} else {
+			keywordsEl.setValue("");
+		}
+		
+		BigDecimal selectivity = item.getSelectivity();
+		String selectivityStr = "";
+		if(selectivity != null) {
+			selectivityStr = selectivity.toPlainString();
+		}
+		selectivityEl.setValue(selectivityStr);
+		
+		int usage = item.getUsage();
+		String usageStr = "";
+		if(usage >= 0) {
+			usageStr = Integer.toString(usage);
+		}
+		usageEl.setValue(usageStr);
+		
+		String description = item.getDescription();
+		if(StringHelper.containsNonWhitespace(description)) {
+			descriptionEl.setValue(description);
+		} else {
+			descriptionEl.setValue("");
+		}
+	}
+	
+	public void reset() {
+		keyEl.setValue("");
+		subjectEl.setValue("");
 		studyFieldEl.setValue("");
 		keywordsEl.setValue("");
 		selectivityEl.setValue("");

@@ -46,7 +46,7 @@ import org.olat.modules.qpool.QuestionItem;
  */
 @Entity(name="qpool2item")
 @Table(name="o_qp_pool_2_item")
-public class PoolToItem  implements CreateInfo, Persistable {
+public class PoolToItem implements CreateInfo, Persistable {
 
 	private static final long serialVersionUID = -2114442630543980092L;
 

@@ -3,13 +3,20 @@
 	<div id="qdetails" class="pane ui-layout-center">$r.render("details")</div>
 	<div id="qpreview" class="pane ui-layout-west">$r.render("preview")</div>
 </div>
+<div id="qbuttons" class="b_clearfix o_qpool_button_bar_box">
+	<div class="o_qpool_button_bar">
+		$r.render("select.item")
+		$r.render("delete.item")
+	</div>
+</div>
 <script>
 jQuery(function() {
 	var width = jQuery('#b_col3_content_inner').width();
 	var height = jQuery('#b_col3_content_inner').height();
 	jQuery('#container').width(width).height(height).layout({
 		center: { size: '50%' },
-		west: { size: '50%' }
+		west: { size: '50%' },
+		south: {}
 	});
 });
 </script>

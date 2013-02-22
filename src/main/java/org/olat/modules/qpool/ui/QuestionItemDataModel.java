@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.QuestionType;
 
 /**
  * 
@@ -39,13 +40,18 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 
 	private List<QuestionItemRow> rows;
 	private FlexiTableColumnModel columnModel;
-	private final ItemRowsSource source;
+	private ItemRowsSource source;
 	private final Translator translator;
 	
 	public QuestionItemDataModel(FlexiTableColumnModel columnModel, ItemRowsSource source, Translator translator) {
 		this.columnModel = columnModel;
 		this.source = source;
 		this.translator = translator;
+	}
+	
+	public void setSource(ItemRowsSource source) {
+		this.source = source;
+		rows.clear();
 	}
 	
 	@Override
@@ -112,7 +118,13 @@ public class QuestionItemDataModel implements FlexiTableDataModel, TableDataMode
 			case subject: return item.getSubject();
 			case studyField: return null;
 			case point: return item.getPoint();
-			case type: return item.getType();
+			case type: {
+				QuestionType type = item.getQuestionType();
+				if(type == null) {
+					return "";
+				}
+				return type.name();
+			}
 			case status: {
 				QuestionStatus s = item.getQuestionStatus();
 				if(s == null) {

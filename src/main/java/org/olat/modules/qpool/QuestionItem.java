@@ -19,31 +19,28 @@
  */
 package org.olat.modules.qpool;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.olat.core.id.OLATResourceable;
-
 /**
  * 
  * Initial date: 21.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItem extends OLATResourceable {
+public interface QuestionItem extends QuestionItemShort {
 	
-	public Long getKey();
+	public String getDescription();
 	
-	public Date getCreationDate();
+	public String getKeywords();
 	
-	public Date getLastModified();
+	public String getCopyright();
+
+	public String getTestType();
 	
-	public String getSubject();
+	public String getLevel();
 	
-	public BigDecimal getPoint();
 	
-	public String getType();
+	public String getEditor();
 	
-	public QuestionStatus getQuestionStatus();
+	public String getItemVersion();
+
 
 }

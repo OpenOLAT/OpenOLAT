@@ -25,13 +25,13 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
-import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,37 +41,33 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("qpoolService")
-public class QuestionPoolServiceImpl implements QuestionPoolService, ApplicationListener<ContextRefreshedEvent> {
+public class QuestionPoolServiceImpl implements QuestionPoolService {
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private PoolDAO poolDao;
 	@Autowired
+	private StudyFieldDAO studyFieldDao;
+	@Autowired
 	private QuestionItemDAO questionItemDao;
-	
-	
+
 	@Override
-	public void onApplicationEvent(ContextRefreshedEvent event) {
-		int numOfPools = poolDao.getNumOfPools();
-		if(numOfPools == 0) {
-			//create a pool if there isn't any
-			poolDao.createPool("Catalog");
-			dbInstance.intermediateCommit();
+	public String getMateriliazedPathOfStudyFields(QuestionItem item) {
+		QuestionItemImpl reloadedItem = (QuestionItemImpl)questionItemDao.loadById(item.getKey());
+		return studyFieldDao.getMaterializedPath(reloadedItem.getStudyField());
+	}
+
+	@Override
+	public void deleteItems(List<QuestionItem> items) {
+		if(items == null || items.isEmpty()) {
+			return; //nothing to do
 		}
 		
-		int numOfQuestions = questionItemDao.getNumOfQuestions();
-		if(numOfQuestions < 3) {
-			List<Pool> pools = poolDao.getPools();
-			for(int i=0; i<200; i++) {
-				QuestionItem item = questionItemDao.create("NGC " + i, QuestionType.MC);
-				poolDao.addItemToPool(item, pools.get(0));
-				if(i % 20 == 0) {
-					dbInstance.intermediateCommit();
-				}
-			}
-		}
-		dbInstance.intermediateCommit();
+		poolDao.deleteFromPools(items);
+		questionItemDao.deleteFromShares(items);
+		//TODO unmark
+		questionItemDao.delete(items);
 	}
 
 	@Override
@@ -90,6 +86,11 @@ public class QuestionPoolServiceImpl implements QuestionPoolService, Application
 	}
 
 	@Override
+	public void addItemToPool(QuestionItem item, Pool pool) {
+		poolDao.addItemToPool(item, pool);
+	}
+
+	@Override
 	public int getNumOfFavoritItems(Identity identity) {
 		return questionItemDao.getNumOfFavoritItems(identity);
 	}
@@ -97,6 +98,38 @@ public class QuestionPoolServiceImpl implements QuestionPoolService, Application
 	@Override
 	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults) {
 		return questionItemDao.getFavoritItems(identity, firstResult, maxResults);
+	}
+
+	@Override
+	public void shareItems(List<QuestionItem> items, List<BusinessGroup> groups) {
+		if(items == null || items.isEmpty() || groups == null || groups.isEmpty()) {
+			return;//nothing to do
+		}
+		
+		List<OLATResource> resources = new ArrayList<OLATResource>(groups.size());
+		for(BusinessGroup group:groups) {
+			resources.add(group.getResource());
+		}
+		
+		for(QuestionItem item:items) {
+			questionItemDao.share(item, resources);
+		}
+	}
+
+	@Override
+	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity) {
+		return questionItemDao.getResourcesWithSharedItems(identity);
+	}
+
+	@Override
+	public int countSharedItemByResource(OLATResource resource) {
+		return questionItemDao.countSharedItemByResource(resource);
+	}
+
+	@Override
+	public List<QuestionItem> getSharedItemByResource(OLATResource resource,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		return questionItemDao.getSharedItemByResource(resource, firstResult, maxResults, orderBy);
 	}
 
 	@Override

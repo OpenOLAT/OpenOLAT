@@ -19,9 +19,7 @@
  */
 package de.bps.olat.repository.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;

@@ -7,6 +7,7 @@
 
 
 <bean id="qtiModule" class="org.olat.ims.qti.QTIModule" depends-on="database" >
+	<property name="poolModule" ref="qpoolModule"/>
 	<property name="qtiRepositoryHandlers">
 		<list>
 			<ref bean="QTITestHandler${assessmentplugin.activate}" />
