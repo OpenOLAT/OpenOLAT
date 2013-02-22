@@ -428,6 +428,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		} else if (itemLinks != null && itemLinks.contains(source)) {
 			Item item = (Item) ((Link) source).getUserObject();
+			// Reload first, could be stale
+			item = feedManager.getItem(feed, item.getGuid());					
 			displayItemController(ureq, item);
 
 		} else if (source == makeInternalButton) {
@@ -560,11 +562,11 @@ public class ItemsController extends BasicController implements Activateable2 {
 				// remove the item also from the helper (cached selection)
 				helper.removeItem(item);
 				// permanently remove item
-				feedManager.remove(item, feed);
+				feed = feedManager.remove(item, feed);
 				// remove delete and edit buttons of this item
 				deleteButtons.remove(source);
 				for (Link editButton : editButtons) {
-					if (editButton.getUserObject() == item) {
+					if (item.equals(editButton.getUserObject())) {
 						editButtons.remove(editButton);
 						break;
 					}
@@ -606,7 +608,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 					} else {
 						if (!feed.getItems().contains(currentItem)) {
 							// Add the modified item if it is not part of the feed
-							feedManager.addItem(currentItem, mediaFile, feed);
+							feed = feedManager.addItem(currentItem, mediaFile, feed);
 							createButtonsForItem(ureq, currentItem);
 							createItemLink(currentItem);
 							// Add date component
@@ -631,7 +633,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 							ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_CREATE, getClass(), LoggingResourceable.wrap(currentItem));
 						} else {
 							// Write item file
-							feedManager.updateItem(currentItem, mediaFile, feed);
+							feed = feedManager.updateItem(currentItem, mediaFile, feed);
 							// Update current item in the users view, replace in helper cache of
 							// current selected items.
 							helper.updateItem(currentItem); 
@@ -807,7 +809,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		Link result = null;
 		if (buttons != null && item != null) {
 			for (Link button : buttons) {
-				if (button.getUserObject() == item) {
+				if (item.equals(button.getUserObject())) {
 					result = button;
 					break;
 				}
