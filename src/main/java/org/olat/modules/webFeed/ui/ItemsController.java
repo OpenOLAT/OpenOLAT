@@ -428,6 +428,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		} else if (itemLinks != null && itemLinks.contains(source)) {
 			Item item = (Item) ((Link) source).getUserObject();
+			// Reload first, could be stale
+			item = feedManager.getItem(feed, item.getGuid());					
 			displayItemController(ureq, item);
 
 		} else if (source == makeInternalButton) {
@@ -564,7 +566,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				// remove delete and edit buttons of this item
 				deleteButtons.remove(source);
 				for (Link editButton : editButtons) {
-					if (editButton.getUserObject() == item) {
+					if (item.equals(editButton.getUserObject())) {
 						editButtons.remove(editButton);
 						break;
 					}
@@ -807,7 +809,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		Link result = null;
 		if (buttons != null && item != null) {
 			for (Link button : buttons) {
-				if (button.getUserObject() == item) {
+				if (item.equals(button.getUserObject())) {
 					result = button;
 					break;
 				}
