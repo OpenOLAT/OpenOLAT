@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.resource.OLATResource;
@@ -47,6 +48,8 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	private DB dbInstance;
 	@Autowired
 	private PoolDAO poolDao;
+	@Autowired
+	private CollectionDAO collectionDao;
 	@Autowired
 	private StudyFieldDAO studyFieldDao;
 	@Autowired
@@ -68,6 +71,27 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 		questionItemDao.deleteFromShares(items);
 		//TODO unmark
 		questionItemDao.delete(items);
+	}
+
+	@Override
+	public void addAuthors(List<Identity> authors, List<QuestionItem> items) {
+		if(authors == null || authors.isEmpty() || items == null || items.isEmpty()) {
+			return;//nothing to do
+		}
+		
+		for(QuestionItem item:items) {
+			questionItemDao.addAuthors(authors, item);
+		}
+	}
+
+	@Override
+	public int countItems(Identity author) {
+		return questionItemDao.countItems(author);
+	}
+
+	@Override
+	public List<QuestionItem> getItems(Identity author, int firstResult, int maxResults, SortKey... orderBy) {
+		return questionItemDao.getItems(author, firstResult, maxResults, orderBy);
 	}
 
 	@Override
@@ -96,7 +120,7 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults) {
+	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults, SortKey... orderBy) {
 		return questionItemDao.getFavoritItems(identity, firstResult, maxResults);
 	}
 
@@ -133,7 +157,32 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> getItems(Identity identity, int firstResult, int maxResults) {
-		return new ArrayList<QuestionItem>();
+	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItem> initialItems) {
+		QuestionItemCollection coll = collectionDao.createCollection(collectionName, owner);
+		for(QuestionItem item:initialItems) {
+			collectionDao.addItemToCollection(item, coll);
+		}
+		return coll;
+	}
+
+	@Override
+	public void addItemToCollection(QuestionItem item, QuestionItemCollection coll) {
+		collectionDao.addItemToCollection(item, coll);
+	}
+
+	@Override
+	public List<QuestionItemCollection> getCollections(Identity owner) {
+		return collectionDao.getCollections(owner);
+	}
+
+	@Override
+	public int countItemsOfCollection(QuestionItemCollection collection) {
+		return collectionDao.countItemsOfCollection(collection);
+	}
+
+	@Override
+	public List<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, int firstResult,
+			int maxResults, SortKey... orderBy) {
+		return collectionDao.getItemsOfCollection(collection, firstResult, maxResults, orderBy);
 	}
 }

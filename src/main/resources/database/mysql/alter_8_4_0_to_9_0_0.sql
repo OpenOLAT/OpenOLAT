@@ -45,6 +45,7 @@ create table if not exists o_qp_item (
    lastmodified datetime not null,
    q_version varchar(32),
    fk_study_field bigint,
+   fk_author_grp_id bigint,
    primary key (id)
 );
 
@@ -96,6 +97,7 @@ alter table o_qp_collection_2_item add constraint idx_qp_coll_item_id foreign ke
 alter table o_qp_collection_2_item add unique (fk_collection_id, fk_item_id);
 
 alter table o_qp_item add constraint idx_qp_pool_2_field_id foreign key (fk_study_field) references o_qp_study_field(id);
+alter table o_qp_item add constraint idx_qp_item_author_grp_id foreign key (fk_author_grp_id) references o_bs_secgroup(id);
 alter table o_qp_study_field add constraint idx_qp_field_2_parent_id foreign key (fk_parent_field) references o_qp_study_field(id);
 
 

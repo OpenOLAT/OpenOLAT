@@ -79,11 +79,11 @@ public class CollectionDAOTest extends OlatTestCase {
 	public void addItemToCollectionById() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-2-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 2", id);
-		QuestionItem item = questionDao.create("NGC 81", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
+		QuestionItem item = questionDao.create(null, "NGC 89", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
 		dbInstance.commitAndCloseSession();
 		
 		//add the item to the collection
-		collectionDao.addItemToCollection(coll, item);
+		collectionDao.addItemToCollection(item, coll);
 		dbInstance.commit();//check if it's alright
 	}
 	
@@ -92,10 +92,10 @@ public class CollectionDAOTest extends OlatTestCase {
 		//create a collection with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
-		QuestionItem item1 = questionDao.create("NGC 82", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
-		QuestionItem item2 = questionDao.create("NGC 83", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
-		collectionDao.addItemToCollection(coll, item1);
-		collectionDao.addItemToCollection(coll, item2);
+		QuestionItem item1 = questionDao.create(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
+		QuestionItem item2 = questionDao.create(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
+		collectionDao.addItemToCollection(item1, coll);
+		collectionDao.addItemToCollection(item2, coll);
 		dbInstance.commit();//check if it's alright
 		
 		//load the items of the collection
@@ -106,5 +106,20 @@ public class CollectionDAOTest extends OlatTestCase {
 		Assert.assertTrue(items.contains(item2));
 	}
 	
+	
+	@Test
+	public void getCollections_myOhMy() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
+		QuestionItemCollection coll1 = collectionDao.createCollection("NGC collection part. 4", id);
+		QuestionItemCollection coll2 = collectionDao.createCollection("NGC collection part. 5", id);
+		dbInstance.commit();//check if it's alright
+		
+		//load the items of the collection
+		List<QuestionItemCollection> items = collectionDao.getCollections(id);
+		Assert.assertNotNull(items);
+		Assert.assertEquals(2, items.size());
+		Assert.assertTrue(items.contains(coll1));
+		Assert.assertTrue(items.contains(coll2));
+	}
 	
 }

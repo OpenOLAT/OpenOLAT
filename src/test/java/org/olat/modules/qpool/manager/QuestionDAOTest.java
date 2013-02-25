@@ -57,7 +57,7 @@ public class QuestionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createQuestion() {
-		QuestionItem item = questionDao.create("Stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.FIB);
+		QuestionItem item = questionDao.create(null, "Stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.FIB);
 		Assert.assertNotNull(item);
 		Assert.assertNotNull(item.getKey());
 		Assert.assertNotNull(item.getCreationDate());
@@ -67,10 +67,43 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertEquals("Stars", item.getSubject());
 		dbInstance.commitAndCloseSession();
 	}
+	
+	@Test
+	public void createQuestion_withOwner() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-1-" + UUID.randomUUID().toString());
+		QuestionItem item = questionDao.create(id, "My fav. stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.FIB);
+		Assert.assertNotNull(item);
+		Assert.assertNotNull(item.getKey());
+		Assert.assertNotNull(item.getCreationDate());
+		Assert.assertNotNull(item.getLastModified());
+		Assert.assertNotNull(item.getQuestionType());
+		Assert.assertNotNull(item.getQuestionStatus());
+		Assert.assertEquals("My fav. stars", item.getSubject());
+		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void getItems_byAuthor() {
+		//create an author with 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-2-" + UUID.randomUUID().toString());
+		QuestionItem item1 = questionDao.create(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.FIB);
+		QuestionItem item2 = questionDao.create(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.FIB);
+		dbInstance.commitAndCloseSession();
+		
+		//count the items of the author
+		int numOfItems = questionDao.countItems(id);
+		Assert.assertEquals(2, numOfItems);
+		//retrieve the items of the author
+		List<QuestionItem> items = questionDao.getItems(id, 0, -1);
+		Assert.assertNotNull(items);
+		Assert.assertEquals(2, items.size());
+		Assert.assertTrue(items.contains(item1));
+		Assert.assertTrue(items.contains(item2));
+	}
 
 	@Test
 	public void getNumOfQuestions() {
-		QuestionItem item = questionDao.create("NGC 1277", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item = questionDao.create(null, "NGC 1277", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
 		
@@ -82,9 +115,9 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Test
 	public void getFavoritItems() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.create("NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
-		QuestionItem item2 = questionDao.create("NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
-		QuestionItem item3 = questionDao.create("NGC 292", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item1 = questionDao.create(id, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item2 = questionDao.create(id, "NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item3 = questionDao.create(id, "NGC 292", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		markManager.setMark(item1, id, null, "[QuestionItem:" + item1 + "]");
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
@@ -101,8 +134,8 @@ public class QuestionDAOTest extends OlatTestCase {
 	public void shareItems() {
 		//create a group to share 2 items
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item1 = questionDao.create("Share-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
-		QuestionItem item2 = questionDao.create("Share-Item-2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item1 = questionDao.create(null, "Share-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item2 = questionDao.create(null, "Share-Item-2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		dbInstance.commit();
 		
 		//share them
@@ -121,7 +154,7 @@ public class QuestionDAOTest extends OlatTestCase {
 	public void shareItems_avoidDuplicates() {
 		//create a group to share 2 items
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.create("Share-Item-Dup-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item = questionDao.create(null, "Share-Item-Dup-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		dbInstance.commit();
 		
 		//share them
@@ -141,7 +174,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		//create a group to share 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-item-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.create("Share-Item-Dup-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item = questionDao.create(id, "Share-Item-Dup-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		dbInstance.commit();
 		
 		//share them
@@ -161,7 +194,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		//create a group to share 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.create("Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		dbInstance.commit();
 		//share them
 		questionDao.share(item, group.getResource());

@@ -33,6 +33,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.test.JunitTestHelper;
@@ -61,8 +62,8 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		//create a group to share 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item1 = questionDao.create("Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
-		QuestionItem item2 = questionDao.create("Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item1 = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item2 = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
 		dbInstance.commit();
 		//share them
 		questionDao.share(item1, group.getResource());
@@ -80,5 +81,32 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		Assert.assertNull(deletedItem1);
 		QuestionItem deletedItem2 = questionDao.loadById(item2.getKey());
 		Assert.assertNull(deletedItem2);
+	}
+	
+	@Test
+	public void createCollection() {
+		//create an user with 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
+		QuestionItem item1 = questionDao.create(id, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
+		QuestionItem item2 = questionDao.create(id, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
+		dbInstance.commit();
+		
+		//load the items of the collection
+		List<QuestionItem> items = new ArrayList<QuestionItem>();
+		items.add(item1);
+		items.add(item2);
+		QuestionItemCollection newColl = qpoolService.createCollection(id, "My private collection", items);
+		Assert.assertNotNull(newColl);
+		Assert.assertEquals("My private collection", newColl.getName());
+		dbInstance.commit();//check if it's alright
+		
+		//retrieve the list of items in the collection
+		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl);
+		Assert.assertEquals(2, numOfItemsInCollection);
+		List<QuestionItem> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, 0, -1);
+		Assert.assertNotNull(itemsOfCollection);
+		Assert.assertEquals(2, itemsOfCollection.size());
+		Assert.assertTrue(itemsOfCollection.contains(item1));
+		Assert.assertTrue(itemsOfCollection.contains(item2));
 	}
 }

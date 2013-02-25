@@ -19,26 +19,37 @@
  */
 package org.olat.modules.qpool.ui;
 
-import org.olat.core.util.event.MultiUserEvent;
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.QuestionPoolService;
 
 /**
  * 
- * Initial date: 22.02.2013<br>
+ * Initial date: 25.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QPoolEvent extends MultiUserEvent {
-
-	private static final long serialVersionUID = -2848823902400095710L;
+public class CollectionOfItemsSource implements QuestionItemsSource {
 	
-	public static final String ITEM_SHARED = "qpool-item-shared";
-	public static final String ITEM_MARKED = "qpool-item-marked";
-	public static final String ITEM_DELETED = "qpool-item-deleted";
-	public static final String COLL_CREATED = "qpool-coll-created";
+	private final QuestionPoolService qpoolService;
+	private final QuestionItemCollection collection;
 	
-
-	public QPoolEvent(String cmd) {
-		super(cmd);
+	public CollectionOfItemsSource(QuestionItemCollection collection) {
+		this.collection = collection;
+		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 	}
 
+	@Override
+	public int getNumOfItems() {
+		return qpoolService.countItemsOfCollection(collection);
+	}
+
+	@Override
+	public List<QuestionItem> getItems(int firstResult, int maxResults, SortKey... orderBy) {
+		return qpoolService.getItemsOfCollection(collection, firstResult, maxResults);
+	}
 }

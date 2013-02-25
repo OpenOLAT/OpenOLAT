@@ -131,7 +131,7 @@ public class PoolDAO {
 				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("poolKey", pool.getKey());
 		if(firstResult >= 0) {
-			query.setFirstResult(0);
+			query.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);

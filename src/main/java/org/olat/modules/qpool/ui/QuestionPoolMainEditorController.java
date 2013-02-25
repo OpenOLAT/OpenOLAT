@@ -45,6 +45,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionPoolService;
 
 /**
@@ -56,17 +57,20 @@ import org.olat.modules.qpool.QuestionPoolService;
 public class QuestionPoolMainEditorController extends BasicController implements Activateable2, StackedControllerAware {
 
 	private final MenuTree menuTree;
-	private GenericTreeNode sharesNode;
+	private GenericTreeNode sharesNode, myNode;
 	
 	private final Panel content;
 	private StackedController stackPanel;
 
-	private QuestionsController myQuestionsCtrl;
-	private QuestionsController markedQuestionsCtrl;
-	private QuestionsController selectedPoolCtrl;
-	private QuestionsController sharedItemsCtrl;
 	private QuestionsController currentCtrl;
+	private QuestionsController myQuestionsCtrl;
+	private QuestionsController sharedItemsCtrl;
+	private QuestionsController collItemsCtrl;
+	private QuestionsController selectedPoolCtrl;
+	private QuestionsController markedQuestionsCtrl;
+	private StudyFieldAdminController studyFieldCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
+	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
 
 	private final MarkManager markManager;
 	private final QuestionPoolService qpoolService;
@@ -129,6 +133,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				} else if(uNode instanceof BusinessGroup) {
 					BusinessGroup group = (BusinessGroup)uNode;
 					doSelect(ureq, group);
+				} else if(uNode instanceof QuestionItemCollection) {
+					QuestionItemCollection coll = (QuestionItemCollection)uNode;
+					doSelect(ureq, coll);
 				}
 			}
 		}
@@ -140,7 +147,10 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			if(QPoolEvent.ITEM_SHARED.equals(event.getCommand())) {
 				buildShareSubTreeModel(sharesNode);
 				menuTree.setDirty(true);
-			}	
+			}	else if(QPoolEvent.COLL_CREATED.equals(event.getCommand())) {
+				buildMySubTreeModel(myNode);
+				menuTree.setDirty(true);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -165,6 +175,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				} else if(userObj instanceof Pool) {
 					qpoolService.addItemToPool(item, (Pool)userObj);
 					showInfo("item.pooled", item.getSubject());
+				} else if(userObj instanceof QuestionItemCollection) {
+					qpoolService.addItemToCollection(item, (QuestionItemCollection)userObj);
+					showInfo("item.collectioned", item.getSubject());
 				} else if("menu.database.favorit".equals(userObj)) {
 					String businessPath = "[QuestionItem:" + item.getKey() + "]";
 					markManager.setMark(item, getIdentity(), null, businessPath);
@@ -175,9 +188,6 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			logError("Cannot drop with id: " + dropId, e);
 		}
 	}
-	
-	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
-	private StudyFieldAdminController studyFieldCtrl;
 	
 	private void doSelectAdmin(UserRequest ureq) {
 		if(adminStatisticsCtrl == null) {
@@ -241,6 +251,18 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		content.setContent(sharedItemsCtrl.getInitialComponent());
 	}
 	
+	private void doSelect(UserRequest ureq, QuestionItemCollection coll) {
+		if(collItemsCtrl == null) {
+			collItemsCtrl = new QuestionsController(ureq, getWindowControl(), new CollectionOfItemsSource(coll));
+			collItemsCtrl.setStackedController(stackPanel);
+			listenTo(collItemsCtrl);
+		} else {
+			collItemsCtrl.updateSource(new CollectionOfItemsSource(coll));
+		}
+		currentCtrl = collItemsCtrl;
+		content.setContent(collItemsCtrl.getInitialComponent());
+	}
+	
 	private TreeModel buildTreeModel() {
 		QuestionPoolMenuTreeModel gtm = new QuestionPoolMenuTreeModel();
 		GenericTreeNode rootNode = new GenericTreeNode(translate("topnav.qpool"), "topnav.qpool.alt");
@@ -248,17 +270,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		gtm.setRootNode(rootNode);
 		
 		//question database
-		GenericTreeNode databaseNode = new GenericTreeNode(translate("menu.database"), "menu.database");
-		databaseNode.setCssClass("o_sel_qpool_database");
-		rootNode.addChild(databaseNode);
-		
-		GenericTreeNode node = new GenericTreeNode(translate("menu.database.my"), "menu.database.my");
-		node.setIconCssClass("o_sel_qpool_my_items");
-		databaseNode.addChild(node);
-		
-		node = new GenericTreeNode(translate("menu.database.favorit"), "menu.database.favorit");
-		node.setIconCssClass("o_sel_qpool_favorits");
-		databaseNode.addChild(node);
+		myNode = new GenericTreeNode(translate("menu.database"), "menu.database");
+		myNode.setCssClass("o_sel_qpool_database");
+		rootNode.addChild(myNode);
+		buildMySubTreeModel(myNode);
+
 
 		//pools
 		GenericTreeNode poolNode = new GenericTreeNode(translate("menu.pools"), "menu.pools.alt");
@@ -267,7 +283,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		
 		List<Pool> pools = qpoolService.getPools(getIdentity());
 		for(Pool pool:pools) {
-			node = new GenericTreeNode(pool.getName(), pool);
+			GenericTreeNode node = new GenericTreeNode(pool.getName(), pool);
 			node.setIconCssClass("o_sel_qpool_pool");
 			poolNode.addChild(node);
 		}
@@ -283,11 +299,30 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		adminNode.setCssClass("o_sel_qpool_admin");
 		rootNode.addChild(adminNode);
 		
-		node = new GenericTreeNode(translate("menu.admin.studyfields"), "menu.admin.studyfields");
+		GenericTreeNode node = new GenericTreeNode(translate("menu.admin.studyfields"), "menu.admin.studyfields");
 		node.setIconCssClass("o_sel_qpool_study_fields");
 		adminNode.addChild(node);
 
 		return gtm;
+	}
+	
+	private void buildMySubTreeModel(GenericTreeNode myNode) {
+		myNode.removeAllChildren();
+		
+		GenericTreeNode node = new GenericTreeNode(translate("menu.database.my"), "menu.database.my");
+		node.setIconCssClass("o_sel_qpool_my_items");
+		myNode.addChild(node);
+		
+		node = new GenericTreeNode(translate("menu.database.favorit"), "menu.database.favorit");
+		node.setIconCssClass("o_sel_qpool_favorits");
+		myNode.addChild(node);
+		
+		List<QuestionItemCollection> collections = qpoolService.getCollections(getIdentity());
+		for(QuestionItemCollection coll: collections) {
+			node = new GenericTreeNode(coll.getName(), coll);
+			node.setIconCssClass("o_sel_qpool_collection");
+			myNode.addChild(node);
+		}
 	}
 	
 	private void buildShareSubTreeModel(GenericTreeNode sharesNode) {

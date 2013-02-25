@@ -27,6 +27,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
@@ -54,8 +56,11 @@ public class QuestionItemDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
 	
-	public QuestionItem create(String subject, String format, String language, StudyField field, QuestionType type) {
+	public QuestionItem create(Identity owner, String subject, String format, String language,
+			StudyField field, QuestionType type) {
 		QuestionItemImpl item = new QuestionItemImpl();
 		item.setCreationDate(new Date());
 		item.setLastModified(new Date());
@@ -66,8 +71,59 @@ public class QuestionItemDAO {
 		item.setFormat(format);
 		item.setLanguage(language);
 		item.setStudyField(field);
+		SecurityGroup authorGroup = securityManager.createAndPersistSecurityGroup();
+		item.setAuthorGroup(authorGroup);
 		dbInstance.getCurrentEntityManager().persist(item);
+		if(owner != null) {
+			securityManager.addIdentityToSecurityGroup(owner, authorGroup);
+		}
 		return item;
+	}
+	
+	public void addAuthors(List<Identity> authors, QuestionItem item) {
+		QuestionItemImpl lockedItem = loadForUpdate(item.getKey());
+		SecurityGroup secGroup = lockedItem.getAuthorGroup();
+		for(Identity author:authors) {
+			if(!securityManager.isIdentityInSecurityGroup(author, secGroup)) {
+				securityManager.addIdentityToSecurityGroup(author, secGroup);
+			}
+		}
+		dbInstance.commit();
+	}
+	
+	public int countItems(Identity me) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item) from questionitem item")
+		  .append(" inner join item.authorGroup authorGroup ")
+		  .append(" where authorGroup in (")
+		  .append("   select vmember.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=authorGroup")
+		  .append(" )");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", me.getKey())
+				.getSingleResult().intValue();
+	}
+	
+	public List<QuestionItem> getItems(Identity me, int firstResult, int maxResults, SortKey... orderBy) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item from questionitem item")
+		  .append(" inner join item.authorGroup authorGroup ")
+		  .append(" where authorGroup in (")
+		  .append("   select vmember.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=authorGroup")
+		  .append(" )");
+
+		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItem.class)
+				.setParameter("identityKey", me.getKey());
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
 	}
 	
 	public void delete(List<QuestionItem> items) {
@@ -92,11 +148,11 @@ public class QuestionItemDAO {
 		return items.get(0);
 	}
 	
-	public QuestionItem loadForUpdate(Long key) {
+	public QuestionItemImpl loadForUpdate(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item where item.key=:key");
-		QuestionItem item = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItem.class)
+		QuestionItemImpl item = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemImpl.class)
 				.setParameter("key", key)
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getSingleResult();

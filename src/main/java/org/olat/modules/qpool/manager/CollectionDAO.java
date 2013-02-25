@@ -72,7 +72,7 @@ public class CollectionDAO {
 		return items.get(0);
 	}
 	
-	public void addItemToCollection(QuestionItemCollection collection, QuestionItem item) {
+	public void addItemToCollection(QuestionItem item, QuestionItemCollection collection) {
 		QuestionItem lockedItem = questionItemDao.loadForUpdate(item.getKey());
 		if(!isInCollection(collection, lockedItem)) {
 			CollectionToItem coll2Item = new CollectionToItem();
@@ -95,6 +95,16 @@ public class CollectionDAO {
 		return count.intValue() > 0;
 	}
 	
+	public int countItemsOfCollection(QuestionItemCollection collection) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(coll2item) from qcollection2item coll2item where coll2item.collection.key=:collectionKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("collectionKey", collection.getKey())
+				.getSingleResult().intValue();
+	}
+	
 	public List<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select coll2item.item from qcollection2item coll2item where coll2item.collection.key=:collectionKey");
@@ -104,11 +114,21 @@ public class CollectionDAO {
 				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("collectionKey", collection.getKey());
 		if(firstResult >= 0) {
-			query.setFirstResult(0);
+			query.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
 		return query.getResultList();
+	}
+	
+	public List<QuestionItemCollection> getCollections(Identity me) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select coll from qcollection coll where coll.owner.key=:identityKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemCollection.class)
+				.setParameter("identityKey", me.getKey())
+				.getResultList();
 	}
 }

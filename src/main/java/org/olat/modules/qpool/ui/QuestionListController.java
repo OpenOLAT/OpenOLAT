@@ -50,6 +50,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -64,7 +69,7 @@ import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
  */
 public class QuestionListController extends FormBasicController implements StackedControllerAware, ItemRowsSource {
 
-	private FormLink createList, shareItem, deleteItem;
+	private FormLink createList, shareItem, deleteItem, authorItem;
 	
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
@@ -73,6 +78,8 @@ public class QuestionListController extends FormBasicController implements Stack
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteBox;
 	private SelectBusinessGroupController selectGroupCtrl;
+	private CreateCollectionController createCollectionCtrl;
+	private StepsMainRunController importAuthorsWizard;
 	
 	private final MarkManager markManager;
 	private final QuestionPoolService qpoolService;
@@ -114,6 +121,7 @@ public class QuestionListController extends FormBasicController implements Stack
 		
 		createList = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
 		deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
 	}
 
@@ -142,8 +150,8 @@ public class QuestionListController extends FormBasicController implements Stack
 			FormLink link = (FormLink)source;
 			if(link == createList) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
-				System.out.println(selections.size());
-				
+				List<QuestionItem> items = getQuestionItems(selections);
+				doAskCollectionName(ureq, items);
 			} else if(link == shareItem) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
 				if(selections.size() > 0) {
@@ -155,6 +163,12 @@ public class QuestionListController extends FormBasicController implements Stack
 				if(selections.size() > 0) {
 					List<QuestionItem> items = getQuestionItems(selections);
 					doConfirmDelete(ureq, items);
+				}
+			} else if(link == authorItem) {
+				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				if(selections.size() > 0) {
+					List<QuestionItem> items = getQuestionItems(selections);
+					doChooseAuthoren(ureq, items);
 				}
 			} else if("select".equals(link.getCmd())) {
 				QuestionItemRow row = (QuestionItemRow)link.getUserObject();
@@ -191,12 +205,27 @@ public class QuestionListController extends FormBasicController implements Stack
 				List<BusinessGroup> groups = bge.getGroups();
 				if(groups.size() > 0) {
 					@SuppressWarnings("unchecked")
-					List<QuestionItem> items = (List<QuestionItem>)((SelectBusinessGroupController)source).getUserObject();
+					List<QuestionItem> items = (List<QuestionItem>)selectGroupCtrl.getUserObject();
 					doShareItems(ureq, items, groups);
 				}
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source == createCollectionCtrl) {
+			if(Event.DONE_EVENT == event) {
+				@SuppressWarnings("unchecked")
+				List<QuestionItem> items = (List<QuestionItem>)createCollectionCtrl.getUserObject();
+				String collectionName = createCollectionCtrl.getName();
+				doCreateCollection(ureq, collectionName, items);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == importAuthorsWizard) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(importAuthorsWizard);
+				importAuthorsWizard = null;
+			}
 		} else if(source == confirmDeleteBox) {
 			boolean delete = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
 			if(delete) {
@@ -213,8 +242,10 @@ public class QuestionListController extends FormBasicController implements Stack
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(selectGroupCtrl);
+		removeAsListenerAndDispose(createCollectionCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
+		createCollectionCtrl = null;
 	}
 	
 	public List<QuestionItem> getQuestionItems(Set<Integer> index) {
@@ -234,6 +265,49 @@ public class QuestionListController extends FormBasicController implements Stack
 			return row.getItem();
 		}
 		return null;
+	}
+	
+	private void doAskCollectionName(UserRequest ureq, List<QuestionItem> items) {
+		removeAsListenerAndDispose(createCollectionCtrl);
+		createCollectionCtrl = new CreateCollectionController(ureq, getWindowControl());
+		createCollectionCtrl.setUserObject(items);
+		listenTo(createCollectionCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				createCollectionCtrl.getInitialComponent(), true, translate("create.list"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doCreateCollection(UserRequest ureq, String name, List<QuestionItem> items) {
+		qpoolService.createCollection(getIdentity(), name, items);
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_CREATED));
+	}
+	
+	private void doChooseAuthoren(UserRequest ureq, List<QuestionItem> items) {
+		removeAsListenerAndDispose(importAuthorsWizard);
+
+		Step start = new ImportAuthor_1_ChooseMemberStep(ureq, items);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				addAuthors(ureq, runContext);
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		importAuthorsWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("author.item"), "o_sel_qpool_import_1_wizard");
+		listenTo(importAuthorsWizard);
+		getWindowControl().pushAsModalDialog(importAuthorsWizard.getInitialComponent());
+	}
+	
+	private void addAuthors(UserRequest ureq, StepsRunContext runContext) {
+		@SuppressWarnings("unchecked")
+		List<QuestionItem> items = (List<QuestionItem>)runContext.get("items");
+		@SuppressWarnings("unchecked")
+		List<Identity> authors = (List<Identity>)runContext.get("members");
+		qpoolService.addAuthors(authors, items);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, List<QuestionItem> items) {

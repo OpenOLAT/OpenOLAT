@@ -45,7 +45,7 @@ public class MyQuestionItemsSource implements QuestionItemsSource {
 
 	@Override
 	public int getNumOfItems() {
-		return 0;
+		return qpoolService.countItems(me);
 	}
 
 	@Override

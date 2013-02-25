@@ -38,7 +38,15 @@ public interface QuestionPoolService {
 	
 	public void deleteItems(List<QuestionItem> items);
 	
+	public void addAuthors(List<Identity> authors, List<QuestionItem> items);
 	
+
+	public int countItems(Identity author);
+
+	public List<QuestionItem> getItems(Identity author, int firstResult, int maxResults, SortKey... orderBy);
+	
+	
+	//pools
 	public List<Pool> getPools(Identity identity);
 	
 	public int getNumOfItemsInPool(Pool pool);
@@ -48,13 +56,14 @@ public interface QuestionPoolService {
 	public void addItemToPool(QuestionItem item, Pool pool);
 	
 	
+	//favorit
 	public int getNumOfFavoritItems(Identity identity);
 	
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults);
-	
-	public List<QuestionItem> getItems(Identity identity, int firstResult, int maxResults);
+	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults, SortKey... orderBy);
 	
 	
+	
+	//share
 	public void shareItems(List<QuestionItem> items, List<BusinessGroup> groups);
 	
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity);
@@ -63,5 +72,16 @@ public interface QuestionPoolService {
 	
 	public List<QuestionItem> getSharedItemByResource(OLATResource resource, int firstResult, int maxResults, SortKey... orderBy);
 		
+	
+	//list
+	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItem> initialItems);
+	
+	public void addItemToCollection(QuestionItem item, QuestionItemCollection collection);
+	
+	public List<QuestionItemCollection> getCollections(Identity owner);
+	
+	public int countItemsOfCollection(QuestionItemCollection collection);
+	
+	public List<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, int firstResult, int maxResults, SortKey... orderBy);
 
 }

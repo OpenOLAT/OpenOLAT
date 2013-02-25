@@ -24,6 +24,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -36,6 +37,8 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
@@ -85,6 +88,9 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	//rights
 	@Column(name="q_copyright", nullable=true, insertable=true, updatable=true)
 	private String copyright;
+	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_author_grp_id", nullable=false, insertable=true, updatable=false)
+	private SecurityGroup authorGroup;
 	
 	//usage
 	@Column(name="q_point", nullable=true, insertable=true, updatable=true)
@@ -264,6 +270,14 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 
 	public void setCopyright(String copyright) {
 		this.copyright = copyright;
+	}
+
+	public SecurityGroup getAuthorGroup() {
+		return authorGroup;
+	}
+
+	public void setAuthorGroup(SecurityGroup authorGroup) {
+		this.authorGroup = authorGroup;
 	}
 
 	public BigDecimal getDifficulty() {
