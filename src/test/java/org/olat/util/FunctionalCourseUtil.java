@@ -20,6 +20,7 @@
 package org.olat.util;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -27,6 +28,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.exception.MethodInvocationException;
+import org.apache.velocity.exception.ParseErrorException;
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
@@ -192,14 +198,29 @@ public class FunctionalCourseUtil {
 	}
 	
 	public enum CourseNodeAlias {
-		CP("o_cp_icon"),
-		BLOG("o_blog_icon"),
-		PODCAST("o_podcast_icon"),
+		STRUCTURE("o_st_icon"), // NOT really a course node
+		SP("o_sp_icon"),
+		FORUM("o_fo_icon"),
 		WIKI("o_wiki_icon"),
+		BLOG("o_blog_icon"),
+		CP("o_cp_icon"),
+		SCORM("o_scorm_icon"),
+		BC("o_bc_icon"),
+		PODCAST("o_podcast_icon"),
+		DIALOG("o_dialog_icon"),
+		ASSESSMENT("o_ms_icon"),
+		TASK("o_ta_icon"),
 		PORTFOLIO_TASK("o_ep_icon"),
 		IQ_TEST("o_iqtest_icon"),
 		IQ_SELFTEST("o_iqself_icon"),
-		IQ_QUESTIONAIRE("o_iqsurv_icon");
+		IQ_QUESTIONAIRE("o_iqsurv_icon"),
+		ENROLMENT("o_en_icon"),
+		PROJECT_BROKER("o_projectbroker_icon"),
+		NOTIFICATIONS("o_infomsg_icon"),
+		MEMBERS("o_cmembers_icon"),
+		CALENDAR("o_cal_icon"),
+		LINK_LIST("o_ll_icon"),
+		CONTACT("o_co_icon");
 		
 		private String iconCss;
 		
@@ -443,11 +464,91 @@ public class FunctionalCourseUtil {
 	 * @param nth
 	 * @return true on success otherwise false
 	 */
-	public boolean open(Selenium browser, long courseId, int nth){
+	public CourseNodeAlias open(Selenium browser, long courseId, int nth){
 		if(!functionalRepositorySiteUtil.openCourse(browser, courseId))
-			return(false);
+			return(null);
 		
 		return(open(browser, nth));
+	}
+
+	/**
+	 * Counts the course nodes.
+	 * 
+	 * @param browser
+	 * @param learningResources
+	 * @param courseNodes
+	 * @param structuralNodes
+	 * @return
+	 */
+	public int count(Selenium browser, boolean learningResources, boolean courseNodes, boolean structuralNodes){
+		int count = -1;
+		
+		//TODO:JK: implement me
+		
+		return(count);
+	}
+	
+	/**
+	 * Returns the matching CourseNodeAlias of corresponding iconCss String.
+	 * 
+	 * @param iconCss
+	 * @return
+	 */
+	public static CourseNodeAlias findCourseNodeAliasOfIconCss(String iconCss){
+
+		if(iconCss == null){
+			return (null);
+		}
+		
+		CourseNodeAlias alias = null;
+		
+		if(iconCss.contains(CourseNodeAlias.SP.getIconCss())){
+			alias = CourseNodeAlias.SP;
+		}else if(iconCss.contains(CourseNodeAlias.FORUM.getIconCss())){
+			alias = CourseNodeAlias.FORUM;
+		}else if(iconCss.contains(CourseNodeAlias.WIKI.getIconCss())){
+			alias = CourseNodeAlias.WIKI;
+		}else if(iconCss.contains(CourseNodeAlias.BLOG.getIconCss())){
+			alias = CourseNodeAlias.BLOG;
+		}else if(iconCss.contains(CourseNodeAlias.CP.getIconCss())){
+			alias = CourseNodeAlias.CP;
+		}else if(iconCss.contains(CourseNodeAlias.SCORM.getIconCss())){
+			alias = CourseNodeAlias.SCORM;
+		}else if(iconCss.contains(CourseNodeAlias.BC.getIconCss())){
+			alias = CourseNodeAlias.BC;
+		}else if(iconCss.contains(CourseNodeAlias.PODCAST.getIconCss())){
+			alias = CourseNodeAlias.PODCAST;
+		}else if(iconCss.contains(CourseNodeAlias.DIALOG.getIconCss())){
+			alias = CourseNodeAlias.DIALOG;
+		}else if(iconCss.contains(CourseNodeAlias.ASSESSMENT.getIconCss())){
+			alias = CourseNodeAlias.ASSESSMENT;
+		}else if(iconCss.contains(CourseNodeAlias.TASK.getIconCss())){
+			alias = CourseNodeAlias.TASK;
+		}else if(iconCss.contains(CourseNodeAlias.PORTFOLIO_TASK.getIconCss())){
+			alias = CourseNodeAlias.PORTFOLIO_TASK;
+		}else if(iconCss.contains(CourseNodeAlias.IQ_TEST.getIconCss())){
+			alias = CourseNodeAlias.IQ_TEST;
+		}else if(iconCss.contains(CourseNodeAlias.IQ_SELFTEST.getIconCss())){
+			alias = CourseNodeAlias.IQ_SELFTEST;
+		}else if(iconCss.contains(CourseNodeAlias.IQ_QUESTIONAIRE.getIconCss())){
+			alias = CourseNodeAlias.IQ_QUESTIONAIRE;
+		}else if(iconCss.contains(CourseNodeAlias.ENROLMENT.getIconCss())){
+			alias = CourseNodeAlias.ENROLMENT;
+		}else if(iconCss.contains(CourseNodeAlias.PROJECT_BROKER.getIconCss())){
+			alias = CourseNodeAlias.PROJECT_BROKER;
+		}else if(iconCss.contains(CourseNodeAlias.NOTIFICATIONS.getIconCss())){
+			alias = CourseNodeAlias.NOTIFICATIONS;
+		}else if(iconCss.contains(CourseNodeAlias.MEMBERS.getIconCss())){
+			alias = CourseNodeAlias.MEMBERS;
+		}else if(iconCss.contains(CourseNodeAlias.CALENDAR.getIconCss())){
+			alias = CourseNodeAlias.CALENDAR;
+		}else if(iconCss.contains(CourseNodeAlias.LINK_LIST.getIconCss())){
+			alias = CourseNodeAlias.LINK_LIST;
+		}else if(iconCss.contains(CourseNodeAlias.CONTACT.getIconCss())){
+			alias = CourseNodeAlias.CONTACT;
+		}
+		
+		return(alias);
 	}
 	
 	/**
@@ -455,25 +556,34 @@ public class FunctionalCourseUtil {
 	 * 
 	 * @param browser
 	 * @param nth
-	 * @return true on success
+	 * @return the matching CourseNodeAlias
 	 */
-	public boolean open(Selenium browser, int nth){
+	public CourseNodeAlias open(Selenium browser, int nth){
 		functionalUtil.idle(browser);
 
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		if(nth == -1){
 			selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l0')]//li)//a");
+			
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.click(selectorBuffer.toString());
+			
+			return(CourseNodeAlias.STRUCTURE);
 		}else{
 			selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l1')]//li)[")
 			.append(nth + 1)
 			.append("]//a");
-		}
-
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		browser.click(selectorBuffer.toString());
 		
-		return(true);
+	
+			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+			browser.click(selectorBuffer.toString());
+			
+			functionalUtil.idle(browser);
+			String alias = browser.getAttribute(selectorBuffer.toString() + "@class");
+			
+			return(findCourseNodeAliasOfIconCss(alias));
+		}
 	}
 	
 	/**
@@ -501,6 +611,19 @@ public class FunctionalCourseUtil {
 		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
+	}
+	
+	/**
+	 * Opens the nth learning resource.
+	 * 
+	 * @param browser
+	 * @param nth
+	 * @return The matching CSS CourseNodeAlias
+	 */
+	public CourseNodeAlias openLearningResource(Selenium browser, int nth){
+		//TODO:JK: implement me
+		
+		return(null);
 	}
 	
 	/**
@@ -848,6 +971,7 @@ public class FunctionalCourseUtil {
 			String[] catalogSelectors = createCatalogSelectors(catalog);
 			
 			for(String catalogSelector: catalogSelectors){
+				functionalUtil.idle(browser);
 				functionalUtil.waitForPageToLoadElement(browser, catalogSelector);
 
 				if(browser.isElementPresent(catalogSelector + "/../img[contains(@class, 'x-tree-elbow-end-plus')]")){

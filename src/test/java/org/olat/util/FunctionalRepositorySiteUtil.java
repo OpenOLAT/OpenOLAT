@@ -236,6 +236,27 @@ public class FunctionalRepositorySiteUtil {
 		}
 	}
 	
+	//TODO:JK: add CSS classes
+	public enum DetailedViewAction{
+		CLOSE(null),
+		COPY(null),
+		DELETE(null);
+		
+		private String actionCss;
+		
+		DetailedViewAction(String actionCss){
+			setActionCss(actionCss);
+		}
+
+		public String getActionCss() {
+			return actionCss;
+		}
+
+		public void setActionCss(String actionCss) {
+			this.actionCss = actionCss;
+		}
+	}
+	
 	public final static String TOOLBOX_CONTENT_CSS = "b_toolbox_content";
 	public final static String TOOLBOX_COURSE_CSS = "o_toolbox_course";
 	public final static String TOOLBOX_CONTENT_PACKAGE_CSS = "o_toolbox_content";
@@ -799,16 +820,55 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
-	 * Opens the appropriate detailed view.
+	 * Opens a course by its title. The nth search result will be opened.
 	 * 
 	 * @param browser
-	 * @param key
+	 * @param title
+	 * @param nth
 	 * @return
 	 */
-	public boolean openDetailedView(Selenium browser, Long key){
-		//TODO:JK: implement me
+	public boolean openCourse(Selenium browser, String title, int nth){
+		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
+			return(false);
+
+		if(!openActionByMenuTree(browser, RepositorySiteAction.SEARCH_FORM))
+			return(false);
+
+		functionalUtil.idle(browser);
 		
-		return(false);
+		//FIXME:JK: use CSS classes instead of ordinal
+		int searchFormIndex = 0;
+
+		/* open search form */
+		functionalUtil.typeText(browser, SearchField.TITLE_OF_LEARNING_RESOURCE.getEntryCss(), title);
+
+		/* click search */
+		StringBuffer selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("xpath=//form[")
+		.append(searchFormIndex + 1)
+		.append("]")
+		.append("//div[@class='b_form_element']")
+		.append("//a[@class='b_button']");
+
+		browser.click(selectorBuffer.toString());
+		functionalUtil.waitForPageToLoad(browser);
+
+		/* click course */
+		functionalUtil.idle(browser);
+		
+		selectorBuffer = new StringBuffer();
+
+		selectorBuffer.append("//form")
+		.append("//tr")
+		.append("//td[3]") //FIXME:JK: this isn't very safe
+		.append("//a");
+
+		browser.click(selectorBuffer.toString());
+
+		waitForPageToLoadCourse(browser);
+		
+		return(true);
 	}
 	
 	/**
@@ -871,6 +931,18 @@ public class FunctionalRepositorySiteUtil {
 		return(true);
 	}
 	
+	/**
+	 * Opens the appropriate detailed view.
+	 * 
+	 * @param browser
+	 * @param key
+	 * @return
+	 */
+	public boolean openDetailedView(Selenium browser, Long key){
+		//TODO:JK: implement me
+		
+		return(false);
+	}
 	
 	/**
 	 * Opens the detail view of a specified learning resource.
@@ -880,7 +952,7 @@ public class FunctionalRepositorySiteUtil {
 	 * @param nth
 	 * @return true on success
 	 */
-	public boolean openDetailView(Selenium browser, String title, int nth){
+	public boolean openDetailedView(Selenium browser, String title, int nth){
 		if(!functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES))
 			return(false);
 
@@ -890,19 +962,23 @@ public class FunctionalRepositorySiteUtil {
 		int searchFormIndex = 0;
 
 		/* open search form */
-		functionalUtil.typeText(browser, SearchField.ID.getEntryCss(), title);
+		functionalUtil.typeText(browser, SearchField.TITLE_OF_LEARNING_RESOURCE.getEntryCss(), title);
 
 		/* click search */
+		functionalUtil.idle(browser);
+		
 		StringBuffer selectorBuffer = new StringBuffer();
 
 		selectorBuffer.append("xpath=//form[")
 		.append(searchFormIndex + 1)
 		.append("]")
 		.append("//div[@class='b_form_element']")
-		.append("//a[@class='b_button']");
+		.append("//a[contains(@class, '")
+		.append(functionalUtil.getButtonDirtyCss())
+		.append("')]");
 
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
-		functionalUtil.waitForPageToLoad(browser);
 
 		/* click course */
 		functionalUtil.idle(browser);
@@ -916,8 +992,8 @@ public class FunctionalRepositorySiteUtil {
 		.append("//td[6]") //FIXME:JK: this isn't very safe
 		.append("//a");
 
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
 		browser.click(selectorBuffer.toString());
-		functionalUtil.waitForPageToLoad(browser);
 		
 		return(true);
 	}
@@ -939,6 +1015,29 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Clicks the appropriate action defined by parameter actionCss.
+	 * 
+	 * @param browser
+	 * @param actionCss
+	 * @return
+	 */
+	private boolean clickDetailedViewAction(Selenium browser, String actionCss){
+		functionalUtil.idle(browser);
+		
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//ul//li//a[contains(@class, '")
+		.append(actionCss)
+		.append("')]");
+		
+		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
+		browser.click(selectorBuffer.toString());
+		
+		return(true);
+	}
+	
+	/**
+	 * Fills in title and description of a newly created repository entry.
 	 * 
 	 * @param browser
 	 * @param title
@@ -983,7 +1082,7 @@ public class FunctionalRepositorySiteUtil {
 		if(!clickCreate(browser, getCreateBlogCss()))
 			throw(new IOException("can't open create wizard of blog"));
 		
-		if(!openDetailView(browser, title, 0))
+		if(!openDetailedView(browser, title, 0))
 			throw(new IOException("can't open detail view"));
 			
 		long id = readIdFromDetailView(browser);
@@ -1008,6 +1107,7 @@ public class FunctionalRepositorySiteUtil {
 	}
 	
 	/**
+	 * Fills in the title and description of a newly created course.
 	 * 
 	 * @param browser
 	 * @param title
@@ -1196,6 +1296,18 @@ public class FunctionalRepositorySiteUtil {
 		return(true);
 	}
 
+	public boolean copyRepositoryEntry(Selenium browser, String title, String description) {
+		if(!clickDetailedViewAction(browser, DetailedViewAction.COPY.getActionCss())){
+			return(false);
+		}
+		
+		if(!fillInRepositoryEntryPopup(browser, title, description)){
+			return(false);
+		}
+		
+		return(true);
+	}
+	
 	public String getRepositoryPopupCss() {
 		return repositoryPopupCss;
 	}

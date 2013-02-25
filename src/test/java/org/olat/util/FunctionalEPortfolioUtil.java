@@ -585,7 +585,7 @@ public class FunctionalEPortfolioUtil {
 		/* wait until tree has loaded */
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//li[contains(@class, '")
+		locatorBuffer.append("xpath=//div[contains(@class, '")
 		.append(functionalUtil.getTreeNodeLoadingCss())
 		.append("')]");
 		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());
@@ -804,7 +804,7 @@ public class FunctionalEPortfolioUtil {
 		
 		StringBuffer locatorBuffer = new StringBuffer();
 		
-		locatorBuffer.append("xpath=//li[contains(@class, '")
+		locatorBuffer.append("xpath=//div[contains(@class, '")
 		.append(functionalUtil.getTreeNodeLoadingCss())
 		.append("')]");
 		functionalUtil.waitForPageToUnloadElement(browser, locatorBuffer.toString());

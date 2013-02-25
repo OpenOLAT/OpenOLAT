@@ -105,9 +105,9 @@ public class FunctionalPodcastTest {
 		
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
 		
-		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 		Assert.assertTrue(functionalCourseUtil.importPodcastFeed(browser, PODCAST_FEED));
 		
-		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 	}
 }

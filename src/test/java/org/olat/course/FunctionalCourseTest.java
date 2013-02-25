@@ -285,7 +285,7 @@ public class FunctionalCourseTest {
 		Assert.assertTrue(functionalRepositorySiteUtil.createCourseUsingWizard(browser, WIZARD_COURSE_TITLE, WIZARD_COURSE_DESCRIPTION,
 				elementArray, null, true, CourseWizardAccess.USERS));
 		
-		Assert.assertTrue(functionalCourseUtil.open(browser, 1));
+		Assert.assertNotNull(functionalCourseUtil.open(browser, 1));
 		
 		for(File currentFile: largeFile){
 			Assert.assertTrue(functionalCourseUtil.uploadFileToCourseFolder(browser, currentFile.toURI()));
