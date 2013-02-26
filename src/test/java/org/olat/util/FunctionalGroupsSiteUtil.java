@@ -280,6 +280,8 @@ public class FunctionalGroupsSiteUtil {
 	public boolean openActionByMenuTree(Selenium browser, Object action){
 		StringBuffer selectorBuffer;
 		
+		functionalUtil.idle(browser);
+		
 		if(action instanceof GroupsSiteAction){
 			selectorBuffer = new StringBuffer();
 			
@@ -287,7 +289,7 @@ public class FunctionalGroupsSiteUtil {
 			.append(((GroupsSiteAction) action).getActionCss())
 			.append("')]//a[contains(@class, '")
 			.append(functionalUtil.getTreeLevel0Css())
-			.append("')]");;
+			.append("')]");
 		}else{
 			return(false);
 		}

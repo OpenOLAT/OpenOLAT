@@ -573,7 +573,7 @@ public class FunctionalCourseUtil {
 		}else{
 			selectorBuffer.append("xpath=(//ul[contains(@class, 'b_tree_l1')]//li)[")
 			.append(nth + 1)
-			.append("]//a");
+			.append("]//a[not(contains(@class, 'b_tree_level_open') or contains(@class, 'b_tree_level_close'))]");
 		
 	
 			functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
