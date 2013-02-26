@@ -25,9 +25,6 @@ import java.util.Set;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.DefaultMinimalTopNavController;
-import org.olat.core.commons.services.search.ui.SearchController;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -49,6 +46,9 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.SearchServiceUIFactory.DisplayOption;
+import org.olat.search.ui.SearchInputController;
 
 /**
  * <h3>Description:</h3> A simple top nav controller that features a close
@@ -69,7 +69,7 @@ public class ContextHelpTopNavController extends FormBasicController {
 
 	private SingleSelection langSelection;
 	private FormLink closeLink;
-	private SearchController searchController;
+	private SearchInputController searchController;
 
 	/**
 	 * Constructor, creates a velocity page with the links and the selector

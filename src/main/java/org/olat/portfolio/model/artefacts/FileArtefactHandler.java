@@ -26,7 +26,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
-import org.olat.core.commons.services.search.AbstractOlatDocument;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -41,6 +40,7 @@ import org.olat.portfolio.EPAbstractHandler;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.ui.artefacts.view.details.FileArtefactDetailsController;
 import org.olat.repository.RepositoryManager;
+import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.file.FileDocumentFactory;
 

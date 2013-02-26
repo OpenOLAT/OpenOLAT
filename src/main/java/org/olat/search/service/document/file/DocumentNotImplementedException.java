@@ -25,11 +25,10 @@
 
 package org.olat.search.service.document.file;
 
-/**
- * 
- */
 public class DocumentNotImplementedException extends Exception {
-	
+
+	private static final long serialVersionUID = -734830480798536519L;
+
 	public DocumentNotImplementedException(String message) { 
 		super(message);
 	}

@@ -27,6 +27,7 @@ package org.olat.modules.wiki.versioning.diff;
 
 import java.util.List;
 
+import org.olat.modules.wiki.versioning.ChangeInfo;
 import org.olat.modules.wiki.versioning.DifferenceService;
 
 /**
@@ -42,7 +43,7 @@ public class CookbookDifferenceService implements DifferenceService {
   public CookbookDifferenceService() {
   }
 
-  public List diff(String text1, String text2) {
+  public List<ChangeInfo> diff(String text1, String text2) {
     CookbookDiff diff = new CookbookDiff();
 //    System.err.println("old="+text1);
 //    System.err.println("new="+text2);

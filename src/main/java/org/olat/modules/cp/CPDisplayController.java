@@ -29,9 +29,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.ui.SearchController;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
@@ -70,6 +67,9 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.ICourse;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.SearchServiceUIFactory.DisplayOption;
+import org.olat.search.ui.SearchInputController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -90,7 +90,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	private String selNodeId;
 	private HtmlStaticPageComponent cpComponent;
 	private IFrameDisplayController cpContentCtr;
-	private SearchController searchCtrl;
+	private SearchInputController searchCtrl;
 	private Link nextLink;
 	private Link previousLink;
 	//fxdiff VCRP-14: print cp

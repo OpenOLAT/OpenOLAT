@@ -23,12 +23,13 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.core.commons.services.search;
+package org.olat.search;
 
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.util.Version;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 
@@ -37,6 +38,9 @@ import org.olat.core.id.Roles;
  * @author Christian Guretzki
  */
 public interface SearchService {
+	
+	public static final Version OO_LUCENE_VERSION = Version.LUCENE_41;
+	
   /**
    * 
    * @param query          Lucene query string

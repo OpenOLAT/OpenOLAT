@@ -34,7 +34,7 @@ import java.util.List;
  */
 
 public class DefaultDifferenceService implements DifferenceService {
-  public List diff(String text1, String text2) {
+  public List<ChangeInfo> diff(String text1, String text2) {
     return null;
   }
 }

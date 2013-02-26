@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.core.commons.services.search;
+package org.olat.search;
 
 
 /**

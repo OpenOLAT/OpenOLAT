@@ -95,6 +95,11 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
+	public List<QuestionItem> getAllItems(int firstResult, int maxResults) {
+		return questionItemDao.getAllItems(firstResult, maxResults);
+	}
+
+	@Override
 	public List<Pool> getPools(Identity identity) {
 		return poolDao.getPools();
 	}

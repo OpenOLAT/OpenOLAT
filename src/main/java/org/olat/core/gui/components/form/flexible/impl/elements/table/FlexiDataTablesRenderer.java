@@ -80,6 +80,7 @@ class FlexiDataTablesRenderer implements ComponentRenderer {
       .append("	jQuery('#").append(id).append("').dataTable( {\n")
       .append("		'bScrollInfinite': true,\n")
       .append("		'bScrollCollapse': true,\n")
+      .append("		'bFilter': false,\n")
       .append("		'sScrollY': '200px',\n")
       .append("		'bProcessing': true,\n")
       .append("		'bServerSide': true,\n")

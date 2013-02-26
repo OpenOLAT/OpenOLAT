@@ -26,7 +26,6 @@ import org.apache.lucene.document.Document;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
@@ -43,6 +42,7 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -55,7 +55,8 @@ import org.olat.search.service.SearchResourceContext;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class PortfolioMapDocument extends OlatDocument {
-	
+
+	private static final long serialVersionUID = -7960651550499734346L;
 	private static final OLog log = Tracing.createLoggerFor(PortfolioMapDocument.class);
 	
 	private static BaseSecurity securityManager;

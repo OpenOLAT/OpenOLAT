@@ -20,7 +20,7 @@
 package org.olat.search.ui;
 
 import org.apache.commons.collections.map.LRUMap;
-import org.olat.core.commons.services.search.SearchResults;
+import org.olat.search.SearchResults;
 
 /**
  * A LRU map

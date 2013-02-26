@@ -21,12 +21,12 @@ package org.olat.modules.webFeed.search.indexer;
 
 import java.io.IOException;
 
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.search.document.FeedItemDocument;
 import org.olat.repository.RepositoryEntry;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;

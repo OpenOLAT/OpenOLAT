@@ -20,7 +20,6 @@
 
 package org.olat.modules.webFeed.portfolio;
 
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -43,6 +42,7 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**

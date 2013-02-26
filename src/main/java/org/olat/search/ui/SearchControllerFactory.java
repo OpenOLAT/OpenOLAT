@@ -28,16 +28,10 @@ import java.util.Map;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.ResultDocument;
-import org.olat.core.commons.services.search.ui.ResultController;
-import org.olat.core.commons.services.search.ui.ResultControllerCreator;
-import org.olat.core.commons.services.search.ui.SearchController;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -49,6 +43,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.model.ResultDocument;
 import org.olat.search.service.document.ContextHelpDocument;
 import org.olat.user.UserManager;
 
@@ -69,7 +65,7 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 	}
 	
 	@Override
-	public SearchController createInputController(UserRequest ureq, WindowControl wControl, DisplayOption displayOption, Form mainForm) {
+	public SearchInputController createInputController(UserRequest ureq, WindowControl wControl, DisplayOption displayOption, Form mainForm) {
 		String resourceUrl = null;
 		BusinessControl bc = wControl.getBusinessControl();
 		if (bc != null) {
@@ -86,7 +82,7 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 	}
 
 	@Override
-	public SearchController createSearchController(UserRequest ureq, WindowControl wControl) {
+	public SearchInputController createSearchController(UserRequest ureq, WindowControl wControl) {
 		String resourceUrl = null;
 		BusinessControl bc = wControl.getBusinessControl();
 		if (bc != null) {

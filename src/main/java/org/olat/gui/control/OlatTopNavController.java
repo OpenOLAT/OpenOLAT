@@ -29,9 +29,6 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
-import org.olat.core.commons.services.search.ui.SearchController;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -55,6 +52,9 @@ import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.InstantMessagingMainController;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.SearchServiceUIFactory.DisplayOption;
+import org.olat.search.ui.SearchInputController;
 
 /**
  * Description:<br>
@@ -69,7 +69,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	private static final String ACTION_LOGOUT = "logout";
 	private VelocityContainer topNavVC;
 	private InstantMessagingMainController imController;
-	private SearchController searchC;
+	private SearchInputController searchC;
 	private Link helpLink, loginLink, impressumLink;
 
 	

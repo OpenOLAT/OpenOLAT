@@ -18,16 +18,16 @@
  * <p>
  */
 
-package org.olat.core.commons.services.search.ui;
+package org.olat.search.ui;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.olat.core.commons.services.search.ResultDocument;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.AssertException;
+import org.olat.search.model.ResultDocument;
 
 /**
  * Description:<br>
@@ -41,7 +41,7 @@ import org.olat.core.logging.AssertException;
  */
 public class ResultControllerCreator {
 
-	private static final Class[] ARGCLASSES = new Class[] { UserRequest.class, WindowControl.class, Form.class, ResultDocument.class }; 
+	private static final Class<?>[] ARGCLASSES = new Class[] { UserRequest.class, WindowControl.class, Form.class, ResultDocument.class }; 
 
 	private String fileType;
 	private String className;
@@ -49,8 +49,8 @@ public class ResultControllerCreator {
 	public ResultController createController(UserRequest ureq, WindowControl wControl, Form mainForm, ResultDocument document) {
 		Exception re = null;
 		try {
-			Class cclazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-			Constructor con = cclazz.getConstructor(ARGCLASSES);
+			Class<?> cclazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+			Constructor<?> con = cclazz.getConstructor(ARGCLASSES);
 			Object o = con.newInstance(new Object[]{ ureq, wControl, mainForm, document });
 			ResultController c = (ResultController)o;
 			return c;

@@ -27,7 +27,6 @@ package org.olat.admin.search;
 
 import org.apache.log4j.Level;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -39,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.LogRealTimeViewerController;
+import org.olat.search.SearchModule;
 import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.indexer.IndexCronGenerator;
 

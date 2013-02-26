@@ -255,7 +255,7 @@
 	<bean id="org.olat.admin.user.UserSearchUIService"
 		class="org.olat.admin.user.UserSearchUIServiceImpl" />
 	
-	<bean id="org.olat.core.commons.services.search.ui.SearchServiceUIFactory"
+	<bean id="org.olat.search.ui.SearchServiceUIFactory"
 		class="org.olat.search.ui.SearchControllerFactory" />
 
 </beans>

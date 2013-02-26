@@ -22,8 +22,6 @@ package org.olat.search.ui;
 
 import static org.olat.search.ui.ResultsController.RESULT_PER_PAGE;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,23 +32,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.util.Version;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.AbstractOlatDocument;
-import org.olat.core.commons.services.search.QueryException;
-import org.olat.core.commons.services.search.ResultDocument;
-import org.olat.core.commons.services.search.SearchResults;
-import org.olat.core.commons.services.search.ServiceNotAvailableException;
-import org.olat.core.commons.services.search.ui.SearchController;
-import org.olat.core.commons.services.search.ui.SearchEvent;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -70,6 +54,13 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.search.QueryException;
+import org.olat.search.SearchResults;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.SearchServiceUIFactory.DisplayOption;
+import org.olat.search.ServiceNotAvailableException;
+import org.olat.search.model.AbstractOlatDocument;
+import org.olat.search.model.ResultDocument;
 import org.olat.search.service.searcher.SearchClient;
 
 /**
@@ -81,7 +72,7 @@ import org.olat.search.service.searcher.SearchClient;
  * Initial Date:  3 dec. 2009 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class SearchInputController extends FormBasicController implements SearchController {
+public class SearchInputController extends FormBasicController {
 	private static final OLog log = Tracing.createLoggerFor(SearchInputController.class);
 	
 	private static final String FUZZY_SEARCH = "~0.7";
@@ -217,6 +208,7 @@ public class SearchInputController extends FormBasicController implements Search
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void setSearchStore(UserRequest ureq) {
 		prefs = (Map<String,Properties>)ureq.getUserSession().getEntry(SEARCH_STORE_KEY);
 		if(prefs == null) {
@@ -439,9 +431,7 @@ public class SearchInputController extends FormBasicController implements Search
 				//remove first old "did you mean words"
 				hideDidYouMeanWords();
 			}
-			
-			getHighlightWords(searchString);
-			
+
 			query = getQueryString(searchString, false);
 			condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, rsrcUrl);
 			SearchResults searchResults = searchCache.get(getQueryCacheKey(firstResult, query, condQueries));
@@ -480,22 +470,6 @@ public class SearchInputController extends FormBasicController implements Search
 			getWindowControl().setWarning(translate("search.service.unexpected.error"));
 		}
 		return SearchResults.EMPTY_SEARCH_RESULTS;
-	}
-	
-	protected Set<String> getHighlightWords(String searchString) {
-		try {
-			Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-			TokenStream stream = analyzer.tokenStream("content", new StringReader(searchString));
-			TermAttribute termAtt = (TermAttribute) stream.addAttribute(TermAttribute.class);
-			for (boolean next = stream.incrementToken(); next; next = stream.incrementToken()) {
-				String term = termAtt.term();
-				if(log.isDebug()) log.debug(term);
-			}
-			analyzer.close();
-		} catch (IOException e) {
-			log.error("", e);
-		}
-		return null;
 	}
 	
 	protected SearchResults doFuzzySearch(UserRequest ureq, String searchString, List<String> condSearchStrings, String parentCtxt, String docType, String rsrcUrl,

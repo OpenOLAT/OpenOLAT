@@ -23,14 +23,16 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.core.commons.services.search;
+package org.olat.search;
 
 /**
  * This exception will be throwed when search query  is not valid.
  * @author guretzki
  */
 public class QueryException extends Exception {
-	
+
+	private static final long serialVersionUID = 3316313306898869201L;
+
 	public QueryException(String message) { 
 		super(message);
 	}

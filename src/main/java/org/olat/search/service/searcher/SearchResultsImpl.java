@@ -29,23 +29,19 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.search.AbstractOlatDocument;
-import org.olat.core.commons.services.search.ResultDocument;
-import org.olat.core.commons.services.search.SearchResults;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
@@ -53,6 +49,9 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.search.SearchResults;
+import org.olat.search.model.AbstractOlatDocument;
+import org.olat.search.model.ResultDocument;
 import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.indexer.Indexer;
 
@@ -63,6 +62,8 @@ import org.olat.search.service.indexer.Indexer;
  * 
  */
 public class SearchResultsImpl implements SearchResults {
+
+	private static final long serialVersionUID = 3950063141792217522L;
 	private static final OLog log = Tracing.createLoggerFor(SearchResultsImpl.class);
 	
 	private static final String HIGHLIGHT_PRE_TAG  = "<span class=\"o_search_result_highlight\">"; 
@@ -91,7 +92,7 @@ public class SearchResultsImpl implements SearchResults {
 	 * @param doHighlighting Flag to enable highlighting search 
 	 * @throws IOException
 	 */
-	public SearchResultsImpl(Indexer mainIndexer, Searcher searcher, TopDocs docs, Query query, Analyzer analyzer, Identity identity,
+	public SearchResultsImpl(Indexer mainIndexer, IndexSearcher searcher, TopDocs docs, Query query, Analyzer analyzer, Identity identity,
 			Roles roles, int firstResult, int maxReturns, boolean doHighlighting) throws IOException{
 		this.mainIndexer = mainIndexer;
 		resultList = initResultList(identity, roles, query, analyzer, searcher, docs, firstResult, maxReturns, doHighlighting);
@@ -162,14 +163,13 @@ public class SearchResultsImpl implements SearchResults {
 		return totalHits > maxHits;
 	}
 
-	private List<ResultDocument> initResultList(Identity identity, Roles roles, Query query, Analyzer analyzer, Searcher searcher, TopDocs docs,
+	private List<ResultDocument> initResultList(Identity identity, Roles roles, Query query, Analyzer analyzer, IndexSearcher searcher, TopDocs docs,
 			int firstResult, int maxReturns, final boolean doHighlight) throws IOException {
-		FieldSelector selector = new FieldSelector() {
-			@Override
-			public FieldSelectorResult accept(String fieldName) {
-				return (doHighlight || !AbstractOlatDocument.CONTENT_FIELD_NAME.equals(fieldName)) ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
-			}
-		};
+
+		Set<String> fields = AbstractOlatDocument.getFields();
+		if(!doHighlight) {
+			fields.remove(AbstractOlatDocument.CONTENT_FIELD_NAME);
+		}
 		
 		maxHits = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
 		totalHits = docs.totalHits;
@@ -177,7 +177,12 @@ public class SearchResultsImpl implements SearchResults {
 		int numOfDocs = Math.min(maxHits, docs.totalHits);
 		List<ResultDocument> res = new ArrayList<ResultDocument>(maxReturns + 1);
 		for (int i=firstResult; i<numOfDocs && res.size() < maxReturns; i++) {
-			Document doc = searcher.doc(docs.scoreDocs[i].doc, selector);
+			Document doc;
+			if(doHighlight) {
+				doc = searcher.doc(docs.scoreDocs[i].doc);
+			} else {
+				doc = searcher.doc(docs.scoreDocs[i].doc, fields);
+			}
 			String reservedTo = doc.get(AbstractOlatDocument.RESERVED_TO);
 			if(StringHelper.containsNonWhitespace(reservedTo) && !"public".equals(reservedTo)
 					&& !reservedTo.contains(identity.getKey().toString())) {
@@ -191,7 +196,7 @@ public class SearchResultsImpl implements SearchResults {
 			
 			if(!roles.isOLATAdmin() && i % 10 == 0) {
 				// Do commit after certain number of documents because the transaction should not be too big
-				DBFactory.getInstance().intermediateCommit();
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		}
 		return res;

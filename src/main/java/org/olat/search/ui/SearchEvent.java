@@ -18,10 +18,10 @@
  * <p>
  */
 
-package org.olat.core.commons.services.search.ui;
+package org.olat.search.ui;
 
-import org.olat.core.commons.services.search.ResultDocument;
 import org.olat.core.gui.control.Event;
+import org.olat.search.model.ResultDocument;
 
 /**
  * Description:<br>
@@ -31,6 +31,9 @@ import org.olat.core.gui.control.Event;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class SearchEvent extends Event {
+
+	private static final long serialVersionUID = -1398284268579829998L;
+	
 	public static final String GOTO_DOCUMENT_EVENT = "cmd.goto";
 	public static final String RELOAD_EVENT = "cmd.reload";
 	public static final String NEXT_EVENT = "next";

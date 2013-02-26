@@ -43,19 +43,19 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.search.QueryException;
-import org.olat.core.commons.services.search.SearchResults;
-import org.olat.core.commons.services.search.SearchService;
-import org.olat.core.commons.services.search.ServiceNotAvailableException;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.search.QueryException;
+import org.olat.search.SearchResults;
+import org.olat.search.SearchService;
+import org.olat.search.ServiceNotAvailableException;
 
 /**
  * 

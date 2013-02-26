@@ -23,14 +23,16 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.core.commons.services.search;
+package org.olat.search.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
@@ -73,6 +75,25 @@ public abstract class AbstractOlatDocument implements Serializable {
 	public static final String CSS_ICON = "cssicon";
 	
 	public static final String RESERVED_TO = "reservedto";
+	
+	public static final Set<String> getFields() {
+		Set<String> fields = new HashSet<String>();
+		fields.add(TITLE_FIELD_NAME);
+		fields.add(DESCRIPTION_FIELD_NAME);
+		fields.add(CONTENT_FIELD_NAME);
+		fields.add(DOCUMENTTYPE_FIELD_NAME);
+		fields.add(FILETYPE_FIELD_NAME);
+		fields.add(RESOURCEURL_FIELD_NAME);
+		fields.add(AUTHOR_FIELD_NAME);
+		fields.add(CREATED_FIELD_NAME);
+		fields.add(CHANGED_FIELD_NAME);
+		fields.add(TIME_STAMP_NAME);
+		fields.add(PARENT_CONTEXT_TYPE_FIELD_NAME);
+		fields.add(PARENT_CONTEXT_NAME_FIELD_NAME);
+		fields.add(CSS_ICON);
+		fields.add(RESERVED_TO);
+		return fields;
+	}
 
 	
   // Lucene Attributes
@@ -99,17 +120,15 @@ public abstract class AbstractOlatDocument implements Serializable {
 	public AbstractOlatDocument() {
 		timestamp = new Date();
 	}
-	
-	
-	
+
 	public AbstractOlatDocument(Document document) {
-		title        = document.get(TITLE_FIELD_NAME);
-		description  = document.get(DESCRIPTION_FIELD_NAME);
+		title = document.get(TITLE_FIELD_NAME);
+		description = document.get(DESCRIPTION_FIELD_NAME);
 		documentType = document.get(DOCUMENTTYPE_FIELD_NAME);
-		fileType     = document.get(FILETYPE_FIELD_NAME);
-		resourceUrl  = document.get(RESOURCEURL_FIELD_NAME);
-		author       = document.get(AUTHOR_FIELD_NAME);
-		reservedTo	 = document.get(RESERVED_TO);
+		fileType = document.get(FILETYPE_FIELD_NAME);
+		resourceUrl = document.get(RESOURCEURL_FIELD_NAME);
+		author = document.get(AUTHOR_FIELD_NAME);
+		reservedTo = document.get(RESERVED_TO);
 		try {
 			String f = document.get(CREATED_FIELD_NAME);
 			if(StringHelper.containsNonWhitespace(f)) {
@@ -139,7 +158,6 @@ public abstract class AbstractOlatDocument implements Serializable {
 		cssIcon = document.get(CSS_ICON);
 	}
 
-
 	/**
 	 * @return Returns the author.
 	 */
@@ -150,14 +168,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 		return author;
 	}
 
-
 	/**
 	 * @param author The author to set.
 	 */
 	public void setAuthor(String author) {
 		this.author = author;
 	}
-
 
 	/**
 	 * @return Returns the description.
@@ -169,14 +185,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 		return description;
 	}
 
-
 	/**
 	 * @param description The description to set.
 	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
 
 	/**
 	 * @return Returns the documentType.
@@ -188,14 +202,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 		return documentType;
 	}
 
-
 	/**
 	 * @param documentType The documentType to set.
 	 */
 	public void setDocumentType(String documentType) {
 		this.documentType = documentType;
 	}
-
 
 	/**
 	 * @return Returns the fileType.
@@ -204,14 +216,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 		return fileType;
 	}
 
-
 	/**
 	 * @param fileType The fileType to set.
 	 */
 	public void setFileType(String fileType) {
 		this.fileType = fileType;
 	}
-
 
 	/**
 	 * @return Returns the lastChange.
@@ -220,14 +230,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 		return lastChange;
 	}
 
-
 	/**
 	 * @param lastChange The lastChange to set.
 	 */
 	public void setLastChange(Date lastChange) {
 		this.lastChange = lastChange;
 	}
-
 
 	/**
 	 * @return Returns the resourceUrl.
@@ -239,14 +247,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 		return resourceUrl;
 	}
 
-
 	/**
 	 * @param resourceUrl The resourceUrl to set.
 	 */
 	public void setResourceUrl(String resourceUrl) {
 		this.resourceUrl = resourceUrl;
 	}
-
 
 	/**
 	 * @return Returns the title.
@@ -257,7 +263,6 @@ public abstract class AbstractOlatDocument implements Serializable {
 		}
 		return title;
 	}
-
 
 	/**
 	 * @param title The title to set.
@@ -358,14 +363,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 		return timestamp;
 	}
 
-
 	/**
 	 * @return Returns the createdDate.
 	 */
 	public Date getCreatedDate() {
 		return createdDate;
 	}
-
 
 	/**
 	 * @param createdDate The createdDate to set.
@@ -374,7 +377,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		this.createdDate = createdDate;
 	}
 	
-
+	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
 		buf.append(this.getDocumentType());
@@ -384,8 +387,6 @@ public abstract class AbstractOlatDocument implements Serializable {
 		if (getDescription() != null) buf.append(getDescription());
 		buf.append("|");
 		buf.append(getResourceUrl());
-		
 		return buf.toString();
 	}
-
 }

@@ -26,12 +26,12 @@
 package org.olat.search.service.document;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -39,6 +39,8 @@ import org.olat.search.service.SearchResourceContext;
  * @author Christian Guretzki
  */
 public class GroupDocument extends OlatDocument {
+
+	private static final long serialVersionUID = 7177532567808727224L;
 	private static final OLog log = Tracing.createLoggerFor(GroupDocument.class);
 
 	// Must correspond with LocalString_xx.properties

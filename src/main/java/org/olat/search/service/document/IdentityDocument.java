@@ -22,7 +22,6 @@ package org.olat.search.service.document;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -31,6 +30,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
@@ -48,6 +48,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class IdentityDocument extends OlatDocument {
+
+	private static final long serialVersionUID = -7433744122379433733L;
 	private static final OLog log = Tracing.createLoggerFor(IdentityDocument.class);
 	
 	

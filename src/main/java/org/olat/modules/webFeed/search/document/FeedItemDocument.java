@@ -19,10 +19,10 @@
  */
 package org.olat.modules.webFeed.search.document;
 
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.webFeed.models.Item;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**

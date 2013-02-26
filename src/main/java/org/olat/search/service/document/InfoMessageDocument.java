@@ -21,13 +21,14 @@ package org.olat.search.service.document;
 
 import org.apache.lucene.document.Document;
 import org.olat.commons.info.model.InfoMessage;
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.filter.FilterFactory;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 public class InfoMessageDocument extends OlatDocument {
+
+	private static final long serialVersionUID = 4632827059160372302L;
 	private static final OLog log = Tracing.createLoggerFor(InfoMessageDocument.class);
 
   //Must correspond with LocalString_xx.properties

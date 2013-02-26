@@ -27,16 +27,15 @@ package org.olat.search.service.indexer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.search.SearchModule;
 import org.olat.search.service.spell.SearchSpellChecker;
 
 /**
@@ -50,6 +49,7 @@ public class Index {
 	
 	private String indexPath;
 	private String tempIndexPath;
+	private String permanentIndexPath;
 	
 	private OlatFullIndexer fullIndexer;
 	private SearchSpellChecker spellChecker;
@@ -65,8 +65,14 @@ public class Index {
 		this.spellChecker = spellChecker;
 		this.indexPath = searchModuleConfig.getFullIndexPath();
 		this.tempIndexPath = searchModuleConfig.getFullTempIndexPath();
+		this.permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
 		
 		fullIndexer = new OlatFullIndexer(this, searchModuleConfig, mainIndexer);
+		fullIndexer.init();
+	}
+	
+	public void close() {
+		fullIndexer.close();
 	}
 
 	/**
@@ -95,7 +101,18 @@ public class Index {
 		try {
 			File indexFile = new File(indexPath);
 			Directory directory = FSDirectory.open(indexFile);
-			return IndexReader.indexExists(directory);
+			return DirectoryReader.indexExists(directory);
+		} catch (IOException e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
+	public boolean existPermanentIndex() {
+		try {
+			File indexFile = new File(permanentIndexPath);
+			Directory directory = FSDirectory.open(indexFile);
+			return DirectoryReader.indexExists(directory);
 		} catch (IOException e) {
 			log.error("", e);
 			return false;
@@ -143,18 +160,4 @@ public class Index {
 	public void setIndexInterval(long indexInterval) {
 		fullIndexer.setIndexInterval(indexInterval);
 	}
-
-	/**
-	 * @return  Creation date of current used search index. 
-	 */
-	public Date getCreationDate() {
-		try {
-			File indexFile = new File(indexPath);
-			Directory directory = FSDirectory.open(indexFile);
-			return new Date(IndexReader.getCurrentVersion(directory));
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	
 }

@@ -39,8 +39,9 @@ import org.olat.core.id.Roles;
  * @author Lavinia Dumitrescu
  */
 public class SearchRequest implements Serializable {
-	
-  private String queryString;
+
+	private static final long serialVersionUID = -2886090379563029101L;
+	private String queryString;
   private List<String> condQueries;
   private Long identityId;
   private Roles roles;

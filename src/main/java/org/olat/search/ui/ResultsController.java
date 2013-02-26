@@ -24,11 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.ResultDocument;
-import org.olat.core.commons.services.search.SearchResults;
-import org.olat.core.commons.services.search.ui.ResultController;
-import org.olat.core.commons.services.search.ui.SearchEvent;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,6 +35,9 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.search.SearchResults;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.model.ResultDocument;
 
 /**
  * Description:<br>

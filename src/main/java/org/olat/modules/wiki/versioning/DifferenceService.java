@@ -40,5 +40,5 @@ public interface DifferenceService {
    * @param text2
    * @return a list
    */
-  public List<String> diff(String text1, String text2);
+  public List<ChangeInfo> diff(String text1, String text2);
 }

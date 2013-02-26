@@ -39,8 +39,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -69,7 +67,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -85,6 +82,7 @@ import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.fo.Forum;
@@ -100,8 +98,11 @@ import org.olat.modules.wiki.gui.components.wikiToHtml.RequestNewPageEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.RequestPageEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.WikiMarkupComponent;
 import org.olat.modules.wiki.portfolio.WikiArtefact;
+import org.olat.modules.wiki.versioning.ChangeInfo;
 import org.olat.modules.wiki.versioning.HistoryTableDateModel;
 import org.olat.portfolio.EPUIFactory;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 
@@ -135,7 +136,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private FileUploadController fileUplCtr;
 	private BreadCrumbController breadCrumpCtr;
 	private DialogBoxController removePageDialogCtr, archiveWikiDialogCtr;
-	private List diffs = new ArrayList(2);
+	private List<ChangeInfo> diffs = new ArrayList<ChangeInfo>(2);
 	private Identity ident;
 	private SubscriptionContext subsContext;
 	private LockResult lockEntry;
@@ -622,9 +623,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 		mediaTableCtr.setMultiSelect(true);
 		mediaTableCtr.addMultiSelectAction(ACTION_DELETE_MEDIAS, ACTION_DELETE_MEDIAS);
 		
-		List filelist = getWiki().getMediaFileListWithMetadata();
+		List<VFSItem> filelist = getWiki().getMediaFileListWithMetadata();
 		Map files = new HashMap();
-		for (Iterator iter = filelist.iterator(); iter.hasNext();) {
+		for (Iterator<VFSItem> iter = filelist.iterator(); iter.hasNext();) {
 			VFSLeaf elem = (VFSLeaf) iter.next();
 			if(elem.getName().endsWith(METADATA_SUFFIX)) {  //*.metadata files go here
 				Properties p = new Properties();
@@ -639,7 +640,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				}
 			}
 		}
-		for (Iterator iter = filelist.iterator(); iter.hasNext();) {
+		for (Iterator<VFSItem> iter = filelist.iterator(); iter.hasNext();) {
 			VFSLeaf elem = (VFSLeaf) iter.next();
 			if(!elem.getName().endsWith(METADATA_SUFFIX)){
 				if(!files.containsKey(elem.getName())) {

@@ -29,14 +29,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.search.SearchService;
 
 /**
  * Used in multi-threaded mode.
@@ -69,7 +71,9 @@ public class IndexWriterWorker implements Runnable {
 		try {
 			File indexPartFile = new File(tempIndexDir, "part" + id);
 			Directory indexPartDirectory = FSDirectory.open(indexPartFile);
-			indexWriter = new IndexWriter(indexPartDirectory, new StandardAnalyzer(Version.LUCENE_CURRENT), true, IndexWriter.MaxFieldLength.UNLIMITED);
+			Analyzer analyzer = new StandardAnalyzer(SearchService.OO_LUCENE_VERSION);
+			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+			indexWriter = new IndexWriter(indexPartDirectory, indexWriterConfig);
 			indexWriter.deleteAll();
 		} catch (IOException e) {
 			log.warn("Can not create IndexWriter");

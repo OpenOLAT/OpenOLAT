@@ -18,26 +18,51 @@
  * <p>
  */
 
-package org.olat.core.commons.services.search.ui;
+package org.olat.search;
 
-import org.olat.core.commons.services.search.ResultDocument;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.control.Controller;
+import java.util.Collections;
+import java.util.List;
+
+import org.olat.search.model.ResultDocument;
 
 /**
  * 
  * Description:<br>
- * Controller which shows a result (a document) from a full text search
  * 
  * <P>
- * Initial Date:  4 dec. 2009 <br>
- * @author srosse, stephane.rosse@frentix.com
+ * Initial Date:  8 dec. 2009 <br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface ResultController extends Controller {
+public class EmptySearchResults implements SearchResults {
+
+	private static final long serialVersionUID = 9056000658199264982L;
+
+	protected EmptySearchResults() {
+		//
+	}
 	
-	public boolean isHighlight();
+	@Override
+	public List<ResultDocument> getList() {
+		return Collections.emptyList();
+	}
 	
-	public void setHighlight(boolean highlight);
-	
-	public FormItem getInitialFormItem();
+	@Override
+	public String getLength() {
+		return "0";
+	}
+
+	@Override
+	public String getNumberOfIndexDocuments() {
+		return "0";
+	}
+
+	@Override
+	public int getTotalHits() {
+		return 0;
+	}
+
+	@Override
+	public int getTotalDocs() {
+		return 0;
+	}
 }

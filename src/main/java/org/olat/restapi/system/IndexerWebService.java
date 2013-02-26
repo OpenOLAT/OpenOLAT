@@ -29,9 +29,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.olat.core.commons.services.search.SearchServiceStatus;
 import org.olat.restapi.system.vo.IndexerStatisticsVO;
 import org.olat.restapi.system.vo.IndexerStatus;
+import org.olat.search.SearchServiceStatus;
 import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.SearchServiceStatusImpl;
 import org.olat.search.service.indexer.FullIndexerStatus;

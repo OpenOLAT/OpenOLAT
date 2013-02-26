@@ -11,20 +11,19 @@
 	  <constructor-arg index="0" ref="org.olat.search.service.${search.service}" />
    	</bean>
    	
-	<bean id="org.olat.search.service.enabled" class="org.olat.search.service.SearchServiceImpl" init-method="init" destroy-method="stop" depends-on="searchModuleInit" lazy-init="true">
+	<bean id="org.olat.search.service.enabled" class="org.olat.search.service.SearchServiceImpl"
+	init-method="init" destroy-method="stop" depends-on="searchModuleInit" lazy-init="true">
 		<constructor-arg index="0" ref="searchModule" />
 		<constructor-arg index="1" ref="mainIndexer" />
 		<constructor-arg index="2" ref="searchProvider" />
 		<constructor-arg index="3" ref="schedulerFactoryBean"/>
-	    <!-- When index is older than maxIndexTime in millis, an error will be logged 432000000 = 5d, 86400 = 1d -->
-	   	<property name="maxIndexTime" value="432000000"/>
 		<property name="metadataFields" ref="SearchMetadataFieldsProvider" />
 	</bean>
 
 	<bean id="org.olat.search.service.disabled" class="org.olat.search.service.SearchServiceDisabled" init-method="init" destroy-method="stop" lazy-init="true">
 	</bean>
 	
-	<bean id="searchModule" class="org.olat.core.commons.services.search.SearchModule" lazy-init="true">
+	<bean id="searchModule" class="org.olat.search.SearchModule" lazy-init="true">
 		<property name="fileBlackList">
 			<list>
 				<!-- list of files which will not be indexed -->
@@ -74,6 +73,7 @@
 					tempSpellCheckPath=${search.index.tempSpellcheck}
 					pdfTextBufferPath=${search.index.pdfBuffer}
 					indexPath=${search.index.path}
+					permanentIndexPath=${search.permanent.index.path}
 					<!-- indexInterval in ms (0=no delay) -->
 					indexInterval=0
 					documentsPerInterval=4
@@ -109,6 +109,7 @@
 				<ref bean="identityIndexer" />
 				<ref bean="epDefaultMapIndexer" />
 				<ref bean="epStructuredMapIndexer" />
+				<ref bean="questionItemIndexer" />
 			</list>
 		</property>
 	</bean>
@@ -232,6 +233,10 @@
 			</list>
 		</property>				
 	</bean>
+	
+	
+	<!-- Question items -->
+	<bean id="questionItemIndexer" class="org.olat.search.service.indexer.QuestionItemIndexer"/>
 	
 	<!-- Inject security callback to IdentityIndexer which reduce the visibility of users 
 	     via the full text search to admin and user managers -->

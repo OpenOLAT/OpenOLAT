@@ -28,12 +28,12 @@ package org.olat.search.service.document;
 import java.util.Iterator;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.repository.course.ProjectBrokerCourseNodeIndexer;
 
@@ -42,6 +42,8 @@ import org.olat.search.service.indexer.repository.course.ProjectBrokerCourseNode
  * @author Christian Guretzki
  */
 public class ProjectBrokerProjectDocument extends OlatDocument {
+
+	private static final long serialVersionUID = 8087008741983757688L;
 	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerProjectDocument.class);
 
 	//Must correspond with LocalString_xx.properties

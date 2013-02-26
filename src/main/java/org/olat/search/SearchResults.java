@@ -18,10 +18,12 @@
  * <p>
  */
 
-package org.olat.core.commons.services.search;
+package org.olat.search;
 
 import java.io.Serializable;
 import java.util.List;
+
+import org.olat.search.model.ResultDocument;
 
 /**
  * 

@@ -26,12 +26,12 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.dom4j.Element;
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.resources.IMSLoader;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -44,6 +44,8 @@ import org.olat.search.service.SearchResourceContext;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class IMSMetadataDocument extends OlatDocument {
+
+	private static final long serialVersionUID = 7056634173187546351L;
 	private static Set<String> stopWords = new HashSet<String>();
 	private static final OLog log = Tracing.createLoggerFor(IMSMetadataDocument.class);
 	
@@ -82,6 +84,7 @@ public class IMSMetadataDocument extends OlatDocument {
 				sb.append(content).append(' ');
 			}	
 		}
+		@SuppressWarnings("rawtypes")
 		List children = element.elements();
 		for(int i=0; i<children.size(); i++) {
 			Element child = (Element)children.get(i);

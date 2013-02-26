@@ -18,37 +18,25 @@
  * <p>
  */
 
-package org.olat.core.commons.services.search.ui;
+package org.olat.search.ui;
 
-import org.olat.core.commons.services.search.ResultDocument;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.Controller;
 
-public interface SearchController extends Controller {
+/**
+ * 
+ * Description:<br>
+ * Controller which shows a result (a document) from a full text search
+ * 
+ * <P>
+ * Initial Date:  4 dec. 2009 <br>
+ * @author srosse, stephane.rosse@frentix.com
+ */
+public interface ResultController extends Controller {
 	
-	public String getSearchString();
+	public boolean isHighlight();
 	
-	public void setSearchString(String searchString);
+	public void setHighlight(boolean highlight);
 	
-	public String getParentContext();
-
-	public void setParentContext(String parentContext);
-
-	public String getDocumentType();
-
-	public void setDocumentType(String documentType);
-
-	public String getResourceUrl();
-	
-	public void setResourceUrl(String resourceUrl);
-	
-	public boolean isResourceContextEnable();
-
-	public void setResourceContextEnable(boolean resourceContextEnable);
-	
-
-	public FormItem getFormItem();
-	
-	public void gotoSearchResult(UserRequest ureq, ResultDocument document);
+	public FormItem getInitialFormItem();
 }

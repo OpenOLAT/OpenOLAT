@@ -126,6 +126,21 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
+	public List<QuestionItem> getAllItems(int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item from questionitem item order by item.key");
+
+		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItem.class);
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
+	}
+	
 	public void delete(List<QuestionItem> items) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		for(QuestionItem item:items) {

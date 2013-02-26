@@ -57,7 +57,7 @@ import org.olat.modules.wiki.versioning.ChangeInfo;
 
 public class CookbookDiff {
   private ChangeInfo last;
-  private List lines = new ArrayList();
+  private List<String> lines = new ArrayList<String>();
 
   /** block len > any possible real block len */
   private final int UNREAL = Integer.MAX_VALUE;
@@ -78,7 +78,7 @@ public class CookbookDiff {
   private int blocklen[];
 
   /** Do one string comparison. Called with both strings. */
-  public List diff(String oldText, String newText) {
+  public List<ChangeInfo> diff(String oldText, String newText) {
   	Node.panchor = null;
     oldInfo = new SourceInfo();
     newInfo = new SourceInfo();
@@ -287,8 +287,8 @@ public class CookbookDiff {
    * printout - Prints summary to stdout.
    * Expects all data structures have been filled out.
    */
-  private List printOut() {
-    List result = new ArrayList();
+  private List<ChangeInfo> printOut() {
+    List<ChangeInfo> result = new ArrayList<ChangeInfo>();
 
     printstatus = idle;
     anyprinted = false;
@@ -323,24 +323,24 @@ public class CookbookDiff {
   // Stores an info object
   // and adds all 'printed' lines to the
   // last one
-  private void setLast(ChangeInfo info, List result) {
+  private void setLast(ChangeInfo info, List<ChangeInfo> result) {
     setLast(result);
     last = info;
   }
 
-  private void setLast(List result) {
+  private void setLast(List<ChangeInfo> result) {
     if (null != last) {
-      last.setLines((String[]) lines.toArray(new String[0]));
+      last.setLines(lines.toArray(new String[0]));
       result.add(last);
     }
-    lines = new ArrayList();
+    lines = new ArrayList<String>();
   }
 
   /*
    * newconsume        Part of printout. Have run out of old file.
    * Print the rest of the new file, as inserts and/or moves.
    */
-  private void newConsume(List result) {
+  private void newConsume(List<ChangeInfo> result) {
     for (; ;) {
       if (printnewline > newInfo.maxLine)
         break;        /* end of file */
@@ -356,7 +356,7 @@ public class CookbookDiff {
    * Process the rest of the old file, printing any
    * parts which were deletes or moves.
    */
-  private void oldConsume(List result) {
+  private void oldConsume(List<ChangeInfo> result) {
     for (; ;) {
       if (printoldline > oldInfo.maxLine)
         break;       /* end of file */
@@ -374,7 +374,7 @@ public class CookbookDiff {
    * showdelete        Part of printout.
    * Expects printoldline is at a deletion.
    */
-  private void showDelete(List result) {
+  private void showDelete(List<ChangeInfo> result) {
     if (printstatus != delete) {
       ChangeInfo info = new ChangeInfo(ChangeInfo.DELETE, printoldline, printoldline);
       setLast(info, result);
@@ -389,7 +389,7 @@ public class CookbookDiff {
    * showinsert        Part of printout.
    * Expects printnewline is at an insertion.
    */
-  private void showInsert(List result) {
+  private void showInsert(List<ChangeInfo> result) {
     if (printstatus == change) {
       // result.add(">>>>     CHANGED TO");
     } else if (printstatus != insert) {
@@ -407,7 +407,7 @@ public class CookbookDiff {
    * Expects printnewline is an insertion.
    *  Expects printoldline is a deletion.
    */
-  private void showChange(List result) {
+  private void showChange(List<ChangeInfo> result) {
     if (printstatus != change) {
       ChangeInfo info = new ChangeInfo(ChangeInfo.CHANGE, printoldline, printoldline);
       setLast(info, result);
@@ -461,7 +461,7 @@ public class CookbookDiff {
    * Expects printnewline and printoldline at start of
    * two blocks that aren't to be displayed.
    */
-  private void showSame(List result) {
+  private void showSame(List<ChangeInfo> result) {
     int count;
     printstatus = idle;
     if (newInfo.other[printnewline] != printoldline) {
@@ -477,7 +477,7 @@ public class CookbookDiff {
    * Expects printoldline, printnewline at start of
    * two different blocks ( a move was done).
    */
-  private void showMove(List result) {
+  private void showMove(List<ChangeInfo> result) {
     int oldblock = blocklen[printoldline];
     int newother = newInfo.other[printnewline];
     int newblock = blocklen[newother];

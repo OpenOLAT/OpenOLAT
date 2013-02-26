@@ -19,8 +19,8 @@
  */
 package org.olat.modules.webFeed.search.document;
 
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.modules.webFeed.models.Feed;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**

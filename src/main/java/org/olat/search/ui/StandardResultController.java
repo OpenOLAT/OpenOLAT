@@ -20,9 +20,6 @@
 
 package org.olat.search.ui;
 
-import org.olat.core.commons.services.search.ResultDocument;
-import org.olat.core.commons.services.search.ui.ResultController;
-import org.olat.core.commons.services.search.ui.SearchEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.search.model.ResultDocument;
 
 /**
  * Description:<br>

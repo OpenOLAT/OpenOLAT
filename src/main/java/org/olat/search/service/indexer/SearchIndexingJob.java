@@ -25,9 +25,9 @@
 package org.olat.search.service.indexer;
 
 import org.olat.core.commons.scheduler.JobWithDB;
-import org.olat.core.commons.services.search.SearchService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.search.SearchService;
 import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.SearchServiceImpl;
 import org.quartz.InterruptableJob;

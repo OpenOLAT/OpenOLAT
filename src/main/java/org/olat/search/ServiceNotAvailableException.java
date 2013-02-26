@@ -23,14 +23,16 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.core.commons.services.search;
+package org.olat.search;
 
 /**
  * This exception will be throwed when search service isi not available.
  * @author guretzki
  */
 public class ServiceNotAvailableException extends Exception {
-	
+
+	private static final long serialVersionUID = 1001559565609002786L;
+
 	public ServiceNotAvailableException(String message) { 
 		super(message);
 	}

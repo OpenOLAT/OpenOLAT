@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.core.commons.services.search;
+package org.olat.search;
 
 /**
  * Search module config.
@@ -51,6 +51,7 @@ public class SearchModule extends AbstractOLATModule {
 	
 	// Definitions config parameter names in module-config
 	public final static String CONF_INDEX_PATH = "indexPath";
+	public final static String CONF_PERMANENT_INDEX_PATH = "permanentIndexPath";
 	public final static String CONF_TEMP_INDEX_PATH = "tempIndexPath";
 	public final static String CONF_TEMP_SPELL_CHECK_PATH = "tempSpellCheckPath";
 	public final static String CONF_GENERATE_AT_STARTUP = "generateIndexAtStartup";
@@ -89,6 +90,7 @@ public class SearchModule extends AbstractOLATModule {
 	private static final String DEFAULT_RAM_BUFFER_SIZE_MB = "48";
 	
 	private String fullIndexPath;
+	private String fullPermanentIndexPath;
 	private String fullTempIndexPath;
 	private String fullTempSpellCheckPath;
 	private long indexInterval;
@@ -156,12 +158,16 @@ public class SearchModule extends AbstractOLATModule {
 	public void initDefaultProperties() {
 		log.debug("init start...");
 		String indexPath = getStringConfigParameter(CONF_INDEX_PATH, "/tmp", false);
+		String permanentIndexPath = getStringConfigParameter(CONF_PERMANENT_INDEX_PATH, "/sidx", false);
+
 		log.debug("init indexPath=" + indexPath);
 		String tempIndexPath = getStringConfigParameter(CONF_TEMP_INDEX_PATH, "/tmp", false);
 		String tempSpellCheckPath = getStringConfigParameter(CONF_TEMP_SPELL_CHECK_PATH, "/tmp",false);
 		String tempPdfTextBufferPath = getStringConfigParameter(CONF_TEMP_PDF_TEXT_BUF_PATH, "/tmp", false);
     
 		fullIndexPath = buildPath(indexPath);
+		fullPermanentIndexPath = buildPath(permanentIndexPath);
+		
     fullTempIndexPath = buildPath(tempIndexPath);
     fullTempSpellCheckPath = buildPath(tempSpellCheckPath);
     fullPdfTextBufferPath = buildPath(tempPdfTextBufferPath);
@@ -252,6 +258,13 @@ public class SearchModule extends AbstractOLATModule {
 	 */
 	public String getFullIndexPath() {
 		return fullIndexPath;
+	}
+	
+	/**
+	 * @return Return the path to the permanent index
+	 */
+	public String getFullPermanentIndexPath() {
+		return fullPermanentIndexPath;
 	}
 
 	/**

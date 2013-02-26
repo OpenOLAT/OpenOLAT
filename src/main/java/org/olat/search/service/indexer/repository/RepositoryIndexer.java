@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -42,6 +41,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.search.SearchModule;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.RepositoryEntryDocument;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;

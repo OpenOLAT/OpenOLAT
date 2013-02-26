@@ -144,6 +144,7 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 				sb.append(content).append(' ');
 			}	
 		}
+		@SuppressWarnings("rawtypes")
 		List children = element.elements();
 		for(int i=0; i<children.size(); i++) {
 			Element child = (Element)children.get(i);

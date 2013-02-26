@@ -32,13 +32,13 @@ import java.util.regex.Pattern;
 import org.apache.lucene.document.Document;
 import org.apache.velocity.context.Context;
 import org.olat.core.commons.contextHelp.ContextHelpDispatcher;
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -50,6 +50,8 @@ import org.olat.search.service.SearchResourceContext;
  * @author gnaegi
  */
 public class ContextHelpDocument extends OlatDocument {
+
+	private static final long serialVersionUID = 599794530742910533L;
 	private static final OLog log = Tracing.createLoggerFor(ContextHelpDocument.class);
 	private static final Pattern HTML_TAG_PATTERN = Pattern.compile("</?[a-zA-Z0-9]+\\b[^>]*>");
   private static final Pattern HTML_SPACE_PATTERN = Pattern.compile("&nbsp;");

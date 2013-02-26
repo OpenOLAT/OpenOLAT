@@ -83,8 +83,8 @@ public class WikiUnitTest extends OlatTestCase {
 		
 		page1.setContent(WIKI_CONTENT+"\nThis is a new line");
 		wikiMgr.saveWikiPage(ores, page1, true, wiki);
-		List diffs = wiki.getDiff(page1, page1.getVersion() -1, page1.getVersion());
-		ChangeInfo change = (ChangeInfo)diffs.get(0);
+		List<ChangeInfo> diffs = wiki.getDiff(page1, page1.getVersion() -1, page1.getVersion());
+		ChangeInfo change = diffs.get(0);
 		
 		assertEquals("INSERT", change.getType());
 		assertEquals("This is a new line", change.getLines()[0]);

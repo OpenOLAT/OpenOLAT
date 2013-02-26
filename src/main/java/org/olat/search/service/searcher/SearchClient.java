@@ -22,12 +22,12 @@ package org.olat.search.service.searcher;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.olat.core.commons.services.search.QueryException;
-import org.olat.core.commons.services.search.SearchResults;
-import org.olat.core.commons.services.search.ServiceNotAvailableException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.search.QueryException;
+import org.olat.search.SearchResults;
+import org.olat.search.ServiceNotAvailableException;
 
 /**
  * 

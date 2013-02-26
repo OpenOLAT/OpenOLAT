@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.core.commons.services.search;
+package org.olat.search.model;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.util.StringHelper;
@@ -33,7 +33,8 @@ import org.olat.core.util.StringHelper;
  * @author Christian Guretzki
  */
 public class ResultDocument extends AbstractOlatDocument {
-	
+
+	private static final long serialVersionUID = 1031183603445282909L;
 	/* Max text length of description field. */
 	private static final int MAX_DESCRIPTION_LENGTH = 120;
 	private String highlightResult = "";

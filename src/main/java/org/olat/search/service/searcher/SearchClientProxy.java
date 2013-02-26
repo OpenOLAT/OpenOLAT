@@ -45,14 +45,15 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.olat.core.commons.services.search.QueryException;
-import org.olat.core.commons.services.search.SearchResults;
-import org.olat.core.commons.services.search.ServiceNotAvailableException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.search.QueryException;
+import org.olat.search.SearchResults;
+import org.olat.search.ServiceNotAvailableException;
 
 
 /**
@@ -65,6 +66,8 @@ import org.olat.core.logging.Tracing;
  * @author Lavinia Dumitrescu
  */
 public class SearchClientProxy implements SearchClient {
+	
+	private static final OLog log = Tracing.createLoggerFor(SearchClientProxy.class);
 	
 	protected static final String JMS_RESPONSE_STATUS_PROPERTY_NAME = "response_status";
 	protected static final String JMS_RESPONSE_STATUS_OK = "ok";
@@ -107,7 +110,7 @@ public class SearchClientProxy implements SearchClient {
 	public void springInit() throws JMSException {
 		connection_ = connectionFactory_.createConnection();
 		connection_.start();
-		Tracing.logInfo("springInit: JMS connection started with connectionFactory=" + connectionFactory_, SearchClientProxy.class);
+		log.info("springInit: JMS connection started with connectionFactory=" + connectionFactory_);
 	}
 	
 	private synchronized Destination acquireTempQueue(Session session) throws JMSException {
@@ -152,16 +155,16 @@ public class SearchClientProxy implements SearchClient {
 	 */
 	@Override
 	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxResults, boolean doHighlighting) throws ServiceNotAvailableException, ParseException, QueryException {
-		boolean isDebug = Tracing.isDebugEnabled(SearchClientProxy.class);
+		boolean isDebug = log.isDebug();
 		if(isDebug){
-			Tracing.logDebug("STARTqueryString=" + queryString,SearchClientProxy.class);
+			log.debug("STARTqueryString=" + queryString);
 		}
 		SearchRequest searchRequest = new SearchRequest(queryString, condQueries, identity.getKey(), roles, firstResult, maxResults, doHighlighting);
 		Session session = null;
 		try {
 			session = acquireSession();
 			if(isDebug){
-				Tracing.logDebug("doSearch session=" + session,SearchClientProxy.class);
+				log.debug("doSearch session=" + session);
 			}
 			Message requestMessage = session.createObjectMessage(searchRequest);
 			Message returnedMessage = (Message) doSearchRequest(session, requestMessage);
@@ -171,7 +174,7 @@ public class SearchClientProxy implements SearchClient {
 				if (responseStatus.equalsIgnoreCase(JMS_RESPONSE_STATUS_OK)) {
 				  SearchResults searchResult = (SearchResults)((ObjectMessage)returnedMessage).getObject();
 				  if(isDebug){
-					  Tracing.logDebug("ENDqueryString=" + queryString,SearchClientProxy.class);
+					  log.debug("ENDqueryString=" + queryString);
 					}
 				  return searchResult;							
 				} else if (responseStatus.equalsIgnoreCase(JMS_RESPONSE_STATUS_PARSE_EXCEPTION)) {
@@ -181,7 +184,7 @@ public class SearchClientProxy implements SearchClient {
 				} else if (responseStatus.equalsIgnoreCase(JMS_RESPONSE_STATUS_SERVICE_NOT_AVAILABLE_EXCEPTION)) {
 					throw new ServiceNotAvailableException("Remote search service not available" + queryString);
 				} else {
-					Tracing.logWarn("doSearch: receive unkown responseStatus=" + responseStatus, SearchClientProxy.class);
+					log.warn("doSearch: receive unkown responseStatus=" + responseStatus);
 					return null;
 				}
 			} else {
@@ -189,7 +192,7 @@ public class SearchClientProxy implements SearchClient {
 				throw new ServiceNotAvailableException("communication error with JMS - cannot receive messages!!!");
 			}				
 		} catch (JMSException e) {
-			Tracing.logError("Search failure I",e,SearchClientProxy.class);
+			log.error("Search failure I",e);
 			throw new ServiceNotAvailableException("communication error with JMS - cannot send messages!!!");
 		} finally {
 			releaseSession(session);
@@ -207,6 +210,7 @@ public class SearchClientProxy implements SearchClient {
 			TextMessage requestMessage = session.createTextMessage(query);
 			Message returnedMessage = (Message) doSearchRequest(session, requestMessage);			
 			if(returnedMessage!=null){
+				@SuppressWarnings("unchecked")
 				List<String> spellStringList = (List<String>)((ObjectMessage)returnedMessage).getObject();	
 			  return new HashSet<String>(spellStringList);		
 			} else {
@@ -240,21 +244,21 @@ public class SearchClientProxy implements SearchClient {
 
 	public void stop() {
 		try {
-			for (Iterator iterator = sessions_.iterator(); iterator.hasNext();) {
+			for (Iterator<Session> iterator = sessions_.iterator(); iterator.hasNext();) {
 				Session session = (Session) iterator.next();
 				session.close();
 			}
 			connection_.close();
-			Tracing.logInfo("ClusteredSearchRequester stopped",SearchClientProxy.class);
+			log.info("ClusteredSearchRequester stopped");
 		} catch (JMSException e) {
-			Tracing.logError("Exception in stop ClusteredSearchRequester, ",e,SearchClientProxy.class);
+			log.error("Exception in stop ClusteredSearchRequester, ",e);
 		}
 	}
 	
 	private Message doSearchRequest(Session session, Message message) throws JMSException {
 		Destination replyQueue = acquireTempQueue(session);
-		if(Tracing.isDebugEnabled(SearchClientProxy.class)){
-			Tracing.logDebug("doSearchRequest replyQueue=" + replyQueue,SearchClientProxy.class);
+		if(log.isDebug()){
+			log.debug("doSearchRequest replyQueue=" + replyQueue);
 		}
 		try{
 			MessageConsumer responseConsumer = session.createConsumer(replyQueue);
@@ -266,8 +270,8 @@ public class SearchClientProxy implements SearchClient {
 			MessageProducer producer = session.createProducer(searchQueue_);
 			producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 			producer.setTimeToLive(timeToLive_);
-			if (Tracing.isDebugEnabled(SearchClientProxy.class)) {
-				Tracing.logDebug("Sending search request message with correlationId="+correlationId,SearchClientProxy.class);
+			if (log.isDebug()) {
+				log.debug("Sending search request message with correlationId="+correlationId);
 			}
 			producer.send(message);
 			producer.close();
@@ -278,20 +282,20 @@ public class SearchClientProxy implements SearchClient {
 				final long diff = (start + receiveTimeout_) - System.currentTimeMillis(); 
 				if (diff<=0) {
 					// timeout
-					Tracing.logInfo("Timeout in search. Remaining time zero or negative.", SearchClientProxy.class);
+					log.info("Timeout in search. Remaining time zero or negative.");
 					break;
 				}
-				if (Tracing.isDebugEnabled(SearchClientProxy.class)) {
-					Tracing.logDebug("doSearchRequest: call receive with timeout=" + diff,SearchClientProxy.class);
+				if (log.isDebug()) {
+					log.debug("doSearchRequest: call receive with timeout=" + diff);
 				}
 				returnedMessage = responseConsumer.receive(diff);
 				if (returnedMessage==null) {
 					// timeout case, we're stopping now with a reply...
-					Tracing.logInfo("Timeout in search. Repy was null.", SearchClientProxy.class);
+					log.info("Timeout in search. Repy was null.");
 					break;
 				} else if (!correlationId.equals(returnedMessage.getJMSCorrelationID())) {
 					// we got an old reply from a previous search request
-					Tracing.logInfo("Got a response with a wrong correlationId. Ignoring and waiting for the next", SearchClientProxy.class);
+					log.info("Got a response with a wrong correlationId. Ignoring and waiting for the next");
 					continue;
 				} else {
 					// we got a valid reply
@@ -299,13 +303,12 @@ public class SearchClientProxy implements SearchClient {
 				}
 			}
 			responseConsumer.close();
-			if (Tracing.isDebugEnabled(SearchClientProxy.class)) {
-				Tracing.logDebug("doSearchRequest: returnedMessage=" + returnedMessage,SearchClientProxy.class);
+			if (log.isDebug()) {
+				log.debug("doSearchRequest: returnedMessage=" + returnedMessage);
 			}
 			return returnedMessage;
 		} finally {
 			releaseTempQueue(replyQueue);
 		}
 	}
-	
 }

@@ -28,11 +28,11 @@ package org.olat.search.service.document.file;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.search.SearchModule;
 import org.olat.search.service.SearchResourceContext;
 
 /**

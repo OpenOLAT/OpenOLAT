@@ -25,10 +25,8 @@
 
 package org.olat.search.service;
 
-import java.util.Date;
-
-import org.olat.core.commons.services.search.SearchService;
-import org.olat.core.commons.services.search.SearchServiceStatus;
+import org.olat.search.SearchService;
+import org.olat.search.SearchServiceStatus;
 import org.olat.search.service.indexer.FullIndexerStatus;
 import org.olat.search.service.indexer.Index;
 
@@ -43,7 +41,6 @@ public class SearchServiceStatusImpl implements SearchServiceStatus {
 	
 	private boolean indexExists; 
 	private long queryCount;
-	private Date indexCreationDate;
 	
 
 	/**
@@ -56,7 +53,6 @@ public class SearchServiceStatusImpl implements SearchServiceStatus {
 	public SearchServiceStatusImpl(Index indexer, SearchService search) {
 		fullIndexerStatus = indexer.getFullIndexStatus();
 		indexExists = indexer.existIndex();
-		indexCreationDate = indexer.getCreationDate();
 		queryCount = search.getQueryCount();
 	}
 
@@ -80,17 +76,9 @@ public class SearchServiceStatusImpl implements SearchServiceStatus {
 	}
 
 	/**
-	 * @return  Date when search index is created.
-	 */
-	public Date getIndexCreationDate() {
-		return indexCreationDate;
-	}
-
-	/**
 	 * @return  Number of handled search queries since last restart. 
 	 */
 	public long getQueryCount() {
 		return queryCount;
 	}
-
 }

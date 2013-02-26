@@ -18,15 +18,17 @@
  * <p>
  */
 
-package org.olat.core.commons.services.search.ui;
+package org.olat.search;
 
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.commons.services.search.ResultDocument;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.search.model.ResultDocument;
+import org.olat.search.ui.ResultController;
+import org.olat.search.ui.SearchInputController;
 
 /**
  * Description:<br>
@@ -38,9 +40,9 @@ import org.olat.core.gui.control.WindowControl;
  */
 public interface SearchServiceUIFactory {
 
-	public SearchController createInputController(UserRequest ureq, WindowControl wControl, DisplayOption displayOption, Form mainForm);
+	public SearchInputController createInputController(UserRequest ureq, WindowControl wControl, DisplayOption displayOption, Form mainForm);
 	
-	public SearchController createSearchController(UserRequest ureq, WindowControl wControl);
+	public SearchInputController createSearchController(UserRequest ureq, WindowControl wControl);
 	
 	public ResultController createController(UserRequest ureq, WindowControl wControl, Form mainForm, ResultDocument document);
 	

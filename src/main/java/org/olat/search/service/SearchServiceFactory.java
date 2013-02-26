@@ -25,7 +25,7 @@
 
 package org.olat.search.service;
 
-import org.olat.core.commons.services.search.SearchService;
+import org.olat.search.SearchService;
 
 /**
  * 

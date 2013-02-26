@@ -22,9 +22,6 @@ package org.olat.portfolio.ui;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.ui.SearchController;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
-import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -54,6 +51,9 @@ import org.olat.portfolio.ui.structel.EPMultipleMapController;
 import org.olat.portfolio.ui.structel.EPStructureEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.SearchServiceUIFactory.DisplayOption;
+import org.olat.search.ui.SearchInputController;
 
 /**
  * 
@@ -73,7 +73,7 @@ public class EPMapRunController extends BasicController implements Activateable2
 	private CloseableModalController createMapBox;
 	private ReferencableEntriesSearchController searchTemplateCtrl;
 	private EPMultipleMapController multiMapCtrl;
-	private SearchController searchController;
+	private SearchInputController searchController;
 	
 	private final boolean create;
 	private final Identity choosenOwner;

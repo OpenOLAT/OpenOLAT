@@ -29,17 +29,17 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.queryParser.ParseException;
-import org.olat.core.commons.services.search.QueryException;
-import org.olat.core.commons.services.search.SearchModule;
-import org.olat.core.commons.services.search.SearchResults;
-import org.olat.core.commons.services.search.SearchService;
-import org.olat.core.commons.services.search.SearchServiceStatus;
-import org.olat.core.commons.services.search.ServiceNotAvailableException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.search.QueryException;
+import org.olat.search.SearchModule;
+import org.olat.search.SearchResults;
+import org.olat.search.SearchService;
+import org.olat.search.SearchServiceStatus;
+import org.olat.search.ServiceNotAvailableException;
 
 /**
  * 
@@ -92,7 +92,7 @@ public class SearchServiceDisabled implements SearchService {
 
 	/**
 	 * 
-	 * @see org.olat.search.service.SearchService#spellCheck(java.lang.String)
+	 * @see org.olat.search.SearchService#spellCheck(java.lang.String)
 	 */
 	public Set<String> spellCheck(String query) throws ServiceNotAvailableException {		
 		log.error("call spellCheck on disabled search service");

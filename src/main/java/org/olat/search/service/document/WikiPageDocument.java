@@ -38,12 +38,12 @@ import org.jamwiki.parser.ParserInput;
 import org.jamwiki.parser.jflex.JFlexParser;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.commons.services.search.OlatDocument;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.wiki.WikiPage;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -51,7 +51,8 @@ import org.olat.search.service.SearchResourceContext;
  * @author Christian Guretzki
  */
 public class WikiPageDocument extends OlatDocument {
-	
+
+	private static final long serialVersionUID = -1210392466207248182L;
 	private static final OLog log = Tracing.createLoggerFor(WikiPageDocument.class);
 	private static final DummyDataHandler DUMMY_DATA_HANDLER = new DummyDataHandler();
 	

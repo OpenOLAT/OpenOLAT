@@ -44,6 +44,9 @@ public interface QuestionPoolService {
 	public int countItems(Identity author);
 
 	public List<QuestionItem> getItems(Identity author, int firstResult, int maxResults, SortKey... orderBy);
+
+	public List<QuestionItem> getAllItems(int firstResult, int maxResults);
+	
 	
 	
 	//pools

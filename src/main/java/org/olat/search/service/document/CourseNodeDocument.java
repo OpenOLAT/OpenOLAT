@@ -29,14 +29,16 @@ import org.apache.lucene.document.Document;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.CourseNode;
+import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.core.commons.services.search.OlatDocument;
 
 /**
  * Lucene document mapper.
  * @author Christian Guretzki
  */
 public class CourseNodeDocument extends OlatDocument {
+
+	private static final long serialVersionUID = -2035945166792451137L;
 	private static final OLog log = Tracing.createLoggerFor(CourseNodeDocument.class);
 
 	// Must correspond with LocalString_xx.properties

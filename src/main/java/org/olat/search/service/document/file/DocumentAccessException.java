@@ -25,11 +25,10 @@
 
 package org.olat.search.service.document.file;
 
-/**
- * 
- */
 public class DocumentAccessException extends Exception {
-	
+
+	private static final long serialVersionUID = 7552723962897317850L;
+
 	public DocumentAccessException(String message) { 
 		super(message);
 	}

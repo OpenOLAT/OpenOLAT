@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.search.AbstractOlatDocument;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,6 +46,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.SearchMetadataFieldsProvider;
 import org.olat.search.service.document.ContextHelpDocument;
 import org.olat.search.service.document.file.ExcelDocument;

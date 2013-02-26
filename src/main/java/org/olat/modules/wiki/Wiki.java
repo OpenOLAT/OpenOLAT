@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtil;
+import org.olat.modules.wiki.versioning.ChangeInfo;
 import org.olat.modules.wiki.versioning.DifferenceService;
 
 /**
@@ -162,7 +163,7 @@ public class Wiki implements WikiContainer, Serializable {
 		return this.wikiPages.size();
 	}
 
-	protected List<String> getDiff(WikiPage page, int version1, int version2) {
+	protected List<ChangeInfo> getDiff(WikiPage page, int version1, int version2) {
 		WikiPage v1 = loadVersion(page, version1);
 		WikiPage v2 = loadVersion(page, version2);
 		
