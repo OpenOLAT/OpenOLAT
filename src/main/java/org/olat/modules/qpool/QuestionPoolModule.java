@@ -19,12 +19,18 @@
  */
 package org.olat.modules.qpool;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.qpool.impl.PdfQuestionPoolServiceProvider;
+import org.olat.modules.qpool.impl.TextQuestionPoolServiceProvider;
 
 /**
  * 
@@ -36,9 +42,12 @@ public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOf
 	
 	private final List<QuestionPoolSPI> questionPoolProviders = new ArrayList<QuestionPoolSPI>();
 
+	private VFSContainer rootContainer;
+
 	@Override
 	public void init() {
-		//
+		addQuestionPoolProvider(new TextQuestionPoolServiceProvider());
+		addQuestionPoolProvider(new PdfQuestionPoolServiceProvider());
 	}
 
 	@Override
@@ -60,14 +69,25 @@ public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOf
 	public boolean isEnabled() {
 		return true;
 	}
+	
+	public VFSContainer getRootContainer() {
+		if(rootContainer == null) {
+			rootContainer = new OlatRootFolderImpl(File.separator + "qpool", null);
+		}
+		return rootContainer;
+	}
 
 	public List<QuestionPoolSPI> getQuestionPoolProviders() {
-		return new ArrayList<QuestionPoolSPI>(questionPoolProviders);
+		List<QuestionPoolSPI> providers = new ArrayList<QuestionPoolSPI>(questionPoolProviders);
+		Collections.sort(providers, new QuestionPoolSPIComparator());
+		return providers;
 	}
 
 	public void setQuestionPoolProviders(List<QuestionPoolSPI> providers) {
 		if(providers != null) {
-			questionPoolProviders.addAll(providers);
+			for(QuestionPoolSPI provider:providers) {
+				addQuestionPoolProvider(provider);
+			}
 		}
 	}
 	
@@ -81,8 +101,19 @@ public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOf
 	}
 	
 	public void addQuestionPoolProvider(QuestionPoolSPI provider) {
-		questionPoolProviders.add(provider);
+		int currentIndex = -1;
+		for(int i=questionPoolProviders.size(); i-->0; ) {
+			QuestionPoolSPI currentProvider = questionPoolProviders.get(i);
+			if(provider.getFormat() != null &&
+					provider.getFormat().equals(currentProvider.getFormat())) {
+				currentIndex = i;
+			}
+		}
+		
+		if(currentIndex >= 0) {
+			questionPoolProviders.set(currentIndex, provider);
+		} else {
+			questionPoolProviders.add(provider);
+		}
 	}
-
-
 }

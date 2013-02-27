@@ -37,6 +37,7 @@ public interface QuestionItem extends QuestionItemShort {
 	
 	public String getLevel();
 	
+	public String getDirectory();
 	
 	public String getEditor();
 	

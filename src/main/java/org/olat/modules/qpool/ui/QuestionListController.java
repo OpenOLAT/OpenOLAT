@@ -69,7 +69,7 @@ import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
  */
 public class QuestionListController extends FormBasicController implements StackedControllerAware, ItemRowsSource {
 
-	private FormLink createList, shareItem, deleteItem, authorItem;
+	private FormLink createList, shareItem, deleteItem, authorItem, importItem;
 	
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
@@ -80,6 +80,7 @@ public class QuestionListController extends FormBasicController implements Stack
 	private SelectBusinessGroupController selectGroupCtrl;
 	private CreateCollectionController createCollectionCtrl;
 	private StepsMainRunController importAuthorsWizard;
+	private ImportQuestionItemController importItemCtrl;
 	
 	private final MarkManager markManager;
 	private final QuestionPoolService qpoolService;
@@ -121,6 +122,7 @@ public class QuestionListController extends FormBasicController implements Stack
 		
 		createList = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
 		deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
 	}
@@ -170,6 +172,8 @@ public class QuestionListController extends FormBasicController implements Stack
 					List<QuestionItem> items = getQuestionItems(selections);
 					doChooseAuthoren(ureq, items);
 				}
+			} else if(link == importItem) {
+				doOpenImport(ureq);
 			} else if("select".equals(link.getCmd())) {
 				QuestionItemRow row = (QuestionItemRow)link.getUserObject();
 				doSelect(ureq, row.getItem());
@@ -226,6 +230,12 @@ public class QuestionListController extends FormBasicController implements Stack
 				removeAsListenerAndDispose(importAuthorsWizard);
 				importAuthorsWizard = null;
 			}
+		} else if(source == importItemCtrl) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				//
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == confirmDeleteBox) {
 			boolean delete = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
 			if(delete) {
@@ -241,9 +251,11 @@ public class QuestionListController extends FormBasicController implements Stack
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(importItemCtrl);
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(createCollectionCtrl);
 		cmc = null;
+		importItemCtrl = null;
 		selectGroupCtrl = null;
 		createCollectionCtrl = null;
 	}
@@ -265,6 +277,17 @@ public class QuestionListController extends FormBasicController implements Stack
 			return row.getItem();
 		}
 		return null;
+	}
+	
+	private void doOpenImport(UserRequest ureq) {
+		removeAsListenerAndDispose(importItemCtrl);
+		importItemCtrl = new ImportQuestionItemController(ureq, getWindowControl());
+		listenTo(importItemCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				importItemCtrl.getInitialComponent(), true, translate("import.item"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	private void doAskCollectionName(UserRequest ureq, List<QuestionItem> items) {

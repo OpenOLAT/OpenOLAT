@@ -154,7 +154,7 @@ public abstract class QTIHandler extends FileHandler implements RepositoryHandle
 	  File fUnzippedDir = FileResourceManager.getInstance().unzipFileResource(tempFr);
 	  File changeLogDir = new File(fUnzippedDir, "changelog");
 	  if(changeLogDir.exists()) {	  	
-	  	boolean changeLogDeleted = FileUtils.deleteDirsAndFiles(changeLogDir, true, true);	  	
+	  	FileUtils.deleteDirsAndFiles(changeLogDir, true, true);	  	
 	  }
 	  File targetZipFile = sourceFile;
 	  FileUtils.deleteDirsAndFiles(targetZipFile.getParentFile(), true, false);

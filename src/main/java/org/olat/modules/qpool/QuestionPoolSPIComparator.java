@@ -19,32 +19,20 @@
  */
 package org.olat.modules.qpool;
 
-import java.io.File;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.vfs.VFSLeaf;
+import java.util.Comparator;
 
 /**
- * 
- * Initial date: 21.02.2013<br>
+ * Sort by priority
+ * Initial date: 27.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionPoolSPI {
-	
-	public int getPriority();
-	
-	public String getFormat();
-	
-	public boolean isCompatible(String filename, File file);
-	
-	public boolean isCompatible(String filename, VFSLeaf file);
-	
-	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item);
+public class QuestionPoolSPIComparator implements Comparator<QuestionPoolSPI> {
 
-	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item);
-
-
+	@Override
+	public int compare(QuestionPoolSPI o1, QuestionPoolSPI o2) {
+		int p1 = o1.getPriority();
+		int p2 = o2.getPriority();
+		return p1 < p2 ? 1 : (p1==p2 ? 0 : -1);
+	}
 }

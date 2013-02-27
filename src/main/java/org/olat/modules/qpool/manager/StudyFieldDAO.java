@@ -87,6 +87,10 @@ public class StudyFieldDAO {
 	}
 
 	public String getMaterializedPath(StudyField field) {
+		if(field == null) {
+			return "";
+		}
+		
 		List<StudyField> parentLine = new ArrayList<StudyField>();
 		
 		StringBuilder sb = new StringBuilder();

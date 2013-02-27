@@ -92,7 +92,7 @@ public class PoolDAOTest extends OlatTestCase {
 		String name = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(name);
 		Assert.assertNotNull(pool);
-		QuestionItem item = questionItemDao.create(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item = questionItemDao.create(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.MC);
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
 		
@@ -106,7 +106,7 @@ public class PoolDAOTest extends OlatTestCase {
 		//create a pool
 		String name = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(name);
-		QuestionItem item = questionItemDao.create(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item = questionItemDao.create(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.MC);
 		poolDao.addItemToPool(item, pool);
 		dbInstance.commitAndCloseSession();
 		
@@ -121,7 +121,7 @@ public class PoolDAOTest extends OlatTestCase {
 		//create a pool with an item
 		String name = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(name);
-		QuestionItem item = questionItemDao.create(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item = questionItemDao.create(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.MC);
 		poolDao.addItemToPool(item, pool);
 		dbInstance.commitAndCloseSession();
 		

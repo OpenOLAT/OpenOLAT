@@ -34,6 +34,8 @@ public interface QuestionItemShort extends OLATResourceable {
 	
 	public Long getKey();
 	
+	public String getUuid();
+	
 	public Date getCreationDate();
 	
 	public Date getLastModified();

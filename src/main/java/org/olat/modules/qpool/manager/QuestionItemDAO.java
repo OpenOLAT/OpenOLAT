@@ -22,6 +22,7 @@ package org.olat.modules.qpool.manager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -59,18 +60,33 @@ public class QuestionItemDAO {
 	@Autowired
 	private BaseSecurity securityManager;
 	
+	
 	public QuestionItem create(Identity owner, String subject, String format, String language,
-			StudyField field, QuestionType type) {
+			StudyField field, String rootFilename, QuestionType type) {
+
+		String uuid = UUID.randomUUID().toString();
+		return create(owner, subject, format, language, field, uuid, rootFilename, type) ;
+	}
+	
+	public QuestionItem create(Identity owner, String subject, String format, String language,
+			StudyField field, String uuid, String rootFilename, QuestionType type) {
 		QuestionItemImpl item = new QuestionItemImpl();
+		
+		
+		item.setUuid(uuid);
 		item.setCreationDate(new Date());
 		item.setLastModified(new Date());
 		item.setSubject(subject);
 		item.setStatus(QuestionStatus.inWork.name());
 		item.setUsage(0);
-		item.setType(type.name());
+		if(type != null) {
+			item.setType(type.name());
+		}
 		item.setFormat(format);
 		item.setLanguage(language);
 		item.setStudyField(field);
+		item.setDirectory(generateDir(uuid));
+		item.setRootFilename(rootFilename);
 		SecurityGroup authorGroup = securityManager.createAndPersistSecurityGroup();
 		item.setAuthorGroup(authorGroup);
 		dbInstance.getCurrentEntityManager().persist(item);
@@ -79,6 +95,21 @@ public class QuestionItemDAO {
 		}
 		return item;
 	}
+	
+	public String generateDir(String uuid) {
+		String cleanUuid = uuid.replace("-", "");
+		String firstToken = cleanUuid.substring(0, 2);
+		String secondToken = cleanUuid.substring(2, 4);
+		String thirdToken = cleanUuid.substring(4, 6);
+		String forthToken = cleanUuid.substring(6, 8);
+		StringBuilder sb = new StringBuilder();
+		sb.append(firstToken).append("/")
+		  .append(secondToken).append("/")
+		  .append(thirdToken).append("/")
+		  .append(forthToken).append("/");
+		return sb.toString();
+	}
+	
 	
 	public void addAuthors(List<Identity> authors, QuestionItem item) {
 		QuestionItemImpl lockedItem = loadForUpdate(item.getKey());
@@ -149,11 +180,11 @@ public class QuestionItemDAO {
 		}
 	}
 	
-	public QuestionItem loadById(Long key) {
+	public QuestionItemImpl loadById(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item where item.key=:key");
-		List<QuestionItem> items = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItem.class)
+		List<QuestionItemImpl> items = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemImpl.class)
 				.setParameter("key", key)
 				.getResultList();
 		

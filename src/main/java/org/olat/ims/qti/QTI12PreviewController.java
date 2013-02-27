@@ -19,27 +19,36 @@
  */
 package org.olat.ims.qti;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.editor.ItemPreviewController;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.resources.IMSEntityResolver;
-
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionPoolService;
 /**
  * 
  * Initial date: 21.02.2013<br>
@@ -50,30 +59,36 @@ public class QTI12PreviewController extends BasicController {
 	
 	private final Panel mainPanel;
 	private ItemPreviewController previewCtrl;
+	private final QuestionPoolService qpoolService;
 
-	public QTI12PreviewController(UserRequest ureq, WindowControl wControl) {
+	public QTI12PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
-		
+		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 		mainPanel = new Panel("qti12preview");
 		
-		Item item = readItemXml();
-		if(item != null) {
-			Translator translator = Util.createPackageTranslator(QTIEditorPackage.class, getLocale());
-			previewCtrl = new ItemPreviewController(wControl, item, "/Users/srosse", translator);
-			listenTo(previewCtrl);
-			mainPanel.setContent(previewCtrl.getInitialComponent());
+		VFSLeaf leaf = qpoolService.getRootFile(qitem);
+		if(leaf == null) {
+			//no data to preview
+		} else {
+			Item item = readItemXml(leaf);
+			if(item != null) {
+				Translator translator = Util.createPackageTranslator(QTIEditorPackage.class, getLocale());
+				VFSContainer directory = qpoolService.getRootDirectory(qitem);
+				String mapperUrl = registerMapper(ureq, new QItemDirectoryMapper(directory));
+				previewCtrl = new ItemPreviewController(wControl, item, mapperUrl, translator);
+				listenTo(previewCtrl);
+				mainPanel.setContent(previewCtrl.getInitialComponent());
+			}
 		}
 		
 		putInitialPanel(mainPanel);
 	}
 	
-	private Item readItemXml() {
-
-		XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+	private Item readItemXml(VFSLeaf leaf) {
 		Document doc = null;
 		try {
-			File itemXml = new File("/Users/srosse/Desktop/mchc_i_001.xml");
-			InputStream is = new FileInputStream(itemXml);
+			InputStream is = leaf.getInputStream();
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			doc = xmlParser.parse(is, false);
 			
 			Element item = (Element)doc.selectSingleNode("questestinterop/item");
@@ -81,7 +96,6 @@ public class QTI12PreviewController extends BasicController {
 		  Item qtiItem = (Item)parser.parse(item);
 
 			is.close();
-			
 			return qtiItem;
 		} catch (Exception e) {
 			logError("", e);
@@ -97,5 +111,24 @@ public class QTI12PreviewController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	private class QItemDirectoryMapper implements Mapper {
+		private final VFSContainer itemBaseContainer;
+		
+		private QItemDirectoryMapper(VFSContainer container) {
+			itemBaseContainer = container;
+		}
+		
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			VFSItem vfsItem = itemBaseContainer.resolve(relPath);
+			MediaResource mr;
+			if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+				mr = new NotFoundMediaResource(relPath);
+			} else {
+				mr = new VFSMediaResource((VFSLeaf) vfsItem);
+			}
+			return mr;
+		}
 	}
 }

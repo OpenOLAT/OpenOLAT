@@ -26,10 +26,11 @@ create table if not exists o_qp_study_field (
 
 create table if not exists o_qp_item (
    id bigint not null,
+   q_uuid varchar(36) not null,
    q_subject varchar(255) not null,
    q_keywords varchar(2048),
-   q_type varchar(64) not null,
-   q_language varchar(16) not null,
+   q_type varchar(64),
+   q_language varchar(16),
    q_status varchar(32) not null,
    q_description varchar(4000),
    q_copyright varchar(2048),
@@ -44,6 +45,8 @@ create table if not exists o_qp_item (
    creationdate datetime not null,
    lastmodified datetime not null,
    q_version varchar(32),
+   q_dir varchar(32),
+   q_root_filename varchar(255),
    fk_study_field bigint,
    fk_author_grp_id bigint,
    primary key (id)

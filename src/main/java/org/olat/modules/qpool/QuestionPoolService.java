@@ -19,10 +19,13 @@
  */
 package org.olat.modules.qpool;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.resource.OLATResource;
 
@@ -39,6 +42,12 @@ public interface QuestionPoolService {
 	public void deleteItems(List<QuestionItem> items);
 	
 	public void addAuthors(List<Identity> authors, List<QuestionItem> items);
+	
+	public QuestionItem importItem(Identity owner, String filename, File file);
+	
+	public VFSLeaf getRootFile(QuestionItem item);
+	
+	public VFSContainer getRootDirectory(QuestionItem item);
 	
 
 	public int countItems(Identity author);

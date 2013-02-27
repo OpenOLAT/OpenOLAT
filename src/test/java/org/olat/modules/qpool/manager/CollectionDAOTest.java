@@ -79,7 +79,7 @@ public class CollectionDAOTest extends OlatTestCase {
 	public void addItemToCollectionById() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-2-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 2", id);
-		QuestionItem item = questionDao.create(null, "NGC 89", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
+		QuestionItem item = questionDao.create(null, "NGC 89", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
 		dbInstance.commitAndCloseSession();
 		
 		//add the item to the collection
@@ -92,8 +92,8 @@ public class CollectionDAOTest extends OlatTestCase {
 		//create a collection with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
-		QuestionItem item1 = questionDao.create(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
-		QuestionItem item2 = questionDao.create(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
+		QuestionItem item1 = questionDao.create(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
+		QuestionItem item2 = questionDao.create(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
 		collectionDao.addItemToCollection(item1, coll);
 		collectionDao.addItemToCollection(item2, coll);
 		dbInstance.commit();//check if it's alright

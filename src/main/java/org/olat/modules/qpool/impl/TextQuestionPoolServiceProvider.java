@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti;
+package org.olat.modules.qpool.impl;
 
 import java.io.File;
 
@@ -25,46 +25,46 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.ims.qti.fileresource.ItemFileResourceValidator;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolSPI;
 
 /**
  * 
- * Initial date: 21.02.2013<br>
+ * Initial date: 26.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTIQuestionPoolServiceProvider implements QuestionPoolSPI {
+public class TextQuestionPoolServiceProvider implements QuestionPoolSPI {
 
+	public static final String TXT_FORMAT = "txt";
+	
 	@Override
 	public int getPriority() {
-		return 10;
+		return 1;
 	}
 
 	@Override
 	public String getFormat() {
-		return QTIConstants.QTI_12_FORMAT;
+		return TXT_FORMAT;
+	}
+	
+	@Override
+	public boolean isCompatible(String filename, File file) {
+		return filename.toLowerCase().endsWith(".txt");
 	}
 
 	@Override
-	public boolean isCompatible(String filename, File file) {
-		return new ItemFileResourceValidator().validate(filename, file);
-	}
-	@Override
 	public boolean isCompatible(String filename, VFSLeaf file) {
-		return new ItemFileResourceValidator().validate(filename, file);
+		return isCompatible(filename, (File)null);
 	}
 
 	@Override
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		QTI12PreviewController previewCtrl = new QTI12PreviewController(ureq, wControl, item);
-		return previewCtrl;
+		return null;
 	}
 
 	@Override
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		QTI12PreviewController previewCtrl = new QTI12PreviewController(ureq, wControl, item);
-		return previewCtrl;
+		return null;
 	}
 }

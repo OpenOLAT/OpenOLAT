@@ -67,6 +67,8 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
   @GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
+	@Column(name="q_uuid", nullable=false, insertable=true, updatable=false)
+	private String uuid;
 
 	//general
 	@Column(name="q_subject", nullable=false, insertable=true, updatable=true)
@@ -119,8 +121,12 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	private Date lastModified;
 	@Column(name="q_version", nullable=true, insertable=true, updatable=true)
 	private String itemVersion;
-
-
+	
+	@Column(name="q_dir", nullable=true, insertable=true, updatable=false)
+	private String directory;
+	@Column(name="q_root_filename", nullable=true, insertable=true, updatable=false)
+	private String rootFilename;
+	
 
 	@Override
 	public Long getKey() {
@@ -129,6 +135,15 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	@Override
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
 	@Override
@@ -318,6 +333,22 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 
 	public void setItemVersion(String itemVersion) {
 		this.itemVersion = itemVersion;
+	}
+
+	public String getDirectory() {
+		return directory;
+	}
+
+	public void setDirectory(String directory) {
+		this.directory = directory;
+	}
+
+	public String getRootFilename() {
+		return rootFilename;
+	}
+
+	public void setRootFilename(String rootFilename) {
+		this.rootFilename = rootFilename;
 	}
 
 	@Override

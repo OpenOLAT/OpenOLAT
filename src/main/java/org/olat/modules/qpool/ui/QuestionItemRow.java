@@ -49,6 +49,11 @@ public class QuestionItemRow implements QuestionItemShort {
 	}
 
 	@Override
+	public String getUuid() {
+		return delegate.getUuid();
+	}
+
+	@Override
 	public String getResourceableTypeName() {
 		return delegate.getResourceableTypeName();
 	}

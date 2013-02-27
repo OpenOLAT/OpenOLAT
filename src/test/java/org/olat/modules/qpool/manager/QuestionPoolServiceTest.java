@@ -19,6 +19,12 @@
  */
 package org.olat.modules.qpool.manager;
 
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -62,8 +68,8 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		//create a group to share 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item1 = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
-		QuestionItem item2 = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, QuestionType.MC);
+		QuestionItem item1 = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.MC);
+		QuestionItem item2 = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.MC);
 		dbInstance.commit();
 		//share them
 		questionDao.share(item1, group.getResource());
@@ -86,9 +92,9 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	@Test
 	public void createCollection() {
 		//create an user with 2 items
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.create(id, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
-		QuestionItem item2 = questionDao.create(id, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, QuestionType.FIB);
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Owner-3-" + UUID.randomUUID().toString());
+		QuestionItem item1 = questionDao.create(id, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
+		QuestionItem item2 = questionDao.create(id, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
 		dbInstance.commit();
 		
 		//load the items of the collection
@@ -109,4 +115,19 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		Assert.assertTrue(itemsOfCollection.contains(item1));
 		Assert.assertTrue(itemsOfCollection.contains(item2));
 	}
+
+	@Test
+	public void importItem_qti12xml() throws IOException, URISyntaxException {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("Imp-Owner-1-" + UUID.randomUUID().toString());
+		dbInstance.commit();
+		URL itemUrl = QuestionPoolServiceTest.class.getResource("mchc_i_001.xml");
+		assertNotNull(itemUrl);
+		File itemFile = new File(itemUrl.toURI());
+		
+		
+		qpoolService.importItem(owner, "mchc_i_001.xml", itemFile);
+		
+		
+	}
+	
 }
