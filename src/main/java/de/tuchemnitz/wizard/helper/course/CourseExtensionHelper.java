@@ -118,7 +118,7 @@ public class CourseExtensionHelper {
 	 * @param longTitle long title for node
 	 * @return created course node
 	 */
-	private static final CourseNode createNode(final ICourse course, final String shortTitle, final String longTitle, final String type) {
+	private static final CourseNode createNode(ICourse course, final String shortTitle, final String longTitle, final String type) {
 		// create a node with default data
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode node = nodeConfig.getInstance();
@@ -126,7 +126,7 @@ public class CourseExtensionHelper {
 		node.setLongTitle(longTitle);
 
 		// append node to course
-		CourseFactory.openCourseEditSession(course.getResourceableId());
+		course = CourseFactory.openCourseEditSession(course.getResourceableId());
 		final CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		final CourseNode rootNode = cetm.getCourseNode(course.getRunStructure().getRootNode().getIdent());
 		course.getEditorTreeModel().addCourseNode(node, rootNode);
@@ -143,8 +143,8 @@ public class CourseExtensionHelper {
 	 * @param node node to be removed
 	 * @param course course where the node belongs to
 	 */
-	public static final void removeNode(final CourseNode node, final ICourse course) {
-		CourseFactory.openCourseEditSession(course.getResourceableId());
+	public static final void removeNode(final CourseNode node, ICourse course) {
+		course = CourseFactory.openCourseEditSession(course.getResourceableId());
 		course.getEditorTreeModel().removeCourseNode(node);
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
