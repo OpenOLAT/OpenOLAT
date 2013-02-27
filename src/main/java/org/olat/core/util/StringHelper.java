@@ -324,10 +324,10 @@ public class StringHelper {
 	 * @return transformed string
 	 */
 	public static String transformDisplayNameToFileSystemName(String s){
-		s = s.replace('?', '_');
-		s = s.replace('/', '_');
-		s = s.replace(' ', '_');
-		return s;
+		//replace some separator with an underscore
+		s = s.replace('?', '_').replace('\\', '_').replace('/', '_').replace(' ', '_');
+		//remove all non-ascii characters
+		return FileUtils.normalizeFilename(s);
 	}
 	
 	public static boolean isLong(String string) {

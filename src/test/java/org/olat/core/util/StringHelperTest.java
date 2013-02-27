@@ -22,9 +22,8 @@ package org.olat.core.util;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /**
  * Description:<br>
@@ -34,9 +33,7 @@ import org.junit.runners.JUnit4;
  * Initial Date:  13.07.2010 <br>
  * @author gnaegi
  */
-@RunWith(JUnit4.class)
 public class StringHelperTest {
-
 
 	@Test
 	public void testContainsNonWhitespace() {
@@ -52,5 +49,13 @@ public class StringHelperTest {
 		assertFalse(StringHelper.containsNonWhitespace(" "));
 		assertFalse(StringHelper.containsNonWhitespace("             "));
 		assertFalse(StringHelper.containsNonWhitespace("  \t  \r"));
+	}
+	
+	@Test
+	public void transformDisplayNameToFileSystemName() {
+		Assert.assertEquals("Webclass_Energie_2004_2005", StringHelper.transformDisplayNameToFileSystemName("Webclass Energie 2004/2005"));
+		Assert.assertEquals("Webclass_Energie_2004_2005", StringHelper.transformDisplayNameToFileSystemName("Webclass Energie 2004\\2005"));
+		Assert.assertEquals("Webclass_Energie_20042005", StringHelper.transformDisplayNameToFileSystemName("Webclass Energie 2004:2005"));
+		Assert.assertEquals("Webclaess", StringHelper.transformDisplayNameToFileSystemName("Webcl\u00E4ss"));
 	}
 }
