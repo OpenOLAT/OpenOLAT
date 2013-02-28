@@ -36,4 +36,6 @@ public interface StudyField {
 	public Date getLastModified();
 	
 	public String getField();
+	
+	public StudyField getParentField();
 }

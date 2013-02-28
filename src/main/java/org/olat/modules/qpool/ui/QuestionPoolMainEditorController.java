@@ -57,7 +57,7 @@ import org.olat.modules.qpool.QuestionPoolService;
 public class QuestionPoolMainEditorController extends BasicController implements Activateable2, StackedControllerAware {
 
 	private final MenuTree menuTree;
-	private GenericTreeNode sharesNode, myNode;
+	private GenericTreeNode sharesNode, myNode, poolNode;
 	
 	private final Panel content;
 	private StackedController stackPanel;
@@ -68,6 +68,8 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private QuestionsController collItemsCtrl;
 	private QuestionsController selectedPoolCtrl;
 	private QuestionsController markedQuestionsCtrl;
+	
+	private PoolsAdminController poolAdminCtrl;
 	private StudyFieldAdminController studyFieldCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
@@ -123,6 +125,8 @@ public class QuestionPoolMainEditorController extends BasicController implements
 					doSelectAdmin(ureq);
 				} else if("menu.admin.studyfields".equals(uNode)) {
 					doSelectAdminStudyFields(ureq);
+				} else if("menu.admin.pools".equals(uNode)) {
+					doSelectAdminPools(ureq);
 				} else if("menu.database.my".equals(uNode)) {
 					doSelectMyQuestions(ureq);
 				} else if("menu.database.favorit".equals(uNode)) {
@@ -149,6 +153,10 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				menuTree.setDirty(true);
 			}	else if(QPoolEvent.COLL_CREATED.equals(event.getCommand())) {
 				buildMySubTreeModel(myNode);
+				menuTree.setDirty(true);
+			}	else if(QPoolEvent.POOL_CREATED.equals(event.getCommand())
+					|| QPoolEvent.POOL_DELETED.equals(event.getCommand())) {
+				buildPoolSubTreeModel(poolNode);
 				menuTree.setDirty(true);
 			}
 		}
@@ -203,6 +211,14 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			listenTo(studyFieldCtrl);
 		}
 		content.setContent(studyFieldCtrl.getInitialComponent());
+	}
+	
+	private void doSelectAdminPools(UserRequest ureq) {
+		if(poolAdminCtrl == null) {
+			poolAdminCtrl = new PoolsAdminController(ureq, getWindowControl());
+			listenTo(poolAdminCtrl);
+		}
+		content.setContent(poolAdminCtrl.getInitialComponent());
 	}
 	
 	private void doSelectMyQuestions(UserRequest ureq) {
@@ -277,16 +293,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 
 
 		//pools
-		GenericTreeNode poolNode = new GenericTreeNode(translate("menu.pools"), "menu.pools.alt");
+		poolNode = new GenericTreeNode(translate("menu.pools"), "menu.pools.alt");
 		poolNode.setCssClass("o_sel_qpool_pools");
 		rootNode.addChild(poolNode);
 		
-		List<Pool> pools = qpoolService.getPools(getIdentity());
-		for(Pool pool:pools) {
-			GenericTreeNode node = new GenericTreeNode(pool.getName(), pool);
-			node.setIconCssClass("o_sel_qpool_pool");
-			poolNode.addChild(node);
-		}
+		buildPoolSubTreeModel(poolNode);
 		
 		//shares
 		sharesNode = new GenericTreeNode(translate("menu.share"), "menu.share");
@@ -298,12 +309,32 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		GenericTreeNode adminNode = new GenericTreeNode(translate("menu.admin"), "menu.admin");
 		adminNode.setCssClass("o_sel_qpool_admin");
 		rootNode.addChild(adminNode);
+		buildAdminSubTreeModel(adminNode);
+
+		return gtm;
+	}
+	
+	private void buildPoolSubTreeModel(GenericTreeNode poolNode) {
+		poolNode.removeAllChildren();
+		
+		List<Pool> pools = qpoolService.getPools(getIdentity());
+		for(Pool pool:pools) {
+			GenericTreeNode node = new GenericTreeNode(pool.getName(), pool);
+			node.setIconCssClass("o_sel_qpool_pool");
+			poolNode.addChild(node);
+		}
+	}
+	
+	private void buildAdminSubTreeModel(GenericTreeNode adminNode) {
+		adminNode.removeAllChildren();
 		
 		GenericTreeNode node = new GenericTreeNode(translate("menu.admin.studyfields"), "menu.admin.studyfields");
 		node.setIconCssClass("o_sel_qpool_study_fields");
 		adminNode.addChild(node);
-
-		return gtm;
+		
+		node = new GenericTreeNode(translate("menu.admin.pools"), "menu.admin.pools");
+		node.setIconCssClass("o_sel_qpool_study_pools");
+		adminNode.addChild(node);
 	}
 	
 	private void buildMySubTreeModel(GenericTreeNode myNode) {

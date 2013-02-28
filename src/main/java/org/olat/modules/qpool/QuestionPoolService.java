@@ -96,4 +96,21 @@ public interface QuestionPoolService {
 	
 	public List<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, int firstResult, int maxResults, SortKey... orderBy);
 
+	
+	//study field admin
+	public List<StudyField> getStudyFields();
+	
+	
+	//pool administration
+	public void createPool(Identity identity, String name);
+	
+	public Pool updatePool(Pool pool);
+	
+	public void deletePool(Pool pool);
+	
+	public int countPools();
+
+	public List<Pool> getPools(int firstResult, int maxResults, SortKey... orderBy);
+	
+	
 }

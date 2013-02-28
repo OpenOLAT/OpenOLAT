@@ -19,57 +19,80 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+
+import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionPoolService;
 
 /**
  * 
- * Initial date: 21.02.2013<br>
+ * Initial date: 27.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StudyFieldAdminController extends BasicController {
+public class TextPreviewController extends BasicController {
 
-	private final MenuTree studyFieldTree;
-	private final StudyFieldTreeModel studyFieldTreeModel;
-	
-	
 	private final VelocityContainer mainVC;
+	private final QuestionPoolService qpoolService;
 	
-	public StudyFieldAdminController(UserRequest ureq, WindowControl wControl) {
+	public TextPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
+		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		mainVC = createVelocityContainer("text_preview");
 		
-		mainVC = createVelocityContainer("admin_study_fields");
-
-		studyFieldTree = new MenuTree("qpoolTree");
-		studyFieldTreeModel = new StudyFieldTreeModel();
-		studyFieldTree.setTreeModel(studyFieldTreeModel);
-		studyFieldTree.setSelectedNode(studyFieldTree.getTreeModel().getRootNode());
-		studyFieldTree.setDropEnabled(false);
-		studyFieldTree.addListener(this);
-		studyFieldTree.setRootVisible(false);
-
-		mainVC.put("tree", studyFieldTree);
+		VFSLeaf leaf = qpoolService.getRootFile(qitem);
+		if(leaf == null) {
+			//no data to preview
+		} else {
+			String txt = readSummary(leaf);
+			mainVC.contextPut("text", txt);
+		}
 		putInitialPanel(mainVC);
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	protected String readSummary(VFSLeaf leaf) {
+    StringWriter out = new StringWriter();
+    InputStream in = leaf.getInputStream();
+    InputStreamReader inr = new InputStreamReader(in);
+		try {
+			char[] buffer = new char[4096];
+			
+			int count = 0;
+	    int n = 0;
+	    while (-1 != (n = inr.read(buffer))) {
+	        out.write(buffer, 0, n);
+	        count += n;
+	        if(count >= 10000) {
+	        	break;
+	        }
+	    }
+		} catch (Exception e) {
+			logError("", e);
+		} finally {
+			IOUtils.closeQuietly(inr);
+			IOUtils.closeQuietly(in);
+		}
+  	return out.toString();
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-
-	
-	
-
 }

@@ -35,7 +35,6 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Persistable;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 
 /**
@@ -66,7 +65,7 @@ public class CollectionToItem implements CreateInfo, Persistable  {
 	
 	@ManyToOne(targetEntity=QuestionItemImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_item_id", nullable=false, updatable=false)
-	private QuestionItem item;
+	private QuestionItemImpl item;
 
 	@Override
 	public Long getKey() {
@@ -94,11 +93,11 @@ public class CollectionToItem implements CreateInfo, Persistable  {
 		this.collection = collection;
 	}
 
-	public QuestionItem getItem() {
+	public QuestionItemImpl getItem() {
 		return item;
 	}
 
-	public void setItem(QuestionItem item) {
+	public void setItem(QuestionItemImpl item) {
 		this.item = item;
 	}
 

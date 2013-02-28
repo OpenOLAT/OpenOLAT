@@ -35,6 +35,8 @@ public class QPoolEvent extends MultiUserEvent {
 	public static final String ITEM_MARKED = "qpool-item-marked";
 	public static final String ITEM_DELETED = "qpool-item-deleted";
 	public static final String COLL_CREATED = "qpool-coll-created";
+	public static final String POOL_CREATED = "qpool-pool-created";
+	public static final String POOL_DELETED = "qpool-pool-deleted";
 	
 
 	public QPoolEvent(String cmd) {

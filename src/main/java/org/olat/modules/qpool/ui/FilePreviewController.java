@@ -19,45 +19,40 @@
  */
 package org.olat.modules.qpool.ui;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionPoolService;
 
 /**
  * 
- * Initial date: 21.02.2013<br>
+ * Initial date: 27.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StudyFieldAdminController extends BasicController {
+public class FilePreviewController extends BasicController {
 
-	private final MenuTree studyFieldTree;
-	private final StudyFieldTreeModel studyFieldTreeModel;
-	
-	
 	private final VelocityContainer mainVC;
 	
-	public StudyFieldAdminController(UserRequest ureq, WindowControl wControl) {
+	public FilePreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
+		QuestionPoolService qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		mainVC = createVelocityContainer("file_preview");
 		
-		mainVC = createVelocityContainer("admin_study_fields");
-
-		studyFieldTree = new MenuTree("qpoolTree");
-		studyFieldTreeModel = new StudyFieldTreeModel();
-		studyFieldTree.setTreeModel(studyFieldTreeModel);
-		studyFieldTree.setSelectedNode(studyFieldTree.getTreeModel().getRootNode());
-		studyFieldTree.setDropEnabled(false);
-		studyFieldTree.addListener(this);
-		studyFieldTree.setRootVisible(false);
-
-		mainVC.put("tree", studyFieldTree);
+		VFSLeaf leaf = qpoolService.getRootFile(qitem);
+		if(leaf != null) {
+			mainVC.contextPut("filename", leaf.getName());
+		}
+		
 		putInitialPanel(mainVC);
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		//
@@ -67,9 +62,4 @@ public class StudyFieldAdminController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-
-	
-	
-
 }

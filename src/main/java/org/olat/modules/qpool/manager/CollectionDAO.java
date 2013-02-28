@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.model.CollectionToItem;
 import org.olat.modules.qpool.model.QuestionItemCollectionImpl;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,7 +75,7 @@ public class CollectionDAO {
 	}
 	
 	public void addItemToCollection(QuestionItem item, QuestionItemCollection collection) {
-		QuestionItem lockedItem = questionItemDao.loadForUpdate(item.getKey());
+		QuestionItemImpl lockedItem = questionItemDao.loadForUpdate(item.getKey());
 		if(!isInCollection(collection, lockedItem)) {
 			CollectionToItem coll2Item = new CollectionToItem();
 			coll2Item.setCreationDate(new Date());
@@ -84,7 +86,7 @@ public class CollectionDAO {
 		dbInstance.commit();
 	}
 	
-	public boolean isInCollection(QuestionItemCollection collection, QuestionItem item) {
+	public boolean isInCollection(QuestionItemCollection collection, QuestionItemImpl item) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(coll2item) from qcollection2item coll2item where coll2item.collection.key=:collectionKey and coll2item.item.key=:itemKey");
 		Number count = dbInstance.getCurrentEntityManager()
@@ -130,5 +132,19 @@ public class CollectionDAO {
 				.createQuery(sb.toString(), QuestionItemCollection.class)
 				.setParameter("identityKey", me.getKey())
 				.getResultList();
+	}
+	
+	public int deleteItemFromCollections(List<QuestionItem> items) {
+		List<Long> keys = new ArrayList<Long>();
+		for(QuestionItem item:items) {
+			keys.add(item.getKey());
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from qcollection2item coll2item where coll2item.item.key in (:itemKeys)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("itemKeys", keys)
+				.executeUpdate();
 	}
 }

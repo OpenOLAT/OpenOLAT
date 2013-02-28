@@ -49,7 +49,9 @@ public interface SearchService {
    * @param doHighlighting Highlights founded text fragements in result  
    * @return               Search result for queury
    */
-	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxReturns, boolean doHighlighting) throws ServiceNotAvailableException, ParseException, QueryException;
+	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxReturns, boolean doHighlighting)
+	throws ServiceNotAvailableException, ParseException, QueryException;
 	
 	/**
 	 * Check a query for similar words.

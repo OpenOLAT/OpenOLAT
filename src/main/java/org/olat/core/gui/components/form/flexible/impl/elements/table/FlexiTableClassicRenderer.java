@@ -78,7 +78,8 @@ class FlexiTableClassicRenderer implements ComponentRenderer {
 		// build rows
 		target.append("<tbody>");
 		// the really selected rowid (from the tabledatamodel)
-		
+
+		dataModel.load(0, rows);
 		for (int i = 0; i < rows; i++) {
 			// use alternating css class
 			String cssClass;

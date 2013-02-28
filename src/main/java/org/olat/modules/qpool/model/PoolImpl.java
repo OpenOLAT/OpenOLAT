@@ -23,8 +23,11 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -32,6 +35,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
@@ -69,6 +74,13 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 	@Column(name="q_name", nullable=false, insertable=true, updatable=true)
 	private String name;
 	
+	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_ownergroup", nullable=false, insertable=true, updatable=false)
+	private SecurityGroup ownerGroup;
+	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_participantgroup", nullable=false, insertable=true, updatable=false)
+	private SecurityGroup participantGroup;
+	
 	
 	public Long getKey() {
 		return key;
@@ -100,6 +112,22 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public SecurityGroup getOwnerGroup() {
+		return ownerGroup;
+	}
+
+	public void setOwnerGroup(SecurityGroup ownerGroup) {
+		this.ownerGroup = ownerGroup;
+	}
+
+	public SecurityGroup getParticipantGroup() {
+		return participantGroup;
+	}
+
+	public void setParticipantGroup(SecurityGroup participantGroup) {
+		this.participantGroup = participantGroup;
 	}
 
 	@Override

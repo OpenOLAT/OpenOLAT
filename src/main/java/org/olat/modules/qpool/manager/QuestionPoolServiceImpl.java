@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
@@ -46,6 +47,8 @@ import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionPoolSPI;
 import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.StudyField;
+import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +77,8 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private QuestionPoolModule qpoolModule;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 
 	@Override
@@ -90,6 +95,7 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 		
 		poolDao.deleteFromPools(items);
 		questionItemDao.deleteFromShares(items);
+		collectionDao.deleteItemFromCollections(items);
 		//TODO unmark
 		questionItemDao.delete(items);
 	}
@@ -229,7 +235,7 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 
 	@Override
 	public List<Pool> getPools(Identity identity) {
-		return poolDao.getPools();
+		return poolDao.getPools(0, -1);
 	}
 
 	@Override
@@ -318,4 +324,39 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 			int maxResults, SortKey... orderBy) {
 		return collectionDao.getItemsOfCollection(collection, firstResult, maxResults, orderBy);
 	}
+
+	@Override
+	public void createPool(Identity identity, String name) {
+		PoolImpl pool = poolDao.createPool(name);
+		securityManager.addIdentityToSecurityGroup(identity, pool.getOwnerGroup());
+	}
+
+	@Override
+	public Pool updatePool(Pool pool) {
+		return poolDao.updatePool(pool);
+	}
+
+	@Override
+	public void deletePool(Pool pool) {
+		poolDao.deletePool(pool);
+	}
+
+	@Override
+	public int countPools() {
+		return poolDao.countPools();
+	}
+
+	@Override
+	public List<Pool> getPools(int firstResult, int maxResults, SortKey... orderBy) {
+		return poolDao.getPools(firstResult, maxResults);
+	}
+
+	@Override
+	public List<StudyField> getStudyFields() {
+		return studyFieldDao.loadAllFields();
+	}
+	
+	
+	
+	
 }

@@ -28,29 +28,42 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.Pool;
 
 /**
  * 
- * Initial date: 25.02.2013<br>
+ * Initial date: 21.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CreateCollectionController extends FormBasicController {
+public class PoolEditController extends FormBasicController {
 
-	private Object userObject;
 	private TextElement nameEl;
+	private final Pool pool;
 	
-	public CreateCollectionController(UserRequest ureq, WindowControl wControl) {
+	public PoolEditController(UserRequest ureq, WindowControl wControl, Pool pool) {
 		super(ureq, wControl);
-		
+		this.pool = pool;
 		initForm(ureq);
+	}
+	
+	public Pool getPool() {
+		return pool;
+	}
+	
+	public String getName() {
+		return nameEl.getValue();
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("create.collection.description");
-		
-		nameEl = uifactory.addTextElement("collection.name", "collection.name", 128, "", formLayout);
+		String name = pool == null ? "" : pool.getName();
+		nameEl = uifactory.addTextElement("pool.name", "pool.name", 128, name, formLayout);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -58,34 +71,17 @@ public class CreateCollectionController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		// 
-	}
-	
-	public Object getUserObject() {
-		return userObject;
-	}
-
-	public void setUserObject(Object userObject) {
-		this.userObject = userObject;
-	}
-	
-	public String getName() {
-		return nameEl.getValue();
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		
-		String name = nameEl.getValue();
+
 		nameEl.clearError();
-		if(!StringHelper.containsNonWhitespace(name)) {
+		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			nameEl.setErrorKey("form.mandatory.hover", null);
+			allOk = false;
 		}
-		
+
 		return allOk && super.validateFormLogic(ureq);
 	}
 

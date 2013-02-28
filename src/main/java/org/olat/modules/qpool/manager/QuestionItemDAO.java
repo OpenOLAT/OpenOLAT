@@ -87,11 +87,11 @@ public class QuestionItemDAO {
 		item.setStudyField(field);
 		item.setDirectory(generateDir(uuid));
 		item.setRootFilename(rootFilename);
-		SecurityGroup authorGroup = securityManager.createAndPersistSecurityGroup();
-		item.setAuthorGroup(authorGroup);
+		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
+		item.setOwnerGroup(ownerGroup);
 		dbInstance.getCurrentEntityManager().persist(item);
 		if(owner != null) {
-			securityManager.addIdentityToSecurityGroup(owner, authorGroup);
+			securityManager.addIdentityToSecurityGroup(owner, ownerGroup);
 		}
 		return item;
 	}
@@ -110,10 +110,9 @@ public class QuestionItemDAO {
 		return sb.toString();
 	}
 	
-	
 	public void addAuthors(List<Identity> authors, QuestionItem item) {
 		QuestionItemImpl lockedItem = loadForUpdate(item.getKey());
-		SecurityGroup secGroup = lockedItem.getAuthorGroup();
+		SecurityGroup secGroup = lockedItem.getOwnerGroup();
 		for(Identity author:authors) {
 			if(!securityManager.isIdentityInSecurityGroup(author, secGroup)) {
 				securityManager.addIdentityToSecurityGroup(author, secGroup);
@@ -125,10 +124,10 @@ public class QuestionItemDAO {
 	public int countItems(Identity me) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(item) from questionitem item")
-		  .append(" inner join item.authorGroup authorGroup ")
-		  .append(" where authorGroup in (")
+		  .append(" inner join item.ownerGroup ownerGroup ")
+		  .append(" where ownerGroup in (")
 		  .append("   select vmember.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
-		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=authorGroup")
+		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup")
 		  .append(" )");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
@@ -139,10 +138,10 @@ public class QuestionItemDAO {
 	public List<QuestionItem> getItems(Identity me, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
-		  .append(" inner join item.authorGroup authorGroup ")
-		  .append(" where authorGroup in (")
+		  .append(" inner join item.ownerGroup ownerGroup ")
+		  .append(" where ownerGroup in (")
 		  .append("   select vmember.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
-		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=authorGroup")
+		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup")
 		  .append(" )");
 
 		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()

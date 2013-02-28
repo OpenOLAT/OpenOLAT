@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolSPI;
+import org.olat.modules.qpool.ui.TextPreviewController;
 
 /**
  * 
@@ -60,11 +61,13 @@ public class TextQuestionPoolServiceProvider implements QuestionPoolSPI {
 
 	@Override
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		return null;
+		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item);
+		return txtController;
 	}
 
 	@Override
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		return null;
+		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item);
+		return txtController;
 	}
 }

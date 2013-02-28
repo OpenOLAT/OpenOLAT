@@ -73,7 +73,8 @@ public class StudyFieldDAO {
 	
 	public List<StudyField> loadAllFields() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select f from qstudyfield f ");
+		sb.append("select f from qstudyfield f ")
+		  .append(" left join fetch f.parentField pf");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), StudyField.class)
 				.getResultList();

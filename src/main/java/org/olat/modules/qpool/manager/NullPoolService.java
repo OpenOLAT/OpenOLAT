@@ -90,7 +90,7 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 
 		int numOfQuestions = questionItemDao.getNumOfQuestions();
 		if(numOfQuestions < 3) {
-			List<Pool> pools = poolDao.getPools();
+			List<Pool> pools = poolDao.getPools(0, -1);
 			for(int i=0; i<200; i++) {
 				long randomIndex = Math.round(Math.random() * (fields.size() - 1));
 				StudyField field = fields.get((int)randomIndex);

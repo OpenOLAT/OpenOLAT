@@ -12,6 +12,8 @@ create table if not exists o_qp_pool (
    creationdate datetime not null,
    lastmodified datetime not null,
    q_name varchar(255) not null,
+   fk_ownergroup bigint,
+   fk_participantgroup bigint,
    primary key (id)
 );
 
@@ -48,7 +50,7 @@ create table if not exists o_qp_item (
    q_dir varchar(32),
    q_root_filename varchar(255),
    fk_study_field bigint,
-   fk_author_grp_id bigint,
+   fk_ownergroup bigint,
    primary key (id)
 );
 
@@ -85,6 +87,10 @@ create table if not exists o_qp_collection_2_item (
    primary key (id)
 );
 
+
+alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);
+alter table o_qp_pool add constraint idx_qp_pool_part_grp_id foreign key (fk_participantgroup) references o_bs_secgroup(id);
+
 alter table o_qp_pool_2_item add constraint idx_qp_pool_2_item_pool_id foreign key (fk_pool_id) references o_qp_pool(id);
 alter table o_qp_pool_2_item add constraint idx_qp_pool_2_item_item_id foreign key (fk_item_id) references o_qp_item(id);
 alter table o_qp_pool_2_item add unique (fk_pool_id, fk_item_id);
@@ -100,7 +106,7 @@ alter table o_qp_collection_2_item add constraint idx_qp_coll_item_id foreign ke
 alter table o_qp_collection_2_item add unique (fk_collection_id, fk_item_id);
 
 alter table o_qp_item add constraint idx_qp_pool_2_field_id foreign key (fk_study_field) references o_qp_study_field(id);
-alter table o_qp_item add constraint idx_qp_item_author_grp_id foreign key (fk_author_grp_id) references o_bs_secgroup(id);
+alter table o_qp_item add constraint idx_qp_item_owner_id foreign key (fk_ownergroup) references o_bs_secgroup(id);
 alter table o_qp_study_field add constraint idx_qp_field_2_parent_id foreign key (fk_parent_field) references o_qp_study_field(id);
 
 

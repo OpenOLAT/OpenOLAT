@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolSPI;
+import org.olat.modules.qpool.ui.FilePreviewController;
 
 /**
  * 
@@ -62,15 +63,13 @@ public class PdfQuestionPoolServiceProvider implements QuestionPoolSPI {
 
 	@Override
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		return null;
+		FilePreviewController fileController = new FilePreviewController(ureq, wControl, item);
+		return fileController;
 	}
 
 	@Override
 	public Controller getEditableController(UserRequest ureq,	WindowControl wControl, QuestionItem item) {
-		return null;
+		FilePreviewController fileController = new FilePreviewController(ureq, wControl, item);
+		return fileController;
 	}
-
-
-	
-
 }

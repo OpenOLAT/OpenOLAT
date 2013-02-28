@@ -25,6 +25,8 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.SortKey;
@@ -48,13 +50,18 @@ public class PoolDAO {
 	private DB dbInstance;
 	@Autowired
 	private QuestionItemDAO questionItemDao;
+	@Autowired
+	private BaseSecurity securityManager;
 	
-	
-	public Pool createPool(String name) {
+	public PoolImpl createPool(String name) {
 		PoolImpl pool = new PoolImpl();
 		pool.setCreationDate(new Date());
 		pool.setLastModified(new Date());
 		pool.setName(name);
+		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
+		pool.setOwnerGroup(ownerGroup);
+		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
+		pool.setParticipantGroup(participantGroup);
 		dbInstance.getCurrentEntityManager().persist(pool);
 		return pool;
 	}
@@ -73,6 +80,22 @@ public class PoolDAO {
 				.executeUpdate();
 	}
 	
+	public Pool updatePool(Pool pool) {
+		return dbInstance.getCurrentEntityManager().merge(pool);
+	}
+	
+	public void deletePool(Pool pool) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from qpool2item pool2item where pool2item.pool.key=:poolKey");
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("poolKey", pool.getKey())
+				.executeUpdate();
+		
+		PoolImpl poolRef = dbInstance.getCurrentEntityManager().getReference(PoolImpl.class, pool.getKey());
+		dbInstance.getCurrentEntityManager().remove(poolRef);
+	}
+	
 	public int getNumOfPools() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(pool) from qpool pool");
@@ -81,13 +104,27 @@ public class PoolDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<Pool> getPools() {
+	public int countPools() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(pool) from qpool pool");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.getSingleResult().intValue();
+	}
+	
+	public List<Pool> getPools(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select pool from qpool pool");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Pool.class)
-				.getResultList();
+		TypedQuery<Pool> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Pool.class);
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
 	}
 	
 	public void addItemToPool(QuestionItem item, Pool pool) {

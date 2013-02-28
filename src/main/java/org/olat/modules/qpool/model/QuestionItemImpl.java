@@ -91,8 +91,8 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	@Column(name="q_copyright", nullable=true, insertable=true, updatable=true)
 	private String copyright;
 	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_author_grp_id", nullable=false, insertable=true, updatable=false)
-	private SecurityGroup authorGroup;
+	@JoinColumn(name="fk_ownergroup", nullable=false, insertable=true, updatable=false)
+	private SecurityGroup ownerGroup;
 	
 	//usage
 	@Column(name="q_point", nullable=true, insertable=true, updatable=true)
@@ -137,7 +137,6 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.key = key;
 	}
 
-	@Override
 	public String getUuid() {
 		return uuid;
 	}
@@ -146,17 +145,14 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.uuid = uuid;
 	}
 
-	@Override
 	public String getResourceableTypeName() {
 		return "QuestionItem";
 	}
 
-	@Override
 	public Long getResourceableId() {
 		return getKey();
 	}
 
-	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -262,7 +258,6 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.selectivity = selectivity;
 	}
 
-	@Override
 	@Transient
 	public QuestionStatus getQuestionStatus() {
 		if(StringHelper.containsNonWhitespace(status)) {
@@ -287,12 +282,12 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.copyright = copyright;
 	}
 
-	public SecurityGroup getAuthorGroup() {
-		return authorGroup;
+	public SecurityGroup getOwnerGroup() {
+		return ownerGroup;
 	}
 
-	public void setAuthorGroup(SecurityGroup authorGroup) {
-		this.authorGroup = authorGroup;
+	public void setOwnerGroup(SecurityGroup ownerGroup) {
+		this.ownerGroup = ownerGroup;
 	}
 
 	public BigDecimal getDifficulty() {

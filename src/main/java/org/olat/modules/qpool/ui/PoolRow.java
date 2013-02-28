@@ -17,26 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.ui;
 
-import java.util.Date;
+import org.olat.modules.qpool.Pool;
 
 /**
  * 
- * Initial date: 22.01.2013<br>
+ * Initial date: 28.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Pool {
+public class PoolRow {
 	
-	public Long getKey();
+	private final Pool pool;
 	
-	public Date getCreationDate();
-	
-	public Date getLastModified();
-	
-	public String getName();
-	
-	public void setName(String name);
+	public PoolRow(Pool pool) {
+		this.pool = pool;
+	}
 
+	public Long getKey() {
+		return pool.getKey();
+	}
+
+	public String getName() {
+		return pool.getName();
+	}
+	
+	public Pool getPool() {
+		return pool;
+	}
 }

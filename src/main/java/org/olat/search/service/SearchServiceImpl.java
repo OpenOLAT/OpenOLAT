@@ -187,7 +187,9 @@ public class SearchServiceImpl implements SearchService {
  	 * @return              SearchResults object for this query
 	 */
 	@Override
-	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxResults, boolean doHighlighting) throws ServiceNotAvailableException, ParseException {
+	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxResults, boolean doHighlighting)
+	throws ServiceNotAvailableException, ParseException {
 		try {
 			if (!existIndex()) {
 				log.warn("Index does not exist, can't search for queryString: "+queryString);
@@ -213,7 +215,6 @@ public class SearchServiceImpl implements SearchService {
 			  	query.add(condQuery, Occur.MUST);
 				}
 			}
-
 			if (log.isDebug()) log.debug("query=" + query);
 
 	    long startTime = System.currentTimeMillis();

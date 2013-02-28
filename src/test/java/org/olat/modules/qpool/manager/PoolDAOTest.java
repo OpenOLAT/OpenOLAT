@@ -70,7 +70,7 @@ public class PoolDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//get pools
-		List<Pool> pools = poolDao.getPools();
+		List<Pool> pools = poolDao.getPools(0, -1);
 		Assert.assertNotNull(pools);
 		Assert.assertTrue(pools.size() >= 1);
 		int numOfPools = poolDao.getNumOfPools();
