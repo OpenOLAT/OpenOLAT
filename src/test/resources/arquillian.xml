@@ -27,4 +27,8 @@
         -->
     </extension>
 
+	<extension qualifier="student">
+		<property name="browserCapabilities">firefox</property>
+		<property name="count">100</property>
+	</extension>
 </arquillian>
