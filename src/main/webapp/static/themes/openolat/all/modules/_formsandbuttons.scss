@@ -365,14 +365,40 @@ table.b_choice {
 div.b_fileinput { 
 	position: relative;
 	div.b_fileinput_fakechooser { 
-		position: absolute; top: 0px; left: 0px; z-index: 1; display: inline; white-space: nowrap;
-		a { margin-left: 5px; } 
+		position: relative; 
+		top: 0px; 
+		left: 0px; 
+		z-index: 1; 
+		display: inline; 
+		white-space: nowrap;
+		a { 
+			margin-left: 5px; 
+		} 
 	}
-	span.b_fileinput_maxsize { padding: 1px 0 1px 1em; font-style: italic; min-height: 16px; vertical-align: middle;} /* same as mall icon left */
-	input.b_fileinput_realchooser { position: relative; top: 0; left: 0; z-index: 2; @include o-opacity(0);}
-	div.b_button_group { text-align: left; padding-left: 0; margin-left: 0;}
+	span.b_fileinput_maxsize { 
+		 /* same as mall icon left */
+		padding: 1px 0 1px 1em; 
+		font-style: italic; 
+		min-height: 16px; 
+		vertical-align: middle;
+	}
+	input.b_fileinput_realchooser { 
+		position: absolute; 
+		top: 0; 
+		left: 0;
+		height: 1.8em; 
+		z-index: 2; 
+		@include o-opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
+	}
+	div.b_button_group { 	
+		text-align: left; 
+		padding-left: 0; 
+		margin-left: 0;
+	}
 }
-.b_fileinput_icon { background-image: url(../openolat/images/drive.png); }
+.b_fileinput_icon { 
+	background-image: url(../openolat/images/drive.png); 
+}
 
 
 /* PROGRESSBAR */
