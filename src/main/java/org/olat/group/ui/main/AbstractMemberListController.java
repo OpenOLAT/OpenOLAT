@@ -453,6 +453,10 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected void doSendMail(UserRequest ureq, List<MemberView> members) {
 		List<Long> identityKeys = getMemberKeys(members);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+		if(identities.isEmpty()) {
+			showWarning("error.msg.send.no.rcps");
+			return;
+		}
 		
 		ContactMessage contactMessage = new ContactMessage(getIdentity());
 		String name = repoEntry != null ? repoEntry.getDisplayname() : businessGroup.getName();
