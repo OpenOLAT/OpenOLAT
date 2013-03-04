@@ -299,7 +299,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		long olatResourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
 		QTIResultSet qTIResultSet = IQManager.getInstance().getLastResultSet(identity, olatResourceId, this.getIdent());
 		if(qTIResultSet!=null) {
-		  ScoreEvaluation scoreEvaluation = new ScoreEvaluation(new Float(qTIResultSet.getScore()), new Boolean(qTIResultSet.getIsPassed()), new Long(qTIResultSet.getAssessmentID()));
+		  ScoreEvaluation scoreEvaluation = new ScoreEvaluation(new Float(qTIResultSet.getScore()), qTIResultSet.getIsPassed(), new Long(qTIResultSet.getAssessmentID()));
 		  return scoreEvaluation;
 		}
 		return null;
