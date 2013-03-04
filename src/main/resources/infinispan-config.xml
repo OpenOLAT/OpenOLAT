@@ -39,6 +39,13 @@
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
 	
+	<namedCache name="AssessmentManager@newpersisting">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="20000" strategy="LRU"/>
+		<expiration maxIdle="900000" wakeUpInterval="5000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+
 	<!-- 
 	Hibernate cache
 	 -->
