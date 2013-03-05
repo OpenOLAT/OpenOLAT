@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.search.QueryException;
@@ -41,6 +42,10 @@ import org.olat.search.ServiceNotAvailableException;
 public interface SearchClient {
 	
 	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxResults, boolean doHighlighting)
+			throws ServiceNotAvailableException, ParseException, QueryException;
+	
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxResults, SortKey... orderBy)
 			throws ServiceNotAvailableException, ParseException, QueryException;
 
 	public Set<String> spellCheck(String query) throws ServiceNotAvailableException;

@@ -53,7 +53,7 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		int numOfPools = poolDao.getNumOfPools();
+		int numOfPools = poolDao.countPools();
 		if(numOfPools == 0) {
 			//create a pool if there isn't any
 			createPools();

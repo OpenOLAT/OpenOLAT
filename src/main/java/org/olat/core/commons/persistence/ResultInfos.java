@@ -17,43 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.core.commons.persistence;
+
+import java.util.List;
+
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 04.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItem extends QuestionItemShort {
+public interface ResultInfos<U> {
 	
-	public String getDescription();
+	public int getNextFirstResult();
 	
-	public String getKeywords();
+	public int getCorrectedRowCount();
 	
-	public String getCopyright();
-
-	public String getTestType();
-	
-	public String getLevel();
-	
-	public String getDirectory();
-	
-	public String getEditor();
-	
-	public String getItemVersion();
-	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldPath();
-	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldName();
-
+	public List<U> getObjects();
 
 }

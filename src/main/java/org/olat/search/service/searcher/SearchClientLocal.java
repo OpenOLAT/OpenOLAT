@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.search.QueryException;
@@ -43,9 +44,17 @@ import org.olat.search.service.SearchServiceFactory;
 public class SearchClientLocal implements SearchClient {
 
 	@Override
-	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxReturns, boolean doHighlighting)
+	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxReturns, boolean doHighlighting)
 	throws ServiceNotAvailableException, ParseException, QueryException {
 		return SearchServiceFactory.getService().doSearch(queryString, condQueries, identity, roles, firstResult, maxReturns, doHighlighting);
+	}
+
+	@Override
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxResults, SortKey... orderBy)
+	throws ServiceNotAvailableException, ParseException, QueryException {
+		return SearchServiceFactory.getService().doSearch(queryString, condQueries, identity, roles, firstResult, maxResults, orderBy);
 	}
 
 	@Override

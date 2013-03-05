@@ -73,7 +73,8 @@ public class PoolDAOTest extends OlatTestCase {
 		List<Pool> pools = poolDao.getPools(0, -1);
 		Assert.assertNotNull(pools);
 		Assert.assertTrue(pools.size() >= 1);
-		int numOfPools = poolDao.getNumOfPools();
+		//count
+		int numOfPools = poolDao.countPools();
 		Assert.assertEquals(pools.size(), numOfPools);
 		//retrieve our pool
 		boolean foundIt = false;
@@ -110,10 +111,33 @@ public class PoolDAOTest extends OlatTestCase {
 		poolDao.addItemToPool(item, pool);
 		dbInstance.commitAndCloseSession();
 		
-		List<QuestionItem> items = poolDao.getItemsOfPool(pool, 0 , -1);
+		//retrieve
+		List<QuestionItem> items = poolDao.getItemsOfPool(pool, null, 0 , -1);
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
 		Assert.assertTrue(items.contains(item));
+		//count
+		int numOfItems = poolDao.getNumOfItemsInPool(pool);
+		Assert.assertEquals(1, numOfItems);
+	}
+	
+	@Test
+	public void getPools_ofItem() {
+		//create a pool
+		String name = "NGC-" + UUID.randomUUID().toString();
+		Pool pool1 = poolDao.createPool(name);
+		Pool pool2 = poolDao.createPool(name + "-b");
+		QuestionItem item = questionItemDao.create(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.MC);
+		poolDao.addItemToPool(item, pool1);
+		poolDao.addItemToPool(item, pool2);
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve the pools
+		List<Pool> pools = poolDao.getPools(item);
+		Assert.assertNotNull(pools);
+		Assert.assertEquals(2, pools.size());
+		Assert.assertTrue(pools.contains(pool1));
+		Assert.assertTrue(pools.contains(pool2));
 	}
 	
 	@Test
@@ -126,14 +150,14 @@ public class PoolDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check the pool and remove the items
-		List<QuestionItem> items = poolDao.getItemsOfPool(pool, 0 , -1);
+		List<QuestionItem> items = poolDao.getItemsOfPool(pool, null, 0 , -1);
 		Assert.assertEquals(1, items.size());
 		int count = poolDao.deleteFromPools(items);
 		Assert.assertEquals(1, count);
 		dbInstance.commitAndCloseSession();
 		
 		//check if the pool is empty
-		List<QuestionItem> emptyItems = poolDao.getItemsOfPool(pool, 0 , -1);
+		List<QuestionItem> emptyItems = poolDao.getItemsOfPool(pool, null, 0 , -1);
 		Assert.assertTrue(emptyItems.isEmpty());
 	}
 	

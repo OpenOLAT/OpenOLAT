@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.util.Version;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 
@@ -51,6 +52,25 @@ public interface SearchService {
    */
 	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
 			int firstResult, int maxReturns, boolean doHighlighting)
+	throws ServiceNotAvailableException, ParseException, QueryException;
+	
+	/**
+	 * There isn't any check access made on this search.
+	 * 
+	 * @param queryString
+	 * @param condQueries
+	 * @param identity
+	 * @param roles
+	 * @param firstResult
+	 * @param maxReturns
+	 * @param orderBy
+	 * @return A list of dbKey's
+	 * @throws ServiceNotAvailableException
+	 * @throws ParseException
+	 * @throws QueryException
+	 */
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxReturns, SortKey... orderBy)
 	throws ServiceNotAvailableException, ParseException, QueryException;
 	
 	/**

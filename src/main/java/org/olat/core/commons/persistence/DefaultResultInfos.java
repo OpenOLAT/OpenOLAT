@@ -17,43 +17,48 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.core.commons.persistence;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 04.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItem extends QuestionItemShort {
-	
-	public String getDescription();
-	
-	public String getKeywords();
-	
-	public String getCopyright();
+public class DefaultResultInfos<U> implements ResultInfos<U> {
 
-	public String getTestType();
+	private int nextFirstResult;
+	private int correctedRowCount;
+	private List<U> objects;
 	
-	public String getLevel();
 	
-	public String getDirectory();
+	public DefaultResultInfos() {
+		nextFirstResult = 0;
+		correctedRowCount = 0;
+		objects = new ArrayList<U>();
+	}
 	
-	public String getEditor();
-	
-	public String getItemVersion();
-	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldPath();
-	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldName();
+	public DefaultResultInfos(int nextFirstResult, int correctedRowCount, List<U> objects) {
+		this.nextFirstResult = nextFirstResult;
+		this.correctedRowCount = correctedRowCount;
+		this.objects = objects;
+	}
 
+	@Override
+	public int getNextFirstResult() {
+		return nextFirstResult;
+	}
 
+	@Override
+	public int getCorrectedRowCount() {
+		return correctedRowCount;
+	}
+
+	public List<U> getObjects() {
+		return objects;
+	}
 }

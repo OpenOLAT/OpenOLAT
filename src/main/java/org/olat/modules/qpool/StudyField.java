@@ -38,4 +38,8 @@ public interface StudyField {
 	public String getField();
 	
 	public StudyField getParentField();
+	
+	public String getMaterializedPathKeys();
+
+	public String getMaterializedPathNames();
 }

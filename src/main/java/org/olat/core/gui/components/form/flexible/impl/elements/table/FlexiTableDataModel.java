@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import org.olat.core.commons.persistence.SortKey;
 
 /**
  * Interface for table data model including column models.
@@ -39,12 +38,6 @@ public interface FlexiTableDataModel {
 	 */
 	public int getRowCount();
 	
-	/**
-	 * Load the rows needed for paging
-	 * @param firstResult
-	 * @param maxResults
-	 */
-	public void load(int firstResult, int maxResults, SortKey... orderBy);
 
 	/**
 	 * Return Object for certain table cell.

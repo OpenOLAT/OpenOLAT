@@ -36,6 +36,7 @@ import org.olat.core.gui.components.link.FormLinkFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Event;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -149,7 +150,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	}
 
 	@Override
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		// typically a link does not validate its data
 	}
 	

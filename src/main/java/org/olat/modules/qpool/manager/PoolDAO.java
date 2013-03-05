@@ -96,14 +96,6 @@ public class PoolDAO {
 		dbInstance.getCurrentEntityManager().remove(poolRef);
 	}
 	
-	public int getNumOfPools() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(pool) from qpool pool");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
-				.getSingleResult().intValue();
-	}
-	
 	public int countPools() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(pool) from qpool pool");
@@ -127,6 +119,18 @@ public class PoolDAO {
 		return query.getResultList();
 	}
 	
+	public List<Pool> getPools(QuestionItem item) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(pool) from qpool2item pool2item")
+		  .append(" inner join pool2item.pool pool")
+		  .append(" where pool2item.item.key=:itemKey");
+		
+		TypedQuery<Pool> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Pool.class)
+				.setParameter("itemKey", item.getKey());
+		return query.getResultList();
+	}
+	
 	public void addItemToPool(QuestionItem item, Pool pool) {
 		QuestionItem lockedItem = questionItemDao.loadForUpdate(item.getKey());
 		if(!isInPool(lockedItem, pool)) {
@@ -139,7 +143,7 @@ public class PoolDAO {
 		dbInstance.commit();//release lock asap
 	}
 	
-	public boolean isInPool(QuestionItem item, Pool pool) {
+	protected boolean isInPool(QuestionItem item, Pool pool) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(pool2item.item) from qpool2item pool2item where pool2item.pool.key=:poolKey and pool2item.item.key=:itemKey");
 		Number count = dbInstance.getCurrentEntityManager()
@@ -159,14 +163,24 @@ public class PoolDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItem> getItemsOfPool(Pool pool, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select pool2item.item from qpool2item pool2item where pool2item.pool.key=:poolKey");
+		sb.append("select item from qpool2item pool2item")
+		  .append(" inner join pool2item.item item ")
+		  .append(" left join fetch item.studyField studyField ")
+		  .append(" where pool2item.pool.key=:poolKey");
+		if(inKeys != null && inKeys.size() > 0) {
+			sb.append(" and item.key in (:inKeys)");
+		}
+		
 		PersistenceHelper.appendGroupBy(sb, "pool2item.item", orderBy);
 		
 		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("poolKey", pool.getKey());
+		if(inKeys != null && inKeys.size() > 0) {
+			query.setParameter("inKeys", inKeys);
+		}
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}

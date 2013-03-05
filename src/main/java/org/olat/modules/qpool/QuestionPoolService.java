@@ -22,11 +22,13 @@ package org.olat.modules.qpool;
 import java.io.File;
 import java.util.List;
 
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.resource.OLATResource;
 
 /**
@@ -41,6 +43,8 @@ public interface QuestionPoolService {
 	
 	public void deleteItems(List<QuestionItem> items);
 	
+	public List<Identity> getAuthors(QuestionItem item);
+	
 	public void addAuthors(List<Identity> authors, List<QuestionItem> items);
 	
 	public QuestionItem importItem(Identity owner, String filename, File file);
@@ -49,10 +53,12 @@ public interface QuestionPoolService {
 	
 	public VFSContainer getRootDirectory(QuestionItem item);
 	
+	public QuestionItem updateItem(QuestionItem item);
+	
 
 	public int countItems(Identity author);
 
-	public List<QuestionItem> getItems(Identity author, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItem> getItems(Identity author, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 
 	public List<QuestionItem> getAllItems(int firstResult, int maxResults);
 	
@@ -63,7 +69,7 @@ public interface QuestionPoolService {
 	
 	public int getNumOfItemsInPool(Pool pool);
 	
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItem> getItemsOfPool(Pool pool, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
 	public void addItemToPool(QuestionItem item, Pool pool);
 	
@@ -71,7 +77,7 @@ public interface QuestionPoolService {
 	//favorit
 	public int getNumOfFavoritItems(Identity identity);
 	
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItem> getFavoritItems(Identity identity, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
 	
 	
@@ -82,8 +88,7 @@ public interface QuestionPoolService {
 	
 	public int countSharedItemByResource(OLATResource resource);
 	
-	public List<QuestionItem> getSharedItemByResource(OLATResource resource, int firstResult, int maxResults, SortKey... orderBy);
-		
+	public ResultInfos<QuestionItem> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
 	//list
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItem> initialItems);
@@ -94,7 +99,7 @@ public interface QuestionPoolService {
 	
 	public int countItemsOfCollection(QuestionItemCollection collection);
 	
-	public List<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 
 	
 	//study field admin
@@ -110,7 +115,7 @@ public interface QuestionPoolService {
 	
 	public int countPools();
 
-	public List<Pool> getPools(int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<Pool> getPools(int firstResult, int maxResults, SortKey... orderBy);
 	
 	
 }

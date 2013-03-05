@@ -48,6 +48,8 @@ public abstract class AbstractOlatDocument implements Serializable {
 	private static final long serialVersionUID = 3477625468662703214L;
 
 	// Field names
+	public  static final String DB_ID_NAME = "key";
+	
 	public  static final String TITLE_FIELD_NAME = "title";
 
 	public  static final String DESCRIPTION_FIELD_NAME = "description";
@@ -78,6 +80,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 	
 	public static final Set<String> getFields() {
 		Set<String> fields = new HashSet<String>();
+		fields.add(DB_ID_NAME);
 		fields.add(TITLE_FIELD_NAME);
 		fields.add(DESCRIPTION_FIELD_NAME);
 		fields.add(CONTENT_FIELD_NAME);
@@ -97,6 +100,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 
 	
   // Lucene Attributes
+	private Long id;
 	private String title = "";
 	protected String description = "";
 	/** E.g. 'Group','ForumMessage'. */
@@ -122,6 +126,10 @@ public abstract class AbstractOlatDocument implements Serializable {
 	}
 
 	public AbstractOlatDocument(Document document) {
+		String idStr = document.get(DB_ID_NAME);
+		if(StringHelper.containsNonWhitespace(idStr)) {
+			id = Long.parseLong(idStr);
+		}
 		title = document.get(TITLE_FIELD_NAME);
 		description = document.get(DESCRIPTION_FIELD_NAME);
 		documentType = document.get(DOCUMENTTYPE_FIELD_NAME);
@@ -156,6 +164,14 @@ public abstract class AbstractOlatDocument implements Serializable {
 		parentContextType = document.get(PARENT_CONTEXT_TYPE_FIELD_NAME);
 		parentContextName = document.get(PARENT_CONTEXT_NAME_FIELD_NAME);
 		cssIcon = document.get(CSS_ICON);
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	/**
@@ -380,13 +396,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
-		buf.append(this.getDocumentType());
-		buf.append("|");
-		buf.append(getTitle());
-		buf.append("|");
+		buf.append(getDocumentType())
+		   .append("|")
+		   .append(getTitle())
+		   .append("|");
 		if (getDescription() != null) buf.append(getDescription());
-		buf.append("|");
-		buf.append(getResourceUrl());
+		buf.append("|").append(getResourceUrl());
 		return buf.toString();
 	}
 }

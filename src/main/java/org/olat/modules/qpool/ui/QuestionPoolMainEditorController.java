@@ -223,7 +223,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectMyQuestions(UserRequest ureq) {
 		if(myQuestionsCtrl == null) {
-			myQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), new MyQuestionItemsSource(getIdentity()));
+			myQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), new MyQuestionItemsSource(getIdentity(), ureq.getUserSession().getRoles()));
 			myQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(myQuestionsCtrl);
 		}
@@ -233,11 +233,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectMarkedQuestions(UserRequest ureq) {
 		if(markedQuestionsCtrl == null) {
-			markedQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), new MarkedItemsSource(getIdentity()));
+			markedQuestionsCtrl = new QuestionsController(ureq, getWindowControl(), new MarkedItemsSource(getIdentity(), ureq.getUserSession().getRoles()));
 			markedQuestionsCtrl.setStackedController(stackPanel);
 			listenTo(markedQuestionsCtrl);
 		} else {
-			markedQuestionsCtrl.updateSource(new MarkedItemsSource(getIdentity()));
+			markedQuestionsCtrl.updateSource(new MarkedItemsSource(getIdentity(), ureq.getUserSession().getRoles()));
 		}
 		currentCtrl = markedQuestionsCtrl;
 		content.setContent(markedQuestionsCtrl.getInitialComponent());
@@ -245,11 +245,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelect(UserRequest ureq, Pool pool) {
 		if(selectedPoolCtrl == null) {
-			selectedPoolCtrl = new QuestionsController(ureq, getWindowControl(), new PooledItemsSource(pool));
+			selectedPoolCtrl = new QuestionsController(ureq, getWindowControl(), new PooledItemsSource(getIdentity(), ureq.getUserSession().getRoles(), pool));
 			selectedPoolCtrl.setStackedController(stackPanel);
 			listenTo(selectedPoolCtrl);
 		} else {
-			selectedPoolCtrl.updateSource(new PooledItemsSource(pool));
+			selectedPoolCtrl.updateSource(new PooledItemsSource(getIdentity(), ureq.getUserSession().getRoles(), pool));
 		}
 		currentCtrl = selectedPoolCtrl;
 		content.setContent(selectedPoolCtrl.getInitialComponent());
@@ -257,11 +257,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelect(UserRequest ureq, BusinessGroup group) {
 		if(sharedItemsCtrl == null) {
-			sharedItemsCtrl = new QuestionsController(ureq, getWindowControl(), new SharedItemsSource(group));
+			sharedItemsCtrl = new QuestionsController(ureq, getWindowControl(), new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
 			sharedItemsCtrl.setStackedController(stackPanel);
 			listenTo(sharedItemsCtrl);
 		} else {
-			sharedItemsCtrl.updateSource(new SharedItemsSource(group));
+			sharedItemsCtrl.updateSource(new SharedItemsSource(group, getIdentity(), ureq.getUserSession().getRoles()));
 		}
 		currentCtrl = sharedItemsCtrl;
 		content.setContent(sharedItemsCtrl.getInitialComponent());
@@ -269,11 +269,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelect(UserRequest ureq, QuestionItemCollection coll) {
 		if(collItemsCtrl == null) {
-			collItemsCtrl = new QuestionsController(ureq, getWindowControl(), new CollectionOfItemsSource(coll));
+			collItemsCtrl = new QuestionsController(ureq, getWindowControl(), new CollectionOfItemsSource(coll, getIdentity(), ureq.getUserSession().getRoles()));
 			collItemsCtrl.setStackedController(stackPanel);
 			listenTo(collItemsCtrl);
 		} else {
-			collItemsCtrl.updateSource(new CollectionOfItemsSource(coll));
+			collItemsCtrl.updateSource(new CollectionOfItemsSource(coll, getIdentity(), ureq.getUserSession().getRoles()));
 		}
 		currentCtrl = collItemsCtrl;
 		content.setContent(collItemsCtrl.getInitialComponent());

@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
@@ -118,4 +119,10 @@ public class SearchServiceDisabled implements SearchService {
 		throw new ServiceNotAvailableException("call doSearch on disabled search service");
 	}
 
+	@Override
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxReturns, SortKey... orderBy)
+			throws ServiceNotAvailableException, ParseException, QueryException {
+		log.error("call doSearch on disabled search service");
+		throw new ServiceNotAvailableException("call doSearch on disabled search service");
+	}
 }

@@ -38,8 +38,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
@@ -56,9 +59,17 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableRendererType rendererType = FlexiTableRendererType.classic;
 	
 	private int rowCount = -1;
-	private int pageSize;
 	
-	private FlexiTableDataModel tableModel;
+	private int currentPage;
+	private int currentFirstResult;
+	private int pageSize;
+	private boolean searchField;
+	
+	private TextElement searchFieldEl;
+	private FormSubmit searchButton;
+	
+	private FlexiTableDataModel dataModel;
+	private FlexiTableDataSource<?> dataSource;
 	private FlexiTableComponent component;
 	private String mapperUrl;
 	
@@ -66,23 +77,44 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
 	public FlexiTableElementImpl(UserRequest ureq, String name, FlexiTableDataModel tableModel) {
-		this(ureq, name, null, tableModel, -1);
-	}
-	public FlexiTableElementImpl(UserRequest ureq, String name, Translator translator, FlexiTableDataModel tableModel) {
-		this(ureq, name, translator, tableModel, -1);
+		this(ureq, name, null, tableModel, null, -1, false);
 	}
 	
-	public FlexiTableElementImpl(UserRequest ureq, String name, Translator translator, FlexiTableDataModel tableModel, int pageSize) {
+	public FlexiTableElementImpl(UserRequest ureq, String name, Translator translator, FlexiTableDataModel tableModel) {
+		this(ureq, name, translator, tableModel, null, -1, false);
+	}
+	
+	public FlexiTableElementImpl(UserRequest ureq, String name, Translator translator,
+			FlexiTableDataModel tableModel, FlexiTableDataSource<?> dataSource, int pageSize, boolean searchField) {
 		super(name);
-		this.tableModel = tableModel;
+		
+		this.dataModel = tableModel;
+		this.dataSource = dataSource;
 		component = new FlexiTableComponent(this, translator);
+		
 		
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
 		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(component));
 		
+		this.searchField = searchField;
+		if(searchField) {
+			String dispatchId = component.getDispatchID();
+			searchFieldEl = new TextElementImpl(dispatchId + "_searchField", "search", "");
+			searchFieldEl.showLabel(false);
+			components.put("rSearch", searchFieldEl);
+			searchButton = new FormSubmit(dispatchId + "_searchButton", "rSearchButton", "search");
+			searchButton.setTranslator(translator);
+			components.put("rSearchB", searchButton);
+		}
+		
 		this.pageSize = pageSize;
 		if(pageSize > 0) {
 			setPage(0);
+		}
+		
+		if(dataSource != null) {
+			//preload it
+			dataSource.load(0, pageSize);
 		}
 	}
 
@@ -103,7 +135,24 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void setMultiSelect(boolean multiSelect) {
 		this.multiSelect = multiSelect;
 	}
+
+	@Override
+	public boolean isSearch() {
+		return searchField;
+	}
 	
+	public String getSearchText() {
+		return searchFieldEl == null ? null : searchFieldEl.getValue();
+	}
+	
+	public TextElement getSearchElement() {
+		return searchFieldEl;
+	}
+	
+	public FormSubmit getSearchButton() {
+		return searchButton;
+	}
+
 	@Override
 	public int getPageSize() {
 		return pageSize;
@@ -114,9 +163,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.pageSize = pageSize;
 	}
 	
+	public int getPage() {
+		return currentPage;
+	}
+	
 	@Override
 	public void setPage(int page) {
-		tableModel.load(0, getPageSize());
+		currentPage = page;//TODO
+		//tableModel.load(0, getPageSize());
+	}
+
+	public int getCurrentFirstResult() {
+		return currentFirstResult;
+	}
+
+	public void setCurrentFirstResult(int currentFirstResult) {
+		this.currentFirstResult = currentFirstResult;
 	}
 
 	public String getMapperUrl() {
@@ -136,7 +198,19 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	protected void addFormItem(FormItem item) {
 		components.put(item.getName(), item);
 	}
+	
+	
 
+	@Override
+	public void doDispatchFormRequest(UserRequest ureq) {
+		super.doDispatchFormRequest(ureq);
+	}
+	
+	@Override
+	protected void dispatchFormRequest(UserRequest ureq) {
+		super.dispatchFormRequest(ureq);
+	}
+	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
 	 */
@@ -148,16 +222,26 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 
 		String selectedIndex = getRootForm().getRequestParameter("rSelect");
+		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
 		if(StringHelper.containsNonWhitespace(selectedIndex)) {
 			int index = selectedIndex.lastIndexOf('-');
 			if(index > 0 && index+1 < selectedIndex.length()) {
 				String pos = selectedIndex.substring(index+1);
 				doSelect(ureq, Integer.parseInt(pos));
 			}
+		} else if(searchButton != null
+				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
+			//snap the request
+			searchFieldEl.evalFormRequest(ureq);
+			String search = searchFieldEl.getValue();
+			if(StringHelper.containsNonWhitespace(search)) {
+				doSearch(ureq, search);
+			} else {
+				doResetSearch(ureq);
+			}
 		} else {
-			
 			boolean actionEvent = false;
-			FlexiTableColumnModel colModel = tableModel.getTableColumnModel();
+			FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
 			for(int i=colModel.getColumnCount(); i-->0; ) {
 				FlexiColumnModel col = colModel.getColumnModel(i);
 				if(col.getAction() != null) {
@@ -187,6 +271,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	protected void doSelect(UserRequest ureq, String action, int index) {
 		getRootForm().fireFormEvent(ureq, new SelectionEvent(action, index, this, FormEvent.ONCLICK));
+	}
+	
+	protected void doSearch(UserRequest ureq, String search) {
+		if(dataSource != null) {
+			resetInternComponts();
+			dataSource.search(search, null, 0, getPageSize());
+		}
+	}
+	
+	protected void doResetSearch(UserRequest ureq) {
+		if(dataSource != null) {
+			resetInternComponts();
+			dataSource.load(0, getPageSize());
+		}
 	}
 	
 	public Set<Integer> getMultiSelectedIndex() {
@@ -223,13 +321,30 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
 		//static text must not validate
+		if(searchFieldEl != null) {
+			searchFieldEl.validate(validationResults);
+		}
+		if(searchButton != null) {
+			searchButton.validate(validationResults);
+		}
 	}
 
 	@Override
 	public void reset() {
+		resetInternComponts();
+		reloadData();
+	}
+	
+	private void resetInternComponts() {
 		rowCount = -1;
 		component.setDirty(true);
 		multiSelectedIndex = null;
+	}
+	
+	private void reloadData() {
+		if(dataSource != null) {
+			dataSource.load(0, getPageSize());//reload needed rows
+		}
 	}
 	
 	/**
@@ -243,6 +358,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	protected void rootFormAvailable() {
 		//root form not interesting for Static text
+		if(searchFieldEl != null && searchFieldEl.getRootForm() != getRootForm()) {
+			searchFieldEl.setRootForm(getRootForm());
+		}
+		if(searchButton != null && searchButton.getRootForm() != getRootForm()) {
+			searchButton.setRootForm(getRootForm());
+		}
 	}
 
 	protected FlexiTableComponent getFormItemComponent() {
@@ -251,7 +372,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	public int getRowCount() {
 		if(rowCount < 0) {
-			rowCount = tableModel.getRowCount();
+			rowCount = dataModel.getRowCount();
 		}
 		return rowCount;
 	}
@@ -268,6 +389,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	public FlexiTableDataModel getTableDataModel() {
-		return tableModel;
+		return dataModel;
+	}
+	
+	public FlexiTableDataSource<?> getTableDataSource() {
+		return dataSource;
 	}
 }

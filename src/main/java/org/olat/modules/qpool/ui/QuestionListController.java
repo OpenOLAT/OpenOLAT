@@ -26,6 +26,8 @@ import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.persistence.DefaultResultInfos;
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -108,7 +110,7 @@ public class QuestionListController extends FormBasicController implements Stack
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.subject.i18nKey(), Cols.subject.ordinal(), true, "subject"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.studyField.i18nKey(), Cols.studyField.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.studyField.i18nKey(), Cols.studyField.ordinal(), true, "studyField.field"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.point.i18nKey(), Cols.point.ordinal(), true, "point"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18nKey(), Cols.type.ordinal(), true, "type"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(), true, "status"));
@@ -116,7 +118,7 @@ public class QuestionListController extends FormBasicController implements Stack
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal()));
 
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
-		itemsTable = uifactory.addTableElement(ureq, "items", model, 20, getTranslator(), formLayout);
+		itemsTable = uifactory.addTableElement(ureq, "items", model, model, 20, true, getTranslator(), formLayout);
 		itemsTable.setMultiSelect(true);
 		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
 		
@@ -143,7 +145,7 @@ public class QuestionListController extends FormBasicController implements Stack
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// 
+		//
 	}
 
 	@Override
@@ -384,16 +386,16 @@ public class QuestionListController extends FormBasicController implements Stack
 	}
 
 	@Override
-	public List<QuestionItemRow> getRows(int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<QuestionItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		Set<Long> marks = markManager.getMarkResourceIds(getIdentity(), "QuestionItem", Collections.<String>emptyList());
 
-		List<QuestionItem> items = source.getItems(firstResult, maxResults, orderBy);
-		List<QuestionItemRow> rows = new ArrayList<QuestionItemRow>(items.size());
-		for(QuestionItem item:items) {
+		ResultInfos<QuestionItem> items = source.getItems(query, condQueries, firstResult, maxResults, orderBy);
+		List<QuestionItemRow> rows = new ArrayList<QuestionItemRow>(items.getObjects().size());
+		for(QuestionItem item:items.getObjects()) {
 			QuestionItemRow row = forgeRow(item, marks);
 			rows.add(row);
 		}
-		return rows;
+		return new DefaultResultInfos<QuestionItemRow>(items.getNextFirstResult(), items.getCorrectedRowCount(), rows);
 	}
 	
 	protected QuestionItemRow forgeRow(QuestionItem item, Set<Long> markedQuestionKeys) {

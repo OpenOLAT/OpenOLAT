@@ -31,7 +31,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,8 +42,7 @@ import org.olat.modules.wiki.versioning.ChangeInfo;
  * @author Christian Guretzki
  */
 public class CookbookDiffTest {
-	private static Logger log = Logger.getLogger(CookbookDiffTest.class);
-	
+
 	private CookbookDifferenceService differenceService;
 
 
@@ -57,10 +55,9 @@ public class CookbookDiffTest {
 	@Test public void testAddText() {
 		String text1 = "Line1\nLine2\nDies ist ein Text.";
 		String text2 = text1 + "Text2";
-		List diffList = differenceService.diff(text1,text2);
-		int i = 1;
-		for (Iterator iter = diffList.iterator(); iter.hasNext();) {
-			ChangeInfo changeInfo = (ChangeInfo) iter.next();
+		List<ChangeInfo> diffList = differenceService.diff(text1,text2);
+		for (Iterator<ChangeInfo> iter = diffList.iterator(); iter.hasNext();) {
+			ChangeInfo changeInfo = iter.next();
 			assertEquals("Type must be CHANGE",changeInfo.getType(),ChangeInfo.CHANGE);
 			assertEquals("Wrong line content.",changeInfo.getLines()[0],"Dies ist ein Text.");
 			assertEquals("Wrong line content.",changeInfo.getLines()[1],"Dies ist ein Text.Text2");
@@ -70,14 +67,11 @@ public class CookbookDiffTest {
 	@Test public void testMove() {
 		String text1 = "Line1\nLine2\nDies ist ein Text.\nbla bla\nText2 Text2.1 Text2.2";
 		String text2 = "Line1\nLine2\nDies ist ein Text.\nText2 Text2.1 Text2.2\nbla bla";
-		List diffList = differenceService.diff(text1,text2);
-		int i = 1;
-		for (Iterator iter = diffList.iterator(); iter.hasNext();) {
-			ChangeInfo changeInfo = (ChangeInfo) iter.next();
+		List<ChangeInfo> diffList = differenceService.diff(text1,text2);
+		for (Iterator<ChangeInfo> iter = diffList.iterator(); iter.hasNext();) {
+			ChangeInfo changeInfo = iter.next();
 			assertEquals("Type must be MOVE",changeInfo.getType(),ChangeInfo.MOVE);
 			assertEquals("Wrong line content.",changeInfo.getLines()[0],"Text2 Text2.1 Text2.2");
 		}
 	}
-
-
 }

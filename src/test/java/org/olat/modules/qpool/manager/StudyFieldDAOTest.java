@@ -107,12 +107,68 @@ public class StudyFieldDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//reload and check parents
-		String path = studyFieldDao.getMaterializedPath(graph);
+		StudyField path = studyFieldDao.loadStudyFieldById(graph.getKey());
 		Assert.assertNotNull(path);
-		
-		Assert.assertEquals("/Science/Mathematics/Topology/Graph theory", path);
-		
+		Assert.assertNotNull(path.getMaterializedPathNames());
+		Assert.assertEquals("/Science/Mathematics/Topology", path.getMaterializedPathNames());
 	}
 	
-
+	@Test
+	public void getDescendants() {
+		StudyField science = studyFieldDao.createAndPersist(null, "Science");
+		StudyField mathematics = studyFieldDao.createAndPersist(science, "Mathematics");
+		StudyField numerical = studyFieldDao.createAndPersist(mathematics, "Numerical");
+		StudyField topology = studyFieldDao.createAndPersist(mathematics, "Topology");
+		StudyField graph = studyFieldDao.createAndPersist(topology, "Graph theory");
+		dbInstance.commitAndCloseSession();
+		
+		//load the descendants of mathematics
+		List<StudyField> descendants = studyFieldDao.getDescendants(mathematics);
+		Assert.assertNotNull(descendants);
+		Assert.assertEquals(3, descendants.size());
+		Assert.assertTrue(descendants.contains(numerical));
+		Assert.assertTrue(descendants.contains(topology));
+		Assert.assertTrue(descendants.contains(graph));
+		
+		//load the descendants of topology
+		List<StudyField> topologyDescendants = studyFieldDao.getDescendants(topology);
+		Assert.assertNotNull(topologyDescendants);
+		Assert.assertEquals(1, topologyDescendants.size());
+		Assert.assertTrue(topologyDescendants.contains(graph));
+		
+		//load the descendants of mathematics
+		List<StudyField> graphDescendants = studyFieldDao.getDescendants(graph);
+		Assert.assertNotNull(descendants);
+		Assert.assertTrue(graphDescendants.isEmpty());
+	}
+	
+	@Test
+	public void updateWithDescendants() {
+		StudyField animals = studyFieldDao.createAndPersist(null, "Animals");
+		StudyField cats = studyFieldDao.createAndPersist(animals, "Cats");
+		StudyField dogs = studyFieldDao.createAndPersist(animals, "Dogs");
+		StudyField huskies = studyFieldDao.createAndPersist(dogs, "Huskies");
+		StudyField lion = studyFieldDao.createAndPersist(cats, "Lion");
+		StudyField mountainLion = studyFieldDao.createAndPersist(lion, "Mountain Lion");
+		StudyField tiger = studyFieldDao.createAndPersist(cats, "Tiger");
+		dbInstance.commitAndCloseSession();
+		
+		//update the cats
+		studyFieldDao.update("Felids", cats);
+		dbInstance.commit();
+		
+		//check if descendants are correctly updated
+		StudyField reloadedLion = studyFieldDao.loadStudyFieldById(lion.getKey());
+		Assert.assertEquals("/Animals/Felids", reloadedLion.getMaterializedPathNames());
+		StudyField reloadedMountainLion = studyFieldDao.loadStudyFieldById(mountainLion.getKey());
+		Assert.assertEquals("/Animals/Felids/Lion", reloadedMountainLion.getMaterializedPathNames());
+		StudyField reloadedTiger = studyFieldDao.loadStudyFieldById(tiger.getKey());
+		Assert.assertEquals("/Animals/Felids", reloadedTiger.getMaterializedPathNames());
+		
+		//dogs are not changed
+		StudyField reloadedDogs = studyFieldDao.loadStudyFieldById(dogs.getKey());
+		Assert.assertEquals("/Animals", reloadedDogs.getMaterializedPathNames());
+		StudyField reloadedHuskies = studyFieldDao.loadStudyFieldById(huskies.getKey());
+		Assert.assertEquals("/Animals/Dogs", reloadedHuskies.getMaterializedPathNames());	
+	}
 }

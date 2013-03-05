@@ -22,10 +22,14 @@ package org.olat.modules.qpool.ui;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.resource.OLATResource;
 
 /**
@@ -36,10 +40,14 @@ import org.olat.resource.OLATResource;
  */
 public class SharedItemsSource implements QuestionItemsSource {
 	
+	private final Roles roles;
+	private final Identity identity;
 	private final OLATResource resource;
 	private final QuestionPoolService qpoolService;
 	
-	public SharedItemsSource(BusinessGroup group) {
+	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles) {
+		this.roles = roles;
+		this.identity = identity;
 		this.resource = group.getResource();
 		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 	}
@@ -50,7 +58,9 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public List<QuestionItem> getItems(int firstResult, int maxResults, SortKey... orderBy) {
-		return qpoolService.getSharedItemByResource(resource, firstResult, maxResults, orderBy);
+	public ResultInfos<QuestionItem> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
+		params.setSearchString(query);
+		return qpoolService.getSharedItemByResource(resource, params, firstResult, maxResults, orderBy);
 	}
 }

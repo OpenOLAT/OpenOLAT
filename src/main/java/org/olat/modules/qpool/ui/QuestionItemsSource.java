@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.qpool.QuestionItem;
 
@@ -34,6 +35,6 @@ public interface QuestionItemsSource {
 	
 	public int getNumOfItems();
 	
-	public List<QuestionItem> getItems(int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItem> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
 
 }

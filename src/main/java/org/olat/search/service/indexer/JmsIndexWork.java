@@ -17,43 +17,48 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.search.service.indexer;
+
+import java.io.Serializable;
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 04.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItem extends QuestionItemShort {
-	
-	public String getDescription();
-	
-	public String getKeywords();
-	
-	public String getCopyright();
+public class JmsIndexWork implements Serializable {
 
-	public String getTestType();
+	private static final long serialVersionUID = 8790611181901676640L;
 	
-	public String getLevel();
+	private String indexType;
+	private Long key;
 	
-	public String getDirectory();
+	public JmsIndexWork() {
+		//
+	}
 	
-	public String getEditor();
+	public JmsIndexWork(String indexType, Long key) {
+		this.indexType = indexType;
+		this.key = key;
+	}
 	
-	public String getItemVersion();
+	public String getIndexType() {
+		return indexType;
+	}
 	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldPath();
+	public void setIndexType(String indexType) {
+		this.indexType = indexType;
+	}
 	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldName();
-
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	
 
 }

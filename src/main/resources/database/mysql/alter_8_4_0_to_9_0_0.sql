@@ -22,6 +22,8 @@ create table if not exists o_qp_study_field (
    creationdate datetime not null,
    lastmodified datetime not null,
    q_field varchar(255) not null,
+   q_mat_path_ids varchar(1024),
+   q_mat_path_names varchar(2048),
    fk_parent_field bigint,
    primary key (id)
 );

@@ -53,6 +53,7 @@ public class Index {
 	
 	private OlatFullIndexer fullIndexer;
 	private SearchSpellChecker spellChecker;
+	private LifeFullIndexer lifeIndexer;
 
 	/**
 	 * 
@@ -61,18 +62,14 @@ public class Index {
 	 * @param restartInterval Restart interval of full-index in milliseconds.
 	 * @param indexInterval   Sleeping time in milliseconds between adding documents to index.
 	 */
-	public Index(SearchModule searchModuleConfig, SearchSpellChecker spellChecker, MainIndexer mainIndexer) {
+	public Index(SearchModule searchModuleConfig, SearchSpellChecker spellChecker, MainIndexer mainIndexer, LifeFullIndexer lifeIndexer) {
 		this.spellChecker = spellChecker;
 		this.indexPath = searchModuleConfig.getFullIndexPath();
 		this.tempIndexPath = searchModuleConfig.getFullTempIndexPath();
 		this.permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
+		this.lifeIndexer = lifeIndexer;
 		
 		fullIndexer = new OlatFullIndexer(this, searchModuleConfig, mainIndexer);
-		fullIndexer.init();
-	}
-	
-	public void close() {
-		fullIndexer.close();
 	}
 
 	/**
@@ -82,6 +79,7 @@ public class Index {
 		// do not start search engine in test mode, some repository tests might lead to nullpointers
 		// since only dummy entries are generated (or fix the search service to handle those correctly)
 		if ( ! Settings.isJUnitTest()) {
+			lifeIndexer.fullIndex();
 		  fullIndexer.startIndexing();
 		}
 	}
@@ -140,6 +138,10 @@ public class Index {
 		FileUtils.deleteDirsAndFiles(indexDir, true, false);
 		FileUtils.copyDirContentsToDir(new File(tempIndexDir, "main") , indexDir ,true, "search indexer move tmp index");
 		log.info("New generated Index ready to use." );
+	}
+	
+	public OlatFullIndexer getIndexer() {
+		return fullIndexer;
 	}
 
 	/**

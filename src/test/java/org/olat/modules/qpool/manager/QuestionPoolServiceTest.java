@@ -34,6 +34,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -109,11 +110,11 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		//retrieve the list of items in the collection
 		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl);
 		Assert.assertEquals(2, numOfItemsInCollection);
-		List<QuestionItem> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, 0, -1);
+		ResultInfos<QuestionItem> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, null, 0, -1);
 		Assert.assertNotNull(itemsOfCollection);
-		Assert.assertEquals(2, itemsOfCollection.size());
-		Assert.assertTrue(itemsOfCollection.contains(item1));
-		Assert.assertTrue(itemsOfCollection.contains(item2));
+		Assert.assertEquals(2, itemsOfCollection.getObjects().size());
+		Assert.assertTrue(itemsOfCollection.getObjects().contains(item1));
+		Assert.assertTrue(itemsOfCollection.getObjects().contains(item2));
 	}
 
 	@Test

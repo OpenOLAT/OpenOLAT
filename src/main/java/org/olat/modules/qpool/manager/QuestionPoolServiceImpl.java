@@ -32,10 +32,13 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DefaultResultInfos;
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -49,8 +52,13 @@ import org.olat.modules.qpool.QuestionPoolSPI;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.StudyField;
 import org.olat.modules.qpool.model.PoolImpl;
+import org.olat.modules.qpool.model.QuestionItemDocument;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.resource.OLATResource;
+import org.olat.search.model.AbstractOlatDocument;
+import org.olat.search.service.indexer.LifeFullIndexer;
+import org.olat.search.service.searcher.SearchClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,12 +87,19 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	private QuestionPoolModule qpoolModule;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private SearchClient searchClient;
+	@Autowired
+	private LifeFullIndexer lifeIndexer;
 	
 
 	@Override
 	public String getMateriliazedPathOfStudyFields(QuestionItem item) {
-		QuestionItemImpl reloadedItem = (QuestionItemImpl)questionItemDao.loadById(item.getKey());
-		return studyFieldDao.getMaterializedPath(reloadedItem.getStudyField());
+		QuestionItemImpl reloadedItem = questionItemDao.loadById(item.getKey());
+		if(reloadedItem.getStudyField() == null) {
+			return "";
+		}
+		return reloadedItem.getStudyField().getMaterializedPathNames();
 	}
 
 	@Override
@@ -109,6 +124,28 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 		for(QuestionItem item:items) {
 			questionItemDao.addAuthors(authors, item);
 		}
+	}
+	
+	@Override
+	public List<Identity> getAuthors(QuestionItem item) {
+		QuestionItemImpl itemImpl;
+		if(item instanceof QuestionItemImpl) {
+			itemImpl = (QuestionItemImpl)item;
+		} else {
+			itemImpl = questionItemDao.loadById(item.getKey());
+		}
+		return securityManager.getIdentitiesOfSecurityGroup(itemImpl.getOwnerGroup());
+	}
+	
+	public QuestionItem getItem() {
+		return null;
+	}
+	
+	public QuestionItem updateItem(QuestionItem item) {
+		QuestionItem mergedItem = questionItemDao.merge(item);
+		dbInstance.commit();//
+		lifeIndexer.indexDocument(QuestionItemDocument.TYPE, mergedItem.getKey());
+		return mergedItem;
 	}
 
 	@Override
@@ -224,8 +261,31 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> getItems(Identity author, int firstResult, int maxResults, SortKey... orderBy) {
-		return questionItemDao.getItems(author, firstResult, maxResults, orderBy);
+	public ResultInfos<QuestionItem> getItems(Identity author, SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
+		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			try {
+				String queryString = searchParams.getSearchString();
+				List<String> condQueries = new ArrayList<String>();
+				condQueries.add(QuestionItemDocument.OWNER_FIELD + ":" + author.getKey());
+				List<Long> results = searchClient.doSearch(queryString, condQueries,
+						searchParams.getIdentity(), searchParams.getRoles(), firstResult, 10000, orderBy);
+
+				int initialResultsSize = results.size();
+				if(results.isEmpty()) {
+					return new DefaultResultInfos<QuestionItem>();
+				} else if(results.size() > maxResults) {
+					results = results.subList(0, Math.min(results.size(), maxResults * 2));
+				}
+				List<QuestionItem> items = questionItemDao.getItems(author, results, firstResult, maxResults, orderBy);
+				return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), firstResult + initialResultsSize, items);
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return new DefaultResultInfos<QuestionItem>();
+		} else {
+			List<QuestionItem> items = questionItemDao.getItems(author, null, firstResult, maxResults, orderBy);
+			return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), -1, items);
+		}
 	}
 
 	@Override
@@ -244,8 +304,33 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> getItemsOfPool(Pool pool, int firstResult, int maxResults, SortKey... orderBy) {
-		return poolDao.getItemsOfPool(pool, firstResult, maxResults, orderBy);
+	public ResultInfos<QuestionItem> getItemsOfPool(Pool pool, SearchQuestionItemParams searchParams,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		
+		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			try {
+				String queryString = searchParams.getSearchString();
+				List<String> condQueries = new ArrayList<String>();
+				condQueries.add("pool:" + pool.getKey());
+				List<Long> results = searchClient.doSearch(queryString, condQueries,
+						searchParams.getIdentity(), searchParams.getRoles(), firstResult, 10000, orderBy);
+
+				int initialResultsSize = results.size();
+				if(results.isEmpty()) {
+					return new DefaultResultInfos<QuestionItem>();
+				} else if(results.size() > maxResults) {
+					results = results.subList(0, Math.min(results.size(), maxResults * 2));
+				}
+				List<QuestionItem> items = poolDao.getItemsOfPool(pool, results, 0, maxResults, orderBy);
+				return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), firstResult + initialResultsSize, items);
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return new DefaultResultInfos<QuestionItem>();
+		} else {
+			List<QuestionItem> items = poolDao.getItemsOfPool(pool, null, firstResult, maxResults, orderBy);
+			return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), -1, items);
+		}
 	}
 
 	@Override
@@ -259,8 +344,43 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults, SortKey... orderBy) {
-		return questionItemDao.getFavoritItems(identity, firstResult, maxResults);
+	public ResultInfos<QuestionItem> getFavoritItems(Identity identity, SearchQuestionItemParams searchParams,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		
+		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			try {
+				//filter with all favorits
+				List<Long> favoritKeys = questionItemDao.getFavoritKeys(identity);
+
+				String queryString = searchParams.getSearchString();
+				List<String> condQueries = new ArrayList<String>();
+				condQueries.add(getDbKeyConditionalQuery(favoritKeys));
+				List<Long> results = searchClient.doSearch(queryString, condQueries,
+						searchParams.getIdentity(), searchParams.getRoles(), firstResult, maxResults * 5, orderBy);
+
+				if(results.isEmpty()) {
+					return new DefaultResultInfos<QuestionItem>();
+				}
+				List<QuestionItem> items = questionItemDao.getFavoritItems(identity, results, firstResult, maxResults);
+				return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), firstResult + results.size(), items);
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return new DefaultResultInfos<QuestionItem>();
+		} else {
+			List<QuestionItem> items = questionItemDao.getFavoritItems(identity, null, firstResult, maxResults);
+			return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), -1, items);
+		}
+	}
+	
+	private String getDbKeyConditionalQuery(List<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(AbstractOlatDocument.DB_ID_NAME).append(":(");
+		for(Long key:keys) {
+			if(sb.length() > 9) sb.append(" ");
+			sb.append(key);
+		}
+		return sb.append(')').toString();
 	}
 
 	@Override
@@ -290,9 +410,33 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> getSharedItemByResource(OLATResource resource,
+	public ResultInfos<QuestionItem> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams searchParams,
 			int firstResult, int maxResults, SortKey... orderBy) {
-		return questionItemDao.getSharedItemByResource(resource, firstResult, maxResults, orderBy);
+		
+		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			try {
+				String queryString = searchParams.getSearchString();
+				List<String> condQueries = new ArrayList<String>();
+				condQueries.add(QuestionItemDocument.SHARE_FIELD + ":" + resource.getKey());
+				List<Long> results = searchClient.doSearch(queryString, condQueries,
+						searchParams.getIdentity(), searchParams.getRoles(), firstResult, maxResults * 5, orderBy);
+
+				int initialResultsSize = results.size();
+				if(results.isEmpty()) {
+					return new DefaultResultInfos<QuestionItem>();
+				} else if(results.size() > maxResults) {
+					results = results.subList(0, Math.min(results.size(), maxResults * 2));
+				}
+				List<QuestionItem> items = questionItemDao.getSharedItemByResource(resource, results, firstResult, maxResults);
+				return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), firstResult + initialResultsSize, items);
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return new DefaultResultInfos<QuestionItem>();
+		} else {
+			List<QuestionItem> items = questionItemDao.getSharedItemByResource(resource, null, firstResult, maxResults, orderBy);
+			return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), -1, items);
+		}
 	}
 
 	@Override
@@ -320,9 +464,32 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, int firstResult,
-			int maxResults, SortKey... orderBy) {
-		return collectionDao.getItemsOfCollection(collection, firstResult, maxResults, orderBy);
+	public ResultInfos<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams searchParams,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		
+		if(searchParams != null && StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			try {
+				List<Long> content = collectionDao.getItemKeysOfCollection(collection);
+
+				String queryString = searchParams.getSearchString();
+				List<String> condQueries = new ArrayList<String>();
+				condQueries.add(getDbKeyConditionalQuery(content));
+				List<Long> results = searchClient.doSearch(queryString, condQueries, searchParams.getIdentity(), searchParams.getRoles(),
+						firstResult, maxResults * 5, orderBy);
+
+				if(results.isEmpty()) {
+					return new DefaultResultInfos<QuestionItem>();
+				}
+				List<QuestionItem> items = collectionDao.getItemsOfCollection(collection, results, firstResult, maxResults, orderBy);
+				return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), firstResult + results.size(), items);
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return new DefaultResultInfos<QuestionItem>();
+		} else {
+			List<QuestionItem> items = collectionDao.getItemsOfCollection(collection, null, firstResult, maxResults, orderBy);
+			return new DefaultResultInfos<QuestionItem>(firstResult + items.size(), -1, items);
+		}
 	}
 
 	@Override
@@ -347,8 +514,9 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<Pool> getPools(int firstResult, int maxResults, SortKey... orderBy) {
-		return poolDao.getPools(firstResult, maxResults);
+	public ResultInfos<Pool> getPools(int firstResult, int maxResults, SortKey... orderBy) {
+		List<Pool> pools = poolDao.getPools(firstResult, maxResults);
+		return new DefaultResultInfos<Pool>(firstResult + pools.size(), -1, pools);
 	}
 
 	@Override

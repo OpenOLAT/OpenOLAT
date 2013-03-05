@@ -17,43 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
+
+import java.util.List;
+
+import org.olat.core.commons.persistence.ResultInfos;
+import org.olat.core.commons.persistence.SortKey;
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 01.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItem extends QuestionItemShort {
+public interface FlexiTableDataSource<U> {
 	
-	public String getDescription();
-	
-	public String getKeywords();
-	
-	public String getCopyright();
-
-	public String getTestType();
-	
-	public String getLevel();
-	
-	public String getDirectory();
-	
-	public String getEditor();
-	
-	public String getItemVersion();
 	
 	/**
-	 * Field can be lazy loaded
-	 * @return
+	 * Load the rows needed for paging
+	 * @param firstResult
+	 * @param maxResults
 	 */
-	public String getStudyFieldPath();
+	public ResultInfos<U> load(int firstResult, int maxResults, SortKey... orderBy);
 	
 	/**
-	 * Field can be lazy loaded
-	 * @return
+	 * 
+	 * @param firstResult
+	 * @param maxResults
+	 * @param orderBy
 	 */
-	public String getStudyFieldName();
-
+	public ResultInfos<U> search(String query, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy);
 
 }

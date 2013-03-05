@@ -86,7 +86,7 @@ public class CollectionDAO {
 		dbInstance.commit();
 	}
 	
-	public boolean isInCollection(QuestionItemCollection collection, QuestionItemImpl item) {
+	protected boolean isInCollection(QuestionItemCollection collection, QuestionItemImpl item) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(coll2item) from qcollection2item coll2item where coll2item.collection.key=:collectionKey and coll2item.item.key=:itemKey");
 		Number count = dbInstance.getCurrentEntityManager()
@@ -107,20 +107,40 @@ public class CollectionDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, List<Long> inKeys,
+			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select coll2item.item from qcollection2item coll2item where coll2item.collection.key=:collectionKey");
+		sb.append("select item from qcollection2item coll2item ")
+		  .append(" inner join coll2item.item item ")
+		  .append(" left join fetch item.studyField studyField ")
+		  .append(" where coll2item.collection.key=:collectionKey");
+		if(inKeys != null && !inKeys.isEmpty()) {
+			sb.append(" and item.key in (:itemKeys)");
+		}
 		PersistenceHelper.appendGroupBy(sb, "coll2item.item", orderBy);
 		
 		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("collectionKey", collection.getKey());
+		if(inKeys != null && !inKeys.isEmpty()) {
+			query.setParameter("itemKeys", inKeys);
+		}
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
+		return query.getResultList();
+	}
+	
+	public List<Long> getItemKeysOfCollection(QuestionItemCollection collection) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(coll2item.item.key) from qcollection2item coll2item ")
+		  .append(" where coll2item.collection.key=:collectionKey");
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("collectionKey", collection.getKey());
 		return query.getResultList();
 	}
 	

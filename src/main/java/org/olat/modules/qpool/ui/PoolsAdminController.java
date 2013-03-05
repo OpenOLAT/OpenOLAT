@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DefaultResultInfos;
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -87,7 +89,7 @@ public class PoolsAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete-pool"));
 
 		model = new PoolDataModel(columnsModel, new PoolSource(), getTranslator());
-		poolTable = uifactory.addTableElement(ureq, "pools", model, 20, getTranslator(), formLayout);
+		poolTable = uifactory.addTableElement(ureq, "pools", model, model, 20, false, getTranslator(), formLayout);
 		poolTable.setRendererType(FlexiTableRendererType.classic);
 		
 		createPool = uifactory.addFormLink("create.pool", formLayout, Link.BUTTON);
@@ -195,13 +197,13 @@ public class PoolsAdminController extends FormBasicController {
 			return qpoolService.countPools();
 		}
 
-		public List<PoolRow> getRows(int firstResult, int maxResults, SortKey... orderBy) {
-			List<Pool> pools = qpoolService.getPools(firstResult, maxResults, orderBy);
-			List<PoolRow> rows = new ArrayList<PoolRow>(pools.size());
-			for(Pool pool:pools) {
+		public ResultInfos<PoolRow> getRows(int firstResult, int maxResults, SortKey... orderBy) {
+			ResultInfos<Pool> pools = qpoolService.getPools(firstResult, maxResults, orderBy);
+			List<PoolRow> rows = new ArrayList<PoolRow>(pools.getObjects().size());
+			for(Pool pool:pools.getObjects()) {
 				rows.add(forgeRow(pool));
 			}
-			return rows;
+			return new DefaultResultInfos<PoolRow>(pools.getNextFirstResult(), pools.getCorrectedRowCount(), rows);
 		}
 	}
 }

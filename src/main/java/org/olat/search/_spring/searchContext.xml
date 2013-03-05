@@ -12,15 +12,29 @@
    	</bean>
    	
 	<bean id="org.olat.search.service.enabled" class="org.olat.search.service.SearchServiceImpl"
-	init-method="init" destroy-method="stop" depends-on="searchModuleInit" lazy-init="true">
+		init-method="init" destroy-method="stop" depends-on="searchModuleInit" lazy-init="true">
 		<constructor-arg index="0" ref="searchModule" />
 		<constructor-arg index="1" ref="mainIndexer" />
 		<constructor-arg index="2" ref="searchProvider" />
 		<constructor-arg index="3" ref="schedulerFactoryBean"/>
+		<constructor-arg index="4" ref="jmsIndexer"/>
 		<property name="metadataFields" ref="SearchMetadataFieldsProvider" />
 	</bean>
 
-	<bean id="org.olat.search.service.disabled" class="org.olat.search.service.SearchServiceDisabled" init-method="init" destroy-method="stop" lazy-init="true">
+	<bean id="org.olat.search.service.disabled" class="org.olat.search.service.SearchServiceDisabled"
+		init-method="init" destroy-method="stop" lazy-init="true">
+	</bean>
+	
+	<bean id="jmsIndexer" class="org.olat.search.service.indexer.JmsIndexer" init-method="springInit" destroy-method="stop">
+		<constructor-arg index="0" ref="searchModule" />
+		<property name="connectionFactory" ref="indexConnectionFactory"/>
+		<property name="jmsQueue" ref="indexQueue"/>
+		<property name="searchService" ref="org.olat.search.service.${search.service}" />
+		<property name="indexers">
+			<list>
+				<ref bean="questionItemIndexer" />
+			</list>
+		</property>
 	</bean>
 	
 	<bean id="searchModule" class="org.olat.search.SearchModule" lazy-init="true">
@@ -68,7 +82,9 @@
 	       <property name="targetMethod" value="init" />
 	       <property name="arguments">
 	             <value>
-	        		generateIndexAtStartup=${generate.index.at.startup}		
+	        searchService=${search.service}
+	             
+	        generateIndexAtStartup=${generate.index.at.startup}		
 					tempIndexPath=${search.index.tempIndex}
 					tempSpellCheckPath=${search.index.tempSpellcheck}
 					pdfTextBufferPath=${search.index.pdfBuffer}
@@ -109,7 +125,6 @@
 				<ref bean="identityIndexer" />
 				<ref bean="epDefaultMapIndexer" />
 				<ref bean="epStructuredMapIndexer" />
-				<ref bean="questionItemIndexer" />
 			</list>
 		</property>
 	</bean>
@@ -271,6 +286,7 @@
 		<property name="receiveTimeout" value="45000"/>
 		<property name="timeToLive" value="45000"/>
 	</bean>
+	
 
 	<!-- SEARCH COMMON CONFIGURATION (PROXY-SIDE AND SERVICE-SIDE) -->
 	<!-- ========================================================= -->

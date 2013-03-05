@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -82,7 +83,6 @@ public class FormSubmit extends FormButton implements Submit{
 	 *      long[], int)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	public void evalFormRequest(UserRequest ureq) {
 		// no values with submit to be evaluated
 		getComponent().setDirty(true);
@@ -91,8 +91,7 @@ public class FormSubmit extends FormButton implements Submit{
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormComponent#validate()
 	 */
-	@SuppressWarnings("unused")
-	public void validate(List statusDescriptinons) {
+	public void validate(List<ValidationStatus> statusDescriptinons) {
 		// submit is not validating itself
 	}
 

@@ -36,17 +36,11 @@ import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.LogDocMergePolicy;
 import org.apache.lucene.index.LogMergePolicy;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -54,7 +48,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
-import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
@@ -71,14 +64,12 @@ public class OlatFullIndexer {
 	private int numberIndexWriter = 5;
 
 	private String  tempIndexPath;
-	private String permanentIndexPath;
 
 	/**
 	 * Reference to indexer for done callback.
 	 */
 	private Index index;
 	private IndexWriter indexWriter;
-	private IndexWriter permanentIndexWriter;
 	
 	
 	/** Flag to stop indexing. */
@@ -121,7 +112,6 @@ public class OlatFullIndexer {
     this.index = index;
     this.mainIndexer = mainIndexer;
     tempIndexPath = searchModuleConfig.getFullTempIndexPath();
-    permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
     indexInterval = searchModuleConfig.getIndexInterval();
     numberIndexWriter = searchModuleConfig.getNumberIndexWriter();
     documentsPerInterval = searchModuleConfig.getDocumentsPerInterval();
@@ -162,16 +152,7 @@ public class OlatFullIndexer {
 		logmp.setMergeFactor(INDEX_MERGE_FACTOR);
 		return logmp;
 	}
-	
-	public void init() {
-		try {
-			File tempIndexDir = new File(permanentIndexPath);
-			Directory indexPath = FSDirectory.open(tempIndexDir);
-			permanentIndexWriter = new IndexWriter(indexPath, newIndexWriterConfig());
-		} catch (IOException e) {
-			log.error("", e);
-		}
-	}
+
 	
 	public IndexWriterConfig newIndexWriterConfig() {
 		Analyzer analyzer = new StandardAnalyzer(SearchService.OO_LUCENE_VERSION);
@@ -321,46 +302,8 @@ public class OlatFullIndexer {
 		}
 	}
 	
-	public void close() {
-		try {
-			permanentIndexWriter.commit();
-			permanentIndexWriter.close();
-		} catch (IOException e) {
-			log.error("", e);
-		}
-	}
-	
-	/**
-	 * Add or update a lucene document in the permanent index.
-	 * @param uuid
-	 * @param document
-	 */
-	public void addPermDocument(Document document) {
-		try {
-			String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
-			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
-			Directory dir = FSDirectory.open(new File(permanentIndexPath));
-			if(DirectoryReader.indexExists(dir)) {
-				IndexReader reader = DirectoryReader.open(dir);
-				IndexSearcher searcher = new IndexSearcher(reader);
-				TermQuery query = new TermQuery(uuidTerm);
-	      TopDocs hits = searcher.search(query, 10);
-				boolean exists = hits.totalHits > 0;
-				if(exists) {
-					permanentIndexWriter.updateDocument(uuidTerm, document);
-				} else {
-					permanentIndexWriter.addDocument(document);
-					permanentIndexWriter.commit();
-				}
-				reader.close();
-			} else {
-				permanentIndexWriter.addDocument(document);
-				permanentIndexWriter.commit();
-			}
-		} catch (IOException e) {
-			log.error("", e);
-		}
-	}
+
+
 	
 	/**
 	 * Callback to addDocument to indexWriter.

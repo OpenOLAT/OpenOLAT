@@ -22,10 +22,13 @@ package org.olat.modules.qpool.ui;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 
 /**
  * 
@@ -35,11 +38,13 @@ import org.olat.modules.qpool.QuestionPoolService;
  */
 public class MyQuestionItemsSource implements QuestionItemsSource {
 	
+	private final Roles roles;
 	private final Identity me;
 	private final QuestionPoolService qpoolService;
 	
-	public MyQuestionItemsSource(Identity me) {
+	public MyQuestionItemsSource(Identity me, Roles roles) {
 		this.me = me;
+		this.roles = roles;
 		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 	}
 
@@ -49,7 +54,9 @@ public class MyQuestionItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public List<QuestionItem> getItems(int firstResult, int maxResults, SortKey... orderBy) {
-		return qpoolService.getItems(me, firstResult, maxResults);
+	public ResultInfos<QuestionItem> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+		SearchQuestionItemParams params = new SearchQuestionItemParams(me, roles);
+		params.setSearchString(query);
+		return qpoolService.getItems(me, params, firstResult, maxResults);
 	}
 }

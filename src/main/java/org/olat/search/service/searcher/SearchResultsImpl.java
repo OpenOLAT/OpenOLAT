@@ -93,9 +93,10 @@ public class SearchResultsImpl implements SearchResults {
 	 * @throws IOException
 	 */
 	public SearchResultsImpl(Indexer mainIndexer, IndexSearcher searcher, TopDocs docs, Query query, Analyzer analyzer, Identity identity,
-			Roles roles, int firstResult, int maxReturns, boolean doHighlighting) throws IOException{
+			Roles roles, int firstResult, int maxReturns, boolean doHighlighting, boolean onlyDbKeys)
+	throws IOException {
 		this.mainIndexer = mainIndexer;
-		resultList = initResultList(identity, roles, query, analyzer, searcher, docs, firstResult, maxReturns, doHighlighting);
+		resultList = initResultList(identity, roles, query, analyzer, searcher, docs, firstResult, maxReturns, doHighlighting, onlyDbKeys);
 	}
 	
 	/**
@@ -164,10 +165,14 @@ public class SearchResultsImpl implements SearchResults {
 	}
 
 	private List<ResultDocument> initResultList(Identity identity, Roles roles, Query query, Analyzer analyzer, IndexSearcher searcher, TopDocs docs,
-			int firstResult, int maxReturns, final boolean doHighlight) throws IOException {
+			int firstResult, int maxReturns, final boolean doHighlight, boolean onlyDbKeys)
+	throws IOException {
 
 		Set<String> fields = AbstractOlatDocument.getFields();
-		if(!doHighlight) {
+		if(onlyDbKeys) {
+			fields.clear();
+			fields.add(AbstractOlatDocument.DB_ID_NAME);
+		} else if(!doHighlight) {
 			fields.remove(AbstractOlatDocument.CONTENT_FIELD_NAME);
 		}
 		
@@ -183,6 +188,7 @@ public class SearchResultsImpl implements SearchResults {
 			} else {
 				doc = searcher.doc(docs.scoreDocs[i].doc, fields);
 			}
+			
 			String reservedTo = doc.get(AbstractOlatDocument.RESERVED_TO);
 			if(StringHelper.containsNonWhitespace(reservedTo) && !"public".equals(reservedTo)
 					&& !reservedTo.contains(identity.getKey().toString())) {

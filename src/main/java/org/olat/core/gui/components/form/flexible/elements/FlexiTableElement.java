@@ -64,6 +64,12 @@ public interface FlexiTableElement extends FormItem {
 	
 	public boolean isMultiSelectedIndex(int index);
 	
+	/**
+	 * Is a search field enabled
+	 * @return
+	 */
+	public boolean isSearch();
+	
 	
 	/**
 	 * Return the page size

@@ -17,43 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.search.service.indexer;
+
+import org.apache.lucene.document.Document;
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 05.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItem extends QuestionItemShort {
+public interface LifeFullIndexer {
 	
-	public String getDescription();
-	
-	public String getKeywords();
-	
-	public String getCopyright();
-
-	public String getTestType();
-	
-	public String getLevel();
-	
-	public String getDirectory();
-	
-	public String getEditor();
-	
-	public String getItemVersion();
+	public void addIndexer(LifeIndexer indexer);
 	
 	/**
-	 * Field can be lazy loaded
-	 * @return
+	 * Start a full index
 	 */
-	public String getStudyFieldPath();
+	public void fullIndex();
 	
 	/**
-	 * Field can be lazy loaded
-	 * @return
+	 * Ask to index the document with the specified key
+	 * @param type
+	 * @param key
 	 */
-	public String getStudyFieldName();
-
+	public void indexDocument(String type, Long key);
+	
+	/**
+	 * Add a document to the index
+	 * @param doc
+	 */
+	public void addDocument(Document doc);
 
 }

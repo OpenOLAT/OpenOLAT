@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -121,9 +122,8 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#validate(java.util.List)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		// nothing to do
 	}
 

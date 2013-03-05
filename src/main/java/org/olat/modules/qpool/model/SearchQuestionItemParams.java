@@ -17,43 +17,53 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.model;
+
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 28.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItem extends QuestionItemShort {
+public class SearchQuestionItemParams {
 	
-	public String getDescription();
+	private Long poolKey;
+	private String searchString;
 	
-	public String getKeywords();
+	private final Identity identity;
+	private final Roles roles;
 	
-	public String getCopyright();
+	public SearchQuestionItemParams(Identity identity, Roles roles) {
+		this.identity = identity;
+		this.roles = roles;
+	}
 
-	public String getTestType();
+	public Long getPoolKey() {
+		return poolKey;
+	}
+
+	public void setPoolKey(Long poolKey) {
+		this.poolKey = poolKey;
+	}
+
+	public String getSearchString() {
+		return searchString;
+	}
+
+	public void setSearchString(String searchString) {
+		this.searchString = searchString;
+	}
+
+	public Identity getIdentity() {
+		return identity;
+	}
 	
-	public String getLevel();
-	
-	public String getDirectory();
-	
-	public String getEditor();
-	
-	public String getItemVersion();
-	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldPath();
-	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldName();
+	public Roles getRoles() {
+		return roles;
+	}
 
 
 }

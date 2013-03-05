@@ -117,6 +117,14 @@ public class QuestionItemRow implements QuestionItemShort {
 	public BigDecimal getDifficulty() {
 		return delegate.getDifficulty();
 	}
+	
+	public String getStudyFieldPath() {
+		return delegate.getStudyFieldPath();
+	}
+
+	public String getStudyFieldName() {
+		return delegate.getStudyFieldName();
+	}
 
 	public QuestionItem getItem() {
 		return delegate;

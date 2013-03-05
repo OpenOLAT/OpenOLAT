@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,6 +35,7 @@ import org.olat.modules.qpool.QuestionType;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * 
@@ -99,19 +101,46 @@ public class CollectionDAOTest extends OlatTestCase {
 		dbInstance.commit();//check if it's alright
 		
 		//load the items of the collection
-		List<QuestionItem> items = collectionDao.getItemsOfCollection(coll, 0, -1);
+		List<QuestionItem> items = collectionDao.getItemsOfCollection(coll, null, 0, -1);
 		Assert.assertNotNull(items);
 		Assert.assertEquals(2, items.size());
 		Assert.assertTrue(items.contains(item1));
 		Assert.assertTrue(items.contains(item2));
+		//count them
+		int numOfItems = collectionDao.countItemsOfCollection(coll);
+		Assert.assertEquals(2, numOfItems);
+		
+		//load limit sub set
+		List<QuestionItem> limitedItems = collectionDao.getItemsOfCollection(coll, Collections.singletonList(item1.getKey()), 0, -1);
+		Assert.assertNotNull(limitedItems);
+		Assert.assertEquals(1, limitedItems.size());
+		Assert.assertTrue(limitedItems.contains(item1));
 	}
 	
+	@Test
+	public void getItemKeysOfCollection() {
+		//create a collection with 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-4-" + UUID.randomUUID().toString());
+		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 4", id);
+		QuestionItem item1 = questionDao.create(null, "NGC 99", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
+		QuestionItem item2 = questionDao.create(null, "NGC 101", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
+		collectionDao.addItemToCollection(item1, coll);
+		collectionDao.addItemToCollection(item2, coll);
+		dbInstance.commit();//check if it's alright
+		
+		//load the items of the collection
+		List<Long> items = collectionDao.getItemKeysOfCollection(coll);
+		Assert.assertNotNull(items);
+		Assert.assertEquals(2, items.size());
+		Assert.assertTrue(items.contains(item1.getKey()));
+		Assert.assertTrue(items.contains(item2.getKey()));
+	}
 	
 	@Test
 	public void getCollections_myOhMy() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
-		QuestionItemCollection coll1 = collectionDao.createCollection("NGC collection part. 4", id);
-		QuestionItemCollection coll2 = collectionDao.createCollection("NGC collection part. 5", id);
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-5-" + UUID.randomUUID().toString());
+		QuestionItemCollection coll1 = collectionDao.createCollection("NGC collection part. 6", id);
+		QuestionItemCollection coll2 = collectionDao.createCollection("NGC collection part. 7", id);
 		dbInstance.commit();//check if it's alright
 		
 		//load the items of the collection
@@ -121,5 +150,4 @@ public class CollectionDAOTest extends OlatTestCase {
 		Assert.assertTrue(items.contains(coll1));
 		Assert.assertTrue(items.contains(coll2));
 	}
-	
 }

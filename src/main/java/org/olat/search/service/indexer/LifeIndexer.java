@@ -17,43 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.search.service.indexer;
 
 /**
  * 
- * Initial date: 21.01.2013<br>
+ * Initial date: 05.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
  */
-public interface QuestionItem extends QuestionItemShort {
+public interface LifeIndexer {
 	
-	public String getDescription();
-	
-	public String getKeywords();
-	
-	public String getCopyright();
-
-	public String getTestType();
-	
-	public String getLevel();
-	
-	public String getDirectory();
-	
-	public String getEditor();
-	
-	public String getItemVersion();
+	public String getSupportedTypeName();
 	
 	/**
-	 * Field can be lazy loaded
-	 * @return
+	 * Trigger a full index
+	 * @param indexWriter
 	 */
-	public String getStudyFieldPath();
-	
+	public void fullIndex(LifeFullIndexer indexWriter);
+
 	/**
-	 * Field can be lazy loaded
-	 * @return
+	 * Trigger only the specificied object/document
+	 * @param key
+	 * @param indexWriter
 	 */
-	public String getStudyFieldName();
-
-
+	public void indexDocument(Long key, LifeFullIndexer indexWriter);
+	
 }

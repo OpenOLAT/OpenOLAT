@@ -71,8 +71,7 @@ public class QuestionItemDAO {
 	public QuestionItem create(Identity owner, String subject, String format, String language,
 			StudyField field, String uuid, String rootFilename, QuestionType type) {
 		QuestionItemImpl item = new QuestionItemImpl();
-		
-		
+
 		item.setUuid(uuid);
 		item.setCreationDate(new Date());
 		item.setLastModified(new Date());
@@ -110,6 +109,10 @@ public class QuestionItemDAO {
 		return sb.toString();
 	}
 	
+	public QuestionItem merge(QuestionItem item) {
+		return dbInstance.getCurrentEntityManager().merge(item);
+	}
+	
 	public void addAuthors(List<Identity> authors, QuestionItem item) {
 		QuestionItemImpl lockedItem = loadForUpdate(item.getKey());
 		SecurityGroup secGroup = lockedItem.getOwnerGroup();
@@ -135,18 +138,25 @@ public class QuestionItemDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItem> getItems(Identity me, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItem> getItems(Identity me, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
 		  .append(" inner join item.ownerGroup ownerGroup ")
+		  .append(" left join fetch item.studyField studyField ")
 		  .append(" where ownerGroup in (")
 		  .append("   select vmember.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
 		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup")
 		  .append(" )");
+		if(inKeys != null && !inKeys.isEmpty()) {
+			sb.append(" and item.key in (:itemKeys)");
+		}
 
 		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("identityKey", me.getKey());
+		if(inKeys != null && !inKeys.isEmpty()) {
+			query.setParameter("itemKeys", inKeys);
+		}
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -225,16 +235,33 @@ public class QuestionItemDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItem> getFavoritItems(Identity identity, int firstResult, int maxResults) {
+	public List<Long> getFavoritKeys(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(mark.resId) from ").append(MarkImpl.class.getName()).append(" mark ")
+		  .append(" where mark.creator.key=:identityKey and mark.resName='QuestionItem'");
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey());
+		return query.getResultList();
+	}
+	
+	public List<QuestionItem> getFavoritItems(Identity identity, List<Long> inKeys, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.studyField studyField")
 		  .append(" where item.key in (")
 		  .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where mark.creator.key=:identityKey and mark.resName='QuestionItem'")
 		  .append(" )");
+		if(inKeys != null && !inKeys.isEmpty()) {
+			sb.append(" and item.key in (:itemKeys)");
+		}
 
 		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("identityKey", identity.getKey());
+		if(inKeys != null && !inKeys.isEmpty()) {
+			query.setParameter("itemKeys", inKeys);
+		}
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -297,14 +324,23 @@ public class QuestionItemDAO {
 		return count.intValue();
 	}
 	
-	public List<QuestionItem> getSharedItemByResource(OLATResource resource, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItem> getSharedItemByResource(OLATResource resource, List<Long> inKeys,
+			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select share.item from qshareitem share")
+		sb.append("select item from qshareitem share")
+		  .append(" inner join share.item item")
+		  .append(" left join fetch item.studyField studyField")
 		  .append(" where share.resource.key=:resourceKey");
+		if(inKeys != null && !inKeys.isEmpty()) {
+			sb.append(" and item.key in (:itemKeys)");
+		}
 
 		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("resourceKey", resource.getKey());
+		if(inKeys != null && !inKeys.isEmpty()) {
+			query.setParameter("itemKeys", inKeys);
+		}
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -334,6 +370,18 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
+	public List<OLATResource> getSharedResources(QuestionItem item) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select resource from qshareitem share")
+		  .append(" inner join share.resource resource")
+		  .append(" where share.item.key=:itemKey");
+
+		TypedQuery<OLATResource> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OLATResource.class)
+				.setParameter("itemKey", item.getKey());
+		return query.getResultList();
+	}
+	
 	public int deleteFromShares(List<QuestionItem> items) {
 		List<Long> keys = new ArrayList<Long>();
 		for(QuestionItem item:items) {
@@ -346,6 +394,4 @@ public class QuestionItemDAO {
 				.setParameter("itemKeys", keys)
 				.executeUpdate();
 	}
-	
-	
 }

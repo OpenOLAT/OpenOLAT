@@ -1,0 +1,320 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.search.service.indexer;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.LogDocMergePolicy;
+import org.apache.lucene.index.LogMergePolicy;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.search.SearchModule;
+import org.olat.search.SearchService;
+import org.olat.search.model.AbstractOlatDocument;
+import org.olat.search.service.SearchServiceImpl;
+
+/**
+ * TODO or not: to make the Indexer cluster wide functional. It would be
+ * possible to create on the fly an IndexWriter with a doInSync.
+ * 
+ * Initial date: 04.03.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class JmsIndexer implements MessageListener, LifeFullIndexer {
+	private static final int INDEX_MERGE_FACTOR = 1000;
+	private static final OLog log = Tracing.createLoggerFor(JmsIndexer.class);
+	
+	private Queue jmsQueue;
+	private Session indexerSession;
+	private MessageConsumer consumer;
+	private ConnectionFactory connectionFactory;
+	private QueueConnection connection;
+	
+	private SearchService searchService;
+
+	private String permanentIndexPath;
+	private DirectoryReader reader;
+	private IndexWriter permanentIndexWriter;
+	
+	private double ramBufferSizeMB;
+	private boolean useCompoundFile;
+	private boolean indexingNode;
+	
+	private List<LifeIndexer> indexers = new ArrayList<LifeIndexer>();
+	
+	public JmsIndexer(SearchModule searchModuleConfig) {
+		indexingNode = searchModuleConfig.isSearchServiceEnabled();
+    ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
+    useCompoundFile = searchModuleConfig.getUseCompoundFile();
+		permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
+	}
+
+	public Queue getJmsQueue() {
+		return jmsQueue;
+	}
+	
+	/**
+	 * [Used by Spring]
+	 * @param jmsQueue
+	 */
+	public void setJmsQueue(Queue jmsQueue) {
+		this.jmsQueue = jmsQueue;
+	}
+
+	/**
+	 * [Used by Spring]
+	 * @param connectionFactory
+	 */
+	public void setConnectionFactory(ConnectionFactory connectionFactory) {
+		this.connectionFactory = connectionFactory;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param searchService
+	 */
+	public void setSearchService(SearchService searchService) {
+		this.searchService = searchService;
+	}
+
+	public void setIndexers(List<LifeIndexer> indexers) {
+		if(indexers != null) {
+			for(LifeIndexer indexer:indexers){
+				addIndexer(indexer);
+			}
+		}
+	}
+
+	@Override
+	public void addIndexer(LifeIndexer indexer) {
+		indexers.add(indexer);
+	}
+	
+	public List<LifeIndexer> getIndexerByType(String type) {
+		List<LifeIndexer> indexerByType = new ArrayList<LifeIndexer>();
+		for(LifeIndexer indexer:indexers) {
+			if(type.equals(indexer.getSupportedTypeName())) {
+				indexerByType.add(indexer);
+			}
+		}
+		return indexerByType;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @throws JMSException
+	 */
+	public void springInit() throws JMSException {
+		initQueue();
+		initDirectory();
+	}
+	
+	public void initQueue() throws JMSException {
+		connection = (QueueConnection)connectionFactory.createConnection();
+		connection.start();
+		log.info("springInit: JMS connection started with connectionFactory=" + connectionFactory);
+
+		if(indexingNode) {
+			//listen to the queue only if indexing node
+			indexerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			consumer = indexerSession.createConsumer(jmsQueue);
+			consumer.setMessageListener(this);
+		}
+	}
+	
+	public void initDirectory() {
+		try {
+			File tempIndexDir = new File(permanentIndexPath);
+			Directory indexPath = FSDirectory.open(tempIndexDir);
+			
+			if(indexingNode) {
+				permanentIndexWriter = new IndexWriter(indexPath, newIndexWriterConfig());
+				permanentIndexWriter.commit();
+			}
+	
+			reader = DirectoryReader.open(indexPath);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	public LogMergePolicy newLogMergePolicy() {
+		LogMergePolicy logmp = new LogDocMergePolicy();
+		logmp.setUseCompoundFile(useCompoundFile);
+		logmp.setCalibrateSizeByDeletes(true);
+		logmp.setMergeFactor(INDEX_MERGE_FACTOR);
+		return logmp;
+	}
+	
+	public IndexWriterConfig newIndexWriterConfig() {
+		Analyzer analyzer = new StandardAnalyzer(SearchService.OO_LUCENE_VERSION);
+		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+		indexWriterConfig.setMergePolicy(newLogMergePolicy());
+		indexWriterConfig.setRAMBufferSizeMB(ramBufferSizeMB);// for better performance set to 48MB (see lucene docu 'how to make indexing faster")
+		indexWriterConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
+		return indexWriterConfig;
+	}
+	
+	/**
+	 * [used by Spring]
+	 */
+	public void stop() {
+		closeQueue();
+		closeWriter();
+	}
+	
+	public void closeQueue() {
+		if(consumer != null) {
+			try {
+				consumer.close();
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+		if(connection != null) {
+			try {
+				indexerSession.close();
+				connection.close();
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+	}
+	
+	public void closeWriter() {
+		try {
+			permanentIndexWriter.commit();
+			permanentIndexWriter.close();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	@Override
+	public void fullIndex() {
+		for(LifeIndexer indexer:indexers) {
+			indexer.fullIndex(this);
+		}
+	}
+
+	@Override
+	public void indexDocument(String type, Long key) {
+		QueueSender sender;
+		QueueSession session;
+		try {
+			JmsIndexWork workUnit = new JmsIndexWork(type, key);
+			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
+			ObjectMessage message = session.createObjectMessage();
+			message.setObject(workUnit);
+
+			sender = session.createSender(getJmsQueue());
+			sender.send( message );
+			session.close();
+		} catch (JMSException e) {
+			log.error("", e );
+		}
+	}
+	
+	@Override
+	public void onMessage(Message message) {
+		if(message instanceof ObjectMessage) {
+			try {
+				ObjectMessage objMsg = (ObjectMessage)message;
+				JmsIndexWork workUnit = (JmsIndexWork)objMsg.getObject();
+				doIndex(workUnit);
+				message.acknowledge();
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+	}
+	
+	private void doIndex(JmsIndexWork workUnit) {
+		if(searchService instanceof SearchServiceImpl) {
+			String type = workUnit.getIndexType();
+			List<LifeIndexer> indexers = getIndexerByType(type);
+			for(LifeIndexer indexer:indexers) {
+				indexer.indexDocument(workUnit.getKey(), this);
+			}
+		}
+	}
+	
+	private DirectoryReader getReader() throws IOException {
+		DirectoryReader newReader = DirectoryReader.openIfChanged(reader);
+		if(newReader != null) {
+			reader = newReader;
+		}
+		return reader;
+	}
+	
+	/**
+	 * Add or update a lucene document in the permanent index.
+	 * @param uuid
+	 * @param document
+	 */
+	@Override
+	public void addDocument(Document document) {
+		try {
+			String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
+			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
+
+			DirectoryReader reader = getReader();
+			IndexSearcher searcher = new IndexSearcher(reader);
+	    TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
+			if(hits.totalHits > 0) {
+				permanentIndexWriter.updateDocument(uuidTerm, document);
+			} else {
+				permanentIndexWriter.addDocument(document);
+				permanentIndexWriter.commit();
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+}

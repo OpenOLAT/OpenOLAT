@@ -80,6 +80,9 @@ public class OlatDocument extends AbstractOlatDocument {
 	 */
 	public Document getLuceneDocument() {
 		Document document = new Document();
+		if(getId() != null) {
+			document.add(new StringField(DB_ID_NAME, getId().toString(), Field.Store.YES));
+		}
 		document.add(createTextField(TITLE_FIELD_NAME,getTitle(), 4));
 		document.add(createTextField(DESCRIPTION_FIELD_NAME,getDescription(), 2));
 		document.add(createTextField(CONTENT_FIELD_NAME,getContent(), 0.5f ) );
@@ -123,8 +126,8 @@ public class OlatDocument extends AbstractOlatDocument {
 			}
 		}
 		
-		document.add(new TextField(PARENT_CONTEXT_TYPE_FIELD_NAME, getParentContextType(), Field.Store.YES));
-		document.add(new TextField(PARENT_CONTEXT_NAME_FIELD_NAME, getParentContextName(), Field.Store.YES));
+		document.add(createTextField(PARENT_CONTEXT_TYPE_FIELD_NAME, getParentContextType(), 1.0f));
+		document.add(createTextField(PARENT_CONTEXT_NAME_FIELD_NAME, getParentContextName(), 1.0f));
 		if(StringHelper.containsNonWhitespace(getReservedTo())) {
 			for(StringTokenizer tokenizer = new StringTokenizer(getReservedTo(), " "); tokenizer.hasMoreTokens(); ) {
 				String reserved = tokenizer.nextToken();
@@ -136,8 +139,14 @@ public class OlatDocument extends AbstractOlatDocument {
 	  return document;
 	}
 
-
-	private Field createTextField(String fieldName, String content, float boost) {
+	/**
+	 * Create a field which is indexed, tokenized and stored
+	 * @param fieldName
+	 * @param content
+	 * @param boost
+	 * @return
+	 */
+	protected static Field createTextField(String fieldName, String content, float boost) {
 		TextField field = new TextField(fieldName,content, Field.Store.YES);
 		field.setBoost(boost);
 		return field;

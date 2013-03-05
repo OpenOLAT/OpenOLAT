@@ -22,9 +22,12 @@ package org.olat.modules.qpool.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DefaultResultInfos;
+import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSource;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.qpool.ui.PoolsAdminController.PoolSource;
@@ -35,7 +38,7 @@ import org.olat.modules.qpool.ui.PoolsAdminController.PoolSource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PoolDataModel implements FlexiTableDataModel, TableDataModel<PoolRow> {
+public class PoolDataModel implements FlexiTableDataModel, FlexiTableDataSource<PoolRow>, TableDataModel<PoolRow> {
 
 	private List<PoolRow> rows;
 	private PoolSource source;
@@ -74,7 +77,7 @@ public class PoolDataModel implements FlexiTableDataModel, TableDataModel<PoolRo
 	}
 
 	@Override
-	public void load(int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<PoolRow> load(int firstResult, int maxResults, SortKey... orderBy) {
 		if(rows == null) {
 			rows = new ArrayList<PoolRow>();
 		}
@@ -82,15 +85,21 @@ public class PoolDataModel implements FlexiTableDataModel, TableDataModel<PoolRo
 		for(int i=rows.size(); i<firstResult; i++) {
 			rows.add(null);
 		}
-		List<PoolRow> newRows = source.getRows(firstResult, maxResults, orderBy);
-		for(int i=0; i<newRows.size(); i++) {
+		ResultInfos<PoolRow> newRows = source.getRows(firstResult, maxResults, orderBy);
+		for(int i=0; i<newRows.getObjects().size(); i++) {
 			int rowIndex = i + firstResult;
 			if(rowIndex < rows.size()) {
-				rows.set(rowIndex, newRows.get(i));
+				rows.set(rowIndex, newRows.getObjects().get(i));
 			} else {
-				rows.add(newRows.get(i));
+				rows.add(newRows.getObjects().get(i));
 			}
 		}
+		return new DefaultResultInfos<PoolRow>(newRows.getNextFirstResult(), newRows.getCorrectedRowCount(), rows);
+	}
+
+	@Override
+	public ResultInfos<PoolRow> search(String query, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy) {
+		return load(firstResult, maxResults, orderBy);
 	}
 
 	@Override

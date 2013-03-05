@@ -12,4 +12,17 @@
 	<bean id="searchQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
 		<constructor-arg value="olat/searchQueue" />
 	</bean>
+	
+	
+	<bean id="indexConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
+		<property name="brokerURL" value="${index.broker.url}" /> 
+	</bean>
+
+	<bean id="indexQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
+		<constructor-arg value="olat/indexQueue" />
+	</bean>
+	
+	
+	
+	
 </beans>

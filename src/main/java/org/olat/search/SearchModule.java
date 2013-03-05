@@ -50,6 +50,7 @@ public class SearchModule extends AbstractOLATModule {
 	private static final OLog log = Tracing.createLoggerFor(SearchModule.class);
 	
 	// Definitions config parameter names in module-config
+	public final static String CONF_SEARCH_SERVICE = "searchService";
 	public final static String CONF_INDEX_PATH = "indexPath";
 	public final static String CONF_PERMANENT_INDEX_PATH = "permanentIndexPath";
 	public final static String CONF_TEMP_INDEX_PATH = "tempIndexPath";
@@ -89,6 +90,7 @@ public class SearchModule extends AbstractOLATModule {
 	private static final int    DEFAULT_RESTART_DAY_OF_WEEK = 8;
 	private static final String DEFAULT_RAM_BUFFER_SIZE_MB = "48";
 	
+	private String searchService;
 	private String fullIndexPath;
 	private String fullPermanentIndexPath;
 	private String fullTempIndexPath;
@@ -157,6 +159,9 @@ public class SearchModule extends AbstractOLATModule {
 	@Override
 	public void initDefaultProperties() {
 		log.debug("init start...");
+
+		searchService = getStringConfigParameter(CONF_SEARCH_SERVICE, "enabled", false);
+		
 		String indexPath = getStringConfigParameter(CONF_INDEX_PATH, "/tmp", false);
 		String permanentIndexPath = getStringConfigParameter(CONF_PERMANENT_INDEX_PATH, "/sidx", false);
 
@@ -251,6 +256,10 @@ public class SearchModule extends AbstractOLATModule {
 			sb.append(file);
 		}
 		setStringProperty(CONF_FILE_BLACK_LIST, sb.toString(), true);
+	}
+	
+	public boolean isSearchServiceEnabled() {
+		return "enabled".equals(searchService);
 	}
 
 	/**

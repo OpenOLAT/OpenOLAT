@@ -72,6 +72,11 @@ public class StudyFieldImpl implements StudyField, CreateInfo, ModifiedInfo, Per
 	@Column(name="q_field", nullable=false, insertable=true, updatable=true)
 	private String field;
 	
+	@Column(name="q_mat_path_ids", nullable=false, insertable=true, updatable=true)
+	private String materializedPathKeys;
+	@Column(name="q_mat_path_names", nullable=false, insertable=true, updatable=true)
+	private String materializedPathNames;
+	
 	@ManyToOne(targetEntity=StudyFieldImpl.class)
   @JoinColumn(name="fk_parent_field", nullable=true, insertable=true, updatable=true)
 	private StudyField parentField;
@@ -118,6 +123,22 @@ public class StudyFieldImpl implements StudyField, CreateInfo, ModifiedInfo, Per
 
 	public void setParentField(StudyField parentField) {
 		this.parentField = parentField;
+	}
+
+	public String getMaterializedPathKeys() {
+		return materializedPathKeys;
+	}
+
+	public void setMaterializedPathKeys(String materializedPathKeys) {
+		this.materializedPathKeys = materializedPathKeys;
+	}
+
+	public String getMaterializedPathNames() {
+		return materializedPathNames;
+	}
+
+	public void setMaterializedPathNames(String materializedPathNames) {
+		this.materializedPathNames = materializedPathNames;
 	}
 
 	@Override

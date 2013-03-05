@@ -67,6 +67,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListEleme
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeModel;
@@ -915,8 +916,8 @@ public class FormUIFactory {
 	}
 	
 	public FlexiTableElement addTableElement(UserRequest ureq, String name, FlexiTableDataModel tableModel,
-			int pageSize, Translator translator, FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, name, translator, tableModel, pageSize);
+			FlexiTableDataSource dataSource, int pageSize, boolean search, Translator translator, FormItemContainer formLayout) {
+		FlexiTableElementImpl fte = new FlexiTableElementImpl(ureq, name, translator, tableModel, dataSource, pageSize, search);
 		formLayout.add(fte);
 		return fte;
 	}

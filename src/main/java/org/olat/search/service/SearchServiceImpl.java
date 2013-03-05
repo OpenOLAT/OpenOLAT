@@ -27,13 +27,16 @@ package org.olat.search.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -43,10 +46,13 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
@@ -54,6 +60,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.model.QuestionItemDocument;
+import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchResults;
 import org.olat.search.SearchService;
@@ -62,6 +70,7 @@ import org.olat.search.ServiceNotAvailableException;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.indexer.FullIndexerStatus;
 import org.olat.search.service.indexer.Index;
+import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.search.service.indexer.MainIndexer;
 import org.olat.search.service.searcher.JmsSearchProvider;
 import org.olat.search.service.searcher.SearchResultsImpl;
@@ -87,6 +96,7 @@ public class SearchServiceImpl implements SearchService {
 	private DirectoryReader reader;
 	private DirectoryReader permReader;
 	
+	private LifeFullIndexer lifeIndexer;
 	private SearchSpellChecker searchSpellChecker;
 	private String indexPath;
 	private String permanentIndexPath;
@@ -98,18 +108,21 @@ public class SearchServiceImpl implements SearchService {
 	private String fields[] = {
 			AbstractOlatDocument.TITLE_FIELD_NAME, AbstractOlatDocument.DESCRIPTION_FIELD_NAME,
 			AbstractOlatDocument.CONTENT_FIELD_NAME, AbstractOlatDocument.AUTHOR_FIELD_NAME,
-			AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME, AbstractOlatDocument.FILETYPE_FIELD_NAME
+			AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME, AbstractOlatDocument.FILETYPE_FIELD_NAME,
+			QuestionItemDocument.STUDY_FIELD
 	};
 
 	
 	/**
 	 * [used by spring]
 	 */
-	private SearchServiceImpl(SearchModule searchModule, MainIndexer mainIndexer, JmsSearchProvider searchProvider, Scheduler scheduler) {
+	private SearchServiceImpl(SearchModule searchModule, MainIndexer mainIndexer, JmsSearchProvider searchProvider,
+			Scheduler scheduler, LifeFullIndexer lifeIndexer) {
 		log.info("Start SearchServiceImpl constructor...");
 		this.scheduler = scheduler;
 		this.searchModuleConfig = searchModule;
 		this.mainIndexer = mainIndexer;
+		this.lifeIndexer = lifeIndexer;
 		analyzer = new StandardAnalyzer(SearchService.OO_LUCENE_VERSION);
 		searchProvider.setSearchService(this);
 	}
@@ -163,7 +176,7 @@ public class SearchServiceImpl implements SearchService {
 		searchSpellChecker.setSpellDictionaryPath(searchModuleConfig.getSpellCheckDictionaryPath());
 		searchSpellChecker.setSpellCheckEnabled(searchModuleConfig.getSpellCheckEnabled());
 		
-	  indexer = new Index(searchModuleConfig, searchSpellChecker, mainIndexer);
+	  indexer = new Index(searchModuleConfig, searchSpellChecker, mainIndexer, lifeIndexer);
 
 	  indexPath = searchModuleConfig.getFullIndexPath();	
 	  permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
@@ -198,32 +211,16 @@ public class SearchServiceImpl implements SearchService {
 			
 			log.info("queryString=" + queryString);
 			IndexSearcher searcher = getIndexSearcher();
-			
-			BooleanQuery query = new BooleanQuery();
-			if(StringHelper.containsNonWhitespace(queryString)) {
-				QueryParser queryParser = new MultiFieldQueryParser(SearchService.OO_LUCENE_VERSION, fields, analyzer);
-				queryParser.setLowercaseExpandedTerms(false);//some add. fields are not tokenized and not lowered case
-		  	Query multiFieldQuery = queryParser.parse(queryString.toLowerCase());
-		  	query.add(multiFieldQuery, Occur.MUST);
-			}
-			
-			if(condQueries != null && !condQueries.isEmpty()) {
-				for(String condQueryString:condQueries) {
-					QueryParser condQueryParser = new QueryParser(SearchService.OO_LUCENE_VERSION, condQueryString, analyzer);
-					condQueryParser.setLowercaseExpandedTerms(false);
-			  	Query condQuery = condQueryParser.parse(condQueryString);
-			  	query.add(condQuery, Occur.MUST);
-				}
-			}
+			BooleanQuery query = createQuery(queryString, condQueries);
 			if (log.isDebug()) log.debug("query=" + query);
-
+			
 	    long startTime = System.currentTimeMillis();
 	    int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
 
 	    TopDocs docs = searcher.search(query, n);
 	    long queryTime = System.currentTimeMillis() - startTime;
 	    if (log.isDebug()) log.debug("hits.length()=" + docs.totalHits);
-	    SearchResultsImpl searchResult = new SearchResultsImpl(mainIndexer, searcher, docs, query, analyzer, identity, roles, firstResult, maxResults, doHighlighting);
+	    SearchResultsImpl searchResult = new SearchResultsImpl(mainIndexer, searcher, docs, query, analyzer, identity, roles, firstResult, maxResults, doHighlighting, false);
 	    searchResult.setQueryTime(queryTime);
 	    searchResult.setNumberOfIndexDocuments(docs.totalHits);
 	    queryCount++;
@@ -238,6 +235,79 @@ public class SearchServiceImpl implements SearchService {
 			throw new ServiceNotAvailableException(ex.getMessage());
 		}
  	}
+	
+	@Override
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxResults, SortKey... orderBy)
+	throws ServiceNotAvailableException, ParseException, QueryException {
+		try {
+			if (!existIndex()) {
+				log.warn("Index does not exist, can't search for queryString: "+queryString);
+				throw new ServiceNotAvailableException("Index does not exist");
+			}
+			
+			log.info("queryString=" + queryString);
+			IndexSearcher searcher = getIndexSearcher();
+			BooleanQuery query = createQuery(queryString, condQueries);
+
+	    int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
+	    TopDocs docs;
+	    if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+	    	SortField[] sortFields = new SortField[orderBy.length];
+	    	for(int i=0; i<orderBy.length; i++) {
+	    		sortFields[i] = new SortField(orderBy[i].getKey(), SortField.Type.STRING_VAL, orderBy[i].isAsc());
+	    	}
+	    	Sort sort = new Sort(sortFields);
+	    	docs = searcher.search(query, n, sort);
+	    } else {
+	    	docs = searcher.search(query, n);
+	    }
+
+			int numOfDocs = Math.min(n, docs.totalHits);
+			Set<String> fields = new HashSet<String>();
+			fields.add(AbstractOlatDocument.DB_ID_NAME);
+			
+			List<Long> res = new ArrayList<Long>(maxResults + 1);
+	    for (int i=firstResult; i<numOfDocs && res.size() < maxResults; i++) {
+	    	Document doc = searcher.doc(docs.scoreDocs[i].doc, fields);
+	    	String dbKeyStr = doc.get(AbstractOlatDocument.DB_ID_NAME);
+	    	if(StringHelper.containsNonWhitespace(dbKeyStr)) {
+	    		res.add(Long.parseLong(dbKeyStr));
+	    	}
+	    }
+	    queryCount++;
+	    return res;
+		} catch (ServiceNotAvailableException naex) {
+			// pass exception 
+			throw new ServiceNotAvailableException(naex.getMessage());
+		} catch (ParseException pex) {
+			throw new ParseException("can not parse query=" + queryString);
+		} catch (Exception ex) {
+			log.warn("Exception in search", ex);
+			throw new ServiceNotAvailableException(ex.getMessage());
+		}
+	}
+	
+	private BooleanQuery createQuery(String queryString, List<String> condQueries)
+	throws ParseException {
+		BooleanQuery query = new BooleanQuery();
+		if(StringHelper.containsNonWhitespace(queryString)) {
+			QueryParser queryParser = new MultiFieldQueryParser(SearchService.OO_LUCENE_VERSION, fields, analyzer);
+			queryParser.setLowercaseExpandedTerms(false);//some add. fields are not tokenized and not lowered case
+	  	Query multiFieldQuery = queryParser.parse(queryString.toLowerCase());
+	  	query.add(multiFieldQuery, Occur.MUST);
+		}
+		
+		if(condQueries != null && !condQueries.isEmpty()) {
+			for(String condQueryString:condQueries) {
+				QueryParser condQueryParser = new QueryParser(SearchService.OO_LUCENE_VERSION, condQueryString, analyzer);
+				condQueryParser.setLowercaseExpandedTerms(false);
+		  	Query condQuery = condQueryParser.parse(condQueryString);
+		  	query.add(condQuery, Occur.MUST);
+			}
+		}
+		return query;
+	}
 
 	/**
 	 * Delegates impl to the searchSpellChecker.
@@ -288,7 +358,6 @@ public class SearchServiceImpl implements SearchService {
 		} catch (Exception e) {
 			log.error("", e);
 		}
-		indexer.close();
 	}
 
 	public boolean isEnabled() {

@@ -273,6 +273,27 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	public void setStudyField(StudyField studyField) {
 		this.studyField = studyField;
 	}
+	
+	@Transient
+	@Override
+	public String getStudyFieldPath() {
+		if(studyField != null) {
+			String path = studyField.getMaterializedPathNames();
+			if(StringHelper.containsNonWhitespace(path)) {
+				return path + "/" + studyField.getField();
+			} 
+			return "/" + studyField.getField();
+		}
+		return null;
+	}
+
+	@Override
+	public String getStudyFieldName() {
+		if(studyField != null) {
+			return studyField.getField();
+		}
+		return null;
+	}
 
 	public String getCopyright() {
 		return copyright;

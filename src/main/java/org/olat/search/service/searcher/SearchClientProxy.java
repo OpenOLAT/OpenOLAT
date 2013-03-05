@@ -46,6 +46,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
@@ -199,6 +200,17 @@ public class SearchClientProxy implements SearchClient {
 		}
 	}
 	
+	
+	
+	@Override
+	public List<Long> doSearch(String queryString, List<String> condQueries,
+			Identity identity, Roles roles, int firstResult, int maxResults,
+			SortKey... orderBy) throws ServiceNotAvailableException, ParseException,
+			QueryException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	/**
 	 * Uses Request/reply mechanism for synchronous operation.
 	 * @see org.olat.search.service.searcher.OLATSearcher#spellCheck(java.lang.String)
