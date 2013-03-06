@@ -39,7 +39,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.StudyField;
+import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ResourceShareImpl;
 import org.olat.resource.OLATResource;
@@ -62,28 +62,28 @@ public class QuestionItemDAO {
 	
 	
 	public QuestionItem create(Identity owner, String subject, String format, String language,
-			StudyField field, String rootFilename, QuestionType type) {
+			TaxonomyLevel field, String rootFilename, QuestionType type) {
 
 		String uuid = UUID.randomUUID().toString();
 		return create(owner, subject, format, language, field, uuid, rootFilename, type) ;
 	}
 	
 	public QuestionItem create(Identity owner, String subject, String format, String language,
-			StudyField field, String uuid, String rootFilename, QuestionType type) {
+			TaxonomyLevel taxonLevel, String uuid, String rootFilename, QuestionType type) {
 		QuestionItemImpl item = new QuestionItemImpl();
 
-		item.setUuid(uuid);
+		item.setIdentifier(uuid);
 		item.setCreationDate(new Date());
 		item.setLastModified(new Date());
-		item.setSubject(subject);
-		item.setStatus(QuestionStatus.inWork.name());
+		item.setTitle(subject);
+		item.setStatus(QuestionStatus.draft.name());
 		item.setUsage(0);
 		if(type != null) {
 			item.setType(type.name());
 		}
 		item.setFormat(format);
 		item.setLanguage(language);
-		item.setStudyField(field);
+		item.setTaxonomyLevel(taxonLevel);
 		item.setDirectory(generateDir(uuid));
 		item.setRootFilename(rootFilename);
 		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
@@ -142,7 +142,7 @@ public class QuestionItemDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
 		  .append(" inner join item.ownerGroup ownerGroup ")
-		  .append(" left join fetch item.studyField studyField ")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel ")
 		  .append(" where ownerGroup in (")
 		  .append("   select vmember.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
 		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup")
@@ -248,7 +248,7 @@ public class QuestionItemDAO {
 	public List<QuestionItem> getFavoritItems(Identity identity, List<Long> inKeys, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
-		  .append(" left join fetch item.studyField studyField")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" where item.key in (")
 		  .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where mark.creator.key=:identityKey and mark.resName='QuestionItem'")
 		  .append(" )");
@@ -329,7 +329,7 @@ public class QuestionItemDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qshareitem share")
 		  .append(" inner join share.item item")
-		  .append(" left join fetch item.studyField studyField")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" where share.resource.key=:resourceKey");
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");

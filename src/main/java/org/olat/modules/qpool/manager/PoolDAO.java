@@ -167,7 +167,7 @@ public class PoolDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qpool2item pool2item")
 		  .append(" inner join pool2item.item item ")
-		  .append(" left join fetch item.studyField studyField ")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel ")
 		  .append(" where pool2item.pool.key=:poolKey");
 		if(inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");

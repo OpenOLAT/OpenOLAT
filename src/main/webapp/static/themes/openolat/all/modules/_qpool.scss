@@ -11,3 +11,15 @@ div.o_qpool_button_bar { padding: 15px; text-align:center; }
 .o_sel_qpool_favorits { background-image: url('../openolat/images/flag.png')!important; }
 .o_sel_qpool_share { background-image: url('../openolat/images/users.png')!important; }
 .o_sel_qpool_collection { background-image: url('../openolat/images/document-list.png')!important; }
+
+
+.o_qpool_edit_learning_time {
+	div {
+		float:left;
+		
+		input, select, span.o_qpool_edit_learning_time_label  {
+			margin-right:5px;
+			padding-right:5px;
+		}
+	}
+}

@@ -122,7 +122,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.QuestionDAOTest.class,
 	org.olat.modules.qpool.manager.CollectionDAOTest.class,
 	org.olat.modules.qpool.manager.PoolDAOTest.class,
-	org.olat.modules.qpool.manager.StudyFieldDAOTest.class,
+	org.olat.modules.qpool.manager.TaxonomyLevelDAOTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolServiceTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
 	org.olat.core.commons.service.mark.MarksTest.class,

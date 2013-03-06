@@ -19,7 +19,10 @@
  */
 package org.olat.search.service.indexer;
 
+import java.io.IOException;
+
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexWriter;
 
 /**
  * 
@@ -44,9 +47,29 @@ public interface LifeFullIndexer {
 	public void indexDocument(String type, Long key);
 	
 	/**
+	 * Return the index writer, don't forget to release it.
+	 * @return
+	 * @throws IOException
+	 */
+	public IndexWriter getAndLockWriter() throws IOException;
+	
+	/**
+	 * Release the writer, other nodes of a cluster can use it after that.
+	 * @param writer
+	 */
+	public void releaseWriter(IndexWriter writer);
+	
+	/**
 	 * Add a document to the index
 	 * @param doc
 	 */
 	public void addDocument(Document doc);
+	
+	/**
+	 * 
+	 * @param doc
+	 * @param writer
+	 */
+	public void addDocument(Document doc, IndexWriter writer);
 
 }

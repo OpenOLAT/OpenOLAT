@@ -37,7 +37,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
-import org.olat.modules.qpool.StudyField;
+import org.olat.modules.qpool.TaxonomyLevel;
 
 /**
  * 
@@ -45,13 +45,15 @@ import org.olat.modules.qpool.StudyField;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="qstudyfield")
-@Table(name="o_qp_study_field")
+@Entity(name="qtaxonomylevel")
+@Table(name="o_qp_taxonomy_level")
 @NamedQueries({
-	@NamedQuery(name="loadStudyFieldByKey", query="select f from qstudyfield f where f.key=:key"),
-	@NamedQuery(name="loadStudyFieldsByparent", query="select f from qstudyfield f where f.parentField.key=:parentKey")
+	@NamedQuery(name="loadTaxonomyLevelByKey", query="select f from qtaxonomylevel f where f.key=:key"),
+	@NamedQuery(name="loadTaxonomicPath", query="select f from qtaxonomylevel f where f.parentField.key=:parentKey"),
+	@NamedQuery(name="loadTaxonomyDescendants", query="select f from qtaxonomylevel f  where f.materializedPathKeys like :path"),
+	@NamedQuery(name="loadAllTaxonomyLevels", query="select f from qtaxonomylevel f  left join fetch f.parentField pf")
 })
-public class StudyFieldImpl implements StudyField, CreateInfo, ModifiedInfo, Persistable  {
+public class TaxonomyLevelImpl implements TaxonomyLevel, CreateInfo, ModifiedInfo, Persistable  {
 
 	private static final long serialVersionUID = -1150399691749897973L;
 
@@ -77,9 +79,9 @@ public class StudyFieldImpl implements StudyField, CreateInfo, ModifiedInfo, Per
 	@Column(name="q_mat_path_names", nullable=false, insertable=true, updatable=true)
 	private String materializedPathNames;
 	
-	@ManyToOne(targetEntity=StudyFieldImpl.class)
+	@ManyToOne(targetEntity=TaxonomyLevelImpl.class)
   @JoinColumn(name="fk_parent_field", nullable=true, insertable=true, updatable=true)
-	private StudyField parentField;
+	private TaxonomyLevel parentField;
 	
 	@Override
 	public Long getKey() {
@@ -117,11 +119,11 @@ public class StudyFieldImpl implements StudyField, CreateInfo, ModifiedInfo, Per
 		this.field = field;
 	}
 
-	public StudyField getParentField() {
+	public TaxonomyLevel getParentField() {
 		return parentField;
 	}
 
-	public void setParentField(StudyField parentField) {
+	public void setParentField(TaxonomyLevel parentField) {
 		this.parentField = parentField;
 	}
 
@@ -151,8 +153,8 @@ public class StudyFieldImpl implements StudyField, CreateInfo, ModifiedInfo, Per
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof StudyFieldImpl) {
-			StudyFieldImpl f = (StudyFieldImpl)obj;
+		if(obj instanceof TaxonomyLevelImpl) {
+			TaxonomyLevelImpl f = (TaxonomyLevelImpl)obj;
 			return key != null && key.equals(f.key);
 		}
 		return false;

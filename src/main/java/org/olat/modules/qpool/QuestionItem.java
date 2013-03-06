@@ -26,34 +26,43 @@ package org.olat.modules.qpool;
  *
  */
 public interface QuestionItem extends QuestionItemShort {
+
+	//general
+	public String getKeywords();
 	
 	public String getDescription();
 	
-	public String getKeywords();
+	public String getCoverage();
 	
-	public String getCopyright();
-
-	public String getTestType();
+	public String getAdditionalInformations();
+		
+	//classification
+	/**
+	 * Field can be lazy loaded
+	 * @return
+	 */
+	public String getTaxonomicPath();
 	
-	public String getLevel();
+	/**
+	 * Field can be lazy loaded
+	 * @return
+	 */
+	public String getTaxonomyLevelName();
 	
-	public String getDirectory();
+	//question
+	public String getAssessmentType();
 	
-	public String getEditor();
-	
+	//lifecycle
 	public String getItemVersion();
 	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldPath();
+	//rights
+	public String getCopyright();
+
+	//technics
+	public String getEditor();
 	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getStudyFieldName();
+	public String getEditorVersion();
 
-
+	//intern
+	public String getDirectory();
 }

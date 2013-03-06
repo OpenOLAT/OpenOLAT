@@ -65,7 +65,7 @@ public abstract class Component {
 	private boolean dirty = false;
 	private boolean domReplaceable = true;
 
-	private final List<Controller> listeners;
+	private final List<ComponentEventListener> listeners;
 	private Translator translator;
 	// for debugging reasons to trace where the latest dispatch occured
 	private Controller latestDispatchedController;
@@ -127,7 +127,7 @@ public abstract class Component {
 					
 		this.name = name;
 		this.translator = translator;
-		listeners = new ArrayList<Controller>(2);
+		listeners = new ArrayList<ComponentEventListener>(2);
 	}
 	
 	/**
@@ -218,27 +218,31 @@ public abstract class Component {
 	 * @param ores
 	 */
 	protected void fireEvent(final UserRequest ureq, final Event event) {
-		Controller[] listenerArray = new Controller[listeners.size()];
+		ComponentEventListener[] listenerArray = new ComponentEventListener[listeners.size()];
 		listeners.toArray(listenerArray);
 		
-		for (Controller listenerA:listenerArray) {
-			final Controller listener = listenerA;
-			latestDispatchedController = listenerA;
+		for (ComponentEventListener listenerA:listenerArray) {
 			latestFiredEvent = event;
-			try{
-				listener.getUserActivityLogger().frameworkSetBusinessPathFromWindowControl(listener.getWindowControlForDebug());
-			} catch(AssertException e) {
-				log_.error("Error in setting up the businessPath on the IUserActivityLogger. listener="+listener, e);
-				// still continue
+			if(listenerA instanceof Controller) {
+				final Controller listener = (Controller)listenerA;
+				latestDispatchedController = listener;
+				try{
+					listener.getUserActivityLogger().frameworkSetBusinessPathFromWindowControl(listener.getWindowControlForDebug());
+				} catch(AssertException e) {
+					log_.error("Error in setting up the businessPath on the IUserActivityLogger. listener="+listener, e);
+					// still continue
+				}
+
+				ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
+					public void run() {
+						listener.dispatchEvent(ureq, Component.this, event);
+					}
+					
+				}, listener.getUserActivityLogger());
+			} else {
+				listenerA.dispatchEvent(ureq, Component.this, event);
 			}
 
-			ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
-
-				public void run() {
-					listener.dispatchEvent(ureq, Component.this, event);
-				}
-				
-			}, listener.getUserActivityLogger());
 			// clear the event for memory reasons, used only for debugging reasons in
 			// case of an error
 			// TODO:fj: may be useful for admin purposes
@@ -252,14 +256,14 @@ public abstract class Component {
 	 * 
 	 * @return a list of the controllers listening (normally only one)
 	 */
-	public List<Controller> debuginfoGetListeners() {
+	public List<ComponentEventListener> debuginfoGetListeners() {
 		return listeners;
 	}
 	
 	/**
 	 * @param controller
 	 */
-	public void addListener(Controller controller) {
+	public void addListener(ComponentEventListener controller) {
 		// tests if the same controller was already registered to avoid
 		// double-firing.
 		// the contains method is fast since there is normally one one listener
@@ -269,7 +273,7 @@ public abstract class Component {
 		listeners.add(controller);
 	}
 	
-	public void removeListener(Controller controller) {
+	public void removeListener(ComponentEventListener controller) {
 		listeners.remove(controller);
 	}
 
@@ -285,7 +289,7 @@ public abstract class Component {
 	 * 
 	 * @param translator The translator to set
 	 */
-	protected void setTranslator(Translator translator) {
+	public void setTranslator(Translator translator) {
 		this.translator = translator;
 	}
 

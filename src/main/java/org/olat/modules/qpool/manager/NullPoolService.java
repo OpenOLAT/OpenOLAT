@@ -27,7 +27,7 @@ import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.StudyField;
+import org.olat.modules.qpool.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -47,7 +47,7 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 	@Autowired
 	private PoolDAO poolDao;
 	@Autowired
-	private StudyFieldDAO studyFieldDao;
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private QuestionItemDAO questionItemDao;
 	
@@ -68,32 +68,32 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 	}
 	
 	private void createStudyFields() {
-		StudyField science = studyFieldDao.createAndPersist(null, "Science");
-		StudyField mathematics = studyFieldDao.createAndPersist(science, "Mathematics");
-		StudyField topology = studyFieldDao.createAndPersist(mathematics, "Topology");
-		studyFieldDao.createAndPersist(topology, "Graph theory");
+		TaxonomyLevel science = taxonomyLevelDao.createAndPersist(null, "Science");
+		TaxonomyLevel mathematics = taxonomyLevelDao.createAndPersist(science, "Mathematics");
+		TaxonomyLevel topology = taxonomyLevelDao.createAndPersist(mathematics, "Topology");
+		taxonomyLevelDao.createAndPersist(topology, "Graph theory");
 
-		StudyField physics = studyFieldDao.createAndPersist(science, "Physics");
-		studyFieldDao.createAndPersist(physics, "General relativity");
-		StudyField quantum = studyFieldDao.createAndPersist(physics, "Quantum mechanics");
-		studyFieldDao.createAndPersist(quantum, "Quantum mechanics");
-		studyFieldDao.createAndPersist(quantum, "Quantum chromodynamics");
-		studyFieldDao.createAndPersist(quantum, "Standard Model");
-		studyFieldDao.createAndPersist(quantum, "Higgs field");
+		TaxonomyLevel physics = taxonomyLevelDao.createAndPersist(science, "Physics");
+		taxonomyLevelDao.createAndPersist(physics, "General relativity");
+		TaxonomyLevel quantum = taxonomyLevelDao.createAndPersist(physics, "Quantum mechanics");
+		taxonomyLevelDao.createAndPersist(quantum, "Quantum mechanics");
+		taxonomyLevelDao.createAndPersist(quantum, "Quantum chromodynamics");
+		taxonomyLevelDao.createAndPersist(quantum, "Standard Model");
+		taxonomyLevelDao.createAndPersist(quantum, "Higgs field");
 		
-		studyFieldDao.createAndPersist(science, "Chemistry");
+		taxonomyLevelDao.createAndPersist(science, "Chemistry");
 		dbInstance.commit();
 	}
 	
 	private void createQuestions() {
-		List<StudyField> fields = studyFieldDao.loadAllFields();
+		List<TaxonomyLevel> fields = taxonomyLevelDao.loadAllLevels();
 
 		int numOfQuestions = questionItemDao.getNumOfQuestions();
 		if(numOfQuestions < 3) {
 			List<Pool> pools = poolDao.getPools(0, -1);
 			for(int i=0; i<200; i++) {
 				long randomIndex = Math.round(Math.random() * (fields.size() - 1));
-				StudyField field = fields.get((int)randomIndex);
+				TaxonomyLevel field = fields.get((int)randomIndex);
 				QuestionItem item = questionItemDao.create(null, "NGC " + i, QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), field, null, randomType());
 				poolDao.addItemToPool(item, pools.get(0));
 			}

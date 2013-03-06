@@ -137,6 +137,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		}
 		//if enabled or not must be set now in case it was set during construction time
 		this.component.setEnabled(isEnabled());
+		this.component.setTranslator(getTranslator());
 	}
 	
 	@Override

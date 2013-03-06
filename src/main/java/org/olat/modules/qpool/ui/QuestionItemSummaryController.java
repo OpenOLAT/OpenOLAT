@@ -19,8 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.math.BigDecimal;
-
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -29,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionPoolService;
 
 /**
  * 
@@ -39,18 +39,20 @@ import org.olat.modules.qpool.QuestionItem;
 public class QuestionItemSummaryController extends FormBasicController {
 	
 	private StaticTextElement keyEl;
+	private StaticTextElement identifierEl;
 	private StaticTextElement subjectEl;
 	private StaticTextElement studyFieldEl;
 	private StaticTextElement keywordsEl;
-	private StaticTextElement selectivityEl;
 	private StaticTextElement usageEl;
 	private StaticTextElement descriptionEl;
 	
-
 	private QuestionItem item;
+	private final QuestionPoolService qpoolService;
 	
 	public QuestionItemSummaryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 		
 		initForm(ureq);
 	}
@@ -59,13 +61,13 @@ public class QuestionItemSummaryController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("metadatas");
 		
-		keyEl = uifactory.addStaticTextElement("item.key", "", formLayout);
-		subjectEl = uifactory.addStaticTextElement("item.subject", "", formLayout);
-		studyFieldEl = uifactory.addStaticTextElement("item.studyField", "", formLayout);
-		keywordsEl = uifactory.addStaticTextElement("item.keywords", "", formLayout);
-		selectivityEl = uifactory.addStaticTextElement("item.selectivity", "", formLayout);
-		usageEl = uifactory.addStaticTextElement("item.usage", "", formLayout);
-		descriptionEl = uifactory.addStaticTextElement("item.description", "", formLayout);
+		keyEl = uifactory.addStaticTextElement("general.key", "", formLayout);
+		identifierEl = uifactory.addStaticTextElement("general.identifier", "", formLayout);
+		subjectEl = uifactory.addStaticTextElement("general.title", "", formLayout);
+		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", formLayout);
+		studyFieldEl = uifactory.addStaticTextElement("classification.taxonomy.level", "", formLayout);
+		usageEl = uifactory.addStaticTextElement("question.usage", "", formLayout);
+		descriptionEl = uifactory.addStaticTextElement("general.description", "", formLayout);
 	}
 	
 	@Override
@@ -81,22 +83,12 @@ public class QuestionItemSummaryController extends FormBasicController {
 		this.item = item;
 
 		keyEl.setValue(item.getKey().toString());
-		subjectEl.setValue(item.getSubject());
-		studyFieldEl.setValue("");
-		
+		identifierEl.setValue(item.getIdentifier());
+		subjectEl.setValue(item.getTitle());
 		String keywords = item.getKeywords();
-		if(StringHelper.containsNonWhitespace(keywords)) {
-			keywordsEl.setValue(keywords);
-		} else {
-			keywordsEl.setValue("");
-		}
-		
-		BigDecimal selectivity = item.getSelectivity();
-		String selectivityStr = "";
-		if(selectivity != null) {
-			selectivityStr = selectivity.toPlainString();
-		}
-		selectivityEl.setValue(selectivityStr);
+		keywordsEl.setValue(keywords == null ? "" : keywords);
+		String taxonPath = qpoolService.getTaxonomicPath(item);
+		studyFieldEl.setValue(taxonPath == null ? "" : taxonPath);
 		
 		int usage = item.getUsage();
 		String usageStr = "";
@@ -118,7 +110,6 @@ public class QuestionItemSummaryController extends FormBasicController {
 		subjectEl.setValue("");
 		studyFieldEl.setValue("");
 		keywordsEl.setValue("");
-		selectivityEl.setValue("");
 		usageEl.setValue("");
 		descriptionEl.setValue("");
 	}

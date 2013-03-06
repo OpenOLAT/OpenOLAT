@@ -80,7 +80,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 
 	private String permanentIndexPath;
 	private DirectoryReader reader;
-	private IndexWriter permanentIndexWriter;
+	private IndexWriterHolder permanentIndexWriter;
 	
 	private double ramBufferSizeMB;
 	private boolean useCompoundFile;
@@ -172,12 +172,9 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		try {
 			File tempIndexDir = new File(permanentIndexPath);
 			Directory indexPath = FSDirectory.open(tempIndexDir);
-			
 			if(indexingNode) {
-				permanentIndexWriter = new IndexWriter(indexPath, newIndexWriterConfig());
-				permanentIndexWriter.commit();
+				permanentIndexWriter = new IndexWriterHolder (indexPath, newIndexWriterConfig());
 			}
-	
 			reader = DirectoryReader.open(indexPath);
 		} catch (IOException e) {
 			log.error("", e);
@@ -229,9 +226,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	
 	public void closeWriter() {
 		try {
-			permanentIndexWriter.commit();
 			permanentIndexWriter.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("", e);
 		}
 	}
@@ -293,6 +289,14 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		return reader;
 	}
 	
+	public IndexWriter getAndLockWriter() throws IOException {
+		return permanentIndexWriter.getAndLock();
+	}
+	
+	public void releaseWriter(IndexWriter writer) {
+		permanentIndexWriter.release(writer);
+	}
+	
 	/**
 	 * Add or update a lucene document in the permanent index.
 	 * @param uuid
@@ -300,6 +304,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	 */
 	@Override
 	public void addDocument(Document document) {
+		IndexWriter writer = null;
 		try {
 			String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
 			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
@@ -307,11 +312,31 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			DirectoryReader reader = getReader();
 			IndexSearcher searcher = new IndexSearcher(reader);
 	    TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
+	    writer = permanentIndexWriter.getAndLock();
 			if(hits.totalHits > 0) {
-				permanentIndexWriter.updateDocument(uuidTerm, document);
+				writer.updateDocument(uuidTerm, document);
 			} else {
-				permanentIndexWriter.addDocument(document);
-				permanentIndexWriter.commit();
+				writer.addDocument(document);
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		} finally {
+			permanentIndexWriter.release(writer);
+		}
+	}
+
+	@Override
+	public void addDocument(Document document, IndexWriter writer) {
+		try {
+			String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
+			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
+			DirectoryReader reader = getReader();
+			IndexSearcher searcher = new IndexSearcher(reader);
+	    TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
+			if(hits.totalHits > 0) {
+				writer.updateDocument(uuidTerm, document);
+			} else {
+				writer.addDocument(document);
 			}
 		} catch (IOException e) {
 			log.error("", e);

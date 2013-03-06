@@ -27,7 +27,7 @@ import java.util.Date;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface StudyField {
+public interface TaxonomyLevel {
 	
 	public Long getKey();
 
@@ -37,7 +37,7 @@ public interface StudyField {
 	
 	public String getField();
 	
-	public StudyField getParentField();
+	public TaxonomyLevel getParentField();
 	
 	public String getMaterializedPathKeys();
 

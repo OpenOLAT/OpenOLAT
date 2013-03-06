@@ -73,7 +73,7 @@ public class QuestionItemDocumentFactory {
 		OlatDocument oDocument = new OlatDocument();
 		oDocument.setId(item.getKey());
 		oDocument.setCreatedDate(item.getCreationDate());
-		oDocument.setTitle(item.getSubject());
+		oDocument.setTitle(item.getTitle());
 		oDocument.setDescription(item.getDescription());
 		oDocument.setResourceUrl("[QuestionItem:" + item.getKey() + "]");
 		oDocument.setDocumentType(QuestionItemDocument.TYPE);
@@ -112,7 +112,7 @@ public class QuestionItemDocumentFactory {
 		}
 
 		//need path
-		String path = item.getStudyFieldPath();
+		String path = item.getTaxonomicPath();
 		if(StringHelper.containsNonWhitespace(path)) {
 			for(StringTokenizer tokenizer = new StringTokenizer(path, "/"); tokenizer.hasMoreTokens(); ) {
 				String nextToken = tokenizer.nextToken();

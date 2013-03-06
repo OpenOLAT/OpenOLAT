@@ -27,7 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.modules.qpool.QuestionPoolService;
-import org.olat.modules.qpool.StudyField;
+import org.olat.modules.qpool.TaxonomyLevel;
 
 /**
  * 
@@ -50,9 +50,9 @@ public class StudyFieldTreeModel extends GenericTreeModel {
 		GenericTreeNode rootNode = new GenericTreeNode("root", "root");
 		setRootNode(rootNode);
 
-		List<StudyField> fields = qpoolService.getStudyFields();
+		List<TaxonomyLevel> fields = qpoolService.getStudyFields();
 		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<Long, GenericTreeNode>();
-		for(StudyField field:fields) {
+		for(TaxonomyLevel field:fields) {
 			Long key = field.getKey();
 			GenericTreeNode node = fieldKeyToNode.get(key);
 			if(node == null) {
@@ -60,7 +60,7 @@ public class StudyFieldTreeModel extends GenericTreeModel {
 				fieldKeyToNode.put(key, node);
 			}
 
-			StudyField parentField = field.getParentField();
+			TaxonomyLevel parentField = field.getParentField();
 			if(parentField == null) {
 				//this is a root
 				rootNode.addChild(node);

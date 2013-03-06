@@ -416,10 +416,13 @@ function o_ainvoke(r) {
 							//var con = jQuery(hfrag).find('script').remove(); //Strip scripts
 							var hdrco = hdr+"\n\n"+hfrag;
 							var inscripts = '';//jQuery(hfrag).find('script');//hfrag.extractScripts();
+							
+							var replaceElement = false;
 							var newc = jQuery("#o_c"+ciid);
 							if (newc == null || (newc.length == 0)) {
 								//not a container, perhaps an element
 								newc = jQuery("#o_fi"+ciid);
+								replaceElement = true;
 							} 
 							if (newc != null) {
 								if(civis){ // needed only for ie 6/7 bug where an empty div requires space on screen
@@ -430,17 +433,19 @@ function o_ainvoke(r) {
 								// do dom replacement
 								// remove listeners !! ext overwrite or prototype replace does NOT remove listeners !!
 //								newc.descendants().each(function(el){if (el.stopObserving) el.stopObserving()});
-								newc.empty();
 								
-								try{
-									newc.html(hdrco);//Ext.DomHelper.overwrite(newc, hdrco, false);
-								} catch(e) {
-									console.log(e);
-									console.log('Fragment',hdrco);
+								if(replaceElement) {
+									newc.replaceWith(hdrco);	
+								} else {
+									newc.empty();
+									try{
+										newc.html(hdrco);//Ext.DomHelper.overwrite(newc, hdrco, false);
+									} catch(e) {
+										console.log(e);
+										console.log('Fragment',hdrco);
+									}
+									b_changedDomEl.push('o_c'+ciid);
 								}
-								
-								b_changedDomEl.push('o_c'+ciid);
-								
 								newc = null;
 								
 								// exeucte inline scripts

@@ -63,12 +63,12 @@ public class QuestionDAOTest extends OlatTestCase {
 		QuestionItem item = questionDao.create(null, "Stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.FIB);
 		Assert.assertNotNull(item);
 		Assert.assertNotNull(item.getKey());
-		Assert.assertNotNull(item.getUuid());
+		Assert.assertNotNull(item.getIdentifier());
 		Assert.assertNotNull(item.getCreationDate());
 		Assert.assertNotNull(item.getLastModified());
 		Assert.assertNotNull(item.getQuestionType());
 		Assert.assertNotNull(item.getQuestionStatus());
-		Assert.assertEquals("Stars", item.getSubject());
+		Assert.assertEquals("Stars", item.getTitle());
 		dbInstance.commitAndCloseSession();
 	}
 	
@@ -82,7 +82,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(item.getLastModified());
 		Assert.assertNotNull(item.getQuestionType());
 		Assert.assertNotNull(item.getQuestionStatus());
-		Assert.assertEquals("My fav. stars", item.getSubject());
+		Assert.assertEquals("My fav. stars", item.getTitle());
 		dbInstance.commitAndCloseSession();
 	}
 	

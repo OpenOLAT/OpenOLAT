@@ -220,7 +220,11 @@ public class LinkRenderer implements ComponentRenderer {
 				}
 			} else {
 				// use translator
-				sb.append(translator.translate(i18n));
+				if(translator == null) {
+					sb.append("Ohoho");
+				} else {
+					sb.append(translator.translate(i18n));
+				}
 			}
 			sb.append("</span></a>");
 			if (link.markIt) {

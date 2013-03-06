@@ -17,28 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.ui.edit;
+
+import org.olat.core.gui.control.Event;
+import org.olat.modules.qpool.QuestionItem;
 
 /**
  * 
- * Initial date: 20.02.2013<br>
+ * Initial date: 05.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum QuestionStatus {
-	draft,
-	review,
-	finalVersion,
-	revised,
-	unavailable;
-	
-	public static final String[] valueString() {
-		QuestionStatus[] enumVals = QuestionStatus.values();
-		String[] vals = new String[enumVals.length];
-		for(int i=enumVals.length; i-->0; ) {
-			vals[i] = enumVals[i].name();
-		}
-		return vals;
+public class QItemEdited extends Event {
+
+	private static final long serialVersionUID = -8778970425649808840L;
+	private final QuestionItem item;
+
+	public QItemEdited(QuestionItem item) {
+		super("qitem-edited");
+		this.item = item;
 	}
 
+	public QuestionItem getItem() {
+		return item;
+	}
 }

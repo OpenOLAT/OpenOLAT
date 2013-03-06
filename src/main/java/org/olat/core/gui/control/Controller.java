@@ -26,8 +26,8 @@
 
 package org.olat.core.gui.control;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.logging.activity.IUserActivityLogger;
 
 /**
@@ -35,7 +35,7 @@ import org.olat.core.logging.activity.IUserActivityLogger;
  * 
  * @author Felix Jost
  */
-public interface Controller extends Disposable {
+public interface Controller extends ComponentEventListener, Disposable {
 
 	/**
 	 * Adds a controller as listener to this controller
@@ -51,15 +51,7 @@ public interface Controller extends Disposable {
 	 */
 	public Component getInitialComponent();
 
-	/**
-	 * The event method will be called when a listener is added to a source and
-	 * the source fires an event
-	 * 
-	 * @param ureq The user request
-	 * @param source The component who fired the event
-	 * @param event The event
-	 */
-	public void dispatchEvent(UserRequest ureq, Component source, Event event);
+
 
 	/**
 	 * disposes the controller. to be called only by the same user that created

@@ -50,7 +50,7 @@ import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionPoolSPI;
 import org.olat.modules.qpool.QuestionPoolService;
-import org.olat.modules.qpool.StudyField;
+import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QuestionItemDocument;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -80,7 +80,7 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	@Autowired
 	private CollectionDAO collectionDao;
 	@Autowired
-	private StudyFieldDAO studyFieldDao;
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
@@ -94,12 +94,12 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	
 
 	@Override
-	public String getMateriliazedPathOfStudyFields(QuestionItem item) {
+	public String getTaxonomicPath(QuestionItem item) {
 		QuestionItemImpl reloadedItem = questionItemDao.loadById(item.getKey());
-		if(reloadedItem.getStudyField() == null) {
+		if(reloadedItem.getTaxonomyLevel() == null) {
 			return "";
 		}
-		return reloadedItem.getStudyField().getMaterializedPathNames();
+		return reloadedItem.getTaxonomyLevel().getMaterializedPathNames();
 	}
 
 	@Override
@@ -520,8 +520,8 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 
 	@Override
-	public List<StudyField> getStudyFields() {
-		return studyFieldDao.loadAllFields();
+	public List<TaxonomyLevel> getStudyFields() {
+		return taxonomyLevelDao.loadAllLevels();
 	}
 	
 	

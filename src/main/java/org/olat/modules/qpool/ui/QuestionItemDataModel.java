@@ -155,10 +155,12 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 	public Object getValueAt(int row, int col) {
 		QuestionItemRow item = getObject(row);
 		switch(Cols.values()[col]) {
-			case id: return item.getKey();
-			case subject: return item.getSubject();
-			case studyField: return item.getStudyFieldName();
-			case point: return item.getPoint();
+			case key: return item.getKey();
+			case identifier: return item.getIdentifier();
+			case masterIdentifier: return item.getMasterIdentifier();
+			case title: return item.getTitle();
+			case taxnonomyLevel: return item.getTaxonomyLevelName();
+			case difficulty: return item.getDifficulty();
 			case type: {
 				QuestionType type = item.getQuestionType();
 				if(type == null) {
@@ -171,7 +173,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 				if(s == null) {
 					return "";
 				}
-				return translator.translate(s.name());
+				return translator.translate("lifecycle.status." + s.name());
 			}
 			case mark: {
 				return item.getMarkLink();
@@ -183,12 +185,15 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 	}
 	
 	public enum Cols {
-		id("item.key"),
-		subject("item.subject"),
-		studyField("item.studyField"),
-		point("item.point"),
-		type("item.type"),
-		status("item.status"),
+		key("general.key"),
+		identifier("general.identifier"),
+		masterIdentifier("general.master.identifier"),
+		title("general.title"),
+		taxnonomyLevel("classification.taxonomy.level"),
+		difficulty("question.difficulty"),
+		
+		type("question.assessmentType"),
+		status("lifecycle.status"),
 		mark("mark");
 		
 		private final String i18nKey;

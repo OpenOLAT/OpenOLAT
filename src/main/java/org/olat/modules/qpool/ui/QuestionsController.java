@@ -147,7 +147,7 @@ public class QuestionsController extends BasicController implements StackedContr
 		listenTo(detailsCtrl);
 		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);
 		listenTo(mainCtrl);
-		stackPanel.pushController(item.getSubject(), mainCtrl);
+		stackPanel.pushController(item.getTitle(), mainCtrl);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, QuestionItem item) {

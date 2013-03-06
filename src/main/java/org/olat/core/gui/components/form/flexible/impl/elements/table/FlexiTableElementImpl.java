@@ -35,14 +35,19 @@ import java.util.Set;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
@@ -52,7 +57,7 @@ import org.olat.core.util.ValidationStatus;
  * 
  * @author Christian Guretzki
  */
-public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection {
+public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection, ComponentEventListener {
 
 	//settings
 	private boolean multiSelect;
@@ -64,9 +69,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int currentFirstResult;
 	private int pageSize;
 	private boolean searchField;
-	
+
+	private FormLink searchButton;
 	private TextElement searchFieldEl;
-	private FormSubmit searchButton;
 	
 	private FlexiTableDataModel dataModel;
 	private FlexiTableDataSource<?> dataSource;
@@ -101,9 +106,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			String dispatchId = component.getDispatchID();
 			searchFieldEl = new TextElementImpl(dispatchId + "_searchField", "search", "");
 			searchFieldEl.showLabel(false);
-			components.put("rSearch", searchFieldEl);
-			searchButton = new FormSubmit(dispatchId + "_searchButton", "rSearchButton", "search");
+			searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
 			searchButton.setTranslator(translator);
+			
+			components.put("rSearch", searchFieldEl);
 			components.put("rSearchB", searchButton);
 		}
 		
@@ -144,12 +150,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public String getSearchText() {
 		return searchFieldEl == null ? null : searchFieldEl.getValue();
 	}
-	
+
 	public TextElement getSearchElement() {
 		return searchFieldEl;
 	}
 	
-	public FormSubmit getSearchButton() {
+	public FormItem getSearchButton() {
 		return searchButton;
 	}
 
@@ -210,6 +216,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	protected void dispatchFormRequest(UserRequest ureq) {
 		super.dispatchFormRequest(ureq);
 	}
+
+	@Override
+	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
+		//
+		System.out.println();
+	}
 	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
@@ -223,7 +235,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 		String selectedIndex = getRootForm().getRequestParameter("rSelect");
 		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
-		if(StringHelper.containsNonWhitespace(selectedIndex)) {
+		if("undefined".equals(dispatchuri)) {
+			evalSearchRequest(ureq);
+		} else if(StringHelper.containsNonWhitespace(selectedIndex)) {
 			int index = selectedIndex.lastIndexOf('-');
 			if(index > 0 && index+1 < selectedIndex.length()) {
 				String pos = selectedIndex.substring(index+1);
@@ -232,15 +246,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
 			//snap the request
-			searchFieldEl.evalFormRequest(ureq);
-			String search = searchFieldEl.getValue();
-			if(StringHelper.containsNonWhitespace(search)) {
-				doSearch(ureq, search);
-			} else {
-				doResetSearch(ureq);
-			}
+			evalSearchRequest(ureq);
 		} else {
-			boolean actionEvent = false;
 			FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
 			for(int i=colModel.getColumnCount(); i-->0; ) {
 				FlexiColumnModel col = colModel.getColumnModel(i);
@@ -248,20 +255,19 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					String selectedRowIndex = getRootForm().getRequestParameter(col.getAction());
 					if(StringHelper.containsNonWhitespace(selectedRowIndex)) {
 						doSelect(ureq, col.getAction(), Integer.parseInt(selectedRowIndex));
-						actionEvent = true;
 					}
 				}
 			}
-			
-			if(!actionEvent) {
-				String paramId = component.getFormDispatchId();
-				String value = getRootForm().getRequestParameter(paramId);
-				if (value != null) {
-					//TODO:cg:XXX do something with value TextElement e.g. setValue(value);
-					// mark associated component dirty, that it gets rerendered
-					component.setDirty(true);
-				}
-			}
+		}
+	}
+	
+	protected void evalSearchRequest(UserRequest ureq) {
+		searchFieldEl.evalFormRequest(ureq);
+		String search = searchFieldEl.getValue();
+		if(StringHelper.containsNonWhitespace(search)) {
+			doSearch(ureq, search);
+		} else {
+			doResetSearch(ureq);
 		}
 	}
 	
@@ -326,7 +332,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		if(searchButton != null) {
 			searchButton.validate(validationResults);
-		}
+		}/*
+		if(searchPanel != null) {
+			searchPanel.validate(validationResults);
+		}*/
 	}
 
 	@Override

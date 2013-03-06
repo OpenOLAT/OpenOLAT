@@ -34,28 +34,50 @@ public interface QuestionItemShort extends OLATResourceable {
 	
 	public Long getKey();
 	
-	public String getUuid();
+	//general
+	public String getIdentifier();
+	
+	public String getMasterIdentifier();
+
+	public String getTitle();
+	
+	public String getLanguage();
+	
+	//educational
+	public String getEducationalContext();
+
+	public String getEducationalLearningTime();
+	
+	//question
+	public String getType();
+	
+	public BigDecimal getDifficulty();
+	
+	public BigDecimal getStdevDifficulty();
+
+	public BigDecimal getDifferentiation();
+
+	public int getNumOfAnswerAlternatives();
+
+	public int getUsage();
+
+	//lifecycle
+	public QuestionStatus getQuestionStatus();
+	
+	//technics
+	public String getFormat();
 	
 	public Date getCreationDate();
 	
 	public Date getLastModified();
 	
-	public String getSubject();
 	
-	public String getFormat();
 	
-	public String getLanguage();
 	
-	public BigDecimal getPoint();
 	
-	public BigDecimal getSelectivity();
 	
-	public BigDecimal getDifficulty();
-	
-	public int getUsage();
 	
 	public QuestionType getQuestionType();
 	
-	public QuestionStatus getQuestionStatus();
 
 }

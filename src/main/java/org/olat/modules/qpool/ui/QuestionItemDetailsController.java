@@ -54,7 +54,7 @@ import org.olat.modules.qpool.QuestionPoolService;
  */
 public class QuestionItemDetailsController extends BasicController {
 	
-	private Link deleteItem, shareItem, saveItem;
+	private Link deleteItem, shareItem;
 
 	private Controller editCtrl;
 	private CloseableModalController cmc;
@@ -96,7 +96,6 @@ public class QuestionItemDetailsController extends BasicController {
 		listenTo(commentsAndRatingCtr);
 
 		mainVC = createVelocityContainer("item_details");
-		saveItem = LinkFactory.createButton("save", mainVC, this);
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
 		
@@ -118,8 +117,6 @@ public class QuestionItemDetailsController extends BasicController {
 			doConfirmDelete(ureq, metadatasCtrl.getItem());
 		} else if(source == shareItem) {
 			doSelectGroup(ureq, metadatasCtrl.getItem());
-		} else if(source == saveItem) {
-			doSave(ureq, metadatasCtrl.getItem());
 		}
 	}
 	
@@ -155,12 +152,7 @@ public class QuestionItemDetailsController extends BasicController {
 		selectGroupCtrl = null;
 	}
 	
-	protected void doSave(UserRequest ureq, QuestionItem item) {
-		QuestionItem mergedItem = qpoolService.updateItem(item);
-		System.out.println(mergedItem);
-	}
-	
-	protected void doSelectGroup(UserRequest ureq, QuestionItem item) {
+	private void doSelectGroup(UserRequest ureq, QuestionItem item) {
 		removeAsListenerAndDispose(selectGroupCtrl);
 		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl());
 		selectGroupCtrl.setUserObject(item);

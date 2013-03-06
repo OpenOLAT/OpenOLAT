@@ -22,9 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -72,13 +70,14 @@ public abstract class AbstractFlexiTableRenderer implements ComponentRenderer {
 	
 	protected void renderSearchFields(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		TextElement searchEl = ftE.getSearchElement();
+
+		FormItem searchEl = ftE.getSearchElement();
 		if(searchEl != null) {
 			Component searchC = searchEl.getComponent();
 			searchC.getHTMLRendererSingleton().render(renderer, sb, searchC, ubu, translator, renderResult, args);
 		}
 		
-		FormSubmit searchButton = ftE.getSearchButton();
+		FormItem searchButton = ftE.getSearchButton();
 		if(searchButton != null) {
 			Component searchB = searchButton.getComponent();
 			searchB.getHTMLRendererSingleton().render(renderer, sb, searchB, ubu, translator, renderResult, args);

@@ -19,20 +19,27 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.math.BigDecimal;
-
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
-import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.ui.edit.EducationalMetadataController;
+import org.olat.modules.qpool.ui.edit.EducationalMetadataEditController;
+import org.olat.modules.qpool.ui.edit.GeneralMetadataController;
+import org.olat.modules.qpool.ui.edit.GeneralMetadataEditController;
+import org.olat.modules.qpool.ui.edit.LifecycleMetadataController;
+import org.olat.modules.qpool.ui.edit.LifecycleMetadataEditController;
+import org.olat.modules.qpool.ui.edit.QItemEdited;
+import org.olat.modules.qpool.ui.edit.QuestionMetadataController;
+import org.olat.modules.qpool.ui.edit.QuestionMetadataEditController;
+import org.olat.modules.qpool.ui.edit.RightsMetadataController;
+import org.olat.modules.qpool.ui.edit.RightsMetadataEditController;
+import org.olat.modules.qpool.ui.edit.TechnicalMetadataController;
+import org.olat.modules.qpool.ui.edit.TechnicalMetadataEditController;
 
 /**
  * 
@@ -40,121 +47,194 @@ import org.olat.modules.qpool.QuestionType;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemMetadatasController extends FormBasicController {
+public class QuestionItemMetadatasController extends BasicController {
 
-	private final QuestionItem item;
-	private final String studyFields;
+	private final VelocityContainer mainVC;
+	private final GeneralMetadataController generalCtrl;
+	private final EducationalMetadataController educationalCtrl;
+	private final QuestionMetadataController questionCtrl;
+	private final LifecycleMetadataController lifecycleCtrl;
+	private final TechnicalMetadataController technicalCtrl;
+	private final RightsMetadataController rightsCtrl;
 	
-	private final QuestionPoolService qpoolService;
+	private GeneralMetadataEditController generalEditCtrl;
+	private EducationalMetadataEditController educationalEditCtrl;
+	private QuestionMetadataEditController questionEditCtrl;
+	private LifecycleMetadataEditController lifecycleEditCtrl;
+	private TechnicalMetadataEditController technicalEditCtrl;
+	private RightsMetadataEditController rightsEditCtrl;
+	
+	private QuestionItem item;
 	
 	public QuestionItemMetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		super(ureq, wControl, "item_metadatas");
+		super(ureq, wControl);
 		this.item = item;
-		
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
-		studyFields = qpoolService.getMateriliazedPathOfStudyFields(item);
-		
-		initForm(ureq);
+
+		generalCtrl = new GeneralMetadataController(ureq, wControl, item);
+		listenTo(generalCtrl);
+		educationalCtrl = new EducationalMetadataController(ureq, wControl, item);
+		listenTo(educationalCtrl);
+		questionCtrl = new QuestionMetadataController(ureq, wControl, item);
+		listenTo(questionCtrl);
+		lifecycleCtrl = new LifecycleMetadataController(ureq, wControl, item);
+		listenTo(lifecycleCtrl);
+		technicalCtrl = new TechnicalMetadataController(ureq, wControl, item);
+		listenTo(technicalCtrl);
+		rightsCtrl = new RightsMetadataController(ureq, wControl, item);
+		listenTo(rightsCtrl);
+
+		mainVC = createVelocityContainer("item_metadatas");
+		mainVC.put("details_general", generalCtrl.getInitialComponent());
+		mainVC.put("details_educational", educationalCtrl.getInitialComponent());
+		mainVC.put("details_question", questionCtrl.getInitialComponent());
+		mainVC.put("details_lifecycle", lifecycleCtrl.getInitialComponent());
+		mainVC.put("details_technical", technicalCtrl.getInitialComponent());
+		mainVC.put("details_rights", rightsCtrl.getInitialComponent());
+		putInitialPanel(mainVC);
+	}
+
+	@Override
+	protected void doDispose() {
+		//
 	}
 	
 	public QuestionItem getItem() {
 		return item;
 	}
+	
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		//general
-		FormLayoutContainer standardCont = FormLayoutContainer.createDefaultFormLayout("details_general", getTranslator());
-		formLayout.add(standardCont);
-		formLayout.add("details_general", standardCont);
-		standardCont.setFormTitle(translate("general"));
-
-		uifactory.addStaticTextElement("item.key", item.getKey().toString(), standardCont);
-		uifactory.addStaticTextElement("item.subject", item.getSubject(), standardCont);
-		uifactory.addStaticTextElement("item.studyField", studyFields == null ? "" : studyFields, standardCont);
-		
-		String keywords = item.getKeywords() == null ? "" : item.getKeywords();
-		uifactory.addStaticTextElement("item.keywords", keywords, standardCont);
-		
-		QuestionType type = item.getQuestionType();
-		String typeLabel = "";
-		if(type != null) {
-			typeLabel = translate("item.type." + type.name().toLowerCase());
-		}
-		uifactory.addStaticTextElement("item.type", typeLabel, standardCont);
-		uifactory.addStaticTextElement("item.language", item.getLanguage(), standardCont);
-		
-		String s = "";
-		QuestionStatus status = item.getQuestionStatus();
-		if(status != null) {
-			s = translate(status.name());
-		}
-		uifactory.addStaticTextElement("item.status", s, standardCont);
-		
-		//description
-		FormLayoutContainer descriptionCont = FormLayoutContainer.createDefaultFormLayout("details_description", getTranslator());
-		formLayout.add(descriptionCont);
-		formLayout.add("details_description", descriptionCont);
-		descriptionCont.setFormTitle(translate("item.description"));
-
-		uifactory.addStaticTextElement("item.description", item.getDescription() == null ? "" : item.getDescription(), descriptionCont);
-		
-		//rights
-		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("details_rights", getTranslator());
-		formLayout.add(rightsCont);
-		formLayout.add("details_rights", rightsCont);
-		rightsCont.setFormTitle(translate("rights"));
-
-		uifactory.addStaticTextElement("item.copyright", item.getCopyright() == null ? "" : item.getCopyright(), rightsCont);
-		
-		//applications
-		FormLayoutContainer applicationsCont = FormLayoutContainer.createDefaultFormLayout("details_applications", getTranslator());
-		formLayout.add(applicationsCont);
-		formLayout.add("details_applications", applicationsCont);
-		applicationsCont.setFormTitle(translate("applications"));
-
-		uifactory.addStaticTextElement("item.difficulty", toString(item.getDifficulty()), applicationsCont);
-		uifactory.addStaticTextElement("item.selectivity", toString(item.getSelectivity()), applicationsCont);
-		
-		int usage = item.getUsage();
-		String usageStr = "";
-		if(usage >= 0) {
-			usageStr = Integer.toString(usage);
-		}
-		uifactory.addStaticTextElement("item.usage", usageStr, applicationsCont);
-		uifactory.addStaticTextElement("item.testType", item.getTestType(), applicationsCont);
-		uifactory.addStaticTextElement("item.level", item.getLevel(), applicationsCont);
-
-		//technics
-		FormLayoutContainer technicsCont = FormLayoutContainer.createDefaultFormLayout("details_technics", getTranslator());
-		formLayout.add(technicsCont);
-		formLayout.add("details_technics", technicsCont);
-		technicsCont.setFormTitle(translate("technics"));
-		
-		Formatter format = Formatter.getInstance(getLocale());
-		uifactory.addStaticTextElement("item.format", item.getFormat(), technicsCont);
-		uifactory.addStaticTextElement("item.editor", item.getEditor(), technicsCont);
-		uifactory.addStaticTextElement("item.creation", format.formatDate(item.getCreationDate()), technicsCont);
-		uifactory.addStaticTextElement("item.lastModified", format.formatDate(item.getLastModified()), technicsCont);
-		uifactory.addStaticTextElement("item.version", item.getItemVersion(), technicsCont);
-	}
-	
-	private final String toString(BigDecimal decimal) {
-		if(decimal == null) {
-			return "";
-		} else {
-			return decimal.toPlainString();
-		}
-	}
-	
-	@Override
-	protected void doDispose() {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		
+		if(QPoolEvent.EDIT.endsWith(event.getCommand())) {
+			if(source == generalCtrl) {
+				doEditGeneralMetadata(ureq);
+			} else if(source == educationalCtrl) {
+				doEditEducationalMetadata(ureq);
+			} else if(source == questionCtrl) {
+				doEditQuestionMetadata(ureq);
+			} else if(source == lifecycleCtrl) {
+				doEditLifecycleMetadata(ureq);
+			} else if(source == technicalCtrl) {
+				doEditTechnicalMetadata(ureq);
+			} else if(source == rightsCtrl) {
+				doEditRightsMetadata(ureq);
+			}
+		} else if(event instanceof QItemEdited) {
+			QItemEdited editEvent = (QItemEdited)event;
+			if (source == generalEditCtrl) {
+				doGeneralMetadataFinishEditing(ureq);
+			} else if (source == educationalEditCtrl) {
+				doEducationalMetadataFinishEditing(ureq);
+			}	else if(source == questionEditCtrl) {
+				doQuestionMetadataFinishEditing(ureq);
+			} else if(source == lifecycleEditCtrl) {
+				doLifecycleMetadataFinishEditing(ureq);
+			} else if(source == technicalEditCtrl) {
+				doTechnicalMetadataFinishEditing(ureq);
+			} else if(source == rightsEditCtrl) {
+				doRightsMetadataFinishEditing(ureq);
+			}
+			reloadData(editEvent.getItem());
+		} else if(event == Event.CANCELLED_EVENT) {
+			if (source == generalEditCtrl) {
+				doGeneralMetadataFinishEditing(ureq);
+			} else if (source == educationalEditCtrl) {
+				doEducationalMetadataFinishEditing(ureq);
+			} else if(source == questionEditCtrl) {
+				doQuestionMetadataFinishEditing(ureq);
+			} else if(source == lifecycleEditCtrl) {
+				doLifecycleMetadataFinishEditing(ureq);
+			} else if(source == technicalEditCtrl) {
+				doTechnicalMetadataFinishEditing(ureq);
+			} else if(source == rightsEditCtrl) {
+				doRightsMetadataFinishEditing(ureq);
+			}
+		}
+	}
+	
+	private void doEditGeneralMetadata(UserRequest ureq) {
+		generalEditCtrl = new GeneralMetadataEditController(ureq, getWindowControl(), item);
+		listenTo(generalEditCtrl);
+		mainVC.put("details_general", generalEditCtrl.getInitialComponent());
+	}
+	
+	private void doGeneralMetadataFinishEditing(UserRequest ureq) {
+		removeAsListenerAndDispose(generalEditCtrl);
+		generalEditCtrl = null;
+		mainVC.put("details_general", generalCtrl.getInitialComponent());
+	}
+	
+	private void doEditEducationalMetadata(UserRequest ureq) {
+		educationalEditCtrl= new EducationalMetadataEditController(ureq, getWindowControl(), item);
+		listenTo(educationalEditCtrl);
+		mainVC.put("details_educational", educationalEditCtrl.getInitialComponent());
+	}
+	
+	private void doEducationalMetadataFinishEditing(UserRequest ureq) {
+		removeAsListenerAndDispose(educationalEditCtrl);
+		educationalEditCtrl = null;
+		mainVC.put("details_educational", educationalCtrl.getInitialComponent());
+	}
+	
+	private void doEditQuestionMetadata(UserRequest ureq) {
+		questionEditCtrl= new QuestionMetadataEditController(ureq, getWindowControl(), item);
+		listenTo(questionEditCtrl);
+		mainVC.put("details_question", questionEditCtrl.getInitialComponent());
+	}
+	
+	private void doQuestionMetadataFinishEditing(UserRequest ureq) {
+		removeAsListenerAndDispose(questionEditCtrl);
+		questionEditCtrl = null;
+		mainVC.put("details_question", questionCtrl.getInitialComponent());
+	}
+	
+	private void doEditLifecycleMetadata(UserRequest ureq) {
+		lifecycleEditCtrl= new LifecycleMetadataEditController(ureq, getWindowControl(), item);
+		listenTo(lifecycleEditCtrl);
+		mainVC.put("details_lifecycle", lifecycleEditCtrl.getInitialComponent());
+	}
+	
+	private void doLifecycleMetadataFinishEditing(UserRequest ureq) {
+		removeAsListenerAndDispose(lifecycleEditCtrl);
+		lifecycleEditCtrl = null;
+		mainVC.put("details_lifecycle", lifecycleCtrl.getInitialComponent());
+	}
+	
+	private void doEditTechnicalMetadata(UserRequest ureq) {
+		technicalEditCtrl= new TechnicalMetadataEditController(ureq, getWindowControl(), item);
+		listenTo(technicalEditCtrl);
+		mainVC.put("details_technical", technicalEditCtrl.getInitialComponent());
+	}
+	
+	private void doTechnicalMetadataFinishEditing(UserRequest ureq) {
+		removeAsListenerAndDispose(technicalEditCtrl);
+		technicalEditCtrl = null;
+		mainVC.put("details_technical", technicalCtrl.getInitialComponent());
+	}
+	
+	private void doEditRightsMetadata(UserRequest ureq) {
+		rightsEditCtrl= new RightsMetadataEditController(ureq, getWindowControl(), item);
+		listenTo(rightsEditCtrl);
+		mainVC.put("details_rights", rightsEditCtrl.getInitialComponent());
+	}
+	
+	private void doRightsMetadataFinishEditing(UserRequest ureq) {
+		removeAsListenerAndDispose(rightsEditCtrl);
+		rightsEditCtrl = null;
+		mainVC.put("details_rights", rightsCtrl.getInitialComponent());
+	}
+	
+	private void reloadData(QuestionItem item) {
+		this.item = item;
+		generalCtrl.setItem(item);
+		educationalCtrl.setItem(item);
+		questionCtrl.setItem(item);
+		lifecycleCtrl.setItem(item);
 	}
 }

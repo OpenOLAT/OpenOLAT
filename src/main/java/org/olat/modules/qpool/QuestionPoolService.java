@@ -39,7 +39,7 @@ import org.olat.resource.OLATResource;
  */
 public interface QuestionPoolService {
 	
-	public String getMateriliazedPathOfStudyFields(QuestionItem item);
+	public String getTaxonomicPath(QuestionItem item);
 	
 	public void deleteItems(List<QuestionItem> items);
 	
@@ -103,7 +103,7 @@ public interface QuestionPoolService {
 
 	
 	//study field admin
-	public List<StudyField> getStudyFields();
+	public List<TaxonomyLevel> getStudyFields();
 	
 	
 	//pool administration

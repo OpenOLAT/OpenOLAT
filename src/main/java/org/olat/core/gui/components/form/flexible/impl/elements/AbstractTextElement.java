@@ -196,6 +196,11 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	public void setDisplaySize(int displaySize){
 		this.displaySize = displaySize;
 	}
+	
+	@Override
+	public int getMaxLength() {
+		return maxlength;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#setMaxLength(int)

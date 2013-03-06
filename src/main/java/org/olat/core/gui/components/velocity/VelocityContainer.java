@@ -29,9 +29,9 @@ package org.olat.core.gui.components.velocity;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Container;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -60,7 +60,7 @@ public class VelocityContainer extends Container {
 	 * @param listeningController the listenenController; may be null if the
 	 *          caller has no need to register for events
 	 */
-	public VelocityContainer(String componentName, String pagePath, Translator trans, Controller listeningController) {
+	public VelocityContainer(String componentName, String pagePath, Translator trans, ComponentEventListener listeningController) {
 		this(null, componentName, pagePath, trans, listeningController);
 	}
 	
@@ -73,7 +73,7 @@ public class VelocityContainer extends Container {
 	 * @param listeningController the listenenController; may be null if the
 	 *          caller has no need to register for events
 	 */
-	public VelocityContainer(String id, String componentName, String pagePath, Translator trans, Controller listeningController) {
+	public VelocityContainer(String id, String componentName, String pagePath, Translator trans, ComponentEventListener listeningController) {
 		super(id, componentName, trans);
 		setPage(pagePath);
 		if (listeningController != null) addListener(listeningController);
@@ -88,7 +88,7 @@ public class VelocityContainer extends Container {
 	 * @param listeningController the listenenController; may be null if the
 	 *          caller has no need to register for events
 	 */
-	public VelocityContainer(String componentName, Class baseClass, String pageName, Translator trans, Controller listeningController) {
+	public VelocityContainer(String componentName, Class<?> baseClass, String pageName, Translator trans, ComponentEventListener listeningController) {
 		this(componentName, Util.getPackageVelocityRoot(baseClass) + "/" + pageName + ".html", trans, listeningController);
 	}
 

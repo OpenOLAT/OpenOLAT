@@ -46,7 +46,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.StudyField;
+import org.olat.modules.qpool.TaxonomyLevel;
 
 /**
  * 
@@ -67,66 +67,87 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
   @GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-	@Column(name="q_uuid", nullable=false, insertable=true, updatable=false)
-	private String uuid;
-
+	
 	//general
-	@Column(name="q_subject", nullable=false, insertable=true, updatable=true)
-	private String subject;
-	@ManyToOne(targetEntity=StudyFieldImpl.class)
-	@JoinColumn(name="fk_study_field", nullable=true, insertable=true, updatable=true)
-	private StudyField studyField;
-	@Column(name="q_keywords", nullable=true, insertable=true, updatable=true)
-	private String keywords;
-	@Column(name="q_type", nullable=false, insertable=true, updatable=true)
-	private String type;
-	@Column(name="q_language", nullable=false, insertable=true, updatable=true)
-	private String language;
-	@Column(name="q_status", nullable=false, insertable=true, updatable=true)
-	private String status;
+	@Column(name="q_identifier", nullable=false, insertable=true, updatable=false)
+	private String identifier;
+	@Column(name="q_master_identifier", nullable=false, insertable=true, updatable=false)
+	private String masterIdentifier;
+	@Column(name="q_title", nullable=false, insertable=true, updatable=true)
+	private String title;
 	@Column(name="q_description", nullable=true, insertable=true, updatable=true)
 	private String description;
+	@Column(name="q_keywords", nullable=true, insertable=true, updatable=true)
+	private String keywords;
+	@Column(name="q_coverage", nullable=true, insertable=true, updatable=true)
+	private String coverage;
+	@Column(name="q_additional_informations", nullable=true, insertable=true, updatable=true)
+	private String additionalInformations;
+	@Column(name="q_language", nullable=false, insertable=true, updatable=true)
+	private String language;
 	
+	//classification
+	@ManyToOne(targetEntity=TaxonomyLevelImpl.class)
+	@JoinColumn(name="fk_taxonomy_level", nullable=true, insertable=true, updatable=true)
+	private TaxonomyLevel taxonomyLevel;
+	
+	//educational
+	@Column(name="q_educational_context", nullable=true, insertable=true, updatable=true)
+	private String educationalContext;
+	@Column(name="q_educational_learningtime", nullable=false, insertable=true, updatable=true)
+	private String educationalLearningTime;
+	
+	//question
+	@Column(name="q_type", nullable=false, insertable=true, updatable=true)
+	private String type;
+	@Column(name="q_difficulty", nullable=true, insertable=true, updatable=true)
+	private BigDecimal difficulty;
+	@Column(name="q_stdev_difficulty", nullable=true, insertable=true, updatable=true)
+	private BigDecimal stdevDifficulty;
+	@Column(name="q_differentiation", nullable=true, insertable=true, updatable=true)
+	private BigDecimal differentiation;
+	@Column(name="q_num_of_answers_alt", nullable=false, insertable=true, updatable=true)
+	private int numOfAnswerAlternatives;
+	@Column(name="q_usage", nullable=false, insertable=true, updatable=true)
+	private int usage;
+	@Column(name="q_assessment_type", nullable=false, insertable=true, updatable=true)
+	private String assessmentType;
+	
+	//life cycle
+	@Column(name="q_version", nullable=true, insertable=true, updatable=true)
+	private String itemVersion;
+	@Column(name="q_status", nullable=false, insertable=true, updatable=true)
+	private String status;
+	//TODO contribute
+
 	//rights
 	@Column(name="q_copyright", nullable=true, insertable=true, updatable=true)
 	private String copyright;
-	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_ownergroup", nullable=false, insertable=true, updatable=false)
-	private SecurityGroup ownerGroup;
-	
-	//usage
-	@Column(name="q_point", nullable=true, insertable=true, updatable=true)
-	private BigDecimal point;
-	@Column(name="q_difficulty", nullable=true, insertable=true, updatable=true)
-	private BigDecimal difficulty;
-	@Column(name="q_selectivity", nullable=true, insertable=true, updatable=true)
-	private BigDecimal selectivity;
-	@Column(name="q_usage", nullable=false, insertable=true, updatable=true)
-	private int usage;
-	@Column(name="q_test_type", nullable=false, insertable=true, updatable=true)
-	private String testType;
-	@Column(name="q_level", nullable=false, insertable=true, updatable=true)
-	private String level;
 
 	//technics
-	@Column(name="q_format", nullable=false, insertable=true, updatable=true)
-	private String format;
 	@Column(name="q_editor", nullable=true, insertable=true, updatable=true)
 	private String editor;
+	@Column(name="q_editor_version", nullable=true, insertable=true, updatable=true)
+	private String editorVersion;
+	
+	@Column(name="q_format", nullable=false, insertable=true, updatable=true)
+	private String format;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
-	@Column(name="q_version", nullable=true, insertable=true, updatable=true)
-	private String itemVersion;
-	
+
+	//intern
 	@Column(name="q_dir", nullable=true, insertable=true, updatable=false)
 	private String directory;
 	@Column(name="q_root_filename", nullable=true, insertable=true, updatable=false)
 	private String rootFilename;
-	
+	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_ownergroup", nullable=false, insertable=true, updatable=false)
+	private SecurityGroup ownerGroup;
 
 	@Override
 	public Long getKey() {
@@ -136,15 +157,7 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	public void setKey(Long key) {
 		this.key = key;
 	}
-
-	public String getUuid() {
-		return uuid;
-	}
-
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
-
+	
 	public String getResourceableTypeName() {
 		return "QuestionItem";
 	}
@@ -152,6 +165,167 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 	public Long getResourceableId() {
 		return getKey();
 	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
+	}
+
+	@Override
+	public String getMasterIdentifier() {
+		return masterIdentifier;
+	}
+
+	public void setMasterIdentifier(String masterIdentifier) {
+		this.masterIdentifier = masterIdentifier;
+	}
+
+	@Override
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getCoverage() {
+		return coverage;
+	}
+
+	public void setCoverage(String coverage) {
+		this.coverage = coverage;
+	}
+
+	public String getAdditionalInformations() {
+		return additionalInformations;
+	}
+
+	public void setAdditionalInformations(String additionalInformations) {
+		this.additionalInformations = additionalInformations;
+	}
+
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
+	}
+
+	public void setTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
+		this.taxonomyLevel = taxonomyLevel;
+	}
+	
+	@Transient
+	@Override
+	public String getTaxonomicPath() {
+		if(taxonomyLevel != null) {
+			String path = taxonomyLevel.getMaterializedPathNames();
+			if(StringHelper.containsNonWhitespace(path)) {
+				return path + "/" + taxonomyLevel.getField();
+			} 
+			return "/" + taxonomyLevel.getField();
+		}
+		return null;
+	}
+
+	@Override
+	public String getTaxonomyLevelName() {
+		if(taxonomyLevel != null) {
+			return taxonomyLevel.getField();
+		}
+		return null;
+	}
+
+
+	@Override
+	public String getEducationalContext() {
+		return educationalContext;
+	}
+
+	public void setEducationalContext(String educationalContext) {
+		this.educationalContext = educationalContext;
+	}
+
+	@Override
+	public String getEducationalLearningTime() {
+		return educationalLearningTime;
+	}
+
+	public void setEducationalLearningTime(String educationalLearningTime) {
+		this.educationalLearningTime = educationalLearningTime;
+	}
+
+	@Override
+	public BigDecimal getDifficulty() {
+		return difficulty;
+	}
+
+	public void setDifficulty(BigDecimal difficulty) {
+		this.difficulty = difficulty;
+	}
+
+	@Override
+	public BigDecimal getStdevDifficulty() {
+		return stdevDifficulty;
+	}
+
+	public void setStdevDifficulty(BigDecimal stdevDifficulty) {
+		this.stdevDifficulty = stdevDifficulty;
+	}
+
+	@Override
+	public BigDecimal getDifferentiation() {
+		return differentiation;
+	}
+
+	public void setDifferentiation(BigDecimal differentiation) {
+		this.differentiation = differentiation;
+	}
+
+	@Override
+	public int getNumOfAnswerAlternatives() {
+		return numOfAnswerAlternatives;
+	}
+
+	public void setNumOfAnswerAlternatives(int numOfAnswerAlternatives) {
+		this.numOfAnswerAlternatives = numOfAnswerAlternatives;
+	}
+
+	@Override
+	public int getUsage() {
+		return usage;
+	}
+
+	public void setUsage(int usage) {
+		this.usage = usage;
+	}
+
+	@Override
+	public String getAssessmentType() {
+		return assessmentType;
+	}
+
+	public void setAssessmentType(String assessmentType) {
+		this.assessmentType = assessmentType;
+	}
+	
+	
+	
+	
+	
+	
+	
 
 	public Date getCreationDate() {
 		return creationDate;
@@ -171,14 +345,6 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		lastModified = date;
 	}
 
-	public String getSubject() {
-		return subject;
-	}
-
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-	
 	public String getFormat() {
 		return format;
 	}
@@ -195,13 +361,7 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.language = language;
 	}
 
-	public BigDecimal getPoint() {
-		return point;
-	}
 
-	public void setPoint(BigDecimal point) {
-		this.point = point;
-	}
 
 	public String getType() {
 		return type;
@@ -226,21 +386,7 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.status = status;
 	}
 
-	public String getDescription() {
-		return description;
-	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public int getUsage() {
-		return usage;
-	}
-
-	public void setUsage(int usage) {
-		this.usage = usage;
-	}
 
 	public String getKeywords() {
 		return keywords;
@@ -250,13 +396,6 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.keywords = keywords;
 	}
 
-	public BigDecimal getSelectivity() {
-		return selectivity;
-	}
-
-	public void setSelectivity(BigDecimal selectivity) {
-		this.selectivity = selectivity;
-	}
 
 	@Transient
 	public QuestionStatus getQuestionStatus() {
@@ -266,34 +405,6 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		return null;
 	}
 
-	public StudyField getStudyField() {
-		return studyField;
-	}
-
-	public void setStudyField(StudyField studyField) {
-		this.studyField = studyField;
-	}
-	
-	@Transient
-	@Override
-	public String getStudyFieldPath() {
-		if(studyField != null) {
-			String path = studyField.getMaterializedPathNames();
-			if(StringHelper.containsNonWhitespace(path)) {
-				return path + "/" + studyField.getField();
-			} 
-			return "/" + studyField.getField();
-		}
-		return null;
-	}
-
-	@Override
-	public String getStudyFieldName() {
-		if(studyField != null) {
-			return studyField.getField();
-		}
-		return null;
-	}
 
 	public String getCopyright() {
 		return copyright;
@@ -311,29 +422,6 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 		this.ownerGroup = ownerGroup;
 	}
 
-	public BigDecimal getDifficulty() {
-		return difficulty;
-	}
-
-	public void setDifficulty(BigDecimal difficulty) {
-		this.difficulty = difficulty;
-	}
-
-	public String getTestType() {
-		return testType;
-	}
-
-	public void setTestType(String testType) {
-		this.testType = testType;
-	}
-
-	public String getLevel() {
-		return level;
-	}
-
-	public void setLevel(String level) {
-		this.level = level;
-	}
 
 	public String getEditor() {
 		return editor;
@@ -341,6 +429,14 @@ public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo,
 
 	public void setEditor(String editor) {
 		this.editor = editor;
+	}
+
+	public String getEditorVersion() {
+		return editorVersion;
+	}
+
+	public void setEditorVersion(String editorVersion) {
+		this.editorVersion = editorVersion;
 	}
 
 	public String getItemVersion() {

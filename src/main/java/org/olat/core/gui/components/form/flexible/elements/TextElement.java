@@ -139,8 +139,11 @@ public interface TextElement extends FormItem{
 	 * defines the desired display size of the element
 	 */
 	public void setDisplaySize(int displaySize);
+	
+	
+	public int getMaxLength();
 	/**
-	 * @param maxLength The maximum numbe of characters allowed in this field. Set
+	 * @param maxLength The maximum number of characters allowed in this field. Set
 	 *          -1 for no limit
 	 */
 	public void setMaxLength(int maxLength);

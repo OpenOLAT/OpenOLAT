@@ -112,7 +112,7 @@ public class CollectionDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qcollection2item coll2item ")
 		  .append(" inner join coll2item.item item ")
-		  .append(" left join fetch item.studyField studyField ")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel ")
 		  .append(" where coll2item.collection.key=:collectionKey");
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");

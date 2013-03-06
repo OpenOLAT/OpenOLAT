@@ -28,6 +28,7 @@ package org.olat.core.gui.dev;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.control.Controller;
 
 /**
@@ -46,10 +47,15 @@ public class Util {
 	 */
 	public static Controller getListeningControllerFor(Component comp) {
 		Controller c = null;
-		List<Controller> controllers = comp.debuginfoGetListeners();
-		if (controllers.size() > 0) {
+		List<ComponentEventListener> listeners = comp.debuginfoGetListeners();
+		if (listeners.size() > 0) {
 			// legacy, in future a component may only have one listener (in practice no component ever uses more than one listener; one listener = assigned responsability) 
-			c = controllers.get(0);
+			for(ComponentEventListener listener:listeners) {
+				if(listener instanceof Controller) {
+					c = (Controller)listener;
+					break;
+				}
+			}
 		}
 		return c;
 	}

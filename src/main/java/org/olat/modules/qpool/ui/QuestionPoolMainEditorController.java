@@ -179,13 +179,13 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				Object userObj = node.getUserObject();
 				if(userObj instanceof BusinessGroup) {
 					qpoolService.shareItems(Collections.singletonList(item), Collections.singletonList((BusinessGroup)userObj));
-					showInfo("item.shared", item.getSubject());
+					showInfo("item.shared", item.getTitle());
 				} else if(userObj instanceof Pool) {
 					qpoolService.addItemToPool(item, (Pool)userObj);
-					showInfo("item.pooled", item.getSubject());
+					showInfo("item.pooled", item.getTitle());
 				} else if(userObj instanceof QuestionItemCollection) {
 					qpoolService.addItemToCollection(item, (QuestionItemCollection)userObj);
-					showInfo("item.collectioned", item.getSubject());
+					showInfo("item.collectioned", item.getTitle());
 				} else if("menu.database.favorit".equals(userObj)) {
 					String businessPath = "[QuestionItem:" + item.getKey() + "]";
 					markManager.setMark(item, getIdentity(), null, businessPath);

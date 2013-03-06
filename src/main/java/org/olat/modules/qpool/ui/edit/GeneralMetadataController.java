@@ -1,0 +1,125 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.qpool.ui.edit;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.ui.QPoolEvent;
+import org.olat.modules.qpool.ui.QuestionItemMetadatasController;
+
+/**
+ * 
+ * Initial date: 05.03.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class GeneralMetadataController extends FormBasicController {
+	
+	private FormLink editLink;
+	private StaticTextElement keyEl, identifierEl, masterIdentifierEl, titleEl, keywordsEl, coverageEl, addInfosEl, languageEl, studyFieldEl;
+	
+	private final QuestionPoolService qpoolService;
+	
+	public GeneralMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+		super(ureq, wControl, "view");
+		setTranslator(Util.createPackageTranslator(QuestionItemMetadatasController.class, ureq.getLocale(), getTranslator()));
+		
+		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		
+		initForm(ureq);
+		setItem(item);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("general");
+		
+		editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
+		editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		
+		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
+		formLayout.add("metadatas", metaCont);
+
+		keyEl = uifactory.addStaticTextElement("general.key", "", metaCont);
+		identifierEl = uifactory.addStaticTextElement("general.identifier", "", metaCont);
+		masterIdentifierEl = uifactory.addStaticTextElement("general.master.identifier", "", metaCont);
+
+		//general
+		titleEl = uifactory.addStaticTextElement("general.title", "", metaCont);
+		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", metaCont);
+		coverageEl = uifactory.addStaticTextElement("general.coverage", "", metaCont);
+		addInfosEl = uifactory.addStaticTextElement("general.additional.informations", "", metaCont);
+		languageEl = uifactory.addStaticTextElement("general.language", "", metaCont);
+		
+		//classification
+		studyFieldEl = uifactory.addStaticTextElement("classification.taxonomic.path", "", metaCont);
+	}
+	
+	public void setItem(QuestionItem item) {
+		keyEl.setValue(item.getKey().toString());
+		identifierEl.setValue(item.getIdentifier());
+		String masterId = item.getMasterIdentifier() == null ? "" : item.getMasterIdentifier();
+		masterIdentifierEl.setValue(masterId);
+		String title = item.getTitle() == null ? "" : item.getTitle();
+		titleEl.setValue(title);
+		String keywords = item.getKeywords() == null ? "" : item.getKeywords();
+		keywordsEl.setValue(keywords);
+		String coverage = item.getCoverage() == null ? "" : item.getCoverage();
+		coverageEl.setValue(coverage);
+		String addInfos = item.getAdditionalInformations() == null ? "" : item.getAdditionalInformations();
+		addInfosEl.setValue(addInfos);
+		String language = item.getLanguage() == null ? "" : item.getLanguage();
+		languageEl.setValue(language);
+		String studyFields = qpoolService.getTaxonomicPath(item);
+		studyFieldEl.setValue(studyFields == null ? "" : studyFields);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(editLink == source) {
+			fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
+		} else {
+			super.formInnerEvent(ureq, source, event);
+		}
+	}
+}

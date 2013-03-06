@@ -22,7 +22,10 @@ package org.olat.search.service.indexer;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexWriter;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.manager.QuestionItemDocumentFactory;
@@ -36,7 +39,7 @@ import org.olat.search.service.SearchResourceContext;
  *
  */
 public class QuestionItemIndexer implements LifeIndexer {
-
+	private static final OLog log = Tracing.createLoggerFor(QuestionItemIndexer.class);
 	private static final int BATCH_SIZE = 100;
 
 	@Override
@@ -59,15 +62,25 @@ public class QuestionItemIndexer implements LifeIndexer {
 		QuestionItemDocumentFactory docFactory = CoreSpringFactory.getImpl(QuestionItemDocumentFactory.class);
 		SearchResourceContext ctxt = new SearchResourceContext();
 		
-		int counter = 0;
-		List<QuestionItem> items;
-		do {
-			items = qpoolService.getAllItems(counter, BATCH_SIZE);
-			for(QuestionItem item:items) {
-				Document doc = docFactory.createDocument(ctxt, item);
-				indexWriter.addDocument(doc);
-			}
-			counter += items.size();
-		} while(items.size() == BATCH_SIZE);
+		IndexWriter writer = null;
+		try {
+			writer = indexWriter.getAndLockWriter();
+			
+			int counter = 0;
+			List<QuestionItem> items;
+			do {
+				items = qpoolService.getAllItems(counter, BATCH_SIZE);
+				for(QuestionItem item:items) {
+					Document doc = docFactory.createDocument(ctxt, item);
+					indexWriter.addDocument(doc, writer);
+				}
+				counter += items.size();
+			} while(items.size() == BATCH_SIZE);
+			
+		} catch (Exception e) {
+			log.error("", e);
+		} finally {
+			indexWriter.releaseWriter(writer);
+		}
 	}
 }

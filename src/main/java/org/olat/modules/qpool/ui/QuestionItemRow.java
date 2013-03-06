@@ -49,11 +49,6 @@ public class QuestionItemRow implements QuestionItemShort {
 	}
 
 	@Override
-	public String getUuid() {
-		return delegate.getUuid();
-	}
-
-	@Override
 	public String getResourceableTypeName() {
 		return delegate.getResourceableTypeName();
 	}
@@ -62,7 +57,75 @@ public class QuestionItemRow implements QuestionItemShort {
 	public Long getResourceableId() {
 		return delegate.getResourceableId();
 	}
+	
+	@Override
+	public String getIdentifier() {
+		return delegate.getIdentifier();
+	}
 
+	@Override
+	public String getMasterIdentifier() {
+		return delegate.getMasterIdentifier();
+	}
+
+	@Override
+	public String getTitle() {
+		return delegate.getTitle();
+	}
+	
+	@Override
+	public String getLanguage() {
+		return delegate.getLanguage();
+	}
+
+	public String getTaxonomicPath() {
+		return delegate.getTaxonomicPath();
+	}
+
+	public String getTaxonomyLevelName() {
+		return delegate.getTaxonomyLevelName();
+	}
+
+	@Override
+	public String getEducationalContext() {
+		return delegate.getEducationalContext();
+	}
+
+	@Override
+	public String getEducationalLearningTime() {
+		return delegate.getEducationalLearningTime();
+	}
+	
+	@Override
+	public String getType() {
+		return delegate.getType();
+	}
+
+	@Override
+	public BigDecimal getDifficulty() {
+		return delegate.getDifficulty();
+	}
+	
+	@Override
+	public BigDecimal getStdevDifficulty() {
+		return delegate.getStdevDifficulty();
+	}
+
+	@Override
+	public BigDecimal getDifferentiation() {
+		return delegate.getDifferentiation();
+	}
+
+	@Override
+	public int getNumOfAnswerAlternatives() {
+		return delegate.getNumOfAnswerAlternatives();
+	}
+	
+	@Override
+	public int getUsage() {
+		return delegate.getUsage();
+	}
+	
 	@Override
 	public Date getCreationDate() {
 		return delegate.getCreationDate();
@@ -73,30 +136,14 @@ public class QuestionItemRow implements QuestionItemShort {
 		return delegate.getLastModified();
 	}
 
-	@Override
-	public String getSubject() {
-		return delegate.getSubject();
-	}
+
 
 	@Override
 	public String getFormat() {
 		return delegate.getFormat();
 	}
 
-	@Override
-	public String getLanguage() {
-		return delegate.getLanguage();
-	}
 
-	@Override
-	public BigDecimal getSelectivity() {
-		return delegate.getSelectivity();
-	}
-
-	@Override
-	public int getUsage() {
-		return delegate.getUsage();
-	}
 
 	@Override
 	public QuestionStatus getQuestionStatus() {
@@ -104,27 +151,12 @@ public class QuestionItemRow implements QuestionItemShort {
 	}
 
 	@Override
-	public BigDecimal getPoint() {
-		return delegate.getPoint();
-	}
-
-	@Override
 	public QuestionType getQuestionType() {
 		return delegate.getQuestionType();
 	}
-	
-	@Override
-	public BigDecimal getDifficulty() {
-		return delegate.getDifficulty();
-	}
-	
-	public String getStudyFieldPath() {
-		return delegate.getStudyFieldPath();
-	}
 
-	public String getStudyFieldName() {
-		return delegate.getStudyFieldName();
-	}
+	
+
 
 	public QuestionItem getItem() {
 		return delegate;
