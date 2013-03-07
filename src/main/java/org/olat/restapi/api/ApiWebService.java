@@ -42,7 +42,7 @@ import javax.ws.rs.core.Response.Status;
 public class ApiWebService {
 	
 	private String VERSION = "1.0";
-	private String COPYRIGHT = "openOLAT - Online Learning and Training\nhttp://www.openolat.org\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing,\nsoftware distributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\\nSee the License for the specific language governing permissions and\\nlimitations under the License.\n\nCopyright (c) frentix GmbH\nhttp://www.frentix.com";
+	private String COPYRIGHT = "OpenOLAT - infinite learning\nhttp://www.openolat.org\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing,\nsoftware distributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\\nSee the License for the specific language governing permissions and\\nlimitations under the License.\n\nCopyright (c) frentix GmbH\nhttp://www.frentix.com";
 	
 	/**
 	 * Version number of the whole REST API of OLAT.
