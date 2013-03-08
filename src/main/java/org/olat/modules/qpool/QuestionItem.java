@@ -42,13 +42,7 @@ public interface QuestionItem extends QuestionItemShort {
 	 * @return
 	 */
 	public String getTaxonomicPath();
-	
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getTaxonomyLevelName();
-	
+
 	//question
 	public String getAssessmentType();
 	

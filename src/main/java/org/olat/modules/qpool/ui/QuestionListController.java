@@ -57,12 +57,15 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
+import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
 
 /**
  * 
@@ -82,7 +85,7 @@ public class QuestionListController extends FormBasicController implements Stack
 	private SelectBusinessGroupController selectGroupCtrl;
 	private CreateCollectionController createCollectionCtrl;
 	private StepsMainRunController importAuthorsWizard;
-	private ImportQuestionItemController importItemCtrl;
+	private ImportController importItemCtrl;
 	
 	private final MarkManager markManager;
 	private final QuestionPoolService qpoolService;
@@ -155,34 +158,34 @@ public class QuestionListController extends FormBasicController implements Stack
 			FormLink link = (FormLink)source;
 			if(link == createList) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
-				List<QuestionItem> items = getQuestionItems(selections);
+				List<QuestionItemShort> items = getShortItems(selections);
 				doAskCollectionName(ureq, items);
 			} else if(link == shareItem) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
 				if(selections.size() > 0) {
-					List<QuestionItem> items = getQuestionItems(selections);
+					List<QuestionItemShort> items = getShortItems(selections);
 					doSelectGroup(ureq, items);
 				}
 			} else if(link == deleteItem) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
 				if(selections.size() > 0) {
-					List<QuestionItem> items = getQuestionItems(selections);
+					List<QuestionItemShort> items = getShortItems(selections);
 					doConfirmDelete(ureq, items);
 				}
 			} else if(link == authorItem) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
 				if(selections.size() > 0) {
-					List<QuestionItem> items = getQuestionItems(selections);
+					List<QuestionItemShort> items = getShortItems(selections);
 					doChooseAuthoren(ureq, items);
 				}
 			} else if(link == importItem) {
 				doOpenImport(ureq);
 			} else if("select".equals(link.getCmd())) {
-				QuestionItemRow row = (QuestionItemRow)link.getUserObject();
-				doSelect(ureq, row.getItem());
+				ItemRow row = (ItemRow)link.getUserObject();
+				doSelect(ureq, row);
 			} else if("mark".equals(link.getCmd())) {
-				QuestionItemRow row = (QuestionItemRow)link.getUserObject();
-				if(doMark(ureq, row.getItem())) {
+				ItemRow row = (ItemRow)link.getUserObject();
+				if(doMark(ureq, row)) {
 					link.setI18nKey("Mark_true");
 				} else {
 					link.setI18nKey("Mark_false");
@@ -193,11 +196,11 @@ public class QuestionListController extends FormBasicController implements Stack
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("rSelect".equals(se.getCommand())) {
-					QuestionItemRow row = model.getObject(se.getIndex());
-					fireEvent(ureq, new QuestionEvent(se.getCommand(), row.getItem()));
+					ItemRow row = model.getObject(se.getIndex());
+					fireEvent(ureq, new QItemEvent(se.getCommand(), row));
 				} else if("select-item".equals(se.getCommand())) {
-					QuestionItemRow row = model.getObject(se.getIndex());
-					doSelect(ureq, row.getItem());
+					ItemRow row = model.getObject(se.getIndex());
+					doSelect(ureq, row);
 				}
 			}
 		}
@@ -212,7 +215,7 @@ public class QuestionListController extends FormBasicController implements Stack
 				List<BusinessGroup> groups = bge.getGroups();
 				if(groups.size() > 0) {
 					@SuppressWarnings("unchecked")
-					List<QuestionItem> items = (List<QuestionItem>)selectGroupCtrl.getUserObject();
+					List<QuestionItemShort> items = (List<QuestionItemShort>)selectGroupCtrl.getUserObject();
 					doShareItems(ureq, items, groups);
 				}
 			}
@@ -221,7 +224,7 @@ public class QuestionListController extends FormBasicController implements Stack
 		} else if(source == createCollectionCtrl) {
 			if(Event.DONE_EVENT == event) {
 				@SuppressWarnings("unchecked")
-				List<QuestionItem> items = (List<QuestionItem>)createCollectionCtrl.getUserObject();
+				List<QuestionItemShort> items = (List<QuestionItemShort>)createCollectionCtrl.getUserObject();
 				String collectionName = createCollectionCtrl.getName();
 				doCreateCollection(ureq, collectionName, items);
 			}
@@ -243,7 +246,7 @@ public class QuestionListController extends FormBasicController implements Stack
 			boolean delete = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
 			if(delete) {
 				@SuppressWarnings("unchecked")
-				List<QuestionItem> items = (List<QuestionItem>)confirmDeleteBox.getUserObject();
+				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmDeleteBox.getUserObject();
 				doDelete(ureq, items);
 			}
 		} else if(source == cmc) {
@@ -263,28 +266,28 @@ public class QuestionListController extends FormBasicController implements Stack
 		createCollectionCtrl = null;
 	}
 	
-	public List<QuestionItem> getQuestionItems(Set<Integer> index) {
-		List<QuestionItem> items = new ArrayList<QuestionItem>();
+	public List<QuestionItemShort> getShortItems(Set<Integer> index) {
+		List<QuestionItemShort> items = new ArrayList<QuestionItemShort>();
 		for(Integer i:index) {
-			QuestionItemRow row = model.getObject(i.intValue());
+			ItemRow row = model.getObject(i.intValue());
 			if(row != null) {
-				items.add(row.getItem());
+				items.add(row);
 			}
 		}
 		return items;
 	}
 
-	public QuestionItem getQuestionItemAt(int index) {
-		QuestionItemRow row = model.getObject(index);
+	public QuestionItemShort getQuestionItemAt(int index) {
+		ItemRow row = model.getObject(index);
 		if(row != null) {
-			return row.getItem();
+			return qpoolService.loadItemById(row.getKey());
 		}
 		return null;
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
 		removeAsListenerAndDispose(importItemCtrl);
-		importItemCtrl = new ImportQuestionItemController(ureq, getWindowControl());
+		importItemCtrl = new ImportController(ureq, getWindowControl());
 		listenTo(importItemCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -293,7 +296,7 @@ public class QuestionListController extends FormBasicController implements Stack
 		listenTo(cmc);
 	}
 	
-	private void doAskCollectionName(UserRequest ureq, List<QuestionItem> items) {
+	private void doAskCollectionName(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(createCollectionCtrl);
 		createCollectionCtrl = new CreateCollectionController(ureq, getWindowControl());
 		createCollectionCtrl.setUserObject(items);
@@ -305,12 +308,12 @@ public class QuestionListController extends FormBasicController implements Stack
 		listenTo(cmc);
 	}
 	
-	private void doCreateCollection(UserRequest ureq, String name, List<QuestionItem> items) {
+	private void doCreateCollection(UserRequest ureq, String name, List<QuestionItemShort> items) {
 		qpoolService.createCollection(getIdentity(), name, items);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_CREATED));
 	}
 	
-	private void doChooseAuthoren(UserRequest ureq, List<QuestionItem> items) {
+	private void doChooseAuthoren(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(importAuthorsWizard);
 
 		Step start = new ImportAuthor_1_ChooseMemberStep(ureq, items);
@@ -330,24 +333,24 @@ public class QuestionListController extends FormBasicController implements Stack
 	
 	private void addAuthors(UserRequest ureq, StepsRunContext runContext) {
 		@SuppressWarnings("unchecked")
-		List<QuestionItem> items = (List<QuestionItem>)runContext.get("items");
+		List<QuestionItemShort> items = (List<QuestionItemShort>)runContext.get("items");
 		@SuppressWarnings("unchecked")
 		List<Identity> authors = (List<Identity>)runContext.get("members");
 		qpoolService.addAuthors(authors, items);
 	}
 	
-	private void doConfirmDelete(UserRequest ureq, List<QuestionItem> items) {
+	private void doConfirmDelete(UserRequest ureq, List<QuestionItemShort> items) {
 		confirmDeleteBox = activateYesNoDialog(ureq, null, translate("confirm.delete"), confirmDeleteBox);
 		confirmDeleteBox.setUserObject(items);
 	}
 	
-	private void doDelete(UserRequest ureq, List<QuestionItem> items) {
+	private void doDelete(UserRequest ureq, List<QuestionItemShort> items) {
 		qpoolService.deleteItems(items);
 		itemsTable.reset();
 		showInfo("item.deleted");
 	}
 	
-	protected void doSelectGroup(UserRequest ureq, List<QuestionItem> items) {
+	protected void doSelectGroup(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(selectGroupCtrl);
 		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl());
 		selectGroupCtrl.setUserObject(items);
@@ -359,23 +362,24 @@ public class QuestionListController extends FormBasicController implements Stack
 		listenTo(cmc);
 	}
 	
-	private void doShareItems(UserRequest ureq, List<QuestionItem> items, List<BusinessGroup> groups) {
+	private void doShareItems(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups) {
 		qpoolService.shareItems(items, groups);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
 	}
 	
-	protected void doSelect(UserRequest ureq, QuestionItem item) {
+	protected void doSelect(UserRequest ureq, ItemRow row) {
+		QuestionItem item = qpoolService.loadItemById(row.getKey());
 		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item);
 		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);
 		stackPanel.pushController(item.getTitle(), mainCtrl);
 	}
 	
-	protected boolean doMark(UserRequest ureq, QuestionItem item) {
+	protected boolean doMark(UserRequest ureq, OLATResourceable item) {
 		if(markManager.isMarked(item, getIdentity(), null)) {
 			markManager.deleteMark(item);
 			return false;
 		} else {
-			String businessPath = "[QuestionItem:" + item.getKey() + "]";
+			String businessPath = "[QuestionItem:" + item.getResourceableId() + "]";
 			markManager.setMark(item, getIdentity(), null, businessPath);
 			return true;
 		}
@@ -387,22 +391,22 @@ public class QuestionListController extends FormBasicController implements Stack
 	}
 
 	@Override
-	public ResultInfos<QuestionItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<ItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		Set<Long> marks = markManager.getMarkResourceIds(getIdentity(), "QuestionItem", Collections.<String>emptyList());
 
-		ResultInfos<QuestionItem> items = source.getItems(query, condQueries, firstResult, maxResults, orderBy);
-		List<QuestionItemRow> rows = new ArrayList<QuestionItemRow>(items.getObjects().size());
-		for(QuestionItem item:items.getObjects()) {
-			QuestionItemRow row = forgeRow(item, marks);
+		ResultInfos<QuestionItemShort> items = source.getItems(query, condQueries, firstResult, maxResults, orderBy);
+		List<ItemRow> rows = new ArrayList<ItemRow>(items.getObjects().size());
+		for(QuestionItemShort item:items.getObjects()) {
+			ItemRow row = forgeRow(item, marks);
 			rows.add(row);
 		}
-		return new DefaultResultInfos<QuestionItemRow>(items.getNextFirstResult(), items.getCorrectedRowCount(), rows);
+		return new DefaultResultInfos<ItemRow>(items.getNextFirstResult(), items.getCorrectedRowCount(), rows);
 	}
 	
-	protected QuestionItemRow forgeRow(QuestionItem item, Set<Long> markedQuestionKeys) {
+	protected ItemRow forgeRow(QuestionItemShort item, Set<Long> markedQuestionKeys) {
 		boolean marked = markedQuestionKeys.contains(item.getKey());
 		
-		QuestionItemRow row = new QuestionItemRow(item);
+		ItemRow row = new ItemRow(item);
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "Mark_" + marked, null, null, Link.NONTRANSLATED);
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);

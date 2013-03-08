@@ -42,14 +42,15 @@ function treeAcceptDrop(el) {
 			return false;
 		} 
 		
-		var dropAllowed = dropEl.data(dragNodeId);
+		var sibling = "";
+		if(dropElId.indexOf('ds') == 0) {
+			sibling = "yes";
+		} else if(dropElId.indexOf('dt') == 0) {
+			sibling = "end";
+		}
+		
+		var dropAllowed = dropEl.data(dragNodeId + "-" + sibling);
 		if(dropAllowed === undefined) {
-			var sibling = "";
-			if(dragElId.indexOf('ds') == 0) {
-				sibling = "yes";
-			} else if(dragElId.indexOf('dt') == 0) {
-				sibling = "end";
-			}
 			var url = dropEl.droppable('option', 'fbUrl');
 			//use prototype for the Ajax call
 			jQuery.ajax(url, { 
@@ -61,7 +62,7 @@ function treeAcceptDrop(el) {
 					dropAllowed = data.dropAllowed;
 				}
 	  		});
-			dropEl.data(dragNodeId, dropAllowed);
+			dropEl.data(dragNodeId + "-" + sibling, dropAllowed);
 		}
 		return dropAllowed;
 	}

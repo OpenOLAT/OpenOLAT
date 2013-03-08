@@ -42,8 +42,9 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.QuestionPoolSPI;
+import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionPoolService;
 
 /**
@@ -61,7 +62,7 @@ public class QuestionItemDetailsController extends BasicController {
 	private final VelocityContainer mainVC;
 	private DialogBoxController confirmDeleteBox;
 	private SelectBusinessGroupController selectGroupCtrl;
-	private final QuestionItemMetadatasController metadatasCtrl;
+	private final MetadatasController metadatasCtrl;
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
 
 	private final QuestionPoolModule poolModule;
@@ -73,7 +74,7 @@ public class QuestionItemDetailsController extends BasicController {
 		poolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 		
-		QuestionPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 		if(spi == null) {
 			editCtrl = new QuestionItemRawController(ureq, wControl);
 		} else {
@@ -84,7 +85,7 @@ public class QuestionItemDetailsController extends BasicController {
 		}
 		listenTo(editCtrl);
 
-		metadatasCtrl = new QuestionItemMetadatasController(ureq, wControl, item);
+		metadatasCtrl = new MetadatasController(ureq, wControl, item);
 		listenTo(metadatasCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -164,7 +165,7 @@ public class QuestionItemDetailsController extends BasicController {
 		listenTo(cmc);
 	}
 	
-	private void doShareItems(UserRequest ureq, QuestionItem item, List<BusinessGroup> groups) {
+	private void doShareItems(UserRequest ureq, QuestionItemShort item, List<BusinessGroup> groups) {
 		qpoolService.shareItems(Collections.singletonList(item), groups);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
 	}
@@ -174,7 +175,7 @@ public class QuestionItemDetailsController extends BasicController {
 		confirmDeleteBox.setUserObject(item);
 	}
 	
-	private void doDelete(UserRequest ureq, QuestionItem item) {
+	private void doDelete(UserRequest ureq, QuestionItemShort item) {
 		qpoolService.deleteItems(Collections.singletonList(item));
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_DELETED));
 		showInfo("item.deleted");

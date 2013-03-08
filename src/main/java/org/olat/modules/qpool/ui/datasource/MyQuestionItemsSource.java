@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.ui.datasource;
 
 import java.util.List;
 
@@ -26,9 +26,10 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
+import org.olat.modules.qpool.ui.QuestionItemsSource;
 
 /**
  * 
@@ -54,7 +55,7 @@ public class MyQuestionItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public ResultInfos<QuestionItem> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<QuestionItemShort> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(me, roles);
 		params.setSearchString(query);
 		return qpoolService.getItems(me, params, firstResult, maxResults);

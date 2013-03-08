@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti.fileresource;
+package org.olat.ims.qti.qpool;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -148,6 +148,7 @@ public class ItemFileResourceValidator {
 
 		@Override
 		public void error(SAXParseException exception) throws SAXException {
+			exception.printStackTrace();
 			error++;
 		}
 

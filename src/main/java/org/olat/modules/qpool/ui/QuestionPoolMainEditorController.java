@@ -44,9 +44,14 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
+import org.olat.modules.qpool.ui.datasource.MarkedItemsSource;
+import org.olat.modules.qpool.ui.datasource.MyQuestionItemsSource;
+import org.olat.modules.qpool.ui.datasource.PooledItemsSource;
+import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
 
 /**
  * 
@@ -70,7 +75,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private QuestionsController markedQuestionsCtrl;
 	
 	private PoolsAdminController poolAdminCtrl;
-	private StudyFieldAdminController studyFieldCtrl;
+	private TaxonomyAdminController studyFieldCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
 
@@ -86,7 +91,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree = new MenuTree("qpoolTree");
 		menuTree.setTreeModel(buildTreeModel());
 		menuTree.setSelectedNode(menuTree.getTreeModel().getRootNode());
+		menuTree.setDragEnabled(false);
 		menuTree.setDropEnabled(true);
+		menuTree.setDropSiblingEnabled(false);
 		menuTree.addListener(this);
 		menuTree.setRootVisible(false);
 		
@@ -173,7 +180,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			int lastIndex = dropId.lastIndexOf('-');
 			String rowStr = dropId.substring(lastIndex+1, dropId.length());
 			int row = Integer.parseInt(rowStr);
-			QuestionItem item = currentCtrl.getQuestionAt(row);
+			QuestionItemShort item = currentCtrl.getQuestionAt(row);
 			TreeNode node = menuTree.getTreeModel().getNodeById(targetId);
 			if(node != null) {
 				Object userObj = node.getUserObject();
@@ -207,7 +214,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectAdminStudyFields(UserRequest ureq) {
 		if(studyFieldCtrl == null) {
-			studyFieldCtrl = new StudyFieldAdminController(ureq, getWindowControl());
+			studyFieldCtrl = new TaxonomyAdminController(ureq, getWindowControl());
 			listenTo(studyFieldCtrl);
 		}
 		content.setContent(studyFieldCtrl.getInitialComponent());

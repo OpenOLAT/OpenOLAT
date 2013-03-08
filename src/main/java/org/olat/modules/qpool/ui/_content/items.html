@@ -1,4 +1,4 @@
-<div id="container">
+<div id="qpoolcontainer">
 	<div id="qitems" class="pane ui-layout-north">$r.render("items")</div>
 	<div id="qdetails" class="pane ui-layout-center">$r.render("details")</div>
 	<div id="qpreview" class="pane ui-layout-west">$r.render("preview")</div>
@@ -9,11 +9,15 @@
 		$r.render("delete.item")
 	</div>
 </div>
-<script>
+<script type="text/javascript">
 jQuery(function() {
 	var width = jQuery('#b_col3_content_inner').width();
-	var height = jQuery('#b_col3_content_inner').height();
-	jQuery('#container').width(width).height(height).layout({
+	var winHeight = jQuery(window).height();
+	var headerHeight = jQuery('#b_header').height() + jQuery('#b_nav_main').height();
+	var footerHeight = jQuery('#b_footer').height() + jQuery('#qbuttons').height();
+	var maxHeight = winHeight - headerHeight - footerHeight - 50;
+	jQuery('#qpoolcontainer').width(width).height(maxHeight).layout({
+		north: { size: '50%' },
 		center: { size: '50%' },
 		west: { size: '50%' },
 		south: {}

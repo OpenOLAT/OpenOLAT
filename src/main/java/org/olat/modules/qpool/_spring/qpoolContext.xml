@@ -15,6 +15,13 @@
 	    	<constructor-arg index="1" ref="qpoolModule" />
 	  	</bean>
 		</property>
+		<property name="questionPoolProviders">
+			<list>
+				<ref bean="qtiPoolServiceProvider"/>
+				<ref bean="textPoolServiceProvider"/>
+				<ref bean="filePoolServiceProvider"/> 
+			</list>
+		</property>
 	</bean>
 	
 	<!-- default configuration -->

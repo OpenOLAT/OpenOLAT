@@ -38,6 +38,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolService;
 
 /**
@@ -95,7 +96,7 @@ public class QuestionsController extends BasicController implements StackedContr
 		listCtrl.updateSource(source);
 	}
 	
-	public QuestionItem getQuestionAt(int index) {
+	public QuestionItemShort getQuestionAt(int index) {
 		return listCtrl.getQuestionItemAt(index);
 	}
 
@@ -117,9 +118,9 @@ public class QuestionsController extends BasicController implements StackedContr
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == listCtrl) {
-			if(event instanceof QuestionEvent) {
-				QuestionEvent se = (QuestionEvent)event;
-				QuestionItem item = se.getItem();
+			if(event instanceof QItemEvent) {
+				QItemEvent se = (QItemEvent)event;
+				QuestionItemShort item = se.getItem();
 				doUpdateDetails(ureq, item);
 			} else if(event instanceof QPoolEvent) {
 				fireEvent(ureq, event);
@@ -155,12 +156,13 @@ public class QuestionsController extends BasicController implements StackedContr
 		confirmDeleteBox.setUserObject(item);
 	}
 	
-	private void doUpdateDetails(UserRequest ureq, QuestionItem item) {
+	private void doUpdateDetails(UserRequest ureq, QuestionItemShort itemShort) {
+		QuestionItem item = qpoolService.loadItemById(itemShort.getKey());
 		detailsCtrl.updateItem(item);
 		previewCtrl.updateItem(ureq, item);
 	}
 	
-	private void doDelete(UserRequest ureq, QuestionItem item) {
+	private void doDelete(UserRequest ureq, QuestionItemShort item) {
 		qpoolService.deleteItems(Collections.singletonList(item));
 		postDelete(ureq);
 	}

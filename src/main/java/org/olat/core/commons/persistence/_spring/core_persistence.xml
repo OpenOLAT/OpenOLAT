@@ -101,7 +101,7 @@
 		<class>org.olat.modules.qpool.model.ResourceShareImpl</class>
 		<class>org.olat.modules.qpool.model.TaxonomyLevelImpl</class>
 		<class>org.olat.modules.qpool.model.ResourceShareImpl</class>
-		<class>org.olat.modules.qpool.model.QuestionItemCollectionImpl</class>
+		<class>org.olat.modules.qpool.model.ItemCollectionImpl</class>
 		<class>org.olat.modules.qpool.model.CollectionToItem</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>

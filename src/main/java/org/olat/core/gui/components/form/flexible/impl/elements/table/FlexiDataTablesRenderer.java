@@ -60,7 +60,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
 		String id = ftC.getFormDispatchId();
 		int rows = dataModel.getRowCount();
 		
-		target.append("<script>")
+		target.append("<script type='text/javascript'>")
 		  .append("jQuery(function() {\n")
       .append("	jQuery('#").append(id).append("').dataTable( {\n")
       .append("		'bScrollInfinite': true,\n")
@@ -75,10 +75,11 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("		'fnRowCallback': function( nRow, aData, iDisplayIndex ) {\n")
       .append("			jQuery(nRow).draggable({ \n")
       .append("				containment: '#b_main',\n")
+      .append("				zIndex: 10000,\n")
       .append("				cursorAt: {left: 0, top: 0},\n")
-      .append("				accept: function(event,ui){ console.log('Accept'); return true; },\n")
+      .append("				accept: function(event,ui){ return true; },\n")
       .append("				helper: function(event) {\n")
-      .append("				  return jQuery(\"<div class='ui-widget-header' style='z-index:1000;'>I'm a custom helper</div>\");\n")
+      .append("				  return jQuery(\"<div class='ui-widget-header'>I'm a custom helper</div>\").appendTo('body').css('zIndex',5).show();\n")
       .append("				}\n")
       .append("			});\n")
       .append("		},\n")

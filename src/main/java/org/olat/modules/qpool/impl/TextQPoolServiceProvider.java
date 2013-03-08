@@ -26,8 +26,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolSPI;
-import org.olat.modules.qpool.ui.FilePreviewController;
+import org.olat.modules.qpool.manager.AbstractQPoolServiceProvider;
+import org.olat.modules.qpool.ui.TextPreviewController;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -35,25 +36,24 @@ import org.olat.modules.qpool.ui.FilePreviewController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PdfQuestionPoolServiceProvider implements QuestionPoolSPI {
-	
-	public static final String PDF_FORMAT = "pdf";
+@Service("textPoolServiceProvider")
+public class TextQPoolServiceProvider extends AbstractQPoolServiceProvider {
 
+	public static final String TXT_FORMAT = "txt";
+	
 	@Override
 	public int getPriority() {
-		return 0;
+		return 1;
 	}
 
 	@Override
 	public String getFormat() {
-		return PDF_FORMAT;
+		return TXT_FORMAT;
 	}
-
+	
 	@Override
 	public boolean isCompatible(String filename, File file) {
-		return !filename.toLowerCase().endsWith(".xml")
-				&& !filename.toLowerCase().endsWith(".txt")
-				&& !filename.toLowerCase().endsWith(".zip");
+		return filename.toLowerCase().endsWith(".txt");
 	}
 
 	@Override
@@ -63,13 +63,13 @@ public class PdfQuestionPoolServiceProvider implements QuestionPoolSPI {
 
 	@Override
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		FilePreviewController fileController = new FilePreviewController(ureq, wControl, item);
-		return fileController;
+		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item);
+		return txtController;
 	}
 
 	@Override
-	public Controller getEditableController(UserRequest ureq,	WindowControl wControl, QuestionItem item) {
-		FilePreviewController fileController = new FilePreviewController(ureq, wControl, item);
-		return fileController;
+	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item);
+		return txtController;
 	}
 }

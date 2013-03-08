@@ -60,7 +60,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.qpool.model.QuestionItemDocument;
+import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchResults;
@@ -109,7 +109,7 @@ public class SearchServiceImpl implements SearchService {
 			AbstractOlatDocument.TITLE_FIELD_NAME, AbstractOlatDocument.DESCRIPTION_FIELD_NAME,
 			AbstractOlatDocument.CONTENT_FIELD_NAME, AbstractOlatDocument.AUTHOR_FIELD_NAME,
 			AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME, AbstractOlatDocument.FILETYPE_FIELD_NAME,
-			QuestionItemDocument.STUDY_FIELD
+			QItemDocument.STUDY_FIELD
 	};
 
 	

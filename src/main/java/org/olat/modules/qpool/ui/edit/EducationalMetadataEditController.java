@@ -33,7 +33,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.modules.qpool.ui.QuestionItemMetadatasController;
+import org.olat.modules.qpool.ui.MetadatasController;
 
 /**
  * 
@@ -52,7 +52,7 @@ public class EducationalMetadataEditController extends FormBasicController {
 
 	public EducationalMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(QuestionItemMetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 		
 		this.item = item;
 		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);

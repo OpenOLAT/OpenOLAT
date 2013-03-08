@@ -22,6 +22,9 @@ package org.olat.modules.qpool.ui;
 import org.olat.core.gui.components.tree.DnDTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QuestionItemCollection;
 
 /**
  * 
@@ -35,6 +38,20 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 
 	@Override
 	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode,	boolean sibling) {
-		return !sibling;
+		if(droppedNode == null && targetNode == null) {
+			return false;
+		} else if(droppedNode == null) {
+			Object uObject = targetNode.getUserObject();
+			if("menu.database.my".equals(uObject)
+					|| "menu.database.favorit".equals(uObject)) {
+				return !sibling;
+			} else if(uObject instanceof BusinessGroup
+					|| uObject instanceof QuestionItemCollection
+					|| uObject instanceof Pool) {
+				return !sibling;
+			}
+			return false;
+		}
+		return false;
 	}
 }

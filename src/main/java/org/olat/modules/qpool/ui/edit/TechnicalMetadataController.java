@@ -34,7 +34,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.ui.QPoolEvent;
-import org.olat.modules.qpool.ui.QuestionItemMetadatasController;
+import org.olat.modules.qpool.ui.MetadatasController;
 
 /**
  * 
@@ -49,7 +49,7 @@ public class TechnicalMetadataController extends FormBasicController  {
 
 	public TechnicalMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl, "view");
-		setTranslator(Util.createPackageTranslator(QuestionItemMetadatasController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 		
 		initForm(ureq);
 		setItem(item);

@@ -41,6 +41,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.test.JunitTestHelper;
@@ -69,18 +70,18 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		//create a group to share 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item1 = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.MC);
-		QuestionItem item2 = questionDao.create(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, QuestionType.MC);
+		QuestionItem item1 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, QuestionType.MC);
+		QuestionItem item2 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, QuestionType.MC);
 		dbInstance.commit();
 		//share them
 		questionDao.share(item1, group.getResource());
 		dbInstance.commitAndCloseSession();
 
 		//delete the items
-		List<QuestionItem> shared = new ArrayList<QuestionItem>();
-		shared.add(item1);
-		shared.add(item2);
-		qpoolService.deleteItems(shared);
+		List<QuestionItemShort> toDelete = new ArrayList<QuestionItemShort>();
+		toDelete.add(item1);
+		toDelete.add(item2);
+		qpoolService.deleteItems(toDelete);
 		dbInstance.commit();//make sure that changes are committed
 		
 		//check if they exists
@@ -94,12 +95,12 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	public void createCollection() {
 		//create an user with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Owner-3-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.create(id, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
-		QuestionItem item2 = questionDao.create(id, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, QuestionType.FIB);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
 		dbInstance.commit();
 		
 		//load the items of the collection
-		List<QuestionItem> items = new ArrayList<QuestionItem>();
+		List<QuestionItemShort> items = new ArrayList<QuestionItemShort>();
 		items.add(item1);
 		items.add(item2);
 		QuestionItemCollection newColl = qpoolService.createCollection(id, "My private collection", items);
@@ -110,7 +111,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		//retrieve the list of items in the collection
 		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl);
 		Assert.assertEquals(2, numOfItemsInCollection);
-		ResultInfos<QuestionItem> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, null, 0, -1);
+		ResultInfos<QuestionItemShort> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, null, 0, -1);
 		Assert.assertNotNull(itemsOfCollection);
 		Assert.assertEquals(2, itemsOfCollection.getObjects().size());
 		Assert.assertTrue(itemsOfCollection.getObjects().contains(item1));
@@ -118,17 +119,26 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	}
 
 	@Test
-	public void importItem_qti12xml() throws IOException, URISyntaxException {
+	public void importItem_qti12_item() throws IOException, URISyntaxException {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("Imp-Owner-1-" + UUID.randomUUID().toString());
 		dbInstance.commit();
 		URL itemUrl = QuestionPoolServiceTest.class.getResource("mchc_i_001.xml");
 		assertNotNull(itemUrl);
 		File itemFile = new File(itemUrl.toURI());
-		
-		
-		qpoolService.importItem(owner, "mchc_i_001.xml", itemFile);
-		
-		
+
+		qpoolService.importItems(owner, "mchc_i_001.xml", itemFile);
 	}
+	
+	@Test
+	public void importItem_qti12_assessment() throws IOException, URISyntaxException {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("Imp-Owner-2-" + UUID.randomUUID().toString());
+		dbInstance.commit();
+		URL itemUrl = QuestionPoolServiceTest.class.getResource("mchc_asmimr_101.xml");
+		assertNotNull(itemUrl);
+		File itemFile = new File(itemUrl.toURI());
+
+		qpoolService.importItems(owner, "mchc_asmimr_101.xml", itemFile);
+	}
+	
 	
 }

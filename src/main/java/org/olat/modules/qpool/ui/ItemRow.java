@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
@@ -33,13 +32,13 @@ import org.olat.modules.qpool.QuestionType;
  * Initial date: 23.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class QuestionItemRow implements QuestionItemShort {
+public class ItemRow implements QuestionItemShort {
 	
-	private final QuestionItem delegate;
+	private final QuestionItemShort delegate;
 	
 	private FormLink markLink;
 	
-	public QuestionItemRow(QuestionItem item) {
+	public ItemRow(QuestionItemShort item) {
 		this.delegate = item;
 	}
 
@@ -76,10 +75,6 @@ public class QuestionItemRow implements QuestionItemShort {
 	@Override
 	public String getLanguage() {
 		return delegate.getLanguage();
-	}
-
-	public String getTaxonomicPath() {
-		return delegate.getTaxonomicPath();
 	}
 
 	public String getTaxonomyLevelName() {
@@ -136,14 +131,10 @@ public class QuestionItemRow implements QuestionItemShort {
 		return delegate.getLastModified();
 	}
 
-
-
 	@Override
 	public String getFormat() {
 		return delegate.getFormat();
 	}
-
-
 
 	@Override
 	public QuestionStatus getQuestionStatus() {
@@ -155,12 +146,10 @@ public class QuestionItemRow implements QuestionItemShort {
 		return delegate.getQuestionType();
 	}
 
-	
-
-
+	/*
 	public QuestionItem getItem() {
 		return delegate;
-	}
+	}*/
 
 	public FormLink getMarkLink() {
 		return markLink;

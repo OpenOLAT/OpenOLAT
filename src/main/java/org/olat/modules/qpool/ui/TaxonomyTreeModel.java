@@ -35,12 +35,12 @@ import org.olat.modules.qpool.TaxonomyLevel;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StudyFieldTreeModel extends GenericTreeModel {
+public class TaxonomyTreeModel extends GenericTreeModel {
 
 	private static final long serialVersionUID = 3032222581990406868L;
 	private QuestionPoolService qpoolService;
 	
-	public StudyFieldTreeModel() {
+	public TaxonomyTreeModel() {
 		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 		
 		buildTree();

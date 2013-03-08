@@ -145,7 +145,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		}
 		String ident = curRoot.getIdent();
 		target.append("\"><div id='dd").append(ident).append("' class=\"b_tree_item_wrapper");
-		if(tree.isDragEnabled()) {
+		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			target.append(" b_dd_item");
 		}
 		if(selected) {
@@ -283,7 +283,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		target.append("</div>");
 		
 		//append div to drop as sibling
-		if(!renderChildren && (tree.isDragEnabled() || tree.isDropEnabled())) {
+		if(!renderChildren && (tree.isDragEnabled() || tree.isDropSiblingEnabled())) {
 			appendSiblingDropObj(curRoot, level, tree, target, ubu, flags, false);
 		}
 		
@@ -292,7 +292,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 			renderChildren(target, level, curRoot, selPath, openNodeIds, ubu, flags, markedNode, tree);
 			
 			//append div to drop as sibling after the children
-			if(tree.isDragEnabled() || tree.isDropEnabled()) {
+			if(tree.isDragEnabled() || tree.isDropSiblingEnabled()) {
 				appendSiblingDropObj(curRoot, level, tree, target, ubu, flags, true);
 			}
 		}

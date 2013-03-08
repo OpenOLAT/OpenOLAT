@@ -29,7 +29,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.manager.QuestionItemDocumentFactory;
-import org.olat.modules.qpool.model.QuestionItemDocument;
+import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -44,7 +44,7 @@ public class QuestionItemIndexer implements LifeIndexer {
 
 	@Override
 	public String getSupportedTypeName() {
-		return QuestionItemDocument.TYPE;
+		return QItemDocument.TYPE;
 	}
 
 	@Override

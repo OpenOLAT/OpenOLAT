@@ -27,10 +27,10 @@ import org.olat.search.model.OlatDocument;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDocument extends OlatDocument {
+public class QItemDocument extends OlatDocument {
 
 	private static final long serialVersionUID = 2137366338712446727L;
-	public static final String TYPE = "type.question.item";
+	public static final String TYPE = "type.qp.item";
 	
 	public static final String OWNER_FIELD = "owner";
 	public static final String SHARE_FIELD = "share";

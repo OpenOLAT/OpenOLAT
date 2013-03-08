@@ -41,24 +41,40 @@ public interface QuestionPoolService {
 	
 	public String getTaxonomicPath(QuestionItem item);
 	
-	public void deleteItems(List<QuestionItem> items);
+	public void deleteItems(List<QuestionItemShort> items);
 	
 	public List<Identity> getAuthors(QuestionItem item);
 	
-	public void addAuthors(List<Identity> authors, List<QuestionItem> items);
+	public void addAuthors(List<Identity> authors, List<QuestionItemShort> items);
 	
-	public QuestionItem importItem(Identity owner, String filename, File file);
+	public List<QuestionItem> importItems(Identity owner, String filename, File file);
 	
 	public VFSLeaf getRootFile(QuestionItem item);
 	
 	public VFSContainer getRootDirectory(QuestionItem item);
+	
+	/**
+	 * Create a new item and persist it on the database
+	 * @param owner
+	 * @param subject
+	 * @param format
+	 * @param language
+	 * @param taxonLevel
+	 * @param dir
+	 * @param rootFilename
+	 * @param type
+	 * @return
+	 */
+	public QuestionItem createAndPersistItem(Identity owner, String subject, String format, String language, TaxonomyLevel taxonLevel, String dir, String rootFilename, QuestionType type);
+	
+	public QuestionItem loadItemById(Long key);
 	
 	public QuestionItem updateItem(QuestionItem item);
 	
 
 	public int countItems(Identity author);
 
-	public ResultInfos<QuestionItem> getItems(Identity author, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItemShort> getItems(Identity author, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 
 	public List<QuestionItem> getAllItems(int firstResult, int maxResults);
 	
@@ -69,37 +85,37 @@ public interface QuestionPoolService {
 	
 	public int getNumOfItemsInPool(Pool pool);
 	
-	public ResultInfos<QuestionItem> getItemsOfPool(Pool pool, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItemShort> getItemsOfPool(Pool pool, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
-	public void addItemToPool(QuestionItem item, Pool pool);
+	public void addItemToPool(QuestionItemShort item, Pool pool);
 	
 	
 	//favorit
 	public int getNumOfFavoritItems(Identity identity);
 	
-	public ResultInfos<QuestionItem> getFavoritItems(Identity identity, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItemShort> getFavoritItems(Identity identity, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
 	
 	
 	//share
-	public void shareItems(List<QuestionItem> items, List<BusinessGroup> groups);
+	public void shareItems(List<QuestionItemShort> items, List<BusinessGroup> groups);
 	
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity);
 	
 	public int countSharedItemByResource(OLATResource resource);
 	
-	public ResultInfos<QuestionItem> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItemShort> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
 	//list
-	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItem> initialItems);
+	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems);
 	
-	public void addItemToCollection(QuestionItem item, QuestionItemCollection collection);
+	public void addItemToCollection(QuestionItemShort item, QuestionItemCollection collection);
 	
 	public List<QuestionItemCollection> getCollections(Identity owner);
 	
 	public int countItemsOfCollection(QuestionItemCollection collection);
 	
-	public ResultInfos<QuestionItem> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItemShort> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 
 	
 	//study field admin

@@ -27,10 +27,10 @@ import java.util.Comparator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionPoolSPIComparator implements Comparator<QuestionPoolSPI> {
+public class QuestionPoolSPIComparator implements Comparator<QPoolSPI> {
 
 	@Override
-	public int compare(QuestionPoolSPI o1, QuestionPoolSPI o2) {
+	public int compare(QPoolSPI o1, QPoolSPI o2) {
 		int p1 = o1.getPriority();
 		int p2 = o2.getPriority();
 		return p1 < p2 ? 1 : (p1==p2 ? 0 : -1);

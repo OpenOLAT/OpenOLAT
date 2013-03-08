@@ -29,8 +29,6 @@ import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.modules.qpool.impl.PdfQuestionPoolServiceProvider;
-import org.olat.modules.qpool.impl.TextQuestionPoolServiceProvider;
 
 /**
  * 
@@ -40,14 +38,13 @@ import org.olat.modules.qpool.impl.TextQuestionPoolServiceProvider;
  */
 public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOff {
 	
-	private final List<QuestionPoolSPI> questionPoolProviders = new ArrayList<QuestionPoolSPI>();
+	private final List<QPoolSPI> questionPoolProviders = new ArrayList<QPoolSPI>();
 
 	private VFSContainer rootContainer;
 
 	@Override
 	public void init() {
-		addQuestionPoolProvider(new TextQuestionPoolServiceProvider());
-		addQuestionPoolProvider(new PdfQuestionPoolServiceProvider());
+		//
 	}
 
 	@Override
@@ -77,22 +74,22 @@ public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOf
 		return rootContainer;
 	}
 
-	public List<QuestionPoolSPI> getQuestionPoolProviders() {
-		List<QuestionPoolSPI> providers = new ArrayList<QuestionPoolSPI>(questionPoolProviders);
+	public List<QPoolSPI> getQuestionPoolProviders() {
+		List<QPoolSPI> providers = new ArrayList<QPoolSPI>(questionPoolProviders);
 		Collections.sort(providers, new QuestionPoolSPIComparator());
 		return providers;
 	}
 
-	public void setQuestionPoolProviders(List<QuestionPoolSPI> providers) {
+	public void setQuestionPoolProviders(List<QPoolSPI> providers) {
 		if(providers != null) {
-			for(QuestionPoolSPI provider:providers) {
+			for(QPoolSPI provider:providers) {
 				addQuestionPoolProvider(provider);
 			}
 		}
 	}
 	
-	public QuestionPoolSPI getQuestionPoolProvider(String format) {
-		for(QuestionPoolSPI provider:questionPoolProviders) {
+	public QPoolSPI getQuestionPoolProvider(String format) {
+		for(QPoolSPI provider:questionPoolProviders) {
 			if(format.equals(provider.getFormat())) {
 				return provider;
 			}
@@ -100,10 +97,10 @@ public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOf
 		return null;
 	}
 	
-	public void addQuestionPoolProvider(QuestionPoolSPI provider) {
+	public void addQuestionPoolProvider(QPoolSPI provider) {
 		int currentIndex = -1;
 		for(int i=questionPoolProviders.size(); i-->0; ) {
-			QuestionPoolSPI currentProvider = questionPoolProviders.get(i);
+			QPoolSPI currentProvider = questionPoolProviders.get(i);
 			if(provider.getFormat() != null &&
 					provider.getFormat().equals(currentProvider.getFormat())) {
 				currentIndex = i;

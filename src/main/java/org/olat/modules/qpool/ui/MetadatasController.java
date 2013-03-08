@@ -47,7 +47,7 @@ import org.olat.modules.qpool.ui.edit.TechnicalMetadataEditController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemMetadatasController extends BasicController {
+public class MetadatasController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private final GeneralMetadataController generalCtrl;
@@ -66,7 +66,7 @@ public class QuestionItemMetadatasController extends BasicController {
 	
 	private QuestionItem item;
 	
-	public QuestionItemMetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl);
 		this.item = item;
 

@@ -37,6 +37,7 @@ import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
@@ -61,60 +62,59 @@ public class QuestionItemDAO {
 	private BaseSecurity securityManager;
 	
 	
-	public QuestionItem create(Identity owner, String subject, String format, String language,
-			TaxonomyLevel field, String rootFilename, QuestionType type) {
-
-		String uuid = UUID.randomUUID().toString();
-		return create(owner, subject, format, language, field, uuid, rootFilename, type) ;
-	}
-	
-	public QuestionItem create(Identity owner, String subject, String format, String language,
-			TaxonomyLevel taxonLevel, String uuid, String rootFilename, QuestionType type) {
+	public QuestionItemImpl create(String subject, String format, String dir, String rootFilename) {
 		QuestionItemImpl item = new QuestionItemImpl();
-
+		
+		String uuid = UUID.randomUUID().toString();
 		item.setIdentifier(uuid);
 		item.setCreationDate(new Date());
 		item.setLastModified(new Date());
 		item.setTitle(subject);
 		item.setStatus(QuestionStatus.draft.name());
 		item.setUsage(0);
+		item.setNumOfAnswerAlternatives(0);
+		item.setFormat(format);
+		if(dir == null) {
+			item.setDirectory(FileStorage.generateDir(uuid));
+		} else {
+			item.setDirectory(dir);
+		}
+		item.setRootFilename(rootFilename);
+		return item;
+	}
+
+	public QuestionItemImpl createAndPersist(Identity owner, String subject, String format, String language,
+			TaxonomyLevel taxonLevel, String dir, String rootFilename, QuestionType type) {
+		QuestionItemImpl item = create(subject, format, dir, rootFilename);
 		if(type != null) {
 			item.setType(type.name());
 		}
-		item.setFormat(format);
 		item.setLanguage(language);
 		item.setTaxonomyLevel(taxonLevel);
-		item.setDirectory(generateDir(uuid));
-		item.setRootFilename(rootFilename);
-		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
-		item.setOwnerGroup(ownerGroup);
-		dbInstance.getCurrentEntityManager().persist(item);
-		if(owner != null) {
-			securityManager.addIdentityToSecurityGroup(owner, ownerGroup);
-		}
+		persist(owner, item);
 		return item;
 	}
 	
-	public String generateDir(String uuid) {
-		String cleanUuid = uuid.replace("-", "");
-		String firstToken = cleanUuid.substring(0, 2);
-		String secondToken = cleanUuid.substring(2, 4);
-		String thirdToken = cleanUuid.substring(4, 6);
-		String forthToken = cleanUuid.substring(6, 8);
-		StringBuilder sb = new StringBuilder();
-		sb.append(firstToken).append("/")
-		  .append(secondToken).append("/")
-		  .append(thirdToken).append("/")
-		  .append(forthToken).append("/");
-		return sb.toString();
+	public void persist(Identity owner, QuestionItemImpl item) {
+		if(item.getOwnerGroup() == null) {
+			SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
+			item.setOwnerGroup(ownerGroup);
+		}
+		dbInstance.getCurrentEntityManager().persist(item);
+		if(owner != null) {
+			securityManager.addIdentityToSecurityGroup(owner, item.getOwnerGroup());
+		}
 	}
-	
+
 	public QuestionItem merge(QuestionItem item) {
+		if(item instanceof QuestionItemImpl) {
+			((QuestionItemImpl)item).setLastModified(new Date());
+		}
 		return dbInstance.getCurrentEntityManager().merge(item);
 	}
 	
-	public void addAuthors(List<Identity> authors, QuestionItem item) {
-		QuestionItemImpl lockedItem = loadForUpdate(item.getKey());
+	public void addAuthors(List<Identity> authors, Long itemKey) {
+		QuestionItemImpl lockedItem = loadForUpdate(itemKey);
 		SecurityGroup secGroup = lockedItem.getOwnerGroup();
 		for(Identity author:authors) {
 			if(!securityManager.isIdentityInSecurityGroup(author, secGroup)) {
@@ -138,7 +138,7 @@ public class QuestionItemDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItem> getItems(Identity me, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItemShort> getItems(Identity me, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
 		  .append(" inner join item.ownerGroup ownerGroup ")
@@ -151,8 +151,8 @@ public class QuestionItemDAO {
 			sb.append(" and item.key in (:itemKeys)");
 		}
 
-		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItem.class)
+		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemShort.class)
 				.setParameter("identityKey", me.getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);
@@ -181,9 +181,9 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
-	public void delete(List<QuestionItem> items) {
+	public void delete(List<QuestionItemShort> items) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		for(QuestionItem item:items) {
+		for(QuestionItemShort item:items) {
 			QuestionItem refItem = em.getReference(QuestionItemImpl.class, item.getKey());
 			em.remove(refItem);
 		}
@@ -245,7 +245,7 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
-	public List<QuestionItem> getFavoritItems(Identity identity, List<Long> inKeys, int firstResult, int maxResults) {
+	public List<QuestionItemShort> getFavoritItems(Identity identity, List<Long> inKeys, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
@@ -256,8 +256,8 @@ public class QuestionItemDAO {
 			sb.append(" and item.key in (:itemKeys)");
 		}
 
-		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItem.class)
+		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemShort.class)
 				.setParameter("identityKey", identity.getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);
@@ -284,11 +284,11 @@ public class QuestionItemDAO {
 		dbInstance.commit();//release the lock asap
 	}
 	
-	public void share(QuestionItem item, List<OLATResource> resources) {
+	public void share(Long itemKey, List<OLATResource> resources) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		QuestionItem lockedItem = loadForUpdate(item.getKey());
+		QuestionItem lockedItem = loadForUpdate(itemKey);
 		for(OLATResource resource:resources) {
-			if(!isShared(item, resource)) {
+			if(!isShared(lockedItem, resource)) {
 				ResourceShareImpl share = new ResourceShareImpl();
 				share.setCreationDate(new Date());
 				share.setItem(lockedItem);
@@ -324,7 +324,7 @@ public class QuestionItemDAO {
 		return count.intValue();
 	}
 	
-	public List<QuestionItem> getSharedItemByResource(OLATResource resource, List<Long> inKeys,
+	public List<QuestionItemShort> getSharedItemByResource(OLATResource resource, List<Long> inKeys,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qshareitem share")
@@ -335,8 +335,8 @@ public class QuestionItemDAO {
 			sb.append(" and item.key in (:itemKeys)");
 		}
 
-		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItem.class)
+		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemShort.class)
 				.setParameter("resourceKey", resource.getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);
@@ -382,9 +382,9 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
-	public int deleteFromShares(List<QuestionItem> items) {
+	public int deleteFromShares(List<QuestionItemShort> items) {
 		List<Long> keys = new ArrayList<Long>();
-		for(QuestionItem item:items) {
+		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
 		StringBuilder sb = new StringBuilder();

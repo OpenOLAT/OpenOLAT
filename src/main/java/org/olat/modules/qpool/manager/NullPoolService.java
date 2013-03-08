@@ -94,7 +94,7 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 			for(int i=0; i<200; i++) {
 				long randomIndex = Math.round(Math.random() * (fields.size() - 1));
 				TaxonomyLevel field = fields.get((int)randomIndex);
-				QuestionItem item = questionItemDao.create(null, "NGC " + i, QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), field, null, randomType());
+				QuestionItem item = questionItemDao.createAndPersist(null, "NGC " + i, QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), field, null, null, randomType());
 				poolDao.addItemToPool(item, pools.get(0));
 			}
 		}

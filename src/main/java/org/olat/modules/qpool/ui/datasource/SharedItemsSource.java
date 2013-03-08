@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.ui.datasource;
 
 import java.util.List;
 
@@ -26,9 +26,12 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
+import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -36,27 +39,29 @@ import org.olat.modules.qpool.model.SearchQuestionItemParams;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MarkedItemsSource implements QuestionItemsSource {
+public class SharedItemsSource implements QuestionItemsSource {
 	
 	private final Roles roles;
-	private final Identity me;
+	private final Identity identity;
+	private final OLATResource resource;
 	private final QuestionPoolService qpoolService;
 	
-	public MarkedItemsSource(Identity me, Roles roles) {
-		this.me = me;
+	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles) {
 		this.roles = roles;
+		this.identity = identity;
+		this.resource = group.getResource();
 		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
 	}
 
 	@Override
 	public int getNumOfItems() {
-		return qpoolService.getNumOfFavoritItems(me);
+		return qpoolService.countSharedItemByResource(resource);
 	}
 
 	@Override
-	public ResultInfos<QuestionItem> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		SearchQuestionItemParams params = new SearchQuestionItemParams(me, roles);
+	public ResultInfos<QuestionItemShort> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);
-		return qpoolService.getFavoritItems(me, params, firstResult, maxResults);
+		return qpoolService.getSharedItemByResource(resource, params, firstResult, maxResults, orderBy);
 	}
 }

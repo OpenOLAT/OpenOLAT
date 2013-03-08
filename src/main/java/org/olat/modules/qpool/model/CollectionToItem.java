@@ -59,7 +59,7 @@ public class CollectionToItem implements CreateInfo, Persistable  {
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	
-	@ManyToOne(targetEntity=QuestionItemCollectionImpl.class,fetch=FetchType.LAZY,optional=false)
+	@ManyToOne(targetEntity=ItemCollectionImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_collection_id", nullable=false, updatable=false)
 	private QuestionItemCollection collection;
 	

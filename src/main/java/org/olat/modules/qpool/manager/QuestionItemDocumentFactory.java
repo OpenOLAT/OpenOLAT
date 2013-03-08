@@ -34,7 +34,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolService;
-import org.olat.modules.qpool.model.QuestionItemDocument;
+import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.resource.OLATResource;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -68,15 +68,14 @@ public class QuestionItemDocumentFactory {
 		return null;
 	}
 
-	public Document createDocument(SearchResourceContext searchResourceContext, QuestionItem item) {	
-		
+	public Document createDocument(SearchResourceContext searchResourceContext, QuestionItem item) {
 		OlatDocument oDocument = new OlatDocument();
 		oDocument.setId(item.getKey());
 		oDocument.setCreatedDate(item.getCreationDate());
 		oDocument.setTitle(item.getTitle());
 		oDocument.setDescription(item.getDescription());
 		oDocument.setResourceUrl("[QuestionItem:" + item.getKey() + "]");
-		oDocument.setDocumentType(QuestionItemDocument.TYPE);
+		oDocument.setDocumentType(QItemDocument.TYPE);
 		oDocument.setCssIcon("o_qitem_icon");
 		oDocument.setParentContextType(searchResourceContext.getParentContextType());
 		oDocument.setParentContextName(searchResourceContext.getParentContextName());
@@ -92,23 +91,28 @@ public class QuestionItemDocumentFactory {
 			  .append(" ");
 		}
 		oDocument.setAuthor(authorSb.toString());
+		
+		//specific fields
+		
+		
+		
 
 		//save owners key
 		Document document = oDocument.getLuceneDocument();
 		for(Identity owner:owners) {
-			document.add(new StringField(QuestionItemDocument.OWNER_FIELD, owner.getKey().toString(), Field.Store.NO));
+			document.add(new StringField(QItemDocument.OWNER_FIELD, owner.getKey().toString(), Field.Store.NO));
 		}
 		
 		//link resources
 		List<OLATResource> resources = questionItemDao.getSharedResources(item);
 		for(OLATResource resource:resources) {
-			document.add(new StringField(QuestionItemDocument.SHARE_FIELD, resource.getKey().toString(), Field.Store.NO));
+			document.add(new StringField(QItemDocument.SHARE_FIELD, resource.getKey().toString(), Field.Store.NO));
 		}
 		
 		//need pools
 		List<Pool> pools = poolDao.getPools(item);
 		for(Pool pool:pools) {
-			document.add(new StringField(QuestionItemDocument.POOL_FIELD, pool.getKey().toString(), Field.Store.NO));
+			document.add(new StringField(QItemDocument.POOL_FIELD, pool.getKey().toString(), Field.Store.NO));
 		}
 
 		//need path
@@ -116,7 +120,7 @@ public class QuestionItemDocumentFactory {
 		if(StringHelper.containsNonWhitespace(path)) {
 			for(StringTokenizer tokenizer = new StringTokenizer(path, "/"); tokenizer.hasMoreTokens(); ) {
 				String nextToken = tokenizer.nextToken();
-				document.add(new TextField(QuestionItemDocument.STUDY_FIELD, nextToken, Field.Store.NO));
+				document.add(new TextField(QItemDocument.STUDY_FIELD, nextToken, Field.Store.NO));
 			}
 		}
 		return document;

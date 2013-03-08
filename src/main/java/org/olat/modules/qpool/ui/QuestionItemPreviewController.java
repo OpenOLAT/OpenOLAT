@@ -30,7 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.QuestionPoolSPI;
+import org.olat.modules.qpool.QPoolSPI;
 
 /**
  * 
@@ -74,7 +74,7 @@ public class QuestionItemPreviewController extends BasicController {
 		removeAsListenerAndDispose(previewCtrl);
 
 		Component content;
-		QuestionPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 		if(spi == null) {
 			content = getRawContent(item);
 		} else {

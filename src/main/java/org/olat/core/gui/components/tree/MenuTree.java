@@ -108,6 +108,7 @@ public class MenuTree extends Component {
 	private boolean expandServerOnly = true; // default is serverside menu
 	private boolean dragEnabled = false;
 	private boolean dropEnabled = false;
+	private boolean dropSiblingEnabled = false;
 	private boolean expandSelectedNode = true;
 	private boolean rootVisible = true;
 	//fxdiff VCRP-9: drag and drop in menu tree
@@ -419,6 +420,14 @@ public class MenuTree extends Component {
 	
 	public void setDropEnabled(boolean enabled) {
 		dropEnabled = enabled;
+	}
+	
+	public boolean isDropSiblingEnabled() {
+		return dropSiblingEnabled;
+	}
+	
+	public void setDropSiblingEnabled(boolean enabled) {
+		dropSiblingEnabled = enabled;
 	}
 	
 	/**

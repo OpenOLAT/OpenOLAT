@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.ui.wizard;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 
 /**
  * 
@@ -38,9 +38,9 @@ import org.olat.modules.qpool.QuestionItem;
  */
 public class ImportAuthor_1_ChooseMemberStep extends BasicStep {
 	
-	private final List<QuestionItem> items;
+	private final List<QuestionItemShort> items;
 	
-	public ImportAuthor_1_ChooseMemberStep(UserRequest ureq, List<QuestionItem> items) {
+	public ImportAuthor_1_ChooseMemberStep(UserRequest ureq, List<QuestionItemShort> items) {
 		super(ureq);
 		this.items = items;
 		setNextStep(new ImportAuthor_2_ConfirmMemberChoiceStep(ureq));

@@ -33,21 +33,21 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StudyFieldAdminController extends BasicController {
+public class TaxonomyAdminController extends BasicController {
 
 	private final MenuTree studyFieldTree;
-	private final StudyFieldTreeModel studyFieldTreeModel;
+	private final TaxonomyTreeModel studyFieldTreeModel;
 	
 	
 	private final VelocityContainer mainVC;
 	
-	public StudyFieldAdminController(UserRequest ureq, WindowControl wControl) {
+	public TaxonomyAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("admin_study_fields");
 
 		studyFieldTree = new MenuTree("qpoolTree");
-		studyFieldTreeModel = new StudyFieldTreeModel();
+		studyFieldTreeModel = new TaxonomyTreeModel();
 		studyFieldTree.setTreeModel(studyFieldTreeModel);
 		studyFieldTree.setSelectedNode(studyFieldTree.getTreeModel().getRootNode());
 		studyFieldTree.setDropEnabled(false);

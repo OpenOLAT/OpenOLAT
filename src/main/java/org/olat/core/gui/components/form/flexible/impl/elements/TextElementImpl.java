@@ -48,6 +48,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -288,7 +289,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 			//validate the inline element to check for error
 			transientValue = getValue();
 			setValue(paramVal);
-			validate(new ArrayList());
+			validate(new ArrayList<ValidationStatus>());
 			if(hasError()){
 				//in any case, if an error is there -> set Inline Editing on
 				isInlineEditingOn(true);

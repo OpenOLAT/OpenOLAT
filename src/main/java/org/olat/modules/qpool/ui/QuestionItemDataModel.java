@@ -39,9 +39,9 @@ import org.olat.modules.qpool.QuestionType;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDataSource<QuestionItemRow>, TableDataModel<QuestionItemRow> {
+public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDataSource<ItemRow>, TableDataModel<ItemRow> {
 
-	private List<QuestionItemRow> rows;
+	private List<ItemRow> rows;
 	private FlexiTableColumnModel columnModel;
 	private ItemRowsSource source;
 	private final Translator translator;
@@ -75,25 +75,25 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 	}
 
 	@Override
-	public QuestionItemRow getObject(int row) {
+	public ItemRow getObject(int row) {
 		return rows.get(row);
 	}
 
 	@Override
-	public void setObjects(List<QuestionItemRow> objects) {
-		rows = new ArrayList<QuestionItemRow>(objects);
+	public void setObjects(List<ItemRow> objects) {
+		rows = new ArrayList<ItemRow>(objects);
 	}
 
 	@Override
-	public ResultInfos<QuestionItemRow> load(int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<ItemRow> load(int firstResult, int maxResults, SortKey... orderBy) {
 		if(rows == null) {
-			rows = new ArrayList<QuestionItemRow>();
+			rows = new ArrayList<ItemRow>();
 		}
 		for(int i=rows.size(); i<firstResult; i++) {
 			rows.add(null);
 		}
 		
-		ResultInfos<QuestionItemRow> newRows = source.getRows(null, null, firstResult, maxResults, orderBy);
+		ResultInfos<ItemRow> newRows = source.getRows(null, null, firstResult, maxResults, orderBy);
 		if(firstResult == 0) {
 			if(newRows.getObjects().size() < maxResults) {
 				rowCount = newRows.getObjects().size();
@@ -110,20 +110,20 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 				rows.add(newRows.getObjects().get(i));
 			}
 		}
-		return new DefaultResultInfos<QuestionItemRow>(newRows.getNextFirstResult(), newRows.getCorrectedRowCount(), rows);
+		return new DefaultResultInfos<ItemRow>(newRows.getNextFirstResult(), newRows.getCorrectedRowCount(), rows);
 	}
 	
 	@Override
-	public ResultInfos<QuestionItemRow> search(String query, List<String> condQueries, int firstResult,
+	public ResultInfos<ItemRow> search(String query, List<String> condQueries, int firstResult,
 			int maxResults, SortKey... orderBy) {
 		if(firstResult == 0) {
-			rows = new ArrayList<QuestionItemRow>();
+			rows = new ArrayList<ItemRow>();
 		} else {
 			for(int i=rows.size(); i<firstResult; i++) {
 				rows.add(null);
 			}
 		}
-		ResultInfos<QuestionItemRow> newRows = source.getRows(query, condQueries, firstResult, maxResults, orderBy);
+		ResultInfos<ItemRow> newRows = source.getRows(query, condQueries, firstResult, maxResults, orderBy);
 		if(newRows.getCorrectedRowCount() >= 0) {
 			rowCount = newRows.getCorrectedRowCount();
 		} else if(firstResult == 0) {
@@ -138,7 +138,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 				rows.add(newRows.getObjects().get(i));
 			}
 		}
-		return new DefaultResultInfos<QuestionItemRow>(newRows.getNextFirstResult(), newRows.getCorrectedRowCount(), rows);
+		return new DefaultResultInfos<ItemRow>(newRows.getNextFirstResult(), newRows.getCorrectedRowCount(), rows);
 	}
 
 	@Override
@@ -153,7 +153,7 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		QuestionItemRow item = getObject(row);
+		ItemRow item = getObject(row);
 		switch(Cols.values()[col]) {
 			case key: return item.getKey();
 			case identifier: return item.getIdentifier();

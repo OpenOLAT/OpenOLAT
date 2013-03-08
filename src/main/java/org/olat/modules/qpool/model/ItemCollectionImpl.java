@@ -46,7 +46,7 @@ import org.olat.modules.qpool.QuestionItemCollection;
  */
 @Entity(name="qcollection")
 @Table(name="o_qp_item_collection")
-public class QuestionItemCollectionImpl implements QuestionItemCollection, Persistable {
+public class ItemCollectionImpl implements QuestionItemCollection, Persistable {
 
 	private static final long serialVersionUID = 898627243085538859L;
 
@@ -124,8 +124,8 @@ public class QuestionItemCollectionImpl implements QuestionItemCollection, Persi
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof QuestionItemCollectionImpl) {
-			QuestionItemCollectionImpl coll = (QuestionItemCollectionImpl)obj;
+		if(obj instanceof ItemCollectionImpl) {
+			ItemCollectionImpl coll = (ItemCollectionImpl)obj;
 			return key != null && key.equals(coll.key);
 		}
 		return false;

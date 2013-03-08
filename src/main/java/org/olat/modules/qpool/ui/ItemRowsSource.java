@@ -34,5 +34,5 @@ public interface ItemRowsSource {
 	
 	public int getRowCount();
 	
-	public ResultInfos<QuestionItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<ItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
 }

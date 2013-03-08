@@ -32,6 +32,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.PoolToItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,9 +67,9 @@ public class PoolDAO {
 		return pool;
 	}
 	
-	public int deleteFromPools(List<QuestionItem> items) {
+	public int deleteFromPools(List<QuestionItemShort> items) {
 		List<Long> keys = new ArrayList<Long>();
-		for(QuestionItem item:items) {
+		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
 		
@@ -131,7 +132,7 @@ public class PoolDAO {
 		return query.getResultList();
 	}
 	
-	public void addItemToPool(QuestionItem item, Pool pool) {
+	public void addItemToPool(QuestionItemShort item, Pool pool) {
 		QuestionItem lockedItem = questionItemDao.loadForUpdate(item.getKey());
 		if(!isInPool(lockedItem, pool)) {
 			PoolToItem p2i = new PoolToItem();
@@ -163,7 +164,7 @@ public class PoolDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItem> getItemsOfPool(Pool pool, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItemShort> getItemsOfPool(Pool pool, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from qpool2item pool2item")
 		  .append(" inner join pool2item.item item ")
@@ -175,8 +176,8 @@ public class PoolDAO {
 		
 		PersistenceHelper.appendGroupBy(sb, "pool2item.item", orderBy);
 		
-		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItem.class)
+		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemShort.class)
 				.setParameter("poolKey", pool.getKey());
 		if(inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);

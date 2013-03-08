@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 
 /**
  * 
@@ -35,6 +35,6 @@ public interface QuestionItemsSource {
 	
 	public int getNumOfItems();
 	
-	public ResultInfos<QuestionItem> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItemShort> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
 
 }

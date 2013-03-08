@@ -20,10 +20,12 @@
 package org.olat.modules.qpool;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -32,7 +34,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionPoolSPI {
+public interface QPoolSPI {
 	
 	public int getPriority();
 	
@@ -41,6 +43,8 @@ public interface QuestionPoolSPI {
 	public boolean isCompatible(String filename, File file);
 	
 	public boolean isCompatible(String filename, VFSLeaf file);
+	
+	public List<QuestionItem> importItems(Identity owner, String filename, File file);
 	
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item);
 

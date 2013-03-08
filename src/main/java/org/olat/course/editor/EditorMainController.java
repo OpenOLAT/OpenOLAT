@@ -263,6 +263,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			//fxdiff VCRP-9: drag and drop in menu tree
 			menuTree.setDragEnabled(true);
 			menuTree.setDropEnabled(true);
+			menuTree.setDropSiblingEnabled(true);
 			menuTree.setDragAndDropGroup("courseEditorGroup");
 						
 

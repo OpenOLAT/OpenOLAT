@@ -38,12 +38,12 @@ import org.olat.modules.qpool.QuestionPoolService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImportQuestionItemController extends FormBasicController {
+public class ImportController extends FormBasicController {
 	
 	private FileElement fileEl;
 	private final QuestionPoolService qpoolservice;
 	
-	public ImportQuestionItemController(UserRequest ureq, WindowControl wControl) {
+	public ImportController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		qpoolservice = CoreSpringFactory.getImpl(QuestionPoolService.class);
 		initForm(ureq);
@@ -73,7 +73,7 @@ public class ImportQuestionItemController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String filename = fileEl.getUploadFileName();
 		File file = fileEl.getUploadFile();
-		qpoolservice.importItem(getIdentity(), filename, file);
+		qpoolservice.importItems(getIdentity(), filename, file);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

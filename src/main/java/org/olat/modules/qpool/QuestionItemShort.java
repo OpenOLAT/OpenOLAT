@@ -43,6 +43,13 @@ public interface QuestionItemShort extends OLATResourceable {
 	
 	public String getLanguage();
 	
+	//classification
+	/**
+	 * Field can be lazy loaded
+	 * @return
+	 */
+	public String getTaxonomyLevelName();
+	
 	//educational
 	public String getEducationalContext();
 
