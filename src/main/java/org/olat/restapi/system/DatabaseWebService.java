@@ -19,8 +19,10 @@
  */
 package org.olat.restapi.system;
 
-import java.util.Collection;
+import java.util.Set;
 
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.ws.rs.GET;
@@ -37,8 +39,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.restapi.system.vo.DatabaseConnectionVO;
 import org.olat.restapi.system.vo.DatabaseVO;
 import org.olat.restapi.system.vo.HibernateStatisticsVO;
-
-import com.mchange.v2.c3p0.PooledDataSource;
 
 /**
  * 
@@ -92,33 +92,86 @@ public class DatabaseWebService {
 	
 	private DatabaseConnectionVO getConnectionInfos() {
 		DatabaseConnectionVO vo = new DatabaseConnectionVO();
+		vo.setActiveConnectionCount(0);
+		vo.setCurrentConnectionCount(0);
 		try {
-			int activeConnectionCount = 0;
-			int currentConnectionCount = 0;
-
 			JMXManager jmxManager = CoreSpringFactory.getImpl(JMXManager.class);
 			MBeanServer mBeanServer = jmxManager.getMBeanServer();
-			ObjectName c3p0ObjectName = new ObjectName("com.mchange.v2.c3p0:type=C3P0Registry");
-
-			Object attributes = mBeanServer.getAttribute(c3p0ObjectName, "AllPooledDataSources");
-			if(attributes instanceof Collection) {
-				@SuppressWarnings("unchecked")
-				Collection<Object> attributeCollection = (Collection<Object>)attributes;
-				for(Object attribute : attributeCollection) {
-					if(attribute instanceof PooledDataSource) {
-						PooledDataSource dataSource = (PooledDataSource)attribute;
-						activeConnectionCount += dataSource.getNumBusyConnectionsAllUsers();
-						currentConnectionCount += dataSource.getNumConnectionsAllUsers();
-					}
-				}
-			}
-
-			vo.setActiveConnectionCount(activeConnectionCount);
-			vo.setCurrentConnectionCount(currentConnectionCount);
-			
+			boolean found = searchC3P0DataSources(mBeanServer, vo) || searchTomcatDataSources(mBeanServer, vo);
+			if(log.isDebug()) {
+				log.debug("MBean for datasource found: " + found);
+			}	
 		} catch (Exception e) {
 			log.error("", e);
 		}
 		return vo;
+	}
+	
+	private boolean searchC3P0DataSources(MBeanServer mBeanServer, DatabaseConnectionVO vo) {
+		try {
+			ObjectName poolName = new ObjectName("com.mchange.v2.c3p0:type=*,*");
+			Set<ObjectName> names = mBeanServer.queryNames(poolName, null);
+			if(names.size() > 0) {
+				int activeConnectionCount = 0;
+				int currentConnectionCount = 0;
+
+				for(ObjectName name:names) {
+					String cName = name.getCanonicalName();
+					if(cName.startsWith("com.mchange.v2.c3p0:type=PooledDataSource")) {
+						MBeanInfo info = mBeanServer.getMBeanInfo(name);
+						MBeanAttributeInfo[] attrs = info.getAttributes();
+						for(MBeanAttributeInfo attr:attrs) {
+							String attrName = attr.getName();
+							if("numBusyConnectionsAllUsers".equals(attrName)) {
+								Number obj = (Number)mBeanServer.getAttribute(name, "numBusyConnectionsAllUsers");
+								activeConnectionCount += obj.intValue();
+							} else if("numConnectionsAllUsers".equals(attrName)) {
+								Number obj = (Number)mBeanServer.getAttribute(name, "numConnectionsAllUsers");
+								currentConnectionCount += obj.intValue();
+							}
+						}
+					}
+				}
+
+				vo.setActiveConnectionCount(activeConnectionCount);
+				vo.setCurrentConnectionCount(currentConnectionCount);
+				return true;
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return false;
+	}
+	
+	private boolean searchTomcatDataSources(MBeanServer mBeanServer, DatabaseConnectionVO vo) {
+		try {
+			ObjectName poolName = new ObjectName("Catalina:type=DataSource,*");
+			Set<ObjectName> names = mBeanServer.queryNames(poolName, null);
+			if(names.size() > 0) {
+				int activeConnectionCount = 0;
+				int idleConnectionCount = 0;
+				
+				for(ObjectName name:names) {
+					MBeanInfo info = mBeanServer.getMBeanInfo(name);
+					MBeanAttributeInfo[] attrs = info.getAttributes();
+					for(MBeanAttributeInfo attr:attrs) {
+						String attrName = attr.getName();
+						if("numActive".equals(attrName)) {
+							Number obj = (Number)mBeanServer.getAttribute(name, "numActive");
+							activeConnectionCount += obj.intValue();
+						} else if("numIdle".equals(attrName)) {
+							Number obj = (Number)mBeanServer.getAttribute(name, "numIdle");
+							idleConnectionCount += obj.intValue();
+						}
+					}
+				}
+
+				vo.setActiveConnectionCount(activeConnectionCount);
+				vo.setCurrentConnectionCount(activeConnectionCount - idleConnectionCount);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return false;
 	}
 }
