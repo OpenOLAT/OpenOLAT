@@ -51,6 +51,22 @@ create table if not exists o_im_preferences (
 );
 alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_from_identity_id) references o_bs_identity (id);
 
+create or replace view o_im_roster_entry_v as (
+   select
+      entry.id as re_id,
+      entry.creationdate as re_creationdate,
+      ident.id as ident_id,
+      ident.name as ident_name,
+      entry.r_nickname as re_nickname,
+      entry.r_fullname as re_fullname,
+      entry.r_anonym as re_anonym,
+      entry.r_vip as re_vip,
+      entry.r_resname as re_resname,
+      entry.r_resid as re_resid
+   from o_im_roster_entry as entry
+   inner join o_bs_identity as ident on (entry.fk_identity_id = ident.id)
+);
+
 -- views for contacts
 create or replace view o_gp_visible_participant_v as (
    select

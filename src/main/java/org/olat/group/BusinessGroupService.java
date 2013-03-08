@@ -200,7 +200,8 @@ public interface BusinessGroupService {
 			List<BusinessGroup> groupsToMerge, MailPackage mailing);
 	
 	/**
-	 * Update the members of a list of business groups
+	 * Update the members of a list of business groups. The process is additive, a current
+	 * participant which is marked as "add owner", will be participant and owner.
 	 * @param membersMod
 	 * @param groups
 	 */

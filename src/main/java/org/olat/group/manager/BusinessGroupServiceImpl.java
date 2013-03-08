@@ -111,7 +111,6 @@ import org.olat.user.UserDataDeletable;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -505,7 +504,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public void updateMembership(Identity ureqIdentity, MembershipModification membersMod,
 			List<BusinessGroup> groups, MailPackage mailing) {
 		Roles ureqRoles = securityManager.getRoles(ureqIdentity);
@@ -556,7 +554,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	@Transactional
 	public void updateMemberships(final Identity ureqIdentity, final List<BusinessGroupMembershipChange> changes,
 			MailPackage mailing) {
 		Roles ureqRoles = securityManager.getRoles(ureqIdentity);

@@ -1447,6 +1447,21 @@ create or replace view o_as_eff_statement_members_strict_v as (
    left join o_as_user_course_infos as pm_initial_launch on (pm_initial_launch.fk_resource_id = sm_reResource.resource_id and pm_initial_launch.fk_identity = sm_studentMembership.identity_id)
 );
 
+create or replace view o_im_roster_entry_v as (
+   select
+      entry.id as re_id,
+      entry.creationdate as re_creationdate,
+      ident.id as ident_id,
+      ident.name as ident_name,
+      entry.r_nickname as re_nickname,
+      entry.r_fullname as re_fullname,
+      entry.r_anonym as re_anonym,
+      entry.r_vip as re_vip,
+      entry.r_resname as re_resname,
+      entry.r_resid as re_resid
+   from o_im_roster_entry as entry
+   inner join o_bs_identity as ident on (entry.fk_identity_id = ident.id)
+);
 
 create index  ocl_asset_idx on oc_lock (asset);
 alter table oc_lock add index FK9E30F4B66115906D (identity_fk), add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity (id);

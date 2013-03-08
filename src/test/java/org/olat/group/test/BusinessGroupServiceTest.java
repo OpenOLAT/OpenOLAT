@@ -47,8 +47,11 @@ import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -699,6 +702,73 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			boolean enabled = myCTSMngr.isToolEnabled(CollaborationTools.TOOLS[i]);
 			assertTrue(msg, !enabled);
 		}
+	}
+	
+	@Test
+	public void testUpdateMembership() {
+		//create a group with owner and participant
+		Identity ureqIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mship-u-" + UUID.randomUUID().toString());
+		Identity ownerIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mship-o-" + UUID.randomUUID().toString());
+		Identity partIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mship-p-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(ureqIdentity, "Up-mship", "updateMembership", 0, 10, false, false, null);
+		securityManager.addIdentityToSecurityGroup(ownerIdentity, group.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(partIdentity, group.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+
+		//update memberships
+		MailPackage mailing = new MailPackage(false);
+		List<BusinessGroup> groups = Collections.singletonList(group);
+		MembershipModification membersMod = new MembershipModification();
+		membersMod.getAddOwners().add(partIdentity);
+		membersMod.getAddParticipants().add(ownerIdentity);
+		businessGroupService.updateMembership(ureqIdentity, membersMod, groups, mailing);
+		dbInstance.commitAndCloseSession();
+		
+		//check if the participant is owner too and the owner is participant too
+		boolean partIsOwner = securityManager.isIdentityInSecurityGroup(partIdentity, group.getOwnerGroup());
+		Assert.assertTrue(partIsOwner);
+		boolean partIsPart = securityManager.isIdentityInSecurityGroup(partIdentity, group.getPartipiciantGroup());
+		Assert.assertTrue(partIsPart);
+		boolean ownerIsOwner = securityManager.isIdentityInSecurityGroup(ownerIdentity, group.getOwnerGroup());
+		Assert.assertTrue(ownerIsOwner);
+		boolean ownerIsPart = securityManager.isIdentityInSecurityGroup(ownerIdentity, group.getPartipiciantGroup());
+		Assert.assertTrue(ownerIsPart);
+	}
+	
+	@Test
+	public void testUpdateMemberships() {
+		//create a group with owner and participant
+		Identity ureqIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mships-u-" + UUID.randomUUID().toString());
+		Identity ownerIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mships-o-" + UUID.randomUUID().toString());
+		Identity partIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mships-p-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(ureqIdentity, "Up-mships", "updateMemberships", 0, 10, false, false, null);
+		securityManager.addIdentityToSecurityGroup(ownerIdentity, group.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(partIdentity, group.getPartipiciantGroup());
+		dbInstance.commitAndCloseSession();
+
+		//invert the roles
+		BusinessGroupMembershipChange change1 = new BusinessGroupMembershipChange(ownerIdentity, group.getKey());
+		change1.setTutor(Boolean.FALSE);
+		change1.setParticipant(Boolean.TRUE);
+		BusinessGroupMembershipChange change2 = new BusinessGroupMembershipChange(partIdentity, group.getKey());
+		change2.setTutor(Boolean.TRUE);
+		change2.setParticipant(Boolean.FALSE);
+
+		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
+		changes.add(change1);
+		changes.add(change2);
+		businessGroupService.updateMemberships(ureqIdentity, changes, new MailPackage(false));
+		dbInstance.commitAndCloseSession();
+		
+		//check the result
+		boolean partIsOwner = securityManager.isIdentityInSecurityGroup(partIdentity, group.getOwnerGroup());
+		Assert.assertTrue(partIsOwner);
+		boolean partIsPart = securityManager.isIdentityInSecurityGroup(partIdentity, group.getPartipiciantGroup());
+		Assert.assertFalse(partIsPart);
+		boolean ownerIsPart = securityManager.isIdentityInSecurityGroup(ownerIdentity, group.getPartipiciantGroup());
+		Assert.assertTrue(ownerIsPart);
+		boolean ownerIsOwner = securityManager.isIdentityInSecurityGroup(ownerIdentity, group.getOwnerGroup());
+		Assert.assertFalse(ownerIsOwner);
 	}
 
 	/**

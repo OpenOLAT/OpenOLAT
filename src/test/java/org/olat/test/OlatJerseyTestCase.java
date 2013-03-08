@@ -127,6 +127,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 			if(!webServerStarted) {
 				log.info("Starting the Grizzly Web Container...");
 				webServer.start();
+				webServerStarted=true;
 			}
 		} catch (IOException ex) {
 			log.error("Cannot start the Grizzly Web Container");

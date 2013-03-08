@@ -42,7 +42,8 @@ import org.olat.core.id.Persistable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="imrosterentryview") @Cacheable(false)
+@Cacheable(false)
+@Entity(name="imrosterentryview")
 @Table(name="o_im_roster_entry_v")
 @NamedQueries({
 	@NamedQuery(name="loadIMRosterEntryViewByResource", query="select entry from imrosterentryview entry where entry.resourceId=:resid and entry.resourceTypeName=:resname")
