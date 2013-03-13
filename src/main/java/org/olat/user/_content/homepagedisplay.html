@@ -19,7 +19,7 @@
 				</tr>
 			#end
 			#foreach( $propertyHandler in $userPropertyHandlers )
-				#if($homepageConfig.isEnabled($propertyHandler.getName()))
+	
 			<tr>
 				<td>
 					<label>
@@ -30,7 +30,6 @@
 					$!propertyHandler.getUserPropertyAsHTML($user, $locale)
 				</td>
 			</tr>
-				#end
 			#end		
 		#if ( $homepageConfig.getTextAboutMe() && ($homepageConfig.getTextAboutMe() != "") )
 		<tr valign="top">

@@ -25,6 +25,8 @@
 
 package org.olat.user;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -80,10 +82,17 @@ public class HomePageDisplayController extends BasicController {
 		
 		// add configured property handlers and the homepage config
 		// do the looping in the velocity context
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
+		List<UserPropertyHandler> userPropertyHandlers
+			= new ArrayList<UserPropertyHandler>(userManager.getUserPropertyHandlersFor(usageIdentifyer, false));
+		for(Iterator<UserPropertyHandler> propIt=userPropertyHandlers.iterator(); propIt.hasNext(); ) {
+			UserPropertyHandler prop = propIt.next();
+			if(!hpc.isEnabled(prop.getName()) && !userManager.isMandatoryUserProperty(usageIdentifyer, prop)) {
+				propIt.remove();
+			}
+		}
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
-		mainVC.contextPut("homepageConfig", hpc);		
-		
+		mainVC.contextPut("homepageConfig", hpc);	
+
 		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false);
 		listenTo(dpc); // auto dispose
 		mainVC.put("image", dpc.getInitialComponent());
