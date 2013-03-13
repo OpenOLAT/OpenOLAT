@@ -104,7 +104,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 				conn.shutdown();
 			}
 		} catch (Exception e) {
-      e.printStackTrace();
+			log.error("", e);
       throw e;
 		}
 	}

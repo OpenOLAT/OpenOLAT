@@ -1936,6 +1936,30 @@ public class RepositoryManager extends BasicManager {
 		return isInstitutionalResourceManager && sameInstitutional;
 	}
 	
+	public int countLearningResourcesAsStudent(Identity identity) {
+		StringBuilder sb = new StringBuilder(1200);
+		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join v.olatResource as res ")
+		  .append(" left join v.ownerGroup as ownerGroup ")
+		  .append(" inner join v.participantGroup as participantGroup ")
+		  .append(" left join v.tutorGroup as tutorGroup ")
+		  .append("where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" and (")
+		  .append(" exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=participantGroup)")
+		  .append(" or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember, ")
+		  .append("   ").append(BGResourceRelation.class.getName()).append(" as bresource, ")
+		  .append("   ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
+		  .append("   where bgroup.partipiciantGroup=vmember.securityGroup and res=bresource.resource and bgroup=bresource.group and vmember.identity=:identityKey")
+		  .append("  )")
+		  .append(" )");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.getSingleResult().intValue();
+	}
+	
 	/**
 	 * Gets all learning resources where the user is in a learning group as participant.
 	 * @param identity
@@ -1994,20 +2018,22 @@ public class RepositoryManager extends BasicManager {
 	 * @return list of RepositoryEntries
 	 */
 	public boolean hasLearningResourcesAsTeacher(Identity identity) {
-		/*
+		return countLearningResourcesAsTeacher(identity) > 0;
+	}
+	
+	public int countLearningResourcesAsTeacher(Identity identity) {
 		StringBuilder sb = new StringBuilder(1200);
-		sb.append("select count(v.key) from ").append(RepositoryEntry.class.getName()).append(" v ")
+		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join v.olatResource as res ")
 			.append(" left join v.ownerGroup as ownerGroup")
+			.append(" left join v.participantGroup as participantGroup")
 			.append(" left join v.tutorGroup as tutorGroup");
-		whereClauseLearningResourcesAsTeacher(sb);	
-		Number count = dbInstance.getCurrentEntityManager()
+		whereClauseLearningResourcesAsTeacher(sb);
+		
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
-				.getSingleResult();
-		*/
-		List<RepositoryEntry> repos = getLearningResourcesAsTeacher(identity, 0, 1);
-		return !repos.isEmpty();
+				.getSingleResult().intValue();
 	}
 	
 	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
@@ -2064,6 +2090,55 @@ public class RepositoryManager extends BasicManager {
 	    .append("   ").append(BusinessGroupImpl.class.getName()).append(" as bgroup")
 	    .append("   where bgroup.ownerGroup=vmember.securityGroup and res=bresource.resource and bgroup=bresource.group and vmember.identity=:identityKey")
 	    .append(" ))");
+	}
+	
+	public int countFavoritLearningResourcesAsTeacher(Identity identity, List<String> types) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
+		  .append(" inner join v.olatResource as res ")
+		  .append(" where v.key in (")
+		  .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where mark.creator.key=:identityKey and mark.resName='RepositoryEntry'")
+		  .append(" )");
+		if(types != null && !types.isEmpty()) {
+			sb.append(" and res.resName in (:types)");
+		}
+
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey());
+		if(types != null && !types.isEmpty()) {
+			query.setParameter("types", types);
+		}
+		return query.getSingleResult().intValue();
+	}
+	
+	public List<RepositoryEntry> getFavoritLearningResourcesAsTeacher(Identity identity, List<String> types, int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
+		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" left join fetch v.ownerGroup as ownerGroup")
+		  .append(" left join fetch v.participantGroup as participantGroup")
+		  .append(" left join fetch v.tutorGroup as tutorGroup")
+		  .append(" where v.key in (")
+		  .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where mark.creator.key=:identityKey and mark.resName='RepositoryEntry'")
+		  .append(" )");
+		if(types != null && !types.isEmpty()) {
+			sb.append(" and res.resName in (:types)");
+		}
+
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identityKey", identity.getKey());
+		if(types != null && !types.isEmpty()) {
+			query.setParameter("types", types);
+		}
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
 	}
 	
 	/**

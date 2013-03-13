@@ -166,6 +166,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.RestApiLoginFilterTest.class,
 	org.olat.restapi.UserAuthenticationMgmtTest.class,
 	org.olat.restapi.UserFoldersTest.class,
+	org.olat.restapi.UserCoursesTest.class,
 	org.olat.restapi.UserMgmtTest.class,
 	org.olat.restapi.ContactsTest.class,
 	org.olat.restapi.SystemTest.class,

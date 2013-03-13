@@ -19,6 +19,7 @@
  */
 package org.olat.user.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getLocale;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isUserManager;
@@ -325,6 +326,30 @@ public class UserWebService {
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);
 		}
+	}
+	
+	@Path("{identityKey}/folders")
+	public UserFoldersWebService getFoldersWebService(@PathParam("identityKey") Long identityKey) {
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		}
+		return new UserFoldersWebService(identity);
+	}
+	
+	@Path("{identityKey}/courses")
+	public UserCoursesWebService getCoursesWebService(@PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest httpRequest) {
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		}
+
+		Identity ureqIdentity = getIdentity(httpRequest);
+		if(ureqIdentity == null || !ureqIdentity.equals(identity)) {
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+		}
+		return new UserCoursesWebService(identity);
 	}
 	
 	/**

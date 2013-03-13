@@ -29,6 +29,7 @@ package org.olat.repository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -81,6 +83,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private MarkManager markManager;
 	
 	@Before
 	public void setup() {
@@ -288,6 +292,61 @@ public class RepositoryManagerTest extends OlatTestCase {
 				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
 			}
 		}
+	}
+	
+	@Test
+	public void getFavoritLearningResourcesAsTeacher() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-fav-1-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		markManager.setMark(re, id, null, "[RepositoryEntry:" + re.getKey() + "]");
+		dbInstance.commitAndCloseSession();
+		
+		//check get favorit
+		List<RepositoryEntry> entries = repositoryManager.getFavoritLearningResourcesAsTeacher(id, null, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.contains(re));
+		
+		//check count
+		int countEntries = repositoryManager.countFavoritLearningResourcesAsTeacher(id, null);
+		Assert.assertEquals(1, countEntries);
+	}
+	
+	@Test
+	public void getFavoritLearningResourcesAsTeacher_restrictedTypes() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-fav-1-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		markManager.setMark(re, id, null, "[RepositoryEntry:" + re.getKey() + "]");
+		dbInstance.commitAndCloseSession();
+		
+		//check get favorite
+		List<String> types = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
+		List<RepositoryEntry> entries = repositoryManager.getFavoritLearningResourcesAsTeacher(id, types, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.contains(re));
+		
+		//check count
+		int countEntries = repositoryManager.countFavoritLearningResourcesAsTeacher(id, types);
+		Assert.assertEquals(1, countEntries);
+	}
+	
+	@Test
+	public void getFavoritLearningResourcesAsTeacher_negativeTypes() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-fav-1-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		markManager.setMark(re, id, null, "[RepositoryEntry:" + re.getKey() + "]");
+		dbInstance.commitAndCloseSession();
+		
+		//check get favorite
+		List<String> types = Collections.singletonList("CourseModule");
+		List<RepositoryEntry> entries = repositoryManager.getFavoritLearningResourcesAsTeacher(id, types, 0, -1);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(0, entries.size());
+		
+		//check count
+		int countEntries = repositoryManager.countFavoritLearningResourcesAsTeacher(id, types);
+		Assert.assertEquals(0, countEntries);
 	}
 	
 	@Test
