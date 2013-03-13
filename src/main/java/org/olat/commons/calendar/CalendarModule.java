@@ -26,6 +26,8 @@ import net.fortuna.ical4j.util.CompatibilityHints;
 
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -38,6 +40,8 @@ import org.olat.core.configuration.PersistedProperties;
  */
 public class CalendarModule extends AbstractOLATModule {
 	
+	private static final OLog log = Tracing.createLoggerFor(CalendarModule.class);
+	
 	private TimeZone defaultTimeZone;
 	private TimeZoneRegistry timeZoneRegistry;
 	
@@ -48,8 +52,12 @@ public class CalendarModule extends AbstractOLATModule {
 		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
 		System.setProperty(CompatibilityHints.KEY_RELAXED_PARSING, "true");
 		String defaultTimeZoneID = java.util.TimeZone.getDefault().getID();
+		log.info("Calendar time zone: " + defaultTimeZoneID);
 		timeZoneRegistry = TimeZoneRegistryFactory.getInstance().createRegistry();
 		defaultTimeZone = timeZoneRegistry.getTimeZone(defaultTimeZoneID);
+		if(defaultTimeZone == null) {
+			log.error("Cannot match the JVM default time zone to an ical4j time zone: " + defaultTimeZoneID);
+		}
 	}
 
 	@Override

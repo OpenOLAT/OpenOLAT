@@ -355,9 +355,13 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		if (!kEvent.isAllDayEvent()) {
 			// regular VEvent
 			DateTime dtBegin = new DateTime(kEvent.getBegin());
-			dtBegin.setTimeZone(tz);
+			if(tz != null) {
+				dtBegin.setTimeZone(tz);
+			}
 			DateTime dtEnd = new DateTime(kEvent.getEnd());
-			dtEnd.setTimeZone(tz);
+			if(tz != null) {
+				dtEnd.setTimeZone(tz);
+			}
 			vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
 		} else {
 			// AllDay VEvent
@@ -709,7 +713,11 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			
 			java.util.Calendar recurStartCal = java.util.Calendar.getInstance();
 			recurStartCal.clear();
-			recurStartCal.setTimeInMillis(date.getTime()-tz.getOffset(date.getTime()));
+			if(tz == null) {
+				recurStartCal.setTimeInMillis(date.getTime());
+			} else {
+				recurStartCal.setTimeInMillis(date.getTime() - tz.getOffset(date.getTime()));
+			}
 			long duration = kEvent.getEnd().getTime() - kEvent.getBegin().getTime();
 
 			java.util.Calendar beginCal = java.util.Calendar.getInstance();

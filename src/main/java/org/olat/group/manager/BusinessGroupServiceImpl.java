@@ -950,8 +950,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public void cancelPendingParticipation(Identity ureqIdentity, ResourceReservation reservation) {
 		if(reservation != null && "BusinessGroup".equals(reservation.getResource().getResourceableTypeName())) {
 			BusinessGroup group = businessGroupDAO.loadForUpdate(reservation.getResource().getResourceableId());
-			transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, null);
-			dbInstance.commit();
+			if(group != null) {
+				transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, null);
+				dbInstance.commit();
+			}
 		}
 	}
 
@@ -960,18 +962,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		ResourceReservation reservation = acService.getReservation(reservationOwner, resource);
 		if(reservation != null && "BusinessGroup".equals(resource.getResourceableTypeName())) {
 			BusinessGroup group = businessGroupDAO.loadForUpdate(resource.getResourceableId());
-
-			String type = reservation.getType();
-			if("group_coach".equals(type)) {
-				if(!securityManager.isIdentityInSecurityGroup(reservationOwner, group.getOwnerGroup())) {
-					internalAddCoach(reservationOwner, group);
-				}
-			} else if("group_participant".equals(type)) {
-				if(!securityManager.isIdentityInSecurityGroup(reservationOwner, group.getPartipiciantGroup())) {
-					internalAddParticipant(reservationOwner, group);
+			if(group != null) {
+				String type = reservation.getType();
+				if("group_coach".equals(type)) {
+					if(!securityManager.isIdentityInSecurityGroup(reservationOwner, group.getOwnerGroup())) {
+						internalAddCoach(reservationOwner, group);
+					}
+				} else if("group_participant".equals(type)) {
+					if(!securityManager.isIdentityInSecurityGroup(reservationOwner, group.getPartipiciantGroup())) {
+						internalAddParticipant(reservationOwner, group);
+					}
 				}
 			}
-			
 			reservationDao.deleteReservation(reservation);
 			dbInstance.commit();
 		}

@@ -205,7 +205,9 @@ public class CalendarUtils {
 				Date dUntil = recur.getUntil();
 				DateTime dtUntil = dUntil == null ? null : new DateTime(dUntil.getTime());
 				if(dtUntil != null) {
-					dtUntil.setTimeZone(tz);
+					if(tz != null) {
+						dtUntil.setTimeZone(tz);
+					}
 					return dtUntil;
 				}
 			} catch (ParseException e) {
@@ -245,7 +247,9 @@ public class CalendarUtils {
 			}
 			if(recurrenceEnd != null) {
 				DateTime recurEndDT = new DateTime(recurrenceEnd.getTime());
-				recurEndDT.setTimeZone(tz);
+				if(tz != null) {
+					recurEndDT.setTimeZone(tz);
+				}
 				sb.append(";");
 				sb.append(KalendarEvent.UNTIL);
 				sb.append("=");
