@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -51,6 +52,9 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -69,6 +73,10 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private ACReservationDAO reservationDao;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -752,4 +760,143 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	}
 	
 
+	@Test
+	public void testAcceptPendingParticipation_participant() {
+		//create a group
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Reserv-bg-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		
+		//create a reservation
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR, 6);
+		ResourceReservation reservation = reservationDao.createReservation(id, "group_participant", cal.getTime(), group.getResource());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reservation);
+		Assert.assertEquals("group_participant", reservation.getType());
+		Assert.assertEquals(group.getResource(), reservation.getResource());
+		
+		//check that the user is not participant
+		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup()));
+		
+		//accept reservation
+		businessGroupService.acceptPendingParticipation(id, id, group.getResource());
+		dbInstance.commitAndCloseSession();
+		
+	//check that the user is participant
+		boolean participant = securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup());
+		Assert.assertTrue(participant);
+	}
+
+	@Test
+	public void testAcceptPendingParticipation_coach() {
+		//create a group
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Reserv-bg-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		
+		//create a reservation
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR, 6);
+		ResourceReservation reservation = reservationDao.createReservation(id, "group_coach", cal.getTime(), group.getResource());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reservation);
+		
+		//check that the user is not participant
+		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, group.getOwnerGroup()));
+		
+		//accept reservation
+		acService.acceptReservationToResource(id, reservation);
+		dbInstance.commitAndCloseSession();
+		
+		//check that the user is participant
+		Assert.assertTrue(securityManager.isIdentityInSecurityGroup(id, group.getOwnerGroup()));
+		//check that the reservations are deleted
+		List<ResourceReservation> reservations = reservationDao.loadReservations(id);
+		Assert.assertNotNull(reservations);
+		Assert.assertTrue(reservations.isEmpty());
+	}
+
+	@Test
+	public void testCancelPendingParticipation_participant() {
+		//create a group
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Reserv-bg-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		
+		//create a reservation
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR, 6);
+		ResourceReservation reservation = reservationDao.createReservation(id, "group_participant", cal.getTime(), group.getResource());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reservation);
+		
+		//check that the user is not participant
+		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup()));
+		
+		//accept reservation
+		acService.removeReservation(id, id, reservation);
+		dbInstance.commitAndCloseSession();
+		
+		//check that the user is not participant
+		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup()));
+		//check that the reservations are deleted
+		List<ResourceReservation> reservations = reservationDao.loadReservations(id);
+		Assert.assertNotNull(reservations);
+		Assert.assertTrue(reservations.isEmpty());
+	}
+	
+	@Test
+	public void testCancelPendingParticipation_deletedGroup() {
+		//create a group
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Reserv-bg-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		
+		//create a reservation
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR, 6);
+		ResourceReservation reservation = reservationDao.createReservation(id, "group_participant", cal.getTime(), group.getResource());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reservation);
+		
+		//delete the group
+		businessGroupService.deleteBusinessGroup(group);
+		dbInstance.commitAndCloseSession();
+		
+		//accept reservation
+		acService.removeReservation(id, id, reservation);
+		dbInstance.commitAndCloseSession();
+		
+		//check that the user is not participant
+		boolean participant2 = securityManager.isIdentityInSecurityGroup(id, group.getPartipiciantGroup());
+		Assert.assertFalse(participant2);
+		//check that the reservations are deleted
+		List<ResourceReservation> reservations = reservationDao.loadReservations(id);
+		Assert.assertNotNull(reservations);
+		Assert.assertTrue(reservations.isEmpty());
+	}
+	
+	@Test
+	public void testAcceptPendingParticipation_deletedGroup() {
+		//create a group
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Reserv-bg-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		
+		//create a reservation
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR, 6);
+		ResourceReservation reservation = reservationDao.createReservation(id, "group_coach", cal.getTime(), group.getResource());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reservation);
+		
+		//delete the group
+		businessGroupService.deleteBusinessGroup(group);
+		dbInstance.commitAndCloseSession();
+		
+		//accept reservation
+		acService.acceptReservationToResource(id, reservation);
+		dbInstance.commitAndCloseSession();
+		
+		//check that the reservations are deleted
+		List<ResourceReservation> reservations = reservationDao.loadReservations(id);
+		Assert.assertNotNull(reservations);
+		Assert.assertTrue(reservations.isEmpty());
+	}
 }
