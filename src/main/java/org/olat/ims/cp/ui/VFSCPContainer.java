@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeNode;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -99,14 +100,14 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 	}
 
 	protected static List<VFSItem> getItems(ContentPackage cp, CPTreeDataModel model, String nodeId) {
-		List<AjaxTreeNode> nodes = model.getChildrenFor(nodeId);
+		List<TreeNode> nodes = model.getChildrenFor(nodeId);
 		
 		CPManager cpMgm =CPManager.getInstance();
 
 		List<VFSItem> items = new ArrayList<VFSItem>();
-		for(AjaxTreeNode node:nodes) {
+		for(TreeNode node:nodes) {
 			try {
-				String nid = (String)node.get(AjaxTreeNode.CONF_ID);
+				String nid = (String)node.getIdent();//TODO jquery .get(AjaxTreeNode.CONF_ID);
 				String id = model.getIdentifierForNodeID(nid);
 				String filePath = cpMgm.getPageByItemId(cp, id);
 				String title = cpMgm.getItemTitle(cp, id);
@@ -115,7 +116,7 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 					title += " (" + filePath + ")";
 					
 					VFSItem item;
-					List<AjaxTreeNode> children = model.getChildrenFor(nid);
+					List<TreeNode> children = model.getChildrenFor(nid);
 					if(children.isEmpty()) {
 						item = new VFSCPNamedItem(title, (VFSLeaf)f);
 					} else {
@@ -123,7 +124,7 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 					}
 					items.add(item);
 				}
-			} catch (JSONException e) {
+			} catch (Exception e) {
 				log.error("", e);
 			}
 		}

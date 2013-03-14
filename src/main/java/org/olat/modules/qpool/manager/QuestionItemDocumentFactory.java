@@ -33,7 +33,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.resource.OLATResource;
 import org.olat.search.model.OlatDocument;
@@ -57,7 +57,7 @@ public class QuestionItemDocumentFactory {
 	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
-	private QuestionPoolService qpoolService;
+	private QPoolService qpoolService;
 
 
 	public Document createDocument(SearchResourceContext searchResourceContext, Long itemKey) {
@@ -72,6 +72,7 @@ public class QuestionItemDocumentFactory {
 		OlatDocument oDocument = new OlatDocument();
 		oDocument.setId(item.getKey());
 		oDocument.setCreatedDate(item.getCreationDate());
+		oDocument.setLastChange(item.getLastModified());
 		oDocument.setTitle(item.getTitle());
 		oDocument.setDescription(item.getDescription());
 		oDocument.setResourceUrl("[QuestionItem:" + item.getKey() + "]");
@@ -92,13 +93,41 @@ public class QuestionItemDocumentFactory {
 		}
 		oDocument.setAuthor(authorSb.toString());
 		
-		//specific fields
+		//add specific fields
+		Document document = oDocument.getLuceneDocument();
 		
+		//general fields
+		addStringField(document, QItemDocument.IDENTIFIER_FIELD, item.getIdentifier(), 1.0f);
+		addStringField(document, QItemDocument.MASTER_IDENTIFIER_FIELD,  item.getMasterIdentifier(), 1.0f);
+		addTextField(document, QItemDocument.KEYWORDS_FIELD, item.getKeywords(), 2.0f);
+		addTextField(document, QItemDocument.COVERAGE_FIELD, item.getCoverage(), 2.0f);
+		addTextField(document, QItemDocument.ADD_INFOS_FIELD, item.getAdditionalInformations(), 2.0f);
+		addStringField(document, QItemDocument.LANGUAGE_FIELD,  item.getLanguage(), 1.0f);
 		
+		//educational
+		addStringField(document, QItemDocument.EDU_CONTEXT_FIELD,  item.getEducationalContext(), 1.0f);
 		
+		//question
+		if(item.getQuestionType() != null) {
+			addStringField(document, QItemDocument.ITEM_TYPE_FIELD,  item.getQuestionType().name(), 1.0f);
+		}
+		addStringField(document, QItemDocument.ASSESSMENT_TYPE_FIELD, item.getAssessmentType(), 1.0f);
+		
+		//lifecycle
+		addStringField(document, QItemDocument.ITEM_VERSION_FIELD, item.getItemVersion(), 1.0f);
+		if(item.getQuestionStatus() != null) {
+			addStringField(document, QItemDocument.ITEM_STATUS_FIELD, item.getQuestionStatus().name(), 1.0f);
+		}
+		
+		//rights
+		addTextField(document, QItemDocument.COPYRIGHT_FIELD, item.getCopyright(), 2.0f);
+
+		//technical
+		addTextField(document, QItemDocument.EDITOR_FIELD, item.getEditor(), 2.0f);
+		addStringField(document, QItemDocument.EDITOR_VERSION_FIELD, item.getEditorVersion(), 1.0f);
+		addStringField(document, QItemDocument.FORMAT_FIELD, item.getFormat(), 1.0f);
 
 		//save owners key
-		Document document = oDocument.getLuceneDocument();
 		for(Identity owner:owners) {
 			document.add(new StringField(QItemDocument.OWNER_FIELD, owner.getKey().toString(), Field.Store.NO));
 		}
@@ -126,6 +155,14 @@ public class QuestionItemDocumentFactory {
 		return document;
 	}
 	
+	private void addStringField(Document doc, String fieldName, String content, float boost) {
+		if(StringHelper.containsNonWhitespace(content)) {
+			TextField field = new TextField(fieldName, content, Field.Store.YES);
+			field.setBoost(boost);
+			doc.add(field);
+		}
+	}
+	
 	/**
 	 * indexed and tokenized
 	 * @param fieldName
@@ -133,9 +170,11 @@ public class QuestionItemDocumentFactory {
 	 * @param boost
 	 * @return
 	 */
-	protected Field createTextField(String fieldName, String content, float boost) {
-		TextField field = new TextField(fieldName,content, Field.Store.YES);
-		field.setBoost(boost);
-		return field;
+	private void addTextField(Document doc, String fieldName, String content, float boost) {
+		if(StringHelper.containsNonWhitespace(content)) {
+			TextField field = new TextField(fieldName, content, Field.Store.YES);
+			field.setBoost(boost);
+			doc.add(field);
+		}
 	}
 }

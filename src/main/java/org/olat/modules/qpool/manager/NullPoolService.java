@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,8 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private QuestionItemDAO questionItemDao;
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -63,7 +66,7 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 	}
 	
 	private void createPools() {
-		poolDao.createPool("Catalog");
+		poolDao.createPool(null, "Catalog");
 		dbInstance.commit();
 	}
 	

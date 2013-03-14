@@ -188,12 +188,7 @@ public class CatalogEntryListController extends AbstractRepositoryEntryListContr
 	private void doMove(UserRequest ureq, Long key) {
 		CatalogEntry entryToMove = cm.getCatalogEntryByKey(key);
 
-		boolean ajax = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
-		if (ajax) {
-			catEntryMoveController= new CatalogAjaxMoveController(ureq, getWindowControl(), entryToMove);
-		} else {
-			catEntryMoveController= new CatalogEntryMoveController(getWindowControl(), ureq, entryToMove, getTranslator());
-		}
+		catEntryMoveController= new CatalogEntryMoveController(getWindowControl(), ureq, entryToMove, getTranslator());
 		listenTo(catEntryMoveController);
 		cmc = new CloseableModalController(getWindowControl(), "close", catEntryMoveController.getInitialComponent());
 		listenTo(cmc);

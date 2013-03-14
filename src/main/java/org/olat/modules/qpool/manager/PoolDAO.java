@@ -30,6 +30,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.id.Identity;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -54,16 +55,18 @@ public class PoolDAO {
 	@Autowired
 	private BaseSecurity securityManager;
 	
-	public PoolImpl createPool(String name) {
+	public PoolImpl createPool(Identity owner, String name) {
 		PoolImpl pool = new PoolImpl();
 		pool.setCreationDate(new Date());
 		pool.setLastModified(new Date());
 		pool.setName(name);
+		pool.setPublicPool(false);
 		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
 		pool.setOwnerGroup(ownerGroup);
-		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
-		pool.setParticipantGroup(participantGroup);
 		dbInstance.getCurrentEntityManager().persist(pool);
+		if(owner != null) {
+			securityManager.addIdentityToSecurityGroup(owner, ownerGroup);
+		}
 		return pool;
 	}
 	

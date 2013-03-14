@@ -46,7 +46,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
 import org.olat.modules.qpool.ui.datasource.MarkedItemsSource;
 import org.olat.modules.qpool.ui.datasource.MyQuestionItemsSource;
@@ -80,13 +80,13 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
 
 	private final MarkManager markManager;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public QuestionPoolMainEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		menuTree = new MenuTree("qpoolTree");
 		menuTree.setTreeModel(buildTreeModel());

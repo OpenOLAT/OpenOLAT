@@ -48,7 +48,7 @@ import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 /**
  * 
  * Initial date: 21.02.2013<br>
@@ -59,11 +59,11 @@ public class QTI12PreviewController extends BasicController {
 	
 	private final Panel mainPanel;
 	private ItemPreviewController previewCtrl;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 
 	public QTI12PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		mainPanel = new Panel("qti12preview");
 		
 		VFSLeaf leaf = qpoolService.getRootFile(qitem);

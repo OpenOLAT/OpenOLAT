@@ -63,7 +63,7 @@ import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
 import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
 
@@ -74,13 +74,14 @@ import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
  */
 public class QuestionListController extends FormBasicController implements StackedControllerAware, ItemRowsSource {
 
-	private FormLink createList, shareItem, deleteItem, authorItem, importItem;
+	private FormLink createList, shareItem, copyItem, deleteItem, authorItem, importItem;
 	
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
 	private StackedController stackPanel;
 	
 	private CloseableModalController cmc;
+	private DialogBoxController confirmCopyBox;
 	private DialogBoxController confirmDeleteBox;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private CreateCollectionController createCollectionCtrl;
@@ -88,7 +89,7 @@ public class QuestionListController extends FormBasicController implements Stack
 	private ImportController importItemCtrl;
 	
 	private final MarkManager markManager;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	private QuestionItemsSource source;
 	
@@ -97,7 +98,7 @@ public class QuestionListController extends FormBasicController implements Stack
 
 		this.source = source;
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		initForm(ureq);
 	}
@@ -128,6 +129,7 @@ public class QuestionListController extends FormBasicController implements Stack
 		
 		createList = uifactory.addFormLink("create.list", formLayout, Link.BUTTON);
 		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+		copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
 		deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
@@ -165,6 +167,12 @@ public class QuestionListController extends FormBasicController implements Stack
 				if(selections.size() > 0) {
 					List<QuestionItemShort> items = getShortItems(selections);
 					doSelectGroup(ureq, items);
+				}
+			} else if(link == copyItem) {
+				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
+				if(selections.size() > 0) {
+					List<QuestionItemShort> items = getShortItems(selections);
+					doConfirmCopy(ureq, items);
 				}
 			} else if(link == deleteItem) {
 				Set<Integer> selections = itemsTable.getMultiSelectedIndex();
@@ -238,13 +246,18 @@ public class QuestionListController extends FormBasicController implements Stack
 			}
 		} else if(source == importItemCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				//
+				itemsTable.reset();
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source == confirmCopyBox) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmCopyBox.getUserObject();
+				doCopy(ureq, items);
+			}
 		} else if(source == confirmDeleteBox) {
-			boolean delete = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
-			if(delete) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
 				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmDeleteBox.getUserObject();
 				doDelete(ureq, items);
@@ -360,6 +373,18 @@ public class QuestionListController extends FormBasicController implements Stack
 				selectGroupCtrl.getInitialComponent(), true, translate("select.group"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	protected void doConfirmCopy(UserRequest ureq, List<QuestionItemShort> items) {
+		String title = translate("copy");
+		String text = translate("copy.confirmation");
+		confirmCopyBox = activateYesNoDialog(ureq, title, text, confirmCopyBox);
+		confirmCopyBox.setUserObject(items);
+	}
+	
+	protected void doCopy(UserRequest ureq, List<QuestionItemShort> items) {
+		qpoolService.copyItems(getIdentity(), items);
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
 	}
 	
 	private void doShareItems(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups) {

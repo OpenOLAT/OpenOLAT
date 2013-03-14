@@ -236,5 +236,7 @@ public class MetadatasController extends BasicController {
 		educationalCtrl.setItem(item);
 		questionCtrl.setItem(item);
 		lifecycleCtrl.setItem(item);
+		rightsCtrl.setItem(item);
+		technicalCtrl.setItem(item);
 	}
 }

@@ -350,17 +350,11 @@ public class CatalogController extends BasicController implements Activateable2 
 					// move a resource in the catalog - moving of catalog leves is triggered by a toolbox action
 					int pos = Integer.parseInt(s.substring(CATENTRY_LEAF.length()));
 					linkMarkedToBeEdited = (CatalogEntry) childCe.get(pos);
-					removeAsListenerAndDispose(catEntryMoveController);
-					boolean ajax = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
-					if (ajax) {
-						// fancy ajax tree
-						catEntryMoveController= new CatalogAjaxMoveController(ureq, getWindowControl(), linkMarkedToBeEdited);
-					} else {
-						// old-school selection tree
-						catEntryMoveController= new CatalogEntryMoveController(getWindowControl(), ureq, linkMarkedToBeEdited, getTranslator());
-					}
-					listenTo(catEntryMoveController);
+					
 					removeAsListenerAndDispose(cmc);
+					removeAsListenerAndDispose(catEntryMoveController);
+					catEntryMoveController= new CatalogEntryMoveController(getWindowControl(), ureq, linkMarkedToBeEdited, getTranslator());
+					listenTo(catEntryMoveController);
 					cmc = new CloseableModalController(getWindowControl(), "close", catEntryMoveController.getInitialComponent());
 					listenTo(cmc);
 					cmc.activate();
@@ -602,22 +596,15 @@ public class CatalogController extends BasicController implements Activateable2 
 				linkMarkedToBeEdited = null; 
 				//
 				catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(OresHelper.createOLATResourceableType(CatalogController.class), ureq.getIdentity(), LOCK_TOKEN);
-				if ( ! catModificationLock.isSuccess()) {
+				if (!catModificationLock.isSuccess()) {
 					showError("catalog.locked.by", catModificationLock.getOwner().getName());
 					return;
 				}
-				// check if user surfs in ajax mode
-				removeAsListenerAndDispose(catEntryMoveController);
-				boolean ajax = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
-				if (ajax) {
-					// fancy ajax tree
-					catEntryMoveController= new CatalogAjaxMoveController(ureq, getWindowControl(), currentCatalogEntry);
-				} else {
-					// old-school selection tree
-					catEntryMoveController= new CatalogEntryMoveController(getWindowControl(), ureq, currentCatalogEntry, getTranslator());					
-				}
-				listenTo(catEntryMoveController);
+				
 				removeAsListenerAndDispose(cmc);
+				removeAsListenerAndDispose(catEntryMoveController);
+				catEntryMoveController= new CatalogEntryMoveController(getWindowControl(), ureq, currentCatalogEntry, getTranslator());					
+				listenTo(catEntryMoveController);
 				cmc = new CloseableModalController(getWindowControl(), "close", catEntryMoveController.getInitialComponent());
 				listenTo(cmc);
 				cmc.activate();

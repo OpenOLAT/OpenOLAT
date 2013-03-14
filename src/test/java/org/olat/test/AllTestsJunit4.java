@@ -120,6 +120,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.ims.qti.fileresource.FileResourceValidatorTest.class,
 	org.olat.modules.webFeed.FeedManagerImplTest.class,
 	org.olat.modules.qpool.manager.QuestionDAOTest.class,
+	org.olat.modules.qpool.manager.FileStorageTest.class,
 	org.olat.modules.qpool.manager.CollectionDAOTest.class,
 	org.olat.modules.qpool.manager.PoolDAOTest.class,
 	org.olat.modules.qpool.manager.TaxonomyLevelDAOTest.class,

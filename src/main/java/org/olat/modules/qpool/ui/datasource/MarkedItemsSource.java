@@ -27,7 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 
@@ -41,12 +41,12 @@ public class MarkedItemsSource implements QuestionItemsSource {
 	
 	private final Roles roles;
 	private final Identity me;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public MarkedItemsSource(Identity me, Roles roles) {
 		this.me = me;
 		this.roles = roles;
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 
 	@Override

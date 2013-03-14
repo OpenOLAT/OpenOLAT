@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * 
@@ -58,7 +59,7 @@ public class DateElement extends FormItemImpl {
 	}
 	
 	@Override
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		//
 	}
 	

@@ -58,6 +58,8 @@ public interface QuestionItemShort extends OLATResourceable {
 	//question
 	public String getType();
 	
+	public QuestionType getQuestionType();
+	
 	public BigDecimal getDifficulty();
 	
 	public BigDecimal getStdevDifficulty();
@@ -84,7 +86,7 @@ public interface QuestionItemShort extends OLATResourceable {
 	
 	
 	
-	public QuestionType getQuestionType();
+	
 	
 
 }

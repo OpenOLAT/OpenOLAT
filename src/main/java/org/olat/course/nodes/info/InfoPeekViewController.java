@@ -176,7 +176,7 @@ public class InfoPeekViewController extends BasicController {
 				boolean tooltip = StringHelper.containsNonWhitespace(item.getMessage());
 				if(tooltip) {
 					String message = Formatter.escWithBR(Formatter.truncate(item.getMessage(), 255)).toString();
-					sb.append("<span ext:qtip=\"").append(StringEscapeUtils.escapeHtml(message)).append("\">");
+					sb.append("<span title=\"").append(StringEscapeUtils.escapeHtml(message)).append("\">");
 				} else {
 					sb.append("<span>");
 				}

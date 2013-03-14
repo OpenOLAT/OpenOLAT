@@ -19,6 +19,11 @@
  */
 package org.olat.modules.qpool.ui.edit;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.NewControllerFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,11 +36,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.ui.QPoolEvent;
 import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.QPoolEvent;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -48,10 +56,16 @@ public class RightsMetadataController extends FormBasicController  {
 	private FormLink editLink;
 	private StaticTextElement descriptionEl;
 	private MultipleSelectionElement copyrightEl;
-
+	private FormLayoutContainer authorCont;
+	
+	private final QPoolService qpoolService;
+	private final UserManager userManager;
+	
 	public RightsMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl, "view");
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		
 		initForm(ureq);
 		setItem(item);
@@ -66,6 +80,12 @@ public class RightsMetadataController extends FormBasicController  {
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
+		
+		String authorListPage = velocity_root + "/author_list.html";
+		authorCont = FormLayoutContainer.createCustomFormLayout("owners", getTranslator(), authorListPage);
+		authorCont.setLabel("rights.owners", null);
+		metaCont.add(authorCont);
+		authorCont.setRootForm(mainForm);
 		
 		String[] keys = new String[]{ "on" };
 		String[] values = new String[]{ "" };
@@ -86,6 +106,17 @@ public class RightsMetadataController extends FormBasicController  {
 			descriptionEl.setVisible(false);
 			descriptionEl.setValue("");
 		}
+		
+		List<Identity> authors = qpoolService.getAuthors(item);
+		List<String> authorLinks = new ArrayList<String>(authors.size());
+		int pos = 0;
+		for(Identity author:authors) {
+			String name = userManager.getUserDisplayName(author.getUser());
+			FormLink link = uifactory.addFormLink("author_" + pos++, name, null, authorCont, Link.NONTRANSLATED);
+			link.setUserObject(author);
+			authorLinks.add(link.getComponent().getComponentName());
+		}
+		authorCont.contextPut("authors", authorLinks);
 	}
 	
 	@Override
@@ -102,6 +133,10 @@ public class RightsMetadataController extends FormBasicController  {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(editLink == source) {
 			fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
+		} else if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof Identity) {
+			Identity author = (Identity)((FormLink)source).getUserObject();
+			String businessPath = "[Identity:" + author.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}

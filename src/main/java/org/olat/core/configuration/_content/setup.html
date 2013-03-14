@@ -16,10 +16,10 @@ Show olat.properties (System default values)</a>
 			<div>
 			#if ($prop.isOverwritten())
 			#set ($overwriteValue = $r.escapeHtml($prop.getOverwriteValue()))
-				<span style="color:red" ext:qtip="$overwriteValue">X</span>
+				<span style="color:red" title="$overwriteValue">X</span>
 			#end
 			#if ($prop.hasComment())
-				<span ext:qtip="$prop.getComment()" ext:hide="user" ext:qtitle="$prop.getKey() comment" ext:qwidth="400">$prop.getKey()</span>=
+				<span title="$prop.getComment()" ext:hide="user" ext:qtitle="$prop.getKey() comment" ext:qwidth="400">$prop.getKey()</span>=
 			#else
 				<span>$prop.getKey()</span>=
 			#end

@@ -56,13 +56,18 @@ public class ResourceShareImpl implements CreateInfo, Persistable {
   @GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 
+	@Column(name="q_editable", nullable=false, insertable=true, updatable=true)
+	private boolean editable;
+	
 	@ManyToOne(targetEntity=OLATResourceImpl.class)
 	@JoinColumn(name="fk_resource_id", nullable=false, insertable=true, updatable=false)
 	private OLATResource resource;
+	
 	@ManyToOne(targetEntity=QuestionItemImpl.class)
 	@JoinColumn(name="fk_item_id", nullable=false, insertable=true, updatable=false)
 	private QuestionItem item;
@@ -85,6 +90,14 @@ public class ResourceShareImpl implements CreateInfo, Persistable {
 		this.creationDate = creationDate;
 	}
 	
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
 	public OLATResource getResource() {
 		return resource;
 	}

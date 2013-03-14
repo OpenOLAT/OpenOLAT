@@ -47,7 +47,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.qpool.Pool;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.ui.PoolDataModel.Cols;
 
 /**
@@ -66,11 +66,11 @@ public class PoolsAdminController extends FormBasicController {
 	private PoolEditController poolEditCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public PoolsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "pools_admin");
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
 	}
 	

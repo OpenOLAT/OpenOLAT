@@ -59,23 +59,25 @@ public class QuestionItemDAO {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private FileStorage qpoolFileStorage;
+	@Autowired
 	private BaseSecurity securityManager;
 	
 	
-	public QuestionItemImpl create(String subject, String format, String dir, String rootFilename) {
+	public QuestionItemImpl create(String title, String format, String dir, String rootFilename) {
 		QuestionItemImpl item = new QuestionItemImpl();
 		
 		String uuid = UUID.randomUUID().toString();
 		item.setIdentifier(uuid);
 		item.setCreationDate(new Date());
 		item.setLastModified(new Date());
-		item.setTitle(subject);
+		item.setTitle(title);
 		item.setStatus(QuestionStatus.draft.name());
 		item.setUsage(0);
 		item.setNumOfAnswerAlternatives(0);
 		item.setFormat(format);
 		if(dir == null) {
-			item.setDirectory(FileStorage.generateDir(uuid));
+			item.setDirectory(qpoolFileStorage.generateDir(uuid));
 		} else {
 			item.setDirectory(dir);
 		}
@@ -105,12 +107,57 @@ public class QuestionItemDAO {
 			securityManager.addIdentityToSecurityGroup(owner, item.getOwnerGroup());
 		}
 	}
+	
+	public QuestionItemImpl copy(Identity owner, QuestionItemShort itemToCopyRef) {
+		QuestionItemImpl itemToCopy = loadById(itemToCopyRef.getKey());
+		
+		String subject = "(Copy) " + itemToCopy.getTitle();
+		QuestionItemImpl copy = create(subject, itemToCopy.getFormat(), null, itemToCopy.getRootFilename());
+		
+		//general
+		copy.setMasterIdentifier(itemToCopy.getIdentifier());
+		copy.setDescription(itemToCopy.getDescription());
+		copy.setKeywords(itemToCopy.getKeywords());
+		copy.setCoverage(itemToCopy.getCoverage());
+		copy.setAdditionalInformations(itemToCopy.getAdditionalInformations());
+		copy.setLanguage(itemToCopy.getLanguage());
+		
+		//classification
+		copy.setTaxonomyLevel(itemToCopy.getTaxonomyLevel());
+		
+		//educational
+		copy.setEducationalContext(itemToCopy.getEducationalContext());
+		copy.setEducationalLearningTime(itemToCopy.getEducationalLearningTime());
+		
+		//item
+		copy.setType(itemToCopy.getType());
+		copy.setDifficulty(itemToCopy.getDifficulty());
+		copy.setStdevDifficulty(itemToCopy.getStdevDifficulty());
+		copy.setDifferentiation(itemToCopy.getDifferentiation());
+		copy.setNumOfAnswerAlternatives(itemToCopy.getNumOfAnswerAlternatives());
+		copy.setUsage(0);
+		copy.setAssessmentType(itemToCopy.getAssessmentType());
+		
+		//lifecycle
+		copy.setItemVersion(itemToCopy.getItemVersion());
+		copy.setStatus(QuestionStatus.draft.name());
+		
+		//rights
+		copy.setCopyright(itemToCopy.getCopyright());
+		
+		//technical
+		copy.setEditor(itemToCopy.getEditor());
+		copy.setEditorVersion(itemToCopy.getEditorVersion());
 
-	public QuestionItem merge(QuestionItem item) {
+		persist(owner, copy);
+		return copy;
+	}
+
+	public QuestionItemImpl merge(QuestionItem item) {
 		if(item instanceof QuestionItemImpl) {
 			((QuestionItemImpl)item).setLastModified(new Date());
 		}
-		return dbInstance.getCurrentEntityManager().merge(item);
+		return (QuestionItemImpl)dbInstance.getCurrentEntityManager().merge(item);
 	}
 	
 	public void addAuthors(List<Identity> authors, Long itemKey) {
@@ -119,6 +166,17 @@ public class QuestionItemDAO {
 		for(Identity author:authors) {
 			if(!securityManager.isIdentityInSecurityGroup(author, secGroup)) {
 				securityManager.addIdentityToSecurityGroup(author, secGroup);
+			}
+		}
+		dbInstance.commit();
+	}
+	
+	public void removeAuthors(List<Identity> authors, Long itemKey) {
+		QuestionItemImpl lockedItem = loadForUpdate(itemKey);
+		SecurityGroup secGroup = lockedItem.getOwnerGroup();
+		for(Identity author:authors) {
+			if(securityManager.isIdentityInSecurityGroup(author, secGroup)) {
+				securityManager.removeIdentityFromSecurityGroup(author, secGroup);
 			}
 		}
 		dbInstance.commit();

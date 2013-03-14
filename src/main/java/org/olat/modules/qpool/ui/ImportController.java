@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -41,11 +41,11 @@ import org.olat.modules.qpool.QuestionPoolService;
 public class ImportController extends FormBasicController {
 	
 	private FileElement fileEl;
-	private final QuestionPoolService qpoolservice;
+	private final QPoolService qpoolservice;
 	
 	public ImportController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		qpoolservice = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolservice = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
 	}
 

@@ -29,16 +29,12 @@ package org.olat.core.commons.controllers.linkchooser;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.SelectionTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.ajax.tree.TreeController;
-import org.olat.core.gui.control.generic.ajax.tree.TreeNodeClickedEvent;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
@@ -65,7 +61,6 @@ public class CustomLinkChooserController extends DefaultController {
 	private SelectionTree jumpInSelectionTree;
 	private CustomLinkTreeModel customLinkTreeModel;
 
-	private TreeController ajaxTreeController;
 	private Link chooseLink, cancelLink;
 	private String selectedAjaxTreePath;
 	
@@ -78,23 +73,12 @@ public class CustomLinkChooserController extends DefaultController {
 		mainVC = new VelocityContainer("mainVC", VELOCITY_ROOT + "/internallinkchooser.html", trans, this);
 
 		this.customLinkTreeModel = customLinkTreeModel;
-		boolean ajax = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
-		if (ajax) {
-			// For real browsers we use the cool ajax tree
-			ajaxTreeController = new TreeController(ureq, getWindowControl(), customLinkTreeModel.getRootNode().getTitle(), customLinkTreeModel, null);
-			ajaxTreeController.addControllerListener(this);
-			mainVC.put("internalLinkTree", ajaxTreeController.getInitialComponent());
-			// choose and cancel link
-			chooseLink = LinkFactory.createButton("selectfile", mainVC, this);
-			cancelLink = LinkFactory.createButton("cancel", mainVC, this);
-		} else {
-			// Legacy mode with old selection component
-			jumpInSelectionTree = new SelectionTree("internalLinkTree", trans);
-			jumpInSelectionTree.setTreeModel(customLinkTreeModel);
-			jumpInSelectionTree.addListener(this);
-			jumpInSelectionTree.setFormButtonKey("select");
-			mainVC.put("internalLinkTree", jumpInSelectionTree);
-		}
+
+		jumpInSelectionTree = new SelectionTree("internalLinkTree", trans);
+		jumpInSelectionTree.setTreeModel(customLinkTreeModel);
+		jumpInSelectionTree.addListener(this);
+		jumpInSelectionTree.setFormButtonKey("select");
+		mainVC.put("internalLinkTree", jumpInSelectionTree);
 		setInitialComponent(mainVC);
 	}
 
@@ -131,26 +115,9 @@ public class CustomLinkChooserController extends DefaultController {
 	}
 
 	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == ajaxTreeController) {
-			if (event instanceof TreeNodeClickedEvent) {
-				// get the clicked node and resolve the corresponding file
-				TreeNodeClickedEvent clickedEvent = (TreeNodeClickedEvent) event;
-				selectedAjaxTreePath = clickedEvent.getNodeId();
-				// enable link, set dirty button class and trigger redrawing
-				chooseLink.setEnabled(true);
-				chooseLink.setCustomEnabledLinkCSS("b_button b_button_dirty");
-				chooseLink.setDirty(true);
-			}
-		}
-	}
-
-	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
+		//
 	}
 }

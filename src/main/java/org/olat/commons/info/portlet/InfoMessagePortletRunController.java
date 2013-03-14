@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.model.InfoMessage;
@@ -242,29 +241,37 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 				SubscriptionInfo info = isi.getInfo();
 				//title
 				String title = info.getTitle(SubscriptionInfo.MIME_PLAIN);
-				
-				String tip = null;
+				int key = info.hashCode();
+				StringBuilder tipSb = null;
 				boolean tooltip = StringHelper.containsNonWhitespace(item.getDescriptionTooltip());
 				if(tooltip) {
-					StringBuilder tipSb = new StringBuilder();
-					tipSb.append("<b>").append(title).append(":</b>")
-						.append("<br/>")
+					tipSb = new StringBuilder();
+					tipSb.append("<b>").append(title).append(":</b>").append("<br/>")
 						.append(Formatter.escWithBR(Formatter.truncate(item.getDescriptionTooltip(), 256)));
-					tip = StringEscapeUtils.escapeHtml(tipSb.toString());
-					sb.append("<span ext:qtip=\"").append(tip).append("\">");
+					sb.append("<span id='o_sel_info_msg_title_").append(key).append("'>");
 				} else {
 					sb.append("<span>");
 				}
 				sb.append(Formatter.truncate(title, 30)).append("</span>&nbsp;");
 				//link
 				String infoTitle = Formatter.truncate(item.getDescription(), 30);
-				sb.append("<a href=\"").append(item.getLink()).append("\" class=\"o_portlet_infomessage_link\"");
-				if(tooltip) {
-					sb.append("ext:qtip=\"").append(tip).append("\"");
-				}
+				sb.append("<a id='o_sel_info_msg_link_").append(key).append("' href=\"").append(item.getLink()).append("\" class=\"o_portlet_infomessage_link\"");
+
 				sb.append(">")
 					.append(infoTitle)
 					.append("</a>");
+				
+				if(tooltip) {
+					sb.append("<div id='o_sel_info_tooltip_").append(key).append("' style='display:none'>").append(tipSb.toString()).append("</div>");
+				  sb.append("<script type='text/javascript'>/* <![CDATA[ */")
+				    .append("jQuery(function() {")
+					  .append("  jQuery('#o_sel_info_msg_title_").append(key).append(",#o_sel_info_msg_link_").append(key).append("').tooltip({")
+					  .append("	  items: 'a,span',")
+					  .append("   content: function(){ return jQuery('#o_sel_info_tooltip_").append(key).append("').html(); }")
+					  .append("  });")
+					  .append("});")
+					  .append("/* ]]> */</script>");
+				}
 			} else {
 				sb.append("-");
 			}

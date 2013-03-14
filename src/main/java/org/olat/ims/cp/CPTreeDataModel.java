@@ -26,17 +26,19 @@
 
 package org.olat.ims.cp;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
+import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.dom4j.tree.DefaultElement;
 import org.json.JSONException;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeModel;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeNode;
-import org.olat.core.util.Encoder;
+import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.ims.cp.objects.CPItem;
 import org.olat.ims.cp.objects.CPOrganization;
 
@@ -51,13 +53,16 @@ import org.olat.ims.cp.objects.CPOrganization;
  * 
  * @author Sergio Trentini
  */
-public class CPTreeDataModel extends AjaxTreeModel {
+public class CPTreeDataModel extends GenericTreeModel {
 
-	private ContentPackage cp;
-	private Logger log;
-	private Hashtable<String, String> map, reverseMap;
+	private static final long serialVersionUID = -6843143820668185636L;
+	private static final OLog log = Tracing.createLoggerFor(CPTreeDataModel.class);
+	
+	private final ContentPackage cp;
+	private Map<String, String> map, reverseMap;
 
 	private int nodeCounter;
+	private final String rootNodeId;
 
 	/**
 	 * Constructor
@@ -67,26 +72,15 @@ public class CPTreeDataModel extends AjaxTreeModel {
 	 * @param rootNodeId The root node id of the ext-js tree. (We use an md5 hash
 	 *          to make sure it doesn't contain any weird characters.)
 	 */
-	public CPTreeDataModel(String orgaIdentifyer, String rootNodeId) {
-		super(Encoder.encrypt(orgaIdentifyer));
-		// initialize counter
+	public CPTreeDataModel(String orgaIdentifyer, String rootNodeId, ContentPackage cp) {
+		this.cp = cp;
+		this.rootNodeId = rootNodeId;
 		nodeCounter = 1;
-		log = Logger.getLogger(this.getClass());
 		map = new Hashtable<String, String>();
 		reverseMap = new Hashtable<String, String>();
 		map.put(rootNodeId, orgaIdentifyer);
 		reverseMap.put(orgaIdentifyer, rootNodeId);
-		// Set the cp icon to the root node
-		setCustomRootIconCssClass("o_cp_org");
-	}
-
-	/**
-	 * Sets the contentPackage, this model belongs to
-	 * 
-	 * @param cp
-	 */
-	public void setContentPackage(ContentPackage cp) {
-		this.cp = cp;
+		update();
 	}
 
 	/**
@@ -142,7 +136,74 @@ public class CPTreeDataModel extends AjaxTreeModel {
 		}
 		return nodeId;
 	}
+	
+	public void update() {
+		String realNodeId = getIdentifierForNodeID(rootNodeId);
+		DefaultElement el = cp.getElementByIdentifier(realNodeId);
+		if(el instanceof CPOrganization) {
+			CPOrganization item = (CPOrganization)el;
+			String rootTitle = cp.getFirstOrganizationInManifest().getTitle();
+			GenericTreeNode rootNode = new GenericTreeNode(rootNodeId, rootTitle, item);
+			rootNode.setIconCssClass("o_cp_org");
+			
+			List<TreeNode> children = getChildrenFor(rootNodeId);
+			for(TreeNode child:children) {
+				rootNode.addChild(child);
+				buildTreeModel(child);
+			}
+			
+			setRootNode(rootNode);
+		}
+	}
+	
+	public void buildTreeModel(TreeNode node) {
+		List<TreeNode> children = getChildrenFor(node.getIdent());
+		for(TreeNode child:children) {
+			node.addChild(child);
+			buildTreeModel(child);
+		}
+	}
+	
+	public List<TreeNode> getChildrenFor(String nodeId) {
+		List<TreeNode> nodeList = new ArrayList<TreeNode>();
+		nodeId = getIdentifierForNodeID(nodeId);
+		DefaultElement el = cp.getElementByIdentifier(nodeId);
+		if (el == null) {
+			log.info("element not found (id " + nodeId + ")");
+			return nodeList;
+		}
+		try {
+			if (el.getName().equals(CPCore.ORGANIZATION)) {
+				CPOrganization org = (CPOrganization) el;
+				for (Iterator<CPItem> it = org.getItemIterator(); it.hasNext();) {
+					CPItem item = it.next();
+					addItem(nodeList, item);
+				}
+			} else if (el.getName().equals(CPCore.ITEM)) {
+				CPItem pItem = (CPItem) el;
+				for (Iterator<CPItem> it = pItem.getItemIterator(); it.hasNext();) {
+					CPItem item = it.next();
+					addItem(nodeList, item);
+				}
+			} else {
+				// element is not item nor orga -> ergo wrong element
+				log.info("unknown element while building treemodel for gui (id: " + nodeId + ")");
+			}
+		} catch (JSONException e) {
+			log.error("error while building treemodel");
+		}
 
+		return nodeList;
+	}
+	
+	private void addItem(List<TreeNode> nodeList, CPItem item) throws JSONException {
+		String nId = putIdentifierForNodeID(item.getIdentifier());
+		GenericTreeNode child = new GenericTreeNode(nId, item.getTitle(), item);
+		child.setIconCssClass("o_cp_item");
+		nodeList.add(child);
+	}
+	
+/*
 	@Override
 	public List<AjaxTreeNode> getChildrenFor(String nodeId) {
 
@@ -179,13 +240,6 @@ public class CPTreeDataModel extends AjaxTreeModel {
 		return nodeList;
 	}
 
-	/**
-	 * Adds the item to the node list. Also sets the necessary properties.
-	 * 
-	 * @param nodeList
-	 * @param item
-	 * @throws JSONException
-	 */
 	private void addItem(Vector<AjaxTreeNode> nodeList, CPItem item) throws JSONException {
 		String nId;
 		nId = putIdentifierForNodeID(item.getIdentifier());
@@ -196,7 +250,7 @@ public class CPTreeDataModel extends AjaxTreeModel {
 		} 
 		child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, "o_cp_item");
 		nodeList.add(child);
-	}
+	}*/
 
 	/**
 	 * Returns the path of the given item in the tree.
@@ -237,5 +291,9 @@ public class CPTreeDataModel extends AjaxTreeModel {
 			CPOrganization item = (CPOrganization) elem;
 			path.insert(0, slash).insert(1, getNodeIDForIdentifier(item.getIdentifier()));
 		}
+	}
+
+	public void removePath(String identifier) {
+		update();
 	}
 }

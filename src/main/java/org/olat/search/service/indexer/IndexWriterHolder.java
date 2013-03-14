@@ -49,6 +49,19 @@ public class IndexWriterHolder {
 		this.indexPath = indexPath;
 		this.config = config;
 	}
+	
+	public synchronized void ensureIndexExists() {
+		if(!DirectoryReader.indexExists(indexPath)) {
+			IndexWriter writer = null;
+			try {
+				writer = getAndLock();
+			} catch (IOException e) {
+				log.error("",  e);
+			} finally {
+				release(writer);
+			}
+		}
+	}
 
 	public synchronized IndexWriter getAndLock() throws IOException {
 		if(writerRef == null) {

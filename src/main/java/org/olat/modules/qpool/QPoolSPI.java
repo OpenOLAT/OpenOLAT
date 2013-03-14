@@ -21,6 +21,7 @@ package org.olat.modules.qpool;
 
 import java.io.File;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -46,9 +47,29 @@ public interface QPoolSPI {
 	
 	public List<QuestionItem> importItems(Identity owner, String filename, File file);
 	
+	/**
+	 * Export the item to the Zip
+	 * @param item
+	 * @param out
+	 */
+	public void exportItem(QuestionItemFull item, ZipOutputStream out);
+	
+	/**
+	 * Return the preview controller used in the main list panel of
+	 * the question poll.
+	 * @param ureq
+	 * @param wControl
+	 * @param item
+	 * @return
+	 */
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item);
 
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param item
+	 * @return
+	 */
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item);
-
-
 }

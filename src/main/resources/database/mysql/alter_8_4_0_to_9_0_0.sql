@@ -12,8 +12,8 @@ create table if not exists o_qp_pool (
    creationdate datetime not null,
    lastmodified datetime not null,
    q_name varchar(255) not null,
+   q_public bit default 0,
    fk_ownergroup bigint,
-   fk_participantgroup bigint,
    primary key (id)
 );
 
@@ -41,9 +41,9 @@ create table if not exists o_qp_item (
    q_educational_context varchar(128),
    q_educational_learningtime varchar(32),
    q_type varchar(64),
-   q_difficulty decimal,
-   q_stdev_difficulty decimal,
-   q_differentiation decimal,
+   q_difficulty decimal(10,9),
+   q_stdev_difficulty decimal(10,9),
+   q_differentiation decimal(10,9),
    q_num_of_answers_alt bigint not null default 0,
    q_usage bigint not null default 0,
    q_assessment_type varchar(64),
@@ -65,6 +65,7 @@ create table if not exists o_qp_item (
 create table if not exists o_qp_pool_2_item (
    id bigint not null,
    creationdate datetime not null,
+   q_editable bit default 0,
    fk_pool_id bigint not null,
    fk_item_id bigint not null,
    primary key (id)
@@ -73,6 +74,7 @@ create table if not exists o_qp_pool_2_item (
 create table if not exists o_qp_share_item (
    id bigint not null,
    creationdate datetime not null,
+   q_editable bit default 0,
    fk_resource_id bigint not null,
    fk_item_id bigint not null,
    primary key (id)
@@ -97,7 +99,6 @@ create table if not exists o_qp_collection_2_item (
 
 
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);
-alter table o_qp_pool add constraint idx_qp_pool_part_grp_id foreign key (fk_participantgroup) references o_bs_secgroup(id);
 
 alter table o_qp_pool_2_item add constraint idx_qp_pool_2_item_pool_id foreign key (fk_pool_id) references o_qp_pool(id);
 alter table o_qp_pool_2_item add constraint idx_qp_pool_2_item_item_id foreign key (fk_item_id) references o_qp_item(id);

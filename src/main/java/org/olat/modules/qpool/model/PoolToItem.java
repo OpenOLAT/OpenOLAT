@@ -59,7 +59,10 @@ public class PoolToItem implements CreateInfo, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
-	
+
+	@Column(name="q_editable", nullable=false, insertable=true, updatable=true)
+	private boolean editable;
+
 	@ManyToOne(targetEntity=PoolImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_pool_id", nullable=false, updatable=false)
 	private Pool pool;
@@ -82,6 +85,14 @@ public class PoolToItem implements CreateInfo, Persistable {
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
 	}
 
 	public Pool getPool() {

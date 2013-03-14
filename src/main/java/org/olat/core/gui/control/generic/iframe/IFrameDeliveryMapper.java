@@ -305,7 +305,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			sb.append("\"></script>\n<script type=\"text/javascript\" src=\"");
 			StaticMediaDispatcher.renderStaticURI(sb, "js/jshashtable-2.1_src.js");
 			sb.append("\"></script>\n<script type=\"text/javascript\" src=\"");
-			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-ui-1.10.0.custom.min.js");
+			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/ui/jquery-ui-1.10.0.custom.min.js");
 			sb.append("\"></script>");
 			// Load glossary code now			
 			sb.append("\n<script type=\"text/javascript\" id=\"textmarkerLib\" src=\"");
@@ -316,7 +316,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			  .append(textMarkerPath).append("/css/textmarker.css\"");
 			if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
 			sb.append(">\n<link rel=\"stylesheet\" type=\"text/css\" id=\"jqueryiocss\" href=\"");
-		  StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-ui.css");
+		  StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/ui/jquery-ui-1.10.0.custom.min.css");
 		  sb.append("\" ");
 			if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
 			sb.append(">\n");

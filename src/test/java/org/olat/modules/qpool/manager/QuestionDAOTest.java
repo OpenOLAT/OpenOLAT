@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +37,10 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.TaxonomyLevel;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -57,7 +61,9 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Autowired
 	private QuestionItemDAO questionDao;
 	@Autowired
-	private MarkManager markManager;
+	private MarkManager markManager; 
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	
 	@Test
 	public void createQuestion() {
@@ -85,6 +91,92 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(item.getQuestionStatus());
 		Assert.assertEquals("My fav. stars", item.getTitle());
 		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void copyQuestion() {
+		// create an item and fill it
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createAndPersist(null, "Tax. to copy");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsUser("QClone-1-" + UUID.randomUUID().toString());
+		Identity cloner = JunitTestHelper.createAndPersistIdentityAsUser("QClone-2-" + UUID.randomUUID().toString());
+		QuestionItemImpl original = questionDao.createAndPersist(author, "To copy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), taxonomyLevel, null, "root.xml", QuestionType.FIB);
+		dbInstance.commit();
+		Assert.assertNotNull(original);
+		Assert.assertNotNull(original.getIdentifier());
+		Assert.assertNull(original.getMasterIdentifier());
+		
+		//general
+		original.setTitle("Original");
+		original.setDescription("Original description");
+		original.setKeywords("original copy to");
+		original.setCoverage("New coverage");
+		original.setAdditionalInformations("Additional informations before copy");
+		original.setLanguage("en");
+		//educational
+		original.setEducationalContext("Secondary school");
+		original.setEducationalLearningTime("PT1H30M");
+		//question
+		original.setType(QuestionType.ESSAY.name());
+		original.setDifficulty(new BigDecimal("0.1"));
+		original.setStdevDifficulty(new BigDecimal("0.2"));
+		original.setDifferentiation(new BigDecimal("-0.5"));
+		original.setNumOfAnswerAlternatives(4);
+		original.setUsage(5);
+		original.setAssessmentType("formative");
+		//lifecycle
+		original.setItemVersion("1.0");
+		original.setStatus(QuestionStatus.review.name());
+		//rights
+		original.setCopyright("MIT License");
+		//technical
+		original.setEditor("OpenOLAT");
+		original.setEditorVersion("9.0a");
+		
+		original = questionDao.merge(original);
+		dbInstance.commitAndCloseSession();
+		
+		//clone it
+		QuestionItemImpl clone = questionDao.copy(cloner, original);
+		//compare
+		Assert.assertEquals(1, questionDao.countItems(cloner));
+		//general
+		Assert.assertNotNull(clone.getIdentifier());
+		Assert.assertFalse(clone.getIdentifier().equals(original.getIdentifier()));
+		Assert.assertEquals(original.getIdentifier(), clone.getMasterIdentifier());
+		Assert.assertNotNull(clone.getTitle());
+		Assert.assertFalse(clone.getTitle().equals(original.getTitle()));
+		Assert.assertEquals(original.getDescription(), clone.getDescription());
+		Assert.assertEquals(original.getKeywords(), clone.getKeywords());
+		Assert.assertEquals(original.getCoverage(), clone.getCoverage());
+		Assert.assertEquals(original.getAdditionalInformations(), clone.getAdditionalInformations());
+		Assert.assertEquals(original.getLanguage(), clone.getLanguage());
+		//classification
+		Assert.assertEquals(original.getTaxonomyLevelName(), clone.getTaxonomyLevelName());
+		//educational
+		Assert.assertEquals(original.getEducationalContext(), clone.getEducationalContext());
+		Assert.assertEquals(original.getEducationalLearningTime(), clone.getEducationalLearningTime());
+		//question
+		Assert.assertEquals(original.getType(), clone.getType());
+		Assert.assertNotNull(clone.getDifficulty());
+		Assert.assertEquals(original.getDifficulty().doubleValue(), clone.getDifficulty().doubleValue(), 0.000001);
+		Assert.assertNotNull(clone.getStdevDifficulty());
+		Assert.assertEquals(original.getStdevDifficulty().doubleValue(), clone.getStdevDifficulty().doubleValue(), 0.000001);
+		Assert.assertNotNull(clone.getDifferentiation());
+		Assert.assertEquals(original.getDifferentiation().doubleValue(), clone.getDifferentiation().doubleValue(), 0.000001);
+		Assert.assertEquals(original.getNumOfAnswerAlternatives(), clone.getNumOfAnswerAlternatives());
+		Assert.assertEquals(0, clone.getUsage());
+		Assert.assertEquals(original.getAssessmentType(), clone.getAssessmentType());
+		//lifecycle
+		Assert.assertEquals(QuestionStatus.draft.name(), clone.getStatus());
+		Assert.assertEquals(original.getItemVersion(), clone.getItemVersion());
+		//rights
+		Assert.assertEquals(original.getCopyright(), clone.getCopyright());
+		//technical
+		Assert.assertEquals(original.getEditor(), clone.getEditor());
+		Assert.assertEquals(original.getEditorVersion(), clone.getEditorVersion());
+		Assert.assertEquals(original.getFormat(), clone.getFormat());
+		Assert.assertNotNull(clone.getCreationDate());
+		Assert.assertNotNull(clone.getLastModified());
 	}
 	
 	@Test

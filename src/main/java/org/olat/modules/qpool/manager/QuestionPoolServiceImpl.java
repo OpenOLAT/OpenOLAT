@@ -22,6 +22,7 @@ package org.olat.modules.qpool.manager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
@@ -38,14 +39,13 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.QuestionPoolService;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
-import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -63,7 +63,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("qpoolService")
-public class QuestionPoolServiceImpl implements QuestionPoolService {
+public class QuestionPoolServiceImpl implements QPoolService {
 	
 	private static final OLog log = Tracing.createLoggerFor(QuestionPoolServiceImpl.class);
 	
@@ -121,6 +121,17 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 	}
 	
 	@Override
+	public void removeAuthors(List<Identity> authors, List<QuestionItemShort> items) {
+		if(authors == null || authors.isEmpty() || items == null || items.isEmpty()) {
+			return;//nothing to do
+		}
+		
+		for(QuestionItemShort item:items) {
+			questionItemDao.removeAuthors(authors, item.getKey());
+		}
+	}
+
+	@Override
 	public List<Identity> getAuthors(QuestionItem item) {
 		QuestionItemImpl itemImpl;
 		if(item instanceof QuestionItemImpl) {
@@ -143,6 +154,18 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 		return mergedItem;
 	}
 
+
+	@Override
+	public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy) {
+		List<QuestionItem> copies = new ArrayList<QuestionItem>();
+		for(QuestionItemShort itemToCopy:itemsToCopy) {
+			QuestionItemImpl copy = questionItemDao.copy(cloner, itemToCopy);
+			
+			copies.add(copy);
+		}
+		return copies;
+	}
+
 	@Override
 	public List<QuestionItem> importItems(Identity owner, String filename, File file) {
 		List<QuestionItem> importedItem = null;
@@ -155,6 +178,17 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 		return importedItem;
 	}
 	
+	@Override
+	public void exportItem(QuestionItemShort item, ZipOutputStream zout) {
+		QPoolSPI provider = qpoolModule.getQuestionPoolProvider(item.getFormat());
+		if(provider == null) {
+			log.error("Not found provider for this format: " + item.getFormat());
+		} else {
+			QuestionItemImpl fullItem = questionItemDao.loadById(item.getKey());
+			provider.exportItem(fullItem, zout);
+		}
+	}
+
 	@Override
 	public VFSLeaf getRootFile(QuestionItem item) {
 		QuestionItemImpl reloadedItem = questionItemDao.loadById(item.getKey());
@@ -474,8 +508,7 @@ public class QuestionPoolServiceImpl implements QuestionPoolService {
 
 	@Override
 	public void createPool(Identity identity, String name) {
-		PoolImpl pool = poolDao.createPool(name);
-		securityManager.addIdentityToSecurityGroup(identity, pool.getOwnerGroup());
+		poolDao.createPool(identity, name);
 	}
 
 	@Override

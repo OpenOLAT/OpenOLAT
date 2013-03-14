@@ -170,7 +170,7 @@ div.b_tree {
 			}
 
 			@for $i from 0 through 11 {
-				a.b_tree_l#{$i}  { padding-left: $tree_padding_opener_px + ($i * $tree_padding_steps_px); }
+				a.b_tree_l#{$i}  { padding-left: $tree_padding_opener_px + ($i * $tree_padding_steps_px); z-index:9; }
 			}			
 			
 			
@@ -181,6 +181,7 @@ div.b_tree {
 				float: right;
 				display: inline;
 				position: static;
+				z-index:9;
 				background-repeat:no-repeat;
 			}
 			

@@ -54,7 +54,7 @@ public class SelectionTree extends Component {
 	
 	private TreeModel treeModel;
 	private String selectedNodeId = null; // selection of single select
-	private List selectedNodeIds = null; // selection of multiselect
+	private List<String> selectedNodeIds = null; // selection of multiselect
 	private String formButtonKey;
 	private String actionCommand;
 	private boolean multiselect = false;
@@ -75,7 +75,7 @@ public class SelectionTree extends Component {
 		
 	protected void doDispatchRequest(UserRequest ureq) {
 		selectedNodeId = null;
-		selectedNodeIds = new ArrayList();
+		selectedNodeIds = new ArrayList<String>();
 		
 		
 		
@@ -91,7 +91,7 @@ public class SelectionTree extends Component {
 					selectedNodeId = ureq.getParameter(SelectionTreeRenderer.ATTR_SELECTION);
 				}
 			} else {
-				Enumeration parameterNames = ureq.getHttpReq().getParameterNames();
+				Enumeration<String> parameterNames = ureq.getHttpReq().getParameterNames();
 				while (parameterNames.hasMoreElements()) {
 					String parameterName = (String) parameterNames.nextElement();
 					if (SelectionTreeRenderer.isMultiSelectParameter(parameterName)) {

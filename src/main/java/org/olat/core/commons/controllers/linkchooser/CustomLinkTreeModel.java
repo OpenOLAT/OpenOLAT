@@ -27,7 +27,6 @@
 package org.olat.core.commons.controllers.linkchooser;
 
 import org.olat.core.gui.components.tree.TreeModel;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeModel;
 
 
 
@@ -36,11 +35,12 @@ import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeModel;
  * 
  * @author Christian Guretzki
  */
-public abstract class CustomLinkTreeModel extends AjaxTreeModel implements TreeModel {
+public abstract class CustomLinkTreeModel implements TreeModel {
+
+	private static final long serialVersionUID = -7324868972569602133L;
 
 	public CustomLinkTreeModel(String treeModelIdentifyer) {
-		super(treeModelIdentifyer);
-		// TODO Auto-generated constructor stub
+		//super(treeModelIdentifyer);
 	}
 
 	/**

@@ -80,9 +80,9 @@ public class DownloadComponentRenderer implements ComponentRenderer {
 		// Tooltip
 		String tip = comp.getLinkToolTip();
 		if (tip != null) {
-			sb.append(" ext:qtip=\"");
-			sb.append(StringEscapeUtils.escapeHtml(tip));
-			sb.append("\"");
+			sb.append(" title=\"")
+			  .append(StringEscapeUtils.escapeHtml(tip))
+			  .append("\"");
 		}
 		sb.append(" target=\"_blank\">");
 		// Link Text

@@ -19,26 +19,39 @@
  */
 package org.olat.modules.qpool.ui.edit;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import org.olat.admin.securitygroup.gui.GroupController;
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
+import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -48,11 +61,18 @@ import org.olat.modules.qpool.ui.MetadatasController;
  */
 public class RightsMetadataEditController extends FormBasicController {
 	
+	private FormSubmit okButton;
+	private FormLink managerOwners;
 	private SingleSelection copyrightEl;
 	private TextElement descriptionEl;
+	private FormLayoutContainer authorCont;
+
+	private CloseableModalController cmc;
+	private GroupController groupController;
 	
 	private QuestionItem item;
-	private final QuestionPoolService qpoolService;
+	private final UserManager userManager;
+	private final QPoolService qpoolService;
 	private static final String[] keys = {
 		"-",
 		"all rights reserved",
@@ -70,13 +90,23 @@ public class RightsMetadataEditController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 		
 		this.item = item;
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rights");
+		
+		String authorListPage = velocity_root + "/author_list.html";
+		authorCont = FormLayoutContainer.createCustomFormLayout("owners", getTranslator(), authorListPage);
+		authorCont.setLabel("rights.owners", null);
+		formLayout.add(authorCont);
+		authorCont.setRootForm(mainForm);
+		reloadAuthors();
+		
+		managerOwners = uifactory.addFormLink("manage.owners", formLayout, Link.BUTTON_SMALL);
 
 		String[] values = Arrays.copyOf(keys, keys.length);
 		values[0] = "None";
@@ -99,8 +129,21 @@ public class RightsMetadataEditController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
+		okButton = uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	private void reloadAuthors() {
+		List<Identity> authors = qpoolService.getAuthors(item);
+		List<String> authorLinks = new ArrayList<String>(authors.size());
+		int pos = 0;
+		for(Identity author:authors) {
+			String name = userManager.getUserDisplayName(author.getUser());
+			FormLink link = uifactory.addFormLink("author_" + pos++, name, null, authorCont, Link.NONTRANSLATED);
+			link.setUserObject(author);
+			authorLinks.add(link.getComponent().getComponentName());
+		}
+		authorCont.contextPut("authors", authorLinks);
 	}
 	
 	private boolean isKey(String value) {
@@ -118,11 +161,43 @@ public class RightsMetadataEditController extends FormBasicController {
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == groupController) {
+			if(event instanceof IdentitiesAddEvent ) { 
+				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent) event;
+				List<Identity> list = identitiesAddedEvent.getAddIdentities();
+        qpoolService.addAuthors(list, Collections.<QuestionItemShort>singletonList(item));
+        identitiesAddedEvent.getAddedIdentities().addAll(list);
+			} else if (event instanceof IdentitiesRemoveEvent) {
+				IdentitiesRemoveEvent identitiesRemoveEvent = (IdentitiesRemoveEvent) event;
+				List<Identity> list = identitiesRemoveEvent.getRemovedIdentities();
+        qpoolService.removeAuthors(list, Collections.<QuestionItemShort>singletonList(item));
+			}
+			reloadAuthors();
+			//cmc.deactivate();
+			//cleanUp();
+		} else if(source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(groupController);
+		removeAsListenerAndDispose(cmc);
+		groupController = null;
+		cmc = null;
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == copyrightEl) {
 			String selectedKey = copyrightEl.getSelectedKey();
 			descriptionEl.setVisible(selectedKey.equals(keys[keys.length - 1]));
 			flc.setDirty(true);
+		} else if(source == managerOwners) {
+			okButton.getComponent().setDirty(false);
+			doOpenAuthorManager(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -166,5 +241,20 @@ public class RightsMetadataEditController extends FormBasicController {
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));
+	}
+	
+	private void doOpenAuthorManager(UserRequest ureq) {
+		if(item instanceof QuestionItemImpl) {
+			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+			
+			groupController = new GroupController(ureq, getWindowControl(), true, true, false, true,
+					false, false, itemImpl.getOwnerGroup());
+			listenTo(groupController);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					groupController.getInitialComponent(), true, translate("manage.owners"));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 }

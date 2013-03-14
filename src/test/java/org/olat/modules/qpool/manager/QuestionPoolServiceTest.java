@@ -42,7 +42,7 @@ import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -63,7 +63,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	@Autowired
 	private QuestionItemDAO questionDao;
 	@Autowired
-	private QuestionPoolService qpoolService;
+	private QPoolService qpoolService;
 	
 	@Test
 	public void deleteItems() {

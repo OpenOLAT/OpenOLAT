@@ -21,6 +21,7 @@ package org.olat.modules.qpool;
 
 import java.io.File;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
@@ -37,7 +38,7 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionPoolService {
+public interface QPoolService {
 	
 	public String getTaxonomicPath(QuestionItem item);
 	
@@ -46,6 +47,10 @@ public interface QuestionPoolService {
 	public List<Identity> getAuthors(QuestionItem item);
 	
 	public void addAuthors(List<Identity> authors, List<QuestionItemShort> items);
+	
+	public void removeAuthors(List<Identity> authors, List<QuestionItemShort> items);
+	
+	public void exportItem(QuestionItemShort item, ZipOutputStream zout);
 	
 	public List<QuestionItem> importItems(Identity owner, String filename, File file);
 	
@@ -70,6 +75,8 @@ public interface QuestionPoolService {
 	public QuestionItem loadItemById(Long key);
 	
 	public QuestionItem updateItem(QuestionItem item);
+	
+	public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
 	
 
 	public int countItems(Identity author);

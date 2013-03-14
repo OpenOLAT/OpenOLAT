@@ -73,6 +73,7 @@ public class QuestionMetadataController extends FormBasicController  {
 		usageEl = uifactory.addStaticTextElement("question.usage", "", metaCont);
 		assessmentTypeEl = uifactory.addStaticTextElement("question.assessmentType", "", metaCont);
 	}
+	
 	public void setItem(QuestionItem item) {
 		String type = item.getType() == null ? "" : item.getType();
 		typeEl.setValue(type);

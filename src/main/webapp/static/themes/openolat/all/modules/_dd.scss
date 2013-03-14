@@ -13,7 +13,7 @@
 */
 
 /*  (in trees ) */
-.b_dd_item { cursor:move; z-index: 1000; }
+.b_dd_item { cursor:move; z-index: 100; }
 .b_dd_proxy {@include o-opacity(40);}
 .b_dd_item.b_dd_over { background-color: #ffff60; }
 .b_dd_sibling { height:3px; width:100%; }

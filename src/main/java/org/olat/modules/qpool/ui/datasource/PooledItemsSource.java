@@ -28,7 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 
@@ -43,13 +43,13 @@ public class PooledItemsSource implements QuestionItemsSource {
 	private final Pool pool;
 	private final Roles roles;
 	private final Identity identity;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public PooledItemsSource(Identity identity, Roles roles, Pool pool) {
 		this.pool = pool;
 		this.roles = roles;
 		this.identity = identity;
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 
 	@Override

@@ -81,12 +81,13 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		// get ajax flag for link rendering
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		
-		if (renderType == 1)
-			target.append(crumbRenderer.render(fc, ubu, true, iframePostEnabled));
-		else if (renderType == 2)
-			target.append(crumbRenderer.render(fc, ubu, false, iframePostEnabled));
-		else
+		if (renderType == 1) {
+			crumbRenderer.render(fc, target, ubu, true, iframePostEnabled);
+		} else if (renderType == 2) {
+			crumbRenderer.render(fc, target, ubu, false, iframePostEnabled);
+		} else {
 			renderList(renderer, target, fc, ubu, translator, iframePostEnabled);
+		}
 	}
 
 	private void renderList(Renderer r, StringOutput target, FolderComponent fc, URLBuilder ubu, Translator translator, boolean iframePostEnabled) {
@@ -119,7 +120,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 
 		target.append("<div class=\"b_briefcase_createactions b_clearfix\"><ul>");
 		if (canWrite) {
-			// add folder actions: upload file, create new folder, creat new file
+			// add folder actions: upload file, create new folder, create new file
 
 			if(canVersion) {
 			// deleted files
@@ -198,9 +199,9 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		target.append("</ul></div>");
 		
 		// add current file bread crumb path
-		target.append(crumbRenderer.render(fc, ubu, true, iframePostEnabled));			
+		crumbRenderer.render(fc, target, ubu, true, iframePostEnabled);			
 		// add file listing for current folder
-		target.append(listRenderer.render(fc, ubu, translator, iframePostEnabled));
+		listRenderer.render(fc, target, ubu, translator, iframePostEnabled);
 
 		if (fc.getCurrentContainerChildren().size() > 0) {
 			if (canWrite || canDelete || canMail) {

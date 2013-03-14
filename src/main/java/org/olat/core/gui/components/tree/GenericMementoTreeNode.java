@@ -36,6 +36,8 @@ import org.olat.core.util.memento.MementoOriginator;
  * @author patrick
  */
 public abstract class GenericMementoTreeNode extends GenericTreeNode implements MementoOriginator{
+
+	private static final long serialVersionUID = -1898272676202191778L;
 	/**
 	 * 
 	 * @param title

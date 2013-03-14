@@ -109,7 +109,14 @@ public class SearchServiceImpl implements SearchService {
 			AbstractOlatDocument.TITLE_FIELD_NAME, AbstractOlatDocument.DESCRIPTION_FIELD_NAME,
 			AbstractOlatDocument.CONTENT_FIELD_NAME, AbstractOlatDocument.AUTHOR_FIELD_NAME,
 			AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME, AbstractOlatDocument.FILETYPE_FIELD_NAME,
-			QItemDocument.STUDY_FIELD
+			QItemDocument.STUDY_FIELD, QItemDocument.IDENTIFIER_FIELD,
+			QItemDocument.MASTER_IDENTIFIER_FIELD, QItemDocument.KEYWORDS_FIELD,
+			QItemDocument.COVERAGE_FIELD, QItemDocument.ADD_INFOS_FIELD,
+			QItemDocument.LANGUAGE_FIELD, QItemDocument.EDU_CONTEXT_FIELD,
+			QItemDocument.ITEM_TYPE_FIELD, QItemDocument.ASSESSMENT_TYPE_FIELD,
+			QItemDocument.ITEM_VERSION_FIELD, QItemDocument.ITEM_STATUS_FIELD,
+			QItemDocument.COPYRIGHT_FIELD, QItemDocument.EDITOR_FIELD,
+			QItemDocument.EDITOR_VERSION_FIELD, QItemDocument.FORMAT_FIELD
 	};
 
 	
@@ -264,12 +271,12 @@ public class SearchServiceImpl implements SearchService {
 	    }
 
 			int numOfDocs = Math.min(n, docs.totalHits);
-			Set<String> fields = new HashSet<String>();
-			fields.add(AbstractOlatDocument.DB_ID_NAME);
+			Set<String> retrievedFields = new HashSet<String>();
+			retrievedFields.add(AbstractOlatDocument.DB_ID_NAME);
 			
-			List<Long> res = new ArrayList<Long>(maxResults + 1);
+			List<Long> res = new ArrayList<Long>();
 	    for (int i=firstResult; i<numOfDocs && res.size() < maxResults; i++) {
-	    	Document doc = searcher.doc(docs.scoreDocs[i].doc, fields);
+	    	Document doc = searcher.doc(docs.scoreDocs[i].doc, retrievedFields);
 	    	String dbKeyStr = doc.get(AbstractOlatDocument.DB_ID_NAME);
 	    	if(StringHelper.containsNonWhitespace(dbKeyStr)) {
 	    		res.add(Long.parseLong(dbKeyStr));
@@ -292,7 +299,8 @@ public class SearchServiceImpl implements SearchService {
 	throws ParseException {
 		BooleanQuery query = new BooleanQuery();
 		if(StringHelper.containsNonWhitespace(queryString)) {
-			QueryParser queryParser = new MultiFieldQueryParser(SearchService.OO_LUCENE_VERSION, fields, analyzer);
+			String[] fieldsArr = getFieldsToSearchIn();
+			QueryParser queryParser = new MultiFieldQueryParser(SearchService.OO_LUCENE_VERSION, fieldsArr, analyzer);
 			queryParser.setLowercaseExpandedTerms(false);//some add. fields are not tokenized and not lowered case
 	  	Query multiFieldQuery = queryParser.parse(queryString.toLowerCase());
 	  	query.add(multiFieldQuery, Occur.MUST);
@@ -307,6 +315,10 @@ public class SearchServiceImpl implements SearchService {
 			}
 		}
 		return query;
+	}
+	
+	private String[] getFieldsToSearchIn() {
+		return fields;
 	}
 
 	/**
@@ -424,10 +436,10 @@ public class SearchServiceImpl implements SearchService {
 		if (metadataFields != null) {
 			// add metadata fields to normal fields
 			String[] metaFields = ArrayHelper.toArray(metadataFields.getAdvancedSearchableFields());		
-			String[] newFields = new String[this.fields.length + metaFields.length];
-			System.arraycopy(this.fields, 0, newFields, 0, this.fields.length);
-			System.arraycopy(metaFields, 0, newFields, this.fields.length, metaFields.length);
-			this.fields = newFields;			
+			String[] newFields = new String[fields.length + metaFields.length];
+			System.arraycopy(fields, 0, newFields, 0, fields.length);
+			System.arraycopy(metaFields, 0, newFields, fields.length, metaFields.length);
+			fields = newFields;			
 		}
 	}
 

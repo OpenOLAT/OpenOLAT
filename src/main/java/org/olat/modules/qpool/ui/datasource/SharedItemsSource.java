@@ -28,7 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.resource.OLATResource;
@@ -44,13 +44,13 @@ public class SharedItemsSource implements QuestionItemsSource {
 	private final Roles roles;
 	private final Identity identity;
 	private final OLATResource resource;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles) {
 		this.roles = roles;
 		this.identity = identity;
 		this.resource = group.getResource();
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 
 	@Override

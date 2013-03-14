@@ -509,7 +509,7 @@ public class ZipUtil {
 	 * @param subDirPath
 	 * @return Returns the last container of this subpath.
 	 */
-	private static VFSContainer getAllSubdirs(VFSContainer base, String subDirPath, Identity identity, boolean create) {
+	public static VFSContainer getAllSubdirs(VFSContainer base, String subDirPath, Identity identity, boolean create) {
 		StringTokenizer st;
 		if (subDirPath.indexOf("/") != -1) { 
 			st = new StringTokenizer(subDirPath, "/", false);
@@ -624,7 +624,7 @@ public class ZipUtil {
 		return success;
 	}
 	
-	private static boolean addToZip(VFSItem vfsItem, String currentPath, ZipOutputStream out) {
+	public static boolean addToZip(VFSItem vfsItem, String currentPath, ZipOutputStream out) {
 
 		boolean success = true;
 		InputStream in = null;

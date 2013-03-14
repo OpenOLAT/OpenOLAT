@@ -308,9 +308,9 @@ public class FolderComponent extends Component {
 					
 					String r1 = v1.getVersions().getRevisionNr();
 					String r2 = v2.getVersions().getRevisionNr();
-					if(v1 == null) {
+					if(r1 == null) {
 						return -1;
-					} else if (v2 == null) {
+					} else if (r2 == null) {
 						return 1;
 					}
 					return (sortAsc) ? collator.compare(r1, r2) : collator.compare(r2, r1);

@@ -33,7 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -44,11 +44,11 @@ import org.olat.modules.qpool.QuestionPoolService;
 public class TextPreviewController extends BasicController {
 
 	private final VelocityContainer mainVC;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public TextPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		mainVC = createVelocityContainer("text_preview");
 		
 		VFSLeaf leaf = qpoolService.getRootFile(qitem);

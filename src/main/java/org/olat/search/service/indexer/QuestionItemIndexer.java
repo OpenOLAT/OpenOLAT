@@ -27,7 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.manager.QuestionItemDocumentFactory;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -58,7 +58,7 @@ public class QuestionItemIndexer implements LifeIndexer {
 
 	@Override
 	public void fullIndex(LifeFullIndexer indexWriter) {
-		QuestionPoolService qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		QuestionItemDocumentFactory docFactory = CoreSpringFactory.getImpl(QuestionItemDocumentFactory.class);
 		SearchResourceContext ctxt = new SearchResourceContext();
 		

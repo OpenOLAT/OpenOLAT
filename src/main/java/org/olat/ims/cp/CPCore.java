@@ -409,24 +409,6 @@ public class CPCore {
 	}
 
 	/**
-	 * searches for the next, not already-used "(copy n)" string as identifier
-	 * 
-	 * @param identifier
-	 * @return the new identifier as String
-	 * @deprecated use auto-generated id CodeHelper.getGlobalForeverUniqueID()
-	 */
-	private String _getNextCopyID(String identifier) {
-		// FIXME: i18n
-		int n = 1;
-		DefaultElement e = rootNode.getElementByIdentifier(identifier + " (Copy " + n + ")");
-		while (e != null) {
-			n++;
-			e = rootNode.getElementByIdentifier(identifier + " (Copy " + n + ")");
-		}
-		return identifier + " (Copy " + n + ")";
-	}
-
-	/**
 	 * Searches for <item>-elements or <dependency>-elements which references to
 	 * the resource with id "resourceIdentifier"
 	 * 

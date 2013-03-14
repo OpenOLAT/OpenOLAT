@@ -151,8 +151,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	 * @throws JMSException
 	 */
 	public void springInit() throws JMSException {
-		initQueue();
 		initDirectory();
+		initQueue();
 	}
 	
 	public void initQueue() throws JMSException {
@@ -174,6 +174,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			Directory indexPath = FSDirectory.open(tempIndexDir);
 			if(indexingNode) {
 				permanentIndexWriter = new IndexWriterHolder (indexPath, newIndexWriterConfig());
+				permanentIndexWriter.ensureIndexExists();
 			}
 			reader = DirectoryReader.open(indexPath);
 		} catch (IOException e) {

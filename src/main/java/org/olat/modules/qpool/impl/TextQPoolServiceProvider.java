@@ -27,7 +27,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.manager.AbstractQPoolServiceProvider;
+import org.olat.modules.qpool.manager.FileStorage;
 import org.olat.modules.qpool.ui.TextPreviewController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,6 +42,13 @@ import org.springframework.stereotype.Service;
 public class TextQPoolServiceProvider extends AbstractQPoolServiceProvider {
 
 	public static final String TXT_FORMAT = "txt";
+	@Autowired
+	private FileStorage qpoolFileStorage;
+	
+	@Override
+	public FileStorage getFileStorage() {
+		return qpoolFileStorage;
+	}
 	
 	@Override
 	public int getPriority() {

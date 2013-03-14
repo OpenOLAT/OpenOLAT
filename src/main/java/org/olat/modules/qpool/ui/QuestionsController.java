@@ -39,7 +39,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -58,12 +58,12 @@ public class QuestionsController extends BasicController implements StackedContr
 	private final VelocityContainer mainVC;
 	private DialogBoxController confirmDeleteBox;
 	
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public QuestionsController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
 		super(ureq, wControl);
 		
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		listCtrl = new QuestionListController(ureq, wControl, source);
 		listenTo(listCtrl);

@@ -28,7 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -42,7 +42,7 @@ public class FilePreviewController extends BasicController {
 	
 	public FilePreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
-		QuestionPoolService qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		mainVC = createVelocityContainer("file_preview");
 		
 		VFSLeaf leaf = qpoolService.getRootFile(qitem);

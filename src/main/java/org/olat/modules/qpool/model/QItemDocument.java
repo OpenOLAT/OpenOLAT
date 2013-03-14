@@ -38,6 +38,19 @@ public class QItemDocument extends OlatDocument {
 	public static final String STUDY_FIELD = "field";
 	
 
-
-
+	public static final String IDENTIFIER_FIELD = "identifier";
+	public static final String MASTER_IDENTIFIER_FIELD = "master";
+	public static final String KEYWORDS_FIELD = "keywords";
+	public static final String COVERAGE_FIELD = "coverage";
+	public static final String ADD_INFOS_FIELD = "infos";
+	public static final String LANGUAGE_FIELD = "language";
+	public static final String EDU_CONTEXT_FIELD = "context";
+	public static final String ITEM_TYPE_FIELD = "itemType";
+	public static final String ASSESSMENT_TYPE_FIELD = "assessmentType";
+	public static final String ITEM_VERSION_FIELD = "itemVersion";
+	public static final String ITEM_STATUS_FIELD = "itemStatus";
+	public static final String COPYRIGHT_FIELD = "copyright";
+	public static final String EDITOR_FIELD = "editor";
+	public static final String EDITOR_VERSION_FIELD = "editorVersion";
+	public static final String FORMAT_FIELD = "format";
 }

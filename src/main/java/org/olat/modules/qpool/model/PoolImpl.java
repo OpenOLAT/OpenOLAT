@@ -74,12 +74,12 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 	@Column(name="q_name", nullable=false, insertable=true, updatable=true)
 	private String name;
 	
+	@Column(name="q_public", nullable=false, insertable=true, updatable=true)
+	private boolean publicPool;
+	
 	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_ownergroup", nullable=false, insertable=true, updatable=false)
 	private SecurityGroup ownerGroup;
-	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_participantgroup", nullable=false, insertable=true, updatable=false)
-	private SecurityGroup participantGroup;
 	
 	
 	public Long getKey() {
@@ -114,20 +114,20 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 		this.name = name;
 	}
 
+	public boolean isPublicPool() {
+		return publicPool;
+	}
+
+	public void setPublicPool(boolean publicPool) {
+		this.publicPool = publicPool;
+	}
+
 	public SecurityGroup getOwnerGroup() {
 		return ownerGroup;
 	}
 
 	public void setOwnerGroup(SecurityGroup ownerGroup) {
 		this.ownerGroup = ownerGroup;
-	}
-
-	public SecurityGroup getParticipantGroup() {
-		return participantGroup;
-	}
-
-	public void setParticipantGroup(SecurityGroup participantGroup) {
-		this.participantGroup = participantGroup;
 	}
 
 	@Override

@@ -27,6 +27,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
@@ -34,10 +36,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -49,6 +53,7 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(AbstractQPoolServiceProvider.class);
 	
+	public abstract FileStorage getFileStorage();
 
 	@Override
 	public List<QuestionItem> importItems(Identity owner, String filename, File file) {
@@ -61,8 +66,8 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	}
 
 	public QuestionItem importItem(Identity owner, String filename, File file) {
-		String dir = FileStorage.generateDir();
-		VFSContainer itemDir = FileStorage.getContainer(dir);
+		String dir = getFileStorage().generateDir();
+		VFSContainer itemDir = getFileStorage().getContainer(dir);
 
 		VFSLeaf leaf = itemDir.createChildLeaf(filename);
 		OutputStream out = leaf.getOutputStream(false);
@@ -78,7 +83,33 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 			IOUtils.closeQuietly(in);
 			IOUtils.closeQuietly(out);
 		}
-		return CoreSpringFactory.getImpl(QuestionPoolService.class)
+		return CoreSpringFactory.getImpl(QPoolService.class)
 				.createAndPersistItem(owner, filename, getFormat(), "de", null, dir, filename, null);
+	}
+
+	@Override
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout) {
+		String directory = item.getDirectory();
+		VFSContainer itemDir = getFileStorage().getContainer(directory);
+		VFSItem file = itemDir.resolve(item.getRootFilename());
+		if(file instanceof VFSLeaf) {
+			exportFile((VFSLeaf)file, zout);
+		}
+	}
+	
+	private void exportFile(VFSLeaf leaf, ZipOutputStream zout) {
+		InputStream in = null;
+		try {
+			in = leaf.getInputStream();
+			if(in != null) {
+				zout.putNextEntry(new ZipEntry(leaf.getName()));
+				IOUtils.copy(in, zout);
+				zout.closeEntry();
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		} finally {
+			IOUtils.closeQuietly(in);
+		}
 	}
 }

@@ -26,7 +26,7 @@ import java.util.Map;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.TaxonomyLevel;
 
 /**
@@ -38,10 +38,10 @@ import org.olat.modules.qpool.TaxonomyLevel;
 public class TaxonomyTreeModel extends GenericTreeModel {
 
 	private static final long serialVersionUID = 3032222581990406868L;
-	private QuestionPoolService qpoolService;
+	private QPoolService qpoolService;
 	
 	public TaxonomyTreeModel() {
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		buildTree();
 	}

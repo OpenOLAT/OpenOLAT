@@ -19,23 +19,35 @@
  */
 package org.olat.ims.qti.qpool;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.cyberneko.html.parsers.SAXParser;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
+import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ZipUtil;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
@@ -45,6 +57,10 @@ import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.manager.FileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This class is NOT thread-safe
@@ -60,14 +76,16 @@ class QTIImportProcessor {
 	private final Identity owner;
 	private final String importedFilename;
 	private final File importedFile;
+	private final FileStorage qpoolFileStorage;
 	private final QuestionItemDAO questionItemDao;
-	
 
-	public QTIImportProcessor(Identity owner, String importedFilename, File importedFile, QuestionItemDAO questionItemDao) {
+	public QTIImportProcessor(Identity owner, String importedFilename, File importedFile,
+			QuestionItemDAO questionItemDao, FileStorage qpoolFileStorage) {
 		this.owner = owner;
 		this.importedFilename = importedFilename;
 		this.importedFile = importedFile;
 		this.questionItemDao = questionItemDao;
+		this.qpoolFileStorage = qpoolFileStorage;
 	}
 	
 	public List<QuestionItem> process() {
@@ -75,32 +93,15 @@ class QTIImportProcessor {
 		try {
 			DocInfos docInfos = getDocInfos();
 			if(docInfos != null && docInfos.doc != null) {
-				List<ItemInfos> itemElements = getItemList(docInfos);
-				for(ItemInfos itemElement:itemElements) {
-					QuestionItem qItem = processItem(itemElement);
+				List<ItemInfos> itemInfos = getItemList(docInfos);
+				for(ItemInfos itemInfo:itemInfos) {
+					QuestionItemImpl qItem = processItem(docInfos, itemInfo);
 					if(qItem != null) {
+						processFiles(qItem, itemInfo);
 						qItems.add(qItem);
 					}
-					
 				}
 			}
-				
-				/*
-				VFSLeaf leaf = itemDir.createChildLeaf(filename);
-				OutputStream out = leaf.getOutputStream(false);
-				InputStream in = null;
-				try {
-					in = new FileInputStream(file);
-					IOUtils.copy(in, out);
-				} catch (FileNotFoundException e) {
-					log.error("", e);
-				} catch (IOException e) {
-					log.error("", e);
-				} finally {
-					IOUtils.closeQuietly(in);
-					IOUtils.closeQuietly(out);
-				}
-				*/
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -113,32 +114,34 @@ class QTIImportProcessor {
 		Element item = (Element)document.selectSingleNode("/questestinterop/item");
 		Element assessment = (Element)document.selectSingleNode("/questestinterop/assessment");
 		if(item != null) {
-			ItemInfos itemInfos = new ItemInfos(item);
+			ItemInfos itemInfos = new ItemInfos(item, true);
 			Element comment = (Element)document.selectSingleNode("/questestinterop/qticomment");
 			String qtiComment = getText(comment);
 			itemInfos.setComment(qtiComment);
 			itemElements.add(itemInfos);
-		} else if(document.matches("/questestinterop/assessment")) {
+		} else if(assessment != null) {
 			@SuppressWarnings("unchecked")
 			List<Element> items = assessment.selectNodes("//item");
 			for(Element it:items) {
-				itemElements.add(new ItemInfos(it));
+				itemElements.add(new ItemInfos(it, false));
 			}
 		}
 		return itemElements;
 	}
 	
-	protected QuestionItem processItem(ItemInfos itemInfos) {
+	protected QuestionItemImpl processItem(DocInfos docInfos, ItemInfos itemInfos) {
 		Element itemEl = itemInfos.getItemEl();
 		//filename
 		String filename;
 		String ident = getAttributeValue(itemEl, "ident");
-		if(StringHelper.containsNonWhitespace(ident)) {
+		if(itemInfos.isOriginalItem()) {
+			filename = docInfos.filename;
+		} else if(StringHelper.containsNonWhitespace(ident)) {
 			filename = StringHelper.transformDisplayNameToFileSystemName(ident) + ".xml";
 		} else {
 			filename = "item.xml";
 		}
-		String dir = FileStorage.generateDir();
+		String dir = qpoolFileStorage.generateDir();
 		
 		//title
 		String title = getAttributeValue(itemEl, "title");
@@ -151,7 +154,193 @@ class QTIImportProcessor {
 		QuestionItemImpl poolItem = questionItemDao.create(title, QTIConstants.QTI_12_FORMAT, dir, filename);
 		//description
 		poolItem.setDescription(itemInfos.getComment());
+		processItemQuestionType(poolItem, ident, itemEl);
+		processItemMetadata(poolItem, itemEl);
+		questionItemDao.persist(owner, poolItem);
+		return poolItem;
+	}
+	
+	private void processItemMetadata(QuestionItemImpl poolItem, Element itemEl) {
 		
+		
+	}
+	
+	/**
+	 * Save the item element in a <questestinterop> cartridge if needed
+	 * @param item
+	 * @param itemEl
+	 */
+	protected void processFiles(QuestionItemImpl item, ItemInfos itemInfos) {
+		if(itemInfos.originalItem) {
+			processItemFiles(item);
+		} else {
+			//an assessment package
+			processAssessmentFiles(item, itemInfos);
+		}
+	}
+	
+	protected void processAssessmentFiles(QuestionItemImpl item, ItemInfos itemInfos) {
+		//a package with an item
+		String dir = item.getDirectory();
+		String rootFilename = item.getRootFilename();
+		VFSContainer container = qpoolFileStorage.getContainer(dir);
+		VFSLeaf endFile = container.createChildLeaf(rootFilename);
+		
+		//embed in <questestinterop>
+		DocumentFactory df = DocumentFactory.getInstance();
+		Document itemDoc = df.createDocument();
+		Element questestinteropEl = df.createElement("questestinterop");
+		itemDoc.setRootElement(questestinteropEl);
+		Element deepClone = (Element)itemInfos.getItemEl().clone();
+		questestinteropEl.add(deepClone);
+		
+		//write
+		try {
+			OutputStream os = endFile.getOutputStream(false);;
+			XMLWriter xw = new XMLWriter(os, new OutputFormat("  ", true));
+			xw.write(itemDoc.getRootElement());
+			xw.close();
+			os.close();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		
+		//there perhaps some other materials
+		if(importedFilename.toLowerCase().endsWith(".zip")) {
+			processAssessmentMaterials(item, deepClone, container);
+		}
+	}
+	
+	protected void processAssessmentMaterials(QuestionItemImpl item, Element itemEl, VFSContainer container) {
+		List<String> materials = getMaterials(itemEl);
+
+		try {
+			InputStream in = new FileInputStream(importedFile);
+			ZipInputStream zis = new ZipInputStream(in);
+
+			ZipEntry entry;
+			try {
+				while ((entry = zis.getNextEntry()) != null) {
+					String name = entry.getName();
+					if(materials.contains(name)) {
+						
+						VFSLeaf leaf = container.createChildLeaf(name);
+						OutputStream out = leaf.getOutputStream(false);
+						BufferedOutputStream bos = new BufferedOutputStream (out);
+						FileUtils.cpio(new BufferedInputStream(zis), bos, "unzip:"+entry.getName());
+						bos.flush();
+						bos.close();
+						out.close();
+					}
+				}
+			} catch(Exception e) {
+				log.error("", e);
+			} finally {
+				IOUtils.closeQuietly(zis);
+				IOUtils.closeQuietly(in);
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected List<String> getMaterials(Element el) {
+		List<String> materialPath = new ArrayList<String>();
+		//mattext
+		List<Element> mattextList = el.selectNodes(".//mattext");
+		for(Element mat:mattextList) {
+			Attribute texttypeAttr = mat.attribute("texttype");
+			String texttype = texttypeAttr.getValue();
+			if("text/html".equals(texttype)) {
+				String content = mat.getStringValue();
+				findMaterialInMatText(content, materialPath);
+			}
+		}
+		//matimage uri
+		List<Element> matList = new ArrayList<Element>();
+		matList.addAll(el.selectNodes(".//matimage"));
+		matList.addAll(el.selectNodes(".//mataudio"));
+		matList.addAll(el.selectNodes(".//matvideo"));
+		
+		for(Element mat:matList) {
+			Attribute uriAttr = mat.attribute("uri");
+			String uri = uriAttr.getValue();
+			materialPath.add(uri);
+		}
+		return materialPath;
+	}
+	
+	/**
+	 * Parse the content and collect the images source
+	 * @param content
+	 * @param materialPath
+	 */
+	protected void findMaterialInMatText(String content, List<String> materialPath) {
+		try {
+			SAXParser parser = new SAXParser();
+			HTMLHandler contentHandler = new HTMLHandler(materialPath);
+			parser.setContentHandler(contentHandler);
+			parser.parse(new InputSource(new StringReader(content)));
+		} catch (SAXException e) {
+			log.error("", e);
+		} catch (IOException e) {
+			log.error("", e);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	private static class HTMLHandler extends DefaultHandler {
+		private final List<String> materialPath;
+		
+		public HTMLHandler(List<String> materialPath) {
+			this.materialPath = materialPath;
+		}
+		
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			String elem = localName.toLowerCase();
+			if("img".equals(elem)) {
+				String imgSrc = attributes.getValue("src");
+				if(StringHelper.containsNonWhitespace(imgSrc)) {
+					materialPath.add(imgSrc);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Process the file of an item's package
+	 * @param item
+	 * @param itemInfos
+	 */
+	protected void processItemFiles(QuestionItemImpl item) {
+	//a package with an item
+		String dir = item.getDirectory();
+		String rootFilename = item.getRootFilename();
+		VFSContainer container = qpoolFileStorage.getContainer(dir);
+		if(importedFilename.toLowerCase().endsWith(".zip")) {
+			ZipUtil.unzipStrict(importedFile, container);
+		} else {
+			VFSLeaf endFile = container.createChildLeaf(rootFilename);
+			
+			OutputStream out = null;
+			FileInputStream in = null;
+			try {
+				out = endFile.getOutputStream(false);
+				in = new FileInputStream(importedFile);
+				IOUtils.copy(in, out);
+			} catch (IOException e) {
+				log.error("", e);
+			} finally {
+				IOUtils.closeQuietly(out);
+				IOUtils.closeQuietly(in);
+			}
+		}
+	}
+	
+	private void processItemQuestionType(QuestionItemImpl poolItem, String ident, Element itemEl) {
 		//question type: mc, sc...
 		QuestionType type = null;
 		//test with openolat ident 
@@ -179,8 +368,6 @@ class QTIImportProcessor {
 		if(type != null) {
 			poolItem.setType(type.name());
 		}
-		questionItemDao.persist(owner, poolItem);
-		return poolItem;
 	}
 	
 	private String getAttributeValue(Element el, String attrName) {
@@ -231,8 +418,8 @@ class QTIImportProcessor {
 		try {
 			while ((entry = zis.getNextEntry()) != null) {
 				String name = entry.getName();
-				if(name != null && name.toLowerCase().equals(".xml")) {
-					Document doc = readXml(in);
+				if(name != null && name.toLowerCase().endsWith(".xml")) {
+					Document doc = readXml(zis);
 					if(doc != null) {
 						DocInfos d = new DocInfos();
 						d.doc = doc;
@@ -256,7 +443,6 @@ class QTIImportProcessor {
 		try {
 			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			doc = xmlParser.parse(in, false);
-			in.close();
 			return doc;
 		} catch (Exception e) {
 			return null;
@@ -264,25 +450,23 @@ class QTIImportProcessor {
 	}
 	
 	public static class ItemInfos {
-		private Element itemEl;
 		private String comment;
-		
-		public ItemInfos() {
-			//
-		}
-		
-		public ItemInfos(Element itemEl) {
+		private final Element itemEl;
+		private final boolean originalItem;
+
+		public ItemInfos(Element itemEl, boolean originalItem) {
 			this.itemEl = itemEl;
+			this.originalItem = originalItem;
 		}
 		
 		public Element getItemEl() {
 			return itemEl;
 		}
 		
-		public void setItemEl(Element itemEl) {
-			this.itemEl = itemEl;
+		public boolean isOriginalItem() {
+			return originalItem;
 		}
-		
+
 		public String getComment() {
 			return comment;
 		}
@@ -293,8 +477,8 @@ class QTIImportProcessor {
 	}
 	
 	public static class DocInfos {
-		private String filename;
 		private Document doc;
+		private String filename;
 		private String qtiComment;
 		
 		public String getFilename() {
@@ -304,7 +488,7 @@ class QTIImportProcessor {
 		public void setFilename(String filename) {
 			this.filename = filename;
 		}
-		
+
 		public Document getDocument() {
 			return doc;
 		}

@@ -28,7 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -47,12 +47,12 @@ public class QuestionItemSummaryController extends FormBasicController {
 	private StaticTextElement descriptionEl;
 	
 	private QuestionItem item;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public QuestionItemSummaryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		initForm(ureq);
 	}

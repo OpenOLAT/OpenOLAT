@@ -186,9 +186,9 @@ public class LinkRenderer implements ComponentRenderer {
 				//tooltips based on the extjs library, see webapp/static/js/ext*
 				if (link.hasTooltip) {
 					if (nontranslated) {
-						sb.append(" ext:qtip=\"").append(title).append("\"");
+						sb.append(" title=\"").append(title).append("\"");
 					} else {
-						sb.append(" ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate(title))).append("\"");
+						sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(translator.translate(title))).append("\"");
 					}
 				}
 			}

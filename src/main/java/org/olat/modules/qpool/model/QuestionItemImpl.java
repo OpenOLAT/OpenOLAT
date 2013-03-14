@@ -43,7 +43,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
@@ -58,7 +58,7 @@ import org.olat.modules.qpool.TaxonomyLevel;
 @NamedQueries({
 	@NamedQuery(name="loadQuestionItemByKey", query="select item from questionitem item where item.key=:itemKey")
 })
-public class QuestionItemImpl implements QuestionItem, CreateInfo, ModifiedInfo, Persistable {
+public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = 6264601750280239307L;
 

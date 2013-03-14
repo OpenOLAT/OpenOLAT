@@ -28,7 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 
@@ -42,14 +42,14 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	
 	private final Roles roles;
 	private final Identity identity;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	private final QuestionItemCollection collection;
 	
 	public CollectionOfItemsSource(QuestionItemCollection collection, Identity identity, Roles roles) {
 		this.roles = roles;
 		this.identity = identity;
 		this.collection = collection;
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 
 	@Override

@@ -36,13 +36,14 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.ajax.tree.MoveTreeNodeEvent;
-import org.olat.core.gui.control.generic.ajax.tree.TreeController;
 import org.olat.core.gui.control.generic.ajax.tree.TreeNodeClickedEvent;
 import org.olat.core.gui.control.generic.ajax.tree.TreeNodeModifiedEvent;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -67,7 +68,7 @@ import org.olat.ims.cp.objects.CPResource;
  */
 public class CPTreeController extends BasicController {
 
-	private TreeController treeCtr;
+	private MenuTree treeCtr;
 	private DialogBoxController dialogCtr;
 	private CPFileImportController uploadCtr;
 	private CPContentController contentCtr;
@@ -88,23 +89,25 @@ public class CPTreeController extends BasicController {
 		contentVC = createVelocityContainer("treeView");
 
 		this.cp = cp;
-
-		String rootTitle = cp.getFirstOrganizationInManifest().getTitle();
+		
 		CPManager cpMgm = CPManager.getInstance();
 		treeModel = cpMgm.getTreeDataModel(cp);
-		treeCtr = new TreeController(ureq, control, rootTitle, treeModel, null);
-		treeCtr.setTreeInlineEditing(true, null, null);
+		treeCtr = new MenuTree("cp");
+		treeCtr.setTreeModel(treeModel);
+		treeCtr.addListener(this);
+		
+		//treeCtr.setTreeInlineEditing(true, null, null);
 		// hook into beforeclick event see treeView.html
-		treeCtr.setBeforeNodeClickCallback("function(event){ return CPEditorBeforeTreeNodeClick(event);}");
+		//treeCtr.setBeforeNodeClickCallback("function(event){ return CPEditorBeforeTreeNodeClick(event);}");
 		
 		// do not sort jsTree (structure is given by manifest)
-		treeCtr.setTreeSorting(false, false, false);
-		listenTo(treeCtr);
+		//treeCtr.setTreeSorting(false, false, false);
+		//listenTo(treeCtr);
 
 		setLinks();
-		contentVC.put("cptreecontroller.tree", treeCtr.getInitialComponent());
+		contentVC.put("cptreecontroller.tree", treeCtr);
 		//fxdiff FXOLAT-132: alert unsaved changes in HTML editor
-		contentVC.contextPut("treeId", treeCtr.getTreePanelID());
+		contentVC.contextPut("treeId", treeCtr.getDispatchID());
 
 		putInitialPanel(contentVC);
 	}
@@ -163,11 +166,16 @@ public class CPTreeController extends BasicController {
 			// no page selected
 		} else {
 			CPManager cpMgm = CPManager.getInstance();
-			String path = treeModel.getPath(identifier);
-			treeCtr.removePath(path);
+			treeModel.removePath(identifier);
 			cpMgm.removeElement(cp, identifier, deleteResource);
 			cpMgm.writeToFile(cp);
+			updateTree();
 		}
+	}
+	
+	private void updateTree() {
+		treeModel.update();
+		treeCtr.setDirty(true);
 	}
 
 	/**
@@ -198,6 +206,7 @@ public class CPTreeController extends BasicController {
 		VFSLeaf htmlFile = root.createChildLeaf(newId + ".html");
 		newPage.setFile(htmlFile);
 		updatePage(newPage);
+		updateTree();
 		return newId;
 	}
 
@@ -219,7 +228,7 @@ public class CPTreeController extends BasicController {
 		setCurrentPage(new CPPage(newNodeID, cp));
 
 		cpMgm.writeToFile(cp);
-		// treeCtr.getInitialComponent().setDirty(true);
+		updateTree();
 		return newNodeID;
 	}
 
@@ -232,15 +241,7 @@ public class CPTreeController extends BasicController {
 		cpMgm.updatePage(cp, page);
 		cpMgm.writeToFile(cp);
 		if (page.isOrgaPage()) {
-			// TODO:GW Shall the repo entry title be updated when the organization
-			// title changes?
-			// // If the organization title changed, also update the repo entry
-			// // title.
-			// RepositoryManager resMgr = RepositoryManager.getInstance();
-			// RepositoryEntry cpEntry =
-			// resMgr.lookupRepositoryEntry(cp.getResourcable(), false);
-			// cpEntry.setDisplayname(page.getTitle());
-			treeCtr.setRootNodeTitle(page.getTitle());
+			updateTree();
 		}
 		selectTreeNodeByCPPage(page);
 	}
@@ -255,7 +256,7 @@ public class CPTreeController extends BasicController {
 		CPPage page = new CPPage(nodeIdentifier, cp);
 		page.setTitle(title);
 		if (page.isOrgaPage()) {
-			treeCtr.setRootNodeTitle(title);
+			updateTree();
 		}
 		updatePage(page);
 	}
@@ -299,8 +300,6 @@ public class CPTreeController extends BasicController {
 	 */
 	protected boolean selectTreeNodeByCPPage(CPPage page) {
 		currentPage = page;
-		String path = treeModel.getPath(page.getIdentifier());
-		treeCtr.selectPath(path);
 		return true;
 	}
 
@@ -365,6 +364,16 @@ public class CPTreeController extends BasicController {
 				listenTo(dialogCtr);
 				dialogCtr.activate();
 			}
+		} else if (source == treeCtr) {
+			if(event instanceof TreeEvent) {
+				TreeEvent te = (TreeEvent)event;
+				String selectedNodeID = treeModel.getIdentifierForNodeID(te.getNodeId());
+
+				currentPage = new CPPage(selectedNodeID, cp);
+				TreeNodeClickedEvent clickedEvent = new TreeNodeClickedEvent(currentPage.getIdentifier());
+				fireEvent(ureq, clickedEvent);
+			}
+
 		}
 	}
 

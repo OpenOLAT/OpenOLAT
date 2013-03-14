@@ -33,7 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.ui.QPoolEvent;
 import org.olat.modules.qpool.ui.MetadatasController;
 
@@ -48,13 +48,13 @@ public class GeneralMetadataController extends FormBasicController {
 	private FormLink editLink;
 	private StaticTextElement keyEl, identifierEl, masterIdentifierEl, titleEl, keywordsEl, coverageEl, addInfosEl, languageEl, studyFieldEl;
 	
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public GeneralMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl, "view");
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 		
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		initForm(ureq);
 		setItem(item);

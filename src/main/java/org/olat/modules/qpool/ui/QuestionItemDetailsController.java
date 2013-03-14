@@ -41,11 +41,11 @@ import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.QPoolSPI;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -55,7 +55,7 @@ import org.olat.modules.qpool.QuestionPoolService;
  */
 public class QuestionItemDetailsController extends BasicController {
 	
-	private Link deleteItem, shareItem;
+	private Link deleteItem, shareItem, exportItem;
 
 	private Controller editCtrl;
 	private CloseableModalController cmc;
@@ -66,13 +66,13 @@ public class QuestionItemDetailsController extends BasicController {
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
 
 	private final QuestionPoolModule poolModule;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl);
 
 		poolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 		if(spi == null) {
@@ -99,6 +99,7 @@ public class QuestionItemDetailsController extends BasicController {
 		mainVC = createVelocityContainer("item_details");
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
+		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
 		mainVC.put("type_specifics", editCtrl.getInitialComponent());
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
@@ -118,6 +119,8 @@ public class QuestionItemDetailsController extends BasicController {
 			doConfirmDelete(ureq, metadatasCtrl.getItem());
 		} else if(source == shareItem) {
 			doSelectGroup(ureq, metadatasCtrl.getItem());
+		} else if(source == exportItem) {
+			doExport(ureq, metadatasCtrl.getItem());
 		}
 	}
 	
@@ -179,5 +182,10 @@ public class QuestionItemDetailsController extends BasicController {
 		qpoolService.deleteItems(Collections.singletonList(item));
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_DELETED));
 		showInfo("item.deleted");
+	}
+	
+	private void doExport(UserRequest ureq, QuestionItemShort item) {
+		QPoolExportResource mr = new QPoolExportResource("UTF-8", item);
+		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
 }

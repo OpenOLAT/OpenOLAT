@@ -19,7 +19,6 @@
  */
 package org.olat.catalog.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
@@ -118,38 +117,6 @@ public class CatalogEntryAddController extends BasicController {
 			} else if (te.getCommand().equals(TreeEvent.COMMAND_CANCELLED)) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
-		}
-
-	}
-
-	/**
-	 * Internal helper to get all children for a given list of parent category items
-	 * @param parents
-	 * @return
-	 */
-	private List<CatalogEntry> fetchChildren(List<CatalogEntry> parents) {
-		List<CatalogEntry> tmp = new ArrayList<CatalogEntry>();
-		for (CatalogEntry child : parents) {
-			tmp.add(child);
-			if (child.getType() == CatalogEntry.TYPE_NODE) {
-				tmp.addAll(fetchChildren((List<CatalogEntry>) CatalogManager.getInstance().getChildrenOf(child)));
-			}
-		}
-		return tmp;
-	}
-
-	/**
-	 * Internal helper method to get list of catalog entries where current user is
-	 * in the owner group
-	 * 
-	 * @param ureq
-	 * @return List of repo entries
-	 */
-	private List<CatalogEntry> getOwnedEntries(UserRequest ureq) {
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			return (List<CatalogEntry>) CatalogManager.getInstance().getRootCatalogEntries();
-		} else {
-			return (List<CatalogEntry>) CatalogManager.getInstance().getCatalogEntriesOwnedBy(ureq.getIdentity());
 		}
 	}
 }

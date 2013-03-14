@@ -202,18 +202,23 @@ public class JunitTestHelper {
 			}
 		}
 		
-		createAndPersistIdentityAsAdmin("administrator");
-		
-		DeployableCourseExport export = (DeployableCourseExport)new ClassPathXmlApplicationContext("/org/olat/test/_spring/demoCourseExport.xml").getBean("demoCourse");
-		if (!export.getDeployableCourseZipFile().exists()) {
-			//do not throw exception as users may upload bad file
-			System.out.println("Cannot deploy course from file: " + export.getIdentifier());
-			return null;
-		}
-		re = CourseFactory.deployCourseFromZIP(export.getDeployableCourseZipFile(), 4);	
-		if (re != null) {
-			Property prop = propertyManager.createPropertyInstance(null, null, null, "_o3_", "deployedCourses", export.getVersion(), re.getKey(), export.getIdentifier(), null);
-			propertyManager.saveProperty(prop);
+		ClassPathXmlApplicationContext beanContext = null;
+		try {
+			createAndPersistIdentityAsAdmin("administrator");
+			beanContext = new ClassPathXmlApplicationContext("/org/olat/test/_spring/demoCourseExport.xml");
+			DeployableCourseExport export = (DeployableCourseExport)beanContext.getBean("demoCourse");
+			if (!export.getDeployableCourseZipFile().exists()) {
+				//do not throw exception as users may upload bad file
+				System.out.println("Cannot deploy course from file: " + export.getIdentifier());
+				return null;
+			}
+			re = CourseFactory.deployCourseFromZIP(export.getDeployableCourseZipFile(), 4);	
+			if (re != null) {
+				Property prop = propertyManager.createPropertyInstance(null, null, null, "_o3_", "deployedCourses", export.getVersion(), re.getKey(), export.getIdentifier(), null);
+				propertyManager.saveProperty(prop);
+			}
+		} finally {
+			beanContext.close();
 		}
 		return re;
 	}

@@ -37,7 +37,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.IdentityShort;
-import org.olat.catalog.ui.CatalogAjaxAddController;
 import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.catalog.ui.RepoEntryCategoriesTableController;
 import org.olat.core.CoreSpringFactory;
@@ -840,19 +839,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 */
 	private void doAddCatalog(UserRequest ureq) {
 		removeAsListenerAndDispose(catalogAdddController);
-		boolean ajax = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
-		if (ajax) {
-			// fancy ajax tree
-			catalogAdddController = new CatalogAjaxAddController(ureq, getWindowControl(), repositoryEntry);
-		} else {
-			// old-school selection tree
-			catalogAdddController = new CatalogEntryAddController(ureq, getWindowControl(), repositoryEntry);
-		}
-
-		
-		
-		listenTo(catalogAdddController);
 		removeAsListenerAndDispose(closeableModalController);
+		
+		catalogAdddController = new CatalogEntryAddController(ureq, getWindowControl(), repositoryEntry);
+		listenTo(catalogAdddController);
 		closeableModalController = new CloseableModalController(getWindowControl(), "close", catalogAdddController.getInitialComponent());
 		listenTo(closeableModalController);
 		closeableModalController.activate();

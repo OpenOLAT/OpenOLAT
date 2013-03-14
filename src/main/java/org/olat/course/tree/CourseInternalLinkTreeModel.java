@@ -25,17 +25,9 @@
 
 package org.olat.course.tree;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.json.JSONException;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeNode;
-import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 
@@ -47,6 +39,9 @@ import org.olat.course.nodes.CourseNodeFactory;
  */
 public class CourseInternalLinkTreeModel extends CustomLinkTreeModel {
 
+	private static final long serialVersionUID = -1069112575005677374L;
+	private TreeNode rootNode;
+	
 	/**
 	 * Create a tree model based on the course editor model
 	 * 
@@ -54,7 +49,7 @@ public class CourseInternalLinkTreeModel extends CustomLinkTreeModel {
 	 */
 	public CourseInternalLinkTreeModel(CourseEditorTreeModel courseEditorTreeModel) {
 		super(courseEditorTreeModel.getRootNode().getIdent());
-		this.setRootNode(courseEditorTreeModel.getRootNode());
+		setRootNode(courseEditorTreeModel.getRootNode());
 	}
 
 	/**
@@ -65,7 +60,7 @@ public class CourseInternalLinkTreeModel extends CustomLinkTreeModel {
 	public CourseInternalLinkTreeModel(CourseNode courseRootNode) {
 		super(courseRootNode.getIdent());
 		TreeNode treeRootNode = convertToTreeNode(courseRootNode);
-		this.setRootNode(treeRootNode);
+		setRootNode(treeRootNode);
 	}
 
 	/**
@@ -92,74 +87,31 @@ public class CourseInternalLinkTreeModel extends CustomLinkTreeModel {
 	/**
 	 * @see org.olat.core.commons.editor.htmleditor.InternalLinkTreeModel#getInternalLinkUrlFor(java.lang.String)
 	 */
+	@Override
 	public String getInternalLinkUrlFor(String nodeId) {
 		return "javascript:parent.gotonode(" + nodeId + ")";
 	}
 	
-	@Override
-	public List<AjaxTreeNode> getChildrenFor(String nodeId) {
-		if (nodeId.contains("/")) throw new AssertException("Ext AJAX tree does not support node id's that contain a '/'");
-		List<AjaxTreeNode> childAjaxTreeNodes = new ArrayList<AjaxTreeNode>();
-		TreeNode treeNode = findNode(nodeId, getRootNode());
-		// Now build the ajax tree nodes for each child
-		int childCount = treeNode.getChildCount();
-		for (int i = 0; i < childCount; i++) {
-			INode childNode = treeNode.getChildAt(i);
-			AjaxTreeNode childAjaxNode = buildAjaxTreeNode((TreeNode) childNode);
-			childAjaxTreeNodes.add(childAjaxNode);
-		}
-		return childAjaxTreeNodes;		
-	}
-
-	/**
-	 * Internal helper to build a tree node from a vfs item
-	 * 
-	 * @param vfsItem
-	 * @return
-	 */
-	private AjaxTreeNode buildAjaxTreeNode(TreeNode treeNode) {
-		AjaxTreeNode node;
-		try {
-			// as node ID we use the file path relative to the root container, as
-			// delimiter we use our special delimiter to not get in conflict with the
-			// ext tree delimiter which uses "/".
-			node = new AjaxTreeNode(treeNode.getIdent(), treeNode.getTitle());
-			// use folder css class
-			node.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, treeNode.getIconCssClass());
-			// disable drag&drop support
-			node.put(AjaxTreeNode.CONF_ALLOWDRAG, false);
-			node.put(AjaxTreeNode.CONF_ALLOWDROP, false);
-			// set open-icon only when there are children available
-			node.put(AjaxTreeNode.CONF_LEAF, (treeNode.getChildCount() < 1));
-		} catch (JSONException e) {
-			throw new OLATRuntimeException("Error while creating AjaxTreeNode for treeNode::" + treeNode.getIdent(), e);
-		}
-
-		return node;
-	}
-
-	
-
-	
-	
-	
-	/* *
-	 * 
-	 * copy past from GenericTreeModel 
-	 * 
-	 * */
-	
-	private TreeNode rootNode;
-	
-
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeModel#getRootNode()
 	 */
-	public TreeNode getRootNode() { return rootNode; }
+	@Override
+	public TreeNode getRootNode() {
+		return rootNode;
+	}
+	
+	/**
+	 * Sets the rootNode.
+	 * @param rootNode The rootNode to set
+	 */
+	public void setRootNode(TreeNode rootNode) {
+		this.rootNode = rootNode;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeModel#getNodeById(java.lang.String)
 	 */
+	@Override
 	public TreeNode getNodeById(String nodeId) {
 		return findNode(nodeId, rootNode);
 	}
@@ -181,13 +133,4 @@ public class CourseInternalLinkTreeModel extends CustomLinkTreeModel {
 		}
 		return null;
 	}
-
-	/**
-	 * Sets the rootNode.
-	 * @param rootNode The rootNode to set
-	 */
-	public void setRootNode(TreeNode rootNode) {
-		this.rootNode = rootNode;
-	}
-
 }

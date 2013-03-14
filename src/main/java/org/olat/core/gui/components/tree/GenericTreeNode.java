@@ -34,6 +34,9 @@ import org.olat.core.util.nodes.GenericNode;
  * @author Mike Stock
  */
 public class GenericTreeNode extends GenericNode implements TreeNode, Serializable {
+
+	private static final long serialVersionUID = -2381133733726739228L;
+	
 	private Object userObject;
 	private String title = null;
 	private String altText = null;

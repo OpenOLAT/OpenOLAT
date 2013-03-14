@@ -21,6 +21,7 @@ package org.olat.ims.qti.qpool;
 
 import java.io.File;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -31,6 +32,8 @@ import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.manager.FileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +46,9 @@ import org.springframework.stereotype.Service;
  */
 @Service("qtiPoolServiceProvider")
 public class QTIQPoolServiceProvider implements QPoolSPI {
-	
+
+	@Autowired
+	private FileStorage qpoolFileStorage;
 	@Autowired
 	private QuestionItemDAO questionItemDao;
 	
@@ -74,8 +79,14 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public List<QuestionItem> importItems(Identity owner, String filename, File file) {
-		QTIImportProcessor processor = new QTIImportProcessor(owner, filename, file, questionItemDao);
+		QTIImportProcessor processor = new QTIImportProcessor(owner, filename, file, questionItemDao, qpoolFileStorage);
 		return processor.process();
+	}
+
+	@Override
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout) {
+		QTIExportProcessor processor = new QTIExportProcessor(item, qpoolFileStorage);
+		processor.process(zout);
 	}
 
 	@Override

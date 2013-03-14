@@ -34,7 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionPoolService;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
 
@@ -50,14 +50,14 @@ public class QuestionMetadataEditController extends FormBasicController {
 	private TextElement difficultyEl, stdevDifficultyEl, differentiationEl, numAnswerAltEl;
 	
 	private QuestionItem item;
-	private final QuestionPoolService qpoolService;
+	private final QPoolService qpoolService;
 
 	public QuestionMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 		
 		this.item = item;
-		qpoolService = CoreSpringFactory.getImpl(QuestionPoolService.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
 	}
 
@@ -82,9 +82,9 @@ public class QuestionMetadataEditController extends FormBasicController {
 		numAnswerAltEl.setDisplaySize(4);
 		
 		uifactory.addStaticTextElement("question.usage", Integer.toString(item.getUsage()), formLayout);
-		String[] assessmentTypeKeys = new String[]{ "summative", "normative", "both"};
+		String[] assessmentTypeKeys = new String[]{ "summative", "formative", "both"};
 		String[] assessmentTypeValues = new String[]{
-			translate("question.assessmentType.summative"), translate("question.assessmentType.normative"),
+			translate("question.assessmentType.summative"), translate("question.assessmentType.formative"),
 			translate("question.assessmentType.both"),	
 		};
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", formLayout,

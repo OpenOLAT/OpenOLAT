@@ -25,7 +25,6 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
@@ -42,7 +41,6 @@ public class AbstractInlineElementComponent extends FormBaseComponentImpl {
 	
 	private final ComponentRenderer RENDERER;
 	private InlineElement aie;
-	private FormItem current;
 
 	public AbstractInlineElementComponent(InlineElement aie, ComponentRenderer HTMLRenderer) {
 		super(aie.getName());
@@ -59,8 +57,6 @@ public class AbstractInlineElementComponent extends FormBaseComponentImpl {
 	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
-		// TODO Auto-generated method stub
 		return RENDERER;
 	}
-
 }
