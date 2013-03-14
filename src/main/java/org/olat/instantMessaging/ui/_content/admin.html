@@ -1,6 +1,10 @@
 <fieldset><legend>$r.translate("im.module.enable.title")</legend>
-$r.render("flc_module")
+	$r.contextHelpWithWrapper("org.olat.instantMessaging.ui","instant-messenger-admin.html","help.hover.imsettings")
+	$r.render("flc_module")
 </fieldset>
-<fieldset><legend>$r.translate("im.module.options.title")</legend>
-$r.render("flc_options")
+<fieldset><legend>$r.translate("im.module.options.chat.title")</legend>
+	$r.render("flc_chatOptions")
+</fieldset>
+<fieldset><legend>$r.translate("im.module.options.message.title")</legend>
+	$r.render("flc_messageOptions")
 </fieldset>

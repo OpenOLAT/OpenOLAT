@@ -76,6 +76,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.group.ui.main.OnlineIconRenderer;
+import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -598,7 +599,7 @@ public class GroupController extends BasicController {
 			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
 			tableCtr.addColumnDescriptor(cd0);
 		}
-		if (imModule.isEnabled() && imModule.isViewOnlineUsersEnabled()) {
+		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.online", 1, COMMAND_IM, getLocale(),
 					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
 		}

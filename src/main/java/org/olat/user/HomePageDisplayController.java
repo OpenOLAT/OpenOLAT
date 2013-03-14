@@ -40,6 +40,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -98,13 +100,18 @@ public class HomePageDisplayController extends BasicController {
 		mainVC.put("image", dpc.getInitialComponent());
 		putInitialPanel(mainVC);
 		
-		if(imModule.isEnabled() && imModule.isViewOnlineUsersEnabled()) {
+		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
 			InstantMessagingService imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 			ImPreferences prefs = imService.getImPreferences(homeIdentity);
 			if(prefs.isVisibleToOthers()) {
+				User user = homeIdentity.getUser();
+				String fName = user.getProperty(UserConstants.FIRSTNAME, getLocale());
+				String lName = user.getProperty(UserConstants.LASTNAME, getLocale());
+				imLink = LinkFactory.createCustomLink("im.link", "im.link", "im.link", Link.NONTRANSLATED, mainVC, this);
+				imLink.setCustomDisplayText(translate("im.link", new String[] {fName,lName}));
 				Buddy buddy = imService.getBuddyById(homeIdentity.getKey());
-				imLink = LinkFactory.createLink("im.link", mainVC, this);
-				imLink.setCustomEnabledLinkCSS(getStatusCss(buddy));
+				String css = (imModule.isOnlineStatusEnabled() ? getStatusCss(buddy) : "o_instantmessaging_chat_icon");
+				imLink.setCustomEnabledLinkCSS(css);
 				imLink.setUserObject(buddy);
 			}
 		}
