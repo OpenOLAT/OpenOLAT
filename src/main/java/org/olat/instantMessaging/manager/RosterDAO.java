@@ -103,8 +103,7 @@ public class RosterDAO {
 				.createNamedQuery("loadIMRosterEntryViewByResource", RosterEntryView.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
-				.setFirstResult(firstResult)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE);
+				.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}

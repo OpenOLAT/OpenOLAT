@@ -219,7 +219,7 @@ public abstract class BasicController extends DefaultController {
 			// use non cacheable as fallback
 			mapperBaseURL =  CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), m);			
 		} else {
-			mapperBaseURL =  CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), cacheableMapperID, m);			
+			mapperBaseURL =  CoreSpringFactory.getImpl(MapperService.class).register(cacheableMapperID, m);
 		}
 		// registration was successful, add to our mapper list
 		mappers.add(m);

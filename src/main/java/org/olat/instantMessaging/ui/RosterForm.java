@@ -89,7 +89,7 @@ public class RosterForm extends FormBasicController {
 	};
 	
 	private String generateNickname() {
-		String prefix = anonymPrefix[ (int)(Math.random() * anonymPrefix.length) ];
+		String prefix = anonymPrefix[ (int)(Math.random() * (anonymPrefix.length - 1)) ];
 		String name = prefix + " - "+ (int)(Math.random() * getIdentity().getKey());
 		return name;
 	}

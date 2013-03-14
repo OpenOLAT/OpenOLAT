@@ -1384,7 +1384,7 @@ public class RichTextConfiguration implements Disposable {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			uri = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperID, contentMapper);				
+			uri = CoreSpringFactory.getImpl(MapperService.class).register(mapperID, contentMapper);				
 		}
 		
 		if (relFilePath != null) {

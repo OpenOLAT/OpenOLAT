@@ -32,6 +32,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -95,6 +96,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private ChatManagerController chatMgrCtrl;
 
 	private String imStatus;
+	private int stateUpdateCounter = 0;
 	private boolean inAssessment = false;
 	private EventBus singleUserEventCenter;
 	private final InstantMessagingService imService;
@@ -139,6 +141,8 @@ public class InstantMessagingMainController extends BasicController implements G
 			onlineOfflineCount.registerForMousePositionEvent(true);
 			updateBuddyStats();
 			main.put("buddiesSummaryPanel", onlineOfflineCount);
+			
+			getWindowControl().getWindowBackOffice().addCycleListener(this);
 		}
 		
 		main.put("newMsgPanel", newMsgIcon);
@@ -252,6 +256,10 @@ public class InstantMessagingMainController extends BasicController implements G
 			processOpenInstantMessageEvent((OpenInstantMessageEvent)event);
 		} else if(event instanceof CloseInstantMessagingEvent) {
 			processCloseInstantMessageEvent();
+		} else if(Window.BEFORE_INLINE_RENDERING.equals(event)) {
+			if(++stateUpdateCounter % 25 == 0) {
+				updateBuddyStats();
+			}
 		}
 	}
 	
