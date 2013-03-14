@@ -280,6 +280,8 @@ public class FunctionalGroupsSiteUtil {
 	public boolean openActionByMenuTree(Selenium browser, Object action){
 		StringBuffer selectorBuffer;
 		
+		functionalUtil.idle(browser);
+		
 		if(action instanceof GroupsSiteAction){
 			selectorBuffer = new StringBuffer();
 			
@@ -287,7 +289,7 @@ public class FunctionalGroupsSiteUtil {
 			.append(((GroupsSiteAction) action).getActionCss())
 			.append("')]//a[contains(@class, '")
 			.append(functionalUtil.getTreeLevel0Css())
-			.append("')]");;
+			.append("')]");
 		}else{
 			return(false);
 		}
@@ -667,22 +669,27 @@ public class FunctionalGroupsSiteUtil {
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.CAN_SEE_COACHES)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.CAN_SEE_COACHES.getValue());
+			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.CAN_SEE_PARTICIPANTS)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.CAN_SEE_PARTICIPANTS.getValue());
+			functionalUtil.idle(browser);
 		}
 
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_SEE_COACHES)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_SEE_COACHES.getValue());
+			functionalUtil.idle(browser);
 		}
 
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_SEE_PARTICIPANTS.getValue());
+			functionalUtil.idle(browser);
 		}
 		
 		if(ArrayUtils.contains(conf, MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS)){
 			functionalUtil.clickCheckbox(browser, null, MembersConfiguration.ALL_CAN_DOWNLOAD_LIST_OF_MEMBERS.getValue());
+			functionalUtil.idle(browser);
 		}
 		
 		return(true);

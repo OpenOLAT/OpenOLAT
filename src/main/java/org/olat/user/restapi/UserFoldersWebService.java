@@ -42,7 +42,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.IdentityShort;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
@@ -81,26 +80,24 @@ import org.olat.restapi.support.vo.FolderVOes;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-@Path("users/{identityKey}/folders")
 public class UserFoldersWebService {
 	
-	//private static final OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
-
+	private final Identity identity;
+	
+	public UserFoldersWebService(Identity identity) {
+		this.identity = identity;
+	}
+	
 	@Path("personal")
-	public VFSWebservice getFolder(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		Identity identity = getIdentity(request);
-		if(identity == null) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
-		}
-		
-		if(identityKey.equals(identity.getKey())) {
+	public VFSWebservice getFolder(@Context HttpServletRequest request) {
+		Identity ureqIdentity = getIdentity(request);
+		if(identity.getKey().equals(ureqIdentity.getKey())) {
 			//private and public folder
-			VFSContainer myFodlers = new BriefcaseWebDAVProvider().getContainer(identity);
+			VFSContainer myFodlers = new BriefcaseWebDAVProvider().getContainer(ureqIdentity);
 			return new VFSWebservice(myFodlers);
 		} else {
 			//only public
-			IdentityShort retrievedIdentity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
-			String chosenUserFolderRelPath = FolderConfig.getUserHome(retrievedIdentity.getName()) + "/" + "public";
+			String chosenUserFolderRelPath = FolderConfig.getUserHome(identity.getName()) + "/" + "public";
 			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(chosenUserFolderRelPath, null);
 			VFSSecurityCallback secCallback = new ReadOnlyCallback();
 			rootFolder.setLocalSecurityCallback(secCallback);
@@ -163,17 +160,16 @@ public class UserFoldersWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getFolders(@PathParam("identityKey") Long identityKey,
-			@Context HttpServletRequest httpRequest) {
+	public Response getFolders(@Context HttpServletRequest httpRequest) {
 		
 		Roles roles;
-		Identity retrievedUser = getIdentity(httpRequest);
-		if(retrievedUser == null) {
+		Identity ureqIdentity = getIdentity(httpRequest);
+		if(ureqIdentity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		} else if(!identityKey.equals(retrievedUser.getKey())) {
+		} else if(!identity.getKey().equals(ureqIdentity.getKey())) {
 			if(isAdmin(httpRequest)) {
-				retrievedUser = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey);
-				roles = BaseSecurityManager.getInstance().getRoles(retrievedUser);
+				ureqIdentity = identity;
+				roles = BaseSecurityManager.getInstance().getRoles(identity);
 			} else {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
@@ -186,7 +182,7 @@ public class UserFoldersWebService {
 		NotificationsManager man = NotificationsManager.getInstance();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("FolderModule");
-			List<Subscriber> subs = man.getSubscribers(retrievedUser, notiTypes);
+			List<Subscriber> subs = man.getSubscribers(ureqIdentity, notiTypes);
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
 				if("BusinessGroup".equals(resName)) {
@@ -203,7 +199,7 @@ public class UserFoldersWebService {
 		}
 
 		final List<FolderVO> folderVOs = new ArrayList<FolderVO>();
-		final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
+		final IdentityEnvironment ienv = new IdentityEnvironment(ureqIdentity, roles);
 		for(Map.Entry<Long, Collection<String>> e:courseNotified.entrySet()) {
 			final Long courseKey = e.getKey();
 			final Collection<String> nodeKeys = e.getValue();
@@ -253,12 +249,12 @@ public class UserFoldersWebService {
 		
 		//start found forums in groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(ureqIdentity, true, true);
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> groups = bgs.findBusinessGroups(params, null, 0, -1);
 		for(BusinessGroup group:groups) {
 			CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
-			VFSContainer container = tools.getSecuredFolder(group, null, retrievedUser, false);
+			VFSContainer container = tools.getSecuredFolder(group, null, ureqIdentity, false);
 
 			FolderVO folderVo = new FolderVO();
 			folderVo.setName(group.getName());

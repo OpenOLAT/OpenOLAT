@@ -190,7 +190,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	protected void initColumns() {
 		int offset = Cols.values().length;
-		if(imModule.isEnabled() && imModule.isViewOnlineUsersEnabled()) {
+		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
 			memberListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.online.i18n(), Cols.online.ordinal(), TABLE_ACTION_IM, getLocale(),
 					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
 		}
@@ -453,6 +453,10 @@ public abstract class AbstractMemberListController extends BasicController imple
 	protected void doSendMail(UserRequest ureq, List<MemberView> members) {
 		List<Long> identityKeys = getMemberKeys(members);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+		if(identities.isEmpty()) {
+			showWarning("error.msg.send.no.rcps");
+			return;
+		}
 		
 		ContactMessage contactMessage = new ContactMessage(getIdentity());
 		String name = repoEntry != null ? repoEntry.getDisplayname() : businessGroup.getName();

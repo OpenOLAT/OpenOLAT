@@ -57,6 +57,9 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 				logDebug("Indexing: " + repoEntryName);
 			}
 			Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
+			if(feed == null) {
+				return; //nothing to index
+			}
 
 			// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
 			if (isLogDebugEnabled()) {
@@ -71,7 +74,6 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 		} catch (NullPointerException e) {
 			logError("Error indexing feed:" + repoEntryName, e);
 		}
-
 	}
 
 	/**

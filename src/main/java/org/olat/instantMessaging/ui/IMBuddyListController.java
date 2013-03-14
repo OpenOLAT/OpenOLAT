@@ -61,11 +61,14 @@ public class IMBuddyListController extends BasicController {
 		mainVC = createVelocityContainer("buddies");
 		buddiesListContent = createVelocityContainer("buddies_content");
 
-		if(imModule.isGroupEnabled()) {
+		// Show status toggler only when status is visible, otherwise show online and offline users
+		if(imModule.isOnlineStatusEnabled()) {
 			toggleOffline = LinkFactory.createCustomLink("toggleOnline", "cmd.online", "", Link.NONTRANSLATED, mainVC, this);
 			toggleOffline.setCustomDisplayText(translate("im.show.offline.buddies"));
 			toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_showofflineswitch");
 			viewMode = ViewMode.onlineUsers;
+		} else {
+			viewMode = ViewMode.offlineUsers;			
 		}
 
 		buddyList = new Roster(getIdentity().getKey());
@@ -133,7 +136,8 @@ public class IMBuddyListController extends BasicController {
 		if(buddiesListContent.getComponent(linkId) == null) {
 			Link buddyLink = LinkFactory.createCustomLink(linkId, "cmd.buddy", "", Link.NONTRANSLATED, buddiesListContent, this);
 			buddyLink.setCustomDisplayText(buddy.getName());
-			buddyLink.setCustomEnabledLinkCSS(getStatusCss(buddy));
+			String css = (imModule.isOnlineStatusEnabled() ? getStatusCss(buddy) : "o_instantmessaging_chat_icon");
+			buddyLink.setCustomEnabledLinkCSS(css);
 			buddyLink.setUserObject(buddy);
 		}
 	}

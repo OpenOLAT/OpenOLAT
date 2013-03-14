@@ -92,8 +92,7 @@ public class InstantMessageDAO {
 	}
 	
 	public int deleteMessages(OLATResourceable ores) {
-		String sb = "delete from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname";
-		int count = dbInstance.getCurrentEntityManager().createQuery(sb)
+		int count = dbInstance.getCurrentEntityManager().createNamedQuery("deleteIMessageByResource")
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.executeUpdate();

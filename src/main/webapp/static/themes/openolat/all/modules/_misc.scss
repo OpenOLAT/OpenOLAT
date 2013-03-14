@@ -21,6 +21,18 @@ div.o_bcard_portrait_group { background-image: url(../openolat/images/group_100x
 div.o_bcard_text {margin-left: 120px; margin-top: 10px; line-height:150%}
 div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31, 73, 179); padding: 5px;}
 
+/* visiting card */
+div.o_visitingcard {
+	h4 {
+		background: url('../openolat/images/card-address.png') 0 50% no-repeat;
+		padding-left: 20px;
+		margin-bottom: 1em;
+	}
+	table th {
+		width: 20%;
+	}
+}
+
 
 /* Full page iframe in popup */
 .popup_iframe {

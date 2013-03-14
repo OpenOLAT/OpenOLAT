@@ -161,7 +161,7 @@ public class HtmlStaticPageComponent extends Component implements AsyncMediaResp
 						// Add classname to the file path to remove conflicts with other
 						// usages of the same file path
 						mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-						amapPath  = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperID, mapper);				
+						amapPath  = CoreSpringFactory.getImpl(MapperService.class).register(mapperID, mapper);				
 					}
 
 

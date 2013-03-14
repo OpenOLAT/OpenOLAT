@@ -166,6 +166,27 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadBusinessGroup_forUpdate() {
+		//create a group
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdco", "gdco-desc", 0, 10, true, true, false, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		//load an lock
+		BusinessGroup groupForUpdate = businessGroupDao.loadForUpdate(group.getKey());
+		Assert.assertNotNull(groupForUpdate);
+		Assert.assertEquals(group, groupForUpdate);
+		dbInstance.commit();//release lock
+	}
+	
+	@Test
+	public void loadBusinessGroup_forUpdate_notFound() {
+		//load and lock an inexistent group
+		BusinessGroup groupForUpdate = businessGroupDao.loadForUpdate(new Long(0l));
+		Assert.assertNull(groupForUpdate);
+		dbInstance.commit();//release lock
+	}
+	
+	@Test
 	public void loadBusinessGroupWithOwner() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("bdao-1-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();

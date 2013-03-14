@@ -19,7 +19,9 @@
  */
 package org.olat.group.ui.main;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.model.Presence;
 
 /**
@@ -27,13 +29,20 @@ import org.olat.instantMessaging.model.Presence;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OnlineIconRenderer extends CustomCssCellRenderer {
+	private InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 
 	@Override
 	protected String getCssClass(Object val) {
-		if(Presence.available.name().equals(val)) {
-			return "b_small_icon o_instantmessaging_available_icon";
-		} else if ("me".equals(val)) {
+		if ("me".equals(val)) {
+			// special case: don't show any icon for myself
 			return "";
+		} else if (!imModule.isOnlineStatusEnabled()) {
+			// don't show the users status when not configured, only an icon to start a chat/message
+			return "b_small_icon o_instantmessaging_chat_icon";
+		}
+		// standard case: available or unavailble (offline or dnd)
+		else if(Presence.available.name().equals(val)) {
+			return "b_small_icon o_instantmessaging_available_icon";
 		} else {
 			return "b_small_icon o_instantmessaging_unavailable_icon";
 		}

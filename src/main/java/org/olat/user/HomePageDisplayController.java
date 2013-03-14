@@ -25,6 +25,8 @@
 
 package org.olat.user;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -38,6 +40,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -80,22 +84,34 @@ public class HomePageDisplayController extends BasicController {
 		
 		// add configured property handlers and the homepage config
 		// do the looping in the velocity context
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
+		List<UserPropertyHandler> userPropertyHandlers
+			= new ArrayList<UserPropertyHandler>(userManager.getUserPropertyHandlersFor(usageIdentifyer, false));
+		for(Iterator<UserPropertyHandler> propIt=userPropertyHandlers.iterator(); propIt.hasNext(); ) {
+			UserPropertyHandler prop = propIt.next();
+			if(!hpc.isEnabled(prop.getName()) && !userManager.isMandatoryUserProperty(usageIdentifyer, prop)) {
+				propIt.remove();
+			}
+		}
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
-		mainVC.contextPut("homepageConfig", hpc);		
-		
+		mainVC.contextPut("homepageConfig", hpc);	
+
 		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false);
 		listenTo(dpc); // auto dispose
 		mainVC.put("image", dpc.getInitialComponent());
 		putInitialPanel(mainVC);
 		
-		if(imModule.isEnabled() && imModule.isViewOnlineUsersEnabled()) {
+		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
 			InstantMessagingService imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 			ImPreferences prefs = imService.getImPreferences(homeIdentity);
 			if(prefs.isVisibleToOthers()) {
+				User user = homeIdentity.getUser();
+				String fName = user.getProperty(UserConstants.FIRSTNAME, getLocale());
+				String lName = user.getProperty(UserConstants.LASTNAME, getLocale());
+				imLink = LinkFactory.createCustomLink("im.link", "im.link", "im.link", Link.NONTRANSLATED, mainVC, this);
+				imLink.setCustomDisplayText(translate("im.link", new String[] {fName,lName}));
 				Buddy buddy = imService.getBuddyById(homeIdentity.getKey());
-				imLink = LinkFactory.createLink("im.link", mainVC, this);
-				imLink.setCustomEnabledLinkCSS(getStatusCss(buddy));
+				String css = (imModule.isOnlineStatusEnabled() ? getStatusCss(buddy) : "o_instantmessaging_chat_icon");
+				imLink.setCustomEnabledLinkCSS(css);
 				imLink.setUserObject(buddy);
 			}
 		}

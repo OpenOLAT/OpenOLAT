@@ -418,6 +418,18 @@ public class FunctionalVOUtil {
 	}
 
 	/**
+	 * Imports the "All Elements Course" via REST.
+	 * 
+	 * @param deploymentUrl
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 */
+	public CourseVO importAllElementsCourse(URL deploymentUrl, String resourceName, String displayName) throws URISyntaxException, IOException{
+		return(importCourse(deploymentUrl, "/org/olat/course/All_Elements_Course_Without_External_Content.zip", "All_Elements_Course_Without_External_Content.zip", resourceName, displayName));
+	}
+	
+	/**
 	 * Imports the "Course including Forum" via REST.
 	 * 
 	 * @param deploymentUrl

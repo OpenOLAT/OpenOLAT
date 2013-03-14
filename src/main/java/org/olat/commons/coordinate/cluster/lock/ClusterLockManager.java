@@ -94,7 +94,8 @@ public class ClusterLockManager extends BasicManager {
 
 	void deleteLock(LockImpl li) {
 		log.info("deleteLock: "+li+" START");
-		dbInstance.getCurrentEntityManager().remove(li);		
+		dbInstance.getCurrentEntityManager().remove(li);
+		dbInstance.commit();//prevent stale object by logout login
 		log.info("deleteLock: "+li+" END");
 	}
 	

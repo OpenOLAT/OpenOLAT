@@ -53,8 +53,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 	private MultipleSelectionElement imEnableCourseEl;
 	private MultipleSelectionElement imEnablePrivateEl;
 	private MultipleSelectionElement imEnableGroupPeersEl;
-	private MultipleSelectionElement imEnableOnlineUsersEl;
-	private MultipleSelectionElement imEnableViewOnlineUsersEl;
+	private MultipleSelectionElement imEnableOnlineStatusEl;
 	
 	private static String[] enabledKeys = new String[]{"on"};
 	
@@ -80,32 +79,52 @@ public class InstantMessagingAdminController extends FormBasicController {
 		imEnabledEl.addActionListener(listener, FormEvent.ONCHANGE);
 		
 		//options
-		FormLayoutContainer optionsFlc = FormLayoutContainer.createDefaultFormLayout("flc_options", getTranslator());
-		formLayout.add(optionsFlc);
+		FormLayoutContainer chatOptionsFlc = FormLayoutContainer.createDefaultFormLayout("flc_chatOptions", getTranslator());
+		formLayout.add(chatOptionsFlc);
 
-		imEnableGroupEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group", optionsFlc, enabledKeys, enabledValues, null);
+		imEnableGroupEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableGroupEl.select(enabledKeys[0], imModule.isGroupEnabled());
 		imEnableGroupEl.addActionListener(listener, FormEvent.ONCHANGE);
 		
-		imEnableCourseEl = uifactory.addCheckboxesHorizontal("im.module.enabled.course", optionsFlc, enabledKeys, enabledValues, null);
+		imEnableCourseEl = uifactory.addCheckboxesHorizontal("im.module.enabled.course", chatOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableCourseEl.select(enabledKeys[0], imModule.isCourseEnabled());
 		imEnableCourseEl.addActionListener(listener, FormEvent.ONCHANGE);
 		
-		imEnablePrivateEl = uifactory.addCheckboxesHorizontal("im.module.enabled.private", optionsFlc, enabledKeys, enabledValues, null);
+		FormLayoutContainer messageOptionsFlc = FormLayoutContainer.createDefaultFormLayout("flc_messageOptions", getTranslator());
+		formLayout.add(messageOptionsFlc);
+		
+ 		imEnablePrivateEl = uifactory.addCheckboxesHorizontal("im.module.enabled.private", messageOptionsFlc, enabledKeys, enabledValues, null);
 		imEnablePrivateEl.select(enabledKeys[0], imModule.isPrivateEnabled());
 		imEnablePrivateEl.addActionListener(listener, FormEvent.ONCHANGE);
 		
-		imEnableGroupPeersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.grouppeers", optionsFlc, enabledKeys, enabledValues, null);
+		imEnableGroupPeersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.grouppeers", messageOptionsFlc, enabledKeys, enabledValues, null);
 		imEnableGroupPeersEl.select(enabledKeys[0], imModule.isGroupPeersEnabled());
 		imEnableGroupPeersEl.addActionListener(listener, FormEvent.ONCHANGE);
 		
-		imEnableOnlineUsersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.onlineusers", optionsFlc, enabledKeys, enabledValues, null);
-		imEnableOnlineUsersEl.select(enabledKeys[0], imModule.isOnlineUsersEnabled());
-		imEnableOnlineUsersEl.addActionListener(listener, FormEvent.ONCHANGE);
+		imEnableOnlineStatusEl = uifactory.addCheckboxesHorizontal("im.module.enabled.onlineStatus", messageOptionsFlc, enabledKeys, enabledValues, null);
+		imEnableOnlineStatusEl.select(enabledKeys[0], imModule.isOnlineStatusEnabled());
+		imEnableOnlineStatusEl.addActionListener(listener, FormEvent.ONCHANGE);
 		
-		imEnableViewOnlineUsersEl = uifactory.addCheckboxesHorizontal("im.module.enabled.viewonlineusers", optionsFlc, enabledKeys, enabledValues, null);
-		imEnableViewOnlineUsersEl.select(enabledKeys[0], imModule.isViewOnlineUsersEnabled());
-		imEnableViewOnlineUsersEl.addActionListener(listener, FormEvent.ONCHANGE);
+		// update GUI dependencies
+		updateDependencies();
+	}
+	
+	private void updateDependencies() {
+		// disable all options when the module is turned off
+		if (imEnabledEl.isSelected(0)) {
+			imEnableGroupEl.setEnabled(true);
+			imEnableCourseEl.setEnabled(true);
+			imEnablePrivateEl.setEnabled(true);
+			imEnableGroupPeersEl.setEnabled(true);
+			imEnableOnlineStatusEl.setEnabled(true);
+		} else {
+			// everything is disabled
+			imEnableGroupEl.setEnabled(false);
+			imEnableCourseEl.setEnabled(false);
+			imEnablePrivateEl.setEnabled(false);
+			imEnableGroupPeersEl.setEnabled(false);
+			imEnableOnlineStatusEl.setEnabled(false);
+		}
 	}
 	
 	protected void doDispose() {
@@ -124,11 +143,12 @@ public class InstantMessagingAdminController extends FormBasicController {
 			imModule.setPrivateEnabled(imEnablePrivateEl.isSelected(0));
 		} else if(source == imEnableGroupPeersEl) {
 			imModule.setGroupPeersEnabled(imEnableGroupPeersEl.isSelected(0));
-		} else if(source == imEnableOnlineUsersEl) {
-			imModule.setOnlineUsersEnabled(imEnableOnlineUsersEl.isSelected(0));
-		} else if(source == imEnableViewOnlineUsersEl) {
-			imModule.setViewOnlineUsersEnabled(imEnableViewOnlineUsersEl.isSelected(0));
+		} else if(source == imEnableOnlineStatusEl) {
+			imModule.setOnlineStatusEnabled(imEnableOnlineStatusEl.isSelected(0));
 		}
+		// update GUI dependencies
+		updateDependencies();
+		
 		super.formInnerEvent(ureq, source, event);
 	}
 

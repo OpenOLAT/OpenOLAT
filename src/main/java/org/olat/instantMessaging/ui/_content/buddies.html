@@ -1,6 +1,8 @@
+$r.contextHelpWithWrapper("org.olat.instantMessaging.ui","instant-messenger.html","help.hover.im")
 <div id='o_instantmessages_buddieslist'>
-	$r.contextHelpWithWrapper("org.olat.instantMessaging.ui","instant-messenger.html","help.hover.im")
+#if ($r.available("toggleOnline"))
 	$r.render("toggleOnline")
 	<hr class="b_form_spacer" />
+#end
 	$r.render("buddiesListContent")
 </div>

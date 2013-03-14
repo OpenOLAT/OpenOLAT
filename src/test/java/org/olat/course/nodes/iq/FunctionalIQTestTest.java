@@ -110,6 +110,6 @@ public class FunctionalIQTestTest {
 		/* close editor, open course and click nth course node */
 		Assert.assertTrue(functionalCourseUtil.closeActiveTab(browser));
 		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
-		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 	}
 }

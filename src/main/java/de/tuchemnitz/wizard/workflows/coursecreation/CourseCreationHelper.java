@@ -302,7 +302,7 @@ public class CourseCreationHelper {
 			addedEntry = RepositoryManager.getInstance().setAccess(addedEntry, access, false);
 		}
 
-		CourseFactory.openCourseEditSession(course.getResourceableId());
+		course = CourseFactory.openCourseEditSession(course.getResourceableId());
 		course.getRunStructure().getRootNode().setShortTitle(addedEntry.getDisplayname());
 		course.getRunStructure().getRootNode().setLongTitle(addedEntry.getDisplayname());
 		CourseFactory.saveCourse(course.getResourceableId());

@@ -1699,6 +1699,22 @@ create view o_gp_visible_owner_v as (
    inner join o_bs_identity ident on (bg_owner_member.identity_id = ident.id)
 );
 
+create or replace view o_im_roster_entry_v as (
+   select
+      entry.id as re_id,
+      entry.creationdate as re_creationdate,
+      ident.id as ident_id,
+      ident.name as ident_name,
+      entry.r_nickname as re_nickname,
+      entry.r_fullname as re_fullname,
+      entry.r_anonym as re_anonym,
+      entry.r_vip as re_vip,
+      entry.r_resname as re_resname,
+      entry.r_resid as re_resid
+   from o_im_roster_entry entry
+   inner join o_bs_identity ident on (entry.fk_identity_id = ident.id)
+);
+
 
 CREATE OR REPLACE TRIGGER ai_o_stat_dayofweek_id
 BEFORE INSERT ON o_stat_dayofweek

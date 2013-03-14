@@ -159,13 +159,13 @@ public interface InstantMessagingService {
 	public void updateStatus(Identity identity, String status);
 
 	/**
-	 * Enable chat of an user
+	 * Enable chat of an user (this is a dummy implementation!!! used as marker)
 	 * @param identity
 	 */
 	public void enableChat(Identity identity);
 	
 	/**
-	 * Disable the chat function of an user
+	 * Disable the chat function of an user (this is a dummy implementation!!! used as marker)
 	 * @param identity
 	 */
 	public void disableChat(Identity identity);

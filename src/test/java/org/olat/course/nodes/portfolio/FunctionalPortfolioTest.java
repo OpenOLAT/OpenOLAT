@@ -125,6 +125,6 @@ public class FunctionalPortfolioTest {
 		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
 		
-		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 	}
 }

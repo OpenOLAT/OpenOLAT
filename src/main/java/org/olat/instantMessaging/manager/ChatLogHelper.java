@@ -127,7 +127,7 @@ public class ChatLogHelper {
 		List<InstantMessage> messages = imDao.getMessages(ores, null, 0, -1);
 		int count = 1;
 		for(InstantMessage message:messages) {
-			Row dataRow = exportSheet.createRow(count);
+			Row dataRow = exportSheet.createRow(count++);
 			addCell(dataRow, message.getFromNickName(), 0);
 			addCell(dataRow, message.getCreationDate(), 1);
 			addCell(dataRow, message.getBody(), 2);

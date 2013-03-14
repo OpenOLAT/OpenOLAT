@@ -159,7 +159,7 @@ public class WikiMarkupComponent extends Component {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			mapperPath = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperID, contentMapper);				
+			mapperPath = CoreSpringFactory.getImpl(MapperService.class).register(mapperID, contentMapper);				
 		}
 		imageBaseUri = mapperPath + "/" + WikiContainer.MEDIA_FOLDER_NAME + "/";
 	}

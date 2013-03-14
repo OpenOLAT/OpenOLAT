@@ -120,8 +120,9 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	private static final Integer INTEGER_ZERO = new Integer(0);
 
 	// the cache per assessment manager instance (=per course)
-	private CacheWrapper<Long,HashMap<String, Serializable>> courseCache;
+	private CacheWrapper<NewCacheKey,HashMap<String, Serializable>> courseCache;
 	private OLATResourceable ores;
+
 	
 	// we cannot store the ref to cpm here, since at the time where the assessmentManager is initialized, the given course is not fully initialized yet.
 	//does not work: final CoursePropertyManager cpm; 
@@ -144,9 +145,9 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 */
 	private NewCachePersistingAssessmentManager(ICourse course) {
 		this.ores = course;
-		String cacheName = "Course@" + course.getResourceableId();
+		//String cacheName = "Course@" + course.getResourceableId();
 		courseCache = CoordinatorManager.getInstance().getCoordinator().getCacher()
-				.getCache(AssessmentManager.class.getSimpleName(), cacheName);
+				.getCache(AssessmentManager.class.getSimpleName(), "newpersisting");
 	}
 	/**
 	 * @param identity the identity for which to properties are to be loaded. 
@@ -236,45 +237,44 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 */
 	private Map<String, Serializable> getOrLoadScorePassedAttemptsMap(Identity identity, List<Property> properties, boolean prepareForNewData) {
 
-		synchronized(courseCache) {  // o_clusterOK by:fj : we sync on the cache to protect access within the monitor "one user in a course".
-			// a user is only active on one node at the same time.
-			HashMap<String, Serializable> m = courseCache.get(identity.getKey());
-			if (m == null) {
-				// cache entry (=all data of the given identity in this course) has expired or has never been stored yet into the cache.
-				// or has been invalidated (in cluster mode when puts occurred from an other node for the same cache)
-				m = new HashMap<String, Serializable>();
-				// load data
-				List<Property> loadedProperties = properties == null ? loadPropertiesFor(Collections.singletonList(identity)) : properties;
-				for (Property property:loadedProperties) {
-					addPropertyToCache(m, property);
-				}
-				
-				//If property not found, prefill with default value.
-				if(!m.containsKey(ATTEMPTS)) {
-					m.put(ATTEMPTS, INTEGER_ZERO);
-				}
-				if(!m.containsKey(SCORE)) {
-					m.put(SCORE, FLOAT_ZERO);
-				}
-				if(!m.containsKey(LAST_MODIFIED)) {
-					m.put(LAST_MODIFIED, null);
-				}
-				
-				// we use a putSilent here (no invalidation notifications to other cluster nodes), since
-				// we did not generate new data, but simply asked to reload it. 
-				if (prepareForNewData) {
-					courseCache.update(identity.getKey(), m);
-				} else {
-					courseCache.put(identity.getKey(), m);
-				}
-			} else {
-				// still in cache. 
-				if (prepareForNewData) { // but we need to notify that data has changed: we reput the data into the cache - a little hacky yes
-					courseCache.update(identity.getKey(), m);
-				}
+		// a user is only active on one node at the same time.
+		NewCacheKey cacheKey = new NewCacheKey(ores.getResourceableId(), identity.getKey());
+		HashMap<String, Serializable> m = courseCache.get(cacheKey);
+		if (m == null) {
+			// cache entry (=all data of the given identity in this course) has expired or has never been stored yet into the cache.
+			// or has been invalidated (in cluster mode when puts occurred from an other node for the same cache)
+			m = new HashMap<String, Serializable>();
+			// load data
+			List<Property> loadedProperties = properties == null ? loadPropertiesFor(Collections.singletonList(identity)) : properties;
+			for (Property property:loadedProperties) {
+				addPropertyToCache(m, property);
 			}
-			return m;
+			
+			//If property not found, prefill with default value.
+			if(!m.containsKey(ATTEMPTS)) {
+				m.put(ATTEMPTS, INTEGER_ZERO);
+			}
+			if(!m.containsKey(SCORE)) {
+				m.put(SCORE, FLOAT_ZERO);
+			}
+			if(!m.containsKey(LAST_MODIFIED)) {
+				m.put(LAST_MODIFIED, null);
+			}
+			
+			// we use a putSilent here (no invalidation notifications to other cluster nodes), since
+			// we did not generate new data, but simply asked to reload it. 
+			if (prepareForNewData) {
+				courseCache.update(cacheKey, m);
+			} else {
+				courseCache.put(cacheKey, m);
+			}
+		} else {
+			// still in cache. 
+			if (prepareForNewData) { // but we need to notify that data has changed: we reput the data into the cache - a little hacky yes
+				courseCache.update(cacheKey, m);
+			}
 		}
+		return m;
 	}
 	
 	// package local for perf. reasons, threadsafe.

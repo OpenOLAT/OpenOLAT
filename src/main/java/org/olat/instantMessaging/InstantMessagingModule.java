@@ -48,17 +48,15 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 	private static final String CONFIG_GROUP_ENABLED = "im.enabled.group";
 	private static final String CONFIG_COURSE_ENABLED = "im.enabled.course";
 	private static final String CONFIG_PRIVATE_ENABLED = "im.enabled.private";
-	private static final String CONFIG_ONLINEUSERS_ENABLED = "im.enabled.onlineusers";
+	private static final String CONFIG_ONLINESTATUS_ENABLED = "im.enabled.onlinestatus";
 	private static final String CONFIG_GROUPPEERS_ENABLED = "im.enabled.grouppeers";
-	private static final String CONFIG_VIEW_ONLINE_USERS_ENABLED = "im.enabled.viewonlineusers";
 
 	private boolean enabled = false;
 	private boolean groupEnabled = false;
 	private boolean courseEnabled = false;
 	private boolean privateEnabled = false;
-	private boolean onlineUsersEnabled = false;
+	private boolean onlineStatusEnabled = false;
 	private boolean groupPeersEnabled = false;
-	private boolean viewOnlineUsersEnabled = false;
 
 	public void init() {
 		String enabledObj = getStringPropertyValue(CONFIG_ENABLED, true);
@@ -77,17 +75,13 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			privateEnabled = "true".equals(enabledObj);
 		}
-		enabledObj = getStringPropertyValue(CONFIG_ONLINEUSERS_ENABLED, true);
+		enabledObj = getStringPropertyValue(CONFIG_ONLINESTATUS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
-			onlineUsersEnabled = "true".equals(enabledObj);
+			onlineStatusEnabled = "true".equals(enabledObj);
 		}
 		enabledObj = getStringPropertyValue(CONFIG_GROUPPEERS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			groupPeersEnabled = "true".equals(enabledObj);
-		}
-		enabledObj = getStringPropertyValue(CONFIG_VIEW_ONLINE_USERS_ENABLED, false);
-		if(StringHelper.containsNonWhitespace(enabledObj)) {
-			viewOnlineUsersEnabled = "true".equals(enabledObj);
 		}
 	}
 
@@ -97,9 +91,8 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		groupEnabled = getBooleanConfigParameter(CONFIG_GROUP_ENABLED, true);
 		courseEnabled = getBooleanConfigParameter(CONFIG_COURSE_ENABLED, true);
 		privateEnabled = getBooleanConfigParameter(CONFIG_PRIVATE_ENABLED, true);
-		onlineUsersEnabled = getBooleanConfigParameter(CONFIG_ONLINEUSERS_ENABLED, true);
+		onlineStatusEnabled = getBooleanConfigParameter(CONFIG_ONLINESTATUS_ENABLED, true);
 		groupPeersEnabled = getBooleanConfigParameter(CONFIG_GROUPPEERS_ENABLED, true);
-		viewOnlineUsersEnabled = getBooleanConfigParameter(CONFIG_VIEW_ONLINE_USERS_ENABLED, false);
 	}
 
 	@Override
@@ -113,7 +106,8 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 	}
 
 	/**
-	 * @return Returns the enabled.
+	 * Global flag to turn the IM module on and off
+	 * @return true: the IM module is enabled; false: IM functionality is not enabled
 	 */
 	@Override
 	public boolean isEnabled() {
@@ -124,6 +118,15 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		setStringProperty(CONFIG_ENABLED, Boolean.toString(enabled), true);
 	}
 
+	/**
+	 * Flag to enable/disable the group chat. If enabled, group users are
+	 * allowed to chat in the group chat room. See isPrivateEnabled() and
+	 * isGroupPeersEnabled() to check if group users are allowed to send private
+	 * messages to each others.
+	 * 
+	 * @return true: the group chat tool is enabled; false: the group chat tool
+	 *         is disabled
+	 */
 	public boolean isGroupEnabled() {
 		return groupEnabled;
 	}
@@ -132,6 +135,14 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		setStringProperty(CONFIG_GROUP_ENABLED, Boolean.toString(enabled), true);
 	}
 
+	/**
+	 * Flag to enable/disable the course chat. If enabled, the course users are
+	 * allowed to chat in the course chat room. See isPrivateEnabled() to check
+	 * if users are allowed to send private messages to each others.
+	 * 
+	 * @return true: course chat room can be used; false: no course chat rooms
+	 *         available
+	 */
 	public boolean isCourseEnabled() {
 		return courseEnabled;
 	}
@@ -140,6 +151,13 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		setStringProperty(CONFIG_COURSE_ENABLED, Boolean.toString(enabled), true);
 	}
 
+	/**
+	 * Flag to enable/disable private messaging between any user. When enabled
+	 * users are allowed to send private messages to other users.
+	 * 
+	 * @return true: private messaging between users enabled; false: private
+	 *         messaging between users disabled
+	 */
 	public boolean isPrivateEnabled() {
 		return privateEnabled;
 	}
@@ -148,27 +166,34 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 		setStringProperty(CONFIG_PRIVATE_ENABLED, Boolean.toString(enabled), true);
 	}
 
-	public boolean isOnlineUsersEnabled() {
-		return onlineUsersEnabled;
+	/**
+	 * Flag to enable/disable the visibility of the online status. This has only
+	 * effect in conjunction with isPrivateEnabled() or isGroupPeersEnabled().
+	 * When set to false, the user does not know if the sent message can be
+	 * delivered immediately or if it will be sent deferred.
+	 * 
+	 * @return true: show the user online status; false: hide the user status.
+	 */
+	public boolean isOnlineStatusEnabled() {
+		return onlineStatusEnabled;
 	}
 
-	public void setOnlineUsersEnabled(boolean enabled) {
-		setStringProperty(CONFIG_ONLINEUSERS_ENABLED, Boolean.toString(enabled), true);
+	public void setOnlineStatusEnabled(boolean enabled) {
+		setStringProperty(CONFIG_ONLINESTATUS_ENABLED, Boolean.toString(enabled), true);
 	}
 
+	/**
+	 * Flag to enable/disable the listing of group peers in the roster for quick
+	 * private messaging access. The listing includes all members of groups in
+	 * which the group members are configured to be visible to the group.
+	 * 
+	 * @return true: group peers visible in roster; false: no roster with group peers.
+	 */
 	public boolean isGroupPeersEnabled() {
 		return groupPeersEnabled;
 	}
 
 	public void setGroupPeersEnabled(boolean enabled) {
 		setStringProperty(CONFIG_GROUPPEERS_ENABLED, Boolean.toString(enabled), true);
-	}
-
-	public boolean isViewOnlineUsersEnabled() {
-		return viewOnlineUsersEnabled;
-	}
-
-	public void setViewOnlineUsersEnabled(boolean enabled) {
-		setStringProperty(CONFIG_VIEW_ONLINE_USERS_ENABLED, Boolean.toString(enabled), true);
 	}
 }

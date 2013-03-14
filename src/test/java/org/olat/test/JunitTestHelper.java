@@ -67,6 +67,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *         http://www.frentix.com
  */
 public class JunitTestHelper {
+	
+	public static final String PWD = "A6B7C8";
 
 	private static final Random randomResId = new Random();
 	static String maildomain = System.getProperty("junit.maildomain");
@@ -106,7 +108,7 @@ public class JunitTestHelper {
 		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_OLATUSERS);
 		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login,
-				Encoder.encrypt("A6B7C8"));
+				Encoder.encrypt(PWD));
 		securityManager.addIdentityToSecurityGroup(identity, group);
 		return identity;
 	}
@@ -124,7 +126,7 @@ public class JunitTestHelper {
 		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_AUTHORS);
 		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login,
-				Encoder.encrypt("A6B7C8"));
+				Encoder.encrypt(PWD));
 		securityManager.addIdentityToSecurityGroup(identity, group);
 		return identity;
 	}
@@ -142,7 +144,7 @@ public class JunitTestHelper {
 		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_ADMIN);
 		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login,
-				Encoder.encrypt("A6B7C8"));
+				Encoder.encrypt(PWD));
 		securityManager.addIdentityToSecurityGroup(identity, group);
 		return identity;
 	}

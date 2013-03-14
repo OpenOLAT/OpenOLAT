@@ -146,11 +146,11 @@ public class FunctionalBlogTest {
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
 		
 		/* import empty feed */
-		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 		Assert.assertTrue(functionalCourseUtil.importBlogFeed(browser, BLOG_FEED));
 		
 		/* blog should be accessible */
-		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 		
 
 		Assert.assertTrue(functionalUtil.logout(browser));
@@ -348,7 +348,7 @@ public class FunctionalBlogTest {
 		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
 		
 		/* create content */
-		Assert.assertTrue(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
+		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
 		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, course.getRepoEntryKey(), 0,
 				CONCURRENT_RW_BLOG_SHORT_TITLE, CONCURRENT_RW_BLOG_DESCRIPTION, CONCURRENT_RW_BLOG_CONTENT));
 		

@@ -111,7 +111,7 @@ public class MapperServiceImpl implements MapperService {
 	 * Cacheable mapper, not session dependant
 	 */
 	@Override
-	public String register(UserSession session, String mapperId, Mapper mapper) {
+	public String register(String mapperId, Mapper mapper) {
 		String encryptedMapId = Encoder.encrypt(mapperId);
 		boolean alreadyLoaded = mapperIdToMapper.containsKey(encryptedMapId);
 		if(mapper instanceof Serializable) {
@@ -130,9 +130,6 @@ public class MapperServiceImpl implements MapperService {
 		}
 		mapperIdToMapper.put(encryptedMapId, mapper);
 		mapperToMapperId.put(mapper, encryptedMapId);
-		if(session.getSessionInfo() == null) {
-			return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + encryptedMapId;
-		}
 		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + encryptedMapId;
 	}
 
