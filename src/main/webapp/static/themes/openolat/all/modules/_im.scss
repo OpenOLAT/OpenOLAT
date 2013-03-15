@@ -9,26 +9,81 @@
 		}
 }
 
-.o_instantmessaging_chat_history, .o_groupchat_history {
-	border: 1px solid #ACAAAA; overflow: scroll; margin: 0 0 1em 0; overflow-x:auto; height:170px;
-	@include o-gradient-white();
+.o_instantmessaging_chat_history { 
+	border: 1px solid #ACAAAA; 
+	height:170px;
+	font-size: 90%;
+
+	/* scrollbar */
+	margin: 0 0 1em 0; 
+	overflow: scroll; 
+	overflow-x:auto; 
+
+	/* message group for all following messages of a single user. a new message group starts 
+	   when someone else replies */
+	div.o_instantmessaging_message_group {
+		border-top: 1px solid #eee;
+		padding: 3px 3px 3px 40px;
+		min-height: 40px;		
+		position: relative;
+		background: #fff;
+		
+		&.o_odd {
+			background: #F4F4F4;
+		}
+				
+		div.o_instantmessaging_avatar {
+			position: absolute;
+			top: 3px;
+			left: 3px;
+			border: 1px solid #bbb;
+			width: 30px;
+			height: 30px;
+			background: #fff no-repeat 50% 50%;			
+			&.o_instantmessaging_avatar_unknown {
+				background-image: url(../openolat/images/dummy_small.png);			
+			}
+			&.o_instantmessaging_avatar_anonymous {
+				background-image: url(../openolat/images/dummy_small.png);			
+			}
+		}
+		
+		div.o_instantmessaging_from { 
+			text-align:left; 
+			color:#999; 
+			text-decoration: none;
+			font-weight: 500;
+		}
+		
+		a:hover {
+			color:#000; 
+			text-decoration: none;
+			
+			div.o_instantmessaging_from{
+				color:#000; 
+			}
+		}
+		
+		div.o_instantmessaging_body {
+			padding: 3px 0 3px 0;
+			
+			span.o_instantmessaging_date { 
+				text-align:right; 
+				color:#999; 
+				font-size: 90%;
+				font-weight: 200;
+			}
+		}
+	}	
 }
-.o_instantmessaging_chat_history div, .o_groupchat_history div { border-top: 1px solid #eee;}
-.o_instantmessaging_chat_history {
-	div.o_instantmessaging_avatar {
-		float:left;
-		padding: 3px;
-		border: 1px solid #333;
-		margin: 3px;
+.o_instantmessaging_chat_form {
+	input { 
+		width: 99%
 	}
-	span.o_instantmessaging_from { text-align:left; color:#999; }
-	span.o_instantmessaging_from:hover { color:#000; }
-	span.o_instantmessaging_date { text-align:right; color:#999; }
-	span.o_instantmessaging_date:hover { color:#000; }
-	p-o_instantmessaging_body { background-color:red; }
+	div.b_button_group {
+		margin-top: 1em;
+	}
 }
-.o_instantmessaging_chat_form input, .o_groupchat_chat_form input { width: 99%}
-.o_instantmessaging_chat_form div.b_button_group, .o_groupchat_chat_form div.b_button_group {margin-top: 1em;}
 #o_instantmessages_buddieslist {
 		font-size: 90%;
 		padding: 1em 0 0 0; margin: 0;

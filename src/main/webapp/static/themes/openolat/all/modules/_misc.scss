@@ -180,13 +180,13 @@ div.b_datecomp {
 /* Download link */
 .b_content_download {background: url('../openolat/images/drive-download.png') no-repeat top left; padding-left: 20px; margin: 3px; display:block; min-height: 16px;}
 
-/* Dummy user portrait (avatar) display */
-img.o_portrait_dummy                {background-image: url(../openolat/images/dummy.png); width: 100px; height: 100px;}
-img.o_portrait_dummy_small          {background-image: url(../openolat/images/dummy_small.png); }
-img.o_portrait_dummy_female_big     {background-image: url(../openolat/images/dummy_female_big.png); width: 100px; height: 100px;}
-img.o_portrait_dummy_female_small   {background-image: url(../openolat/images/dummy_female_small.png); }
-img.o_portrait_dummy_male_big       {background-image: url(../openolat/images/dummy_male_big.png); width: 100px; height: 100px;}
-img.o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); }
+/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG */
+.o_portrait_dummy                {background-image: url(../openolat/images/dummy.png); width: 100px; height: 100px;}
+.o_portrait_dummy_small          {background-image: url(../openolat/images/dummy_small.png); width: 30px; height: 30px;}
+.o_portrait_dummy_female_big     {background-image: url(../openolat/images/dummy_female_big.png); width: 100px; height: 100px;}
+.o_portrait_dummy_female_small   {background-image: url(../openolat/images/dummy_female_small.png); width: 30px; height: 30px;}
+.o_portrait_dummy_male_big       {background-image: url(../openolat/images/dummy_male_big.png); width: 100px; height: 100px;}
+.o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); width: 30px; height: 30px;}
 
 /* Repository */
 

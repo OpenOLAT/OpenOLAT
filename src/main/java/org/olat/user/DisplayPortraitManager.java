@@ -63,7 +63,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	
 	// If you change the following widths, don't forget to change them in basemod.scss as well.
 	public static final int WIDTH_PORTRAIT_BIG = 100;  // 4-8 kbytes (jpeg)
-	public static final int WIDTH_PORTRAIT_SMALL = 50; // 2-4
+	public static final int WIDTH_PORTRAIT_SMALL = 30; // 2-4
 	
 	/**
 	 * [spring]

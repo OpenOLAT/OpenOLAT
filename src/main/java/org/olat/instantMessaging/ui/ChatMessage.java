@@ -31,30 +31,56 @@ public class ChatMessage {
 	private final boolean anonym;
 	private final String creationDate;
 	private final String from;
+	private final Long fromKey;
 	private final String body;
 	private String avatarKey;
 	
-	public ChatMessage(String creationDate, String from, String body,
+	public ChatMessage(String creationDate, String from, Long fromKey, String body,
 			boolean first, boolean anonym) {
 		this.creationDate = creationDate;
 		this.from = from;
+		this.fromKey = fromKey;
 		this.body = body;
 		this.first = first;
 		this.anonym = anonym;
 	}
 
+	/**
+	 * The creation date of the message
+	 * @return
+	 */
 	public String getCreationDate() {
 		return creationDate;
 	}
 
+	/**
+	 * The display name of the author of the message
+	 * @return
+	 */
 	public String getFrom() {
 		return from;
 	}
 
+	/**
+	 * The identity key of the author of the message
+	 * @return
+	 */
+	public Long getFromKey() {
+		return fromKey;
+	}
+
+	/**
+	 * The message text
+	 * @return
+	 */
 	public String getBody() {
 		return body;
 	}
 
+	/**
+	 * The key to the avatar icon or :NA: if no avatar icon is available
+	 * @return
+	 */
 	public String getAvatarKey() {
 		return avatarKey;
 	}
@@ -63,10 +89,20 @@ public class ChatMessage {
 		this.avatarKey = avatarKey;
 	}
 
+	/**
+	 * true if this is the message before this one was written by another user.
+	 * false if the message before this one was written by the same user.
+	 * 
+	 * @return
+	 */
 	public boolean isFirst() {
 		return first;
 	}
 
+	/**
+	 * true if the user posted this message as an anonymous user
+	 * @return
+	 */
 	public boolean isAnonym() {
 		return anonym;
 	}
