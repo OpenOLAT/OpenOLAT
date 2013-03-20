@@ -39,13 +39,10 @@
 			border: 1px solid #bbb;
 			width: 30px;
 			height: 30px;
-			background: #fff no-repeat 50% 50%;			
-			&.o_instantmessaging_avatar_unknown {
-				background-image: url(../openolat/images/dummy_small.png);			
-			}
-			&.o_instantmessaging_avatar_anonymous {
-				background-image: url(../openolat/images/dummy_small.png);			
-			}
+			background-color: #fff;
+			background-repeat: no-repeat;
+			background-position: 50% 50%;			
+			/* background-image set by portrait css class and element style */
 		}
 		
 		div.o_instantmessaging_from { 

@@ -2,9 +2,9 @@
 	<div class="o_cmember">
 		<div class="o_cmember_portrait_wrapper">
 			#if($memberLink.getUserObject().isPortraitAvailable())
-				<img class="o_cmember_portrait" src="$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait_small.jpg" />
+				<div class="o_cmember_portrait" style="background-image: url('$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait_small.jpg')"></div>
 			#else
-				<img class="o_cmember_portrait $memberLink.getUserObject().getPortraitCssClass()" src="$r.staticLink("images/transparent.gif")" alt="user portrait"  />
+				<div class="o_cmember_portrait $memberLink.getUserObject().getPortraitCssClass()"></div>
 			#end
 		</div>
 		<div class="o_cmember_info_wrapper">

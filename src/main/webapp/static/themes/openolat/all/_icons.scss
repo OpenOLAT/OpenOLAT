@@ -348,4 +348,15 @@ span.o_grey_led { background: url(../openolat/images/grey_led.png) no-repeat lef
 .fx_members_icon { background-image: url('../openolat/images/users_members.png') !important; } 
 body#b_body .o_CourseModule_icon_closed {background-image:url('../openolat/images/le_resources/book-open-text-image_locked.png');}
 
+
+/* portrait / avatar icons */
+/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG */
+.o_portrait_dummy                {background-image: url(../openolat/images/dummy.png); width: 100px; height: 100px;}
+.o_portrait_dummy_small          {background-image: url(../openolat/images/dummy_small.png); width: 30px; height: 30px;}
+.o_portrait_dummy_female_big     {background-image: url(../openolat/images/dummy_female_big.png); width: 100px; height: 100px;}
+.o_portrait_dummy_female_small   {background-image: url(../openolat/images/dummy_female_small.png); width: 30px; height: 30px;}
+.o_portrait_dummy_male_big       {background-image: url(../openolat/images/dummy_male_big.png); width: 100px; height: 100px;}
+.o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); width: 30px; height: 30px;}
+.o_portrait_anonymous 			 {background-image: url(../openolat/images/dummy.png);  width: 100px; height: 100px;}
+.o_portrait_anonymous_small 	 {background-image: url(../openolat/images/dummy_small.png);  width: 30px; height: 30px;}
 	

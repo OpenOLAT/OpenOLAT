@@ -14,11 +14,11 @@
 				#if(!$message.anonym) <a href="$r.relLink("url/Identity/${message.fromKey}")">#end
 				
 				#if($message.anonym) 
-					<div class="o_instantmessaging_avatar o_instantmessaging_avatar_anonymous"></div>
+					<div class="o_instantmessaging_avatar o_portrait_anonymous_small"></div>
 				#elseif ($message.avatarKey != ":NA:") 
 					<div class="o_instantmessaging_avatar" style="background-image : url('${avatarBaseURL}/${message.avatarKey}/avatar.jpg')"></div>
 				#else
-					<div class="o_instantmessaging_avatar o_instantmessaging_avatar_unknown"></div>					 
+					<div class="o_instantmessaging_avatar o_portrait_dummy_small"></div>					 
 				#end 
 								
 				<div class="o_instantmessaging_from">${message.from}</div>				

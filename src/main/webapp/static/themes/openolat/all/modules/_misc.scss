@@ -132,12 +132,14 @@ ul.b_mail_attachments {
 	
 /* MEMBERS BB  ( Course Buildingblock: "Teilnehmerliste" ) */
 div.o_cmembers {
-	* { vertical-align:middle; }
+	div.b_clearfix {
+		margin-bottom: 1.5em;
+	}
 	div.o_cmember { 
-		float:left; 
-		
+		float:left; 		
+		position: relative;
 		width:30%; 
-		height:50px; 
+		height:30px; 
 		overflow: hidden;
 		margin: 5px 5px 5px 0; 
 		padding:8px; 
@@ -146,13 +148,27 @@ div.o_cmembers {
 		@include o_gradient2(#f6f6f6,#ebebeb);
 		@include o-border-radius(5px);
 		@include o-box-shadow(0, 1px, 2px, #d3d3d3);
-		* {vertical-align:middle;}
-		.o_cmember_portrait_wrapper {
-			background-color:white;
-			float:left; height:100%; width:50px; overflow:hidden;  margin-right: 5px;   border:1px solid #ddd;  
-			img.o_cmember_portrait { background-color:white; min-width:50px; background-position:50% 50%; background-repeat:no-repeat; }
+		
+		div.o_cmember_portrait_wrapper {
+			position: absolute;
+			div.o_cmember_portrait { 
+				top: 3px;
+				left: 3px;
+				border: 1px solid #bbb;
+				width: 30px;
+				height: 30px;
+				background-color: #fff;
+				background-repeat: no-repeat;
+				background-position: 50% 50%;			
+				/* background-image set by portrait css class and element style */				
+			}
 		}
-		.o_cmember_info_wrapper { padding:16px 0px; 	}
+		div.o_cmember_info_wrapper { 
+			padding-left: 35px;
+			line-height: 30px;
+			vertical-align:middle;
+			
+		}
 	}
 	
 	a.o_cmembers_mail { float:none; margin-left:5px; padding-left:20px; background-image:url(../openolat/images/mail.png); }
@@ -179,14 +195,6 @@ div.b_datecomp {
 
 /* Download link */
 .b_content_download {background: url('../openolat/images/drive-download.png') no-repeat top left; padding-left: 20px; margin: 3px; display:block; min-height: 16px;}
-
-/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG */
-.o_portrait_dummy                {background-image: url(../openolat/images/dummy.png); width: 100px; height: 100px;}
-.o_portrait_dummy_small          {background-image: url(../openolat/images/dummy_small.png); width: 30px; height: 30px;}
-.o_portrait_dummy_female_big     {background-image: url(../openolat/images/dummy_female_big.png); width: 100px; height: 100px;}
-.o_portrait_dummy_female_small   {background-image: url(../openolat/images/dummy_female_small.png); width: 30px; height: 30px;}
-.o_portrait_dummy_male_big       {background-image: url(../openolat/images/dummy_male_big.png); width: 100px; height: 100px;}
-.o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); width: 30px; height: 30px;}
 
 /* Repository */
 
