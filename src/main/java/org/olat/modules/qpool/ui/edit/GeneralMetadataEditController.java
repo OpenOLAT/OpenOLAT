@@ -21,20 +21,34 @@ package org.olat.modules.qpool.ui.edit;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.SelectionTree;
+import org.olat.core.gui.components.tree.TreeEvent;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.TaxonomyTreeModel;
 
 /**
  * 
@@ -43,10 +57,17 @@ import org.olat.modules.qpool.ui.MetadatasController;
  *
  */
 public class GeneralMetadataEditController extends FormBasicController {
-	
+
+	private FormSubmit okButton;
+	private FormLink selectContext;
+	private FormLayoutContainer selectContextCont;
 	private TextElement titleEl, keywordsEl, coverageEl, addInfosEl, languageEl;
 	
+	private SelectionTree selectPathCmp;
+	private CloseableModalController cmc;
+	
 	private String taxonomicPath;
+	private TaxonomyLevel selectedTaxonomicPath;
 	private QuestionItem item;
 	private final QPoolService qpoolService;
 	
@@ -56,7 +77,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		
 		this.item = item;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		taxonomicPath = qpoolService.getTaxonomicPath(item);
+		taxonomicPath = item.getTaxonomicPath();
 		
 		initForm(ureq);
 	}
@@ -66,7 +87,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		
 		this.item = item;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		taxonomicPath = qpoolService.getTaxonomicPath(item);
+		taxonomicPath = item.getTaxonomicPath();
 		
 		initForm(ureq);
 	}
@@ -92,18 +113,53 @@ public class GeneralMetadataEditController extends FormBasicController {
 		languageEl = uifactory.addTextElement("general.language", "general.language", 10, language, formLayout);
 		
 		//classification
-		uifactory.addStaticTextElement("classification.taxonomic.path", taxonomicPath == null ? "" : taxonomicPath, formLayout);
+		String txPath = taxonomicPath == null ? "" : taxonomicPath;
+		String selectContextPage = velocity_root + "/edit_edu_context.html";
+		selectContextCont = FormLayoutContainer.createCustomFormLayout("owners", getTranslator(), selectContextPage);
+		selectContextCont.setLabel("classification.taxonomic.path", null);
+		selectContextCont.contextPut("path", txPath);
+		formLayout.add(selectContextCont);
+		selectContextCont.setRootForm(mainForm);
+		selectContext = uifactory.addFormLink("select", selectContextCont, Link.BUTTON_SMALL);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
+		okButton =uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == selectPathCmp) {
+			TreeEvent te = (TreeEvent) event;
+			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) {
+				GenericTreeNode node = (GenericTreeNode)selectPathCmp.getSelectedNode();
+				selectedTaxonomicPath = (TaxonomyLevel)node.getUserObject();
+				selectContextCont.contextPut("path", selectedTaxonomicPath.getMaterializedPathNames());
+			}
+			cmc.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		cmc = null;
 	}
 
 	@Override
@@ -133,6 +189,40 @@ public class GeneralMetadataEditController extends FormBasicController {
 	}
 	
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == selectContext) {
+			okButton.getComponent().setDirty(false);
+			doOpenSelection(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doOpenSelection(UserRequest ureq) {
+		if(item instanceof QuestionItemImpl) {
+			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+			
+			selectPathCmp = new SelectionTree("taxPathSelection", getTranslator());
+			selectPathCmp.addListener(this);
+			selectPathCmp.setMultiselect(false);
+			selectPathCmp.setFormButtonKey("select");
+			selectPathCmp.setShowCancelButton(true);
+			TaxonomyTreeModel treeModel = new TaxonomyTreeModel();
+			selectPathCmp.setTreeModel(treeModel);
+			
+			if(itemImpl.getTaxonomyLevel() != null || selectedTaxonomicPath != null) {
+				TaxonomyLevel txPath = selectedTaxonomicPath == null ? itemImpl.getTaxonomyLevel() : selectedTaxonomicPath;
+				TreeNode selectedNode = TreeHelper.findNodeByUserObject(txPath, treeModel.getRootNode());
+				selectPathCmp.setSelectedNodeId(selectedNode.getIdent());
+			}
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					selectPathCmp, true, translate("classification.taxonomic.path"));
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+	
+	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
@@ -146,6 +236,9 @@ public class GeneralMetadataEditController extends FormBasicController {
 			itemImpl.setCoverage(coverageEl.getValue());
 			itemImpl.setAdditionalInformations(addInfosEl.getValue());
 			itemImpl.setLanguage(languageEl.getValue());
+			if(selectedTaxonomicPath != null) {
+				itemImpl.setTaxonomyLevel(selectedTaxonomicPath);
+			}
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));

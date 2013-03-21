@@ -31,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.QuestionType;
 
 /**
  * 
@@ -162,23 +161,23 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 			case taxnonomyLevel: return item.getTaxonomyLevelName();
 			case difficulty: return item.getDifficulty();
 			case type: {
-				QuestionType type = item.getQuestionType();
+				String type = item.getItemType();
 				if(type == null) {
 					return "";
 				}
-				return type.name();
+				return type;
 			}
+			case rating: return item.getRating();
+			case format: return item.getFormat();
 			case status: {
 				QuestionStatus s = item.getQuestionStatus();
 				if(s == null) {
 					return "";
 				}
 				return translator.translate("lifecycle.status." + s.name());
-			}
-			case mark: {
+			} case mark: {
 				return item.getMarkLink();
-			}
-			default: {
+			} default: {
 				return "-";
 			}
 		}
@@ -193,6 +192,8 @@ public class QuestionItemDataModel implements FlexiTableDataModel, FlexiTableDat
 		difficulty("question.difficulty"),
 		
 		type("question.assessmentType"),
+		format("technical.format"),
+		rating("rating"),
 		status("lifecycle.status"),
 		mark("mark");
 		

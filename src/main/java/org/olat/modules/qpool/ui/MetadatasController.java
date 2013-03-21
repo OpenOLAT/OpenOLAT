@@ -65,22 +65,24 @@ public class MetadatasController extends BasicController {
 	private RightsMetadataEditController rightsEditCtrl;
 	
 	private QuestionItem item;
+	private final boolean canEdit;
 	
-	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean canEdit) {
 		super(ureq, wControl);
 		this.item = item;
+		this.canEdit = canEdit;
 
-		generalCtrl = new GeneralMetadataController(ureq, wControl, item);
+		generalCtrl = new GeneralMetadataController(ureq, wControl, item, canEdit);
 		listenTo(generalCtrl);
-		educationalCtrl = new EducationalMetadataController(ureq, wControl, item);
+		educationalCtrl = new EducationalMetadataController(ureq, wControl, item, canEdit);
 		listenTo(educationalCtrl);
-		questionCtrl = new QuestionMetadataController(ureq, wControl, item);
+		questionCtrl = new QuestionMetadataController(ureq, wControl, item, canEdit);
 		listenTo(questionCtrl);
-		lifecycleCtrl = new LifecycleMetadataController(ureq, wControl, item);
+		lifecycleCtrl = new LifecycleMetadataController(ureq, wControl, item, canEdit);
 		listenTo(lifecycleCtrl);
-		technicalCtrl = new TechnicalMetadataController(ureq, wControl, item);
+		technicalCtrl = new TechnicalMetadataController(ureq, wControl, item, canEdit);
 		listenTo(technicalCtrl);
-		rightsCtrl = new RightsMetadataController(ureq, wControl, item);
+		rightsCtrl = new RightsMetadataController(ureq, wControl, item, canEdit);
 		listenTo(rightsCtrl);
 
 		mainVC = createVelocityContainer("item_metadatas");
@@ -102,7 +104,6 @@ public class MetadatasController extends BasicController {
 		return item;
 	}
 	
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -110,8 +111,8 @@ public class MetadatasController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		
 		if(QPoolEvent.EDIT.endsWith(event.getCommand())) {
+			if(!canEdit) return;
 			if(source == generalCtrl) {
 				doEditGeneralMetadata(ureq);
 			} else if(source == educationalCtrl) {

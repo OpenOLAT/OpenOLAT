@@ -68,7 +68,7 @@ public class QuestionItemDetailsController extends BasicController {
 	private final QuestionPoolModule poolModule;
 	private final QPoolService qpoolService;
 	
-	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean editable) {
 		super(ureq, wControl);
 
 		poolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
@@ -84,8 +84,9 @@ public class QuestionItemDetailsController extends BasicController {
 			}
 		}
 		listenTo(editCtrl);
-
-		metadatasCtrl = new MetadatasController(ureq, wControl, item);
+		
+		boolean canEdit = editable || qpoolService.isAuthor(item, getIdentity());
+		metadatasCtrl = new MetadatasController(ureq, wControl, item, canEdit);
 		listenTo(metadatasCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -99,6 +100,7 @@ public class QuestionItemDetailsController extends BasicController {
 		mainVC = createVelocityContainer("item_details");
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
+		deleteItem.setVisible(canEdit);
 		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
 		mainVC.put("type_specifics", editCtrl.getInitialComponent());
@@ -169,7 +171,7 @@ public class QuestionItemDetailsController extends BasicController {
 	}
 	
 	private void doShareItems(UserRequest ureq, QuestionItemShort item, List<BusinessGroup> groups) {
-		qpoolService.shareItems(Collections.singletonList(item), groups);
+		qpoolService.shareItemsWithGroups(Collections.singletonList(item), groups, false);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
 	}
 

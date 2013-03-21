@@ -34,6 +34,8 @@ package org.olat.core.logging;
 */
 public class AssertException extends OLATRuntimeException {
 
+	private static final long serialVersionUID = -1358866897360073605L;
+
 	/**
 	 * Includes throwable.
 	 * @param logMsg

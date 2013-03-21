@@ -21,8 +21,6 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;

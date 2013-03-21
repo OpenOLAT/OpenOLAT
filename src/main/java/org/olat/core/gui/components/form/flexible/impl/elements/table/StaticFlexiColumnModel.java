@@ -29,8 +29,26 @@ public class StaticFlexiColumnModel extends AbstractFlexiColumnModel {
 
 	private final String action;
 	
+	/**
+	 * Used the standard renderer
+	 * @param headerKey
+	 * @param label
+	 * @param action
+	 */
 	public StaticFlexiColumnModel(String headerKey, String label, String action) {
 		super(headerKey, -1, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action));
+		this.action = action;
+	}
+	
+	/**
+	 * Use a custom renderer
+	 * @param headerKey
+	 * @param columnIndex
+	 * @param action
+	 * @param renderer
+	 */
+	public StaticFlexiColumnModel(String headerKey, int columnIndex, String action, FlexiCellRenderer renderer) {
+		super(headerKey, columnIndex, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 		this.action = action;
 	}
 

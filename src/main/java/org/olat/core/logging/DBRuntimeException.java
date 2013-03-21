@@ -34,7 +34,8 @@ package org.olat.core.logging;
  *
  */
 public class DBRuntimeException extends OLATRuntimeException {
-	
+
+	private static final long serialVersionUID = 3380967499323008264L;
 
 	/**
 	 * @param logMsg

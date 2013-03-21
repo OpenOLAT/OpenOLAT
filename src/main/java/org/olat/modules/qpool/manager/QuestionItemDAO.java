@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -32,15 +33,18 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ResourceShareImpl;
 import org.olat.resource.OLATResource;
@@ -86,10 +90,10 @@ public class QuestionItemDAO {
 	}
 
 	public QuestionItemImpl createAndPersist(Identity owner, String subject, String format, String language,
-			TaxonomyLevel taxonLevel, String dir, String rootFilename, QuestionType type) {
+			TaxonomyLevel taxonLevel, String dir, String rootFilename, QItemType type) {
 		QuestionItemImpl item = create(subject, format, dir, rootFilename);
 		if(type != null) {
-			item.setType(type.name());
+			item.setType(type);
 		}
 		item.setLanguage(language);
 		item.setTaxonomyLevel(taxonLevel);
@@ -108,46 +112,44 @@ public class QuestionItemDAO {
 		}
 	}
 	
-	public QuestionItemImpl copy(Identity owner, QuestionItemShort itemToCopyRef) {
-		QuestionItemImpl itemToCopy = loadById(itemToCopyRef.getKey());
-		
-		String subject = "(Copy) " + itemToCopy.getTitle();
-		QuestionItemImpl copy = create(subject, itemToCopy.getFormat(), null, itemToCopy.getRootFilename());
+	public QuestionItemImpl copy(Identity owner, QuestionItemImpl original) {
+		String subject = "(Copy) " + original.getTitle();
+		QuestionItemImpl copy = create(subject, original.getFormat(), null, original.getRootFilename());
 		
 		//general
-		copy.setMasterIdentifier(itemToCopy.getIdentifier());
-		copy.setDescription(itemToCopy.getDescription());
-		copy.setKeywords(itemToCopy.getKeywords());
-		copy.setCoverage(itemToCopy.getCoverage());
-		copy.setAdditionalInformations(itemToCopy.getAdditionalInformations());
-		copy.setLanguage(itemToCopy.getLanguage());
+		copy.setMasterIdentifier(original.getIdentifier());
+		copy.setDescription(original.getDescription());
+		copy.setKeywords(original.getKeywords());
+		copy.setCoverage(original.getCoverage());
+		copy.setAdditionalInformations(original.getAdditionalInformations());
+		copy.setLanguage(original.getLanguage());
 		
 		//classification
-		copy.setTaxonomyLevel(itemToCopy.getTaxonomyLevel());
+		copy.setTaxonomyLevel(original.getTaxonomyLevel());
 		
 		//educational
-		copy.setEducationalContext(itemToCopy.getEducationalContext());
-		copy.setEducationalLearningTime(itemToCopy.getEducationalLearningTime());
+		copy.setEducationalContext(original.getEducationalContext());
+		copy.setEducationalLearningTime(original.getEducationalLearningTime());
 		
 		//item
-		copy.setType(itemToCopy.getType());
-		copy.setDifficulty(itemToCopy.getDifficulty());
-		copy.setStdevDifficulty(itemToCopy.getStdevDifficulty());
-		copy.setDifferentiation(itemToCopy.getDifferentiation());
-		copy.setNumOfAnswerAlternatives(itemToCopy.getNumOfAnswerAlternatives());
+		copy.setType(original.getType());
+		copy.setDifficulty(original.getDifficulty());
+		copy.setStdevDifficulty(original.getStdevDifficulty());
+		copy.setDifferentiation(original.getDifferentiation());
+		copy.setNumOfAnswerAlternatives(original.getNumOfAnswerAlternatives());
 		copy.setUsage(0);
-		copy.setAssessmentType(itemToCopy.getAssessmentType());
+		copy.setAssessmentType(original.getAssessmentType());
 		
 		//lifecycle
-		copy.setItemVersion(itemToCopy.getItemVersion());
+		copy.setItemVersion(original.getItemVersion());
 		copy.setStatus(QuestionStatus.draft.name());
 		
 		//rights
-		copy.setCopyright(itemToCopy.getCopyright());
+		copy.setLicense(original.getLicense());
 		
 		//technical
-		copy.setEditor(itemToCopy.getEditor());
-		copy.setEditorVersion(itemToCopy.getEditorVersion());
+		copy.setEditor(original.getEditor());
+		copy.setEditorVersion(original.getEditorVersion());
 
 		persist(owner, copy);
 		return copy;
@@ -196,21 +198,16 @@ public class QuestionItemDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemShort> getItems(Identity me, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItemView> getItems(Identity me, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item from questionitem item")
-		  .append(" inner join item.ownerGroup ownerGroup ")
-		  .append(" left join fetch item.taxonomyLevel taxonomyLevel ")
-		  .append(" where ownerGroup in (")
-		  .append("   select vmember.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
-		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup")
-		  .append(" )");
+		sb.append("select item from qauthoritem item where item.authorKey=:identityKey");
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
+		PersistenceHelper.appendGroupBy(sb, "item", orderBy);
 
-		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemShort.class)
+		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemView.class)
 				.setParameter("identityKey", me.getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);
@@ -226,7 +223,12 @@ public class QuestionItemDAO {
 	
 	public List<QuestionItem> getAllItems(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item from questionitem item order by item.key");
+		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
+		  .append(" left join fetch item.license license")
+		  .append(" left join fetch item.type itemType")
+		  .append(" left join fetch item.educationalContext educationalContext")
+		  .append(" order by item.key");
 
 		TypedQuery<QuestionItem> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItem.class);
@@ -249,7 +251,12 @@ public class QuestionItemDAO {
 	
 	public QuestionItemImpl loadById(Long key) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item from questionitem item where item.key=:key");
+		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
+		  .append(" left join fetch item.license license")
+		  .append(" left join fetch item.type itemType")
+		  .append(" left join fetch item.educationalContext educationalContext")
+		  .append(" where item.key=:key");
 		List<QuestionItemImpl> items = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemImpl.class)
 				.setParameter("key", key)
@@ -259,6 +266,21 @@ public class QuestionItemDAO {
 			return null;
 		}
 		return items.get(0);
+	}
+	
+	public List<QuestionItemFull> loadByIds(Collection<Long> key) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
+		  .append(" left join fetch item.license license")
+		  .append(" left join fetch item.type itemType")
+		  .append(" left join fetch item.educationalContext educationalContext")
+		  .append(" where item.key in (:keys)");
+		List<QuestionItemFull> items = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemFull.class)
+				.setParameter("keys", key)
+				.getResultList();
+		return items;
 	}
 	
 	public QuestionItemImpl loadForUpdate(Long key) {
@@ -303,19 +325,20 @@ public class QuestionItemDAO {
 		return query.getResultList();
 	}
 	
-	public List<QuestionItemShort> getFavoritItems(Identity identity, List<Long> inKeys, int firstResult, int maxResults) {
+	public List<QuestionItemView> getFavoritItems(Identity identity, List<Long> inKeys,
+			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item from questionitem item")
-		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
+		sb.append("select item from qitemview item")
 		  .append(" where item.key in (")
 		  .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark where mark.creator.key=:identityKey and mark.resName='QuestionItem'")
 		  .append(" )");
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
+		PersistenceHelper.appendGroupBy(sb, "item", orderBy);
 
-		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemShort.class)
+		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemView.class)
 				.setParameter("identityKey", identity.getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);
@@ -342,7 +365,7 @@ public class QuestionItemDAO {
 		dbInstance.commit();//release the lock asap
 	}
 	
-	public void share(Long itemKey, List<OLATResource> resources) {
+	public void share(Long itemKey, List<OLATResource> resources, boolean editable) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		QuestionItem lockedItem = loadForUpdate(itemKey);
 		for(OLATResource resource:resources) {
@@ -350,6 +373,7 @@ public class QuestionItemDAO {
 				ResourceShareImpl share = new ResourceShareImpl();
 				share.setCreationDate(new Date());
 				share.setItem(lockedItem);
+				share.setEditable(editable);
 				share.setResource(resource);
 				em.persist(share);
 			}
@@ -382,19 +406,17 @@ public class QuestionItemDAO {
 		return count.intValue();
 	}
 	
-	public List<QuestionItemShort> getSharedItemByResource(OLATResource resource, List<Long> inKeys,
+	public List<QuestionItemView> getSharedItemByResource(OLATResource resource, List<Long> inKeys,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item from qshareitem share")
-		  .append(" inner join share.item item")
-		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
-		  .append(" where share.resource.key=:resourceKey");
+		sb.append("select item from qshareditemview item where item.resourceKey=:resourceKey");
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
+		PersistenceHelper.appendGroupBy(sb, "item", orderBy);
 
-		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemShort.class)
+		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemView.class)
 				.setParameter("resourceKey", resource.getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);

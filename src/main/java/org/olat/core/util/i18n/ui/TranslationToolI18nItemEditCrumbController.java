@@ -60,7 +60,7 @@ import org.olat.core.util.prefs.Preferences;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 
-class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicController {
+public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicController {
 	private Locale referenceLocale;
 	private Locale compareLocale;
 	private List<I18nItem> i18nItems;
@@ -241,11 +241,15 @@ class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicControlle
 			annotationArea.setEnabled(false);
 			// target lang flags and lang name		
 			Locale origLocale = I18nModule.getAllLocales().get(i18nMgr.createOrigianlLocaleKeyForOverlay(currentItem.getLocale()));
-			this.flc.contextPut("targetLanguageKey", i18nMgr.getLocaleKey(origLocale));			
-			this.flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(i18nMgr.getLocaleKey(origLocale), true));						
+			if(origLocale == null) {
+				origLocale = currentItem.getLocale();
+			}
+			String localeKey = i18nMgr.getLocaleKey(origLocale);
+			flc.contextPut("targetLanguageKey", localeKey);			
+			flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(localeKey, true));		
 		}
-		this.flc.contextPut("customizingMode", Boolean.valueOf(customizingMode));
-		this.flc.contextPut("customizingPrefix", (customizingMode ? "customize." : ""));
+		flc.contextPut("customizingMode", Boolean.valueOf(customizingMode));
+		flc.contextPut("customizingPrefix", (customizingMode ? "customize." : ""));
 
 	}
 

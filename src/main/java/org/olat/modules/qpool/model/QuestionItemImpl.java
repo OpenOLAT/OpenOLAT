@@ -45,7 +45,6 @@ import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
 
 /**
@@ -92,14 +91,16 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	private TaxonomyLevel taxonomyLevel;
 	
 	//educational
-	@Column(name="q_educational_context", nullable=true, insertable=true, updatable=true)
-	private String educationalContext;
+	@ManyToOne(targetEntity=QEducationalContext.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_edu_context", nullable=false, insertable=true, updatable=true)
+	private QEducationalContext educationalContext;
 	@Column(name="q_educational_learningtime", nullable=false, insertable=true, updatable=true)
 	private String educationalLearningTime;
 	
 	//question
-	@Column(name="q_type", nullable=false, insertable=true, updatable=true)
-	private String type;
+	@ManyToOne(targetEntity=QItemType.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_type", nullable=false, insertable=true, updatable=true)
+	private QItemType type;
 	@Column(name="q_difficulty", nullable=true, insertable=true, updatable=true)
 	private BigDecimal difficulty;
 	@Column(name="q_stdev_difficulty", nullable=true, insertable=true, updatable=true)
@@ -118,11 +119,11 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	private String itemVersion;
 	@Column(name="q_status", nullable=false, insertable=true, updatable=true)
 	private String status;
-	//TODO contribute
 
 	//rights
-	@Column(name="q_copyright", nullable=true, insertable=true, updatable=true)
-	private String copyright;
+	@ManyToOne(targetEntity=QLicense.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_license", nullable=true, insertable=true, updatable=true)
+	private QLicense license;
 
 	//technics
 	@Column(name="q_editor", nullable=true, insertable=true, updatable=true)
@@ -247,14 +248,21 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		return null;
 	}
 
-
 	@Override
-	public String getEducationalContext() {
+	public QEducationalContext getEducationalContext() {
 		return educationalContext;
 	}
 
-	public void setEducationalContext(String educationalContext) {
+	public void setEducationalContext(QEducationalContext educationalContext) {
 		this.educationalContext = educationalContext;
+	}
+
+	@Override
+	public String getEducationalContextLevel() {
+		if(educationalContext != null) {
+			return educationalContext.getLevel();
+		}
+		return null;
 	}
 
 	@Override
@@ -361,23 +369,22 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.language = language;
 	}
 
-
-
-	public String getType() {
+	public QItemType getType() {
 		return type;
 	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
 	
-	public QuestionType getQuestionType() {
-		if(StringHelper.containsNonWhitespace(type)) {
-			return QuestionType.valueOf(type);
+	@Override
+	public String getItemType() {
+		if(type != null) {
+			return type.getType();
 		}
 		return null;
 	}
 
+	public void setType(QItemType type) {
+		this.type = type;
+	}
+	
 	public String getStatus() {
 		return status;
 	}
@@ -405,13 +412,12 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		return null;
 	}
 
-
-	public String getCopyright() {
-		return copyright;
+	public QLicense getLicense() {
+		return license;
 	}
 
-	public void setCopyright(String copyright) {
-		this.copyright = copyright;
+	public void setLicense(QLicense license) {
+		this.license = license;
 	}
 
 	public SecurityGroup getOwnerGroup() {

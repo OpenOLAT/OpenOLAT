@@ -19,19 +19,24 @@
  */
 package org.olat.modules.qpool.ui.edit;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.manager.LOMConverter;
+import org.olat.modules.qpool.model.LOMDuration;
+import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
 
@@ -44,7 +49,7 @@ import org.olat.modules.qpool.ui.MetadatasController;
 public class EducationalMetadataEditController extends FormBasicController {
 	
 	private SingleSelection contextEl;
-	private TextElement learningTimeDayElement, learningTimeHourElement, learningTimeMinuteElement, learningTimeSecondElement;
+	private IntegerElement learningTimeDayElement, learningTimeHourElement, learningTimeMinuteElement, learningTimeSecondElement;
 	private FormLayoutContainer learningTimeContainer;
 	
 	private QuestionItem item;
@@ -62,9 +67,16 @@ public class EducationalMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("educational");
-		
-		String[] contextKeys = new String[]{ "" };
-		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout, contextKeys, contextKeys, null);
+
+		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
+		String[] contextKeys = new String[ levels.size() ];
+		String[] contextValues = new String[ levels.size() ];
+		int count = 0;
+		for(QEducationalContext level:levels) {
+			contextKeys[count] = level.getLevel();
+			contextValues[count++] = "item.level." + level.getLevel().toLowerCase();
+		}
+		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout, contextKeys, contextValues, null);
 
 		//learningTimeEl = uifactory.addTextElement("educational.learningTime", "educational.learningTime", 1000, "", formLayout);
 
@@ -74,24 +86,20 @@ public class EducationalMetadataEditController extends FormBasicController {
 		learningTimeContainer.setLabel("educational.learningTime", null);
 		formLayout.add(learningTimeContainer);
 		
-		String day = "d";
-		String hour = "h";
-		String minute = "m";
-		String second = "s";
-		
-		learningTimeDayElement = uifactory.addTextElement("learningTime.day", "", 2, day, learningTimeContainer);
+		LOMDuration duration = LOMConverter.convertDuration(item.getEducationalLearningTime());
+		learningTimeDayElement = uifactory.addIntegerElement("learningTime.day", "", duration.getDay(), learningTimeContainer);
 		learningTimeDayElement.setDisplaySize(3);
 		learningTimeDayElement.setMandatory(true);
 		
-		learningTimeHourElement = uifactory.addTextElement("learningTime.hour", "", 2, hour, learningTimeContainer);
+		learningTimeHourElement = uifactory.addIntegerElement("learningTime.hour", "", duration.getHour(), learningTimeContainer);
 		learningTimeHourElement.setDisplaySize(3);
 		learningTimeHourElement.setMandatory(true);
 		
-		learningTimeMinuteElement = uifactory.addTextElement("learningTime.minute", "", 2, minute, learningTimeContainer);
+		learningTimeMinuteElement = uifactory.addIntegerElement("learningTime.minute", "", duration.getMinute(), learningTimeContainer);
 		learningTimeMinuteElement.setDisplaySize(3);
 		learningTimeMinuteElement.setMandatory(true);
 		
-		learningTimeSecondElement = uifactory.addTextElement("learningTime.second", "", 2, second, learningTimeContainer);
+		learningTimeSecondElement = uifactory.addIntegerElement("learningTime.second", "", duration.getSeconds(), learningTimeContainer);
 		learningTimeSecondElement.setDisplaySize(3);
 		learningTimeSecondElement.setMandatory(true);
 
@@ -117,12 +125,18 @@ public class EducationalMetadataEditController extends FormBasicController {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
 			if(contextEl.isOneSelected()) {
-				itemImpl.setEducationalContext(contextEl.getSelectedKey());
+				QEducationalContext context = qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey());
+				itemImpl.setEducationalContext(context);
 			} else {
 				itemImpl.setEducationalContext(null);
 			}
 			
-			//itemImpl.setEducationalLearningTime(learningTimeEl.getValue());
+			int day = learningTimeDayElement.getIntValue();
+			int hour = learningTimeHourElement.getIntValue();
+			int minute = learningTimeMinuteElement.getIntValue();
+			int seconds = learningTimeSecondElement.getIntValue();
+			String timeStr = LOMConverter.convertDuration(day, hour, minute, seconds);
+			itemImpl.setEducationalLearningTime(timeStr);
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));

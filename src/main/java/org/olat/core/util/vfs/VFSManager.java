@@ -500,6 +500,37 @@ public class VFSManager extends BasicManager {
 	}
 	
 	/**
+	 * Copy the content of the source container to the target container.
+	 * @param source
+	 * @param target
+	 * @return
+	 */
+	public static boolean copyContent(VFSContainer source, VFSContainer target) {
+		if(!source.exists()) {
+			return false;
+		}
+		if(isSelfOrParent(source, target)) {
+			return false;
+		}
+		
+		if(source instanceof NamedContainerImpl) {
+			source = ((NamedContainerImpl)source).getDelegate();
+		}
+		if(target instanceof NamedContainerImpl) {
+			target = ((NamedContainerImpl)target).getDelegate();
+		}
+
+		if(source instanceof LocalImpl && target instanceof LocalImpl) {
+			LocalImpl localSource = (LocalImpl)source;
+			LocalImpl localTarget = (LocalImpl)target;
+			File localSourceFile = localSource.getBasefile();
+			File localTargetFile = localTarget.getBasefile();
+			return FileUtils.copyDirContentsToDir(localSourceFile, localTargetFile, false, "VFScopyDir");
+		}
+		return false;
+	}
+	
+	/**
 	 * Copies the stream to the target leaf.
 	 * 
 	 * @param source

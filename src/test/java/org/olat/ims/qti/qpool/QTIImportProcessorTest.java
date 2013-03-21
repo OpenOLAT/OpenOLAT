@@ -48,7 +48,11 @@ import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QEducationalContextDAO;
+import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
+import org.olat.modules.qpool.model.QEducationalContext;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -69,7 +73,11 @@ public class QTIImportProcessorTest extends OlatTestCase {
 	@Autowired
 	private FileStorage qpoolFileStorage;
 	@Autowired
+	private QItemTypeDAO qItemTypeDao;
+	@Autowired
 	private QuestionItemDAO questionItemDao;
+	@Autowired
+	private QEducationalContextDAO qEduContextDao;
 	
 	@Before
 	public void setup() {
@@ -90,7 +98,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		File itemFile = new File(itemUrl.toURI());
 		
 		//get the document informations
-		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qpoolFileStorage);
+		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		DocInfos docInfos = proc.getDocInfos();
 		Assert.assertNotNull(docInfos);
 		Assert.assertNotNull(docInfos.getFilename());
@@ -120,7 +128,8 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		//description -> qticomment
 		Assert.assertEquals("This is a multiple-choice example with image content. The rendering is a standard radio button style. No response processing is incorporated.", reloadItem.getDescription());
 		//question type
-		Assert.assertEquals(QuestionType.SC, reloadItem.getQuestionType());
+		Assert.assertNotNull(reloadItem.getType());
+		Assert.assertEquals(QuestionType.SC.name(), reloadItem.getType().getType());
 		
 		//check that the file is storead
 		VFSContainer itemDir = qpoolFileStorage.getContainer(reloadItem.getDirectory());
@@ -139,7 +148,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		File itemFile = new File(itemUrl.toURI());
 		
 		//get the document informations
-		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qpoolFileStorage);
+		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
@@ -157,7 +166,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		//description -> qticomment
 		Assert.assertEquals("This is a standard numerical fill-in-blank (integer) example. No response processing is incorporated.", reloadItem.getDescription());
 		//question type
-		Assert.assertEquals(QuestionType.FIB, reloadItem.getQuestionType());
+		Assert.assertEquals(QuestionType.FIB.name(), reloadItem.getType().getType());
 	}
 
 	/**
@@ -172,7 +181,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		File testFile = new File(testUrl.toURI());
 		
 		//get the document informations
-		QTIImportProcessor proc = new QTIImportProcessor(owner, testFile.getName(), testFile, questionItemDao, qpoolFileStorage);
+		QTIImportProcessor proc = new QTIImportProcessor(owner, testFile.getName(), testFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		DocInfos docInfos = proc.getDocInfos();
 		Assert.assertNotNull(docInfos);
 		Assert.assertNotNull(docInfos.getFilename());
@@ -192,7 +201,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		File itemFile = new File(itemUrl.toURI());
 		
 		//get the document informations
-		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qpoolFileStorage);
+		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(4, items.size());
@@ -206,7 +215,9 @@ public class QTIImportProcessorTest extends OlatTestCase {
 
 		for(QuestionItem item:items) {
 			Assert.assertEquals(QTIConstants.QTI_12_FORMAT, item.getFormat());
-			QuestionType type = item.getQuestionType();
+			QItemType itemType = item.getType();
+			Assert.assertNotNull(itemType);
+			QuestionType type = QuestionType.valueOf(itemType.getType());
 			if(type != null) {
 				switch(type) {
 					case SC: sc++; break;
@@ -252,7 +263,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		File itemFile = new File(itemUrl.toURI());
 		
 		//get the document informations
-		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qpoolFileStorage);
+		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(2, items.size());
@@ -277,11 +288,11 @@ public class QTIImportProcessorTest extends OlatTestCase {
 			Assert.assertNotNull(itemNode);
 			
 		//check the attachments
-			if(itemFull.getQuestionType() == QuestionType.SC) {
+			if(itemFull.getType().getType().equals(QuestionType.SC.name())) {
 				Assert.assertTrue(exists(itemFull, "media/image1.gif"));
 				Assert.assertTrue(exists(itemFull, "media/image2.gif"));
 				Assert.assertFalse(exists(itemFull, "media/image3.gif"));
-			} else if(itemFull.getQuestionType() == QuestionType.MC) {
+			} else if(itemFull.getType().getType().equals(QuestionType.MC.name())) {
 				Assert.assertFalse(exists(itemFull, "media/image1.gif"));
 				Assert.assertTrue(exists(itemFull, "media/image2.gif"));
 				Assert.assertTrue(exists(itemFull, "media/image3.gif"));
@@ -298,7 +309,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		File itemFile = new File(itemUrl.toURI());
 		
 		//get the document informations
-		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qpoolFileStorage);
+		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(3, items.size());
@@ -342,6 +353,30 @@ public class QTIImportProcessorTest extends OlatTestCase {
 				Assert.fail();
 			}
 		}
+	}
+	
+	@Test
+	public void testImport_QTI12_metadata() throws IOException, URISyntaxException {
+		URL itemUrl = QTIImportProcessorTest.class.getResource("mchc_i_001.xml");
+		Assert.assertNotNull(itemUrl);
+		File itemFile = new File(itemUrl.toURI());
+		
+		//get the document informations
+		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+		List<QuestionItem> items = proc.process();
+		Assert.assertNotNull(items);
+		Assert.assertEquals(1, items.size());
+		dbInstance.commitAndCloseSession();
+		
+		//check metadata
+		QuestionItem item = items.get(0);
+		Assert.assertEquals("Standard Multiple Choice Item", item.getTitle());
+		//qmd_levelofdifficulty
+		QEducationalContext level = item.getEducationalContext();
+		Assert.assertNotNull(level);
+		Assert.assertEquals("basic", level.getLevel());
+		//qmd_toolvendor
+		Assert.assertEquals("QTITools", item.getEditor());	
 	}
 	
 	private boolean exists(QuestionItemFull itemFull, String path) {

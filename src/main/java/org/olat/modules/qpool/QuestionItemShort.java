@@ -51,14 +51,12 @@ public interface QuestionItemShort extends OLATResourceable {
 	public String getTaxonomyLevelName();
 	
 	//educational
-	public String getEducationalContext();
+	public String getEducationalContextLevel();
 
 	public String getEducationalLearningTime();
 	
 	//question
-	public String getType();
-	
-	public QuestionType getQuestionType();
+	public String getItemType();
 	
 	public BigDecimal getDifficulty();
 	

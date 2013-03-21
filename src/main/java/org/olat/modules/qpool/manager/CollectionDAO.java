@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.CollectionToItem;
 import org.olat.modules.qpool.model.ItemCollectionImpl;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -117,20 +118,18 @@ public class CollectionDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemShort> getItemsOfCollection(QuestionItemCollection collection, List<Long> inKeys,
+	public List<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, List<Long> inKeys,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item from qcollection2item coll2item ")
-		  .append(" inner join coll2item.item item ")
-		  .append(" left join fetch item.taxonomyLevel taxonomyLevel ")
-		  .append(" where coll2item.collection.key=:collectionKey");
+		sb.append("select item from qitemview item ")
+		  .append(" where item in (select coll2item.item from qcollection2item coll2item where coll2item.collection.key=:collectionKey)");
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
 		PersistenceHelper.appendGroupBy(sb, "coll2item.item", orderBy);
 		
-		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemShort.class)
+		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemView.class)
 				.setParameter("collectionKey", collection.getKey());
 		if(inKeys != null && !inKeys.isEmpty()) {
 			query.setParameter("itemKeys", inKeys);

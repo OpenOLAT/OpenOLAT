@@ -76,6 +76,15 @@ public class QTIConstants {
 	public static final String ATTR_AIID = "aiid";
 	public static final String ATTR_PREVIEWDOC = "previewDoc";
 	
+	//xml doctype
+	public static final String XML_DOCUMENT_ROOT = "questestinterop";
+	public static final String XML_DOCUMENT_DTD = "ims_qtiasiv1p2p1.dtd";
+	
+	//metadata
+	public static final String META_LEVEL_OF_DIFFICULTY = "qmd_levelofdifficulty";
+	public static final String META_ITEM_TYPE = "qmd_itemtype";
+	public static final String META_TOOLVENDOR = "qmd_toolvendor";
+	
 	// question pool
 	public static final String QTI_12_FORMAT = "IMS QTI 1.2";
 	

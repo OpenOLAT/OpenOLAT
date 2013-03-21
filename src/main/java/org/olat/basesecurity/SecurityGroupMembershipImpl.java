@@ -37,6 +37,8 @@ import org.olat.core.id.ModifiedInfo;
  * @author Felix Jost
  */
 public class SecurityGroupMembershipImpl extends PersistentObject implements ModifiedInfo {
+	private static final long serialVersionUID = 2466302280763907357L;
+	
 	private Identity identity;
 	private SecurityGroup securityGroup;
 	private Date lastModified;

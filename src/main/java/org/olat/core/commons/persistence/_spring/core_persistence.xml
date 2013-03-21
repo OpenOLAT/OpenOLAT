@@ -97,12 +97,19 @@
 		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
+		<class>org.olat.modules.qpool.model.PoolItemView</class>
+		<class>org.olat.modules.qpool.model.AuthorItemView</class>
+		<class>org.olat.modules.qpool.model.ItemView</class>
 		<class>org.olat.modules.qpool.model.QuestionItemImpl</class>
+		<class>org.olat.modules.qpool.model.SharedItemView</class>
 		<class>org.olat.modules.qpool.model.ResourceShareImpl</class>
 		<class>org.olat.modules.qpool.model.TaxonomyLevelImpl</class>
 		<class>org.olat.modules.qpool.model.ResourceShareImpl</class>
 		<class>org.olat.modules.qpool.model.ItemCollectionImpl</class>
 		<class>org.olat.modules.qpool.model.CollectionToItem</class>
+		<class>org.olat.modules.qpool.model.QEducationalContext</class>
+		<class>org.olat.modules.qpool.model.QItemType</class>
+		<class>org.olat.modules.qpool.model.QLicense</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>

@@ -29,6 +29,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
+import org.olat.modules.qpool.model.QItemType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -50,12 +51,16 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
+	private QItemTypeDAO qItemTypeDao;
+	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private QuestionPoolModule qpoolModule;
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
+		qItemTypeDao.createDefaultTypes();
+
 		int numOfPools = poolDao.countPools();
 		if(numOfPools == 0) {
 			//create a pool if there isn't any
@@ -66,7 +71,7 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 	}
 	
 	private void createPools() {
-		poolDao.createPool(null, "Catalog");
+		poolDao.createPool(null, "Catalog", true);
 		dbInstance.commit();
 	}
 	
@@ -90,23 +95,24 @@ public class NullPoolService implements ApplicationListener<ContextRefreshedEven
 	
 	private void createQuestions() {
 		List<TaxonomyLevel> fields = taxonomyLevelDao.loadAllLevels();
+		List<QItemType> types = qItemTypeDao.getItemTypes();
 
 		int numOfQuestions = questionItemDao.getNumOfQuestions();
 		if(numOfQuestions < 3) {
-			List<Pool> pools = poolDao.getPools(0, -1);
+			List<Pool> pools = poolDao.getPools(0, 1);
 			for(int i=0; i<200; i++) {
 				long randomIndex = Math.round(Math.random() * (fields.size() - 1));
 				TaxonomyLevel field = fields.get((int)randomIndex);
-				QuestionItem item = questionItemDao.createAndPersist(null, "NGC " + i, QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), field, null, null, randomType());
-				poolDao.addItemToPool(item, pools.get(0));
+				QuestionItem item = questionItemDao.createAndPersist(null, "NGC " + i, QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), field, null, null, randomType(types));
+				poolDao.addItemToPool(item, pools, false);
 			}
 		}
 		dbInstance.commit();
 	}
 	
-	private QuestionType randomType() {
+	private QItemType randomType(List<QItemType> types) {
 		long t = Math.round(Math.random() * (QuestionType.values().length - 1));
-		return QuestionType.values()[(int)t];
+		return types.get((int)t);
 	}
 
 

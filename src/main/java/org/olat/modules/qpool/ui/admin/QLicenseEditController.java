@@ -17,8 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.modules.qpool.ui.admin;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -28,31 +29,32 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.qpool.Pool;
+import org.olat.core.util.Util;
+import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.model.QLicense;
+import org.olat.modules.qpool.ui.MetadatasController;
 
 /**
  * 
- * Initial date: 21.02.2013<br>
+ * Initial date: 18.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PoolEditController extends FormBasicController {
+public class QLicenseEditController extends FormBasicController {
 
 	private TextElement nameEl;
-	private final Pool pool;
 	
-	public PoolEditController(UserRequest ureq, WindowControl wControl, Pool pool) {
+	private final QLicense license;
+	private final QPoolService qpoolService;
+	
+	public QLicenseEditController(UserRequest ureq, WindowControl wControl, QLicense license) {
 		super(ureq, wControl);
-		this.pool = pool;
+		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		
+		this.license = license;
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		
 		initForm(ureq);
-	}
-	
-	public Pool getPool() {
-		return pool;
-	}
-	
-	public String getName() {
-		return nameEl.getValue();
 	}
 	
 	@Override
@@ -62,9 +64,9 @@ public class PoolEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String name = pool == null ? "" : pool.getName();
-		nameEl = uifactory.addTextElement("pool.name", "pool.name", 128, name, formLayout);
-		
+		String name = license == null ? "" : license.getLicenseKey();
+		nameEl = uifactory.addTextElement("license.key", "license.key", 128, name, formLayout);
+
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
@@ -87,6 +89,12 @@ public class PoolEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(license == null) {
+			qpoolService.createLicense(nameEl.getValue());
+		} else {
+			//itemType.setName(nameEl.getValue());
+			//qpoolService.updatePool(itemType);
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

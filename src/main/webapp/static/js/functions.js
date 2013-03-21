@@ -74,7 +74,7 @@ var BLoader = {
 			if (window.execScript) window.execScript(jsString); // IE style
 			else window.eval(jsString);
 		} catch(e){
-			console.log(contextDesc, 'cannot execute js', jsString);
+			if(console) console.log(contextDesc, 'cannot execute js', jsString);
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::executeGlobalJS: Error when executing JS code in contextDesc::' + contextDesc + ' error::"'+showerror(e)+' for: '+escape(jsString));
 			}
@@ -138,7 +138,7 @@ var BLoader = {
 				}
 			}
 		} catch(e){
-			console.log(e);
+			if(console)  console.log(e);
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::loadCSS: Error when loading CSS from URL::' + cssURL);
 			}
@@ -441,8 +441,8 @@ function o_ainvoke(r) {
 									try{
 										newc.html(hdrco);//Ext.DomHelper.overwrite(newc, hdrco, false);
 									} catch(e) {
-										console.log(e);
-										console.log('Fragment',hdrco);
+										if(console) console.log(e);
+										if(console) console.log('Fragment',hdrco);
 									}
 									b_changedDomEl.push('o_c'+ciid);
 								}
@@ -535,7 +535,8 @@ function o_ainvoke(r) {
 				jQuery(document).ooLog('debug',"stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js");
 		}
 		
-		for (mycounter = 0; stacklength > mycounter; mycounter++) { 
+		for (mycounter = 0; stacklength > mycounter; mycounter++) {
+			
 			if (mycounter > 50) {
 				if(jQuery(document).ooLog().isDebugEnabled()) {
 					jQuery(document).ooLog('debug',"Stopped executing DOM replacement callback functions - to many functions::" + b_onDomReplacementFinished_callbacks.length, "functions.js");
@@ -557,7 +558,10 @@ function o_ainvoke(r) {
 			if(jQuery(document).ooLog().isDebugEnabled())
 				jQuery(document).ooLog('debug',"Executing DOM replacement callback function #" + mycounter + " with timeout funct::" + func, "functions.js");
 			// don't use execScript here - must be executed outside this function scope so that dom replacement elements are available
-			//TODO jquery func.delay(0.01);
+			
+			//func.delay(0.01);
+			func();//TODO jquery
+			
 			if(jQuery(document).ooLog().isDebugEnabled())
 				jQuery(document).ooLog('debug',"Stacksize after timeout: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
 		}
@@ -1087,19 +1091,19 @@ function b_doPrint() {
  * Attach event listeners to enable inline translation tool hover links
  */ 
 function b_attach_i18n_inline_editing() {
-	return;
 	// Add hover handler to display inline edit links
-	Ext.select('span.b_translation_i18nitem').hover(function(){	
-		Ext.get(this.firstChild).show();
+	jQuery('span.b_translation_i18nitem').hover(function() {
+		jQuery(this.firstChild).show();
 		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Entered i18nitem::" + this.firstChild, "functions.js:b_attach_i18n_inline_editing()");
 	},function(){
-		Ext.select('a.b_translation_i18nitem_launcher').hide();
+		jQuery('a.b_translation_i18nitem_launcher').hide();
 		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Leaving i18nitem::" + this, "functions.js:b_attach_i18n_inline_editing()");
 	});
 	// Add highlight effect on link to show which element is affected by this link
-	Ext.select('a.b_translation_i18nitem_launcher').hover(function(){	
-		Ext.get(this).findParent('span.b_translation_i18nitem').highlight();
-	},function(){});
+	jQuery('a.b_translation_i18nitem_launcher').hover(function() {	
+		var parent = jQuery(this).parent('span.b_translation_i18nitem')
+		parent.effect("highlight");
+	});
 	// Add to on ajax ready callback for next execution
 	b_AddOnDomReplacementFinishedCallback(b_attach_i18n_inline_editing);
 }

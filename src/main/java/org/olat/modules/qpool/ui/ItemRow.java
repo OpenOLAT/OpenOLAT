@@ -23,28 +23,37 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.QuestionType;
 
 /**
  * 
  * Initial date: 23.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ItemRow implements QuestionItemShort {
-	
-	private final QuestionItemShort delegate;
+public class ItemRow implements QuestionItemView {
+
+	private final QuestionItemView delegate;
 	
 	private FormLink markLink;
 	
-	public ItemRow(QuestionItemShort item) {
+	public ItemRow(QuestionItemView item) {
 		this.delegate = item;
 	}
 
 	@Override
 	public Long getKey() {
 		return delegate.getKey();
+	}
+
+	@Override
+	public boolean isEditable() {
+		return delegate.isEditable();
+	}
+
+	@Override
+	public Double getRating() {
+		return delegate.getRating();
 	}
 
 	@Override
@@ -82,8 +91,8 @@ public class ItemRow implements QuestionItemShort {
 	}
 
 	@Override
-	public String getEducationalContext() {
-		return delegate.getEducationalContext();
+	public String getEducationalContextLevel() {
+		return delegate.getEducationalContextLevel();
 	}
 
 	@Override
@@ -92,8 +101,8 @@ public class ItemRow implements QuestionItemShort {
 	}
 	
 	@Override
-	public String getType() {
-		return delegate.getType();
+	public String getItemType() {
+		return delegate.getItemType();
 	}
 
 	@Override
@@ -140,16 +149,6 @@ public class ItemRow implements QuestionItemShort {
 	public QuestionStatus getQuestionStatus() {
 		return delegate.getQuestionStatus();
 	}
-
-	@Override
-	public QuestionType getQuestionType() {
-		return delegate.getQuestionType();
-	}
-
-	/*
-	public QuestionItem getItem() {
-		return delegate;
-	}*/
 
 	public FormLink getMarkLink() {
 		return markLink;

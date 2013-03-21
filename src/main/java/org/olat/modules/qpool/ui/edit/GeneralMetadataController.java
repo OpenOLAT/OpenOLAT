@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui.edit;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,9 +32,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.ui.QPoolEvent;
 import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.QPoolEvent;
 
 /**
  * 
@@ -48,14 +46,12 @@ public class GeneralMetadataController extends FormBasicController {
 	private FormLink editLink;
 	private StaticTextElement keyEl, identifierEl, masterIdentifierEl, titleEl, keywordsEl, coverageEl, addInfosEl, languageEl, studyFieldEl;
 	
-	private final QPoolService qpoolService;
+	private final boolean edit;
 	
-	public GeneralMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	public GeneralMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
-		
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		
+		this.edit = edit;
 		initForm(ureq);
 		setItem(item);
 	}
@@ -63,9 +59,10 @@ public class GeneralMetadataController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("general");
-		
-		editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
-		editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		if(edit) {
+			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
+			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		}
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
@@ -100,7 +97,7 @@ public class GeneralMetadataController extends FormBasicController {
 		addInfosEl.setValue(addInfos);
 		String language = item.getLanguage() == null ? "" : item.getLanguage();
 		languageEl.setValue(language);
-		String studyFields = qpoolService.getTaxonomicPath(item);
+		String studyFields = item.getTaxonomicPath();
 		studyFieldEl.setValue(studyFields == null ? "" : studyFields);
 	}
 	

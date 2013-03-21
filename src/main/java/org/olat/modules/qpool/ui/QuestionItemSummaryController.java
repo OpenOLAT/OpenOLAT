@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -28,7 +27,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -46,14 +44,11 @@ public class QuestionItemSummaryController extends FormBasicController {
 	private StaticTextElement usageEl;
 	private StaticTextElement descriptionEl;
 	
+	private boolean canEdit;
 	private QuestionItem item;
-	private final QPoolService qpoolService;
 	
 	public QuestionItemSummaryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		
 		initForm(ureq);
 	}
 
@@ -75,11 +70,15 @@ public class QuestionItemSummaryController extends FormBasicController {
 		//
 	}
 	
+	public boolean isCanEdit() {
+		return canEdit;
+	}
+	
 	public QuestionItem getItem() {
 		return item;
 	}
 	
-	public void updateItem(QuestionItem item) {
+	public void updateItem(QuestionItem item, boolean canEdit) {
 		this.item = item;
 
 		keyEl.setValue(item.getKey().toString());
@@ -87,7 +86,7 @@ public class QuestionItemSummaryController extends FormBasicController {
 		subjectEl.setValue(item.getTitle());
 		String keywords = item.getKeywords();
 		keywordsEl.setValue(keywords == null ? "" : keywords);
-		String taxonPath = qpoolService.getTaxonomicPath(item);
+		String taxonPath = item.getTaxonomicPath();
 		studyFieldEl.setValue(taxonPath == null ? "" : taxonPath);
 		
 		int usage = item.getUsage();

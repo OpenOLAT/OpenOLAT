@@ -68,16 +68,16 @@
 
 //FIXME:FG:6.2: Implement Java way of setting flexi form link buttons dirty on change
 function b_SetTranslationSaveLinksDirty() {
-	var save=$("$f.getItemId("saveLink")"); 
+	var save=jQuery("#$f.getItemId("saveLink")"); 
 	if (!save.hasClassName('b_button_dirty')) {
 		save.addClassName('b_button_dirty'); 
 		#if ($hasNext) 
-			$("$f.getItemId("saveNextLink")").addClassName('b_button_dirty');
+			jQuery("#$f.getItemId("saveNextLink")").addClass('b_button_dirty');
 		#end
 	}
 	
 }
-$("$f.getItemId("targetArea")").observe("keyup", b_SetTranslationSaveLinksDirty);    
+jQuery("#$f.getItemId("targetArea")").on("keyup", b_SetTranslationSaveLinksDirty);    
 
 ## Code to check for user click on key references within the textarea fields
 
@@ -88,7 +88,7 @@ $("$f.getItemId("targetArea")").observe("keyup", b_SetTranslationSaveLinksDirty)
 ## for the given language code
 function checkClick(wrapperName, langCode) {
 	## Get content from text area within this wrapper
-	var area = $$('div.' + wrapperName + ' textarea')[0];
+	var area = jQuery('div.' + wrapperName + ' textarea')[0];
 	var cursorPos = area.selectionStart;
 	var content = area.getValue();
 	## Find the start position of the next i18n reference supported style:
@@ -96,7 +96,7 @@ function checkClick(wrapperName, langCode) {
 	while (content.indexOf("$") != -1 && counter < 10) {
 		var startPos = content.search("\\$\\{?([\\w\\.\\-]*):([\\w\\.\\-]*[\\w\\-])\\}?");
 		var endPos = startPos + content.substring(startPos).search("[^\\{\\w\\.\\-:\\}]|$");
-		##console.log("cursorPos::" + cursorPos + " startPos::"+ startPos + " endPos::"+ endPos + " KEY::" + content.substring(startPos, endPos));
+		console.log("cursorPos::" + cursorPos + " startPos::"+ startPos + " endPos::"+ endPos + " KEY::" + content.substring(startPos, endPos));
 
 		if (startPos <= cursorPos && endPos >= cursorPos) {
 			var reference = content.substring(startPos, endPos);
@@ -107,7 +107,7 @@ function checkClick(wrapperName, langCode) {
 			if (reference.startsWith(":")) {
 				## of type ':my.key' - get current bundle from bundles selction dropdown
 				key = reference.substring(1, reference.length);	
-				var select = $$("#bundlesSelectionContainer select")[0];
+				var select = jQuery("#bundlesSelectionContainer select")[0];
 				bundleName = select.options[select.selectedIndex].value;
 			} else {
 				## of type 'org.olat.core:my.key' - parse bundle from reference
@@ -119,12 +119,12 @@ function checkClick(wrapperName, langCode) {
 			var trans = jQuery(document).ooTranslator().getTranslator(langCode, bundleName);
 			if (trans) {
 				var translated = trans.translate(key);
-				##console.log("WORD FOUND::" + reference + " translated as::" + translated);
+				console.log("WORD FOUND::" + reference + " translated as::" + translated);
 				if (translated != reference) {
 					## set new key and value, make element visible
-					$$('div.' + wrapperName + ' div.b_translation_refKey code')[0].update(reference);
-					$$('div.' + wrapperName + ' div.b_translation_refKey span')[0].update(translated);
-					$$('div.' + wrapperName + ' div.b_translation_refKey')[0].setStyle('display: inline');
+					jQuery('div.' + wrapperName + ' div.b_translation_refKey code')[0].update(reference);
+					jQuery('div.' + wrapperName + ' div.b_translation_refKey span')[0].update(translated);
+					jQuery('div.' + wrapperName + ' div.b_translation_refKey')[0].setStyle('display: inline');
 				}
 			}
 			break;
@@ -138,16 +138,26 @@ function checkClick(wrapperName, langCode) {
 }
 	
 ## Initialize observers
-Ext.onReady(function() {
-	var area = $$('div.b_translation_edit_reference textarea')[0]; 
-	area.observe('click', function(){checkClick('b_translation_edit_reference', '${referenceLanguageKey}');});
+jQuery(function() {
+	jQuery('div.b_translation_edit_reference textarea').each(function(index, el) {
+		jQuery(el).on('click', function() {
+			checkClick('b_translation_edit_reference','${referenceLanguageKey}');
+		});
+	});
+
 #if ($compareSwitchEnabled)
-	area = $$('div.b_translation_edit_compare textarea')[0]; 
-	area.observe('click', function(){checkClick('b_translation_edit_compare', '${compareLanguageKey}');});
+	jQuery('div.b_translation_edit_compare textarea').each(function(index, el) {
+		jQuery(el).on('click', function() {
+			checkClick('b_translation_edit_compare','${compareLanguageKey}');
+		});
+	});
 #end
-	area = $$('div.b_translation_edit_target textarea')[0]; 
-	area.observe('click', function(){checkClick('b_translation_edit_target', '${targetLanguageKey}');});
-	area.focus();
+	jQuery('div.b_translation_edit_target textarea').each(function(index, el) { 
+		jQuery(el).on('click', function(){
+			checkClick('b_translation_edit_target','${targetLanguageKey}');
+		});
+		jQuery(el).focus();
+	});
 });
 /* ]]> */
 </script>

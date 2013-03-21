@@ -17,33 +17,71 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
-
-import org.olat.modules.qpool.Pool;
+package org.olat.modules.qpool.model;
 
 /**
  * 
- * Initial date: 28.02.2013<br>
+ * Initial date: 21.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PoolRow {
+public class LOMDuration {
+	private int year = 0;
+	private int month = 0;
+	private int day = 0;
+	private int hour = 0;
+	private int minute = 0;
+	private int seconds = 0;
 	
-	private final Pool pool;
-	
-	public PoolRow(Pool pool) {
-		this.pool = pool;
+	public LOMDuration() {
+		//
 	}
 
-	public Long getKey() {
-		return pool.getKey();
+	public int getYear() {
+		return year;
 	}
 
-	public String getName() {
-		return pool.getName();
+	public void setYear(int year) {
+		this.year = year;
 	}
-	
-	public Pool getPool() {
-		return pool;
+
+	public int getMonth() {
+		return month;
+	}
+
+	public void setMonth(int month) {
+		this.month = month;
+	}
+
+	public int getDay() {
+		return day;
+	}
+
+	public void setDay(int day) {
+		this.day = day;
+	}
+
+	public int getHour() {
+		return hour;
+	}
+
+	public void setHour(int hour) {
+		this.hour = hour;
+	}
+
+	public int getMinute() {
+		return minute;
+	}
+
+	public void setMinute(int minute) {
+		this.minute = minute;
+	}
+
+	public int getSeconds() {
+		return seconds;
+	}
+
+	public void setSeconds(int seconds) {
+		this.seconds = seconds;
 	}
 }

@@ -58,6 +58,16 @@ import org.olat.core.util.StringHelper;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public abstract class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
+	
+	private FlexiCellRenderer delegate;
+	
+	public CSSIconFlexiCellRenderer() {
+		//
+	}
+	
+	public CSSIconFlexiCellRenderer(FlexiCellRenderer delegate) {
+		this.delegate = delegate;
+	}
 
 	  /**
 	   * Render Date type with Formatter depending on locale. Render all other types with toString. 
@@ -76,7 +86,11 @@ public abstract class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
 			target.append(StringEscapeUtils.escapeHtml(hoverText));
 		}
 		target.append("\">");
-		target.append(getCellValue(cellValue));
+		if(delegate == null) {
+			target.append(getCellValue(cellValue));
+		} else {
+			delegate.render(target, cellValue, row, source, ubu, translator);
+		}
 		target.append("</span>");			
 	}
 		

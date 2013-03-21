@@ -37,9 +37,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemView;
 
 /**
  * 
@@ -109,7 +110,7 @@ public class QuestionsController extends BasicController implements StackedContr
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(selectItem == source) {
-			doSelect(ureq, detailsCtrl.getItem());
+			doSelect(ureq, detailsCtrl.getItem(), detailsCtrl.isCanEdit());
 		} else if(deleteItem == source) {
 			doConfirmDelete(ureq, detailsCtrl.getItem());
 		}
@@ -120,7 +121,7 @@ public class QuestionsController extends BasicController implements StackedContr
 		if(source == listCtrl) {
 			if(event instanceof QItemEvent) {
 				QItemEvent se = (QItemEvent)event;
-				QuestionItemShort item = se.getItem();
+				QuestionItemView item = se.getItem();
 				doUpdateDetails(ureq, item);
 			} else if(event instanceof QPoolEvent) {
 				fireEvent(ureq, event);
@@ -143,8 +144,8 @@ public class QuestionsController extends BasicController implements StackedContr
 		super.event(ureq, source, event);
 	}
 	
-	protected void doSelect(UserRequest ureq, QuestionItem item) {
-		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item);
+	protected void doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
+		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, editable);
 		listenTo(detailsCtrl);
 		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);
 		listenTo(mainCtrl);
@@ -156,9 +157,10 @@ public class QuestionsController extends BasicController implements StackedContr
 		confirmDeleteBox.setUserObject(item);
 	}
 	
-	private void doUpdateDetails(UserRequest ureq, QuestionItemShort itemShort) {
-		QuestionItem item = qpoolService.loadItemById(itemShort.getKey());
-		detailsCtrl.updateItem(item);
+	private void doUpdateDetails(UserRequest ureq, QuestionItemView itemView) {
+		deleteItem.setVisible(itemView.isEditable());
+		QuestionItem item = qpoolService.loadItemById(itemView.getKey());
+		detailsCtrl.updateItem(item, itemView.isEditable());
 		previewCtrl.updateItem(ureq, item);
 	}
 	

@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.QPoolEvent;
 import org.olat.modules.qpool.ui.MetadatasController;
 
@@ -48,10 +49,13 @@ public class QuestionMetadataController extends FormBasicController  {
 	private FormLink editLink;
 	private StaticTextElement typeEl, difficultyEl, stdevDifficultyEl, differentiationEl, numAnswerAltEl, usageEl, assessmentTypeEl;
 
-	public QuestionMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	private final boolean edit;
+	
+	public QuestionMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 	
+		this.edit = edit;
 		initForm(ureq);
 		setItem(item);
 	}
@@ -59,8 +63,10 @@ public class QuestionMetadataController extends FormBasicController  {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("question");
-		editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
-		editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		if(edit) {
+			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
+			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		}
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
@@ -75,8 +81,13 @@ public class QuestionMetadataController extends FormBasicController  {
 	}
 	
 	public void setItem(QuestionItem item) {
-		String type = item.getType() == null ? "" : item.getType();
-		typeEl.setValue(type);
+		QItemType type = item.getType();
+		if(type == null || type.getType() == null) {
+			typeEl.setValue("");
+		} else {
+			typeEl.setValue(type.getType());
+		}
+		
 		difficultyEl.setValue(toString(item.getDifficulty()));
 		stdevDifficultyEl.setValue(toString(item.getStdevDifficulty()));
 		differentiationEl.setValue(toString(item.getDifferentiation()));

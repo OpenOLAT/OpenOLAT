@@ -38,6 +38,7 @@ package org.olat.core.logging;
  */
 public class KnownIssueException extends OLATRuntimeException {
 
+	private static final long serialVersionUID = -2238916925857721010L;
 	private int jiraNumber;
 
 	/**

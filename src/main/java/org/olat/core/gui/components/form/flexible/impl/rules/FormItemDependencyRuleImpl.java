@@ -92,8 +92,8 @@ public abstract class FormItemDependencyRuleImpl implements FormItemDependencyRu
 		if (actiontype == FormItemDependencyRuleImpl.CUSTOM) {
 			applayable.apply(triggerElement, triggerVal, targets);
 		} else {
-			for (Iterator iter = targets.iterator(); iter.hasNext();) {
-				FormItem element = (FormItem) iter.next();
+			for (Iterator<FormItem> iter = targets.iterator(); iter.hasNext();) {
+				FormItem element = iter.next();
 				switch (actiontype) {
 					case FormItemDependencyRuleImpl.MAKE_INVISIBLE:
 						element.setVisible(false);

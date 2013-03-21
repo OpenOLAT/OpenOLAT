@@ -28,6 +28,7 @@ package org.olat.core.logging;
 */
 public class OLATRuntimeException extends RuntimeException {
 
+	private static final long serialVersionUID = -1627846608356883591L;
 	private String logMsg;
 	private String usrMsgKey;
 	private String usrMsgPackage;

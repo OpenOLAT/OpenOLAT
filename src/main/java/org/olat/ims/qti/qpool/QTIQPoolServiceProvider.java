@@ -20,6 +20,7 @@
 package org.olat.ims.qti.qpool;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
@@ -27,13 +28,18 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QEducationalContextDAO;
+import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,7 +56,11 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	@Autowired
 	private FileStorage qpoolFileStorage;
 	@Autowired
+	private QItemTypeDAO qItemTypeDao;
+	@Autowired
 	private QuestionItemDAO questionItemDao;
+	@Autowired
+	private QEducationalContextDAO qEduContextDao;
 	
 	public QTIQPoolServiceProvider() {
 		//
@@ -79,14 +89,32 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public List<QuestionItem> importItems(Identity owner, String filename, File file) {
-		QTIImportProcessor processor = new QTIImportProcessor(owner, filename, file, questionItemDao, qpoolFileStorage);
+		QTIImportProcessor processor = new QTIImportProcessor(owner, filename, file, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		return processor.process();
 	}
 
 	@Override
 	public void exportItem(QuestionItemFull item, ZipOutputStream zout) {
-		QTIExportProcessor processor = new QTIExportProcessor(item, qpoolFileStorage);
-		processor.process(zout);
+		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
+		processor.process(item, zout);
+	}
+	
+	public void assembleTest(List<QuestionItemShort> items) {
+		List<Long> itemKeys = new ArrayList<Long>();
+		for(QuestionItemShort item:items) {
+			itemKeys.add(item.getKey());
+		}
+
+		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
+		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
+		processor.assembleTest(fullItems);	
+	}
+
+	@Override
+	public void copyItem(QuestionItemFull original, QuestionItemFull copy) {
+		VFSContainer originalDir = qpoolFileStorage.getContainer(original.getDirectory());
+		VFSContainer copyDir = qpoolFileStorage.getContainer(copy.getDirectory());
+		VFSManager.copyContent(originalDir, copyDir);
 	}
 
 	@Override

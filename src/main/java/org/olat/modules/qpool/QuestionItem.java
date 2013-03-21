@@ -19,6 +19,10 @@
  */
 package org.olat.modules.qpool;
 
+import org.olat.modules.qpool.model.QEducationalContext;
+import org.olat.modules.qpool.model.QItemType;
+import org.olat.modules.qpool.model.QLicense;
+
 /**
  * 
  * Initial date: 21.01.2013<br>
@@ -42,15 +46,20 @@ public interface QuestionItem extends QuestionItemShort {
 	 * @return
 	 */
 	public String getTaxonomicPath();
+	
+	//educational
+	public QEducationalContext getEducationalContext();
 
 	//question
+	public QItemType getType();
+	
 	public String getAssessmentType();
 	
 	//lifecycle
 	public String getItemVersion();
 	
 	//rights
-	public String getCopyright();
+	public QLicense getLicense();
 
 	//technics
 	public String getEditor();

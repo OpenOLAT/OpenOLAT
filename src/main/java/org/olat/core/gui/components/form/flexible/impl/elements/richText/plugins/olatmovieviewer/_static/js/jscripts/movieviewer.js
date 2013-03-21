@@ -216,13 +216,13 @@ function generatePreview() {
 	var address = document.getElementById('address');
 	var browserLink = document.getElementById('srcbrowser_link');
 	if(pl.provider == "rtmp" || pl.provider == "http") {
-		streaming.style.display = "";
-		browserLink.style.display = "none";
-		address.style.width = '300px';
+		jQuery(streaming).css('display','');
+		jQuery(browserLink).css('display','none');
+		jQuery(address).width(300);
 	} else {
-		streaming.style.display = "none";
-		browserLink.style.display = "";
-		address.style.width = '280px';
+		jQuery(streaming).css('display','none');
+		jQuery(browserLink).css('display','');
+		jQuery(address).width(280);
 	}
 	return;
 }

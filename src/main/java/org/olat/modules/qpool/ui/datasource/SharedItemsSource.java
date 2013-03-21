@@ -27,8 +27,8 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
-import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.resource.OLATResource;
@@ -59,7 +59,7 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public ResultInfos<QuestionItemShort> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);
 		return qpoolService.getSharedItemByResource(resource, params, firstResult, maxResults, orderBy);

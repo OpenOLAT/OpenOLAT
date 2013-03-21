@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -226,8 +227,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	}
 
 	@Override
-	@SuppressWarnings("unused")
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		// no constraint to be checked	
 	}
 

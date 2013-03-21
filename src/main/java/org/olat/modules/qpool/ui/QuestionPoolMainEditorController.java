@@ -40,13 +40,18 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.ui.admin.PoolsAdminController;
+import org.olat.modules.qpool.ui.admin.QEducationalContextsAdminController;
+import org.olat.modules.qpool.ui.admin.QItemTypesAdminController;
+import org.olat.modules.qpool.ui.admin.QLicensesAdminController;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
 import org.olat.modules.qpool.ui.datasource.MarkedItemsSource;
 import org.olat.modules.qpool.ui.datasource.MyQuestionItemsSource;
@@ -75,16 +80,21 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private QuestionsController markedQuestionsCtrl;
 	
 	private PoolsAdminController poolAdminCtrl;
+	private QItemTypesAdminController typesCtrl;
+	private QEducationalContextsAdminController levelsCtrl;
+	private QLicensesAdminController licensesCtrl;
 	private TaxonomyAdminController studyFieldCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
 
+	private final Roles roles;
 	private final MarkManager markManager;
 	private final QPoolService qpoolService;
 	
 	public QuestionPoolMainEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
+		roles = ureq.getUserSession().getRoles();
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
@@ -134,6 +144,12 @@ public class QuestionPoolMainEditorController extends BasicController implements
 					doSelectAdminStudyFields(ureq);
 				} else if("menu.admin.pools".equals(uNode)) {
 					doSelectAdminPools(ureq);
+				} else if("menu.admin.types".equals(uNode)) {
+					doSelectAdminTypes(ureq);
+				} else if("menu.admin.levels".equals(uNode)) {
+					doSelectAdminLevels(ureq);
+				} else if("menu.admin.licenses".equals(uNode)) {
+					doSelectAdminLicenses(ureq);
 				} else if("menu.database.my".equals(uNode)) {
 					doSelectMyQuestions(ureq);
 				} else if("menu.database.favorit".equals(uNode)) {
@@ -185,10 +201,10 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			if(node != null) {
 				Object userObj = node.getUserObject();
 				if(userObj instanceof BusinessGroup) {
-					qpoolService.shareItems(Collections.singletonList(item), Collections.singletonList((BusinessGroup)userObj));
+					qpoolService.shareItemsWithGroups(Collections.singletonList(item), Collections.singletonList((BusinessGroup)userObj), false);
 					showInfo("item.shared", item.getTitle());
 				} else if(userObj instanceof Pool) {
-					qpoolService.addItemToPool(item, (Pool)userObj);
+					qpoolService.shareItemsInPools(Collections.singletonList(item), Collections.singletonList((Pool)userObj), false);
 					showInfo("item.pooled", item.getTitle());
 				} else if(userObj instanceof QuestionItemCollection) {
 					qpoolService.addItemToCollection(item, (QuestionItemCollection)userObj);
@@ -226,6 +242,30 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			listenTo(poolAdminCtrl);
 		}
 		content.setContent(poolAdminCtrl.getInitialComponent());
+	}
+	
+	private void doSelectAdminTypes(UserRequest ureq) {
+		if(typesCtrl == null) {
+			typesCtrl = new QItemTypesAdminController(ureq, getWindowControl());
+			listenTo(typesCtrl);
+		}
+		content.setContent(typesCtrl.getInitialComponent());
+	}
+	
+	private void doSelectAdminLevels(UserRequest ureq) {
+		if(levelsCtrl == null) {
+			levelsCtrl = new QEducationalContextsAdminController(ureq, getWindowControl());
+			listenTo(levelsCtrl);
+		}
+		content.setContent(levelsCtrl.getInitialComponent());
+	}
+	
+	private void doSelectAdminLicenses(UserRequest ureq) {
+		if(licensesCtrl == null) {
+			licensesCtrl = new QLicensesAdminController(ureq, getWindowControl());
+			listenTo(licensesCtrl);
+		}
+		content.setContent(licensesCtrl.getInitialComponent());
 	}
 	
 	private void doSelectMyQuestions(UserRequest ureq) {
@@ -324,7 +364,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private void buildPoolSubTreeModel(GenericTreeNode poolNode) {
 		poolNode.removeAllChildren();
 		
-		List<Pool> pools = qpoolService.getPools(getIdentity());
+		List<Pool> pools = qpoolService.getPools(getIdentity(), roles);
 		for(Pool pool:pools) {
 			GenericTreeNode node = new GenericTreeNode(pool.getName(), pool);
 			node.setIconCssClass("o_sel_qpool_pool");
@@ -340,7 +380,19 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		adminNode.addChild(node);
 		
 		node = new GenericTreeNode(translate("menu.admin.pools"), "menu.admin.pools");
-		node.setIconCssClass("o_sel_qpool_study_pools");
+		node.setIconCssClass("o_sel_qpool_admin_pools");
+		adminNode.addChild(node);
+		
+		node = new GenericTreeNode(translate("menu.admin.types"), "menu.admin.types");
+		node.setIconCssClass("o_sel_qpool_admin_types");
+		adminNode.addChild(node);
+		
+		node = new GenericTreeNode(translate("menu.admin.levels"), "menu.admin.levels");
+		node.setIconCssClass("o_sel_qpool_admin_levels");
+		adminNode.addChild(node);
+
+		node = new GenericTreeNode(translate("menu.admin.licenses"), "menu.admin.licenses");
+		node.setIconCssClass("o_sel_qpool_admin_licenses");
 		adminNode.addChild(node);
 	}
 	

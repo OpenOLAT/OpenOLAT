@@ -1,0 +1,11 @@
+#if($r.available("preview"))
+	$r.render("preview")
+#else
+	No preview
+#end
+
+#if($r.available("metadatas"))
+	$r.render("metadatas")
+#else
+	No metadatas
+#end

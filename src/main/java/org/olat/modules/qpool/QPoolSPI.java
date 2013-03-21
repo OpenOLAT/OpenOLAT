@@ -55,6 +55,13 @@ public interface QPoolSPI {
 	public void exportItem(QuestionItemFull item, ZipOutputStream out);
 	
 	/**
+	 * Copy the item attachment...
+	 * @param original
+	 * @param copy
+	 */
+	public void copyItem(QuestionItemFull original, QuestionItemFull copy);
+	
+	/**
 	 * Return the preview controller used in the main list panel of
 	 * the question poll.
 	 * @param ureq

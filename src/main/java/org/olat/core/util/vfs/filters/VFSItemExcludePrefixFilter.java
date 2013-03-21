@@ -41,7 +41,7 @@ import org.olat.core.util.vfs.VFSItem;
  */
 public class VFSItemExcludePrefixFilter implements VFSItemFilter {
 
-	private Hashtable excludedPrefixes = new Hashtable();
+	private Hashtable<String,String> excludedPrefixes = new Hashtable<String,String>();
 
 	/**
 	 * Constrtuctor
@@ -58,14 +58,14 @@ public class VFSItemExcludePrefixFilter implements VFSItemFilter {
 	 */
 	public void addExcludedPrefix(String prefix) {
 		prefix = prefix.toLowerCase();
-		this.excludedPrefixes.put(prefix, prefix);
+		excludedPrefixes.put(prefix, prefix);
 	}
 
 	/**
 	 * @param prefix
 	 */
 	public void removeSuffix(String prefix) {
-		this.excludedPrefixes.remove(prefix.toLowerCase());
+		excludedPrefixes.remove(prefix.toLowerCase());
 	}
 
 	/**
@@ -73,9 +73,9 @@ public class VFSItemExcludePrefixFilter implements VFSItemFilter {
 	 */
 	public boolean accept(VFSItem vfsItem) {
 		String name = vfsItem.getName().toLowerCase();
-		Enumeration elements = excludedPrefixes.elements();
+		Enumeration<String> elements = excludedPrefixes.elements();
 		while (elements.hasMoreElements() ) {
-			String excludedPrefix = (String)elements.nextElement();
+			String excludedPrefix = elements.nextElement();
 			if (name.startsWith(excludedPrefix)) {
 				return false;
 			}

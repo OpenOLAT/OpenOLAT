@@ -39,11 +39,13 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.ims.qti.QTIConstants;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +63,8 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
+	private QItemTypeDAO qItemTypeDao;
+	@Autowired
 	private QuestionItemDAO questionDao;
 	@Autowired
 	private QPoolService qpoolService;
@@ -68,10 +72,11 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	@Test
 	public void deleteItems() {
 		//create a group to share 2 items
+		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item1 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, QuestionType.MC);
-		QuestionItem item2 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, QuestionType.MC);
+		QuestionItem item1 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		dbInstance.commit();
 		//share them
 		questionDao.share(item1, group.getResource());
@@ -94,9 +99,10 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	@Test
 	public void createCollection() {
 		//create an user with 2 items
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Owner-3-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		dbInstance.commit();
 		
 		//load the items of the collection
@@ -111,11 +117,15 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		//retrieve the list of items in the collection
 		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl);
 		Assert.assertEquals(2, numOfItemsInCollection);
-		ResultInfos<QuestionItemShort> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, null, 0, -1);
+		ResultInfos<QuestionItemView> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, null, 0, -1);
 		Assert.assertNotNull(itemsOfCollection);
 		Assert.assertEquals(2, itemsOfCollection.getObjects().size());
-		Assert.assertTrue(itemsOfCollection.getObjects().contains(item1));
-		Assert.assertTrue(itemsOfCollection.getObjects().contains(item2));
+		List<Long> itemKeys = new ArrayList<Long>();
+		for(QuestionItemView item:itemsOfCollection.getObjects()) {
+			itemKeys.add(item.getKey());
+		}
+		Assert.assertTrue(itemKeys.contains(item1.getKey()));
+		Assert.assertTrue(itemKeys.contains(item2.getKey()));
 	}
 
 	@Test

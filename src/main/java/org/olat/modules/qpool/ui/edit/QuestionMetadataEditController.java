@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui.edit;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -33,8 +34,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.MetadatasController;
 
@@ -64,9 +66,16 @@ public class QuestionMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("question");
-		
-		String[] typeKeys = new String[]{ "" };
-		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", formLayout, typeKeys, typeKeys, null);
+
+		List<QItemType> types = qpoolService.getAllItemTypes();
+		String[] typeKeys = new String[types.size()];
+		String[] typeValues = new String[types.size()];
+		int count = 0;
+		for(QItemType type:types) {
+			typeKeys[count] = type.getType();
+			typeValues[count++] = translate("item.type." + type.getType().toLowerCase());
+		}
+		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", formLayout, typeKeys, typeValues, null);
 		
 		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 10, "", formLayout);
 		difficultyEl.setExampleKey("question.difficulty.example", null);
@@ -163,8 +172,10 @@ public class QuestionMetadataEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
-			String type = typeEl.isOneSelected() ? typeEl.getSelectedKey() : null;
-			itemImpl.setType(type);
+			if(typeEl.isOneSelected()) {
+				String typeKey = typeEl.getSelectedKey();
+				itemImpl.setType(qpoolService.getItemType(typeKey));
+			}
 			
 			BigDecimal difficulty = toBigDecimal(difficultyEl.getValue());
 			itemImpl.setDifficulty(difficulty);

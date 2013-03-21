@@ -20,7 +20,7 @@
 package org.olat.modules.qpool.ui;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItemView;
 
 /**
  * 
@@ -31,14 +31,14 @@ import org.olat.modules.qpool.QuestionItemShort;
 public class QItemEvent extends Event {
 
 	private static final long serialVersionUID = 1868410260121125418L;
-	private final QuestionItemShort item;
+	private final QuestionItemView item;
 
-	public QItemEvent(String cmd, QuestionItemShort item) {
+	public QItemEvent(String cmd, QuestionItemView item) {
 		super(cmd);
 		this.item = item;
 	}
 
-	public QuestionItemShort getItem() {
+	public QuestionItemView getItem() {
 		return item;
 	}
 }

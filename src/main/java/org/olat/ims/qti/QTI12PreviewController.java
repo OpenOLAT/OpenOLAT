@@ -30,6 +30,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -47,8 +48,8 @@ import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.resources.IMSEntityResolver;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 /**
  * 
  * Initial date: 21.02.2013<br>
@@ -58,12 +59,17 @@ import org.olat.modules.qpool.QPoolService;
 public class QTI12PreviewController extends BasicController {
 	
 	private final Panel mainPanel;
+	private final VelocityContainer mainVC;
 	private ItemPreviewController previewCtrl;
+	private QTI12MetadataController metadataCtrl;
+	
 	private final QPoolService qpoolService;
 
 	public QTI12PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+
+		mainVC = createVelocityContainer("qti_preview");
 		mainPanel = new Panel("qti12preview");
 		
 		VFSLeaf leaf = qpoolService.getRootFile(qitem);
@@ -78,10 +84,15 @@ public class QTI12PreviewController extends BasicController {
 				previewCtrl = new ItemPreviewController(wControl, item, mapperUrl, translator);
 				listenTo(previewCtrl);
 				mainPanel.setContent(previewCtrl.getInitialComponent());
+				
+				metadataCtrl = new QTI12MetadataController(ureq, getWindowControl(), item);
+				listenTo(metadataCtrl);
+				mainVC.put("metadatas", metadataCtrl.getInitialComponent());
 			}
 		}
 		
-		putInitialPanel(mainPanel);
+		mainVC.put("preview", mainPanel);
+		putInitialPanel(mainVC);
 	}
 	
 	private Item readItemXml(VFSLeaf leaf) {

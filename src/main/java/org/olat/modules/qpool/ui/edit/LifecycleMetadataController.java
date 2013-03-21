@@ -47,10 +47,13 @@ public class LifecycleMetadataController extends FormBasicController  {
 	private FormLink editLink;
 	private StaticTextElement versionEl, statusEl;
 
-	public LifecycleMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	private final boolean edit;
+	
+	public LifecycleMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 		
+		this.edit = edit;
 		initForm(ureq);
 		setItem(item);
 	}
@@ -58,9 +61,10 @@ public class LifecycleMetadataController extends FormBasicController  {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("lifecycle");
-
-		editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
-		editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		if(edit) {
+			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
+			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		}
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);

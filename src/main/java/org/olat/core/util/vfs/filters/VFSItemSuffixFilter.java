@@ -39,7 +39,7 @@ import org.olat.core.util.vfs.VFSItem;
  * 
  */
 public class VFSItemSuffixFilter implements VFSItemFilter {
-	private Hashtable suffixes = new Hashtable();
+	private Hashtable<String,String> suffixes = new Hashtable<String,String>();
 
 	/**
 	 * Constructor
@@ -56,14 +56,14 @@ public class VFSItemSuffixFilter implements VFSItemFilter {
 	 */
 	public void addSuffix(String suffix) {
 		suffix = suffix.toLowerCase();
-		this.suffixes.put(suffix, suffix);
+		suffixes.put(suffix, suffix);
 	}
 
 	/**
 	 * @param suffix
 	 */
 	public void removeSuffix(String suffix) {
-		this.suffixes.remove(suffix.toLowerCase());
+		suffixes.remove(suffix.toLowerCase());
 	}
 
 	/**
@@ -72,7 +72,9 @@ public class VFSItemSuffixFilter implements VFSItemFilter {
 	public boolean accept(VFSItem vfsItem) {
 		String name = vfsItem.getName().toLowerCase();
 		int idx = name.lastIndexOf('.');
-		if (idx >= 0) { return this.suffixes.containsKey(name.substring(idx + 1)); }
+		if (idx >= 0) { 
+			return suffixes.containsKey(name.substring(idx + 1));
+		}
 		return suffixes.containsKey(name);
 	}
 

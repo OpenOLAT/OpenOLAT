@@ -46,11 +46,14 @@ public class TechnicalMetadataController extends FormBasicController  {
 	
 	private FormLink editLink;
 	private StaticTextElement editorEl, editorVersionEl, formatEl, creationDateEl, lastModifiedEl;
+	
+	private final boolean edit;
 
-	public TechnicalMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	public TechnicalMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 		
+		this.edit = edit;
 		initForm(ureq);
 		setItem(item);
 	}
@@ -58,9 +61,10 @@ public class TechnicalMetadataController extends FormBasicController  {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("technical");
-
-		editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
-		editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		if(edit) {
+			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
+			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		}
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);

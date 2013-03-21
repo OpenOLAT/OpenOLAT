@@ -114,7 +114,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 
 			public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 				// trigger js method that adds hover events - in some conditions method is not available (in iframes)
-				sb.append("if (jQuery.isFunction(b_attach_i18n_inline_editing)) {b_attach_i18n_inline_editing();}");
+				sb.append("if (jQuery.isFunction(b_attach_i18n_inline_editing)){b_attach_i18n_inline_editing();}");
 			}
 		});
 		delegatingComponent.addListener(this);

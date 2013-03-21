@@ -1,9 +1,11 @@
 <div class="b_clearfix">
 	<fieldset>
 		<legend>$off_title</legend>
-		<div class="o_buttons_box_right">
-			$r.render("edit")
-		</div>
+		#if($r.available("edit"))
+			<div class="o_buttons_box_right">
+				$r.render("edit")
+			</div>
+		#end
 		$r.render("metadatas")
 	</fieldset>
 </div>

@@ -38,5 +38,9 @@ public interface Pool {
 	public String getName();
 	
 	public void setName(String name);
+	
+	public boolean isPublicPool();
+	
+	public void setPublicPool(boolean publicPool);
 
 }

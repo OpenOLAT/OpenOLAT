@@ -37,7 +37,7 @@ import org.olat.core.util.Formatter;
  * Render value with toString. Render Date value with Formatter depending on locale.
  * @author Christian Guretzki
  */
-class TextFlexiCellRenderer implements FlexiCellRenderer {
+public class TextFlexiCellRenderer implements FlexiCellRenderer {
 
   /**
    * Render Date type with Formatter depending on locale. Render all other types with toString. 

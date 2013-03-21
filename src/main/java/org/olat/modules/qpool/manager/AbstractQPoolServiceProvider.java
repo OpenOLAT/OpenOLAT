@@ -38,10 +38,11 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
-import org.olat.modules.qpool.QPoolService;
 
 /**
  * 
@@ -111,5 +112,12 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 		} finally {
 			IOUtils.closeQuietly(in);
 		}
+	}
+
+	@Override
+	public void copyItem(QuestionItemFull original, QuestionItemFull copy) {
+		VFSContainer originalDir = getFileStorage().getContainer(original.getDirectory());
+		VFSContainer copyDir = getFileStorage().getContainer(copy.getDirectory());
+		VFSManager.copyContent(originalDir, copyDir);
 	}
 }

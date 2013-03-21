@@ -1,0 +1,308 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.qpool.ui.admin;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.i18n.ui.TranslationToolI18nItemEditCrumbController;
+import org.olat.core.util.prefs.Preferences;
+import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.model.QEducationalContext;
+import org.olat.modules.qpool.ui.MetadatasController;
+
+/**
+ * 
+ * Manage the list of levels
+ * 
+ * Initial date: 18.03.2013<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class QEducationalContextsAdminController extends FormBasicController {
+	
+	private FormLink createType;
+	
+	private LevelDataModel model;
+	private FlexiTableElement tableEl;
+
+	private CloseableModalController cmc;
+	private QEducationalContextEditController editCtrl;
+	private DialogBoxController confirmDeleteCtrl;
+	private TranslationToolI18nItemEditCrumbController i18nItemEditCtr;
+	
+	private final QPoolService qpoolService;
+	
+	public QEducationalContextsAdminController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "levels_admin");
+
+		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
+		
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		initForm(ureq);
+		reloadModel();
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		//add the table
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.level.i18nKey(), Cols.level.ordinal(), true, "level"));
+		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("translate", new TextFlexiCellRenderer());
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.levelI18n.i18nKey(), Cols.levelI18n.ordinal(), "translate", renderer));
+		FlexiCellRenderer delRenderer = new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("delete"), "delete-level"), null);
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", Cols.deletable.ordinal(), "delete-level", delRenderer));
+
+		model = new LevelDataModel(columnsModel);
+		tableEl = uifactory.addTableElement(ureq, "levels", model, null, 20, false, getTranslator(), formLayout);
+		tableEl.setRendererType(FlexiTableRendererType.classic);
+		
+		createType = uifactory.addFormLink("create.level", formLayout, Link.BUTTON);
+	}
+	
+	private void reloadModel() {
+		List<QEducationalContext> rows = qpoolService.getAllEducationlContexts();
+		model.setObjects(rows);
+		tableEl.reset();	
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == createType) {
+			doEdit(ureq, null);
+		} else if(source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("delete-level".equals(se.getCommand())) {
+					QEducationalContext row = model.getObject(se.getIndex());
+					doConfirmDelete(ureq, row);
+				} else if("translate".equals(se.getCommand())) {
+					QEducationalContext row = model.getObject(se.getIndex());
+					doOpenTranslationTool(ureq, row);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == editCtrl) {
+			if(event == Event.DONE_EVENT) {
+				reloadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == confirmDeleteCtrl) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				QEducationalContext level = (QEducationalContext)confirmDeleteCtrl.getUserObject();
+				doDelete(ureq, level);
+			}
+		} else if(source == cmc) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editCtrl);
+		removeAsListenerAndDispose(cmc);
+		editCtrl = null;
+		cmc = null;
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+	
+	private void doOpenTranslationTool(UserRequest ureq, QEducationalContext row) {
+		Locale orgininalLocale = getLocale();
+		Locale varLocale = new Locale(orgininalLocale.getLanguage(), orgininalLocale.getCountry(), "__customizing");
+
+		I18nItem item = new I18nItem("org.olat.modules.qpool.ui", "item.level." + row.getLevel(), varLocale, 1, 1);
+		List<I18nItem> i18nItems = new ArrayList<I18nItem>();
+		i18nItems.add(item);
+
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		List<String> referenceLangs = I18nModule.getTransToolReferenceLanguages();
+		String referencePrefs = (String)guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLangs.get(0));
+		I18nManager i18nMgr = I18nManager.getInstance();
+		Locale referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
+		
+		
+		i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, referenceLocale, true);
+		listenTo(i18nItemEditCtr);
+		
+		i18nItemEditCtr.initialzeI18nitemAsCurrentItem(ureq, item);
+
+		// Open in modal window
+		if (cmc != null) removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), "close", i18nItemEditCtr.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, QEducationalContext level) {
+		String title = translate("delete.level");
+		String text = translate("delete.level.confirm", new String[]{ level.getLevel() });
+		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
+		confirmDeleteCtrl.setUserObject(level);
+	}
+	
+	private void doDelete(UserRequest ureq, QEducationalContext level) {
+		//qpoolService.deletePool(pool);
+		reloadModel();
+	}
+	
+	private void doEdit(UserRequest ureq, QEducationalContext level) {
+		removeAsListenerAndDispose(editCtrl);
+		editCtrl = new QEducationalContextEditController(ureq, getWindowControl(), level);
+		listenTo(editCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				editCtrl.getInitialComponent(), true, translate("edit.pool"));
+		cmc.activate();
+		listenTo(cmc);	
+	}
+	
+	private enum Cols {
+		id("level.key"),
+		level("level.level"),
+		levelI18n("level.translation"),
+		deletable("level.deletable");
+		
+		private final String i18nKey;
+	
+		private Cols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		public String i18nKey() {
+			return i18nKey;
+		}
+	}
+	
+	private class LevelDataModel implements FlexiTableDataModel, TableDataModel<QEducationalContext> {
+
+		private FlexiTableColumnModel columnModel;
+		private List<QEducationalContext> levels;
+		
+		public LevelDataModel(FlexiTableColumnModel columnModel) {
+			this.columnModel = columnModel;
+		}
+		
+		@Override
+		public FlexiTableColumnModel getTableColumnModel() {
+			return columnModel;
+		}
+
+		@Override
+		public void setTableColumnModel(FlexiTableColumnModel columnModel) {
+			this.columnModel = columnModel;
+		}
+
+		@Override
+		public int getColumnCount() {
+			return columnModel.getColumnCount();
+		}
+
+		@Override
+		public QEducationalContext getObject(int row) {
+			if(levels != null && row >= 0 && row < levels.size()) {
+				return levels.get(row);
+			}
+			return null;
+		}
+
+		@Override
+		public void setObjects(List<QEducationalContext> objects) {
+			levels = new ArrayList<QEducationalContext>(objects);
+		}
+
+		@Override
+		public Object createCopyWithEmptyList() {
+			return new LevelDataModel(columnModel);
+		}
+
+
+		@Override
+		public int getRowCount() {
+			return levels == null ? 0 : levels.size();
+		}
+
+		@Override
+		public Object getValueAt(int row, int col) {
+			QEducationalContext level = getObject(row);
+			switch(Cols.values()[col]) {
+				case id: return level.getKey();
+				case level: return level.getLevel();
+				case levelI18n: {
+					String i18nKey = "item.level." + level.getLevel().toLowerCase();
+					String translation = getTranslator().translate(i18nKey);
+					if(translation.length() > 256) {
+						return i18nKey;
+					}
+					return translation;
+				}
+				case deletable: return level.isDeletable();
+				default: return "";
+			}
+		}
+	}
+
+}

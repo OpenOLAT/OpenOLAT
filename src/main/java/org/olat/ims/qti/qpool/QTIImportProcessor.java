@@ -55,7 +55,11 @@ import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.manager.FileStorage;
+import org.olat.modules.qpool.manager.QEducationalContextDAO;
+import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
+import org.olat.modules.qpool.model.QEducationalContext;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -76,15 +80,21 @@ class QTIImportProcessor {
 	private final Identity owner;
 	private final String importedFilename;
 	private final File importedFile;
+
+	private final QItemTypeDAO qItemTypeDao;
 	private final FileStorage qpoolFileStorage;
 	private final QuestionItemDAO questionItemDao;
+	private final QEducationalContextDAO qEduContextDao;
 
 	public QTIImportProcessor(Identity owner, String importedFilename, File importedFile,
-			QuestionItemDAO questionItemDao, FileStorage qpoolFileStorage) {
+			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
+			FileStorage qpoolFileStorage) {
 		this.owner = owner;
 		this.importedFilename = importedFilename;
 		this.importedFile = importedFile;
+		this.qItemTypeDao = qItemTypeDao;
 		this.questionItemDao = questionItemDao;
+		this.qEduContextDao = qEduContextDao;
 		this.qpoolFileStorage = qpoolFileStorage;
 	}
 	
@@ -154,15 +164,87 @@ class QTIImportProcessor {
 		QuestionItemImpl poolItem = questionItemDao.create(title, QTIConstants.QTI_12_FORMAT, dir, filename);
 		//description
 		poolItem.setDescription(itemInfos.getComment());
+		//question type first
 		processItemQuestionType(poolItem, ident, itemEl);
+		//if question type not found, can be overridden by the metadatas
 		processItemMetadata(poolItem, itemEl);
 		questionItemDao.persist(owner, poolItem);
 		return poolItem;
 	}
 	
 	private void processItemMetadata(QuestionItemImpl poolItem, Element itemEl) {
+		@SuppressWarnings("unchecked")
+		List<Element> qtiMetadataFieldList = itemEl.selectNodes("./itemmetadata/qtimetadata/qtimetadatafield");
+		for(Element qtiMetadataField:qtiMetadataFieldList) {
+			Element labelEl = (Element)qtiMetadataField.selectSingleNode("./fieldlabel");
+			Element entryEl = (Element)qtiMetadataField.selectSingleNode("./fieldentry");
+			if(labelEl != null && entryEl != null) {
+				processMetadataField(poolItem, labelEl, entryEl);
+			}
+		}
+	}
+	
+	/**
+	 * <ul>
+	 *  <li>qmd_computerscored</li>
+	 *  <li>qmd_feedbackpermitted</li>
+	 *  <li>qmd_hintspermitted</li>
+	 *  <li>qmd_itemtype -> (check is made on the content of the item)</li>
+	 *  <li>qmd_levelofdifficulty -> educational context</li>
+	 *  <li>qmd_maximumscore</li>
+	 *  <li>qmd_renderingtype</li>
+	 *  <li>qmd_responsetype</li>
+	 *  <li>qmd_scoringpermitted</li>
+	 *  <li>qmd_solutionspermitted</li>
+	 *  <li>qmd_status</li>
+	 *  <li>qmd_timedependence</li>
+	 *  <li>qmd_timelimit</li>
+	 *  <li>qmd_toolvendor -> editor</li>
+	 *  <li>qmd_topic</li>
+	 *  <li>qmd_material</li>
+	 *  <li>qmd_typeofsolution</li>
+	 *  <li>qmd_weighting</li>
+	 * </ul> 
+	 * @param poolItem
+	 * @param labelEl
+	 * @param entryEl
+	 */
+	private void processMetadataField(QuestionItemImpl poolItem, Element labelEl, Element entryEl) {
+		String label = labelEl.getText();
+		String entry = entryEl.getText();
 		
-		
+		if(QTIConstants.META_LEVEL_OF_DIFFICULTY.equals(label)) {
+			if(StringHelper.containsNonWhitespace(entry)) {
+				QEducationalContext context = qEduContextDao.loadByLevel(entry);
+				if(context == null) {
+					context = qEduContextDao.create(entry, true);
+				}
+				poolItem.setEducationalContext(context);
+			}
+		} else if(QTIConstants.META_ITEM_TYPE.equals(label)) {
+			if(poolItem.getType() == null &&  StringHelper.containsNonWhitespace(entry)) {
+				//some heuristic
+				String typeStr = entry;
+				if(typeStr.equalsIgnoreCase("MCQ") || typeStr.equalsIgnoreCase("Multiple choice")) {
+					typeStr = QuestionType.MC.name();
+				} else if(typeStr.equalsIgnoreCase("SCQ") || typeStr.equalsIgnoreCase("Single choice")) {
+					typeStr = QuestionType.SC.name();
+				} else if(typeStr.equalsIgnoreCase("fill-in") || typeStr.equals("Fill-in-the-Blank")
+						|| typeStr.equalsIgnoreCase("Fill-in-Blank") || typeStr.equalsIgnoreCase("Fill In the Blank")) {
+					typeStr = QuestionType.FIB.name();
+				} else if(typeStr.equalsIgnoreCase("Essay")) {
+					typeStr = QuestionType.ESSAY.name();
+				}
+				
+				QItemType type = qItemTypeDao.loadByType(entry);
+				if(type == null) {
+					type = qItemTypeDao.create(entry, true);
+				}
+				poolItem.setType(type);
+			}
+		} else if(QTIConstants.META_TOOLVENDOR.equals(label)) {
+			poolItem.setEditor(entry);
+		}
 	}
 	
 	/**
@@ -366,7 +448,8 @@ class QTIImportProcessor {
 			type = QuestionType.FIB;
 		}
 		if(type != null) {
-			poolItem.setType(type.name());
+			QItemType itemType = qItemTypeDao.loadByType(type.name());
+			poolItem.setType(itemType);
 		}
 	}
 	

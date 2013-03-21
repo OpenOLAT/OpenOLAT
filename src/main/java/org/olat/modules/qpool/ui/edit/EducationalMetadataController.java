@@ -32,8 +32,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.ui.QPoolEvent;
+import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.ui.MetadatasController;
+import org.olat.modules.qpool.ui.QPoolEvent;
 
 /**
  * 
@@ -41,15 +42,17 @@ import org.olat.modules.qpool.ui.MetadatasController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EducationalMetadataController extends FormBasicController  {
+public class EducationalMetadataController extends FormBasicController {
 	
 	private FormLink editLink;
 	private StaticTextElement contextEl, learningTimeEl;
+	
+	private final boolean edit;
 
-	public EducationalMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	public EducationalMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
-		
+		this.edit = edit;
 		initForm(ureq);
 		setItem(item);
 	}
@@ -57,9 +60,10 @@ public class EducationalMetadataController extends FormBasicController  {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("educational");
-
-		editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
-		editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		if(edit) {
+			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
+			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		}
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
@@ -69,8 +73,13 @@ public class EducationalMetadataController extends FormBasicController  {
 	}
 	
 	public void setItem(QuestionItem item) {
-		String context = item.getEducationalContext() == null ? "" : item.getEducationalContext();
-		contextEl.setValue(context);
+		QEducationalContext context = item.getEducationalContext();
+		if(context == null || context.getLevel() == null) {
+			contextEl.setValue("");
+		} else {
+			contextEl.setValue(context.getLevel());
+		}
+		
 		String learningTime = item.getEducationalLearningTime() == null ? "" : item.getEducationalLearningTime();
 		learningTimeEl.setValue(learningTime);
 	}

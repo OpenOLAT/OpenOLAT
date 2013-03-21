@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -31,8 +32,9 @@ import org.olat.core.id.Identity;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,8 @@ public class CollectionDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private CollectionDAO collectionDao;
+	@Autowired
+	private QItemTypeDAO qItemTypeDao;
 	@Autowired
 	private QuestionItemDAO questionDao;
 	
@@ -80,9 +84,10 @@ public class CollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void addItemToCollectionById() {
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-2-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 2", id);
-		QuestionItem item = questionDao.createAndPersist(null, "NGC 89", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
+		QuestionItem item = questionDao.createAndPersist(null, "NGC 89", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		dbInstance.commitAndCloseSession();
 		
 		//add the item to the collection
@@ -93,38 +98,44 @@ public class CollectionDAOTest extends OlatTestCase {
 	@Test
 	public void getItemsOfCollection() {
 		//create a collection with 2 items
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
-		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		collectionDao.addItemToCollection(item1.getKey(), coll);
 		collectionDao.addItemToCollection(item2.getKey(), coll);
 		dbInstance.commit();//check if it's alright
 		
 		//load the items of the collection
-		List<QuestionItemShort> items = collectionDao.getItemsOfCollection(coll, null, 0, -1);
+		List<QuestionItemView> items = collectionDao.getItemsOfCollection(coll, null, 0, -1);
+		List<Long> itemKeys = new ArrayList<Long>();
+		for(QuestionItemView item:items) {
+			itemKeys.add(item.getKey());
+		}
 		Assert.assertNotNull(items);
 		Assert.assertEquals(2, items.size());
-		Assert.assertTrue(items.contains(item1));
-		Assert.assertTrue(items.contains(item2));
+		Assert.assertTrue(itemKeys.contains(item1.getKey()));
+		Assert.assertTrue(itemKeys.contains(item2.getKey()));
 		//count them
 		int numOfItems = collectionDao.countItemsOfCollection(coll);
 		Assert.assertEquals(2, numOfItems);
 		
 		//load limit sub set
-		List<QuestionItemShort> limitedItems = collectionDao.getItemsOfCollection(coll, Collections.singletonList(item1.getKey()), 0, -1);
+		List<QuestionItemView> limitedItems = collectionDao.getItemsOfCollection(coll, Collections.singletonList(item1.getKey()), 0, -1);
 		Assert.assertNotNull(limitedItems);
 		Assert.assertEquals(1, limitedItems.size());
-		Assert.assertTrue(limitedItems.contains(item1));
+		Assert.assertEquals(item1.getKey(), limitedItems.get(0).getKey());
 	}
 	
 	@Test
 	public void getItemKeysOfCollection() {
 		//create a collection with 2 items
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-4-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 4", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 99", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
-		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 101", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, QuestionType.FIB);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 99", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 101", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		collectionDao.addItemToCollection(item1.getKey(), coll);
 		collectionDao.addItemToCollection(item2.getKey(), coll);
 		dbInstance.commit();//check if it's alright

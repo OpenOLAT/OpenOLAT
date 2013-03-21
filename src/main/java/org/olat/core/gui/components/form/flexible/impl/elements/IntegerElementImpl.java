@@ -26,6 +26,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
@@ -149,7 +150,7 @@ public class IntegerElementImpl extends TextElementImpl implements
 			//validate the inline element to check for error
 			transientValue = getValue();
 			super.setValue(paramVal);
-			validate(new ArrayList());
+			validate(new ArrayList<ValidationStatus>());
 			if(hasError()){
 				//in any case, if an error is there -> set Inline Editing on
 				isInlineEditingOn(true);
@@ -186,15 +187,13 @@ public class IntegerElementImpl extends TextElementImpl implements
 	 * @see org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement#setValue(java.lang.String)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	public void setValue(String value) {
 		throw new AssertException(
 				"Please use setIntValue for an IntegerElement!");
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public void validate(java.util.List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		//
 		super.validate(validationResults);
 		if (hasError()) {
@@ -240,7 +239,6 @@ public class IntegerElementImpl extends TextElementImpl implements
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public void setIsEqualCheck(String otherValue, String errorKey) {
 		throw new AssertException(
 				"Please use setIsEqualCheck(int otherValue, String errorKey) for an IntegerElement!");

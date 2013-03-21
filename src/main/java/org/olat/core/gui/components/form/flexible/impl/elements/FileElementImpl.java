@@ -167,7 +167,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, Dispos
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#validate(java.util.List)
 	 */
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		int lastFormError = getRootForm().getLastRequestError();
 		if (lastFormError == Form.REQUEST_ERROR_UPLOAD_LIMIT_EXCEEDED) {
 			// check if total upload limit is exceeded (e.g. sum of files)

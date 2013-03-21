@@ -105,11 +105,15 @@ public class QuestionItemDocumentFactory {
 		addStringField(document, QItemDocument.LANGUAGE_FIELD,  item.getLanguage(), 1.0f);
 		
 		//educational
-		addStringField(document, QItemDocument.EDU_CONTEXT_FIELD,  item.getEducationalContext(), 1.0f);
+		if(item.getEducationalContext() != null) {
+			String context = item.getEducationalContext().getLevel();
+			addStringField(document, QItemDocument.EDU_CONTEXT_FIELD,  context, 1.0f);
+		}
 		
 		//question
-		if(item.getQuestionType() != null) {
-			addStringField(document, QItemDocument.ITEM_TYPE_FIELD,  item.getQuestionType().name(), 1.0f);
+		if(item.getType() != null) {
+			String itemType = item.getType().getType();
+			addStringField(document, QItemDocument.ITEM_TYPE_FIELD,  itemType, 1.0f);
 		}
 		addStringField(document, QItemDocument.ASSESSMENT_TYPE_FIELD, item.getAssessmentType(), 1.0f);
 		
@@ -120,7 +124,10 @@ public class QuestionItemDocumentFactory {
 		}
 		
 		//rights
-		addTextField(document, QItemDocument.COPYRIGHT_FIELD, item.getCopyright(), 2.0f);
+		if(item.getLicense() != null) {
+			String licenseKey = item.getLicense().getLicenseKey();
+			addTextField(document, QItemDocument.COPYRIGHT_FIELD, licenseKey, 2.0f);
+		}
 
 		//technical
 		addTextField(document, QItemDocument.EDITOR_FIELD, item.getEditor(), 2.0f);

@@ -37,10 +37,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.ui.MetadatasController;
 import org.olat.modules.qpool.ui.QPoolEvent;
 import org.olat.user.UserManager;
@@ -61,12 +61,14 @@ public class RightsMetadataController extends FormBasicController  {
 	private final QPoolService qpoolService;
 	private final UserManager userManager;
 	
-	public RightsMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	private final boolean edit;
+	
+	public RightsMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean edit) {
 		super(ureq, wControl, "view");
 		setTranslator(Util.createPackageTranslator(MetadatasController.class, ureq.getLocale(), getTranslator()));
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		
+		this.edit = edit;
 		initForm(ureq);
 		setItem(item);
 	}
@@ -74,9 +76,10 @@ public class RightsMetadataController extends FormBasicController  {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rights");
-
-		editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
-		editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		if(edit) {
+			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
+			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
+		}
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
 		formLayout.add("metadatas", metaCont);
@@ -96,11 +99,11 @@ public class RightsMetadataController extends FormBasicController  {
 	}
 	
 	public void setItem(QuestionItem item) {
-		String copyright = item.getCopyright();
-		if(StringHelper.containsNonWhitespace(copyright)) {
+		QLicense copyright = item.getLicense();
+		if(copyright != null) {
 			copyrightEl.select("on", true);
 			descriptionEl.setVisible(true);
-			descriptionEl.setValue(copyright);
+			descriptionEl.setValue(copyright.getLicenseKey());
 		} else {
 			copyrightEl.select("on", false);
 			descriptionEl.setVisible(false);

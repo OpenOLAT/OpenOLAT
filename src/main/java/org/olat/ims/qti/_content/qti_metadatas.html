@@ -1,0 +1,34 @@
+#if($r.available("leftSettings") || $r.available("rightSettings"))
+	<fieldset>
+		<legend>Settings</legend>
+		<div class="b_clearfix">
+			<div class="b_c50l">
+				<div class="b_subcl">
+					$r.render("leftSettings")
+				</div>
+			</div>
+			<div class="b_c50r">
+				<div class="b_subcr">	
+					$r.render("rightSettings")
+				</div>
+			</div>
+		</div>
+	</fieldset>
+#end
+#if($r.available("leftFeedback") || $r.available("rightFeedback"))
+	<fieldset>
+		<legend>Feedbacks</legend>
+		<div class="b_clearfix">
+			<div class="b_c50l">
+				<div class="b_subcl">
+					$r.render("leftFeedback")
+				</div>
+			</div>
+			<div class="b_c50r">
+				<div class="b_subcr">	
+					$r.render("rightFeedback")
+				</div>
+			</div>
+		</div>
+	</fieldset>
+#end

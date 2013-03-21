@@ -76,7 +76,6 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.group.ui.main.OnlineIconRenderer;
-import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -145,6 +144,8 @@ public class GroupController extends BasicController {
 	private InstantMessagingModule imModule;
 	private InstantMessagingService imService;
 	private UserSessionManager sessionManager;
+	
+	public Object userObject;
 
 	/**
 	 * @param ureq
@@ -216,6 +217,14 @@ public class GroupController extends BasicController {
 		reloadData();
 		groupmemberview.put("subjecttable", tableCtr.getInitialComponent());
 		putInitialPanel(groupmemberview);
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	/**

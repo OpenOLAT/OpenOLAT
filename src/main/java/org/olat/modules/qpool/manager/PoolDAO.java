@@ -27,6 +27,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.SortKey;
@@ -34,6 +35,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.PoolToItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,12 +57,12 @@ public class PoolDAO {
 	@Autowired
 	private BaseSecurity securityManager;
 	
-	public PoolImpl createPool(Identity owner, String name) {
+	public PoolImpl createPool(Identity owner, String name, boolean publicPool) {
 		PoolImpl pool = new PoolImpl();
 		pool.setCreationDate(new Date());
 		pool.setLastModified(new Date());
 		pool.setName(name);
-		pool.setPublicPool(false);
+		pool.setPublicPool(publicPool);
 		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
 		pool.setOwnerGroup(ownerGroup);
 		dbInstance.getCurrentEntityManager().persist(pool);
@@ -123,6 +125,26 @@ public class PoolDAO {
 		return query.getResultList();
 	}
 	
+	public List<Pool> getPools(Identity identity, int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select pool from qpool pool")
+		  .append(" inner join fetch pool.ownerGroup ownerGroup ")
+		  .append(" where pool.publicPool=true")
+		  .append(" or exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+		  .append("     where vmember.identity.key=:identityKey and vmember.securityGroup=ownerGroup)");
+		
+		TypedQuery<Pool> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Pool.class)
+				.setParameter("identityKey", identity.getKey());
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
+	}
+	
 	public List<Pool> getPools(QuestionItem item) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(pool) from qpool2item pool2item")
@@ -135,14 +157,17 @@ public class PoolDAO {
 		return query.getResultList();
 	}
 	
-	public void addItemToPool(QuestionItemShort item, Pool pool) {
+	public void addItemToPool(QuestionItemShort item, List<Pool> pools, boolean editable) {
 		QuestionItem lockedItem = questionItemDao.loadForUpdate(item.getKey());
-		if(!isInPool(lockedItem, pool)) {
-			PoolToItem p2i = new PoolToItem();
-			p2i.setCreationDate(new Date());
-			p2i.setItem(lockedItem);
-			p2i.setPool(pool);
-			dbInstance.getCurrentEntityManager().persist(p2i);
+		for(Pool pool:pools) {
+			if(!isInPool(lockedItem, pool)) {
+				PoolToItem p2i = new PoolToItem();
+				p2i.setCreationDate(new Date());
+				p2i.setItem(lockedItem);
+				p2i.setEditable(editable);
+				p2i.setPool(pool);
+				dbInstance.getCurrentEntityManager().persist(p2i);
+			}
 		}
 		dbInstance.commit();//release lock asap
 	}
@@ -167,20 +192,16 @@ public class PoolDAO {
 				.getSingleResult().intValue();
 	}
 	
-	public List<QuestionItemShort> getItemsOfPool(Pool pool, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
+	public List<QuestionItemView> getItemsOfPool(Pool pool, List<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item from qpool2item pool2item")
-		  .append(" inner join pool2item.item item ")
-		  .append(" left join fetch item.taxonomyLevel taxonomyLevel ")
-		  .append(" where pool2item.pool.key=:poolKey");
+		sb.append("select item from qpoolitem item where item.poolKey=:poolKey");
 		if(inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");
 		}
+		PersistenceHelper.appendGroupBy(sb, "item", orderBy);
 		
-		PersistenceHelper.appendGroupBy(sb, "pool2item.item", orderBy);
-		
-		TypedQuery<QuestionItemShort> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemShort.class)
+		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemView.class)
 				.setParameter("poolKey", pool.getKey());
 		if(inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);
