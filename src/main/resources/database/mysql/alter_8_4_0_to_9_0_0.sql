@@ -61,7 +61,7 @@ create table if not exists o_qp_item (
    q_dir varchar(32),
    q_root_filename varchar(255),
    fk_taxonomy_level bigint,
-   fk_ownergroup bigint,
+   fk_ownergroup bigint not null,
    primary key (id)
 );
 
@@ -156,7 +156,7 @@ create or replace view o_qp_item_v as (
    left join o_qp_edu_context as educontext on (item.fk_edu_context = educontext.id)
 );
 
-create or replace view o_qp_item_my_v as (
+create or replace view o_qp_item_author_v as (
    select
       item.id as item_id,
       ownership.identity_id as item_author,

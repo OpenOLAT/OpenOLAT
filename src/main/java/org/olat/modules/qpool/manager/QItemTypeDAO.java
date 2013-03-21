@@ -56,7 +56,7 @@ public class QItemTypeDAO implements ApplicationListener<ContextRefreshedEvent> 
 			typeKeys.add(type.getType());
 		}
 		for(QuestionType defaultType:QuestionType.values()) {
-			if(!typeKeys.contains(defaultType.name())) {
+			if(!typeKeys.contains(defaultType.name().toLowerCase())) {
 				create(defaultType.name(), false);
 			}
 		}
