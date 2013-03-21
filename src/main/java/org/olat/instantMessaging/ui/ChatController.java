@@ -31,8 +31,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -88,7 +86,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	
 	private List<String> allChats;
 	private final Formatter formatter;
-	private static final Pattern mailPattern = Pattern.compile("((mailto\\:|(news|(ht|f)tp(s?))\\://){1}\\S+)");
 
 	private final boolean vip;
 	private final OLATResourceable ores;
@@ -362,15 +359,8 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private String prepareMsgBody(String body) {
-		List<String> done = new ArrayList<String>(3);
-		Matcher m = mailPattern.matcher(body);
-		while (m.find()) {
-			String l = m.group();
-			if (!done.contains(l)) {
-				body = body.replaceFirst(l, "<a href=\""+l+"\" target=\"_blank\">"+l+"</a>");
-			}
-			done.add(l);
-		}
+		body = Formatter.formatURLsAsLinks(body);
+		body = Formatter.formatEmoticonsAsImages(body);
 		return body;
 	}
 	
