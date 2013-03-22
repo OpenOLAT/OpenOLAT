@@ -79,7 +79,7 @@ public interface MapperService {
 	 */
 	public String register(UserSession session, String mapperId, Mapper mapper);
 	
-	public Mapper getMapperById(String id);
+	public Mapper getMapperById(UserSession session, String id);
 	
 	public void cleanUp(String sessionId);
 
