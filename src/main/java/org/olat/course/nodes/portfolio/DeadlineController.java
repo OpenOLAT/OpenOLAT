@@ -102,6 +102,10 @@ public class DeadlineController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+	
+	public EPStructuredMap getMap() {
+		return map;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)

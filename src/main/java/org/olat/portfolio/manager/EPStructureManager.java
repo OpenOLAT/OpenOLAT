@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.hibernate.ObjectNotFoundException;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
@@ -1469,6 +1471,42 @@ public class EPStructureManager extends BasicManager {
 		// if not found, it is an empty list
 		if (maps.isEmpty()) return null;
 		return maps.get(0);
+	}
+	
+	public List<PortfolioStructureMap> loadPortfolioStructuredMaps(Identity identity,
+			OLATResourceable targetOres, String targetSubPath, String targetBusinessPath) {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select map from ").append(EPStructuredMap.class.getName()).append(" map")
+			.append(" where map.targetResource.resourceableId=:resourceId")
+			.append(" and map.targetResource.resourceableTypeName=:resourceType");
+
+		if (targetSubPath != null) {
+			sb.append(" and map.targetResource.subPath=:subPath");
+		}
+		if (targetBusinessPath != null) {
+			sb.append(" and map.targetResource.businessPath=:businessPath");
+		}
+		sb.append(" and map.ownerGroup in ( " )
+			.append("select sgi.key from ")
+			.append(SecurityGroupImpl.class.getName()).append(" as sgi,")
+			.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+			.append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:ident")
+			.append(" )");
+		
+		TypedQuery<PortfolioStructureMap> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructureMap.class)
+				.setParameter("ident", identity)
+				.setParameter("resourceId", targetOres.getResourceableId())
+				.setParameter("resourceType", targetOres.getResourceableTypeName());
+
+		if (targetSubPath != null) {
+			query.setParameter("subPath", targetSubPath);
+		}
+		if (targetBusinessPath != null) {
+			query.setParameter("businessPath", targetBusinessPath);
+		}
+		return query.getResultList();
 	}
 	
 	/**
