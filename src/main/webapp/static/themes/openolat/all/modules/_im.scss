@@ -103,6 +103,7 @@
 			background-position: 0 50%; 
 		}
 		a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/users_conf.png) no-repeat 0 50%;}
+		a.o_instantmessaging_hidegroupswitch {padding: 2px 0 2px 20px; @include o-opacity(60); background: url(../openolat/images/users_conf.png) no-repeat 0 50%;}
 		a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/status-offline.png) no-repeat 0 50%;}
 		a.o_instantmessaging_hideofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/status.png) no-repeat 0 50%;}
 }

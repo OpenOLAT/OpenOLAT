@@ -1,11 +1,17 @@
 <ul>
-	#foreach ($group in $buddyList.groups)
-		<li class="o_instantmessaging_group">
-			<div class="o_instantmessaging_groupname">$group.groupName</div>
-			<ul>
-			#foreach ($buddy in $group.buddy)
-				<li>$r.render("buddy_${group.groupKey}_${buddy.identityKey}")</li>
-			#end
-		</ul></li>
+	#if($viewGroups)
+		#foreach ($group in $buddyList.groups)
+			<li class="o_instantmessaging_group">
+				<div class="o_instantmessaging_groupname">$group.groupName</div>
+				<ul>
+				#foreach ($buddy in $group.buddy)
+					<li>$r.render("buddy_${group.groupKey}_${buddy.identityKey}")</li>
+				#end
+			</ul></li>
+		#end
+	#else
+		#foreach ($buddy in $buddyList.buddies)
+			<li>$r.render("buddy_${buddy.identityKey}")</li>
+		#end
 	#end
 </ul>

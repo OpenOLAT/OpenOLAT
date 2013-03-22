@@ -255,7 +255,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		} else if (event instanceof OpenInstantMessageEvent) {
 			processOpenInstantMessageEvent((OpenInstantMessageEvent)event);
 		} else if(event instanceof CloseInstantMessagingEvent) {
-			processCloseInstantMessageEvent();
+			processCloseInstantMessageEvent((CloseInstantMessagingEvent)event);
 		} else if(Window.BEFORE_INLINE_RENDERING.equals(event)) {
 			if(++stateUpdateCounter % 25 == 0) {
 				updateBuddyStats();
@@ -359,7 +359,21 @@ public class InstantMessagingMainController extends BasicController implements G
 		}
 	}
 	
-	private void processCloseInstantMessageEvent() {
+	private void processCloseInstantMessageEvent(CloseInstantMessagingEvent event) {
+		if(event.getOres() == null) {
+			close();
+		} else {
+			closeChat(event.getOres());
+		}
+	}
+	
+	private void closeChat(OLATResourceable ores) {
+		if(chatMgrCtrl != null) {
+			chatMgrCtrl.closeChat(ores);
+		}
+	}
+	
+	private void close() {
 		if(statusChangerPanelCtr != null) {
 			statusChangerPanelCtr.executeCloseCommand();
 			removeAsListenerAndDispose(statusChangerPanelCtr);
