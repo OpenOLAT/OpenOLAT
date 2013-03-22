@@ -114,7 +114,8 @@ public class MapperServiceImpl implements MapperService {
 	@Override
 	public String register(UserSession session, String mapperId, Mapper mapper) {
 		String encryptedMapId = Encoder.encrypt(mapperId);
-		boolean alreadyLoaded = mapperKeyToMapper.containsKey(encryptedMapId);
+		MapperKey mapperKey = new MapperKey(session, encryptedMapId);
+		boolean alreadyLoaded = mapperKeyToMapper.containsKey(mapperKey);
 		if(mapper instanceof Serializable) {
 			if(alreadyLoaded) {
 				if(!mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper)) {
@@ -130,7 +131,6 @@ public class MapperServiceImpl implements MapperService {
 			}
 		}
 
-		MapperKey mapperKey = new MapperKey(session, encryptedMapId);
 		mapperKeyToMapper.put(mapperKey, mapper);
 		mapperToMapperKey.put(mapper, mapperKey);
 		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + encryptedMapId;
