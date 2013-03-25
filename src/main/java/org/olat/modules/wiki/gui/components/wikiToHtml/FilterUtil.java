@@ -38,9 +38,9 @@ public class FilterUtil {
 		if (wikiLink.length() > 0) {
       int index = wikiLink.lastIndexOf('/');
       if (index >= 0) {
-        if (wikiLink.length() == index + 1) {
-          wikiLink = wikiLink.substring(0, index + 1) + wikiLink.substring(index + 1, 1).toUpperCase();
-        } else if (wikiLink.length() > index + 1) {
+      	if (wikiLink.length() == index + 1) { 	
+        	//ending slash, do nothing
+      	} else if (wikiLink.length() > index + 1) {
           wikiLink = wikiLink.substring(0, index + 1) + wikiLink.substring(index + 1, index + 2).toUpperCase()
               + wikiLink.substring(index + 2);
         }
