@@ -112,7 +112,7 @@ public class CustomCSS extends LogDelegator implements Disposable {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID + System.currentTimeMillis();
-			mapperBaseURI  = CoreSpringFactory.getImpl(MapperService.class).register(mapperID, cssUriMapper);
+			mapperBaseURI  = CoreSpringFactory.getImpl(MapperService.class).register(uSess, mapperID, cssUriMapper);
 		}
 	}
 

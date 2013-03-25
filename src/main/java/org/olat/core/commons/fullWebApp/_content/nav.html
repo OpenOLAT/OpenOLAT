@@ -28,7 +28,9 @@
 	<li class="b_nav_tab b_nav_active $!navel.getIconCSSClass()">
 		<div> ## div used for tab icon
 			$r.render("a$postfix")
-			$r.render("cp$postfix")	 ## close link has class b_nav_tab_close
+			#if($tabhelper.isCanCloseDTab($dtab))
+				$r.render("cp$postfix")	 ## close link has class b_nav_tab_close
+			#end
 		</div>
 	</li>
 	#else

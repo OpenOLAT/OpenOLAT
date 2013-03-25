@@ -134,11 +134,17 @@ public class BaseFullWebappController extends BasicController implements Generic
 	private Panel initialPanel;
 	private DTabs myDTabsImpl;
 	private static Integer MAX_TAB;
+
+	private boolean invitee = false;
 	
 	public BaseFullWebappController(UserRequest ureq, WindowControl ouisc_wControl,
 			BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
 		super(ureq, null);
+		
+		if(ureq != null && ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null) {
+			invitee = ureq.getUserSession().getRoles().isInvitee();
+		}
 
 		this.baseFullWebappControllerParts = baseFullWebappControllerParts;
 
@@ -1009,12 +1015,23 @@ public class BaseFullWebappController extends BasicController implements Generic
 
 	/**
 	 * 
-	 * [used by velocity
+	 * [used by velocity]
 	 * 
 	 * @return
 	 */
 	public boolean isDTabActive(DTab dtab) {
 		return curDTab != null && dtab == curDTab;
+	}
+	
+	/**
+	 * Invitee have only one dynamic tab. They are not allowed
+	 * to close it.
+	 * [used by velocity]
+	 * 
+	 * @return
+	 */
+	public boolean isCanCloseDTab(DTab dtab) {
+		return !invitee && !(sites == null || sites.isEmpty());
 	}
 	
 	private void setCurrent(SiteInstance site, DTab tab) {
