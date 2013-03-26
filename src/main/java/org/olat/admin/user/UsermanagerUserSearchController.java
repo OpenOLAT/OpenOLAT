@@ -852,15 +852,15 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		status.select(statusKeys[0], true);		
 		
 		uifactory.addSpacerElement("space4", formLayout, false);
-		afterDate  = uifactory.addDateChooser("search.form.afterDate","",formLayout);
+		afterDate  = uifactory.addDateChooser("search.form.afterDate", null, formLayout);
 		afterDate.setValidDateCheck("error.search.form.no.valid.datechooser");
-		beforeDate = uifactory.addDateChooser("search.form.beforeDate","",formLayout);
+		beforeDate = uifactory.addDateChooser("search.form.beforeDate", null, formLayout);
 		beforeDate.setValidDateCheck("error.search.form.no.valid.datechooser");
 		
 		uifactory.addSpacerElement("space5", formLayout, false);
-		userLoginAfter = uifactory.addDateChooser("search.form.userLoginAfterDate", "", formLayout);
+		userLoginAfter = uifactory.addDateChooser("search.form.userLoginAfterDate", null, formLayout);
 		userLoginAfter.setValidDateCheck("error.search.form.no.valid.datechooser");
-		userLoginBefore = uifactory.addDateChooser("search.form.userLoginBeforeDate", "", formLayout);
+		userLoginBefore = uifactory.addDateChooser("search.form.userLoginBeforeDate", null, formLayout);
 		userLoginBefore.setValidDateCheck("error.search.form.no.valid.datechooser");
 		
 		// creation date constraints

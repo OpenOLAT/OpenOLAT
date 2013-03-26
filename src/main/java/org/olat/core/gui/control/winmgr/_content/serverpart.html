@@ -41,7 +41,7 @@ if (window.opener == null) document.cookie = sbcookie+'='+sbtimestamp+'; path=/'
 
 function tick () {
 	//console.log("starting poller with interval: "+pollperiod);
-	jQuery.periodic({period: 5000}, function(pe) {
+	jQuery.periodic({period: 5000, decay:1.005, max_period: Number.MAX_VALUE}, function(pe) {
 		if ( !o_info.linkbusy && (pollperiod > 1000) && (pollError < 2) ) {
 			try {
 				var now = new Date().getTime();
@@ -58,7 +58,7 @@ function tick () {
 					stopped = true;
 				}
 			} catch (e) {
-				pe.stop(); //stop on errors
+				pe.cancel(); //stop on errors
 			}
 		}
 

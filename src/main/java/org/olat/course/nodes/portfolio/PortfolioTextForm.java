@@ -117,7 +117,7 @@ public class PortfolioTextForm extends FormBasicController {
 		
 		//absolut deadline
 		Date deadline = (Date)config.get(PortfolioCourseNodeConfiguration.DEADLINE_DATE);
-		deadlineChooser = uifactory.addDateChooser("deadline-date", "map.deadline." + DeadlineType.absolut.name() + ".label", "", formLayout);
+		deadlineChooser = uifactory.addDateChooser("deadline-date", "map.deadline." + DeadlineType.absolut.name() + ".label", null, formLayout);
 		if(deadline != null) {
 			deadlineChooser.setDate(deadline);
 		}

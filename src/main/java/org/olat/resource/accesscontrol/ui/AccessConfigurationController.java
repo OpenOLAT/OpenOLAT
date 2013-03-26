@@ -283,12 +283,12 @@ public class AccessConfigurationController extends FormBasicController {
 		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), handler.isPaymentMethod(), null, link);
 		confControllers.add(infos);
 
-		DateChooser dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", "", confControllerContainer);
+		DateChooser dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", null, confControllerContainer);
 		dateFrom.setUserObject(infos);
 		dateFrom.setDate(link.getValidFrom());
 		confControllerContainer.add(dateFrom.getName(), dateFrom);
 		
-		DateChooser dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", "", confControllerContainer);
+		DateChooser dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", null, confControllerContainer);
 		dateTo.setUserObject(infos);
 		dateTo.setDate(link.getValidTo());
 		confControllerContainer.add(dateTo.getName(), dateTo);

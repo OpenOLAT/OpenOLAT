@@ -25,7 +25,6 @@
 
 package org.olat.course.statistic;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
@@ -47,9 +46,6 @@ import org.olat.core.util.Util;
  * @author bja
  */
 public class DateChooserForm extends FormBasicController {
-	
-	private static final String SIMPLE_DATE_FORMAT_PATTERN = "dd.MM.yyyy";
-	private static final String JS_DATE_FORMAT_PATTERN = "%d.%m.%Y";
 
 	private FormLayoutContainer titleContainer;
 	private JSDateChooser fromDate;
@@ -88,11 +84,7 @@ public class DateChooserForm extends FormBasicController {
 		 * make the $f.hasError("group") having an effect in ajax mode. E.g.
 		 * removing table tr's in the layouting velocity container.
 		 */
-		this.flc.setDirty(true);
-		/*
-		 * 
-		 */
-
+		flc.setDirty(true);
 	}
 	
 	@Override
@@ -140,8 +132,6 @@ public class DateChooserForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
-	
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, final UserRequest ureq) {
@@ -151,37 +141,19 @@ public class DateChooserForm extends FormBasicController {
 		// spacer
 		formLayout.add(new SpacerElementImpl("spacer1"));
 		
-		SimpleDateFormat sdf = new SimpleDateFormat(SIMPLE_DATE_FORMAT_PATTERN);
 		long defaultWeekRange = numDaysRange_ * 24 * 60 * 60 * 1000;
 		
     // from date
-		fromDate = new JSDateChooser("fromDate", sdf.format(new Date(new Date().getTime()-defaultWeekRange))) {
-			{
-				setLabel("datechooser.bdate", null);
-				displaySize = 17;
-				setExampleKey("datechooser.example.bdate", null);
-				// time is enabled
-				setDateChooserTimeEnabled(false);
-				// not i18n'ified yet
-				setDateChooserDateFormat(JS_DATE_FORMAT_PATTERN);
-				setCustomDateFormat(SIMPLE_DATE_FORMAT_PATTERN);
-				displaySize = getExampleDateString().length();
-			}
-		};
+		fromDate = new JSDateChooser("fromDate", new Date(new Date().getTime()-defaultWeekRange), getLocale());
+		fromDate.setLabel("datechooser.bdate", null);
+		fromDate.setExampleKey("datechooser.example.bdate", null);
+		fromDate.setDisplaySize(fromDate.getExampleDateString().length());
 		formLayout.add(fromDate);
 		// end date
-		toDate = new JSDateChooser("toDate", sdf.format(new Date())) {
-			{
-				setLabel("datechooser.edate", null);
-				setExampleKey("datechooser.example.edate", null);
-				// time is enabled
-				setDateChooserTimeEnabled(false);
-				// not i18n'ified yet
-				setDateChooserDateFormat(JS_DATE_FORMAT_PATTERN);
-				setCustomDateFormat(SIMPLE_DATE_FORMAT_PATTERN);
-				setDisplaySize(getExampleDateString().length());
-			}
-		};
+		toDate = new JSDateChooser("toDate", new Date(), getLocale());
+		toDate.setLabel("datechooser.edate", null);
+		toDate.setExampleKey("datechooser.example.edate", null);
+		toDate.setDisplaySize(toDate.getExampleDateString().length());
 		formLayout.add(toDate);
 		
 		// submit button
@@ -195,5 +167,4 @@ public class DateChooserForm extends FormBasicController {
 	protected void doDispose() {
 		// nothing to be done here
 	}
-	
 }

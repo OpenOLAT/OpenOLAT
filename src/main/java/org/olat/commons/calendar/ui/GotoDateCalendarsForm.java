@@ -54,7 +54,7 @@ public class GotoDateCalendarsForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer horizontalL = FormLayoutContainer.createHorizontalFormLayout("horiz", getTranslator());
 		formLayout.add(horizontalL);
-		gotoDate = uifactory.addDateChooser("goto",null, "",horizontalL);//null because no label is desired.
+		gotoDate = uifactory.addDateChooser("goto", null, null, horizontalL);//null because no label is desired.
 		gotoDate.setMandatory(false);
 		gotoDate.setDate(new Date());
 		gotoDateLink =  uifactory.addFormLink("cal.search.gotodate.button", horizontalL,Link.BUTTON);

@@ -269,20 +269,14 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		for (Project.EventType eventType : Project.EventType.values()) {
 			if ( projectBrokerModuleConfiguration.isProjectEventEnabled(eventType) ){
 				ProjectEvent projectEvent = project.getProjectEvent(eventType);
-				DateChooser dateChooserStart = uifactory.addDateChooser(eventType + "start", eventType.getI18nKey() + ".start.label", "", formLayout);
+				DateChooser dateChooserStart = uifactory.addDateChooser(eventType + "start", eventType.getI18nKey() + ".start.label", null, formLayout);
 				dateChooserStart.setDateChooserTimeEnabled(true);
-				// not i18n'ified yet
-				dateChooserStart.setDateChooserDateFormat(CHOOSER_DATE_FORMAT);
-				dateChooserStart.setCustomDateFormat(CUSTOM_DATE_FORMAT);
 				dateChooserStart.setDisplaySize(CUSTOM_DATE_FORMAT.length());
 				getLogger().info("Event=" + eventType + ", startDate=" + projectEvent.getStartDate());
 				dateChooserStart.setDate(projectEvent.getStartDate());
 				eventStartElementList.put(eventType, dateChooserStart);
-				DateChooser dateChooserEnd   = uifactory.addDateChooser(eventType + "end", eventType.getI18nKey() + ".end.label", "", formLayout);
+				DateChooser dateChooserEnd   = uifactory.addDateChooser(eventType + "end", eventType.getI18nKey() + ".end.label", null, formLayout);
 				dateChooserEnd.setDateChooserTimeEnabled(true);
-				// not i18n'ified yet
-				dateChooserEnd.setDateChooserDateFormat(CHOOSER_DATE_FORMAT);
-				dateChooserEnd.setCustomDateFormat(CUSTOM_DATE_FORMAT);
 				dateChooserEnd.setDisplaySize(CUSTOM_DATE_FORMAT.length());
 				getLogger().debug("Event=" + eventType + ", endDate=" + projectEvent.getEndDate());
 				dateChooserEnd.setDate(projectEvent.getEndDate());

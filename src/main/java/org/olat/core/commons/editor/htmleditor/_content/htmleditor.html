@@ -43,7 +43,7 @@
 	}
 	
 	## Check for dirtyness and mark buttons accordingly, each second
-	jQuery.periodic({period: 1000}, function(executor) {
+	jQuery.periodic({period: 1000, decay:1.0, max_period: Number.MAX_VALUE}, function(executor) {
 		## first check if the html editor still exists on this page, otherwhise stop executing this code
 		var elem = jQuery('#$f.getItemId("rtfElement")');
 		if (!elem) {

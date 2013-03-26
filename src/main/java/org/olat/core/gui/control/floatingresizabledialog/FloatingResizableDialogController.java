@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -122,6 +123,10 @@ public class FloatingResizableDialogController extends BasicController {
 		wrapper.put("panelContent", content);
 		if (collabsibleContent != null) {
 			wrapper.put("collapsibleContent", collabsibleContent);
+			
+			String[] js = new String[]{"js/jquery/uilayout/jquery.layout-latest.min.js"};
+			JSAndCSSComponent jsAndCssComp = new JSAndCSSComponent("layouting", js, null);
+			wrapper.put("layout", jsAndCssComp);
 		}
 		
 		panelName = "o_extjsPanel_" + (uniquePanelName == null ? hashCode() : uniquePanelName);
@@ -147,39 +152,49 @@ public class FloatingResizableDialogController extends BasicController {
 		
 		putInitialPanel(wrapper);
 	}
+	
+	private static final Pattern allGeometry = Pattern.compile("^(\\d+),(\\d+):(\\d+),(\\d+)$");
+	private static final Pattern posGeometry = Pattern.compile("^(\\d+),(\\d+)$");
+	private static final Pattern parseGeometry = Pattern.compile("(\\d+)");
+	
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		
 		if (event.getCommand().equals("geometry")) {
-			
 			String p = ureq.getHttpReq().getParameter("p");	
-			if (p != null && Pattern.compile("^(\\d+),(\\d+):(\\d+),(\\d+)$").matcher(p).matches()) {
-				
-				Matcher m = Pattern.compile("(\\d+)").matcher(p);
-				
-				if (m.find()) offsetX = Integer.parseInt(m.group());
-				if (m.find()) offsetY = Integer.parseInt(m.group());
-				if (m.find()) width   = Integer.parseInt(m.group());
-				if (m.find()) height  = Integer.parseInt(m.group());
-				
-				boolean dirt = wrapper.isDirty();
-				wrapper.contextPut("width"  , width);
-				wrapper.contextPut("height" , height);
-				wrapper.contextPut("offsetX", offsetX);
-				wrapper.contextPut("offsetY", offsetY);
-				wrapper.setDirty(dirt);
+			if (p != null) {	
+				if(allGeometry.matcher(p).matches()) {
+					Matcher m = parseGeometry.matcher(p);
+					
+					if (m.find()) offsetX = Integer.parseInt(m.group());
+					if (m.find()) offsetY = Integer.parseInt(m.group());
+					if (m.find()) width   = Integer.parseInt(m.group());
+					if (m.find()) height  = Integer.parseInt(m.group());
+					
+					boolean dirt = wrapper.isDirty();
+					wrapper.contextPut("width"  , width);
+					wrapper.contextPut("height" , height);
+					wrapper.contextPut("offsetX", offsetX);
+					wrapper.contextPut("offsetY", offsetY);
+					wrapper.setDirty(dirt);
+				} else if(posGeometry.matcher(p).matches()) {
+					Matcher m = parseGeometry.matcher(p);
+					
+					if (m.find()) offsetX = Integer.parseInt(m.group());
+					if (m.find()) offsetY = Integer.parseInt(m.group());
+					
+					boolean dirt = wrapper.isDirty();
+					wrapper.contextPut("offsetX", offsetX);
+					wrapper.contextPut("offsetY", offsetY);
+					wrapper.setDirty(dirt);
+				}
 			}		
-			return;
-		}
-		
-		if (source == wrapper) {
+		} else if (source == wrapper) {
 			if (event.getCommand().equals("close")) {
 				fireEvent(ureq, Event.DONE_EVENT);
-				return;
 			}
 		}
 	}
@@ -197,14 +212,10 @@ public class FloatingResizableDialogController extends BasicController {
 	}
 	
 	public JSCommand getCloseCommand () {
-		String w = getPanelName();
 		StringBuilder sb = new StringBuilder();
-		sb.append("try{");
-		//TODO jquery
-		sb.append("Ext.getCmp('").append(w).append("').purgeListeners();");
-		sb.append("Ext.getCmp('").append(w).append("').close();");
-		sb.append("Ext.getCmp('").append(w).append("').distroy();");
-		sb.append("}catch(e){}");
+		sb.append("try{")
+		  .append(" jQuery('#").append(getPanelName()).append("').dialog('destroy').remove();")
+		  .append("}catch(e){}");
 		return new JSCommand(sb.toString());
 	}
 	

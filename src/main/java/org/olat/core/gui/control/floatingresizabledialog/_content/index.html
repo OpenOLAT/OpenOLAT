@@ -1,10 +1,10 @@
 <div id="${panelName}">
 	#if ($r.available("collapsibleContent"))
-		<div id="${panelName}-east" class="x-layout-inactive-content x-hidden" style="padding:5px;">
+		<div id="${panelName}-east" class="pane ui-layout-east" style="padding:5px;">
 			$r.render("collapsibleContent")
 		</div>
 	#end
-	<div id="${panelName}-center" class="x-layout-inactive-content x-hidden" style="padding:5px;">
+	<div id="${panelName}-center" class="pane ui-layout-center" style="padding:5px;">
 		$r.render("panelContent")
 	</div>
 </div>
@@ -19,9 +19,37 @@
 			stack: true,
 			close: function() {
 				o_beforeserver();
+				jQuery(this).dialog('destroy').remove();
 				$r.javaScriptBgCommand("close")
+			},
+			resize: function(event, ui) {
+				#if ($ajaxFlags.isIframePostEnabled())
+					if (!o_info.linkbusy) {
+						window.suppressOlatOnUnloadOnce = true;
+						o_beforeserver();
+						$r.javaScriptBgCommand("geometry") + '?p='+ encodeURIComponent(ui.position.left + ',' + ui.position.top + ':' + ui.size.width + ',' + ui.size.height);
+					}
+				#end
+				try {
+					tweak_${panelName}();
+				} catch (Exception) {/**/}
+			},
+			dragStop: function(event, ui) {
+				#if ($ajaxFlags.isIframePostEnabled())
+					if (!o_info.linkbusy) {
+						window.suppressOlatOnUnloadOnce = true;
+						o_beforeserver();
+						$r.javaScriptBgCommand("geometry") + '?p='+ encodeURIComponent(ui.position.left + ',' + ui.position.top);
+					}
+				#end	
+				try {
+					tweak_${panelName}(win);
+				} catch (Exception) { /**/ }
 			}
-		});
+		})#if($r.available("collapsibleContent")).layout({
+			center: { size: '66%' },
+			east: { size: '33%' }
+		})#end;
 	});
 /* ]]> */
 </script>

@@ -140,10 +140,8 @@ public class PreviewSettingsForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		sdate = uifactory.addDateChooser("sdate","form.sdate" , "", formLayout);	
+		sdate = uifactory.addDateChooser("sdate","form.sdate" , null, formLayout);	
 		sdate.setExampleKey("form.easy.example.bdate", null);
-		sdate.setDateChooserDateFormat("%d.%m.%Y %H:%M");
-		sdate.setCustomDateFormat("dd.MM.yyyy HH:mm");
 		sdate.setDateChooserTimeEnabled(true);
 		sdate.setMandatory(true);
 		sdate.setValidDateCheck("form.sdate.invalid");

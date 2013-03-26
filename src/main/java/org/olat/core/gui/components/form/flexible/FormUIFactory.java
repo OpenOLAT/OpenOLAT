@@ -25,6 +25,7 @@
 */
 package org.olat.core.gui.components.form.flexible;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -133,7 +134,7 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public DateChooser addDateChooser(String name, String initValue, FormItemContainer formLayout) {
+	public DateChooser addDateChooser(String name, Date initValue, FormItemContainer formLayout) {
 		return addDateChooser(name, name, initValue, formLayout);
 	}
 
@@ -146,8 +147,8 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */	
-	public DateChooser addDateChooser(String name, String i18nLabel, String initValue, FormItemContainer formLayout) {
-		JSDateChooser tmp = new JSDateChooser(name, initValue);
+	public DateChooser addDateChooser(String name, String i18nLabel, Date initValue, FormItemContainer formLayout) {
+		JSDateChooser tmp = new JSDateChooser(name, initValue, formLayout.getTranslator().getLocale());
 		setLabelIfNotNull(i18nLabel, tmp);
 		formLayout.add(tmp);
 		return tmp;

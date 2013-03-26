@@ -210,44 +210,47 @@ function o_qtiFormatCounter(remaining) {
 }
 ##
 ## item time counter
-function o_qtiFormatItemCounter(pe) {
+function o_qtiFormatItemCounter() {
 	try {
-		o_itemremain = $('o_itemremain');
-		if (o_itemremain) {
-			if (o_itemremain_value >= 0) {				
-				o_itemremain.innerHTML = o_qtiFormatCounter(o_itemremain_value);
+		o_itemremain = jQuery('#o_itemremain');
+		if (o_itemremain.length > 0) {
+			if (o_itemremain_value >= 0) {
+				o_itemremain.text(o_qtiFormatCounter(o_itemremain_value));
 				o_itemremain_value -= 1000;
 				return;
 			} else {
 				## set message that time is now finished
-				o_itemremain.innerHTML = "<b>$r.translate("timelimit.finished")</b>";			
+				o_itemremain.html('<b>$r.translate("timelimit.finished")</b>');			
 				## mark container with time message as warning
-				var container = $$('#o_qti_run_content_inner div.b_note')[0];
-				if (container) {
-					container.toggleClassName('b_note');
-					container.toggleClassName('b_warning');
+				var container = jQuery('#o_qti_run_content_inner div.b_note');
+				if (container.length > 0) {
+					container.toggleClass('b_note');
+					container.toggleClass('b_warning');
 					## fallback in case not container was found
 				} else {
-					$('o_qti_run_content_inner').insert({top: "<div class='b_warning'>$r.translate("timelimit.finished")</div>"});
+					jQuery('#o_qti_run_content_inner').prepend("<div class='b_warning'>$r.translate("timelimit.finished")</div>");
 				}
 			}
 		}
 		## time up or not even started, stop executor
-		if (pe != null) pe.stop();
+		if (o_itemremain_pe != null) {
+			o_itemremain_pe.cancel();
+		}
 	} catch(e) {
 		//
 	}
 }
-var o_itemremain = $('o_itemremain');
+var o_itemremain = jQuery('#o_itemremain');
 var o_itemremain_value = 0;
+var o_itemremain_pe = null;
 try{
-	if (o_itemremain) {
-		o_itemremain_value = o_itemremain.firstChild.nodeValue;	
+	if (o_itemremain.length > 0) {
+		o_itemremain_value = o_itemremain.text();	
 		if (o_itemremain_value == 0) {
-			o_itemremain.innerHTML = "<b>$r.translate("timelimit.finished")</b>";		
+			o_itemremain.html('<b>$r.translate("timelimit.finished")</b>');
 		} else {
 			o_qtiFormatItemCounter(null);
-			new PeriodicalExecuter(o_qtiFormatItemCounter, 1);
+			o_itemremain_pe = jQuery.periodic({period: 1000, decay:1.0, max_period: Number.MAX_VALUE }, o_qtiFormatItemCounter);
 		}
 	}
 } catch(e) {
@@ -255,44 +258,47 @@ try{
 }
 
 ## assessment time counter
-function o_qtiFormatAssessmentCounter(pe) {
+function o_qtiFormatAssessmentCounter() {
 	try {
-		o_assessmentremain = $('o_assessmentremain');
+		o_assessmentremain = jQuery('#o_assessmentremain');
 		if (o_assessmentremain) {
 			if (o_assessmentremain_value >= 0) {
-				o_assessmentremain.innerHTML = o_qtiFormatCounter(o_assessmentremain_value);			
+				o_assessmentremain.text(o_qtiFormatCounter(o_assessmentremain_value));			
 				o_assessmentremain_value -= 1000;
 				return;
 			} else {					
 				## set message that time is now finished
-				o_assessmentremain.innerHTML = "<b>$r.translate("timelimit.finished")</b>";			
+				o_assessmentremain.html("<b>$r.translate("timelimit.finished")</b>");			
 				## mark container with time message as warning
-				var container = $$('#o_qti_run_status div.o_qti_timelimit_icon')[0];
-				if (container) {
-					container.toggleClassName('b_warning');
+				var container = jQuery('#o_qti_run_status div.o_qti_timelimit_icon');
+				if (container.length == 1) {
+					container.toggleClass('b_warning');
 				} else {
 					## fallback in case not container was found
-					$('o_qti_run_status').insert({top: "<div class='b_warning'>$r.translate("timelimit.finished")</div>"});
+					jQuery('#o_qti_run_status').prepend("<div class='b_warning'>$r.translate("timelimit.finished")</div>");
 				}
-				$('o_qti_info_timelimit').innerHTML='';
+				jQuery('#o_qti_info_timelimit').html('');
 			}
 		}
 		## time up or not even started, stop executor
-		if (pe != null) pe.stop();
+		if (o_assessmentremain_pe != null) {
+			o_assessmentremain_pe.cancel();
+		}
 	} catch(e) {
 		//
 	}
 }
-var o_assessmentremain = $('o_assessmentremain');
+var o_assessmentremain = jQuery('#o_assessmentremain');
 var o_assessmentremain_value = 0;
+var o_assessmentremain_pe = null;
 try {
 	if (o_assessmentremain) {
-		o_assessmentremain_value = o_assessmentremain.firstChild.nodeValue;	
+		o_assessmentremain_value = o_assessmentremain.text();	
 		if (o_assessmentremain_value == 0) {
-			o_assessmentremain.innerHTML = "<b>$r.translate("timelimit.finished")</b>";		
+			o_assessmentremain.html("<b>$r.translate("timelimit.finished")</b>");		
 		} else {
 			o_qtiFormatAssessmentCounter(null);
-			new PeriodicalExecuter(o_qtiFormatAssessmentCounter, 1);
+			o_assessmentremain_pe = jQuery.periodic({period: 1000, decay:1.0, max_period: Number.MAX_VALUE}, o_qtiFormatAssessmentCounter);
 		}
 	}
 } catch(e) {

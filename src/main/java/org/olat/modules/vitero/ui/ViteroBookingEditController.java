@@ -117,14 +117,14 @@ public class ViteroBookingEditController extends FormBasicController {
 		groupName.setEnabled(editable);
 		
 		//begin
-		beginChooser = uifactory.addDateChooser("booking.begin", "", formLayout);
+		beginChooser = uifactory.addDateChooser("booking.begin", null, formLayout);
 		beginChooser.setDisplaySize(21);
 		beginChooser.setDateChooserTimeEnabled(true);
 		beginChooser.setMandatory(true);
 		beginChooser.setDate(booking.getStart());
 		beginChooser.setEnabled(editable);
 		//end
-		endChooser = uifactory.addDateChooser("booking.end", "", formLayout);
+		endChooser = uifactory.addDateChooser("booking.end", null, formLayout);
 		endChooser.setDisplaySize(21);
 		endChooser.setDateChooserTimeEnabled(true);
 		endChooser.setMandatory(true);

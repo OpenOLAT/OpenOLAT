@@ -23,6 +23,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * simpleDateFormat are pretty heavy object, and take long to build.
@@ -38,10 +40,25 @@ public class ConditionDateFormatter {
 	}
 	
 	public static Date parse(String source) {
+		if(StringHelper.containsNonWhitespace(source)) {
+			synchronized(sdf) {
+				try {
+					return sdf.parse(source);
+				} catch (ParseException e) {
+					return null;
+				}
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	public static String format(Date source) {
+		if(source == null) return null;
 		synchronized(sdf) {
 			try {
-				return sdf.parse(source);
-			} catch (ParseException e) {
+				return sdf.format(source);
+			} catch (Exception e) {
 				return null;
 			}
 		}

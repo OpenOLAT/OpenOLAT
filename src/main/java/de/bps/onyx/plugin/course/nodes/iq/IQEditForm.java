@@ -426,20 +426,16 @@ public class IQEditForm extends FormBasicController {
 		}
 
 		Date startDate = (Date) modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-		startDateElement = uifactory.addDateChooser("qti_form_start_date", "qti.form.date.start", "", formLayout);
+		startDateElement = uifactory.addDateChooser("qti_form_start_date", "qti.form.date.start", null, formLayout);
 		startDateElement.setDateChooserTimeEnabled(true);
-		startDateElement.setDateChooserDateFormat("%d.%m.%Y %H:%M");
-		startDateElement.setCustomDateFormat("dd.MM.yyyy HH:mm");
 		if (startDate != null) {
 			startDateElement.setDate(startDate);
 		}
 		startDateElement.setMandatory(true);
 
 		Date endDate = (Date) modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-		endDateElement = uifactory.addDateChooser("qti_form_end_date", "qti.form.date.end", "", formLayout);
+		endDateElement = uifactory.addDateChooser("qti_form_end_date", "qti.form.date.end", null, formLayout);
 		endDateElement.setDateChooserTimeEnabled(true);
-		endDateElement.setDateChooserDateFormat("%d.%m.%Y %H:%M");
-		endDateElement.setCustomDateFormat("dd.MM.yyyy HH:mm");
 		if (endDate != null) {
 			endDateElement.setDate(endDate);
 		}

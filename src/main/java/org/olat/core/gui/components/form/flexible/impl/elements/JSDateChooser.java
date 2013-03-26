@@ -25,16 +25,18 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.GUIInterna;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 
@@ -55,27 +57,31 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 	/**
 	 * the textelement receiving the date
 	 */
-	private TextElementComponent txtcomponent;
+	private TextElementComponent dateComponent;
 
 	private Locale locale;
-	private String customDateFormat = null;
-	private DateFormat df;
 	private boolean dateChooserTimeEnabled;
-	private String dateChooserDateFormat;
 	private String forValidDateErrorKey;
 	private boolean checkForValidDate;
+	private int minute, hour;
+	
+	public JSDateChooser(String name, Locale locale) {
+		this(null, name, null, locale);
+	}
 
-	public JSDateChooser(String name, String predefinedValue) {
-		this(null, name, predefinedValue);
+	public JSDateChooser(String name, Date predefinedValue, Locale locale) {
+		this(null, name, predefinedValue, locale);
 	}
 	
 	/**
 	 * @param id A fix identifier for state-less behavior, must be unique or null
 	 */
-	public JSDateChooser(String id, String name, String predefinedValue) {
-		super(id, name, predefinedValue);
+	public JSDateChooser(String id, String name, Date predefinedValue, Locale locale) {
+		super(id, name, "");
+		this.locale = locale;
+		setDate(predefinedValue);
 		jscomponent = new JSDateChooserComponent(this);
-		txtcomponent = (TextElementComponent) super.getFormItemComponent();
+		dateComponent = (TextElementComponent) super.getFormItemComponent();
 	}
 
 	public void setDisplaySize(int dispSize){
@@ -87,14 +93,14 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 	}
 
 	TextElementComponent getTextElementComponent() {
-		return txtcomponent;
+		return dateComponent;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.AbstractTextElement#validate(java.util.List)
 	 */
 	@Override
-	public void validate(List validationResults) {
+	public void validate(List<ValidationStatus> validationResults) {
 		// checks of the textelement
 		super.validate(validationResults);
 		/*
@@ -112,15 +118,22 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 		}
 	}
 
-	
-	
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#showError(boolean)
-	 */
 	@Override
-	public void showError(boolean show) {
-		super.showError(show);
+	public void evalFormRequest(UserRequest ureq) {
+		super.evalFormRequest(ureq);
+		
+		try {
+			String hourStr = getRootForm().getRequestParameter("o_dch_" + component.getFormDispatchId());
+			if (hourStr != null && StringHelper.isLong(hourStr)) {
+				hour = Integer.parseInt(hourStr);
+			}	
+			String minuteStr = getRootForm().getRequestParameter("o_dcm_" + component.getFormDispatchId());
+			if (minuteStr != null && StringHelper.isLong(minuteStr)) {
+				minute = Integer.parseInt(minuteStr);
+			}
+		} catch (NumberFormatException e) {
+			log.error("", e);
+		}
 	}
 
 	/**
@@ -131,9 +144,8 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 		super.rootFormAvailable();
 		//locale is available!
 		locale = getTranslator().getLocale();
-		
 		if (GUIInterna.isLoadPerformanceMode()) {
-			getRootForm().getReplayableDispatchID(txtcomponent);
+			getRootForm().getReplayableDispatchID(dateComponent);
 		}
 	}
 
@@ -155,9 +167,20 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 	public Date getDate() {
 		Date d = null;
 		try {
-			d = getDateFormat().parse(getValue());
+			d = parseDate(getValue());
+			if(d != null && (minute >= 0 || hour >= 0)) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(d);
+				if(hour >= 0) {
+					cal.set(Calendar.HOUR_OF_DAY, hour);
+				}
+				if(minute >= 0) {
+					cal.set(Calendar.MINUTE, minute);
+				}
+				d = cal.getTime();
+			}	
 		} catch (ParseException e) {
-			// return null
+			log.error("", e);
 		}
 		return d;
 	}
@@ -168,8 +191,13 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 	public void setDate(Date date) {
 		if (date == null) {
 			setValue("");
+			hour = minute = 0;
 		} else {
 			setValue(formatDate(date));
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date);
+			hour = cal.get(Calendar.HOUR_OF_DAY);
+			minute = cal.get(Calendar.MINUTE);
 		}
 	}
 
@@ -191,21 +219,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#getDateChooserDateFormat()
 	 */
 	public String getDateChooserDateFormat() {
-		return dateChooserDateFormat;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#setDateChooserDateFormat(java.lang.String)
-	 */
-	public void setDateChooserDateFormat(String dateChooserDateFormat) {
-		this.dateChooserDateFormat = dateChooserDateFormat;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#setCustomDateFormat(java.lang.String)
-	 */
-	public void setCustomDateFormat(String customDateFormat){
-		this.customDateFormat = customDateFormat;
+		Calendar cal = Calendar.getInstance();
+		cal.set( 1999, Calendar.MARCH, 1, 0, 0, 0 );
+		String formattedDate = Formatter.getInstance(translator.getLocale()).formatDate(cal.getTime());
+		formattedDate = formattedDate.replace("1999", "yy");
+		formattedDate = formattedDate.replace("99", "yy");
+		formattedDate = formattedDate.replace("03", "mm");
+		formattedDate = formattedDate.replace("3", "mm");
+		formattedDate = formattedDate.replace("01", "dd");
+		formattedDate = formattedDate.replace("1", "dd");
+		return formattedDate;
 	}
 	
 	/* (non-Javadoc)
@@ -219,13 +242,13 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 	@Override
 	public void setVisible(boolean isVisible){
 		super.setVisible(isVisible);
-		txtcomponent.setVisible(isVisible);
+		dateComponent.setVisible(isVisible);
 	}
 	
 	@Override
 	public void setEnabled(boolean isEnabled){
 		super.setEnabled(isEnabled);
-		txtcomponent.setEnabled(isEnabled);
+		dateComponent.setEnabled(isEnabled);
 	}
 	
 	/* (non-Javadoc)
@@ -236,26 +259,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 	}
 	
 	private String formatDate(Date date) {
-		String da = getDateFormat().format(date);
-		return da;
-	}
-
-	private DateFormat getDateFormat() {
-		if (df == null) {
-			if (customDateFormat == null) {
-				if(isDateChooserTimeEnabled()) {
-					df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
-					df.setLenient(false);
-				} else {
-					df = DateFormat.getDateInstance(DateFormat.SHORT, locale);
-					df.setLenient(false);
-				}
-			} else {
-				df = new SimpleDateFormat(customDateFormat);
-				df.setLenient(false);
-			}
+		if(date == null) {
+			return null;
 		}
-		return df;
+		return Formatter.getInstance(locale).formatDate(date);
 	}
-
+	
+	private Date parseDate(String val) throws ParseException {
+		if(StringHelper.containsNonWhitespace(val)) {
+			return Formatter.getInstance(locale).parseDate(val);
+		}
+		return null;
+	}
 }

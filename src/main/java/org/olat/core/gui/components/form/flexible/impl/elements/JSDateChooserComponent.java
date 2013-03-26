@@ -25,11 +25,10 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.olat.core.gui.UserRequest;
+import java.util.Date;
+
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
-import org.olat.core.gui.control.JSAndCSSAdder;
-import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -42,19 +41,7 @@ import org.olat.core.gui.translator.Translator;
  * @author patrickb
  */
 class JSDateChooserComponent extends FormBaseComponentImpl {
-
-	/**
-	 * @see org.olat.core.gui.components.Component#getDispatchID()
-	 * without this: the events are sent from the text-component, but the id will be the one from the datechooser-span
-	 * so the component cant be found while dispatching. and therefore eventhandling won't work.
-	 * by using the id from the text-component, it should work as expected.
-	 * See OLAT-4735.
-	 */
-	@Override
-	public String getDispatchID() {
-		return (element.getTextElementComponent().getDispatchID());
-	}
-
+	
 	private final static ComponentRenderer RENDERER = new JSDateChooserRenderer();
 	private JSDateChooser element;
 
@@ -69,6 +56,22 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.Component#getDispatchID()
+	 * without this: the events are sent from the text-component, but the id will be the one from the datechooser-span
+	 * so the component cant be found while dispatching. and therefore eventhandling won't work.
+	 * by using the id from the text-component, it should work as expected.
+	 * See OLAT-4735.
+	 */
+	@Override
+	public String getDispatchID() {
+		return element.getTextElementComponent().getDispatchID();
+	}
+	
+	public Date getDate() {
+		return element.getDate();
 	}
 
 	public TextElementComponent getTextElementComponent() {

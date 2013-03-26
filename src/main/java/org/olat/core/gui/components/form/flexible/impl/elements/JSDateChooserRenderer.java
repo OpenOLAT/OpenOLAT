@@ -25,6 +25,9 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -35,7 +38,6 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Formatter;
 
 /**
  * Description:<br>
@@ -47,7 +49,7 @@ import org.olat.core.util.Formatter;
  */
 class JSDateChooserRenderer implements ComponentRenderer {
 
-	private int maxlength = -1;
+
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -62,74 +64,71 @@ class JSDateChooserRenderer implements ComponentRenderer {
 		JSDateChooserComponent jsdcc = (JSDateChooserComponent) source;
 
 		String receiverId = jsdcc.getTextElementComponent().getFormDispatchId();
-		// render textelement TODO:pb discuss with fj concatenation/composition of renderers.
-		//ComponentRenderer txtelmRenderer = jsdcc.getTextElementComponent().getHTMLRendererSingleton();
-		//txtelmRenderer.render(renderer,sb, jsdcc.getTextElementComponent(), ubu, translator, renderResult, args);
-
 
 		String exDate = jsdcc.getExampleDateString();
-		maxlength = exDate.length() + 4;
+		int maxlength = exDate.length() + 4;
 		
-		StringOutput content = new StringOutput();
-		renderTextElementPart(content, jsdcc.getTextElementComponent());
-		
-		//
+		StringOutput dc = new StringOutput();
+		renderTextElementPart(dc, jsdcc.getTextElementComponent(), maxlength);
+
 		String triggerId = "trigger_" + jsdcc.getFormDispatchId();
 		Translator sourceTranslator = jsdcc.getElementTranslator();
 
-		
-		/*
-		 * add pop js for date chooser, if componente is enabled
-		 */
+		//add pop js for date chooser, if componente is enabled
 		if (source.isEnabled()) {
-			
-			//date chooser button
-			content.append("<span class=\"b_form_datechooser\" id=\"").append(triggerId).append("\" title=\"").append(StringEscapeUtils.escapeHtml(sourceTranslator.translate("calendar.choose"))).append("\">&nbsp;</span>");
-			// date chooser javascript
-			content.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
-				.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({")
-				.append("inputField:\"").append(receiverId).append("\",")
-				.append("ifFormat:\"");
-			
-			boolean timeFormat24 = true;
-			if (jsdcc.getDateChooserDateFormat() == null) {
-				// use default format from default locale file
-
-				Formatter formatter = Formatter.getInstance(translator.getLocale());
-				if (jsdcc.isDateChooserTimeEnabled()) {
-					String dateTimePattern = formatter.getSimpleDatePatternForDateAndTime();
-					timeFormat24 = dateTimePattern.indexOf("%I") < 0;
-					content.append(dateTimePattern);
-				}
-				else content.append(formatter.getSimpleDatePatternForDate());
-
-			} else {
-				// use custom date format
-				content.append(jsdcc.getDateChooserDateFormat());
-			}
-			// close calendar after choosing a date.
-			content.append("\",").append("button:\"").append(triggerId).append("\",").append("align:\"Tl\",").append("singleClick:true,");
-			if (jsdcc.isDateChooserTimeEnabled()) {
-				content.append("showsTime:true,");
-				content.append("timeFormat:\"").append(timeFormat24 ? "24" : "12").append("\",");
-			}
-			content.append("cache:true,").append("firstDay:1,").append("showOthers:true,");
-			// Call on change method on input field to trigger dirty button
+			String format = jsdcc.getDateChooserDateFormat();
 			TextElementComponent teC = jsdcc.getTextElementComponent();
 			TextElementImpl te = teC.getTextElementImpl();
-			content.append("onUpdate:function(){setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("')}");
-			// Finish js code
-			content.append("})});").append("\n/* ]]> */ \n</script>");
 
-			sb.append(content);
+			//date chooser button
+			dc.append("<span class=\"b_form_datechooser\" id=\"").append(triggerId).append("\" title=\"").append(StringEscapeUtils.escapeHtml(sourceTranslator.translate("calendar.choose"))).append("\"")
+			  .append(" onclick=\"jQuery('#").append(receiverId).append("').datepicker('show');\"")
+			  .append(">&nbsp;</span>");
+			// date chooser javascript
+			dc.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
+				.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({\n")
+				.append("  dateFormat:'").append(format).append("',\n")
+				.append("  firstDay:1,\n")
+				.append("  showOtherMonths:true,\n")
+				.append("  onSelect:function(){\n")
+				.append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("')")
+				.append("  }\n")
+			  .append("})});")
+			  .append("\n/* ]]> */ \n</script>");
+			
+			//input fields for hour and minute
+			if (jsdcc.isDateChooserTimeEnabled()) {
+				int hour, minute;
+				Date currentDate = jsdcc.getDate();
+				if(currentDate == null) {
+					hour = minute = 0;
+				} else {
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(currentDate);
+					hour = cal.get(Calendar.HOUR_OF_DAY);
+					minute = cal.get(Calendar.MINUTE);
+				}
+
+				renderMS(dc, "o_dch_" + receiverId, hour);
+				dc.append(" : ");
+				renderMS(dc, "o_dcm_" + receiverId, minute);
+			}
+			sb.append(dc);
 		} else{
 			//readonly view
-			FormJSHelper.appendReadOnly(content.toString(), sb);
+			FormJSHelper.appendReadOnly(dc.toString(), sb);
 		}
-
+	}
+	
+	private StringOutput renderMS(StringOutput dc, String id, int time) {
+		dc.append("<input type=\"text\" id=\"").append(id).append("\"")
+	    .append(" name=\"").append(id).append("\" size=\"2\"")
+		  .append(" maxlength=\"2\"").append("\" value=\"").append(time).append("\"")
+		  .append(" />");
+		return dc;
 	}
 
-	private void renderTextElementPart(StringOutput sb, Component source) {
+	private void renderTextElementPart(StringOutput sb, Component source, int maxlength) {
 		TextElementComponent teC = (TextElementComponent) source;
 		TextElementImpl te = teC.getTextElementImpl();
 

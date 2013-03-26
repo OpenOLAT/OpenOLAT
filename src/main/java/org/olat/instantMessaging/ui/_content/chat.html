@@ -15,12 +15,13 @@
 function tweak_${panelName}() {
 	try {		
 		var win = jQuery('#${panelName}');
-		var el = win.body.dom.getElementsByClassName('o_instantmessaging_chat_history');
-		if (el.length == 1) {
-			el[0].style.height=win.getSize().height-150 + 'px';
-			el[0].scrollTop = el[0].scrollHeight;
-		}
-	} catch (e) {/**/}
+		jQuery('.o_instantmessaging_chat_history', win).each(function(index, el){
+			var historyEl = jQuery(el);
+			historyEl.height(win.height() - 150);
+			console.log('History', win.height() - 150);
+			historyEl.scrollTop(el.scrollHeight);
+		});
+	} catch (e) { /**/ }
 }
 function focus_${panelName}() {
 	try {
@@ -29,7 +30,7 @@ function focus_${panelName}() {
 			el.focus();
 			el.focus(); //stupid IE needs an extra focus call to work
 		}
-	} catch (e) {/**/}
+	} catch (e) { /**/ }
 }
 /* ]]> */
 </script>

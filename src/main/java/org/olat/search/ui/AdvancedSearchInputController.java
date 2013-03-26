@@ -117,8 +117,8 @@ public class AdvancedSearchInputController extends FormBasicController {
 		authorQuery = uifactory.addTextElement("search_author", "form.search.label.author", 255, "", formLayout); 
 		titleQuery = uifactory.addTextElement("search_title", "form.search.label.title", 255, "", formLayout);
 		descriptionQuery = uifactory.addTextElement("search_description", "form.search.label.description", 255, "", formLayout);
-		createdDate = uifactory.addDateChooser("search_creation", "form.search.label.created.date", "", formLayout);
-		modifiedDate = uifactory.addDateChooser("search_modification", "form.search.label.modified.date", "", formLayout);
+		createdDate = uifactory.addDateChooser("search_creation", "form.search.label.created.date", null, formLayout);
+		modifiedDate = uifactory.addDateChooser("search_modification", "form.search.label.modified.date", null, formLayout);
 
 		//document types
 		initDocumentTypesKeysAndValues();

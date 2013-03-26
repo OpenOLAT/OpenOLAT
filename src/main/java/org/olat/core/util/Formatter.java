@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -104,6 +105,12 @@ public class Formatter {
 	public String formatDate(Date d) {
 		synchronized (shortDateFormat) {
 			return shortDateFormat.format(d);
+		}
+	}
+	
+	public Date parseDate(String val) throws ParseException {
+		synchronized (shortDateFormat) {
+			return shortDateFormat.parse(val);
 		}
 	}
 	

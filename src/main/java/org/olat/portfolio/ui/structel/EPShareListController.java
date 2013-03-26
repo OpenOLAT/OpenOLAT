@@ -506,11 +506,11 @@ public class EPShareListController extends FormBasicController {
 				String text = translate("map.share.with.tutor");
 				uifactory.addStaticTextElement("map.share.text." + cmpName, text, container);
 			} else {
-				DateChooser fromChooser = uifactory.addDateChooser("map.share.from." + cmpName, "map.share.from", "", container);
+				DateChooser fromChooser = uifactory.addDateChooser("map.share.from." + cmpName, "map.share.from", null, container);
 				fromChooser.setDate(policyWrapper.getFrom());
 				fromChooser.setValidDateCheck("map.share.date.invalid");
 				policyWrapper.setFromChooser(fromChooser);
-				DateChooser toChooser = uifactory.addDateChooser("map.share.to." + cmpName, "map.share.to", "", container);
+				DateChooser toChooser = uifactory.addDateChooser("map.share.to." + cmpName, "map.share.to", null, container);
 				toChooser.setDate(policyWrapper.getTo());
 				toChooser.setValidDateCheck("map.share.date.invalid");
 				policyWrapper.setToChooser(toChooser);

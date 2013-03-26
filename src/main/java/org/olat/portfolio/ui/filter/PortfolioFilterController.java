@@ -158,9 +158,9 @@ public class PortfolioFilterController extends FormBasicController {
 			dateFlc = FormLayoutContainer.createCustomFormLayout("dateLayout", getTranslator(), page);
 			formLayout.add(dateFlc);
 			dateFlc.setLabel("filter.by.date", null);
-			dateStart = uifactory.addDateChooser("filter.date.start", "", dateFlc);
+			dateStart = uifactory.addDateChooser("filter.date.start", null, dateFlc);
 			dateStart.addActionListener(this, FormEvent.ONCHANGE);
-			dateEnd = uifactory.addDateChooser("filter.date.end", "", dateFlc);
+			dateEnd = uifactory.addDateChooser("filter.date.end", null, dateFlc);
 			dateEnd.addActionListener(listener, FormEvent.ONCHANGE);
 			dateStart.clearError();
 			dateEnd.clearError();

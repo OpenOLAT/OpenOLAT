@@ -99,8 +99,8 @@ public class SearchAllCalendarsForm extends FormBasicController {
 		setFormTitle ("cal.search.title");
 		subject  = uifactory.addTextElement("cal.search.subject", "cal.search.subject", 40, "", formLayout);
 		location = uifactory.addTextElement("cal.search.location", "cal.search.location", 40, "", formLayout);
-		beginPeriod = uifactory.addDateChooser("begin", "cal.search.beginPeriod", "", formLayout);
-		endPeriod   = uifactory.addDateChooser("end",   "cal.search.endPeriod", "", formLayout);
+		beginPeriod = uifactory.addDateChooser("begin", "cal.search.beginPeriod", null, formLayout);
+		endPeriod   = uifactory.addDateChooser("end",   "cal.search.endPeriod", null, formLayout);
 		
 		beginPeriod.setExampleKey ("cal.form.recurrence.end.example", null);
 		endPeriod.setExampleKey ("cal.form.recurrence.end.example", null);

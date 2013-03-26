@@ -260,7 +260,7 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 			
 			Date startDate = getStartDate(config);
 			Date selectedDate = startDate == null ? new Date() : startDate;
-			dateChooser = uifactory.addDateChooser("pane.tab.start_date_chooser", null, "", formLayout);
+			dateChooser = uifactory.addDateChooser("pane.tab.start_date_chooser", null, null, formLayout);
 			dateChooser.setDate(selectedDate);
 			dateChooser.setVisible(!autoDate);
 			

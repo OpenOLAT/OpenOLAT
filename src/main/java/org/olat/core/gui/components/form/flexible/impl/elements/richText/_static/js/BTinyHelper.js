@@ -110,7 +110,7 @@ var BTinyHelper = {
 	startFormDirtyObserver : function(formId, elementId) {
 		var observerKey = formId + '-' + elementId;
 		// Check for dirtyness and mark buttons accordingly, each second
-		var newExecutor = jQuery.periodic({period: 500}, function(executor) {
+		var newExecutor = jQuery.periodic({period: 500, decay:1.0, max_period: Number.MAX_VALUE}, function(executor) {
 			// first check if the html editor still exists on this page, otherwhise stop executing this code
 			var elem = jQuery('#' + elementId);
 			if (!elem) {

@@ -56,37 +56,6 @@ public interface DateChooser extends TextElement{
 	public void setDateChooserTimeEnabled(boolean dateChooserTimeEnabled);
 
 	/**
-	 * @return
-	 */
-	public String getDateChooserDateFormat();
-
-	/**
-	 * Set an optional date chooser format if the default format for the current
-	 * locale is not good. It is recommended to use the locale dependent format
-	 * when possible. (e.g. 22.02.99 for DE and 99/22/92 for EN)
-	 * <br>
-	 * Use a pattern that corresponds to the SimpleDateFormat patterns.
-	 * 
-	 * @param dateChooserDateFormat
-	 */
-	public void setDateChooserDateFormat(String dateChooserDateFormat);
-
-	/**
-	 * Set an optional date format if the default format for the current
-	 * locale is not good. It is recommended to use the locale dependent format
-	 * when possible. (e.g. 22.02.99 for DE and 99/22/92 for EN)
-	 * <br>
-	 * Together with setDateChooserDateFormat!! One has to set the format of 
-	 * the js datechoose which is differently specified, then the date formatting
-	 * string of java.
-	 * <br>
-	 * Use a pattern that corresponds to the SimpleDateFormat patterns.
-	 * 
-	 * @param customDateFormat
-	 */
-	public void setCustomDateFormat(String customDateFormat);
-
-	/**
 	 * @param errorKey
 	 * @return
 	 */

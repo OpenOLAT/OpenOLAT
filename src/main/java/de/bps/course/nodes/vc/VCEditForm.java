@@ -243,7 +243,7 @@ public class VCEditForm extends FormBasicController {
     vcDescriptionInputList.add(index, vcDescription);
 
     // begin
-    DateChooser vcScheduleDate = uifactory.addDateChooser("begin" + counter, "vc.table.begin", "", editVC);
+    DateChooser vcScheduleDate = uifactory.addDateChooser("begin" + counter, "vc.table.begin", null, editVC);
     vcScheduleDate.setNotEmptyCheck("vc.table.begin.empty");
     vcScheduleDate.setValidDateCheck("vc.table.begin.error");
     vcScheduleDate.setMandatory(true);

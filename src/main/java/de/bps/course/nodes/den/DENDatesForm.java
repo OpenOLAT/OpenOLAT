@@ -140,14 +140,12 @@ public class DENDatesForm extends FormBasicController {
 		retakeTE.setEnabled(showRetakeTE);
 		retakeTE.setVisible(showRetakeTE);
 		
-		beginDateChooser = uifactory.addDateChooser("begin", "config.dates.begin", "", formLayout);
+		beginDateChooser = uifactory.addDateChooser("begin", "config.dates.begin", null, formLayout);
 		beginDateChooser.setNotEmptyCheck("form.error.notempty");
 		beginDateChooser.setValidDateCheck("form.error.date");
 		beginDateChooser.setMandatory(true);
 		beginDateChooser.setDisplaySize(20);
 		beginDateChooser.setDateChooserTimeEnabled(true);
-		beginDateChooser.setDateChooserDateFormat("%d.%m.%Y %H:%M");
-		beginDateChooser.setCustomDateFormat("dd.MM.yyyy HH:mm");
 		beginDateChooser.setExampleKey("config.dates.begin.example", null);
 		beginDateChooser.setEnabled(showBeginDateChooser);
 		beginDateChooser.setVisible(showBeginDateChooser);

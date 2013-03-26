@@ -65,7 +65,7 @@ public class DeadlineController extends FormBasicController {
 		setFormTitle("map.deadline.change.title");
 		setFormDescription("map.deadline.change.description");
 		
-		deadlineChooser = uifactory.addDateChooser("map.deadline", "", formLayout);
+		deadlineChooser = uifactory.addDateChooser("map.deadline", null, formLayout);
 		if(map.getDeadLine() == null) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(new Date());

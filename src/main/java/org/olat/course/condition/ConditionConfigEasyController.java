@@ -63,6 +63,7 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.condition.interpreter.ConditionDateFormatter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroupService;
@@ -214,11 +215,17 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			validatedCondition.setEasyModeCoachesAndAdmins(false);
 			// 3) date switch
 			if (dateSwitch.getSelectedKeys().size() == 1) {
-				if (StringHelper.containsNonWhitespace(fromDate.getValue())) validatedCondition.setEasyModeBeginDate(fromDate.getValue());
-				else validatedCondition.setEasyModeBeginDate(null);
+				if (StringHelper.containsNonWhitespace(fromDate.getValue())) {
+					validatedCondition.setEasyModeBeginDate(ConditionDateFormatter.format(fromDate.getDate()));
+				} else {
+					validatedCondition.setEasyModeBeginDate(null);
+				}
 
-				if (StringHelper.containsNonWhitespace(toDate.getValue())) validatedCondition.setEasyModeEndDate(toDate.getValue());
-				else validatedCondition.setEasyModeEndDate(null);
+				if (StringHelper.containsNonWhitespace(toDate.getValue())) {
+					validatedCondition.setEasyModeEndDate(ConditionDateFormatter.format(toDate.getDate()));
+				} else {
+					validatedCondition.setEasyModeEndDate(null);
+				}
 			} else {
 				validatedCondition.setEasyModeBeginDate(null);
 				validatedCondition.setEasyModeEndDate(null);
@@ -1111,33 +1118,20 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		dateSubContainer = (FormItemContainer) FormLayoutContainer.createDefaultFormLayout("dateSubContainer", getTranslator());
 		formLayout.add(dateSubContainer);
 
-		fromDate = new JSDateChooser("fromDate", validatedCondition.getEasyModeBeginDate()) {
-			{
-				setLabel("form.easy.bdate", null);
-				displaySize = 17;
-				setExampleKey("form.easy.example.bdate", null);
-				// time is enabled
-				setDateChooserTimeEnabled(true);
-				// not i18n'ified yet
-				setDateChooserDateFormat("%d.%m.%Y %H:%M");
-				setCustomDateFormat("dd.MM.yyyy HH:mm");
-				displaySize = getExampleDateString().length();
-			}
-		};
+		fromDate = new JSDateChooser("fromDate", getLocale());
+		fromDate.setLabel("form.easy.bdate", null);
+		fromDate.setDate(ConditionDateFormatter.parse(validatedCondition.getEasyModeBeginDate()));
+		fromDate.setExampleKey("form.easy.example.bdate", null);
+		fromDate.setDateChooserTimeEnabled(true);
+		fromDate.setDisplaySize(fromDate.getExampleDateString().length());
 		dateSubContainer.add(fromDate);
 		
-		toDate = new JSDateChooser("toDate", validatedCondition.getEasyModeEndDate()) {
-			{
-				setLabel("form.easy.edate", null);
-				setExampleKey("form.easy.example.edate", null);
-				// time is enabled
-				setDateChooserTimeEnabled(true);
-				// not i18n'ified yet
-				setDateChooserDateFormat("%d.%m.%Y %H:%M");
-				setCustomDateFormat("dd.MM.yyyy HH:mm");
-				setDisplaySize(getExampleDateString().length());
-			}
-		};
+		toDate = new JSDateChooser("toDate", getLocale());
+		toDate.setLabel("form.easy.edate", null);
+		toDate.setDate(ConditionDateFormatter.parse(validatedCondition.getEasyModeEndDate()));
+		toDate.setExampleKey("form.easy.example.edate", null);
+		toDate.setDateChooserTimeEnabled(true);
+		toDate.setDisplaySize(toDate.getExampleDateString().length());
 		dateSubContainer.add(toDate);
 
 		dateSwitch = uifactory.addCheckboxesHorizontal("dateSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.dateSwitch") }, null);
