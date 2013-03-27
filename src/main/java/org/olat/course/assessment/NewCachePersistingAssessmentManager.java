@@ -157,7 +157,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 */
 	private List<Property> loadPropertiesFor(List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) return Collections.emptyList();
-
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("from org.olat.properties.Property as p")
 		  .append(" inner join fetch p.identity as ident ")
