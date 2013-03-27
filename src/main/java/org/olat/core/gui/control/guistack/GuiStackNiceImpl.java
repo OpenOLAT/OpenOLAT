@@ -124,6 +124,34 @@ public class GuiStackNiceImpl implements GuiStack {
 		modalLayers++;
 	}
 	
+	
+	
+	@Override
+	public void pushCallout(Component content, String targetId) {
+		// wrap the component into a modal foreground dialog with alpha-blended-background
+		final Panel guiMsgPlace = new Panel("guimsgplace_for_callout");
+		VelocityContainer inset = new VelocityContainer("inset", VELOCITY_ROOT + "/callout.html", null, null) {
+			public void validate(UserRequest ureq, ValidationResult vr) {
+				super.validate(ureq, vr);
+				// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.
+				// the windowbackoffice doesn't know about guimessages, it is only a container that keeps them for one render cycle
+				List<ZIndexWrapper> zindexed = wbo.getGuiMessages();
+				zindexed.add(new ZIndexWrapper(guiMsgPlace, 10));
+			}
+		};
+		inset.put("cont", content);
+		inset.put("guimsgplace", guiMsgPlace);
+		inset.contextPut("guimsgtarget", targetId);
+		int zindex = 900 + (modalLayers * 100) + 5;
+		inset.contextPut("zindexoverlay", zindex+1);
+		inset.contextPut("zindexshim", zindex);
+		inset.contextPut("zindexarea", zindex+5);
+		inset.contextPut("zindexextwindows", zindex+50);
+
+		modalPanel.pushContent(inset);
+		modalLayers++;
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.GuiStackHandle#pushContent(org.olat.core.gui.components.Component)
 	 */

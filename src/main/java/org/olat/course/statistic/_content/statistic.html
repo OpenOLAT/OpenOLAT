@@ -7,26 +7,31 @@
 <hr class="b_form_spacer"/>
 <p>$chartIntro</p>
 <div id="placeholder" style="width:600px;height:300px"></div>
-<script type="text/javascript" src='$r.staticLink("js/jquery/flot/jquery.flot.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/flot/jquery.flot.min.js")'></script>
 <script type="text/javascript">
 jQuery(function () {
-    	var d2 = [$d2];
-        var options = {
-        	xaxis: {
-        		tickLength: 0, // hide gridlines
-        		ticks: [$thicks]
-        	}
-        };
-	jQuery.plot(jQuery("#placeholder"), [{
-		color:'#879CB8',
+	var d2 = [$d2];
+	var options = {
+		xaxis: {
+			tickLength: 0, // hide gridlines
+			ticks: [$thicks]
+		},
+		grid: {
+			borderWidth: 1
+		}
+	};
+	
+	var container = jQuery("#placeholder");
+	jQuery.plot(container, [{
+		color:'#025d8c',
 		data: d2,
 		bars: {
 			show: true,
 			align:'center',
-			lineWidth: 1,
+			lineWidth: 2,
 			barWidth: 0.8
 		}
-        }],options);
+	}],options);
 });
 </script>
 	

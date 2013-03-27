@@ -73,6 +73,11 @@ public class StackedBusinessWindowControl implements WindowControl {
 		origWControl.pushAsModalDialog(comp);
 	}
 
+	@Override
+	public void pushAsCallout(Component comp, String targetId) {
+		origWControl.pushAsCallout(comp, targetId);
+	}
+
 	public void pushToMainArea(Component comp) {
 		origWControl.pushToMainArea(comp);
 	}

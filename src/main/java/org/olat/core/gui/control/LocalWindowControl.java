@@ -64,6 +64,12 @@ public class LocalWindowControl implements WindowControl {
 		localHeight++;
 	}
 
+	@Override
+	public void pushAsCallout(Component comp, String targetId) {
+		origWControl.pushAsCallout(comp, targetId);
+		localHeight++;
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.WindowControl#pushToMainArea(org.olat.core.gui.components.Component)
 	 */

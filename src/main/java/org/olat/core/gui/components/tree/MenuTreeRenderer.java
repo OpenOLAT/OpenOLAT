@@ -104,20 +104,20 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		}
 		target.append("'><ul class=\"b_tree_l0\">");
 		if(tree.isRootVisible()) {
-			renderLevel(target, 0, root, selPath, openNodeIds, ubu, flags, tree.markingTreeNode, tree);
+			renderLevel(target, 0, root, selPath, openNodeIds, ubu, flags, tree);
 		} else {
 			selPath.remove(0);
 			int chdCnt = root.getChildCount();
 			for (int i = 0; i < chdCnt; i++) {
 				TreeNode curChd = (TreeNode)root.getChildAt(i);
-				renderLevel(target, 0, curChd, selPath, openNodeIds, ubu, flags, tree.markingTreeNode, tree);
+				renderLevel(target, 0, curChd, selPath, openNodeIds, ubu, flags, tree);
 			}
 		}
 		target.append("</ul>").append("</div>");
 	}
 
 	private void renderLevel(StringOutput target, int level, TreeNode curRoot, List<INode> selPath,
-			Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, TreeNode markedNode, MenuTree tree) {	
+			Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {	
 
 		INode curSel = null;
 		if (level < selPath.size()) {
@@ -160,9 +160,6 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		// render link
 		String title = curRoot.getTitle();
 
-		if (markedNode != null && markedNode == curRoot) {
-			target.append("<span style=\"border:2px solid red;\">");
-		}
 		// expand icon
 		// add ajax support and real open/close function
 		if (((tree.isRootVisible() && level != 0) || !tree.isRootVisible()) && chdCnt > 0) { // root has not open/close icon,  append open / close icon only if there is children
@@ -276,10 +273,6 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		target.append(title).append("</span></a>");
 		// mark active item as strong for accessablity reasons
 		target.append(selected ? "</strong>" : "");
-
-		if (markedNode != null && markedNode == curRoot) {
-			target.append("</span>");
-		}
 		target.append("</div>");
 		
 		//append div to drop as sibling
@@ -289,7 +282,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		
 		if (renderChildren) {
 			//open / close ul
-			renderChildren(target, level, curRoot, selPath, openNodeIds, ubu, flags, markedNode, tree);
+			renderChildren(target, level, curRoot, selPath, openNodeIds, ubu, flags, tree);
 			
 			//append div to drop as sibling after the children
 			if(tree.isDragEnabled() || tree.isDropSiblingEnabled()) {
@@ -302,7 +295,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 	}
 	
 	//fxdiff VCRP-9: drag and drop in menu tree
-	private void renderChildren(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, TreeNode markedNode, MenuTree tree) {
+	private void renderChildren(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
 		int chdCnt = curRoot.getChildCount();
 		// render children as new level
 		target.append("\n<ul class=\"");
@@ -312,7 +305,7 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		// render all the nodes from this level
 		for (int i = 0; i < chdCnt; i++) {
 			TreeNode curChd = (TreeNode) curRoot.getChildAt(i);
-			renderLevel(target, level + 1, curChd, selPath, openNodeIds, ubu, flags, markedNode, tree);
+			renderLevel(target, level + 1, curChd, selPath, openNodeIds, ubu, flags, tree);
 		}
 		target.append("</ul>");
 	}

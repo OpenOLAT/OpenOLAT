@@ -25,8 +25,6 @@
 
 package org.olat.course.statistic;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,9 +72,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class StatisticDisplayController extends BasicController {
 	
-	class Graph {
-		private int max = 0;
-		public String chd;
+	private static class Graph {
 		public List<Integer> values;
 		public List<String> labelList;
 		public String chartIntroStr;
@@ -104,47 +100,6 @@ public class StatisticDisplayController extends BasicController {
 				sb.append("[").append(count++).append(",'").append(v.toString()).append("']");
 			}
 			return sb.toString();
-		}
-		
-		String getLabelsFormatted(int maxLength, double maxWidth) {
-			final int MIN_LENGTH = 8;
-			StringBuffer sb = new StringBuffer();
-			long labelsToIgnore = 0;
-			for (Iterator<String> it = labelList.iterator(); it.hasNext();) {
-				String aLabel = it.next();
-				sb.append("|");
-				if (maxLength==-1) {
-					sb.append(aLabel);
-				} else {
-					if (maxLength<MIN_LENGTH) {
-						if (labelsToIgnore>0) {
-							// then we don't issue a label here
-							labelsToIgnore--;
-							continue;
-						}
-						// then issue a label with length MIN_LENGTH
-						sb.append(aLabel.length()>MIN_LENGTH ? (aLabel.substring(0, Math.max(1,MIN_LENGTH-2))+"..") : aLabel);
-						
-						labelsToIgnore = Math.round(MIN_LENGTH * 6/maxWidth) - 1;
-					} else {
-						sb.append(aLabel.length()>maxLength ? (aLabel.substring(0, Math.max(1,maxLength-2))+"..") : aLabel);
-					}
-				}
-			}
-			try {
-				return URLEncoder.encode(sb.toString(), "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				return URLEncoder.encode(sb.toString());
-			}
-		}
-
-		public int getLengthOfLastLabel() {
-			if (labelList!=null && labelList.size()>0) {
-				return labelList.get(labelList.size()-1).length();
-			} else {
-				// return some minimal meaningful length for the empty label
-				return 10;
-			}
 		}
 	}
 	
@@ -376,9 +331,7 @@ public class StatisticDisplayController extends BasicController {
 			labelList.add(headerKey);
 		}
 		Graph result = new Graph();
-		result.max = max;
 		result.values = values;
-		result.chd = chd.toString();
 		result.labelList = labelList;
 		result.chartIntroStr = chartIntroStr;
 		result.numElements = columnCnt-2;
@@ -430,8 +383,6 @@ public class StatisticDisplayController extends BasicController {
 			labelList.add(headerKey);
 		}
 		Graph result = new Graph();
-		result.max = max;
-		result.chd = chd.toString();
 		result.labelList = labelList;
 		result.chartIntroStr = chartIntroStr;
 		result.numElements = tableCtr_.getTableDataModel().getRowCount()-1;
@@ -450,105 +401,13 @@ public class StatisticDisplayController extends BasicController {
 		try{
 			statisticVc_.contextPut("chartAlt", getTranslator().translate("chart.alt"));
 			statisticVc_.contextPut("chartIntro", graph.chartIntroStr);
-			
-			int lengthLastLabel = graph.getLengthOfLastLabel(); // if '|' does not occur, this will be length+1 which is okish
-			
-			int maxWidth = 1000;
-			int idealBarWidth = 32;
-			int idealBarSpace = 24;
-			int widthPerCharacter = 6; // this is the width per character, roughly
-			int additionalYAxisWidth = 9; // this is the width needed for the y axis and the dashes themselves
-			int spareWidth = 5;
-			int minimalSpaceBetweenLabels = 2;
-			double maxLabelWidth = ((double)idealBarWidth+(double)idealBarSpace-(double)minimalSpaceBetweenLabels);
-			int maxLabelChars = (int)Math.floor(maxLabelWidth/(double)widthPerCharacter);
-			
-			int yAxisWidthLeftMargin = String.valueOf(graph.max).length()*widthPerCharacter + additionalYAxisWidth;
-			int yAxisWidthRightMargin = (maxLabelChars*widthPerCharacter)/2 + spareWidth;
-			double idealWidthToSpaceRatio = (double)idealBarWidth/(double)idealBarSpace;
-			
-			String chartType = "bvs";
-			String chartData = graph.chd;
-			String chartDataScaling = "0,"+graph.max;
-			String chartAxisRange = "1,0,"+graph.max;
-			String chartColor = "879CB8"; 
-			//olat dark blue r=91, g=117, b=154 => 5B,75,9A
-			//olat light blue r=135, g=156, b=184 => 87,9C,B8
-			//olat light grey-blue r=217, g=220, b=227 => D9,Dc,E3
-			
-			String chartXLabels = graph.getLabelsFormatted(maxLabelChars, maxLabelWidth);
 
-			String chartBarWidth = String.valueOf(idealBarWidth);
-			String chartSpaceBetweenBars = String.valueOf(idealBarSpace); 
-			String chartSize = "1000x220";
-			
 			String thicks = graph.getLabelsArray();
 			String vals = graph.getValuesArray();
-			
-			//calculate the max size using default values
-			double n = graph.numElements;
-			long idealWidth = yAxisWidthLeftMargin + Math.round((n - 0.5) * idealBarWidth) + Math.round((n-1) * idealBarSpace) + yAxisWidthRightMargin;
-			if (idealWidth>maxWidth) {
-				double drawingWidth = maxWidth - yAxisWidthLeftMargin - yAxisWidthRightMargin;
-				// be:
-				//   a: the width of a bar
-				//   b: the space between bars
-				//   f: the factor a/b -> f=a/b, a=f*b
-				//   c: the max space available for all bars
-				//   n: the number of bars
-				// formula:
-				//   c = (n-0.5)*a + (n-1)*b = n*f*b + (n-1)*b = ((n-0.5)*f + n - 1)*b
-				double possibleBarSpace = drawingWidth/((n-0.5)*idealWidthToSpaceRatio + n - 1);
-				int barSpace = Math.max(0, (int)Math.floor(possibleBarSpace));
-				
-				// calculate again with the actual barSpace
-				// formula:
-				//   a = (c - (n-1)*b)/(n-0.5)
-				
-				int barWidth = Math.max(1, (int)Math.floor((drawingWidth-(n-1)*((double)barSpace))/(n-0.5)));
-				
-				chartBarWidth = String.valueOf(barWidth);
-				chartSpaceBetweenBars = String.valueOf(barSpace);
-				maxLabelWidth = ((double)barWidth+(double)barSpace-(double)minimalSpaceBetweenLabels);
-				maxLabelChars = (int)Math.floor(maxLabelWidth/(double)widthPerCharacter);
-				chartXLabels = graph.getLabelsFormatted(maxLabelChars, maxLabelWidth);
-
-				lengthLastLabel = Math.min(maxLabelChars, lengthLastLabel);
-				yAxisWidthRightMargin = (lengthLastLabel*widthPerCharacter)/2 + spareWidth;
-				long actualWidth = yAxisWidthLeftMargin + Math.round((n - 0.5) * barWidth) + Math.round((n-1) * barSpace) + yAxisWidthRightMargin;
-				chartSize = actualWidth+"x220";
-			} else {
-				chartSize = idealWidth+"x220";
-			}
-			
-			String url = "http://chart.apis.google.com/chart?" +
-					"chs="+chartSize+
-					"&chma=0,0,0,0"+
-					"&cht="+chartType+
-					"&chd=t:"+chartData+
-					"&chds="+chartDataScaling+
-					"&chxt=x,y" +
-					"&chxl=0:"+chartXLabels+
-					"&chco="+chartColor+
-					"&chbh="+chartBarWidth+","+chartSpaceBetweenBars+
-					"&chxr="+chartAxisRange;
-			statisticVc_.contextPut("chartUrl", url);
 			statisticVc_.contextPut("thicks", thicks);
 			statisticVc_.contextPut("d2", vals);
-
-			if (url.length()>2000) {
-				// from http://code.google.com/apis/chart/faq.html#url_length
-				// The maximum length of a URL is not determined by the Google Chart API, 
-				// but rather by web browser and web server considerations.
-				// The longest URL that Google accepts in a chart GET request is 2048 characters in length, 
-				// after URL-encoding (e.g., | becomes %7C). For POST, this limit is 16K. 
-				statisticVc_.contextPut("hasChartError", Boolean.TRUE);
-				statisticVc_.contextPut("hasChart", Boolean.FALSE);
-				statisticVc_.contextPut("chartError", getTranslator().translate("chart.error"));
-			} else {
-				statisticVc_.contextPut("hasChart", Boolean.TRUE);
-				statisticVc_.contextPut("hasChartError", Boolean.FALSE);
-			}
+			statisticVc_.contextPut("hasChart", Boolean.TRUE);
+			statisticVc_.contextPut("hasChartError", Boolean.FALSE);
 		} catch(RuntimeException re) {
 			log_.warn("generateCharts: RuntimeException during chart generation: "+re, re);
 		}
@@ -571,8 +430,6 @@ public class StatisticDisplayController extends BasicController {
 	
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
-
 }

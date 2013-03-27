@@ -19,29 +19,21 @@
  */
 package org.olat.portfolio.ui.structel.edit;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.json.JSONException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeModel;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeNode;
-import org.olat.core.gui.control.generic.ajax.tree.MoveTreeNodeEvent;
-import org.olat.core.gui.control.generic.ajax.tree.TreeController;
-import org.olat.core.gui.control.generic.ajax.tree.TreeNodeClickedEvent;
-import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
@@ -50,9 +42,8 @@ import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.ui.structel.EPAddElementsController;
-import org.olat.portfolio.ui.structel.EPArtefactClicked;
-import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 
 /**
  * Description:<br>
@@ -71,9 +62,9 @@ public class EPTOCController extends BasicController {
 	private static final String ROOT_NODE_IDENTIFIER = "rootStruct";
 	protected final EPFrontendManager ePFMgr;
 	protected final EPStructureManager eSTMgr;
-	protected PortfolioStructure rootNode;
+	protected PortfolioStructureMap rootNode;
 	protected final EPSecurityCallback secCallback;
-	private TreeController treeCtr;
+	private MenuTree treeCtr;
 	private VelocityContainer tocV;
 	private PortfolioStructure structureClicked;
 	private String artefactNodeClicked;
@@ -84,29 +75,38 @@ public class EPTOCController extends BasicController {
 	private Link delButton;
 
 	public EPTOCController(UserRequest ureq, WindowControl wControl, PortfolioStructure selectedEl, 
-			PortfolioStructure rootNode, EPSecurityCallback secCallback) {
+			PortfolioStructureMap rootNode, EPSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		tocV = createVelocityContainer("toc");
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		eSTMgr = (EPStructureManager) CoreSpringFactory.getBean("epStructureManager");
 		this.rootNode = rootNode;
-		AjaxTreeModel treeModel = buildTreeModel();
-		treeCtr = new TreeController(ureq, getWindowControl(), translate("toc.root"), treeModel, "myjsCallback");
-		treeCtr.setTreeSorting(false, false, false);
-		listenTo(treeCtr);
-		tocV.put("tocTree", treeCtr.getInitialComponent());		
+		TreeModel treeModel = buildTreeModel();
+		//new MenuTree(ureq, getWindowControl(), translate("toc.root"), treeModel, "myjsCallback");
+		treeCtr = new MenuTree("toc");
+		treeCtr.setTreeModel(treeModel);
+		treeCtr.setSelectedNode(treeCtr.getTreeModel().getRootNode());
+		treeCtr.setDragEnabled(false);
+		treeCtr.setDropEnabled(false);
+		treeCtr.setDropSiblingEnabled(false);
+		treeCtr.addListener(this);
+		treeCtr.setRootVisible(true);
+		
+		
+		//listenTo(treeCtr);
+		tocV.put("tocTree", treeCtr);		
 		delButton = LinkFactory.createCustomLink("deleteButton", DELETE_LINK_CMD, "&nbsp;&nbsp;&nbsp;", Link.NONTRANSLATED, tocV, this);
 		delButton.setTooltip(translate("deleteButton"), false);
 		delButton.setCustomEnabledLinkCSS("b_delete_icon b_eportfolio_del_link ");
 		tocV.put("deleteButton", delButton);		
 
 		if(selectedEl == null) {
-			treeCtr.selectPath("/" + ROOT_NODE_IDENTIFIER + "/" + rootNode.getKey()); // select map
+			//TODO jquery treeCtr.selectPath("/" + ROOT_NODE_IDENTIFIER + "/" + rootNode.getKey()); // select map
 			refreshAddElements(ureq, rootNode);
 		} else {
 			String pagePath = calculatePathByDeepestNode(selectedEl);
-			treeCtr.selectPath("/" + ROOT_NODE_IDENTIFIER + "/" + rootNode.getKey() + pagePath);
+		//TODO jquery treeCtr.selectPath("/" + ROOT_NODE_IDENTIFIER + "/" + rootNode.getKey() + pagePath);
 			structureClicked = selectedEl;
 			refreshAddElements(ureq, selectedEl);
 		}
@@ -124,9 +124,9 @@ public class EPTOCController extends BasicController {
 		return path.toString();
 	}
 	
-	protected void refreshTree(PortfolioStructure root) {
+	protected void refreshTree(PortfolioStructureMap root) {
 		this.rootNode = root;
-		treeCtr.reloadPath("/" + ROOT_NODE_IDENTIFIER + "/" + rootNode.getKey());
+	//TODO jquery treeCtr.reloadPath("/" + ROOT_NODE_IDENTIFIER + "/" + rootNode.getKey());
 	}
 	
 	/**
@@ -160,102 +160,17 @@ public class EPTOCController extends BasicController {
 		}		
 	}
 	
-	private AjaxTreeModel buildTreeModel() {
+	private TreeModel buildTreeModel() {
 		idToPath.put(rootNode.getKey(), "/" + ROOT_NODE_IDENTIFIER);
+		return new EPTOCTreeModel(rootNode, translate("toc.root"));
 		
-		AjaxTreeModel model = new AjaxTreeModel(ROOT_NODE_IDENTIFIER) {
-
-			@Override
-			public List<AjaxTreeNode> getChildrenFor(String nodeId) {
-				List<AjaxTreeNode> children = new ArrayList<AjaxTreeNode>();
-				AjaxTreeNode child;
-				boolean isRoot = false;
-				PortfolioStructure selStruct = null;
-				try {
-					List<PortfolioStructure> structs = new ArrayList<PortfolioStructure>();
-					if (nodeId.equals(ROOT_NODE_IDENTIFIER)) {
-						structs.add(rootNode);
-						isRoot = true;
-					} else if (!nodeId.startsWith(ARTEFACT_NODE_IDENTIFIER)){
-						selStruct = ePFMgr.loadPortfolioStructureByKey(new Long(nodeId));
-						structs = ePFMgr.loadStructureChildren(selStruct);
-					} else {
-						// its an artefact -> no childs anymore
-						return null;
-					}
-					if (structs != null && structs.size() != 0) { 
-						for (PortfolioStructure portfolioStructure : structs) {
-							String childNodeId = String.valueOf(portfolioStructure.getKey());
-							boolean hasStructureChild = eSTMgr.countStructureChildren(portfolioStructure) > 0;
-							boolean hasArtefacts = eSTMgr.countArtefacts(portfolioStructure) > 0;
-							boolean hasChilds = hasStructureChild || hasArtefacts;
-							child = new AjaxTreeNode(childNodeId, portfolioStructure.getTitle());
-							if (isLogDebugEnabled()){
-								child = new AjaxTreeNode(childNodeId, portfolioStructure.getTitle() + "drop:" + !isRoot + "drag:" + !isRoot + "leaf:"+!hasChilds);
-							}
-							// seems to be a bug, nothing can be dropped on a leaf, therefore we need to tweak with expanded/expandable ourself!
-//							child.put(AjaxTreeNode.CONF_LEAF, !hasChilds);
-							child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, !hasChilds);
-							child.put(AjaxTreeNode.CONF_ALLOWDRAG, !isRoot);
-				
-							child.put(AjaxTreeNode.CONF_EXPANDED, hasStructureChild);
-							child.put(AjaxTreeNode.CONF_EXPANDABLE, hasChilds);
-							child.put(AjaxTreeNode.CONF_ALLOWDROP, true);
-							child.put(AjaxTreeNode.CONF_ISTARGET, !isRoot); 
-							
-							child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, portfolioStructure.getIcon());
-							String description = FilterFactory.getHtmlTagAndDescapingFilter().filter(portfolioStructure.getDescription());
-							child.put(AjaxTreeNode.CONF_QTIP, description);
-							children.add(child);
-							
-							String path;
-							if(isRoot) {
-								path = "/" + ROOT_NODE_IDENTIFIER;
-							} else {
-								path = idToPath.get(selStruct.getKey()); 
-							}
-
-							idToPath.put(portfolioStructure.getKey(), path + "/" + childNodeId);
-						}
-					} 
-					if (selStruct != null && ePFMgr.countArtefactsRecursively(selStruct) != 0){
-						List<AbstractArtefact> artList = ePFMgr.getArtefacts(selStruct);
-						for (AbstractArtefact abstractArtefact : artList) {
-							//include struct also, to still be unique if an artefact is linked multiple times
-							String childNodeId = ARTEFACT_NODE_IDENTIFIER + String.valueOf(selStruct.getKey()) + "_" + String.valueOf(abstractArtefact.getKey());
-							child = new AjaxTreeNode(childNodeId, abstractArtefact.getTitle());
-							child.put(AjaxTreeNode.CONF_LEAF, true);
-							child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, true);
-							child.put(AjaxTreeNode.CONF_ALLOWDRAG, true);
-							child.put(AjaxTreeNode.CONF_EXPANDED, false);
-							child.put(AjaxTreeNode.CONF_ALLOWDROP, false);
-							child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, abstractArtefact.getIcon());
-							String description = FilterFactory.getHtmlTagAndDescapingFilter().filter(abstractArtefact.getDescription());
-							child.put(AjaxTreeNode.CONF_QTIP, description);
-							children.add(child);
-							
-							String path = idToPath.get(selStruct.getKey());
-							
-							String artefactPath = path + "/" + childNodeId;
-							idToPath.put(abstractArtefact.getKey(), artefactPath);
-							pathToStructure.put(artefactPath, selStruct);
-						}						
-					} 
-				} catch (JSONException e) {
-					throw new OLATRuntimeException("Error while creating tree model for map/page/structure selection", e);
-				}
-				return children;
-			}
-		};
-		model.setCustomRootIconCssClass("o_st_icon");
-		return model;
 	}
 	
 	public void update(UserRequest ureq, PortfolioStructure structure) {
 		String path = idToPath.get(structure.getKey());
 		if(path != null) {
-			treeCtr.reloadPath(path);
-			treeCtr.selectPath(path);
+		//TODO jquery treeCtr.reloadPath(path);
+		//TODO jquery treeCtr.selectPath(path);
 		}
 		refreshAddElements(ureq, structure);
 	}
@@ -310,6 +225,8 @@ public class EPTOCController extends BasicController {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		//TODO jquery implements drag and drop logic
+		/*
 		if (event instanceof TreeNodeClickedEvent) {
 			resetClickedNodes();
 			TreeNodeClickedEvent treeEv = (TreeNodeClickedEvent) event;
@@ -323,7 +240,7 @@ public class EPTOCController extends BasicController {
 				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.SELECTED, structureClicked));
 				// needed because refreshAddElements set flc dirty, therefore selected node gets lost
 				String path = idToPath.get(structureClicked.getKey());
-				treeCtr.selectPath(path);
+			//TODO jquery treeCtr.selectPath(path);
 			} else if (isArtefactNode) {
 				artefactNodeClicked = nodeClicked;
 				refreshAddElements(ureq, null);
@@ -333,7 +250,7 @@ public class EPTOCController extends BasicController {
 				PortfolioStructure structure = pathToStructure.get(path);
 				fireEvent(ureq, new EPArtefactClicked(ARTEFACT_NODE_CLICKED, structure));
 				// needed because refreshAddElements set flc dirty, therefore selected node gets lost
-				treeCtr.selectPath(path); 
+			//TODO jquery treeCtr.selectPath(path); 
 			} else {
 				// root tree node clicked, no add/delete link
 				delButton.setVisible(false);
@@ -386,7 +303,7 @@ public class EPTOCController extends BasicController {
 				}
 			
 			}
-		} else if (source == addElCtrl){
+		} else */ if (source == addElCtrl){
 			// refresh the view, this is a EPStructureChangeEvent
 			fireEvent(ureq, event);	
 		}

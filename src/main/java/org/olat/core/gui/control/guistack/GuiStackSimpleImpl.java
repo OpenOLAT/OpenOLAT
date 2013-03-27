@@ -61,6 +61,11 @@ public class GuiStackSimpleImpl implements GuiStack {
 		contentPanel.pushContent(inset);
 	}
 
+	@Override
+	public void pushCallout(Component content, String targetId) {
+		pushModalDialog(content);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.GuiStack#pushContent(org.olat.core.gui.components.Component)
 	 */

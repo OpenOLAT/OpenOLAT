@@ -48,6 +48,9 @@ public class ErrorWindowControl implements WindowControl {
 
 	@Override
 	public void pushAsModalDialog(Component comp) {/* */}
+	
+	@Override
+	public void pushAsCallout(Component comp, String targetId) {/* */}
 
 	@Override
 	public void pop() {/* */}

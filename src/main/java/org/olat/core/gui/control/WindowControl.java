@@ -55,6 +55,14 @@ public interface WindowControl {
 	 * @param comp
 	 */
 	public void pushAsModalDialog(Component comp);
+	
+	/**
+	 * 
+	 * @param comp
+	 * @param targetId
+	 */
+	public void pushAsCallout(Component comp, String targetId);
+	
 
 	/**
 	 * 

@@ -274,7 +274,7 @@ public class CloseableCalloutWindowController extends BasicController {
 			cmc.activate();
 		} else {
 			// push to modal stack
-			getWindowControl().pushAsModalDialog(calloutVC);
+			getWindowControl().pushAsCallout(calloutVC, getDOMTarget());
 			requiresJSCleanup = true;
 		}
 	}

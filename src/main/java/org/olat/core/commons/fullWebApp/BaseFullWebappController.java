@@ -173,6 +173,11 @@ public class BaseFullWebappController extends BasicController implements Generic
 				currentGuiStack.pushModalDialog(newModalDialog);
 			}
 
+			@Override
+			public void pushAsCallout(Component comp, String targetId) {
+				currentGuiStack.pushCallout(comp, targetId);
+			}
+
 			/**
 			 * @see org.olat.core.gui.control.WindowControl#pop()
 			 */

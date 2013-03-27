@@ -43,9 +43,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.ajax.tree.MoveTreeNodeEvent;
-import org.olat.core.gui.control.generic.ajax.tree.TreeNodeClickedEvent;
-import org.olat.core.gui.control.generic.ajax.tree.TreeNodeModifiedEvent;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -267,12 +264,15 @@ public class CPTreeController extends BasicController {
 	 * @param event
 	 * @return returns true, if move was successfull
 	 */
-	private boolean movePage(MoveTreeNodeEvent event) {
+	private boolean movePage(TreeEvent event) {
+		//TODO jquery
+		/*
 		CPManager cpMgm = CPManager.getInstance();
 		String movedNodeId = event.getNodeId();
 		cpMgm.moveElement(cp, movedNodeId, event.getNewParentNodeId(), event.getPosition());
 		cpMgm.writeToFile(cp);
 		selectTreeNodeById(movedNodeId);
+		*/
 		return true;
 	}
 
@@ -370,8 +370,8 @@ public class CPTreeController extends BasicController {
 				String selectedNodeID = treeModel.getIdentifierForNodeID(te.getNodeId());
 
 				currentPage = new CPPage(selectedNodeID, cp);
-				TreeNodeClickedEvent clickedEvent = new TreeNodeClickedEvent(currentPage.getIdentifier());
-				fireEvent(ureq, clickedEvent);
+				//TODO jquery TreeNodeClickedEvent clickedEvent = new TreeNodeClickedEvent(currentPage.getIdentifier());
+				//fireEvent(ureq, clickedEvent);
 			}
 
 		}
@@ -403,35 +403,38 @@ public class CPTreeController extends BasicController {
 			uploadCtr = null;
 		} else if (source == treeCtr) {
 			// event from extJSTree (TreeController)
-			if (event instanceof MoveTreeNodeEvent) {
+			if (event instanceof TreeEvent) {
 				/** move * */
-				MoveTreeNodeEvent moveEvent = (MoveTreeNodeEvent) event;
-				String selectedNodeID = treeModel.getIdentifierForNodeID(moveEvent.getNodeId());
+				/*
+				if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_DROP)) {
+					TreeEvent moveEvent = (TreeEvent) event;
+					String selectedNodeID = treeModel.getIdentifierForNodeID(moveEvent.getNodeId());
+	
+					currentPage = new CPPage(selectedNodeID, cp);
+	
+					MoveTreeNodeEvent newmoveEvent = new MoveTreeNodeEvent(treeModel.getIdentifierForNodeID(moveEvent.getNodeId()), treeModel
+							.getIdentifierForNodeID(moveEvent.getOldParentNodeId()), treeModel.getIdentifierForNodeID(moveEvent.getNewParentNodeId()),
+							moveEvent.getPosition());
+	
+					boolean success = movePage(newmoveEvent);
+					// setResult is important. If sucess is not true, the ajax tree will
+					// popup a dialog with error-msg
+					moveEvent.setResult(success, "Error", "Error while moving node");
+				} else if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
+					TreeEvent clickedEvent = (TreeEvent) event;
+					String selectedNodeID = treeModel.getIdentifierForNodeID(clickedEvent.getNodeId());
 
-				currentPage = new CPPage(selectedNodeID, cp);
+					currentPage = new CPPage(selectedNodeID, cp);
 
-				MoveTreeNodeEvent newmoveEvent = new MoveTreeNodeEvent(treeModel.getIdentifierForNodeID(moveEvent.getNodeId()), treeModel
-						.getIdentifierForNodeID(moveEvent.getOldParentNodeId()), treeModel.getIdentifierForNodeID(moveEvent.getNewParentNodeId()),
-						moveEvent.getPosition());
-
-				boolean success = movePage(newmoveEvent);
-				// setResult is important. If sucess is not true, the ajax tree will
-				// popup a dialog with error-msg
-				moveEvent.setResult(success, "Error", "Error while moving node");
-
-			} else if (event instanceof TreeNodeClickedEvent) {
-				/** click * */
-				TreeNodeClickedEvent clickedEvent = (TreeNodeClickedEvent) event;
-				String selectedNodeID = treeModel.getIdentifierForNodeID(clickedEvent.getNodeId());
-
-				currentPage = new CPPage(selectedNodeID, cp);
-
-				clickedEvent = new TreeNodeClickedEvent(currentPage.getIdentifier());
-				fireEvent(ureq, clickedEvent);
-			} else if (event instanceof TreeNodeModifiedEvent) {
-				/** a node (name) has been modified **/
+					clickedEvent = new TreeNodeClickedEvent(currentPage.getIdentifier());
+					fireEvent(ureq, clickedEvent);
+				}
+				 } else if (event instanceof TreeNodeModifiedEvent) {
+				//a node (name) has been modified
 				fireEvent(ureq, event);
+				}*/
 			}
+			
 		} else if (source == dialogCtr) {
 			// event from dialog (really-delete-dialog)
 			if (event != Event.CANCELLED_EVENT) {

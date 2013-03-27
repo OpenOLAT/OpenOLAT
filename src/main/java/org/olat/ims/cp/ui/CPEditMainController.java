@@ -34,8 +34,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
-import org.olat.core.gui.control.generic.ajax.tree.TreeNodeClickedEvent;
-import org.olat.core.gui.control.generic.ajax.tree.TreeNodeModifiedEvent;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -159,7 +157,8 @@ public class CPEditMainController extends MainLayoutBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == treeCtr) {
 			// event from TreeController
-			if (event instanceof TreeNodeClickedEvent) {
+			//TODO jquery
+			/*if (event instanceof TreeNodeClickedEvent) {
 				TreeNodeClickedEvent clickedEvent = (TreeNodeClickedEvent) event;
 				String nodeId = clickedEvent.getNodeId();
 				contentCtr.displayPage(ureq, nodeId);
@@ -170,7 +169,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 				String newItemTitle = nodeEvent.getModifiedValue();
 				treeCtr.updateNode(nodeId, newItemTitle);
 
-			} else if (event.getCommand().equals("New Page")) {
+			} else */ if (event.getCommand().equals("New Page")) {
 				String newIdentifier = treeCtr.addNewHTMLPage();
 				contentCtr.displayPage(ureq, newIdentifier);
 

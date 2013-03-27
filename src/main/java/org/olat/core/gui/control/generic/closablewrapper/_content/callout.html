@@ -1,35 +1,20 @@
-<div id="callout_layer_$r.getCId()" class="b_callout_content"></div>
-<div style="display:none">
-	<div id="callout_layer_content_$r.getCId()" class="b_ext_tooltip_wrapper" style="z-index:1800">
+<div id="callout_layer_$r.getCId()" class="b_callout_content">
+	<div id="callout_layer_content_$r.getCId()">
 		$r.render("calloutWindowContent")
 	</div>
 </div>
+#if($closable)
 <script type="text/javascript">
 /* <![CDATA[ */	
 jQuery(function() {
-	/*
-	jQuery('#callout_layer_content_$r.getCId()').dialog({
-		resize: 'auto',
-		modal: true,
-		position: { my: 'left+15 center', at: 'right bottom', of: '#$target' }
-	});
-	jQuery(".ui-dialog-titlebar").hide();
-	*/
-	jQuery('#callout_layer_$r.getCId()').parents('div.b_modal_area').next('div.b_modal_overlay').each(function(index, el) {
-		jQuery(el).css("opacity","0");
-		#if($closable)
-			jQuery(el).click(function() {if (o2cl()) {
+	jQuery('#callout_layer_$r.getCId()').each(function(index, el) {
+		jQuery(el).parents('div.b_callout_area').next('div.b_callout_overlay').each(function(index2, el2) {
+			jQuery(el2).click(function() {if (o2cl()) {
 				$r.javaScriptBgCommand('close');
 			}});
-		#end
+		});
 	});
-	jQuery('#$target').tooltip({
-		items: '#$target',
-		position: { my: 'left+15 center', at: 'right bottom', collision: 'flipfit'},
-		content: function(response) {
-			return jQuery('#callout_layer_content_$r.getCId()').html();
-		}
-  }).tooltip('open');
 });
 /* ]]> */
 </script>
+#end

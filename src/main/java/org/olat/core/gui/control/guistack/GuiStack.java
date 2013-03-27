@@ -40,29 +40,35 @@ public interface GuiStack {
 
 	/**
 	 * 
-	 * @param title the title of the modal dialog, can be null
 	 * @param content the component to push as modal dialog
 	 */
-	public abstract void pushModalDialog(Component content);
+	public void pushModalDialog(Component content);
+	
+	/**
+	 * 
+	 * @param content The component to push as callout window
+	 * @param targetId The target element
+	 */
+	public void pushCallout(Component content, String targetId);
 
 	/**
 	 * @see org.olat.core.gui.control.GuiStackHandle#pushContent(org.olat.core.gui.components.Component)
 	 */
-	public abstract void pushContent(Component newContent);
+	public void pushContent(Component newContent);
 
 	/**
 	 * @see org.olat.core.gui.control.GuiStackHandle#popContent()
 	 */
-	public abstract void popContent();
+	public void popContent();
 
 	/**
 	 * @return
 	 */
-	public abstract Panel getPanel();
+	public Panel getPanel();
 
 	/**
 	 * @return Returns the modalPanel, which should be put so that it looks modal (e.g. alpha-blended background) may be null if no modal panel is needed
 	 */
-	public abstract Panel getModalPanel();
+	public Panel getModalPanel();
 
 }

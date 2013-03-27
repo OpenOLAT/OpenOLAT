@@ -315,15 +315,17 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 	
 	// Implements interface WindowControl
   /////////////////////////////////////
-	public void pushToMainArea(Component comp){};
-	public void pushAsModalDialog(Component comp){};
-	public void pop(){};
-	public void setInfo(String string){};
-	public void setError(String string){};
-	public void setWarning(String string){};
-	public DTabs getDTabs(){return null;};
-	public WindowControlInfo getWindowControlInfo(){return null;};
-	public void makeFlat(){};
+	public void pushToMainArea(Component comp){}
+	public void pushAsModalDialog(Component comp){}
+	@Override
+	public void pushAsCallout(Component comp, String targetId){}
+	public void pop(){}
+	public void setInfo(String string){}
+	public void setError(String string){}
+	public void setWarning(String string){}
+	public DTabs getDTabs(){return null;}
+	public WindowControlInfo getWindowControlInfo(){return null;}
+	public void makeFlat(){}
 	public BusinessControl getBusinessControl() {
 		
 		BusinessControl control = new BusinessControl() {

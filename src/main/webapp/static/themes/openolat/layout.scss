@@ -23,6 +23,7 @@
 @import url(../../yaml/core/slim_base.css);
 @import url(all/content.css);
 
+
 /* --------------- */
 @import "definitions";
 @import "mixins";
@@ -54,6 +55,9 @@
 @import "portlets_boxes";
 @import "library";
 @import "coachingtool";
+
+/* --------------- */
+@import "thirdparty";
 
 /* print & mobile, let's keep 'em down here... */
 /* ------- print -------- */

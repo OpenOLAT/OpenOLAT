@@ -116,10 +116,7 @@ public class MenuTree extends Component {
 	private String dndFeedbackUri;
 	
 	private final JSAndCSSComponent dragAndDropCmp;
-	
-	// for recording / visual marking purposes
-	TreeNode markingTreeNode; 
-	
+
 	private boolean dirtyForUser = false;
 
 	

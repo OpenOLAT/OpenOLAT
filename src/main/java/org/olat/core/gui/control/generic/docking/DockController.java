@@ -169,6 +169,11 @@ class DelegatingWControl implements WindowControl {
 		origWCon.pushAsModalDialog(comp);
 	}
 
+	@Override
+	public void pushAsCallout(Component comp, String targetId) {
+		origWCon.pushAsCallout(comp, targetId);
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.WindowControl#pushToMainArea(org.olat.core.gui.components.Component)
 	 */

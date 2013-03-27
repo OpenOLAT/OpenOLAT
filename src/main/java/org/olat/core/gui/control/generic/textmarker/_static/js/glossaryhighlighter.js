@@ -236,17 +236,17 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
  *
  * August 2006 Florian Gnägi
  */
-function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {
-	
-	highlightEndTag  = "</span>";
-	
-  
+function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {	
+  var highlightEndTag  = "</span>";
+
   // find all occurences of the search term in the given text,
   // and add some "highlight" tags to them (we're not using a
   // regular expression search, because we want to filter out
   // matches that occur within HTML tags and script blocks, so
   // we have to do a little extra validation)
-  var newText = "", junkBefore = "", char = "";
+  var newText = "";
+  var junkBefore = "";
+  var ch = "";
   var i = -1;
   var lcSearchTerm = searchTerm.toLowerCase();
   var lcBodyText = bodyText.toLowerCase();
@@ -276,18 +276,18 @@ function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {
 	// like whitespace (<b>, <h3>, <br>, <p>...)
 	if (i>0) {	 
 		// check character right before the the search term
-		char = lcBodyText.charAt(i-1);	
-		if ( ! (char == " " || char == "\t" || char == "\n" || char == "\r" || char == "\v" || char == "\f" 
-			|| char == ">" || char == "\"" || char == "'" || char == "`" || char == "(" || char == "["  || char == "{"  || char == "-") )		
+		ch = lcBodyText.charAt(i-1);	
+		if ( ! (ch == " " || ch == "\t" || ch == "\n" || ch == "\r" || ch == "\v" || ch == "\f" 
+			|| ch == ">" || ch == "\"" || ch == "'" || ch == "`" || ch == "(" || ch == "["  || ch == "{"  || ch == "-") )		
 			continue;
 	}
 
 	if (lcBodyText.length > i + searchTerm.length) {
 		// check character right after the the search term
-		char = lcBodyText.charAt(i + searchTerm.length);
-		if ( ! (char == " " || char == "\t" || char == "\n" || char == "\r" || char == "\v" || char == "\f" 
-			|| char == "," || char == "."  || char == "!" || char == "?"  || char == ":" || char == ";"  
-			|| char == "<" || char == "\"" || char == "'" || char == "`" || char == ")" || char == "]"  || char == "}"  || char == "-" ) )
+		ch = lcBodyText.charAt(i + searchTerm.length);
+		if ( ! (ch == " " || ch == "\t" || ch == "\n" || ch == "\r" || ch == "\v" || ch == "\f" 
+			|| ch == "," || ch == "."  || ch == "!" || ch == "?"  || ch == ":" || ch == ";"  
+			|| ch == "<" || ch == "\"" || ch == "'" || ch == "`" || ch == ")" || ch == "]"  || ch == "}"  || ch == "-" ) )
 			continue;
 	}
 		

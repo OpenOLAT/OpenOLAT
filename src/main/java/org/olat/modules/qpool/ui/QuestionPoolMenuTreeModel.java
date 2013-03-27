@@ -32,7 +32,7 @@ import org.olat.modules.qpool.QuestionItemCollection;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTreeModel{
+public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTreeModel {
 
 	private static final long serialVersionUID = -665560407090871912L;
 

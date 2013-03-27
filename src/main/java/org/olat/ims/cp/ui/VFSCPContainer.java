@@ -22,9 +22,7 @@ package org.olat.ims.cp.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeNode;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;

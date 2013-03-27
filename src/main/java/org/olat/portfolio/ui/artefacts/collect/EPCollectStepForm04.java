@@ -19,32 +19,27 @@
  */
 package org.olat.portfolio.ui.artefacts.collect;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeModel;
-import org.olat.core.gui.control.generic.ajax.tree.AjaxTreeNode;
-import org.olat.core.gui.control.generic.ajax.tree.TreeController;
-import org.olat.core.gui.control.generic.ajax.tree.TreeNodeClickedEvent;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPAbstractMap;
-import org.olat.portfolio.model.structel.EPStructuredMap;
-import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
-import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 
 /**
@@ -58,11 +53,11 @@ import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
  */
 public class EPCollectStepForm04 extends StepFormBasicController {
 
-	private static final String NO_MAP_CHOOSEN = "noMapChoosen";
-	private static final String ROOT_NODE_IDENTIFIER = "rootMaps";
-	private TreeController mapsTreeController;
-	EPFrontendManager ePFMgr;
-	private PortfolioStructure selectedPortfolioStructure;
+	protected static final String NO_MAP_CHOOSEN = "noMapChoosen";
+	protected static final String ROOT_NODE_IDENTIFIER = "rootMaps";
+	private MenuTree mapsTreeController;
+	private final EPFrontendManager ePFMgr;
+
 	private AbstractArtefact artefact;
 	private PortfolioStructure oldStructure;
 	private PortfolioStructure preSelectedStructure;
@@ -71,6 +66,9 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 		super(ureq, wControl, rootForm, runContext, layout, "step04selectmap");
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		preSelectedStructure = (PortfolioStructure)runContext.get("preSelectedStructure");
+		if(preSelectedStructure == null) {
+			preSelectedStructure = ePFMgr.getUsersLastUsedPortfolioStructure(getIdentity());
+		}
 		initForm(flc, this, ureq);
 	}
 
@@ -88,26 +86,25 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		List<PortfolioStructure> structs = ePFMgr.getStructureElementsForUser(getIdentity());
 		if (structs != null && structs.size() != 0) {
-			AjaxTreeModel treeModel = buildTreeModel();
-			mapsTreeController = new TreeController(ureq, getWindowControl(), translate("step4.my.maps"), treeModel, null);
-			mapsTreeController.setTreeSorting(false, false, false);
-			listenTo(mapsTreeController);
-
-			// find last used structure and preselect
-			PortfolioStructure lastStruct;
-			if(preSelectedStructure == null) {
-				lastStruct = ePFMgr.getUsersLastUsedPortfolioStructure(getIdentity());
-			} else {
-				lastStruct = preSelectedStructure;
+			TreeModel treeModel = new MapsTreeModel(getIdentity(), getTranslator());
+			mapsTreeController = new MenuTree("my.maps");
+			mapsTreeController.setTreeModel(treeModel);
+			mapsTreeController.setSelectedNode(treeModel.getRootNode());
+			mapsTreeController.setDragEnabled(false);
+			mapsTreeController.setDropEnabled(false);
+			mapsTreeController.setDropSiblingEnabled(false);
+			mapsTreeController.addListener(this);
+			mapsTreeController.setRootVisible(true);
+			
+			if(preSelectedStructure != null) {
+				TreeNode node = TreeHelper.findNodeByUserObject(preSelectedStructure, treeModel.getRootNode());
+				if(node != null) {
+					mapsTreeController.setSelectedNode(node);
+				}
 			}
-			if (lastStruct != null) {
-				mapsTreeController.selectPath("/" + ROOT_NODE_IDENTIFIER + getPath(lastStruct));
-				selectedPortfolioStructure = lastStruct;
-			}
-			flc.put("treeCtr", mapsTreeController.getInitialComponent());
+			flc.put("treeCtr", mapsTreeController);
 		}
 		
 		if (!isUsedInStepWizzard()) {
@@ -116,83 +113,11 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 		}
 	}
 
-	private AjaxTreeModel buildTreeModel() {
-		AjaxTreeModel model = new AjaxTreeModel(ROOT_NODE_IDENTIFIER) {
-
-			private boolean firstLevelDone = false;
-
-			@SuppressWarnings("synthetic-access")
-			@Override
-			public List<AjaxTreeNode> getChildrenFor(String nodeId) {
-				List<AjaxTreeNode> children = new ArrayList<AjaxTreeNode>();
-				AjaxTreeNode child;
-				try {
-					List<PortfolioStructure> structs = null;
-					if (nodeId.equals(ROOT_NODE_IDENTIFIER)) {
-						structs = ePFMgr.getStructureElementsForUser(getIdentity(), ElementType.STRUCTURED_MAP, ElementType.DEFAULT_MAP);
-						firstLevelDone = false;
-					} else {
-						PortfolioStructure selStruct = ePFMgr.loadPortfolioStructureByKey(new Long(nodeId));
-						structs = ePFMgr.loadStructureChildren(selStruct);
-					}
-					if (structs == null || structs.size() == 0) { return null; }
-					// add a fake map to choose if no target should be set
-					if (!firstLevelDone){
-						child = new AjaxTreeNode(NO_MAP_CHOOSEN, translate("no.map.as.target"));
-						child.put(AjaxTreeNode.CONF_LEAF, true);
-						child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, true);
-						child.put(AjaxTreeNode.CONF_ALLOWDRAG, false);
-						child.put(AjaxTreeNode.CONF_ALLOWDROP, false);
-						child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, "b_ep_collection_icon");
-						child.put(AjaxTreeNode.CONF_QTIP, translate("no.map.as.target.desc"));
-						if (isUsedInStepWizzard()) children.add(child);
-						firstLevelDone = true;
-					}
-					for (PortfolioStructure portfolioStructure : structs) {
-						// FXOLAT-436 : skip templateMaps that are closed
-						if (portfolioStructure instanceof EPStructuredMap) {
-							if( ((EPStructuredMap) portfolioStructure).getStatus() != null && ((EPStructuredMap) portfolioStructure).getStatus().equals(StructureStatusEnum.CLOSED)){
-								continue;
-							}
-						}
-						
-						String title = portfolioStructure.getTitle();
-						if (!isUsedInStepWizzard() && oldStructure.getKey().equals(portfolioStructure.getKey())) {
-							title = portfolioStructure.getTitle() + "&nbsp; &nbsp; <-- " + translate("move.artefact.actual.node");
-						}						
-						child = new AjaxTreeNode(String.valueOf(portfolioStructure.getKey()), title);
-						boolean hasChilds = ePFMgr.countStructureChildren(portfolioStructure) > 0;	
-						child.put(AjaxTreeNode.CONF_LEAF, !hasChilds);
-						child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, !hasChilds);
-						child.put(AjaxTreeNode.CONF_ALLOWDRAG, false);
-						child.put(AjaxTreeNode.CONF_ALLOWDROP, false);
-						child.put(AjaxTreeNode.CONF_EXPANDED, true);
-						child.put(AjaxTreeNode.CONF_DISABLED, portfolioStructure instanceof EPAbstractMap);
-						child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, portfolioStructure.getIcon());
-						child.put(AjaxTreeNode.CONF_QTIP, portfolioStructure.getDescription());
-						
-						children.add(child);
-					}
-				} catch (JSONException e) {
-					throw new OLATRuntimeException("Error while creating tree model for map/page/structure selection", e);
-				}
-				return children;
-			}
-		};
-		model.setCustomRootIconCssClass("o_st_icon");
-		return model;
-	}
-
-	/**
-	 * save clicked node to selStructure
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
+	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == mapsTreeController) {
+			//TODO jquery
+			/*
 			if (event instanceof TreeNodeClickedEvent) {
 				TreeNodeClickedEvent clickedEvent = (TreeNodeClickedEvent) event;
 				String selectedNodeID = clickedEvent.getNodeId();
@@ -201,38 +126,39 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 				} else if (selectedNodeID.equals(NO_MAP_CHOOSEN)) {
 					selectedPortfolioStructure = null;
 				} else {
-					mapsTreeController.selectPath(null);
+				//TODO jquery mapsTreeController.selectPath(null);
 					selectedPortfolioStructure = null;
 					this.flc.setDirty(true);
 				}
 				
 				if (selectedPortfolioStructure != null && selectedPortfolioStructure instanceof EPAbstractMap) {
 					showWarning("map.not.choosable");
-					mapsTreeController.selectPath(null);
+				//TODO jquery mapsTreeController.selectPath(null);
 					selectedPortfolioStructure = null;
 					this.flc.setDirty(true);
 				}
-			}
+			}*/
 		}
+		super.event(ureq, source, event);
 	}
-
-	private String getPath(PortfolioStructure pStruct) {
-		StringBuffer path = new StringBuffer();
-		PortfolioStructure ps = pStruct;
-		while (ePFMgr.loadStructureParent(ps) != null) {
-			path.insert(0, "/" + ps.getKey().toString());
-			ps = ePFMgr.loadStructureParent(ps);
-		}
-		path.insert(0, "/" + ps.getKey().toString());
-		return path.toString();
-	}
-
 
 	/**
 	 * @see org.olat.core.gui.control.generic.wizard.StepFormBasicController#formOK(org.olat.core.gui.UserRequest)
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
+		PortfolioStructure selectedPortfolioStructure = preSelectedStructure;
+
+		TreeNode node = mapsTreeController.getSelectedNode();
+		if(node != null) {
+			Object obj = node.getUserObject();
+			if(obj == null) {
+				selectedPortfolioStructure = null;
+			} else if (obj instanceof PortfolioStructure && !(obj instanceof EPAbstractMap)) {
+				selectedPortfolioStructure = (PortfolioStructure)obj;
+			}
+		}
+
 		if (selectedPortfolioStructure != null) {
 			ePFMgr.setUsersLastUsedPortfolioStructure(getIdentity(), selectedPortfolioStructure);
 		}

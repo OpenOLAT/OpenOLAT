@@ -1,10 +1,10 @@
 <div id="${panelName}">
 	#if ($r.available("collapsibleContent"))
-		<div id="${panelName}-east" class="pane ui-layout-east" style="padding:5px;">
+		<div id="${panelName}-east" class="pane ui-layout-east">
 			$r.render("collapsibleContent")
 		</div>
 	#end
-	<div id="${panelName}-center" class="pane ui-layout-center" style="padding:5px;">
+	<div id="${panelName}-center" class="pane ui-layout-center">
 		$r.render("panelContent")
 	</div>
 </div>
@@ -16,6 +16,7 @@
 			width: ${width},
 			height: ${height},
 			position: [$offsetX, $offsetY],
+			dialogClass: 'o_modal-ui',
 			stack: true,
 			close: function() {
 				o_beforeserver();
