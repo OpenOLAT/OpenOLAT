@@ -212,7 +212,8 @@ class StatisticUpdateManagerImpl extends BasicManager implements StatisticUpdate
 	@Override
 	public void event(Event event) {
 		// event from EventBus
-		if (event!=startupEvent_) {
+		if (event instanceof MultiUserEvent && event.getCommand().equals(startupEvent_.getCommand())
+				&& !((MultiUserEvent)event).isEventOnThisNode()) {
 			// that means some other StatisticUpdateManager is in the cluster
 			// not good!
 			log_.error("event: CONFIG ERROR: there is more than one StatisticUpdateManager in this Cluster! I'll disable myself.");
