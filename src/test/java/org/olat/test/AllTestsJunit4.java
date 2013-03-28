@@ -105,6 +105,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.fo.ForumManagerTest.class,//fail
 	org.olat.modules.wiki.WikiUnitTest.class,//ok
 	org.olat.modules.wiki.versioning.diff.CookbookDiffTest.class,//ok
+	org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtilTest.class,
 	org.olat.modules.coach.CoachingManagerTest.class,//ok
 	org.olat.properties.PropertyTest.class,//ok
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
@@ -166,6 +167,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.RestApiLoginFilterTest.class,
 	org.olat.restapi.UserAuthenticationMgmtTest.class,
 	org.olat.restapi.UserFoldersTest.class,
+	org.olat.restapi.UserCoursesTest.class,
 	org.olat.restapi.UserMgmtTest.class,
 	org.olat.restapi.ContactsTest.class,
 	org.olat.restapi.SystemTest.class,

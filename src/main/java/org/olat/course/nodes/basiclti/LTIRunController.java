@@ -49,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -202,6 +203,14 @@ public class LTIRunController extends BasicController {
 		setProperty(props, "resource_link_title", courseNode.getShortTitle());
 		setProperty(props, "resource_link_description", courseNode.getLongTitle());
 		setProperty(props, "user_id", u.getKey() + "");
+		// Use the shibboleth ID as person source identificator
+		String personSourceId = (String)ureq.getUserSession().getEntry("shibuid");
+		if (!StringHelper.containsNonWhitespace(personSourceId)) {
+			// fallback to the serverDomainName:identityId
+			personSourceId = Settings.getServerconfig("server_fqdn") + ":" + ident.getKey();
+		}
+		setProperty(props, "lis_person_sourcedid", personSourceId);
+		
 		setProperty(props, "launch_presentation_locale", loc.toString());
 		setProperty(props, "launch_presentation_document_target", "iframe");
 

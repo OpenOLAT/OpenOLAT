@@ -158,7 +158,6 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	private List<Property> loadPropertiesFor(List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) return Collections.emptyList();
 		
-		ICourse course = CourseFactory.loadCourse(ores);
 		StringBuilder sb = new StringBuilder();
 		sb.append("from org.olat.properties.Property as p")
 		  .append(" inner join fetch p.identity as ident ")
@@ -177,8 +176,8 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}
 		TypedQuery<Property> query = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), Property.class)
-				.setParameter("restypename", course.getResourceableTypeName())
-				.setParameter("restypeid", course.getResourceableId());
+				.setParameter("restypename", ores.getResourceableTypeName())
+				.setParameter("restypeid", ores.getResourceableId());
 		if (identities != null) {
 			query.setParameter("id", PersistenceHelper.toKeys(identities));
 		}

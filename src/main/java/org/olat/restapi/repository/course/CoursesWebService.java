@@ -159,7 +159,7 @@ public class CoursesWebService {
 		}
 	}
 	
-	private CourseVO[] toCourseVo(List<RepositoryEntry> repoEntries) {
+	public static CourseVO[] toCourseVo(List<RepositoryEntry> repoEntries) {
 		List<CourseVO> voList = new ArrayList<CourseVO>();
 		
 		int count=0;

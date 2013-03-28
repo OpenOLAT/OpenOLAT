@@ -20,6 +20,10 @@
 
 package org.olat.course.nodes.portfolio;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -30,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.StackedController;
 import org.olat.core.gui.control.Controller;
@@ -63,11 +68,10 @@ import org.olat.repository.RepositoryEntry;
 public class PortfolioResultDetailsController extends FormBasicController {
 	private final EPFrontendManager ePFMgr;
 	private Identity assessedIdentity;
-	private PortfolioStructureMap map;
+	private PortfolioStructureMap template;
+	private List<PortfolioStructureMap> maps;
+	private Map<PortfolioStructureMap, MapElements> mapToElements = new HashMap<PortfolioStructureMap, MapElements>();
 	
-	private FormLink openMapLink;
-	private FormLink changeDeadlineLink;
-	private StaticTextElement deadlineEl;
 	private DeadlineController deadlineCtr;
 	private CloseableCalloutWindowController deadlineCalloutCtr;
 	private final StackedController stackPanel;
@@ -82,10 +86,10 @@ public class PortfolioResultDetailsController extends FormBasicController {
 		
 		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
 		if(mapEntry != null) {
-			PortfolioStructureMap template = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
+			template = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
 			Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
-			map = ePFMgr.loadPortfolioStructureMap(assessedIdentity, template, courseOres, courseNode.getIdent(), null);
+			maps = ePFMgr.loadPortfolioStructureMaps(assessedIdentity, courseOres, courseNode.getIdent(), null);
 		}
 
 		initForm(ureq);
@@ -93,34 +97,58 @@ public class PortfolioResultDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(map == null) {
+		if(maps == null || maps.isEmpty()) {
 			uifactory.addStaticTextElement("no.map", "", formLayout);
 		} else {
 			Formatter formatter = Formatter.getInstance(getLocale());
-			if(map instanceof EPStructuredMap) {
-				EPStructuredMap structuredMap = (EPStructuredMap)map;
-				
-				String copyDate = "";
-				if(structuredMap.getCopyDate() != null) {
-					copyDate = formatter.formatDateAndTime(structuredMap.getCopyDate());
-				}
-				uifactory.addStaticTextElement("map.copyDate", copyDate, formLayout);
-				
-				String returnDate = "";
-				if(structuredMap.getReturnDate() != null) {
-					returnDate = formatter.formatDateAndTime(structuredMap.getReturnDate());
-				}
-				uifactory.addStaticTextElement("map.returnDate", returnDate, formLayout);
-				
-				String deadLine = "";
-				if(structuredMap.getDeadLine() != null) {
-					deadLine = formatter.formatDateAndTime(structuredMap.getDeadLine());
-				}
-				deadlineEl = uifactory.addStaticTextElement("map.deadline", deadLine, formLayout);
-				changeDeadlineLink = uifactory.addFormLink("map.deadline.change", formLayout, Link.BUTTON);
-			}
 			
-			openMapLink = uifactory.addFormLink("open.map", formLayout);
+			int count = 0;
+			for(PortfolioStructureMap map:maps) {
+				MapElements mapElements = new MapElements();
+				if(map instanceof EPStructuredMap) {
+					EPStructuredMap structuredMap = (EPStructuredMap)map;
+					
+					if(maps.size() > 1 || !structuredMap.getStructuredMapSource().equals(template)) {
+						String templateTitle = structuredMap.getStructuredMapSource().getTitle();
+						uifactory.addStaticTextElement("map.template." + count, "map.template", templateTitle, formLayout);
+					}
+					
+					String copyDate = "";
+					if(structuredMap.getCopyDate() != null) {
+						copyDate = formatter.formatDateAndTime(structuredMap.getCopyDate());
+					}
+					uifactory.addStaticTextElement("map.copyDate." + count, "map.copyDate", copyDate, formLayout);
+					
+					String returnDate = "";
+					if(structuredMap.getReturnDate() != null) {
+						returnDate = formatter.formatDateAndTime(structuredMap.getReturnDate());
+					}
+					uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
+					
+					String deadLine = "";
+					if(structuredMap.getDeadLine() != null) {
+						deadLine = formatter.formatDateAndTime(structuredMap.getDeadLine());
+					}
+					mapElements.deadlineEl = uifactory.addStaticTextElement("map.deadline." + count, "map.deadline", deadLine, formLayout);
+				}
+				
+				FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons." + count, getTranslator());
+				buttonsCont.setRootForm(mainForm);
+				formLayout.add(buttonsCont);
+				if(map instanceof EPStructuredMap) {
+					mapElements.changeDeadlineLink = uifactory.addFormLink("map.deadline.change." + count, "map.deadline.change", null, buttonsCont, Link.BUTTON);
+					mapElements.changeDeadlineLink.setUserObject(map);
+				}
+				mapElements.openMapLink = uifactory.addFormLink("open.map." + count, "open.map", null, buttonsCont, Link.BUTTON);
+				mapElements.openMapLink.setUserObject(map);
+				
+				count++;
+				if(count != maps.size()) {
+					uifactory.addSpacerElement("spacer-" + count, formLayout, false);
+				}
+				
+				mapToElements.put(map, mapElements);
+			}
 		}
 	}
 	
@@ -136,26 +164,35 @@ public class PortfolioResultDetailsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == openMapLink) {
-			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
-			Controller viewCtr = EPUIFactory.createPortfolioStructureMapController(ureq, getWindowControl(), map, secCallback);
-			listenTo(viewCtr);
-			if(stackPanel == null) {
-				LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, null, viewCtr.getInitialComponent(), "portfolio" + map.getKey());
-				ctr.activate();
-			} else {
-				LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), viewCtr);
-				stackPanel.pushController(translate("preview.map"), ctr);
-			}
-		} else if (source == changeDeadlineLink) {
-			if (deadlineCalloutCtr == null){
-				popupDeadlineBox(ureq);
-			} else {
-				// close on second click
-				closeDeadlineBox();
+		if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if(link.getName().startsWith("map.deadline.change")) {
+				if (deadlineCalloutCtr == null) {
+					EPStructuredMap map = (EPStructuredMap)link.getUserObject();
+					popupDeadlineBox(ureq, map);
+				} else {
+					// close on second click
+					closeDeadlineBox();
+				}
+			} else if(link.getName().startsWith("open.map")) {
+				PortfolioStructureMap map = (PortfolioStructureMap)link.getUserObject();
+				doOpenMap(ureq, map);
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doOpenMap(UserRequest ureq, PortfolioStructureMap map) {
+		EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
+		Controller viewCtr = EPUIFactory.createPortfolioStructureMapController(ureq, getWindowControl(), map, secCallback);
+		listenTo(viewCtr);
+		if(stackPanel == null) {
+			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, null, viewCtr.getInitialComponent(), "portfolio" + map.getKey());
+			ctr.activate();
+		} else {
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), viewCtr);
+			stackPanel.pushController(translate("preview.map"), ctr);
+		}
 	}
 	
 	/**
@@ -169,12 +206,12 @@ public class PortfolioResultDetailsController extends FormBasicController {
 			deadlineCalloutCtr = null;
 		} else if (source == deadlineCtr) {
 			String deadLine = "";
-			EPStructuredMap structuredMap = (EPStructuredMap)map;
+			EPStructuredMap structuredMap = deadlineCtr.getMap();
 			if(structuredMap.getDeadLine() != null) {
 				Formatter formatter = Formatter.getInstance(getLocale());
 				deadLine = formatter.formatDateAndTime(structuredMap.getDeadLine());
 			}
-			deadlineEl.setValue(deadLine);
+			mapToElements.get(structuredMap).deadlineEl.setValue(deadLine);
 			closeDeadlineBox();
 		}
 	}
@@ -182,14 +219,17 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	/**
 	 * @param ureq
 	 */
-	private void popupDeadlineBox(UserRequest ureq) {
+	private void popupDeadlineBox(UserRequest ureq, EPStructuredMap map) {
 		String title = translate("map.deadline.change");
-		if (deadlineCtr == null) {
-			deadlineCtr = new DeadlineController(ureq, getWindowControl(), (EPStructuredMap)map);
-			listenTo(deadlineCtr);
-		}
+		
+		removeAsListenerAndDispose(deadlineCtr);
+		deadlineCtr = new DeadlineController(ureq, getWindowControl(), map);
+		listenTo(deadlineCtr);
+
 		removeAsListenerAndDispose(deadlineCalloutCtr);
-		deadlineCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), deadlineCtr.getInitialComponent(), changeDeadlineLink, title, true, "b_eportfolio_deadline_callout");
+		FormLink changeDeadlineLink = mapToElements.get(map).changeDeadlineLink;
+		deadlineCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), deadlineCtr.getInitialComponent(),
+				changeDeadlineLink, title, true, "b_eportfolio_deadline_callout");
 		listenTo(deadlineCalloutCtr);
 		deadlineCalloutCtr.activate();
 	}
@@ -200,5 +240,11 @@ public class PortfolioResultDetailsController extends FormBasicController {
 			removeAsListenerAndDispose(deadlineCalloutCtr);
 			deadlineCalloutCtr = null;
 		}
+	}
+	
+	private static class MapElements {
+		private FormLink openMapLink;
+		private FormLink changeDeadlineLink;
+		private StaticTextElement deadlineEl;
 	}
 }

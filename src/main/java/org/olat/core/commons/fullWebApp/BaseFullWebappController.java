@@ -139,7 +139,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
 		super(ureq, null);
-
+		
 		this.baseFullWebappControllerParts = baseFullWebappControllerParts;
 
 		guiMessage = new GUIMessage();
@@ -753,33 +753,33 @@ public class BaseFullWebappController extends BasicController implements Generic
 	}
 	
 	private void popTheTabState(UserRequest ureq) {
-		if(siteAndTabs.isEmpty()) {
+		if(siteAndTabs.isEmpty() && sites != null) {
 			SiteInstance home = sites.get(0);
 			BornSiteInstance bs = siteToBornSite.get(home);
 			doActivateSite(home, bs.getGuiStackHandle());
-		}
-		
-		TabState state = siteAndTabs.remove(siteAndTabs.size() - 1);
-		if(state.getSite() != null) {
-			// latest selected static tab
-			// activate previous chosen static site -> this site has already been
-			// constructed and is thus in the cache
-			SiteInstance si = state.getSite();
-			BornSiteInstance bs = siteToBornSite.get(si);
-			// bs != null since clicked previously
-			GuiStack gsh = bs.getGuiStackHandle();
-			doActivateSite(si, gsh);
-			if(siteToBusinessPath.containsValue(si)) {
-				ureq.getUserSession().addToHistory(ureq, siteToBusinessPath.get(si));
+		} else if(!siteAndTabs.isEmpty()) {
+			TabState state = siteAndTabs.remove(siteAndTabs.size() - 1);
+			if(state.getSite() != null) {
+				// latest selected static tab
+				// activate previous chosen static site -> this site has already been
+				// constructed and is thus in the cache
+				SiteInstance si = state.getSite();
+				BornSiteInstance bs = siteToBornSite.get(si);
+				// bs != null since clicked previously
+				GuiStack gsh = bs.getGuiStackHandle();
+				doActivateSite(si, gsh);
+				if(siteToBusinessPath.containsValue(si)) {
+					ureq.getUserSession().addToHistory(ureq, siteToBusinessPath.get(si));
+				}
+			} else if (state.getDtab() != null && !state.getDtab().getController().isDisposed()) {
+				DTab tab = state.getDtab();
+				doActivateDTab(tab);
+				if(dtabToBusinessPath.containsKey(tab)) {
+					ureq.getUserSession().addToHistory(ureq, dtabToBusinessPath.get(tab));
+				}
+			} else {
+				popTheTabState(ureq);
 			}
-		} else if (state.getDtab() != null && !state.getDtab().getController().isDisposed()) {
-			DTab tab = state.getDtab();
-			doActivateDTab(tab);
-			if(dtabToBusinessPath.containsKey(tab)) {
-				ureq.getUserSession().addToHistory(ureq, dtabToBusinessPath.get(tab));
-			}
-		} else {
-			popTheTabState(ureq);
 		}
 	}
 
@@ -1009,12 +1009,24 @@ public class BaseFullWebappController extends BasicController implements Generic
 
 	/**
 	 * 
-	 * [used by velocity
+	 * [used by velocity]
 	 * 
 	 * @return
 	 */
 	public boolean isDTabActive(DTab dtab) {
 		return curDTab != null && dtab == curDTab;
+	}
+	
+	/**
+	 * Invitee have only one dynamic tab. They are not allowed
+	 * to close it.
+	 * [used by velocity]
+	 * 
+	 * @return
+	 */
+	public boolean isCanCloseDTab(DTab dtab) {
+		//can close
+		return (sites != null && !sites.isEmpty()) || (dtabs != null && dtabs.size() > 1);
 	}
 	
 	private void setCurrent(SiteInstance site, DTab tab) {

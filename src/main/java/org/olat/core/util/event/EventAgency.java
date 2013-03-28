@@ -116,7 +116,7 @@ class EventAgency {
 					}
 				} catch (RuntimeException e) {
 					log.error("Error while sending generic event! Removing listener: "+liArr[i], e);
-					removeListener(liArr[i]);
+					//don't remove it!!! removeListener(liArr[i]);
 				}
 			}
 

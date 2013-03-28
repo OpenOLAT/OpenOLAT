@@ -25,7 +25,8 @@
 
 package org.olat.modules.wiki.gui.components.wikiToHtml;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.List;
 
 import org.jamwiki.DataHandler;
 import org.jamwiki.Environment;
@@ -38,17 +39,13 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.JSAndCSSAdder;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.wiki.WikiContainer;
 import org.olat.modules.wiki.WikiPage;
 
@@ -61,7 +58,7 @@ import org.olat.modules.wiki.WikiPage;
  * 
  * @author guido
  */
-public class WikiMarkupComponent extends Component {
+public class WikiMarkupComponent extends Component implements Disposable {
 	// single renderer for all users, lazy creation upon first object cration of
 	// this class.
 	private static final ComponentRenderer RENDERER = new WikiMarkupRenderer();
@@ -72,6 +69,7 @@ public class WikiMarkupComponent extends Component {
 	private OLATResourceable ores;
 	private OlatWikiDataHandler datahandler;
 	private String imageBaseUri;
+	private Mapper contentMapper;
 
 	public WikiMarkupComponent(String name, OLATResourceable ores, int minHeight) {
 		super(name);
@@ -82,6 +80,14 @@ public class WikiMarkupComponent extends Component {
 		OlatRootFolderImpl tempFolder =  new OlatRootFolderImpl("/tmp", null);
 		Environment.setValue(Environment.PROP_BASE_FILE_DIR, tempFolder.getBasefile().getAbsolutePath());
 		Environment.setValue(Environment.PROP_DB_TYPE, "org.olat.core.gui.components.wikiToHtml.OlatWikiDataHandler");
+	}
+
+	@Override
+	public void dispose() {
+		if(contentMapper != null) {
+			List<Mapper> mappers = Collections.<Mapper>singletonList(contentMapper);
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
+		}
 	}
 
 	/**
@@ -137,18 +143,7 @@ public class WikiMarkupComponent extends Component {
 	 */
 	public void setImageMapperUri(UserRequest ureq, final VFSContainer wikiContainer) {
 		// get a usersession-local mapper for images in this wiki
-		Mapper contentMapper = new Mapper() {
-
-			public MediaResource handle(String relPath, HttpServletRequest request) {
-				VFSItem vfsItem = wikiContainer.resolve(relPath);
-				MediaResource mr;
-				if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) mr = new NotFoundMediaResource(relPath);
-				else mr = new VFSMediaResource((VFSLeaf) vfsItem);
-				return mr;
-			}
-		};
-		//datahandler.setImageURI(MapperRegistry.getInstanceFor(ureq.getUserSession()).register(contentMapper)+"/"+WikiContainer.MEDIA_FOLDER_NAME+"/");
-
+		contentMapper = new WikiImageMapper(wikiContainer);
 		String mapperPath;
 		// Register mapper as cacheable
 		String mapperID = VFSManager.getRealPath(wikiContainer);

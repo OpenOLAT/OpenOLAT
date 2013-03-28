@@ -188,10 +188,6 @@ public class BusinessGroupDAO {
 	}
 	
 	public BusinessGroup loadForUpdate(Long id) {
-		EntityManager em = dbInstance.getCurrentEntityManager();
-		//BusinessGroup group = em.find(BusinessGroupImpl.class, id, LockModeType.PESSIMISTIC_WRITE);
-		
-		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" bgi ")
 			.append(" inner join fetch bgi.ownerGroup ownerGroup")
@@ -200,9 +196,13 @@ public class BusinessGroupDAO {
 			.append(" inner join fetch bgi.resource resource")
 			.append(" where bgi.key=:key");
 		
-		return em.createQuery(sb.toString(), BusinessGroup.class)
-				.setParameter("key", id).setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.getSingleResult();
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("key", id)
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+				.getResultList();
+		if(groups.isEmpty()) return null;
+		return groups.get(0);
 	}
 	
 	public BusinessGroup merge(BusinessGroup group) {

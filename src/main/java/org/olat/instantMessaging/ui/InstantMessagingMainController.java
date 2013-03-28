@@ -32,6 +32,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -55,6 +56,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.InstantMessagingEvent;
+import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
@@ -94,6 +96,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private ChatManagerController chatMgrCtrl;
 
 	private String imStatus;
+	private int stateUpdateCounter = 0;
 	private boolean inAssessment = false;
 	private EventBus singleUserEventCenter;
 	private final InstantMessagingService imService;
@@ -123,20 +126,25 @@ public class InstantMessagingMainController extends BasicController implements G
 		newMsgIcon.contextPut("newMessageSoundURL", newMessageSoundURL);
 		loadNotifications();
 
-		//status changer link
+		// status changer link
 		statusChangerLink = LinkFactory.createCustomLink("statusChanger", "cmd.status", "", Link.NONTRANSLATED, null, this);
 		statusChangerLink.registerForMousePositionEvent(true);
 		statusChangerLink.setTooltip(getTranslator().translate("im.status.change.long"), false);
 		updateStatusCss(null);
 		main.put("statusChangerPanel", statusChangerLink);
 
-		// (offline / online) link
-		onlineOfflineCount = LinkFactory.createCustomLink("onlineOfflineCount", "cmd.roster", "", Link.NONTRANSLATED, main, this);
-		onlineOfflineCount.setTooltip(getTranslator().translate("im.roster.intro"), false);
-		onlineOfflineCount.registerForMousePositionEvent(true);
-		updateBuddyStats();
-		main.put("buddiesSummaryPanel", onlineOfflineCount);
-
+		// roster launcher (offline / online) link
+		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+		if (imModule.isGroupPeersEnabled()) {
+			onlineOfflineCount = LinkFactory.createCustomLink("onlineOfflineCount", "cmd.roster", "", Link.NONTRANSLATED, main, this);
+			onlineOfflineCount.setTooltip(getTranslator().translate("im.roster.intro"), false);
+			onlineOfflineCount.registerForMousePositionEvent(true);
+			updateBuddyStats();
+			main.put("buddiesSummaryPanel", onlineOfflineCount);
+			
+			getWindowControl().getWindowBackOffice().addCycleListener(this);
+		}
+		
 		main.put("newMsgPanel", newMsgIcon);
 		rosterPanel = new Panel("rosterPanel");
 		main.put("rosterPanel", rosterPanel);
@@ -209,6 +217,13 @@ public class InstantMessagingMainController extends BasicController implements G
 		} else if (source == statusChangerCtr) {
 			//update status
 			updateStatusCss(statusChangerCtr.getSelectedStatus());
+			// remove from UI
+			statusChangerPanelCtr.executeCloseCommand();
+			statusPanel.setContent(null);
+			removeAsListenerAndDispose(statusChangerCtr);
+			removeAsListenerAndDispose(statusChangerPanelCtr);
+			statusChangerCtr = null;
+			statusChangerPanelCtr = null;
 		} else if (source == rosterPanelCtr) {
 			//closing the floating panel event
 			updateBuddyStats();
@@ -240,14 +255,18 @@ public class InstantMessagingMainController extends BasicController implements G
 		} else if (event instanceof OpenInstantMessageEvent) {
 			processOpenInstantMessageEvent((OpenInstantMessageEvent)event);
 		} else if(event instanceof CloseInstantMessagingEvent) {
-			processCloseInstantMessageEvent();
+			processCloseInstantMessageEvent((CloseInstantMessagingEvent)event);
+		} else if(Window.BEFORE_INLINE_RENDERING.equals(event)) {
+			if(++stateUpdateCounter % 25 == 0) {
+				updateBuddyStats();
+			}
 		}
 	}
 	
 	private void updateBuddyStats() {
 		if(onlineOfflineCount != null) {
 			BuddyStats stats = imService.getBuddyStats(getIdentity());
-			onlineOfflineCount.setCustomDisplayText("(" + stats.getOnlineBuddies() + "/" + stats.getOfflineBuddies() + ")");
+			onlineOfflineCount.setCustomDisplayText(translate("im.roster.launch", new String[]{stats.getOnlineBuddies() + "", stats.getOfflineBuddies() + ""}));
 		}
 	}
 	
@@ -340,7 +359,21 @@ public class InstantMessagingMainController extends BasicController implements G
 		}
 	}
 	
-	private void processCloseInstantMessageEvent() {
+	private void processCloseInstantMessageEvent(CloseInstantMessagingEvent event) {
+		if(event.getOres() == null) {
+			close();
+		} else {
+			closeChat(event.getOres());
+		}
+	}
+	
+	private void closeChat(OLATResourceable ores) {
+		if(chatMgrCtrl != null) {
+			chatMgrCtrl.closeChat(ores);
+		}
+	}
+	
+	private void close() {
 		if(statusChangerPanelCtr != null) {
 			statusChangerPanelCtr.executeCloseCommand();
 			removeAsListenerAndDispose(statusChangerPanelCtr);

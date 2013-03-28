@@ -35,6 +35,8 @@ import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.LogDelegator;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 
 /**
  * Description:<br>
@@ -82,7 +84,8 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 		// e.g. non-cacheable: 	23423
 		// e.g. cacheable: 		my.mapper.path
 		String smappath = subInfo.substring(0, slashPos);
-		Mapper m = CoreSpringFactory.getImpl(MapperService.class).getMapperById(smappath);
+		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(hreq);
+		Mapper m = CoreSpringFactory.getImpl(MapperService.class).getMapperById(usess, smappath);
 		if (m == null) {
 			logWarn(
 					"Call to mapped resource, but mapper does not exist for path::"

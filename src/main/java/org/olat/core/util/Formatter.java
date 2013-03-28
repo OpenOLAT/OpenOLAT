@@ -42,6 +42,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
+import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
 
 /**
@@ -496,8 +498,8 @@ public class Formatter {
 	
 	
 	// Pattern to find URL's in text
-	private static final Pattern urlPattern = Pattern.compile("((http[s]*://|www\\.)[-A-Za-z0-9+&@#/%?=~_|!:,\\.;]+[-A-Za-z0-9+&@#/%=~_|]*)");
-	
+	private static final Pattern urlPattern = Pattern.compile("((mailto\\:|(news|(ht|f)tp(s?))\\://|www\\.)[-A-Za-z0-9+&@#/%?=~_|!:,\\.;]+[-A-Za-z0-9+&@#/%=~_|]*)");
+
 	/**
 	 * Search in given text fragment for URL's and surround them with clickable
 	 * HTML link objects.
@@ -518,20 +520,26 @@ public class Formatter {
 			// The URL is in group1, the other groups are ignored
 			String url = matcher.group(1);
 			// Fix URL's without protocol, assume http
-			if (!url.startsWith("http")) {
+			if (url.startsWith("www")) {
 				url = "http://" + url; 
 			}
 			// Fix URL's at end of a sentence
-			if (url.endsWith(",") || url.endsWith(".")) {
+			if (url.endsWith(",") || url.endsWith(".") || url.endsWith(":")) {
 				url = url.substring(0, url.length()-1);
 				pos--;
 			}
 			sb.append("<a href=\"");
 			sb.append(url);
 			sb.append("\"");
+			if (url.startsWith("mailto")) {
+				sb.append(" target=\"_blank\" class=\"b_link_mailto\"");				
+			}
 			// OpenOLAT URL's are opened in same window, all other URL's in separate window
-			if (!url.startsWith(Settings.getServerContextPathURI())) {
+			else if (!url.startsWith(Settings.getServerContextPathURI())) {
 				sb.append(" target=\"_blank\" class=\"b_link_extern\"");				
+			}
+			else {
+				sb.append(" class=\"b_link_forward\"");				
 			}
 			sb.append(">");
 			sb.append(url);
@@ -541,6 +549,63 @@ public class Formatter {
 		sb.append(textFragment.substring(pos));
 		//
 		return sb.toString();
+	}
+	
+
+	/* emoticon patterns */
+	private static final Pattern angelPattern = Pattern.compile("(O\\:-*(\\)|3))");
+	private static final Pattern angryPattern = Pattern.compile("(\\:-*(\\|\\||@))");
+	private static final Pattern confusedPattern = Pattern.compile("(%-*\\))");
+	private static final Pattern coolPattern = Pattern.compile("(8-*\\))");
+	private static final Pattern grinPattern = Pattern.compile("(;-*\\))");
+	private static final Pattern kissPattern = Pattern.compile("(\\:(\\^)*\\*)");
+	private static final Pattern ohohPattern = Pattern.compile("(\\:-*O)");
+	private static final Pattern sadPattern = Pattern.compile("(\\:-*\\()");
+	private static final Pattern smilePattern = Pattern.compile("(\\:-*\\))");
+	private static final Pattern tonguePattern = Pattern.compile("(\\:-*P)");
+	private static final Pattern upPattern = Pattern.compile("(\\+(\\s|$))");
+	private static final Pattern downPattern = Pattern.compile("(-(\\s|$))");
+	
+	private static final StringOutput emptyGifUrl = new StringOutput();
+	static {
+		StaticMediaDispatcher.renderStaticURI(emptyGifUrl, "images/transparent.gif");
+	}
+	/**
+	 * Search in textFragment for emoticons such as :-) :-( etc and replace them
+	 * with image tags that render a nice icon.
+	 * 
+	 * @param textFragment
+	 * @return replaced text
+	 */
+	public static String formatEmoticonsAsImages(String textFragment) {
+		
+		Matcher matcher;
+		matcher = confusedPattern.matcher(textFragment);
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_confused' />");
+		matcher = coolPattern.matcher(textFragment);
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_cool' />");
+		matcher = angryPattern.matcher(textFragment);
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_angry' />");
+		matcher = grinPattern.matcher(textFragment);
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_grin' />");
+		matcher = kissPattern.matcher(textFragment);
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_kiss' />");
+		matcher = ohohPattern.matcher(textFragment);
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_ohoh' />");
+		matcher = smilePattern.matcher(textFragment); 
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_angel' />");
+		matcher = angelPattern.matcher(textFragment);
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_smile' />");
+		matcher = sadPattern.matcher(textFragment);
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_sad' />");
+		matcher = tonguePattern.matcher(textFragment); 
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_tongue' />");
+		matcher = upPattern.matcher(textFragment); 
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_up' />");
+		matcher = downPattern.matcher(textFragment); 
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_down' />");
+				
+		return textFragment;
 	}
 	
 	/**
@@ -585,4 +650,3 @@ public class Formatter {
 	}
 	
 }
-	

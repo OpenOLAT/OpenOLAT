@@ -51,16 +51,15 @@ import org.springframework.stereotype.Service;
 @Service("mapperService")
 public class MapperServiceImpl implements MapperService {
 	
-	private Map<String,Mapper> mapperIdToMapper = new ConcurrentHashMap<String,Mapper>();
-	private Map<Mapper,String> mapperToMapperId = new ConcurrentHashMap<Mapper, String>();
-	private Map<String,List<String>> sessionIdToMapperIds = new ConcurrentHashMap<String,List<String>>();
+	private Map<MapperKey,Mapper> mapperKeyToMapper = new ConcurrentHashMap<MapperKey,Mapper>();
+	private Map<Mapper,MapperKey> mapperToMapperKey = new ConcurrentHashMap<Mapper, MapperKey>();
+	private Map<String,List<MapperKey>> sessionIdToMapperKeys = new ConcurrentHashMap<String,List<MapperKey>>();
 
 	private CacheWrapper<String, Serializable> mapperCache;
 	
 	@Autowired
 	private MapperDAO mapperDao;
 	
-
 	private CacheWrapper<String, Serializable> getMapperCache() {
 		if (mapperCache == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType(Mapper.class);
@@ -79,26 +78,28 @@ public class MapperServiceImpl implements MapperService {
 	
 	@Override
 	public int inMemoryCount() {
-		return mapperIdToMapper.size() + mapperToMapperId.size() + sessionIdToMapperIds.size();
+		return mapperKeyToMapper.size() + mapperToMapperKey.size() + sessionIdToMapperKeys.size();
 	}
 
 	@Override
 	public String register(UserSession session, Mapper mapper) {
 		String mapid = UUID.randomUUID().toString().replace("-", "");
 		mapid = Encoder.encrypt(mapid);
-		mapperIdToMapper.put(mapid, mapper);
-		mapperToMapperId.put(mapper, mapid);
+		
+		MapperKey mapperKey = new MapperKey(session, mapid);
+		mapperKeyToMapper.put(mapperKey, mapper);
+		mapperToMapperKey.put(mapper, mapperKey);
 		if(session.getSessionInfo() == null) {
 			return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + mapid;
 		}
 		
 		String sessionId = session.getSessionInfo().getSession().getId();
-		if(sessionIdToMapperIds.containsKey(sessionId)) {
-			sessionIdToMapperIds.get(sessionId).add(mapid);
+		if(sessionIdToMapperKeys.containsKey(sessionId)) {
+			sessionIdToMapperKeys.get(sessionId).add(mapperKey);
 		} else {
-			List<String> ampIds = new ArrayList<String>();
-			ampIds.add(mapid);
-			sessionIdToMapperIds.put(sessionId, ampIds);
+			List<MapperKey> mapKeys = new ArrayList<MapperKey>();
+			mapKeys.add(mapperKey);
+			sessionIdToMapperKeys.put(sessionId, mapKeys);
 		}
 		
 		if(mapper instanceof Serializable) {
@@ -106,14 +107,15 @@ public class MapperServiceImpl implements MapperService {
 		}
 		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + mapid;
 	}	
-	
+
 	/**
 	 * Cacheable mapper, not session dependant
 	 */
 	@Override
 	public String register(UserSession session, String mapperId, Mapper mapper) {
 		String encryptedMapId = Encoder.encrypt(mapperId);
-		boolean alreadyLoaded = mapperIdToMapper.containsKey(encryptedMapId);
+		MapperKey mapperKey = new MapperKey(session, encryptedMapId);
+		boolean alreadyLoaded = mapperKeyToMapper.containsKey(mapperKey);
 		if(mapper instanceof Serializable) {
 			if(alreadyLoaded) {
 				if(!mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper)) {
@@ -128,16 +130,14 @@ public class MapperServiceImpl implements MapperService {
 				}
 			}
 		}
-		mapperIdToMapper.put(encryptedMapId, mapper);
-		mapperToMapperId.put(mapper, encryptedMapId);
-		if(session.getSessionInfo() == null) {
-			return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + encryptedMapId;
-		}
+
+		mapperKeyToMapper.put(mapperKey, mapper);
+		mapperToMapperKey.put(mapper, mapperKey);
 		return WebappHelper.getServletContextPath() + DispatcherAction.PATH_MAPPED + encryptedMapId;
 	}
 
 	@Override
-	public Mapper getMapperById(String id) {
+	public Mapper getMapperById(UserSession session, String id) {
 		if(!StringHelper.containsNonWhitespace(id)) {
 			return null;
 		}
@@ -147,7 +147,8 @@ public class MapperServiceImpl implements MapperService {
 			id = id.substring(index + DispatcherAction.PATH_MAPPED.length(), id.length());
 		}
 		
-		Mapper mapper = mapperIdToMapper.get(id);
+		MapperKey mapperKey = new MapperKey(session, id);
+		Mapper mapper = mapperKeyToMapper.get(mapperKey);
 		if(mapper == null) {
 			mapper = (Mapper)getMapperCache().get(id);
 			if(mapper == null) {
@@ -169,15 +170,15 @@ public class MapperServiceImpl implements MapperService {
 
 	@Override
 	public void cleanUp(String sessionId) {
-		List<String> mapperIds = sessionIdToMapperIds.remove(sessionId);
-		if(mapperIds != null && !mapperIds.isEmpty()) {
-			for(String mapperId:mapperIds) {
-				Mapper mapper = mapperIdToMapper.remove(mapperId);
+		List<MapperKey> mapKeys = sessionIdToMapperKeys.remove(sessionId);
+		if(mapKeys != null && !mapKeys.isEmpty()) {
+			for(MapperKey mapKey:mapKeys) {
+				Mapper mapper = mapperKeyToMapper.remove(mapKey);
 				if(mapper != null) {
 					if(mapper instanceof Serializable) {
-						mapperDao.updateConfiguration(mapperId, (Serializable)mapper);
+						mapperDao.updateConfiguration(mapKey.getMapperId(), (Serializable)mapper);
 					}
-					mapperToMapperId.remove(mapper);
+					mapperToMapperKey.remove(mapper);
 				}
 			}
 		}
@@ -187,14 +188,13 @@ public class MapperServiceImpl implements MapperService {
 	public void cleanUp(List<Mapper> mappers) {
 		if(mappers == null || mappers.isEmpty()) return;
 		for(Mapper mapper:mappers) {
-			String mapperId = mapperToMapperId.remove(mapper);
-			if(mapperId != null) {
-				mapperIdToMapper.remove(mapperId);
+			MapperKey mapperKey = mapperToMapperKey.remove(mapper);
+			if(mapperKey != null) {
+				mapperKeyToMapper.remove(mapperKey);
 				if(mapper instanceof Serializable) {
-					mapperDao.updateConfiguration(mapperId, (Serializable)mapper);
+					mapperDao.updateConfiguration(mapperKey.getMapperId(), (Serializable)mapper);
 				}
 			}
-			
 		}
 	}
 }

@@ -187,49 +187,50 @@ div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.b_filetype_folder, .b_fil
 .b_filetype_zip { background-image: url('../openolat/images/docs/document-zipper.png') ! important; }
 
 /* large icons, as used in library */
-.b_large_icon.b_filetype_file { background-image: url('../openolat/images/docs_large/_blank.png') ! important; }
-.b_large_icon.b_filetype_avi { background-image: url('../openolat/images/docs_large/avi.png') ! important; }
-.b_large_icon.b_filetype_bat { background-image: url('../openolat/images/docs_large/exe.png') ! important; }
-.b_large_icon.b_filetype_bmp { background-image: url('../openolat/images/docs_large/bmp.png') ! important; }
-.b_large_icon.b_filetype_css, { background-image: url('../openolat/images/docs_large/css.png') ! important; }
-.b_large_icon.b_filetype_doc, .b_filetype_docx { background-image: url('../openolat/images/docs_large/doc.png') ! important; }
-.b_large_icon.b_filetype_dvi { background-image: url('../openolat/images/docs_large/avi.png') ! important; }
-.b_large_icon.b_filetype_exe { background-image: url('../openolat/images/docs_large/exe.png') ! important; }
-.b_large_icon.b_filetype_folder { background-image: url('../openolat/images/docs_large/_blank.png')  ! important; }
-.b_large_icon.b_filetype_gif { background-image: url('../openolat/images/docs_large/gif.png') ! important; }
-.b_large_icon.b_filetype_gz { background-image: url('../openolat/images/docs_large/tgz.png') ! important; }
-.b_large_icon.b_filetype_htm, .b_large_icon.b_filetype_html { background-image: url('../openolat/images/docs_large/html.png') ! important; }
-.b_large_icon.b_filetype_ico { 	background-image: url('../openolat/images/docs_large/gif.png') ! important; }
-.b_large_icon.b_filetype_jpeg, .b_large_icon.b_filetype_jpg { background-image: url('../openolat/images/docs_large/jpg.png') ! important; }
-.b_large_icon.b_filetype_js { background-image: url('../openolat/images/docs_large/java.png') ! important; }
-.b_large_icon.b_filetype_log { background-image: url('../openolat/images/docs_large/txt.png') ! important; }
-.b_large_icon.b_filetype_midi { background-image: url('../openolat/images/docs_large/midi.png') ! important; }
-.b_large_icon.b_filetype_mp4, .b_large_icon.b_filetype_m4v, .b_large_icon.b_filetype_webm, .b_large_icon.b_filetype_ogg { background-image: url('../openolat/images/docs_large/mp4.png') ! important; }
-.b_large_icon.b_filetype_flv { background-image: url('../openolat/images/docs_large/flv.png') ! important; }
-.b_large_icon.b_filetype_video, .b_large_icon.b_filetype_mov { background-image: url('../openolat/images/docs_large/qt.png') ! important; }
-.b_large_icon.b_filetype_audio, .b_large_icon.b_filetype_mp3,.b_filetype_m3u { background-image: url('../openolat/images/docs_large/mp3.png') ! important; }
-.b_large_icon.b_filetype_mpeg,.b_large_icon.b_filetype_mpg { background-image: url('../openolat/images/docs_large/mpg.png') ! important; }
-.b_large_icon.b_filetype_odp { background-image: url('../openolat/images/docs_large/odp.png') ! important; }
-.b_large_icon.b_filetype_ods { background-image: url('../openolat/images/docs_large/ods.png') ! important; }
-.b_large_icon.b_filetype_odt { background-image: url('../openolat/images/docs_large/odt.png') ! important; }
-.b_large_icon.b_filetype_odg { background-image: url('../openolat/images/docs_large/odg.png') ! important; }
-.b_large_icon.b_filetype_odf { background-image: url('../openolat/images/docs_large/odf.png') ! important; }
-.b_large_icon.b_filetype_pdf { background-image: url('../openolat/images/docs_large/pdf.png') ! important; }
-.b_large_icon.b_filetype_png { background-image: url('../openolat/images/docs_large/png.png') ! important; }
-.b_large_icon.b_filetype_ppt, .b_large_icon.b_filetype_pptx { background-image: url('../openolat/images/docs_large/ppt.png') ! important; }
-.b_large_icon.b_filetype_ps { background-image: url('../openolat/images/docs_large/pdf.png') ! important; }
-.b_large_icon.b_filetype_qt,.b_large_icon.b_filetype_ra,.b_large_icon.b_filetype_ram { background-image: url('../openolat/images/docs_large/qt.png') ! important; }
-.b_large_icon.b_filetype_readme, .b_large_icon.b_filetype_README { background-image: url('../openolat/images/docs_large/text.png') ! important; }
-.b_large_icon.b_filetype_rtf { background-image: url('../openolat/images/docs_large/rtf.png') ! important; }
-.b_large_icon.b_filetype_tar,.b_large_icon.b_filetype_tgz { background-image: url('../openolat/images/docs_large/gtz.png') ! important; }
-.b_large_icon.b_filetype_tiff { background-image: url('../openolat/images/docs_large/tiff.png') ! important; }
-.b_large_icon.b_filetype_txt { background-image: url('../openolat/images/docs_large/txt.png') ! important; }
-.b_large_icon.b_filetype_wav { background-image: url('../openolat/images/docs_large/wav.png') ! important; }
-.b_large_icon.b_filetype_xls, .b_filetype_xlsx { background-image: url('../openolat/images/docs_large/xls.png') ! important; }
-.b_large_icon.b_filetype_xml{ background-image: url('../openolat/images/docs_large/xml.png') ! important; }
-.b_large_icon.b_filetype_xsl { background-image: url('../openolat/images/docs_large/xsl.png') ! important; }
-.b_large_icon.b_filetype_zip { background-image: url('../openolat/images/docs_large/zip.png') ! important; }
-
+.b_large_icon {
+	&.b_filetype_file { background-image: url('../openolat/images/docs_large/_blank.png') ! important; }
+	&.b_filetype_avi { background-image: url('../openolat/images/docs_large/avi.png') ! important; }
+	&.b_filetype_bat { background-image: url('../openolat/images/docs_large/exe.png') ! important; }
+	&.b_filetype_bmp { background-image: url('../openolat/images/docs_large/bmp.png') ! important; }
+	&.b_filetype_css, { background-image: url('../openolat/images/docs_large/css.png') ! important; }
+	&.b_filetype_doc, &.b_filetype_docx { background-image: url('../openolat/images/docs_large/doc.png') ! important; }
+	&.b_filetype_dvi { background-image: url('../openolat/images/docs_large/avi.png') ! important; }
+	&.b_filetype_exe { background-image: url('../openolat/images/docs_large/exe.png') ! important; }
+	&.b_filetype_folder { background-image: url('../openolat/images/docs_large/_blank.png')  ! important; }
+	&.b_filetype_gif { background-image: url('../openolat/images/docs_large/gif.png') ! important; }
+	&.b_filetype_gz { background-image: url('../openolat/images/docs_large/tgz.png') ! important; }
+	&.b_filetype_htm, &.b_filetype_html { background-image: url('../openolat/images/docs_large/html.png') ! important; }
+	&.b_filetype_ico { 	background-image: url('../openolat/images/docs_large/gif.png') ! important; }
+	&.b_filetype_jpeg, &.b_filetype_jpg { background-image: url('../openolat/images/docs_large/jpg.png') ! important; }
+	&.b_filetype_js { background-image: url('../openolat/images/docs_large/java.png') ! important; }
+	&.b_filetype_log { background-image: url('../openolat/images/docs_large/txt.png') ! important; }
+	&.b_filetype_midi { background-image: url('../openolat/images/docs_large/midi.png') ! important; }
+	&.b_filetype_mp4, &.b_filetype_m4v, &.b_filetype_webm, &.b_filetype_ogg { background-image: url('../openolat/images/docs_large/mp4.png') ! important; }
+	&.b_filetype_flv { background-image: url('../openolat/images/docs_large/flv.png') ! important; }
+	&.b_filetype_video, &.b_filetype_mov { background-image: url('../openolat/images/docs_large/qt.png') ! important; }
+	&.b_filetype_audio, &.b_filetype_mp3,.b_filetype_m3u { background-image: url('../openolat/images/docs_large/mp3.png') ! important; }
+	&.b_filetype_mpeg,&.b_filetype_mpg { background-image: url('../openolat/images/docs_large/mpg.png') ! important; }
+	&.b_filetype_odp { background-image: url('../openolat/images/docs_large/odp.png') ! important; }
+	&.b_filetype_ods { background-image: url('../openolat/images/docs_large/ods.png') ! important; }
+	&.b_filetype_odt { background-image: url('../openolat/images/docs_large/odt.png') ! important; }
+	&.b_filetype_odg { background-image: url('../openolat/images/docs_large/odg.png') ! important; }
+	&.b_filetype_odf { background-image: url('../openolat/images/docs_large/odf.png') ! important; }
+	&.b_filetype_pdf { background-image: url('../openolat/images/docs_large/pdf.png') ! important; }
+	&.b_filetype_png { background-image: url('../openolat/images/docs_large/png.png') ! important; }
+	&.b_filetype_ppt, &.b_filetype_pptx { background-image: url('../openolat/images/docs_large/ppt.png') ! important; }
+	&.b_filetype_ps { background-image: url('../openolat/images/docs_large/pdf.png') ! important; }
+	&.b_filetype_qt,&.b_filetype_ra,&.b_filetype_ram { background-image: url('../openolat/images/docs_large/qt.png') ! important; }
+	&.b_filetype_readme, &.b_filetype_README { background-image: url('../openolat/images/docs_large/text.png') ! important; }
+	&.b_filetype_rtf { background-image: url('../openolat/images/docs_large/rtf.png') ! important; }
+	&.b_filetype_tar,&.b_filetype_tgz { background-image: url('../openolat/images/docs_large/gtz.png') ! important; }
+	&.b_filetype_tiff { background-image: url('../openolat/images/docs_large/tiff.png') ! important; }
+	&.b_filetype_txt { background-image: url('../openolat/images/docs_large/txt.png') ! important; }
+	&.b_filetype_wav { background-image: url('../openolat/images/docs_large/wav.png') ! important; }
+	&.b_filetype_xls, .b_filetype_xlsx { background-image: url('../openolat/images/docs_large/xls.png') ! important; }
+	&.b_filetype_xml{ background-image: url('../openolat/images/docs_large/xml.png') ! important; }
+	&.b_filetype_xsl { background-image: url('../openolat/images/docs_large/xsl.png') ! important; }
+	&.b_filetype_zip { background-image: url('../openolat/images/docs_large/zip.png') ! important; }
+}
 
 /* tab icons in nav  and in LE-resources table*/
 
@@ -347,4 +348,15 @@ span.o_grey_led { background: url(../openolat/images/grey_led.png) no-repeat lef
 .fx_members_icon { background-image: url('../openolat/images/users_members.png') !important; } 
 body#b_body .o_CourseModule_icon_closed {background-image:url('../openolat/images/le_resources/book-open-text-image_locked.png');}
 
+
+/* portrait / avatar icons */
+/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG */
+.o_portrait_dummy                {background-image: url(../openolat/images/dummy.png); width: 100px; height: 100px;}
+.o_portrait_dummy_small          {background-image: url(../openolat/images/dummy_small.png); width: 30px; height: 30px;}
+.o_portrait_dummy_female_big     {background-image: url(../openolat/images/dummy_female_big.png); width: 100px; height: 100px;}
+.o_portrait_dummy_female_small   {background-image: url(../openolat/images/dummy_female_small.png); width: 30px; height: 30px;}
+.o_portrait_dummy_male_big       {background-image: url(../openolat/images/dummy_male_big.png); width: 100px; height: 100px;}
+.o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); width: 30px; height: 30px;}
+.o_portrait_anonymous 			 {background-image: url(../openolat/images/dummy.png);  width: 100px; height: 100px;}
+.o_portrait_anonymous_small 	 {background-image: url(../openolat/images/dummy_small.png);  width: 30px; height: 30px;}
 	

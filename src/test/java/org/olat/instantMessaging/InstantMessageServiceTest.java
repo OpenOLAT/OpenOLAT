@@ -19,13 +19,28 @@
  */
 package org.olat.instantMessaging;
 
+import java.util.List;
+import java.util.UUID;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.control.Event;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.DisplayMembers;
 import org.olat.instantMessaging.manager.InstantMessageDAO;
 import org.olat.instantMessaging.manager.InstantMessagePreferencesDAO;
 import org.olat.instantMessaging.manager.RosterDAO;
+import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.model.BuddyStats;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,6 +62,10 @@ public class InstantMessageServiceTest extends OlatTestCase {
 	private RosterDAO rosterDao;
 	@Autowired
 	private InstantMessagingService imService;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	@Test
 	public void should_service_present() {
@@ -55,5 +74,99 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Assert.assertNotNull(preferencesDao);
 		Assert.assertNotNull(rosterDao);
 		Assert.assertNotNull(imService);
+	}
+	
+	@Test
+	public void testGetBuddiesListenTo() {
+		DummyListener dummyListener = new DummyListener();
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-1-" + UUID.randomUUID().toString());
+		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-2-" + UUID.randomUUID().toString());
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
+		imService.listenChat(chatter1, chatResource, false, false, dummyListener);
+		imService.listenChat(chatter2, chatResource, true, true, dummyListener);
+		dbInstance.commitAndCloseSession();
+
+		//check if the buddies listen to the chat
+		List<Buddy> buddies = imService.getBuddiesListenTo(chatResource);
+		Assert.assertNotNull(buddies);
+		Assert.assertEquals(2, buddies.size());
+		
+		//check the properties of buddy 1
+		Buddy buddy1 = buddies.get(0).getIdentityKey().equals(chatter1.getKey()) ? buddies.get(0) : buddies.get(1);
+		Assert.assertTrue(buddy1.getUsername().equals(chatter1.getName()));
+		Assert.assertFalse(buddy1.isAnonym());
+		Assert.assertFalse(buddy1.isVip());
+
+		//check the properties of buddy 2
+		Buddy buddy2 = buddies.get(0).getIdentityKey().equals(chatter2.getKey()) ? buddies.get(0) : buddies.get(1);
+		Assert.assertTrue(buddy2.getUsername().equals(chatter2.getName()));
+		Assert.assertTrue(buddy2.isAnonym());
+		Assert.assertTrue(buddy2.isVip());
+	}
+	
+	@Test
+	public void testGetBuddyStats_empty() {
+		//create a chat
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-3-" + UUID.randomUUID().toString());
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
+		imService.listenChat(chatter1, chatResource, false, false, new DummyListener());
+		dbInstance.commitAndCloseSession();
+		
+		BuddyStats stats = imService.getBuddyStats(chatter1);
+		Assert.assertNotNull(stats);
+		Assert.assertEquals(0, stats.getOfflineBuddies());
+		Assert.assertEquals(0, stats.getOnlineBuddies());
+	}
+	
+	/**
+	 * Two users in the same group but the visibility is set to false
+	 */
+	@Test
+	public void testGetBuddyStats_mustBeEmpty() {
+		//create a group with owner and participant
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-4-" + UUID.randomUUID().toString());
+		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-5-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Chat-1-", "testGetBuddyStats_mustBeEmpty", 0, 10, false, false, null);
+		securityManager.addIdentityToSecurityGroup(chatter1, group.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(chatter2, group.getPartipiciantGroup());
+		dbInstance.commit();
+		businessGroupService.updateDisplayMembers(group, new DisplayMembers(false, false, false));
+		dbInstance.commitAndCloseSession();
+		
+		//check the buddies
+		BuddyStats stats = imService.getBuddyStats(chatter1);
+		Assert.assertNotNull(stats);
+		Assert.assertEquals(0, stats.getOfflineBuddies());
+		Assert.assertEquals(0, stats.getOnlineBuddies());
+	}
+	
+	/**
+	 * Two users in the same group (which displays its members)
+	 */
+	@Test
+	public void testGetBuddyStats_visible() {
+		//create a group with owner and participant
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-6-" + UUID.randomUUID().toString());
+		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-7-" + UUID.randomUUID().toString());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Chat-2-", "testGetBuddyStats_visible", 0, 10, false, false, null);
+		securityManager.addIdentityToSecurityGroup(chatter1, group.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(chatter2, group.getPartipiciantGroup());
+		dbInstance.commit();
+		businessGroupService.updateDisplayMembers(group, new DisplayMembers(true, true, false));
+		dbInstance.commitAndCloseSession();
+		
+		//check the buddies
+		BuddyStats stats = imService.getBuddyStats(chatter1);
+		Assert.assertNotNull(stats);
+		Assert.assertEquals(1, stats.getOfflineBuddies());
+		Assert.assertEquals(0, stats.getOnlineBuddies());
+	}
+	
+	
+	private class DummyListener implements GenericEventListener {
+		@Override
+		public void event(Event event) {
+			//
+		}
 	}
 }

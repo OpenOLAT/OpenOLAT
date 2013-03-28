@@ -20,7 +20,10 @@
 package org.olat.instantMessaging.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyGroup;
@@ -94,6 +97,36 @@ public class Roster {
 				}	
 			}
 		}
+	}
+	
+	public synchronized List<Buddy> getBuddies() {
+		Set<Buddy> buddies = new HashSet<Buddy>();
+		Set<Buddy> vips = new HashSet<Buddy>();
+		for(Buddy entry:entries) {
+			if(entry.isVip()) {
+				vips.add(entry);
+			}
+			buddies.add(entry);
+		}
+		for(BuddyGroup group:groups) {
+			for(Buddy entry:group.getBuddy()) {
+				if(entry.isVip()) {
+					vips.add(entry);
+				}
+				buddies.add(entry);
+			}
+		}
+
+		//if vip once, vip always
+		List<Buddy> orderedBuddies = new ArrayList<Buddy>(buddies.size());
+		for(Buddy buddy:buddies) {
+			Buddy clone = buddy.clone();
+			clone.setVip(vips.contains(buddy));
+			orderedBuddies.add(clone);
+		}
+
+		Collections.sort(orderedBuddies);
+		return orderedBuddies;
 	}
 	
 	public synchronized void add(Buddy entry) {

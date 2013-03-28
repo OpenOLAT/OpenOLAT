@@ -267,8 +267,11 @@ class ChoiceOfToolsForm extends FormBasicController {
 		
 		for (int i=0; i<CollaborationTools.TOOLS.length; i++) {
 			String k = CollaborationTools.TOOLS[i];
-			if (k.equals(CollaborationTools.TOOL_CHAT) && !CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
-				continue;
+			if (k.equals(CollaborationTools.TOOL_CHAT)) {
+				InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+				if (!imModule.isEnabled() || !imModule.isGroupEnabled()) {
+					continue;
+				}
 			}
 			theKeys.add(""+i);
 			theValues.add(translate("collabtools.named."+CollaborationTools.TOOLS[i]));

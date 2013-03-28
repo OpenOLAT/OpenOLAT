@@ -9,56 +9,139 @@
 		}
 }
 
-.o_instantmessaging_chat_history, .o_groupchat_history {
-	border: 1px solid #ACAAAA; overflow: scroll; margin: 0 0 1em 0; overflow-x:auto; height:170px;
-	@include o-gradient-white();
+.o_instantmessaging_chat_history { 
+	border: 1px solid #ACAAAA; 
+	height:170px;
+	font-size: 90%;
+
+	/* scrollbar */
+	margin: 0 0 1em 0; 
+	overflow: scroll; 
+	overflow-x:auto; 
+
+	/* message group for all following messages of a single user. a new message group starts 
+	   when someone else replies */
+	div.o_instantmessaging_message_group {
+		border-top: 1px solid #eee;
+		padding: 3px 3px 3px 40px;
+		min-height: 40px;		
+		position: relative;
+		background: #fff;
+		
+		&.o_odd {
+			background: #F4F4F4;
+		}
+				
+		div.o_instantmessaging_avatar {
+			position: absolute;
+			top: 3px;
+			left: 3px;
+			border: 1px solid #bbb;
+			width: 30px;
+			height: 30px;
+			background-color: #fff;
+			background-repeat: no-repeat;
+			background-position: 50% 50%;			
+			/* background-image set by portrait css class and element style */
+		}
+		
+		div.o_instantmessaging_from { 
+			text-align:left; 
+			color:#999; 
+			text-decoration: none;
+			font-weight: 500;
+		}
+		
+		a:hover {
+			color:#000; 
+			text-decoration: none;
+			
+			div.o_instantmessaging_from{
+				color:#000; 
+			}
+		}
+		
+		div.o_instantmessaging_body {
+			padding: 3px 0 3px 0;
+			
+			span.o_instantmessaging_date { 
+				text-align:right; 
+				color:#999; 
+				font-size: 90%;
+				font-weight: 200;
+			}
+		}
+	}	
 }
-.o_instantmessaging_chat_history div, .o_groupchat_history div { border-top: 1px solid #eee;}
-.o_instantmessaging_chat_history {
-	div.o_instantmessaging_avatar {
-		float:left;
-		padding: 3px;
-		border: 1px solid #333;
-		margin: 3px;
+.o_instantmessaging_chat_form {
+	input { 
+		width: 99%
 	}
-	span.o_instantmessaging_from { text-align:left; color:#999; }
-	span.o_instantmessaging_from:hover { color:#000; }
-	span.o_instantmessaging_date { text-align:right; color:#999; }
-	span.o_instantmessaging_date:hover { color:#000; }
-	p-o_instantmessaging_body { background-color:red; }
+	div.b_button_group {
+		margin-top: 1em;
+	}
 }
-.o_instantmessaging_chat_form input, .o_groupchat_chat_form input { width: 99%}
-.o_instantmessaging_chat_form div.b_button_group, .o_groupchat_chat_form div.b_button_group {margin-top: 1em;}
 #o_instantmessages_buddieslist {
+		font-size: 90%;
 		padding: 1em 0 0 0; margin: 0;
 		a.b_contexthelp { margin-top:5px; padding-right: 5px; }
 		ul {list-style-type: none; padding: 0; margin: 0} 
 		li { margin: 0; padding: 0;}
-		li.o_instantmessaging_groupname {padding: 0 0 0 20px; background: url(../openolat/images/users.png) no-repeat 0 0;}
-		a.o_instantmessaging_vip span { font-weight:bold; }
-		li a { padding: 2px 0 2px 20px; background-repeat: no-repeat; background-position: 0 0; }
-		a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/users_conf.png) no-repeat 0 0;}
-		a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/grstar.png) no-repeat 0 0;}
-		a.o_instantmessaging_hideofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/gstar.png) no-repeat 0 0;}
+		li.o_instantmessaging_group {
+			padding-bottom: 0.5em;
+			div.o_instantmessaging_groupname {
+				padding: 0 0 0 20px; 
+				background: url(../openolat/images/users.png) no-repeat 0 50%;
+			}
+		}
+		a.o_instantmessaging_vip span { 
+			font-weight:bold; 
+		}
+		li a { 
+			padding: 2px 0 2px 20px; 
+			background-repeat: no-repeat; 
+			background-position: 0 50%; 
+		}
+		a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/users_conf.png) no-repeat 0 50%;}
+		a.o_instantmessaging_hidegroupswitch {padding: 2px 0 2px 20px; @include o-opacity(60); background: url(../openolat/images/users_conf.png) no-repeat 0 50%;}
+		a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/status-offline.png) no-repeat 0 50%;}
+		a.o_instantmessaging_hideofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/status.png) no-repeat 0 50%;}
 }
 
-#o_instantmessages_buddy a { padding: 2px 0 2px 20px; background-repeat: no-repeat; background-position: 0 0; }
+#o_instantmessages_buddy {
+	margin: 1em 0 2em 0;
+	a { padding: 2px 0 2px 20px; background-repeat: no-repeat; background-position: 0 50%; }
+}
 
 div.o_groupchat_roster {
-		margin: 0;
-		ul { list-style-type: none;margin: 0; padding: 0;}
-		li { font-size: 95%}
+	margin: 0;
+	ul { 
+		list-style-type: none;
+		margin: 0; 
+		padding: 0;
+		li { 
+			font-size: 90%;
+			margin: 0;
+			padding: 0 0 0 20px; 
+			background: url(../openolat/images/user.png) no-repeat 0 50%;
+			&.o_instantmessaging_anonymous {
+				background-image: url(../openolat/images/user_silhouette.png)
+			}
+			&.o_instantmessaging_vip { 
+				font-weight:bold; 
+				&.o_instantmessaging_anonymous {
+					font-weight:normal;
+				}
+			}
+		}
+	}
 }
 
-li.o_instantmessaging_vip span { font-weight:bold; }
-li.o_instantmessaging_anonymous span { text-decoration:line-through; }
 
 /* im icons */
-.o_instantmessaging_available_icon { background-image: url(../openolat/images/im/gstar.png); }
-.o_instantmessaging_dnd_icon { background-image: url(../openolat/images/im/gstar_cross.png); }
-.o_instantmessaging_unavailable_icon { background-image: url(../openolat/images/im/grstar.png); }
-.o_instantmessaging_offline_icon { background-image: url(../openolat/images/im/grstar.png);}
+.o_instantmessaging_available_icon { background-image: url(../openolat/images/im/status.png); }
+.o_instantmessaging_dnd_icon { background-image: url(../openolat/images/im/status-away.png); }
+.o_instantmessaging_unavailable_icon { background-image: url(../openolat/images/im/status-offline.png); }
 .o_instantmessaging_new_msg_icon { background-image: url(../openolat/images/im/new_message.png);}
-.o_instantmessaging_error_icon { background-image: url(../openolat/images/cross.png);}	
+.o_instantmessaging_chat_icon { background-image: url(../openolat/images/im/balloon-white-left.png);}
 .o_instantmessaging_refresh_icon {background-image: url(../openolat/images/qti/tries.png);} 
-	

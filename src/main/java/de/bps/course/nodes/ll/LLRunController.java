@@ -94,7 +94,7 @@ public class LLRunController extends BasicController {
 		// nothing to do here
 	}
 	
-	public class LLMapper implements Mapper {
+	public static class LLMapper implements Mapper {
 		private final List<LLModel> linkList;
 		private final Mapper customMediaMapper;
 		private final VFSContainer courseContainer;

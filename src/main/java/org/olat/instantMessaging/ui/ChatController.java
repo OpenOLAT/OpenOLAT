@@ -31,8 +31,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -79,7 +77,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private final VelocityContainer mainVC;
 	private final VelocityContainer chatMsgFieldContent;
 
-	private Map<Long,String> usernameCache = new HashMap<Long,String>();
+	private Map<Long,String> avatarKeyCache = new HashMap<Long,String>();
 	private List<ChatMessage> messageHistory = new ArrayList<ChatMessage>();
 
 	private Link refresh, todayLink, lastWeek, lastMonth;
@@ -88,7 +86,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	
 	private List<String> allChats;
 	private final Formatter formatter;
-	private static final Pattern mailPattern = Pattern.compile("((mailto\\:|(news|(ht|f)tp(s?))\\://){1}\\S+)");
 
 	private final boolean vip;
 	private final OLATResourceable ores;
@@ -319,7 +316,8 @@ public class ChatController extends BasicController implements GenericEventListe
 			}
 
 			boolean anonym = message.isAnonym();
-			ChatMessage msg = new ChatMessage(creationDate, from, m, first, anonym);
+			Long fromKey = message.getFromKey();
+			ChatMessage msg = new ChatMessage(creationDate, from, fromKey, m, first, anonym);
 			if(!anonym ) {
 				msg.setAvatarKey(getAvatarKey(message.getFromKey()));
 			}
@@ -330,34 +328,39 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private String getAvatarKey(Long identityKey) {
-		String username = usernameCache.get(identityKey);
-		if(username == null && buddyList != null) {
+		String avatarKey = avatarKeyCache.get(identityKey);
+		if(avatarKey == null && buddyList != null) {
 			Buddy buddy = buddyList.get(identityKey);
 			if(buddy != null) {
-				username = buddy.getUsername();
-				usernameCache.put(identityKey, username);
+				avatarKey = buddy.getUsername();
+				// check if avatar image exists at all
+				if (portraitManager.getSmallPortraitResource(avatarKey)  == null) {
+					avatarKey = ":NA:";
+				}
+				avatarKeyCache.put(identityKey, avatarKey);
 			}
 		}
-		if(username == null) {
+		if(avatarKey == null) {
 			IdentityShort id = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
 			if(id != null) {
-				username = id.getName();
-				usernameCache.put(identityKey, username);
+				avatarKey = id.getName();
+				// check if avatar image exists at all
+				if (portraitManager.getSmallPortraitResource(avatarKey)  == null) {
+					avatarKey = ":NA:";
+				}				
+				avatarKeyCache.put(identityKey, avatarKey);
 			}
 		}
-		return username;
+		if (avatarKey == null) {
+			// use not-available when still not set to something
+			avatarKey = ":NA:";
+		}
+		return avatarKey;
 	}
 	
 	private String prepareMsgBody(String body) {
-		List<String> done = new ArrayList<String>(3);
-		Matcher m = mailPattern.matcher(body);
-		while (m.find()) {
-			String l = m.group();
-			if (!done.contains(l)) {
-				body = body.replaceFirst(l, "<a href=\""+l+"\" target=\"_blank\">"+l+"</a>");
-			}
-			done.add(l);
-		}
+		body = Formatter.formatURLsAsLinks(body);
+		body = Formatter.formatEmoticonsAsImages(body);
 		return body;
 	}
 	
