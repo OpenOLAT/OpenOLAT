@@ -116,7 +116,7 @@ public class GuiDemoLinksController extends BasicController {
 		linkPos.registerForMousePositionEvent(true);
 		
 		linkTooltip = LinkFactory.createCustomLink("link.tooltip", "link.tooltip", "link.tooltip", Link.LINK, mainVC, this);
-		linkTooltip.setTooltip("link.tooltip.text", false);
+		linkTooltip.setTooltip("link.tooltip.text");
 		
 		// add some text components
 		TextFactory.createTextComponentFromString("text.simple", "Hello World, this text is hardcoded", null, true, mainVC);

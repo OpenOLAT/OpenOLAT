@@ -161,7 +161,6 @@ public class ProfileAndHomePageEditController extends BasicController implements
 			clc = new CloseableModalController(getWindowControl(), this.translator.translate("command.closehp"), this.hpDispC
 					.getInitialComponent());
 			listenTo(clc);
-			clc.insertHeaderCss();
 			clc.activate();
 		}
 	}

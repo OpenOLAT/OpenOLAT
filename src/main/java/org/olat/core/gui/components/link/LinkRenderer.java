@@ -140,10 +140,6 @@ public class LinkRenderer implements ComponentRenderer {
 		// a form link can not have tooltips at the moment
 		// tooltip sets its own id into the <a> tag.
 		if (link.isEnabled()) {
-			if (link.markIt) {
-				sb.append("<span style=\"border:2px solid red;\">");
-			}
-
 			sb.append("<a ");
 			// add layouting
 			sb.append(cssSb);
@@ -175,7 +171,7 @@ public class LinkRenderer implements ComponentRenderer {
 			
 			//tooltips
 			if(title != null) {
-				if (!link.hasTooltip) {
+				if (!link.isHasTooltip()) {
 					sb.append(" title=\"");
 					if (nontranslated){
 						sb.append(title).append("\"");
@@ -184,15 +180,19 @@ public class LinkRenderer implements ComponentRenderer {
 					}
 				}
 				//tooltips based on the extjs library, see webapp/static/js/ext*
-				if (link.hasTooltip) {
+				if (link.isHasTooltip()) {
+					String text;
 					if (nontranslated) {
-						sb.append(" title=\"").append(title).append("\"");
+						text = title;
 					} else {
-						sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(translator.translate(title))).append("\"");
+						text = translator.translate(title);
 					}
+					text = StringEscapeUtils.escapeJavaScript(text);
+					sb.append(" title=\"\"");
+					extJsSb.append(elementId).append(".tooltip({content:function(){return \"").append(text).append("\";}});");
+					hasExtJsSb = true;
 				}
 			}
-			
 
 			if (/* !link.isEnabledForLongTransaction && */!flexiformlink) {
 				// clash with onclick ... FIXME:pb/as find better solution to solve this
@@ -204,8 +204,6 @@ public class LinkRenderer implements ComponentRenderer {
 			} else {
 				sb.append(">");
 			}
-			
-			
 			
 			sb.append("<span> "); // inner wrapper for layouting
 			if (customDisplayText != null) {
@@ -227,9 +225,6 @@ public class LinkRenderer implements ComponentRenderer {
 				}
 			}
 			sb.append("</span></a>");
-			if (link.markIt) {
-				sb.append("</span>");
-			}
 			//on click() is part of prototype.js
 			if(link.registerForMousePositionEvent) {
 				extJsSb.append("jQuery('#"+elementId+"').click(function(event) {")
@@ -247,7 +242,7 @@ public class LinkRenderer implements ComponentRenderer {
 			if(link.javascriptHandlerFunction != null) {
 				extJsSb.append("  jQuery('#"+elementId+"').on('"+link.mouseEvent+"', "+link.javascriptHandlerFunction+");");
 				hasExtJsSb = true;
-			}
+			}	
 		} else {
 			String text;
 			if (customDisplayText != null) {
@@ -290,6 +285,7 @@ public class LinkRenderer implements ComponentRenderer {
 		//now append all gathered javascript stuff if any
 		if(hasExtJsSb){
 			// Execute anonymous function (closure) now (OLAT-5755)
+
 			extJsSb.append("})();");
 			extJsSb.append("\n/* ]]> */\n</script>");
 			sb.append(extJsSb);
@@ -298,10 +294,10 @@ public class LinkRenderer implements ComponentRenderer {
 
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
-	// TODO Auto-generated method stub
+		//
 	}
 
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	// TODO Auto-generated method stub
+		//
 	}
 }

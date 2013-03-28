@@ -1,9 +1,5 @@
 @charset "UTF-8";
 
-@import url(../../js/jquery/tagit/jquery.tagit.css);
-//@import url(../../js/jquery/uilayout/layout-default-latest.css);
-
-
 //overwrite jquery ui
 .ui-widget {
 	font-family: $defaultfont;
@@ -56,6 +52,9 @@
 	display:none;
 }
 
+/*
+ * autocomplete
+ */
 .ui-autocomplete.ui-corner-all {
 	border: 1px solid #eee;
 	@include o-border-radius($di_border_radius);
@@ -71,6 +70,59 @@
 	.b_form_auto_completer_item {
 		background-color: $basecolor_ultra_light;
 	}
+}
+
+/*
+ * datepicker
+ */
+.ui-datepicker {
+	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+	
+	.ui-widget-header {
+		.ui-datepicker-prev.ui-corner-all, .ui-datepicker-next.ui-corner-all {
+			border: none !important;
+			background: #fff !important;
+		}
+
+		.ui-icon.ui-icon-circle-triangle-e {
+			background: #fff url('../openolat/images/arrow_right_big.png') no-repeat center center;
+		}
+		.ui-icon.ui-icon-circle-triangle-w {
+			background: #fff url('../openolat/images/arrow_left_big.png') no-repeat center center;
+		}
+	}
+	
+	.ui-state-default {
+		background: #eee;
+	}
+	
+	.ui-state-highlight, .ui-widget-content .ui-state-highlight {
+		border: 1px solid $basecolor_light;
+		background: $basecolor_ultra_light;
+	}
+}
+
+.ui-datepicker.ui-corner-all {
+	@include o-border-radius($di_border_radius);
+}
+
+.ui-datepicker.ui-widget-content {
+	border-color: $basecolor;
+}
+
+/*
+ * tooltip
+ */
+.ui-tooltip {
+	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+}
+ 
+.ui-tooltip.ui-corner-all {
+	@include o-border-radius($di_border_radius);
+}
+
+.ui-tooltip.ui-widget-content {
+	border: 1px solid $basecolor;
 }
 
 //overwrite tagit

@@ -1,0 +1,16 @@
+The library JQuery UI (http://jqueryui.com/download/) is a custom build with these settings:
+
+UI Core: all
+Interactions: all
+Widgets: remove accordion, progressbar, slider, spinner, tabs
+Effects: need only Effects Core and Pulsate Effect
+Theme: Smoothness
+
+The js.plugins.min.js is build with:
+  mvn -Pcompressjs verify 
+It contains the following minified javascripts:
+  functions.js
+  jshashtable-2.1_src.js
+  jquery.oolog.js
+  jquery.translator.js
+  jquery.periodic.js

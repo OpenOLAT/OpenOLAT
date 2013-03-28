@@ -33,6 +33,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -43,7 +44,8 @@ import org.olat.core.logging.Tracing;
  * 
  * @author Alexander Schneider, Patrick Brunner
  */
-public class Link extends Component {                 
+public class Link extends Component {
+	private static final OLog log = Tracing.createLoggerFor(Link.class);
 	//single renderer for all users, lazy creation upon first object creation of this class.
 	private static final ComponentRenderer RENDERER = new LinkRenderer();
 	
@@ -81,7 +83,6 @@ public class Link extends Component {
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
 	private String target;
-	boolean markIt = false;
 	private Object internalAttachedObj;
 	private Object userObject;
 	private String accessKey;
@@ -93,9 +94,7 @@ public class Link extends Component {
 	private int offsetX = 0;
 	private int offsetY = 0;
 
-	boolean hasTooltip;
-	boolean hasStickyTooltip;
-
+	private boolean hasTooltip;
 	private boolean suppressDirtyFormWarning = false;
 	private boolean isDownloadLink = false;
 
@@ -147,11 +146,11 @@ public class Link extends Component {
 		this.presentation = presentation;
 		this.presentationBeforeCustomCSS = presentation;
 		
-		if(Tracing.isDebugEnabled(Link.class)){
-			Tracing.logDebug("***LINK_CREATED***" 
+		if(log.isDebug()){
+			log.debug("***LINK_CREATED***" 
 					+ " name: " + getComponentName()  
 					+ " component: " + getComponentName() 
-					+ " dispatchId: " + getDispatchID(), Link.class);
+					+ " dispatchId: " + getDispatchID());
 		}
 		setElementId("o_lnk"+getDispatchID());
 		// use span wrappers - if the custom layout needs div wrappers this flag has
@@ -166,10 +165,10 @@ public class Link extends Component {
 		setDirty(true);
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
 		
-		if(Tracing.isDebugEnabled(Link.class)){
-			Tracing.logDebug("***LINK_CLICKED*** " 
+		if(log.isDebug()){
+			log.debug("***LINK_CLICKED*** " 
 					+ " dispatchID: " + ureq.getComponentID()
-					+ " commandID: " + cmd, Link.class);
+					+ " commandID: " + cmd);
 		}
 		
 		dispatch(ureq, command);
@@ -243,7 +242,9 @@ public class Link extends Component {
 		return this.elementId;
 	}
 
-	
+	public boolean isHasTooltip() {
+		return hasTooltip;
+	}
 	
 	/**
 	 * @see org.olat.core.gui.components.Component#setEnabled(boolean)
@@ -501,10 +502,9 @@ public class Link extends Component {
 	 * and can contain HTML tags. 
 	 * @param sticky: sets the tooltip sticky, which means the user has to click the tip to disappear
 	 */
-	public void setTooltip(String tooltipI18nKey, boolean sticky) {
+	public void setTooltip(String tooltipI18nKey) {
 		setTitle(tooltipI18nKey);
 		this.hasTooltip = true;
-		this.hasStickyTooltip = sticky;
 		setDirty(true);
 	}
 

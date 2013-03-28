@@ -99,7 +99,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		if(!isInvitee && CourseModule.isHelpCourseEnabled()) {
 			helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
 			helpLink.setCustomEnabledLinkCSS("b_with_small_icon_right o_help_icon");
-			helpLink.setTooltip("topnav.help.alt", false);
+			helpLink.setTooltip("topnav.help.alt");
 			helpLink.setTarget("_help");
 		}
 		
@@ -107,12 +107,12 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		if (ureq.getIdentity() == null) {
 			topNavVC.contextPut("isGuest", Boolean.TRUE);
 			loginLink = LinkFactory.createLink("topnav.login", topNavVC, this);
-			loginLink.setTooltip("topnav.login.alt", false);
+			loginLink.setTooltip("topnav.login.alt");
 		}
 		
 		if(impressum) {
 			impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
-			impressumLink.setTooltip("topnav.impressum.alt", false);
+			impressumLink.setTooltip("topnav.impressum.alt");
 			impressumLink.setCustomEnabledLinkCSS("o_topnav_impressum");
 			impressumLink.setAjaxEnabled(false);
 			impressumLink.setTarget("_blank");

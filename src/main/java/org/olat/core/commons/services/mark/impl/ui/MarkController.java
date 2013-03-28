@@ -121,7 +121,7 @@ public class MarkController extends FormBasicController {
 			}
 		}
 		
-		((Link)markLink.getComponent()).setTooltip(tooltip, false);
+		((Link)markLink.getComponent()).setTooltip(tooltip);
 	}
 
 	@Override

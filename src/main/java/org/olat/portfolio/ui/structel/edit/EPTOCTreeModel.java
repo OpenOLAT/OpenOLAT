@@ -28,6 +28,9 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.EPAbstractMap;
+import org.olat.portfolio.model.structel.EPPage;
+import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 
@@ -40,42 +43,109 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
 public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 
 	private static final long serialVersionUID = 7389921072899475506L;
+	
 	private final EPFrontendManager ePFMgr;
+	private final PortfolioStructureMap map;
 	
 	public EPTOCTreeModel(PortfolioStructureMap map, String tocLabel) {
 		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		this.map = map;
 
 		GenericTreeNode rootNode = new GenericTreeNode("toc", tocLabel, null);
 		rootNode.setIconCssClass("o_st_icon");
-		rootNode.addChild(loadNode(map));
+		loadNode(map, rootNode);
 		setRootNode(rootNode);
 	}
 	
-	private GenericTreeNode loadNode(PortfolioStructure structure) {
+	protected void reload() {
+		getRootNode().removeAllChildren();
+		loadNode(map, getRootNode());
+	}
+	
+	private GenericTreeNode loadNode(PortfolioStructure structure, TreeNode parentNode) {
 		String ident = structure.getKey().toString();
 		GenericTreeNode structureNode = new GenericTreeNode(ident, structure.getTitle(), structure);
 		structureNode.setIconCssClass(structure.getIcon());
+		parentNode.addChild(structureNode);
+		loadChildNode(structure, structureNode);
+		return structureNode;
+	}
+	
+	protected void loadChildNode(PortfolioStructure structure, TreeNode structureNode) {
+		structureNode.removeAllChildren();
 		
 		List<PortfolioStructure> structs = ePFMgr.loadStructureChildren(structure);
 		for (PortfolioStructure portfolioStructure : structs) {
-			GenericTreeNode childNode = loadNode(portfolioStructure);
-			structureNode.addChild(childNode);
+			loadNode(portfolioStructure, structureNode);
 		}
 		
 		List<AbstractArtefact> artList = ePFMgr.getArtefacts(structure);
 		for (AbstractArtefact artefact : artList) {
-			String artefactIdent = artefact.getKey().toString();
+			String artefactIdent = structureNode.getIdent() + artefact.getKey().toString();
 			GenericTreeNode artefactNode = new GenericTreeNode(artefactIdent, artefact.getTitle(), artefact);
 			artefactNode.setIconCssClass(artefact.getIcon());
 			structureNode.addChild(artefactNode);
 		}
-		
-		return structureNode;
 	}
 
 	@Override
 	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode, boolean sibling) {
-		return false;
+		Object droppedObj = droppedNode.getUserObject();
+		Object droppedParentObj = null;
+		if(droppedNode.getParent() != null) {
+			droppedParentObj = ((TreeNode)droppedNode.getParent()).getUserObject();
+		}
+		Object targetObj = targetNode.getUserObject();
+		boolean isArtefactNode = droppedObj instanceof AbstractArtefact;
+		if (isArtefactNode) {
+			AbstractArtefact droppedArtefact = (AbstractArtefact)droppedObj;
+			if (checkNewArtefactTarget(droppedArtefact, targetObj)){
+				return true;
+			} else if(droppedParentObj.equals(targetObj)) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			if (checkNewStructureTarget(droppedObj, droppedParentObj, targetObj)){
+				return true;
+			} else {					
+				return false;
+			}
+		}
+	}
+	
+	private boolean checkNewArtefactTarget(AbstractArtefact artefact, Object  targetObj){
+		PortfolioStructure newParStruct;
+		if (targetObj instanceof EPAbstractMap ) {
+			return false;
+		} else if(targetObj instanceof PortfolioStructure) {
+			newParStruct = (PortfolioStructure)targetObj;
+		} else {
+			return false;
+		}
+
+		boolean sameTarget = ePFMgr.isArtefactInStructure(artefact, newParStruct);
+		if (sameTarget) {
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean checkNewStructureTarget(Object droppedObj, Object droppedParentObj, Object targetObj){
+		if(targetObj == null || droppedParentObj == null) {
+			return false;
+		}
+		if (droppedParentObj.equals(targetObj)) {
+			return true; // seems only to be a move in order
+		}
+		if (droppedObj instanceof EPPage && targetObj instanceof EPPage) {
+			return false;
+		}
+		if (droppedObj instanceof EPStructureElement && !(targetObj instanceof EPPage)) {
+			return false;
+		}
+		return true;
 	}
 	
 	

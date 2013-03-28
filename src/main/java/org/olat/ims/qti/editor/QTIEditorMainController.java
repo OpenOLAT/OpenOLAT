@@ -632,7 +632,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					previewController.addControllerListener(this);
 					cmcPrieview = new CloseableModalController(getWindowControl(), translate("editor.preview.close"),
 							previewController.getInitialComponent());
-					cmcPrieview.insertHeaderCss();
 					cmcPrieview.activate();
 					listenTo(cmcPrieview);
 					

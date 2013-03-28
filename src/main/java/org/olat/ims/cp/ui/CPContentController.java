@@ -79,12 +79,12 @@ public class CPContentController extends BasicController {
 		editMetadataLink = LinkFactory.createCustomLink("contentcontroller.editlink", "contentcontroller.editlink", null, Link.NONTRANSLATED,
 				contentVC, this);
 		editMetadataLink.setCustomEnabledLinkCSS("o_cpeditor_edit");
-		editMetadataLink.setTooltip(translate("contentcontroller.editlink_title"), false);
+		editMetadataLink.setTooltip(translate("contentcontroller.editlink_title"));
 
 		previewLink = LinkFactory.createCustomLink("contentcontroller.previewlink", "contentcontroller.previewlink", null, Link.NONTRANSLATED,
 				contentVC, this);
 		previewLink.setCustomEnabledLinkCSS("o_cpeditor_preview");
-		previewLink.setTooltip(translate("contentcontroller.previewlink_title"), false);
+		previewLink.setTooltip(translate("contentcontroller.previewlink_title"));
 
 		this.putInitialPanel(contentVC);
 

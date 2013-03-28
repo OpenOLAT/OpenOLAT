@@ -54,13 +54,13 @@ public class GuiDemoTooltipsController extends BasicController {
 		super(ureq, wControl);
 		
 		Link button = LinkFactory.createButton("button", content, this);
-		button.setTooltip("tooltip.content", false);
+		button.setTooltip("tooltip.content");
 		Link linkT = LinkFactory.createLink("linkT", content, this);
-		linkT.setTooltip("tooltip.content", true);
+		linkT.setTooltip("tooltip.content");
 		Link link1 = LinkFactory.createLink("link1", content, this);
-		link1.setTooltip("tooltip.content", false);
+		link1.setTooltip("tooltip.content");
 		Link link2 = LinkFactory.createLink("link2", content, this);
-		link2.setTooltip("tooltip.content", true);
+		link2.setTooltip("tooltip.content");
 		
 		//link with component content
 		

@@ -25,7 +25,7 @@ jQuery(function() {
 		callout.offset({
 			top: (targetOffset.top + targetEl.height() + 15) ,
 			left: (targetOffset.left + targetEl.width()) - callout.width() 
-		});
+		}).css('zindex', o_info.zseed + 5);
 		jQuery('.b_callout', el).each(function(indexb, elb) {
 			jQuery(elb).prepend("<div class='b_callout_top_right_arrow'></div><div class='b_callout_top_right_arrow-border'></div>");
 		});

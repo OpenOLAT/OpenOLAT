@@ -1,0 +1,7 @@
+The custom build (http://jqueryui.com/download/) contains:
+
+UI Core: all
+Interactions: all
+Widgets: remove accordion, progressbar, slider, spinner, tabs
+Effects: need only Effects Core and Pulsate Effect
+Theme: Smoothness

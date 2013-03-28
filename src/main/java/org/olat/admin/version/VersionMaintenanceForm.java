@@ -148,7 +148,6 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 			orphansController = new OrphanVersionsController(ureq, getWindowControl(), orphans);			
 			listenTo(orphansController);
 			cmc = new CloseableModalController(getWindowControl(), "close", orphansController.getInitialComponent());
-			cmc.insertHeaderCss();
 			cmc.activate();
 		} else if(source == cleanUpLink) {
 			String text = translate("confirm.delete.orphans");

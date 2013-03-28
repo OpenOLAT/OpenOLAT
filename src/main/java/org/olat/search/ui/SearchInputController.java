@@ -204,7 +204,7 @@ public class SearchInputController extends FormBasicController {
 		if(!context.isEmpty()) {
 			String scope = context.getValueAt(context.getSize() - 1);
 			String tooltip = getTranslator().translate("form.search.label.tooltip", new String[]{scope});
-			((Link)searchButton.getComponent()).setTooltip(tooltip, false);
+			((Link)searchButton.getComponent()).setTooltip(tooltip);
 		}
 	}
 	

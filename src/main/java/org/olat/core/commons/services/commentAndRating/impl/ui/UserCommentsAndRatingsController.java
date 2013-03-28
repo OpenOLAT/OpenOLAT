@@ -109,7 +109,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			// Link with comments count to expand view
 			this.commentsCountLink = LinkFactory.createLink("comments.count", this.userCommentsAndRatingsVC, this);
 			this.commentsCountLink.setCustomEnabledLinkCSS("b_comments");
-			this.commentsCountLink.setTooltip("comments.count.tooltip", false);
+			this.commentsCountLink.setTooltip("comments.count.tooltip");
 			// Init view with values from DB
 			updateCommentCountView();
 		}

@@ -1,14 +1,3 @@
-drop table o_qp_pool_2_item;
-drop table o_qp_share_item;
-drop table o_qp_collection_2_item;
-drop table o_qp_item_collection;
-drop table o_qp_pool;
-drop table o_qp_item;
-drop table o_qp_taxonomy_level;
-drop table o_qp_edu_context;
-drop table o_qp_item_type;
-drop table o_qp_license;
-
 -- question item
 create table if not exists o_qp_pool (
    id bigint not null,

@@ -321,7 +321,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			if(downloadLink == null) {
 				downloadLink = LinkFactory.createCustomLink(COMMAND_DOWNLOAD, COMMAND_DOWNLOAD, "", Link.NONTRANSLATED, myContent, this);
 				downloadLink.setCustomEnabledLinkCSS("b_content_download");
-				downloadLink.setTooltip(getTranslator().translate(COMMAND_DOWNLOAD), false);
+				downloadLink.setTooltip(getTranslator().translate(COMMAND_DOWNLOAD));
 			} else if (!downloadLink.isVisible()) {
 				downloadLink.setVisible(true);
 			}

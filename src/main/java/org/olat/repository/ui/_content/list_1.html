@@ -10,10 +10,10 @@
 		<div class="f_metadata b_clearfix">
 			#if($thumbnails)
 				<div class="f_thumbnail">
-					#if($info.isThumbnailAvailable())
-						<div class="f_thumbnail_inner f_thumbnail_unavailable" style="">&nbsp;</div>
-					#else
+					#if($item.isThumbnailAvailable())
 						<div class="f_thumbnail_inner f_thumbnail_available" style="width:280px; height:158px; float:left; background:transparent url('${mapperURL}/${item.getThumbnailRelPath()}') no-repeat 50% 50%;">&nbsp;</div>
+					#else
+						<div class="f_thumbnail_inner f_thumbnail_unavailable" style="">&nbsp;</div>
 					#end	
 				</div>
 			#end

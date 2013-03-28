@@ -225,7 +225,6 @@ public abstract class AbstractRepositoryEntryListController extends BasicControl
 			
 			VFSLeaf image = repositoryManager.getImage(entry);
 			if(image != null) {
-				details.setThumbnailAvailable(true);
 				details.setThumbnailRelPath(image.getName());
 			}
 			

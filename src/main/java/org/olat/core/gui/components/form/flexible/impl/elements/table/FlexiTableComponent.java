@@ -28,11 +28,13 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -59,6 +61,17 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 	
 	FlexiTableElementImpl getFlexiTableElement() {
 		return element;
+	}
+	
+	
+
+	@Override
+	public void validate(UserRequest ureq, ValidationResult vr) {
+		super.validate(ureq, vr);
+		if(element.getRendererType() == FlexiTableRendererType.dataTables) {
+			//inject javascript
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/datatables/jquery.dataTables.min.js");
+		}
 	}
 
 	@Override

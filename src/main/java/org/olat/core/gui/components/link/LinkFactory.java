@@ -95,7 +95,7 @@ public class LinkFactory {
 		Link closeIcon = new Link("closeIcon", "close", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vc, listeningController);
 		closeIcon.setCustomEnabledLinkCSS("b_link_close");
 		closeIcon.setCustomDisabledLinkCSS("b_link_close");
-		closeIcon.setTooltip(title, false);
+		closeIcon.setTooltip(title);
 		if(title != null){
 			closeIcon.setTitle(title);
 		}

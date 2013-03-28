@@ -118,7 +118,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 				Link pageLink = LinkFactory
 						.createCustomLink("pageLink" + i, "pageLink" + i, shortPageTitle, Link.LINK + Link.NONTRANSLATED, vC, this);
 				pageLink.setUserObject(i - 1);
-				pageLink.setTooltip(pageTitle, false);
+				pageLink.setTooltip(pageTitle);
 				pageLinkList.add(pageLink);
 				i++;
 			}

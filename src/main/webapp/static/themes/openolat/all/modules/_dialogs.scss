@@ -226,7 +226,7 @@ div.b_msg_error_winicon { background: url(../openolat/images/icon_error_32.png) 
 	 		li.b_wizard_steps_current { font-weight: bold; background: url(../openolat/images/bullet_go.png) 0% 50% no-repeat;padding-left:18px; }	
 	 		li a { color: $basegray;}	
 	 		li a:hover { color: #4F576A; background: transparent; text-decoration: underline}
-	 		li .b_disabled { color: #basegray_light; border: 0; background: transparent; padding:0; margin:0; white-space: normal; font-style: italic;}
+	 		li .b_disabled { color: $basegray_light; border: 0; background: transparent; padding:0; margin:0; white-space: normal; font-style: italic;}
 	 		li.b_wizard_steps_current .b_disabled { color: $basegray;font-style: normal; }		
 	 	}
 	 	

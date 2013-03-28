@@ -129,7 +129,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		// status changer link
 		statusChangerLink = LinkFactory.createCustomLink("statusChanger", "cmd.status", "", Link.NONTRANSLATED, null, this);
 		statusChangerLink.registerForMousePositionEvent(true);
-		statusChangerLink.setTooltip(getTranslator().translate("im.status.change.long"), false);
+		statusChangerLink.setTooltip(getTranslator().translate("im.status.change.long"));
 		updateStatusCss(null);
 		main.put("statusChangerPanel", statusChangerLink);
 
@@ -137,7 +137,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		if (imModule.isGroupPeersEnabled()) {
 			onlineOfflineCount = LinkFactory.createCustomLink("onlineOfflineCount", "cmd.roster", "", Link.NONTRANSLATED, main, this);
-			onlineOfflineCount.setTooltip(getTranslator().translate("im.roster.intro"), false);
+			onlineOfflineCount.setTooltip(getTranslator().translate("im.roster.intro"));
 			onlineOfflineCount.registerForMousePositionEvent(true);
 			updateBuddyStats();
 			main.put("buddiesSummaryPanel", onlineOfflineCount);
@@ -403,7 +403,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		Link link = LinkFactory.createCustomLink(buddy.getIdentityKey().toString(), ACTION_MSG, "", Link.NONTRANSLATED, newMsgIcon, this);
 		link.registerForMousePositionEvent(true);
 		link.setCustomEnabledLinkCSS("b_small_icon o_instantmessaging_new_msg_icon");
-		link.setTooltip(translate("im.new.message", new String[]{ buddy.getName() }), false);
+		link.setTooltip(translate("im.new.message", new String[]{ buddy.getName() }));
 		link.setUserObject(buddy);
 		newMsgIcon.put(buddy.getIdentityKey().toString(), link);
 		return link;

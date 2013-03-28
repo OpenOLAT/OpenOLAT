@@ -78,31 +78,31 @@ public class PortletContainer extends BasicController implements PortletContaine
 		toolboxContainer = createVelocityContainer("portletToolbox");
 				
 		moveLeftLink = LinkFactory.createCustomLink("move.left", "move.left", null, Link.NONTRANSLATED, toolboxContainer, this);
-		moveLeftLink.setTooltip(translate("move.left"), false);
+		moveLeftLink.setTooltip(translate("move.left"));
 		moveLeftLink.setTextReasonForDisabling(translate("move.left.impossible"));		
 		moveLeftLink.setCustomEnabledLinkCSS("b_portlet_edit_left");
 		moveLeftLink.setCustomDisabledLinkCSS("b_portlet_edit_left_disabled");
 		
 		moveUpLink = LinkFactory.createCustomLink("move.up", "move.up", null, Link.NONTRANSLATED, toolboxContainer, this);
-		moveUpLink.setTooltip(translate("move.up"), false);
+		moveUpLink.setTooltip(translate("move.up"));
 		moveUpLink.setTextReasonForDisabling(translate("move.up.impossible"));
 		moveUpLink.setCustomEnabledLinkCSS("b_portlet_edit_up");
 		moveUpLink.setCustomDisabledLinkCSS("b_portlet_edit_up_disabled");
 		
 		moveDownLink = LinkFactory.createCustomLink("move.down", "move.down", null, Link.NONTRANSLATED, toolboxContainer, this);
-		moveDownLink.setTooltip(translate("move.down"), false);
+		moveDownLink.setTooltip(translate("move.down"));
 		moveDownLink.setTextReasonForDisabling(translate("move.down.impossible"));
 		moveDownLink.setCustomEnabledLinkCSS("b_portlet_edit_down");
 		moveDownLink.setCustomDisabledLinkCSS("b_portlet_edit_down_disabled");
 				
 		moveRightLink = LinkFactory.createCustomLink("move.right", "move.right", null, Link.NONTRANSLATED, toolboxContainer, this);
-		moveRightLink.setTooltip(translate("move.right"), false);
+		moveRightLink.setTooltip(translate("move.right"));
 		moveRightLink.setTextReasonForDisabling(translate("move.right.impossible"));
 		moveRightLink.setCustomEnabledLinkCSS("b_portlet_edit_right");
 		moveRightLink.setCustomDisabledLinkCSS("b_portlet_edit_right_disabled");
 		
 		close = LinkFactory.createCustomLink("close", "close", null, Link.NONTRANSLATED, toolboxContainer, this);
-		close.setTooltip(translate("close"), false);
+		close.setTooltip(translate("close"));
 		close.setCustomEnabledLinkCSS("b_portlet_edit_delete");
 		
 		portletContainerVC.put("toolbox", toolboxContainer);

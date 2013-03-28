@@ -159,7 +159,7 @@ public class CPPrintMapper implements Mapper {
 	private void injectJavascriptAndCss(StringBuilder output) {	
 		StringOutput sb = new StringOutput();
 		sb.append("\n<script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-1.9.0.min.js");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-1.9.1.min.js");
 		sb.append("\"></script>");
 		output.append(sb.toString());
 		

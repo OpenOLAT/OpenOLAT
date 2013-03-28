@@ -164,7 +164,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			printLink = LinkFactory.createLink("print", myContent, this);
 			printLink.setCustomEnabledLinkCSS("b_small_icon o_cp_print_icon");
 			printLink.setCustomDisplayText("Print");
-			printLink.setTooltip("print", false);
+			printLink.setTooltip("print");
 			
 			String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
 			printMapper = new CPPrintMapper(ctm, rootContainer, themeBaseUri);
@@ -177,11 +177,11 @@ public class CPDisplayController extends BasicController implements Activateable
 			nextLink = LinkFactory.createLink("next", myContent, this);
 			nextLink.setCustomEnabledLinkCSS("b_small_icon o_cp_next_icon");
 			nextLink.setCustomDisplayText("&nbsp;&nbsp;");
-			nextLink.setTooltip("next", false);
+			nextLink.setTooltip("next");
 			previousLink = LinkFactory.createLink("previous", myContent, this);
 			previousLink.setCustomEnabledLinkCSS("b_small_icon o_cp_previous_icon");
 			previousLink.setCustomDisplayText("&nbsp;&nbsp;");
-			previousLink.setTooltip("next", false);
+			previousLink.setTooltip("next");
 		  myContent.put("next", nextLink);
 		  myContent.put("previous", previousLink);
 		}

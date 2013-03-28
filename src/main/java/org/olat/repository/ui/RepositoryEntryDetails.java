@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 
 /**
  * Used in the view elements
@@ -37,7 +38,6 @@ public class RepositoryEntryDetails {
 	
 	private boolean marked;
 	private boolean selected;
-	private boolean thumbnail;
 	
 	private Long key;
 	private String name;
@@ -148,11 +148,7 @@ public class RepositoryEntryDetails {
 	}
 	
 	public boolean isThumbnailAvailable() {
-		return thumbnail;
-	}
-	
-	public void setThumbnailAvailable(boolean thumbnail) {
-		this.thumbnail = thumbnail;
+		return StringHelper.containsNonWhitespace(thumbnailRelPath);
 	}
 
 	public boolean isMarked() {

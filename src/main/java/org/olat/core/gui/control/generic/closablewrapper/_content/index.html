@@ -31,6 +31,9 @@
 
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
+	var zindex = o_info.zseed;
+	o_info.zseed = zindex + 5;
+
 	jQuery('#b_top').scrollTop();
 	var bodyHeight = document.getElementById('b_body').parentNode.offsetHeight;
 	var windowHeight = window.innerHeight;

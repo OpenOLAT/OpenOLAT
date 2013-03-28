@@ -91,7 +91,7 @@ public class EPAddElementsController extends BasicController {
 		addStructLink.setVisible(false);
 
 		linkArtefactLink = LinkFactory.createCustomLink("linkArtefact", "link", "&nbsp;&nbsp;&nbsp;", Link.NONTRANSLATED, addLinkVC, this);
-		linkArtefactLink.setTooltip(translate("linkArtefact.tooltip"), false);
+		linkArtefactLink.setTooltip(translate("linkArtefact.tooltip"));
 		linkArtefactLink.setCustomEnabledLinkCSS("b_eportfolio_add_link b_eportfolio_link");
 
 		for (String key : typeSet) {
@@ -178,7 +178,7 @@ public class EPAddElementsController extends BasicController {
 
 	private void prepareAddLink(String type) {
 		addStructLink.setVisible(true);
-		addStructLink.setTooltip(translate("add." + type), false);
+		addStructLink.setTooltip(translate("add." + type));
 		addStructLink.setCustomEnabledLinkCSS("b_eportfolio_add_link b_ep_" + type + "_icon");
 	}
 

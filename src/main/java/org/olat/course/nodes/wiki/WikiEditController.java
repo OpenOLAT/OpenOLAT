@@ -200,7 +200,6 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 				wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, getWindowControl(), re.getOlatResource(), callback, null);
 				cmcWikiCtr = new CloseableModalController(getWindowControl(), translate("command.close"), wikiCtr.getInitialComponent());				
 				this.listenTo(cmcWikiCtr);
-				cmcWikiCtr.insertHeaderCss();
 				cmcWikiCtr.activate();
 			}
 		} else if (source == chooseButton || source == changeButton) {

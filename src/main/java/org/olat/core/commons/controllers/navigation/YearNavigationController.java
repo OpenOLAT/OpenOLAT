@@ -178,12 +178,12 @@ public class YearNavigationController extends BasicController {
 		next = LinkFactory.createCustomLink("navi.forward", "navi.forward", null, Link.NONTRANSLATED, mainVC, this);
 		next.setCustomEnabledLinkCSS("b_small_icon b_forward_icon b_float_right");
 		next.setCustomDisabledLinkCSS("b_small_icon b_forward_icon b_float_right"); // b_disabled added by link component
-		next.setTooltip(translate("navi.forward"), false);
+		next.setTooltip(translate("navi.forward"));
 		//
 		previous = LinkFactory.createCustomLink("navi.backward", "navi.backward", null, Link.NONTRANSLATED, mainVC, this);
 		previous.setCustomEnabledLinkCSS("b_small_icon b_backward_icon b_float_left");
 		previous.setCustomDisabledLinkCSS("b_small_icon b_backward_icon b_float_left");
-		previous.setTooltip(translate("navi.backward"), false);
+		previous.setTooltip(translate("navi.backward"));
 		//
 		if (mainPanel == null) {
 			// first time

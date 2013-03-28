@@ -85,7 +85,7 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 		
 		optionLink = LinkFactory.createCustomLink("option.link", "option", "&nbsp;&nbsp;", Link.NONTRANSLATED, vC, this);
 		optionLink.setCustomEnabledLinkCSS("b_ep_options");
-		optionLink.setTooltip(translate("option.link"), false);
+		optionLink.setTooltip(translate("option.link"));
 		
 		putInitialPanel(vC);
 	}

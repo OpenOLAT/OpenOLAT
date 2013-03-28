@@ -142,14 +142,14 @@ public class ArtefactWizzardStepsController extends BasicController {
 		addLink = LinkFactory.createCustomLink("add.to.eportfolio", "add.to.eportfolio", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED,
 				collectLinkVC, this);
 		addLink.setCustomEnabledLinkCSS("b_eportfolio_add");
-		addLink.setTooltip(translate("add.to.eportfolio"), false);
+		addLink.setTooltip(translate("add.to.eportfolio"));
 
 		// check for an already existing artefact with same businessPath, change collect-item
 		List<AbstractArtefact> existingArtefacts = ePFMgr.loadArtefactsByBusinessPath(businessPath, getIdentity());
 		if (existingArtefacts!=null){
 			int amount = existingArtefacts.size();
 			addLink.setCustomEnabledLinkCSS("b_eportfolio_add_again");
-			addLink.setTooltip(translate("add.to.eportfolio.again", String.valueOf(amount)), false);	
+			addLink.setTooltip(translate("add.to.eportfolio.again", String.valueOf(amount)));	
 		}
 		putInitialPanel(collectLinkVC);
 	}

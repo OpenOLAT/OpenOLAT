@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -134,7 +133,6 @@ public class CloseableModalController extends DefaultController {
 			fireEvent(ureq, CLOSE_MODAL_EVENT);
 		}
 	}
-	
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#getInitialComponent()
@@ -143,9 +141,6 @@ public class CloseableModalController extends DefaultController {
 		throw new RuntimeException("please use activate() instead");
 	}
 
-	/**
-	 * 
-	 */
 	public void activate() {
 		if (displayAsOverlay) getWindowControl().pushAsModalDialog(myContent);
 		else getWindowControl().pushToMainArea(myContent);
@@ -160,19 +155,9 @@ public class CloseableModalController extends DefaultController {
 	}
 
 	/**
-	 * insert css in HTML-header, wich overwrites default css
-	 */
-	public void insertHeaderCss() {
-		JSAndCSSComponent jac = new JSAndCSSComponent("cmc-css", this.getClass(), null, "olat-preview.css", true);
-		myContent.put("cmc-css", jac);
-	}
-
-	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
-
 }

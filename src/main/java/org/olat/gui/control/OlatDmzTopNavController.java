@@ -59,7 +59,7 @@ public class OlatDmzTopNavController extends BasicController{
 		// impressum
 		if(impressum) {
 			impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", topNavVC, this);
-			impressumLink.setTooltip("topnav.impressum.alt", false);
+			impressumLink.setTooltip("topnav.impressum.alt");
 			impressumLink.setCustomEnabledLinkCSS("o_topnav_impressum");
 			impressumLink.setAjaxEnabled(false);
 			impressumLink.setTarget("_blank");

@@ -74,7 +74,7 @@ public class QuickstartPortletRunController extends DefaultController {
 			this.quickstartVC = new VelocityContainer("quickstartVC", VELOCITY_ROOT + "/quickstartPortlet.html", trans, this);
 		}
 		helpLink = LinkFactory.createLink("quickstart.link.help", quickstartVC, this);
-		helpLink.setTooltip("quickstart.ttip.help", false);
+		helpLink.setTooltip("quickstart.ttip.help");
 		helpLink.setTarget("_help");		
 
 		setInitialComponent(this.quickstartVC);

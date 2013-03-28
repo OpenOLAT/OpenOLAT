@@ -28,12 +28,16 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeDropEvent;
+import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
@@ -44,6 +48,8 @@ import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.ui.structel.EPAddElementsController;
+import org.olat.portfolio.ui.structel.EPArtefactClicked;
+import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 
 /**
  * Description:<br>
@@ -67,7 +73,7 @@ public class EPTOCController extends BasicController {
 	private MenuTree treeCtr;
 	private VelocityContainer tocV;
 	private PortfolioStructure structureClicked;
-	private String artefactNodeClicked;
+	private AbstractArtefact artefactClicked;
 	
 	protected final Map<Long,String> idToPath = new HashMap<Long,String>();
 	protected final Map<String,PortfolioStructure> pathToStructure = new HashMap<String,PortfolioStructure>();
@@ -86,10 +92,10 @@ public class EPTOCController extends BasicController {
 		//new MenuTree(ureq, getWindowControl(), translate("toc.root"), treeModel, "myjsCallback");
 		treeCtr = new MenuTree("toc");
 		treeCtr.setTreeModel(treeModel);
-		treeCtr.setSelectedNode(treeCtr.getTreeModel().getRootNode());
-		treeCtr.setDragEnabled(false);
-		treeCtr.setDropEnabled(false);
-		treeCtr.setDropSiblingEnabled(false);
+		treeCtr.setSelectedNode(treeModel.getRootNode());
+		treeCtr.setDragEnabled(true);
+		treeCtr.setDropEnabled(true);
+		treeCtr.setDropSiblingEnabled(true);
 		treeCtr.addListener(this);
 		treeCtr.setRootVisible(true);
 		
@@ -97,31 +103,22 @@ public class EPTOCController extends BasicController {
 		//listenTo(treeCtr);
 		tocV.put("tocTree", treeCtr);		
 		delButton = LinkFactory.createCustomLink("deleteButton", DELETE_LINK_CMD, "&nbsp;&nbsp;&nbsp;", Link.NONTRANSLATED, tocV, this);
-		delButton.setTooltip(translate("deleteButton"), false);
+		delButton.setTooltip(translate("deleteButton"));
 		delButton.setCustomEnabledLinkCSS("b_delete_icon b_eportfolio_del_link ");
 		tocV.put("deleteButton", delButton);		
 
 		if(selectedEl == null) {
-			//TODO jquery treeCtr.selectPath("/" + ROOT_NODE_IDENTIFIER + "/" + rootNode.getKey()); // select map
 			refreshAddElements(ureq, rootNode);
 		} else {
-			String pagePath = calculatePathByDeepestNode(selectedEl);
-		//TODO jquery treeCtr.selectPath("/" + ROOT_NODE_IDENTIFIER + "/" + rootNode.getKey() + pagePath);
-			structureClicked = selectedEl;
-			refreshAddElements(ureq, selectedEl);
+			TreeNode selectedNode = TreeHelper.findNodeByUserObject(selectedEl, treeModel.getRootNode());
+			if(selectedNode != null) {
+				structureClicked = selectedEl;
+				treeCtr.setSelectedNode(selectedNode);
+				refreshAddElements(ureq, selectedEl);
+			}
 		}
 		
 		putInitialPanel(tocV);
-	}
-	
-	private String calculatePathByDeepestNode(PortfolioStructure pStruct) {
-		StringBuffer path = new StringBuffer();
-		PortfolioStructure ps = pStruct;
-		while (ps.getRootMap() != null) {
-			path.insert(0, "/" + ps.getKey().toString());
-			ps = ps.getRoot();
-		}
-		return path.toString();
 	}
 	
 	protected void refreshTree(PortfolioStructureMap root) {
@@ -183,11 +180,10 @@ public class EPTOCController extends BasicController {
 		if (source instanceof Link) {
 			Link link = (Link) source;
 			if (link.getCommand().equals(DELETE_LINK_CMD)) {
-				if (artefactNodeClicked != null) {
-					AbstractArtefact artefact = ePFMgr.loadArtefactByKey(new Long(getArtefactIdFromNodeId(artefactNodeClicked)));
-					PortfolioStructure parentStruct = ePFMgr.loadPortfolioStructureByKey(new Long(
-							getArtefactParentStructIdFromNodeId(artefactNodeClicked)));
-					ePFMgr.removeArtefactFromStructure(artefact, parentStruct);
+				if (artefactClicked != null) {
+					AbstractArtefact artefact = artefactClicked;
+					PortfolioStructure parentStruct = getArtefactParentStruct(artefactClicked);
+					PortfolioStructure mergedStruct = ePFMgr.removeArtefactFromStructure(artefact, parentStruct);
 					// refresh the view
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				} else if (structureClicked != null) {
@@ -216,8 +212,210 @@ public class EPTOCController extends BasicController {
 					}
 				}
 			}
+		} else if (source == treeCtr) {
+			if(event instanceof TreeEvent) {
+				TreeEvent te = (TreeEvent)event;
+				if(MenuTree.COMMAND_TREENODE_CLICKED.equals(te.getCommand())) {
+					doSelectTreeElement(ureq, te);
+				}
+			} else if(event instanceof TreeDropEvent) {
+				TreeDropEvent te = (TreeDropEvent)event;
+				doDrop(ureq, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
+			}
 		}
 	}
+	
+	private void doSelectTreeElement(UserRequest ureq, TreeEvent te) {
+		TreeNode selectedNode = treeCtr.getTreeModel().getNodeById(te.getNodeId());
+		Object userObj = selectedNode.getUserObject();
+		if (userObj instanceof PortfolioStructure){
+			//structure clicked
+			structureClicked = (PortfolioStructure)userObj;
+			refreshAddElements(ureq, structureClicked);
+			delButton.setVisible(true);
+			//send event to load this page
+			fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.SELECTED, structureClicked));
+		} else if (userObj instanceof AbstractArtefact) {
+			//artefact clicked
+			Object parentObj = ((TreeNode)selectedNode.getParent()).getUserObject();
+			if(parentObj instanceof PortfolioStructure) {
+				artefactClicked = (AbstractArtefact)userObj;
+				PortfolioStructure structure = (PortfolioStructure)parentObj;
+				refreshAddElements(ureq, null);
+				delButton.setVisible(true);
+				fireEvent(ureq, new EPArtefactClicked(ARTEFACT_NODE_CLICKED, structure));
+			}
+		} else {
+			// root tree node clicked, no add/delete link
+			delButton.setVisible(false);
+			refreshAddElements(ureq, null);
+			fireEvent(ureq, new Event(ARTEFACT_NODE_CLICKED));
+		}
+	}
+	
+	private void reloadTreeModel(PortfolioStructure oldStruct, PortfolioStructure newStruct) {
+		if(oldStruct != null && newStruct != null && oldStruct.equals(newStruct)) {
+			newStruct = null;//only 1 reload
+		}
+		if(oldStruct != null ) {
+			reloadTreeModel(oldStruct);
+		}
+		if(newStruct != null) {
+			reloadTreeModel(newStruct);
+		}
+	}
+	
+	private void reloadTreeModel(PortfolioStructure struct) {
+		EPTOCTreeModel model = (EPTOCTreeModel)treeCtr.getTreeModel();
+		if(struct != null) {
+			TreeNode node = TreeHelper.findNodeByUserObject(struct, model.getRootNode());
+			if(node != null) {
+				model.loadChildNode(struct, node);
+			}
+		}
+	}
+	
+	private void doDrop(UserRequest ureq, String droppedNodeId, String targetNodeId, boolean child, boolean atTheEnd) {
+		TreeNode droppedNode = treeCtr.getTreeModel().getNodeById(droppedNodeId);
+		TreeNode targetNode = treeCtr.getTreeModel().getNodeById(targetNodeId);
+		if(droppedNode == null || targetNode == null) return;
+		
+		Object droppedObj = droppedNode.getUserObject();
+		Object droppedParentObj = null;
+		if(droppedNode.getParent() != null) {
+			droppedParentObj = ((TreeNode)droppedNode.getParent()).getUserObject();
+		}
+		Object targetObj = targetNode.getUserObject();
+
+		if (droppedObj instanceof AbstractArtefact) {
+			AbstractArtefact artefact = (AbstractArtefact)droppedObj;
+			if (checkNewArtefactTarget(artefact, targetObj)){
+				moveArtefactToNewParent(ureq, artefact, droppedParentObj, targetObj);
+
+			} else if(targetObj.equals(droppedParentObj)) {
+				int position = 0;// moveEvent.getPosition();
+				reorder(ureq, artefact, targetNode, position);
+			}
+		} else if (droppedObj instanceof PortfolioStructure) {
+			PortfolioStructure droppedStruct = (PortfolioStructure)droppedObj;
+			if (checkNewStructureTarget(droppedStruct, droppedParentObj, targetNode)) {
+				int newPos = 0;// moveEvent.getPosition();
+				moveStructureToNewParent(ureq, droppedStruct, droppedParentObj, targetObj, newPos);
+			}
+		}
+	}
+	
+	private boolean moveStructureToNewParent(UserRequest ureq, PortfolioStructure structToBeMvd,
+			Object oldParent, Object newParent, int newPos) {
+		
+		if(oldParent instanceof PortfolioStructure && newParent instanceof PortfolioStructure) {
+			PortfolioStructure oldParStruct = (PortfolioStructure)oldParent;
+			PortfolioStructure newParStruct = (PortfolioStructure)newParent;
+			if (oldParStruct.equals(newParStruct)) {
+				// this is only a position move
+				if(ePFMgr.moveStructureToPosition(structToBeMvd, newPos)) {
+					reloadTreeModel(structToBeMvd, null);
+					fireEvent(ureq, new EPMoveEvent());
+					return true;
+				}
+			} else if(ePFMgr.moveStructureToNewParentStructure(structToBeMvd, oldParStruct, newParStruct, newPos)) {
+				reloadTreeModel(oldParStruct, newParStruct);
+				fireEvent(ureq, new EPMoveEvent());
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean checkNewArtefactTarget(AbstractArtefact artefact, Object  targetObj){
+		PortfolioStructure newParStruct;
+		if (targetObj instanceof EPAbstractMap ) {
+			return false;
+		} else if(targetObj instanceof PortfolioStructure) {
+			newParStruct = (PortfolioStructure)targetObj;
+		} else {
+			return false;
+		}
+
+		boolean sameTarget = ePFMgr.isArtefactInStructure(artefact, newParStruct);
+		if (sameTarget) {
+			return false;
+		}
+		return true;
+	}
+	
+	// really do the move!
+	private boolean moveArtefactToNewParent(UserRequest ureq, AbstractArtefact artefact, Object oldParent, Object newParent){
+		if(!(oldParent instanceof PortfolioStructure) || !(newParent instanceof PortfolioStructure)) {
+			return false;
+		}
+
+		try {
+			PortfolioStructure oldParStruct = (PortfolioStructure)oldParent;
+			PortfolioStructure newParStruct = (PortfolioStructure)newParent;
+			
+			if(ePFMgr.moveArtefactFromStructToStruct(artefact, oldParStruct, newParStruct)) {
+				reloadTreeModel(oldParStruct, newParStruct);
+				fireEvent(ureq, new EPMoveEvent());
+				return true;
+			}
+		} catch (Exception e) {
+			logError("could not load artefact, old and new parent", e);
+		}
+		return false;
+	}
+	
+	private boolean reorder(UserRequest ureq, AbstractArtefact artefact, Object parent, int position){
+		if(!(parent instanceof PortfolioStructure)) {
+			return false;
+		}
+		try {
+			PortfolioStructure parStruct = (PortfolioStructure)parent;
+			//translate in the position in the list of artefacts
+			int numOfChildren = ePFMgr.countStructureChildren(parStruct);
+			position = position - numOfChildren;
+			if(position < 0) {
+				position = 0;
+			}
+			
+			if(ePFMgr.moveArtefactInStruct(artefact, parStruct, position)) {
+				reloadTreeModel(parStruct, null);
+				fireEvent(ureq, new EPMoveEvent());
+				return true;
+			}
+		} catch (Exception e) {
+			logError("could not load artefact, old and new parent", e);
+		}
+		return false;
+	}
+	
+	private boolean checkNewStructureTarget(Object droppedObj, Object droppedParentObj, Object targetObj){
+		if(targetObj == null || droppedParentObj == null) {
+			return false;
+		}
+		if (droppedParentObj.equals(targetObj)) {
+			return true; // seems only to be a move in order
+		}
+		if (droppedObj instanceof EPPage && targetObj instanceof EPPage) {
+			return false;
+		}
+		if (droppedObj instanceof EPStructureElement && !(targetObj instanceof EPPage)) {
+			return false;
+		}
+		return true;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	/**
@@ -312,7 +510,7 @@ public class EPTOCController extends BasicController {
 	// reset previously choosen nodes. reference were there to be able to delete a node.
 	private void resetClickedNodes(){
 		structureClicked = null;
-		artefactNodeClicked = null;
+		artefactClicked = null;
 	}
 	
 	private String getArtefactIdFromNodeId(String nodeId){
@@ -323,12 +521,16 @@ public class EPTOCController extends BasicController {
 		return artId;
 	}
 	
-	private String getArtefactParentStructIdFromNodeId(String nodeId){
-		String structId = nodeId.substring(ARTEFACT_NODE_IDENTIFIER.length());
-		if (structId.contains("_")){
-			structId = structId.substring(0, structId.indexOf("_"));
+	private PortfolioStructure getArtefactParentStruct(AbstractArtefact artefact) {
+		TreeNode artefactNode = TreeHelper.findNodeByUserObject(artefact, treeCtr.getTreeModel().getRootNode());
+		if(artefactNode != null && artefactNode.getParent() != null) {
+			Object parentObj = ((TreeNode)artefactNode.getParent()).getUserObject();
+			if(parentObj instanceof PortfolioStructure) {
+				return (PortfolioStructure)parentObj;
+			}
 		}
-		return structId;
+
+		return null;
 	}
 	
 	/**

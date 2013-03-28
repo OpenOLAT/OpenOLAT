@@ -461,7 +461,6 @@ public class FileChooseCreateEditController extends BasicController{
 			removeAsListenerAndDispose(cmcFileChooser);
 			cmcFileChooser = new CloseableModalController(getWindowControl(), getTranslator().translate("close"), fileChooser);			
 			listenTo(cmcFileChooser);
-			cmcFileChooser.insertHeaderCss();
 			cmcFileChooser.activate();
 			
 			fileChooserActive = true;

@@ -250,7 +250,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	public void allowPageEditing() {
 		editLink = LinkFactory.createCustomLink(COMMAND_EDIT, COMMAND_EDIT, "", Link.NONTRANSLATED, myContent, this);
 		editLink.setCustomEnabledLinkCSS("b_content_edit");
-		editLink.setTooltip(translate(COMMAND_EDIT), false);
+		editLink.setTooltip(translate(COMMAND_EDIT));
 	}
 	
 	public void setAllowDownload(boolean allow) {

@@ -113,24 +113,24 @@ public class CPTreeController extends BasicController {
 		importLink = LinkFactory.createCustomLink("cptreecontroller.importlink", "cptreecontroller.importlink", null, Link.NONTRANSLATED,
 				contentVC, this);
 		importLink.setCustomEnabledLinkCSS("o_cpeditor_import");
-		importLink.setTooltip(translate("cptreecontroller.importlink_title"), false);
+		importLink.setTooltip(translate("cptreecontroller.importlink_title"));
 		importLink.setTitle(translate("cptreecontroller.importlink_title"));
 
 		newLink = LinkFactory.createCustomLink("cptreecontroller.newlink", "cptreecontroller.newlink", null, Link.NONTRANSLATED, contentVC,
 				this);
 		newLink.setCustomEnabledLinkCSS("o_cpeditor_new");
-		newLink.setTooltip(translate("cptreecontroller.newlink_title"), false);
+		newLink.setTooltip(translate("cptreecontroller.newlink_title"));
 		newLink.setTitle(translate("cptreecontroller.newlink_title"));
 
 		copyLink = LinkFactory.createCustomLink("cptreecontroller.copylink", "cptreecontroller.copylink", null, Link.NONTRANSLATED, contentVC,
 				this);
-		copyLink.setTooltip(translate("cptreecontroller.copylink_title"), false);
+		copyLink.setTooltip(translate("cptreecontroller.copylink_title"));
 		copyLink.setTitle(translate("cptreecontroller.copylink_title"));
 		copyLink.setCustomEnabledLinkCSS("o_cpeditor_copy");
 
 		deleteLink = LinkFactory.createCustomLink("cptreecontroller.deletelink", "cptreecontroller.deletelink", null, Link.NONTRANSLATED,
 				contentVC, this);
-		deleteLink.setTooltip(translate("cptreecontroller.deletelink_title"), false);
+		deleteLink.setTooltip(translate("cptreecontroller.deletelink_title"));
 		deleteLink.setTitle(translate("cptreecontroller.deletelink_title"));
 		deleteLink.setCustomEnabledLinkCSS("o_cpeditor_delete");
 	}

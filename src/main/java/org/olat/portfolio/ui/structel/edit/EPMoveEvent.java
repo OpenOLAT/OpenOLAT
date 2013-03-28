@@ -31,8 +31,15 @@ import org.olat.core.gui.control.Event;
  */
 public class EPMoveEvent extends Event {
 
+	private static final long serialVersionUID = -7603783878477792174L;
 	private final String newParent;
 	private final String nodeMoved;
+	
+	public EPMoveEvent() {
+		super("move");
+		this.nodeMoved = null;
+		this.newParent = null;
+	}
 	
 	public EPMoveEvent(String newParent, String nodeMoved) {
 		super("move");
