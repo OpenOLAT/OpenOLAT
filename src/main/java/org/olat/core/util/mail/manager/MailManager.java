@@ -1137,8 +1137,7 @@ public class MailManager extends BasicManager {
 			// following doesn't work correctly, therefore add bounce-address in message already
 			Address convertedFrom = getRawEmailFromAddress(from); 
 			MimeMessage msg = createMessage(convertedFrom);
-			String uri = Settings.createServerURI();
-			Address viewableFrom = createAddressWithName(WebappHelper.getMailConfig("mailFrom"), "OLAT @ " + uri);
+			Address viewableFrom = createAddressWithName(WebappHelper.getMailConfig("mailFrom"), WebappHelper.getMailConfig("mailFromName"));
 			msg.setFrom(viewableFrom);
 			msg.setSubject(subject, "utf-8");
 			// reply to can only be an address without name (at least for postfix!), see FXOLAT-312
