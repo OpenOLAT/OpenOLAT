@@ -33,6 +33,8 @@ import org.olat.core.id.OLATResourceable;
  */
 public interface Mark {
 	
+	public Long getKey();
+	
 	public boolean isMarked();
 	
 	public OLATResourceable getOLATResourceable();
