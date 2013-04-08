@@ -102,10 +102,25 @@
 			background-repeat: no-repeat; 
 			background-position: 0 50%; 
 		}
-		a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/users_conf.png) no-repeat 0 50%;}
-		a.o_instantmessaging_hidegroupswitch {padding: 2px 0 2px 20px; @include o-opacity(60); background: url(../openolat/images/users_conf.png) no-repeat 0 50%;}
-		a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/status-offline.png) no-repeat 0 50%;}
-		a.o_instantmessaging_hideofflineswitch {padding: 2px 0 2px 20px; background: url(../openolat/images/im/status.png) no-repeat 0 50%;}
+		#o_instantmessages_buddieslist_toggler {
+			border-bottom: 1px #eee solid;
+			margin: 0 0 0.5em 0;
+			padding: 0 0 0.5em 0;
+			
+			span {
+				white-space: nowrap;
+			}	
+			a {
+				padding: 2px 0 2px 20px; 
+				background-repeat: no-repeat;
+				background-position: 0 50%;
+				margin-right: 1em;
+			}		
+			a.o_instantmessaging_showgroupswitch {background-image: url(../openolat/images/users_conf.png)}
+			a.o_instantmessaging_hidegroupswitch {@include o-opacity(60); background-image: url(../openolat/images/users_conf.png)}
+			a.o_instantmessaging_showofflineswitch {background-image: url(../openolat/images/im/status-offline.png)}
+			a.o_instantmessaging_hideofflineswitch {background-image: url(../openolat/images/im/status.png)}
+		}
 }
 
 #o_instantmessages_buddy {
