@@ -30,9 +30,8 @@ package org.olat.portfolio.model.structel;
  */
 public class EPDefaultMap extends EPAbstractMap {
 
-	/**
-	 * 
-	 */
+	private static final long serialVersionUID = 5327020967451630707L;
+
 	public EPDefaultMap() {
 		//
 	}
@@ -50,5 +49,13 @@ public class EPDefaultMap extends EPAbstractMap {
 	@Override
 	public int hashCode() {
 		return getKey() == null ? -9544 : getKey().hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("epDefaultMap[key=").append(getKey()).append(":")
+		  .append("title=").append(getTitle()).append("]");
+		return sb.toString();
 	}
 }

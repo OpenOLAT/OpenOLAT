@@ -41,6 +41,8 @@ import org.olat.resource.OLATResource;
  */
 public class EPStructureElement extends PersistentObject implements PortfolioStructure, OLATResourceable  {
 
+	private static final long serialVersionUID = -4468638028435147963L;
+	
 	private OLATResource olatResource;
 	private List<EPStructureToArtefactLink> artefacts;
 	private List<EPStructureToStructureLink> children;
@@ -302,6 +304,29 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 
 	
 	private String artefactRepresentationMode;
-	
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("epStructureElement[key=").append(getKey()).append(":")
+		  .append("title=").append(getTitle()).append("]");
+		return sb.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 97914 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof EPStructureElement) {
+			EPStructureElement el = (EPStructureElement)obj;
+			return getKey() != null &&getKey().equals(el.getKey());
+		}
+		return false;
+	}
 }

@@ -32,6 +32,8 @@ import org.olat.core.commons.persistence.PersistentObject;
  */
 public class EPStructureToStructureLink extends PersistentObject {
 
+	private static final long serialVersionUID = -6015515053210505716L;
+
 	public EPStructureToStructureLink() {
 		//
 	}

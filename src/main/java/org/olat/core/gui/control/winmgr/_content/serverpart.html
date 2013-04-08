@@ -18,13 +18,11 @@ jQuery("#b_body").bind("mouseover click keypress", function(event){initPolling()
 
 o_info.mainwinref = this.window;
 o_info.wins = {};
+o_info.poller = null;
 
-var pollperiod  = $pollperiod;
-var growthrate  = 10; //
+var growthrate = 10; //
 var pollminutes = 60; //
-var ishighlight = $highlight;
-var showjson    = $showJSON;
-
+var showjson = $showJSON;
 
 var pollcount = 0;
 var pollError = 0;
@@ -40,25 +38,24 @@ if (window.opener == null) document.cookie = sbcookie+'='+sbtimestamp+'; path=/'
 ## the pollperiod or not 10 min after the last click the poll process stops
 
 function tick () {
-	//console.log("starting poller with interval: "+pollperiod);
-	jQuery.periodic({period: 5000, decay:1.005, max_period: Number.MAX_VALUE}, function(pe) {
-		if ( !o_info.linkbusy && (pollperiod > 1000) && (pollError < 2) ) {
+	o_info.poller = jQuery.periodic({period: $pollperiod, decay:1.005, max_period: Number.MAX_VALUE}, function() {
+		if ( !o_info.linkbusy && (this.period > 1000) && (pollError < 2) ) {
 			try {
 				var now = new Date().getTime();
 				if ((now - o_info.lastClickTime) < (pollminutes*60*1000)) {
-					if ((now - timestampLastPoll) > (pollperiod + pollgrowth)) {
+					if ((now - timestampLastPoll) > (this.period + pollgrowth)) {
 						timestampLastPoll = now;
 						pollcount++;
-						pollgrowth = Math.ceil((pollperiod+pollgrowth)*(100+growthrate)/100)-pollperiod;
+						pollgrowth = Math.ceil((this.period+pollgrowth)*(100+growthrate)/100) - this.period;
 						o_info.ajaxpp = jQuery.ajax({method:'POST', url:'$mapuri/', success:onPollSuccess, failure: onPollFailure});
-						var idl = (now - o_info.lastClickTime)/1000;
+						//var idl = (now - o_info.lastClickTime)/1000;
 						//log("sent poll request. idle="+idl+"s gr="+growthrate+" g="+pollgrowth+" c="+pollcount+" eff="+Math.floor(idl/pollcount*1000));
 					}
 				} else {
 					stopped = true;
 				}
 			} catch (e) {
-				pe.cancel(); //stop on errors
+				o_info.poller.cancel(); //stop on errors
 			}
 		}
 

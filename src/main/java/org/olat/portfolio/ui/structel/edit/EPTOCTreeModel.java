@@ -95,32 +95,49 @@ public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 		if(droppedNode.getParent() != null) {
 			droppedParentObj = ((TreeNode)droppedNode.getParent()).getUserObject();
 		}
+		
+		Object targetParentObj = null;
+		if(targetNode.getParent() != null) {
+			targetParentObj = ((TreeNode)targetNode.getParent()).getUserObject();
+		}
+
 		Object targetObj = targetNode.getUserObject();
 		boolean isArtefactNode = droppedObj instanceof AbstractArtefact;
 		if (isArtefactNode) {
 			AbstractArtefact droppedArtefact = (AbstractArtefact)droppedObj;
-			if (checkNewArtefactTarget(droppedArtefact, targetObj)){
+			if (checkArtefactTarget(droppedParentObj, droppedArtefact, targetObj, targetParentObj, sibling)) {
 				return true;
-			} else if(droppedParentObj.equals(targetObj)) {
+			} else if(droppedParentObj.equals(targetObj)) {	
 				return true;
-			} else {
+			} else {	
 				return false;
 			}
 		} else {
-			if (checkNewStructureTarget(droppedObj, droppedParentObj, targetObj)){
+			if (checkNewStructureTarget(droppedObj, droppedParentObj, targetObj, targetParentObj)) {
 				return true;
-			} else {					
+			} else {				
 				return false;
 			}
 		}
 	}
 	
-	private boolean checkNewArtefactTarget(AbstractArtefact artefact, Object  targetObj){
+	private boolean checkArtefactTarget(Object droppedParentObj, AbstractArtefact artefact,
+			Object targetObj, Object targetParentObj, boolean sibling) {
 		PortfolioStructure newParStruct;
 		if (targetObj instanceof EPAbstractMap ) {
 			return false;
 		} else if(targetObj instanceof PortfolioStructure) {
 			newParStruct = (PortfolioStructure)targetObj;
+		} else if (sibling) {
+			if(targetObj instanceof AbstractArtefact && targetParentObj instanceof PortfolioStructure) {
+				if(droppedParentObj != null && droppedParentObj.equals(targetParentObj)) {
+					return true; //reorder
+				} else {
+					newParStruct = (PortfolioStructure)targetParentObj;
+				}
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}
@@ -132,7 +149,7 @@ public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 		return true;
 	}
 	
-	private boolean checkNewStructureTarget(Object droppedObj, Object droppedParentObj, Object targetObj){
+	private boolean checkNewStructureTarget(Object droppedObj, Object droppedParentObj, Object targetObj, Object targetParentObj){
 		if(targetObj == null || droppedParentObj == null) {
 			return false;
 		}
@@ -147,8 +164,6 @@ public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 		}
 		return true;
 	}
-	
-	
 
 	/*
 	TreeModel model = new GenericTreeModel(ROOT_NODE_IDENTIFIER) {

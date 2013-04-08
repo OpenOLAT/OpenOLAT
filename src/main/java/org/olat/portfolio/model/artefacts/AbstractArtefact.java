@@ -37,7 +37,10 @@ import org.olat.core.util.vfs.VFSContainer;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public abstract class AbstractArtefact extends PersistentObject implements Serializable, OLATResourceable {
-	
+
+	private static final long serialVersionUID = -1966363957300570702L;
+
+
 	/**
 	 * @see org.olat.core.id.OLATResourceable#getResourceableId()
 	 */
@@ -268,6 +271,26 @@ public abstract class AbstractArtefact extends PersistentObject implements Seria
 	public String toString() {
 		return this.getResourceableTypeName() + " : " + this.getTitle() + " : " + this.getKey();
 	}
-	
-	
+
+	@Override
+	public String getResourceableTypeName() {
+		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 4415237 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof AbstractArtefact) {
+			AbstractArtefact a = (AbstractArtefact)obj;
+			return getKey() != null && getKey().equals(a.getKey());
+		}
+		return false;
+	}
 }

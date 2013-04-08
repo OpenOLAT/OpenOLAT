@@ -28,7 +28,9 @@ package org.olat.portfolio.model.structel;
  * @author rhaag
  */
 public class EPPage extends EPStructureElement  {
-		
+
+	private static final long serialVersionUID = -3612344225824264507L;
+
 	/**
 	 * 
 	 */
@@ -58,5 +60,12 @@ public class EPPage extends EPStructureElement  {
 	public int hashCode() {
 		return getKey() == null ? -238145 : getKey().hashCode();
 	}
-
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("epPage[key=").append(getKey()).append(":")
+		  .append("title=").append(getTitle()).append("]");
+		return sb.toString();
+	}
 }

@@ -59,6 +59,9 @@ public class TaxonomyLevelDAO {
 
 			newStudyField.setMaterializedPathKeys(parentPathOfKeys + "/" + parentField.getKey());
 			newStudyField.setMaterializedPathNames(parentPathOfNames + "/" + parentField.getField());
+		} else {
+			newStudyField.setMaterializedPathKeys("/");
+			newStudyField.setMaterializedPathNames("/");
 		}
 		dbInstance.getCurrentEntityManager().persist(newStudyField);
 		return newStudyField;

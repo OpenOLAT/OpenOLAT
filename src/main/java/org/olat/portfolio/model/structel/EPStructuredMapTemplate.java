@@ -30,14 +30,13 @@ package org.olat.portfolio.model.structel;
  */
 public class EPStructuredMapTemplate extends EPAbstractMap {
 
-	/**
-	 * 
-	 */
+	private static final long serialVersionUID = -3843189834931713843L;
+
 	public EPStructuredMapTemplate() {
 		//
 	}
 
-
+	@Override
 	public boolean equals(Object obj) {
 		if(obj == this) {
 			return true;
@@ -57,5 +56,11 @@ public class EPStructuredMapTemplate extends EPAbstractMap {
 		return getKey() == null ? -925 : getKey().hashCode();
 	}
 	
-	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("epMapTemplate[key=").append(getKey()).append(":")
+		  .append("title=").append(getTitle()).append("]");
+		return sb.toString();
+	}
 }

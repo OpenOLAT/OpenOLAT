@@ -32,6 +32,8 @@ import org.olat.basesecurity.SecurityGroup;
  */
 public abstract class EPAbstractMap extends EPStructureElement implements PortfolioStructureMap  {
 
+	private static final long serialVersionUID = 3295737167134638317L;
+	
 	/**
 	 * @uml.property  name="ownerGroup"
 	 */

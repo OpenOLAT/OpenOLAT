@@ -36,6 +36,8 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class EPStructureToArtefactLink extends PersistentObject {
 
+	private static final long serialVersionUID = -7239075055788273545L;
+
 	public EPStructureToArtefactLink() {
 		//
 	}

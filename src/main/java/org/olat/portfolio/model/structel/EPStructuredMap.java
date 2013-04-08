@@ -30,9 +30,8 @@ import java.util.Date;
  */
 public class EPStructuredMap extends EPAbstractMap {
 
-	/**
-	 * 
-	 */
+	private static final long serialVersionUID = -6360377624351045630L;
+
 	public EPStructuredMap() {
 		//
 	}
@@ -145,6 +144,7 @@ public class EPStructuredMap extends EPAbstractMap {
 		this.deadLine = deadLine;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if(obj == this) {
 			return true;
@@ -158,5 +158,13 @@ public class EPStructuredMap extends EPAbstractMap {
 	@Override
 	public int hashCode() {
 		return getKey() == null ? -9254 : getKey().hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("epStructureMap[key=").append(getKey()).append(":")
+		  .append("title=").append(getTitle()).append("]");
+		return sb.toString();
 	}
 }

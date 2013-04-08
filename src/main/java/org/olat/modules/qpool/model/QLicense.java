@@ -65,7 +65,7 @@ public class QLicense implements CreateInfo, Persistable {
 	@Column(name="q_license", nullable=false, insertable=true, updatable=true)
 	private String licenseKey;
 	
-	@Column(name="q_text", nullable=false, insertable=true, updatable=true)
+	@Column(name="q_text", nullable=true, insertable=true, updatable=true)
 	private String licenseText;
 	
 	@Column(name="q_deletable", nullable=false, insertable=true, updatable=false)

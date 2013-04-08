@@ -1,8 +1,8 @@
 <script type="text/javascript">
-/* <![CDATA[ */ 
-if (pollperiod != ${pollperiod}) {
-	pollperiod = ${pollperiod};
-	##if (!window.ActiveXObject) console.log("new pollinterval:"+pollperiod);
+/* <![CDATA[ */
+if (o_info.poller && o_info.poller.period != ${pollperiod}) {
+	o_info.poller.period = ${pollperiod};
+	o_info.poller.reset();
 }
 /* ]]> */
 </script>

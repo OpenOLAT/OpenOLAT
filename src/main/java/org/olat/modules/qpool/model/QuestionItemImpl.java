@@ -70,7 +70,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	//general
 	@Column(name="q_identifier", nullable=false, insertable=true, updatable=false)
 	private String identifier;
-	@Column(name="q_master_identifier", nullable=false, insertable=true, updatable=false)
+	@Column(name="q_master_identifier", nullable=true, insertable=true, updatable=false)
 	private String masterIdentifier;
 	@Column(name="q_title", nullable=false, insertable=true, updatable=true)
 	private String title;
@@ -92,9 +92,9 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	
 	//educational
 	@ManyToOne(targetEntity=QEducationalContext.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_edu_context", nullable=false, insertable=true, updatable=true)
+	@JoinColumn(name="fk_edu_context", nullable=true, insertable=true, updatable=true)
 	private QEducationalContext educationalContext;
-	@Column(name="q_educational_learningtime", nullable=false, insertable=true, updatable=true)
+	@Column(name="q_educational_learningtime", nullable=true, insertable=true, updatable=true)
 	private String educationalLearningTime;
 	
 	//question
@@ -111,7 +111,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	private int numOfAnswerAlternatives;
 	@Column(name="q_usage", nullable=false, insertable=true, updatable=true)
 	private int usage;
-	@Column(name="q_assessment_type", nullable=false, insertable=true, updatable=true)
+	@Column(name="q_assessment_type", nullable=true, insertable=true, updatable=true)
 	private String assessmentType;
 	
 	//life cycle
