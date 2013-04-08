@@ -237,7 +237,7 @@ function o_init() {
 	try {
 		// all init-on-new-page calls here
 		//return opener window
-		o_getOpenWin().o_afterserver();	
+		o_getMainWin().o_afterserver();	
 	} catch(e) {
 		if (o_info.debug) o_log("error in o_init: "+showerror(e));
 	}	
@@ -252,15 +252,26 @@ function b_initEmPxFactor() {
 	}
 }
 
-function o_getOpenWin() {
-	var w = top;
+function o_getMainWin() {
 	try {
-		if (w.opener && w.opener.o_info) {
-			w = w.opener;
+		if (window.opener && window.opener.OPOL) {
+			// use the opener when opener window is an OpenOLAT window
+			return window.opener;
+		} else if (window.OPOL) {
+			// other cases the current window is the main window
+			return window;
 		}
-	} catch (e) {}
-	return w;
+	} catch (e) {
+		if (o_info.debug) { // add webbrowser console log
+			o_logerr('Exception while getting main window. rror::"'+showerror(e));
+		}
+		if (B_AjaxLogger.isDebugEnabled()) { // add ajax logger
+			B_AjaxLogger.logDebug('Exception while getting main window. rror::"'+showerror(e), "functions.js");
+		}	
+	}
+	throw "Can not find main OpenOLAT window";
 }
+
 
 function o_beforeserver() {
 //mal versuche mit Ext.onReady().. erst dann wieder clicks erlauben...
@@ -698,15 +709,13 @@ function gotonode(nodeid) {
 
 function o_openUriInMainWindow(uri) {
 	// get the "olatmain" window
-	var w = top;
 	try {
-		if (w.opener && w.opener.o_info) {
-		  w = w.opener;
-		}
-	} catch (e) {}
-	
-	w.focus();
-	w.location.replace(uri);
+		var w = o_getMainWin();
+		w.focus();
+		w.location.replace(uri);		
+	} catch (e) {
+		showMessageBox("error", "Error", "Can not find main OpenOLAT window to open URL.");		
+	}
 }
 
 function b_viewportHeight() {
@@ -1043,7 +1052,7 @@ function b_attach_i18n_inline_editing() {
 var BDebugger = {
 	_lastDOMCount : 0,
 	_lastObjCount : 0,
-	_knownGlobalOLATObjects : ["o_afterserver","o_onc","o_getOpenWin","o_ainvoke","o_info","o_beforeserver","o_ffEvent","o_openPopUp","o_debu_show","o_logwarn","o_dbg_unmark","o_ffRegisterSubmit","o_clearConsole","o_init","o_log","o_allowNextClick","o_dbg_mark","o_debu_hide","o_logerr","o_debu_oldcn","o_debu_oldtt","o_openUriInMainWindow","o_debug_trid","o_log_all"],
+	_knownGlobalOLATObjects : ["o_afterserver","o_onc","o_getMainWin","o_ainvoke","o_info","o_beforeserver","o_ffEvent","o_openPopUp","o_debu_show","o_logwarn","o_dbg_unmark","o_ffRegisterSubmit","o_clearConsole","o_init","o_log","o_allowNextClick","o_dbg_mark","o_debu_hide","o_logerr","o_debu_oldcn","o_debu_oldtt","o_openUriInMainWindow","o_debug_trid","o_log_all"],
 		
 	_countDOMElements : function() {
 		return document.getElementsByTagName('*').length;
