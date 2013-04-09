@@ -96,8 +96,6 @@ function checkClick(wrapperName, langCode) {
 	while (content.indexOf("$") != -1 && counter < 10) {
 		var startPos = content.search("\\$\\{?([\\w\\.\\-]*):([\\w\\.\\-]*[\\w\\-])\\}?");
 		var endPos = startPos + content.substring(startPos).search("[^\\{\\w\\.\\-:\\}]|$");
-		console.log("cursorPos::" + cursorPos + " startPos::"+ startPos + " endPos::"+ endPos + " KEY::" + content.substring(startPos, endPos));
-
 		if (startPos <= cursorPos && endPos >= cursorPos) {
 			var reference = content.substring(startPos, endPos);
 			## remove {wrapper} brakes
@@ -119,7 +117,6 @@ function checkClick(wrapperName, langCode) {
 			var trans = jQuery(document).ooTranslator().getTranslator(langCode, bundleName);
 			if (trans) {
 				var translated = trans.translate(key);
-				console.log("WORD FOUND::" + reference + " translated as::" + translated);
 				if (translated != reference) {
 					## set new key and value, make element visible
 					jQuery('div.' + wrapperName + ' div.b_translation_refKey code')[0].update(reference);

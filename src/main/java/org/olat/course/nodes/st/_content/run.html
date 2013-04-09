@@ -96,7 +96,7 @@ jQuery(function() {
 			   		var padding = parseInt(childEl.css('padding-top')) + parseInt(childEl.css('padding-bottom'));
 			  		childEl.height((maxHeight - padding) + 'px');
 			    });
-			} catch (e) { console.log(e) }
+			} catch (e) { if(console) console.log(e) }
 		});
 	#end
 });

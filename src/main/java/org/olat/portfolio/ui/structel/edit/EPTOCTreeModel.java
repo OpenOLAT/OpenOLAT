@@ -102,8 +102,7 @@ public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 		}
 
 		Object targetObj = targetNode.getUserObject();
-		boolean isArtefactNode = droppedObj instanceof AbstractArtefact;
-		if (isArtefactNode) {
+		if (droppedObj instanceof AbstractArtefact) {
 			AbstractArtefact droppedArtefact = (AbstractArtefact)droppedObj;
 			if (checkArtefactTarget(droppedParentObj, droppedArtefact, targetObj, targetParentObj, sibling)) {
 				return true;
@@ -112,12 +111,15 @@ public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 			} else {	
 				return false;
 			}
-		} else {
-			if (checkNewStructureTarget(droppedObj, droppedParentObj, targetObj, targetParentObj)) {
+		} else if (droppedObj instanceof PortfolioStructure) {
+			PortfolioStructure droppedStructure = (PortfolioStructure)droppedObj;
+			if (checkStructureTarget(droppedParentObj, droppedStructure, targetObj, targetParentObj, sibling)) {
 				return true;
 			} else {				
 				return false;
 			}
+		} else {
+			return false;
 		}
 	}
 	
@@ -149,110 +151,32 @@ public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 		return true;
 	}
 	
-	private boolean checkNewStructureTarget(Object droppedObj, Object droppedParentObj, Object targetObj, Object targetParentObj){
+	private boolean checkStructureTarget(Object droppedParentObj, PortfolioStructure droppedStructure,
+			Object targetObj, Object targetParentObj, boolean sibling){
+	
 		if(targetObj == null || droppedParentObj == null) {
 			return false;
 		}
-		if (droppedParentObj.equals(targetObj)) {
-			return true; // seems only to be a move in order
-		}
-		if (droppedObj instanceof EPPage && targetObj instanceof EPPage) {
-			return false;
-		}
-		if (droppedObj instanceof EPStructureElement && !(targetObj instanceof EPPage)) {
-			return false;
+
+		if(sibling) {
+			if(targetParentObj instanceof PortfolioStructure) {
+				if(droppedParentObj != null && targetParentObj != null && droppedParentObj.equals(targetParentObj)) {
+					return true; //reorder
+				} else {
+					return false;
+				}
+			}
+		} else {
+			if (droppedParentObj.equals(targetObj)) {
+				return true; // seems only to be a move in order
+			}
+			if (droppedStructure instanceof EPPage && targetObj instanceof EPPage) {
+				return false;
+			}
+			if (droppedStructure instanceof EPStructureElement && !(targetObj instanceof EPPage)) {
+				return false;
+			}
 		}
 		return true;
 	}
-
-	/*
-	TreeModel model = new GenericTreeModel(ROOT_NODE_IDENTIFIER) {
-
-		@Override
-		public List<AjaxTreeNode> getChildrenFor(String nodeId) {
-			List<AjaxTreeNode> children = new ArrayList<AjaxTreeNode>();
-			AjaxTreeNode child;
-			boolean isRoot = false;
-			PortfolioStructure selStruct = null;
-			try {
-				List<PortfolioStructure> structs = new ArrayList<PortfolioStructure>();
-				if (nodeId.equals(ROOT_NODE_IDENTIFIER)) {
-					structs.add(rootNode);
-					isRoot = true;
-				} else if (!nodeId.startsWith(ARTEFACT_NODE_IDENTIFIER)){
-					selStruct = ePFMgr.loadPortfolioStructureByKey(new Long(nodeId));
-					structs = ePFMgr.loadStructureChildren(selStruct);
-				} else {
-					// its an artefact -> no childs anymore
-					return null;
-				}
-				if (structs != null && structs.size() != 0) { 
-					for (PortfolioStructure portfolioStructure : structs) {
-						String childNodeId = String.valueOf(portfolioStructure.getKey());
-						boolean hasStructureChild = eSTMgr.countStructureChildren(portfolioStructure) > 0;
-						boolean hasArtefacts = eSTMgr.countArtefacts(portfolioStructure) > 0;
-						boolean hasChilds = hasStructureChild || hasArtefacts;
-						child = new AjaxTreeNode(childNodeId, portfolioStructure.getTitle());
-						if (isLogDebugEnabled()){
-							child = new AjaxTreeNode(childNodeId, portfolioStructure.getTitle() + "drop:" + !isRoot + "drag:" + !isRoot + "leaf:"+!hasChilds);
-						}
-						// seems to be a bug, nothing can be dropped on a leaf, therefore we need to tweak with expanded/expandable ourself!
-//						child.put(AjaxTreeNode.CONF_LEAF, !hasChilds);
-						child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, !hasChilds);
-						child.put(AjaxTreeNode.CONF_ALLOWDRAG, !isRoot);
-			
-						child.put(AjaxTreeNode.CONF_EXPANDED, hasStructureChild);
-						child.put(AjaxTreeNode.CONF_EXPANDABLE, hasChilds);
-						child.put(AjaxTreeNode.CONF_ALLOWDROP, true);
-						child.put(AjaxTreeNode.CONF_ISTARGET, !isRoot); 
-						
-						child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, portfolioStructure.getIcon());
-						String description = FilterFactory.getHtmlTagAndDescapingFilter().filter(portfolioStructure.getDescription());
-						child.put(AjaxTreeNode.CONF_QTIP, description);
-						children.add(child);
-						
-						String path;
-						if(isRoot) {
-							path = "/" + ROOT_NODE_IDENTIFIER;
-						} else {
-							path = idToPath.get(selStruct.getKey()); 
-						}
-
-						idToPath.put(portfolioStructure.getKey(), path + "/" + childNodeId);
-					}
-				} 
-				if (selStruct != null && ePFMgr.countArtefactsRecursively(selStruct) != 0){
-					List<AbstractArtefact> artList = ePFMgr.getArtefacts(selStruct);
-					for (AbstractArtefact abstractArtefact : artList) {
-						//include struct also, to still be unique if an artefact is linked multiple times
-						String childNodeId = ARTEFACT_NODE_IDENTIFIER + String.valueOf(selStruct.getKey()) + "_" + String.valueOf(abstractArtefact.getKey());
-						child = new AjaxTreeNode(childNodeId, abstractArtefact.getTitle());
-						child.put(AjaxTreeNode.CONF_LEAF, true);
-						child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, true);
-						child.put(AjaxTreeNode.CONF_ALLOWDRAG, true);
-						child.put(AjaxTreeNode.CONF_EXPANDED, false);
-						child.put(AjaxTreeNode.CONF_ALLOWDROP, false);
-						child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, abstractArtefact.getIcon());
-						String description = FilterFactory.getHtmlTagAndDescapingFilter().filter(abstractArtefact.getDescription());
-						child.put(AjaxTreeNode.CONF_QTIP, description);
-						children.add(child);
-						
-						String path = idToPath.get(selStruct.getKey());
-						
-						String artefactPath = path + "/" + childNodeId;
-						idToPath.put(abstractArtefact.getKey(), artefactPath);
-						pathToStructure.put(artefactPath, selStruct);
-					}						
-				} 
-			} catch (JSONException e) {
-				throw new OLATRuntimeException("Error while creating tree model for map/page/structure selection", e);
-			}
-			return children;
-		}
-	};
-	model.setCustomRootIconCssClass("o_st_icon");
-	return model;
-	*/
-
-
 }

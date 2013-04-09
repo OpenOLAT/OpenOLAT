@@ -30,6 +30,7 @@ var BLoader = {
 	// Internal mehod to check if a JS file has already been loaded on the page
 	_isAlreadyLoadedJS: function(jsURL) {
 		var notLoaded = true;
+		console.log(jsURL);
 		// first check for scrips loaded via HTML head
 		jQuery('head script[src]').each(function(s,t) {
 			if (jQuery(t).attr('src').indexOf(jsURL) != -1) {
@@ -37,7 +38,7 @@ var BLoader = {
 			};
 		});
 		// second check for script loaded via ajax call
-		if (this._ajaxLoadedJS.indexOf(jsURL) != -1) notLoaded = false;
+		if (jQuery.inArray(jsURL, this._ajaxLoadedJS) != -1) notLoaded = false;
 		return !notLoaded;
 	},
 		
@@ -340,6 +341,40 @@ Array.prototype.search = function(s,q){
   }
   return false;
 }
+
+if(!Array.prototype.indexOf) {
+	Array.prototype.indexOf = function (searchElement /*, fromIndex */ ) {
+		"use strict";
+		if (this == null) {
+			throw new TypeError();
+        }
+        var t = Object(this);
+        var len = t.length >>> 0;
+        if (len === 0) {
+            return -1;
+        }
+        var n = 0;
+        if (arguments.length > 1) {
+            n = Number(arguments[1]);
+            if (n != n) { // shortcut for verifying if it's NaN
+                n = 0;
+            } else if (n != 0 && n != Infinity && n != -Infinity) {
+                n = (n > 0 || -1) * Math.floor(Math.abs(n));
+            }
+        }
+        if (n >= len) {
+            return -1;
+        }
+        var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);
+        for (; k < len; k++) {
+            if (k in t && t[k] === searchElement) {
+                return k;
+            }
+        }
+        return -1;
+	}
+}
+
 
 // b_AddOnDomReplacementFinishedCallback is used to add callback methods that are executed after
 // the DOM replacement has occured. Note that when not in AJAX mode, those methods will not be 

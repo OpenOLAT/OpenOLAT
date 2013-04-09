@@ -1147,7 +1147,11 @@ public class EPStructureManager extends BasicManager {
 		int oldPos = indexOf(structureLinks, orderSubject);		
 		if (oldPos != orderDest && oldPos != -1) {
 			EPStructureToStructureLink link = structureLinks.remove(oldPos);
-			while (orderDest > structureLinks.size()) orderDest--; // place at end
+			if(orderDest > structureLinks.size()) {
+				orderDest = structureLinks.size() -1; // place at end
+			} else if(oldPos < orderDest) {
+				orderDest--;
+			}
 			structureLinks.add(orderDest, link);			
 			dbInstance.updateObject(structureEl);
 			return true;

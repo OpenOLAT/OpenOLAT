@@ -9,7 +9,7 @@ var BPlayer = {
 			var flashvars = "file=" + soundUrl + "&start=0&autostart=true&repeat=none&controlbar=none&showicons=false";
 			if (swfobject.hasFlashPlayerVersion("9")) {
 	     		var fn = function() {
-	        		var att = { data:playerUrl, width:'1px', height:'1px', wmode:'transparent',};
+	        		var att = { data:playerUrl, width:'1px', height:'1px', wmode:'transparent'};
 	        		var par = { flashvars: flashvars };
 	        		var id = domId;
 	        		var myObject = swfobject.createSWF(att, par, id);

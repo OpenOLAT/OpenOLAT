@@ -18,7 +18,6 @@ function tweak_${panelName}() {
 		jQuery('.o_instantmessaging_chat_history', win).each(function(index, el){
 			var historyEl = jQuery(el);
 			historyEl.height(win.height() - 150);
-			console.log('History', win.height() - 150);
 			historyEl.scrollTop(el.scrollHeight);
 		});
 	} catch (e) { /**/ }
