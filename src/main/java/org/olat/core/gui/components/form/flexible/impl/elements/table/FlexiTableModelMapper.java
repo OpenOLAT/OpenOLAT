@@ -123,8 +123,8 @@ public class FlexiTableModelMapper implements Mapper {
 						if(ftE.isMultiSelectedIndex(i)) {
 							sb.append(" checked='checked'");
 						}   
-						sb.append(">");
-						row.put("choice", sb.toString());
+						sb.append("/>");
+						row.put("multiSelectCol", sb.toString());
 					}
 					
 					for(int j=0; j<columnsModel.getColumnCount(); j++) {

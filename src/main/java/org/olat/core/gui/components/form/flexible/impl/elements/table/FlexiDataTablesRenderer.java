@@ -85,7 +85,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("		},\n")
       .append("		'aoColumns': [\n");
 		if(ftE.isMultiSelect()) {
-			target.append("			{'mData':'choice', bSortable: false },\n");
+			target.append("			{'mData':'multiSelectCol', bSortable: false },\n");
 		}
 		for(int i=0; i<columnsModel.getColumnCount(); i++) {
 			FlexiColumnModel col = columnsModel.getColumnModel(i);
