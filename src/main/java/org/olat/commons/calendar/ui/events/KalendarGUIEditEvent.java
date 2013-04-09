@@ -27,16 +27,17 @@ package org.olat.commons.calendar.ui.events;
 
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
-public class KalendarGUIEditEvent extends Event {
+public class KalendarGUIEditEvent extends FormEvent {
 
+	private static final long serialVersionUID = -3539867971891194310L;
 	public static final String CMD_EDIT = "ecalevent";
 	private KalendarEvent	event;
 	private KalendarRenderWrapper calendarWrapper;
 	
 	public KalendarGUIEditEvent(KalendarEvent event, KalendarRenderWrapper calendarWrapper) {
-		super(CMD_EDIT);
+		super(CMD_EDIT, null);
 		this.event = event;
 		this.calendarWrapper = calendarWrapper;
 	}

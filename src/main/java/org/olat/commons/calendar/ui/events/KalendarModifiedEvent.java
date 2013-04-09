@@ -30,8 +30,9 @@ import org.olat.core.util.event.MultiUserEvent;
 
 public class KalendarModifiedEvent extends MultiUserEvent {
 
-	private String type = null;
-	private String calendarId = null;
+	private static final long serialVersionUID = 8926945159054996511L;
+	private String type;
+	private String calendarId;
 
 	public KalendarModifiedEvent() {
 		super("KalendarModified");

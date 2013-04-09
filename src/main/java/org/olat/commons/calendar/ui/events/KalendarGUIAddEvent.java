@@ -27,17 +27,19 @@ package org.olat.commons.calendar.ui.events;
 
 import java.util.Date;
 
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
-public class KalendarGUIAddEvent extends Event {
+public class KalendarGUIAddEvent extends FormEvent {
 
+	private static final long serialVersionUID = 7056011141923427419L;
 	public static final String CMD_ADD = "acalevent";
 	private String calendarID;
-	private Date startDate;
+	private Date startDate, endDate;
 	private boolean allDayEvent = false;
 	
 	public KalendarGUIAddEvent(String calendarID, Date startDate) {
-		super(CMD_ADD);
+		super(CMD_ADD, null);
 		this.calendarID = calendarID;
 		this.startDate = startDate;
 	}
@@ -49,7 +51,20 @@ public class KalendarGUIAddEvent extends Event {
   * @param allDayEvent  When true, the new event should be an all-day event
   */
 	public KalendarGUIAddEvent(String calendarID, Date startDate, boolean allDayEvent) {
-		super(CMD_ADD);
+		super(CMD_ADD, null);
+		this.calendarID = calendarID;
+		this.startDate = startDate;
+		this.allDayEvent = allDayEvent;
+	}
+	
+ /**
+  * 
+  * @param calendarID
+  * @param startDate
+  * @param allDayEvent  When true, the new event should be an all-day event
+  */
+	public KalendarGUIAddEvent(FormItem item, String calendarID, Date startDate, Date endDate, boolean allDayEvent) {
+		super(CMD_ADD, item);
 		this.calendarID = calendarID;
 		this.startDate = startDate;
 		this.allDayEvent = allDayEvent;
@@ -61,6 +76,10 @@ public class KalendarGUIAddEvent extends Event {
 	
 	public Date getStartDate() {
 		return startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
 	}
 
 	public boolean isAllDayEvent() {

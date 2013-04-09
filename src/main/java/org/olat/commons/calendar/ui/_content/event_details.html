@@ -1,0 +1,21 @@
+<div class="o_cal_time">$date</div>
+<div class="o_cal_wv_event_tooltip_content">
+	$subject
+	<div class="o_cal_location">
+		<b>$r.translate("cal.form.location"):</b> $location
+	</div>
+	<div class="o_cal_links">
+	#foreach($link in $links)
+		#if($link.intern)
+			<a href="javascript:top.o_openUriInMainWindow('$link.uri')" title="$link.title" class="$link.cssClass" onclick="return o2cl();">$link.displayName</a>
+		#else
+			<a href="$link.uri" title="$link.title" class="$link.cssClass" target="_blank">$link.displayName</a>
+		#end
+	#end
+	</div>
+	#if($r.available("edit"))
+		<div class="o_cal_tooltip_buttons">
+			$r.render("edit")
+		</div>
+	#end
+</div>

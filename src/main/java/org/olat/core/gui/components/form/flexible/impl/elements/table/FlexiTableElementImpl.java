@@ -262,6 +262,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	protected void evalSearchRequest(UserRequest ureq) {
+		if(searchFieldEl == null) return;//this a default behavior which can occur without the search configured
 		searchFieldEl.evalFormRequest(ureq);
 		String search = searchFieldEl.getValue();
 		if(StringHelper.containsNonWhitespace(search)) {

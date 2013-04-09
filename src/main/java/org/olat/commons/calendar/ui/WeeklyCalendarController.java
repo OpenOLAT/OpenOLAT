@@ -41,24 +41,29 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarComparator;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.notification.CalendarNotificationManager;
+import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.commons.calendar.ui.components.WeeklyCalendarComponent;
 import org.olat.commons.calendar.ui.events.KalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIEditEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIImportEvent;
+import org.olat.commons.calendar.ui.events.KalendarGUIMoveEvent;
+import org.olat.commons.calendar.ui.events.KalendarGUISelectEvent;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.util.ComponentUtil;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -70,6 +75,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
@@ -80,21 +86,16 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.util.logging.activity.LoggingResourceable;
 
-public class WeeklyCalendarController extends BasicController implements Activateable2, CalendarController, GenericEventListener {
-
-	private static final String CMD_PREVIOUS_WEEK = "pw";
-	private static final String CMD_NEXT_WEEK = "nw";
+public class WeeklyCalendarController extends FormBasicController implements Activateable2, CalendarController, GenericEventListener {
 
 	public static final String CALLER_HOME = "home";
 	public static final String CALLER_PROFILE = "profile";
 	public static final String CALLER_COLLAB = "collab";
 	public static final String CALLER_COURSE = "course";
 	
-	private Panel mainPanel;
-	private VelocityContainer vcMain;
 	private List<KalendarRenderWrapper> calendarWrappers;
 	private List<KalendarRenderWrapper> importedCalendarWrappers;
-	private WeeklyCalendarComponent weeklyCalendar;
+	private FullCalendarElement weeklyCalendar;
 	private KalendarConfigurationController calendarConfig;
 	private ImportedCalendarConfigurationController importedCalendarConfig;
 	private KalendarEntryDetailsController editController;
@@ -104,17 +105,15 @@ public class WeeklyCalendarController extends BasicController implements Activat
 	private Controller subscriptionController;
 	private String caller;
 	private boolean dirty = false;
-	private Link prevWeekLink;
-	private Link nextWeekLink;
-	private Link thisWeekLink;
 	private Link searchLink;
-	private Link subscribeButton;
-	private Link unsubscribeButton;
+	private FormLink subscribeButton, unsubscribeButton;
 
 	private CloseableModalController cmc;
 	private GotoDateCalendarsForm gotoDateForm;
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController csc;
+	private CalendarDetailsController eventDetailsCtr;
+	private CloseableCalloutWindowController eventCalloutCtr;
 	
 	/**
 	 * three options:
@@ -126,6 +125,7 @@ public class WeeklyCalendarController extends BasicController implements Activat
 	private DialogBoxController deleteSingleYesNoController, deleteSequenceYesNoController;
 	private String modifiedCalendarId;
 	private boolean modifiedCalenderDirty = false;
+	private final boolean eventAlwaysVisible;
 	
 	private ILoggingAction calLoggingAction;
 	
@@ -181,87 +181,82 @@ public class WeeklyCalendarController extends BasicController implements Activat
 	 * @param calendarSubscription
 	 * @param eventAlwaysVisible  When true, the 'isVis()' check is disabled and events will be displayed always.
 	 */
-	public WeeklyCalendarController(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendarWrappers, List<KalendarRenderWrapper> importedCalendarWrappers, String caller, CalendarSubscription calendarSubscription, boolean eventAlwaysVisible) {
-		super(ureq,wControl);
-		
-		setBasePackage(CalendarManager.class);
-		
+	public WeeklyCalendarController(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendarWrappers, List<KalendarRenderWrapper> importedCalendarWrappers,
+			String caller, CalendarSubscription calendarSubscription, boolean eventAlwaysVisible) {
+		super(ureq,wControl, "indexWeekly");
+		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
+
 		calendarNotificationsManager = CoreSpringFactory.getImpl(CalendarNotificationManager.class);
 		
+		this.eventAlwaysVisible = eventAlwaysVisible;
 		this.calendarWrappers = calendarWrappers;
 		this.importedCalendarWrappers = importedCalendarWrappers;
 		this.calendarSubscription = calendarSubscription;
 		this.caller = caller;
+
+		initForm(ureq);
 		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(CalendarManager.class));
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// fxdiff OLAT-6399
 		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-
-		// main panel
-		mainPanel = new Panel("mainPanel");
 		
-		// main velocity controller
-		vcMain = createVelocityContainer("indexWeekly");
-		thisWeekLink = LinkFactory.createButton("cal.thisweek", vcMain, this);
-
-		prevWeekLink = LinkFactory.createCustomLink("cal.prevweek", CMD_PREVIOUS_WEEK, "", Link.NONTRANSLATED, vcMain, this);
-		prevWeekLink.setCustomEnabledLinkCSS("b_button o_cal_wv_prev");
-		
-		nextWeekLink = LinkFactory.createCustomLink("cal.nextweek", CMD_NEXT_WEEK, "", Link.NONTRANSLATED, vcMain, this);
-		nextWeekLink.setCustomEnabledLinkCSS("b_button o_cal_wv_next");
-		
+		/*
 		gotoDateForm = new GotoDateCalendarsForm(ureq, wControl, getTranslator());
 		listenTo(gotoDateForm); 
 		vcMain.put("cal.gotodate", gotoDateForm.getInitialComponent());
 		searchLink = LinkFactory.createButton("cal.search.button", vcMain, this);
-		subscribeButton = LinkFactory.createButtonXSmall("cal.subscribe", vcMain, this);
-		unsubscribeButton = LinkFactory.createButtonXSmall("cal.unsubscribe", vcMain, this);
+		*/
 		
-		vcMain.contextPut("caller", caller);
-		mainPanel.setContent(vcMain);
-		
+		subscribeButton = uifactory.addFormLink("cal.subscribe", formLayout, Link.BUTTON_XSMALL);
+		unsubscribeButton = uifactory.addFormLink("cal.unsubscribe", formLayout, Link.BUTTON_XSMALL);
+
 		Collections.sort(calendarWrappers, KalendarComparator.getInstance());
 		Collections.sort(importedCalendarWrappers, KalendarComparator.getInstance());
 		
 		List<KalendarRenderWrapper> allCalendarWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
 		allCalendarWrappers.addAll(importedCalendarWrappers);
-		weeklyCalendar = new WeeklyCalendarComponent("weeklyCalendar", allCalendarWrappers, 7, getTranslator(), eventAlwaysVisible);
-		weeklyCalendar.addListener(this);
-
-	  // subscription, see OLAT-3861
-		if (!isGuest && !calendarWrappers.isEmpty()) {
-			subsContext = calendarNotificationsManager.getSubscriptionContext(calendarWrappers.get(0));
-			// if sc is null, then no subscription is desired
-			if (subsContext != null) {
-				csc = getContextualSubscriptionController(ureq, calendarWrappers.get(0), subsContext);
-				vcMain.put("calsubscription", csc.getInitialComponent());
+		weeklyCalendar = new FullCalendarElement(ureq, "weeklyCalendar", allCalendarWrappers, getTranslator(), eventAlwaysVisible);
+		formLayout.add("calendar", weeklyCalendar);
+		
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("caller", caller);
+			
+			// calendarConfiguration component
+			calendarConfig = new KalendarConfigurationController(calendarWrappers, ureq, getWindowControl(), eventAlwaysVisible, true);
+			listenTo(calendarConfig);
+			layoutCont.put("calendarConfig", calendarConfig.getInitialComponent());
+			
+			//imported calendar list
+			importedCalendarConfig = new ImportedCalendarConfigurationController(importedCalendarWrappers, ureq, getWindowControl(), false);
+			listenTo(importedCalendarConfig);
+			layoutCont.put("importedCalendarConfig", importedCalendarConfig.getInitialComponent());
+			
+			if (!isGuest && !calendarWrappers.isEmpty()) {
+				subsContext = calendarNotificationsManager.getSubscriptionContext(calendarWrappers.get(0));
+				// if sc is null, then no subscription is desired
+				if (subsContext != null) {
+					csc = getContextualSubscriptionController(ureq, calendarWrappers.get(0), subsContext);
+					layoutCont.put("calsubscription", csc.getInitialComponent());
+				}
+				
+				if (calendarSubscription == null || isGuest) {
+					layoutCont.contextPut("hasSubscription", Boolean.FALSE);
+				} else {
+					layoutCont.contextPut("hasSubscription", Boolean.TRUE);
+					layoutCont.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
+				}
 			}
 		}
-		
-		ComponentUtil.registerForValidateEvents(vcMain, this);
+	}
 
-		vcMain.put("calendar", weeklyCalendar);
-
-		// calendarConfiguration component
-		calendarConfig = new KalendarConfigurationController(calendarWrappers, ureq, getWindowControl(), eventAlwaysVisible, true);
-		listenTo(calendarConfig);
-		
-		vcMain.put("calendarConfig", calendarConfig.getInitialComponent());
-		importedCalendarConfig = new ImportedCalendarConfigurationController(importedCalendarWrappers, ureq, getWindowControl(), false);
-		listenTo(importedCalendarConfig);
-		vcMain.put("importedCalendarConfig", importedCalendarConfig.getInitialComponent());
-
-		// calendar subscription
-		if (calendarSubscription == null || isGuest) {
-			vcMain.contextPut("hasSubscription", Boolean.FALSE);
-		} else {
-			vcMain.contextPut("hasSubscription", Boolean.TRUE);
-			vcMain.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
-		}
-		setWeekYearInVelocityPage(vcMain, weeklyCalendar);
-
-		this.putInitialPanel(mainPanel);
-		
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(CalendarManager.class));
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	private ContextualSubscriptionController getContextualSubscriptionController(UserRequest ureq, KalendarRenderWrapper kalendarRenderWrapper, SubscriptionContext context) {
@@ -286,28 +281,15 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		calendarConfig.setEnableRemoveFromPersonalCalendar(enable);
 	}
 	
-	public int getFocusYear() {
-		return weeklyCalendar.getYear();
-	}
-	
-	public int getFocusWeekOfYear() {
-		return weeklyCalendar.getWeekOfYear();
+	public Date getFocus() {
+		return weeklyCalendar.getFocusDate();
 	}
 
+	@Override
 	public void setFocus(Date date) {
 		Calendar focus = CalendarUtils.createCalendarInstance(getLocale());
 		focus.setTime(date);
-		weeklyCalendar.setFocus(focus.get(Calendar.YEAR), focus.get(Calendar.WEEK_OF_YEAR));
-		setWeekYearInVelocityPage(vcMain, weeklyCalendar);
-	}
-	
-	public void setFocus(int year, int weekOfYear) {
-		weeklyCalendar.setFocus(year, weekOfYear);
-	}
-
-	private void setWeekYearInVelocityPage(VelocityContainer vc, WeeklyCalendarComponent weeklyCalendar) {
-		vc.contextPut("week", weeklyCalendar.getWeekOfYear());
-		vc.contextPut("year", weeklyCalendar.getYear());
+		weeklyCalendar.setFocusDate(focus.getTime());
 	}
 	
 	@Override
@@ -329,10 +311,6 @@ public class WeeklyCalendarController extends BasicController implements Activat
 
 	public void setCalendars(List<KalendarRenderWrapper> calendars, List<KalendarRenderWrapper> importedCalendars) {
 		this.calendarWrappers = calendars;
-		Collections.sort(calendarWrappers, KalendarComparator.getInstance());
-		weeklyCalendar.setKalendars(calendarWrappers);
-		calendarConfig.setCalendars(calendarWrappers);
-
 		this.importedCalendarWrappers = importedCalendars;
 		Collections.sort(calendarWrappers, KalendarComparator.getInstance());
 		Collections.sort(importedCalendarWrappers, KalendarComparator.getInstance());
@@ -357,50 +335,9 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		this.calLoggingAction = calLoggingAction;
 	}
 
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (event == ComponentUtil.VALIDATE_EVENT && dirty) {
-			dirty = false;
-			fireEvent(ureq, new KalendarModifiedEvent());
-		} else if (event == ComponentUtil.VALIDATE_EVENT && weeklyCalendar.isDirty() && modifiedCalenderDirty  ) {
-			KalendarRenderWrapper kalendarRenderWrapper = weeklyCalendar.getKalendarRenderWrapper(modifiedCalendarId);
-			kalendarRenderWrapper.reloadKalendar();	
-		} else if(source == prevWeekLink){
-			weeklyCalendar.previousWeek();
-			setWeekYearInVelocityPage(vcMain, weeklyCalendar);
-		} else if(source == nextWeekLink){
-			weeklyCalendar.nextWeek();
-			setWeekYearInVelocityPage(vcMain, weeklyCalendar);
-		} else if (source == thisWeekLink){
-			Calendar cal = CalendarUtils.createCalendarInstance(ureq.getLocale());
-			weeklyCalendar.setFocus(cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR));
-		} else if (source == searchLink) {
-			
-			List<KalendarRenderWrapper> allCalendarWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
-			allCalendarWrappers.addAll(importedCalendarWrappers);
-			
-			removeAsListenerAndDispose(searchController);
-			searchController = new SearchAllCalendarsController(ureq, getWindowControl(), allCalendarWrappers);
-			listenTo(searchController);
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
-			listenTo(cmc);
-			
-			cmc.activate();
-		} else if (source == subscribeButton || source == unsubscribeButton) {
-			removeAsListenerAndDispose(subscriptionController);
-			if(calendarSubscription.isSubscribed() == (source == unsubscribeButton)) {
-				subscriptionController = calendarSubscription.triggerSubscribeAction();
-			}
-			if (subscriptionController != null) {
-				// activate subscription controller
-				listenTo(subscriptionController);
-				mainPanel.setContent(subscriptionController.getInitialComponent());
-			} else {
-				vcMain.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
-			}
-		} else if (source == weeklyCalendar) {
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == weeklyCalendar) {
 			if (event instanceof KalendarGUIEditEvent) {
 				KalendarGUIEditEvent guiEvent = (KalendarGUIEditEvent) event;
 				KalendarEvent kalendarEvent = guiEvent.getKalendarEvent();
@@ -431,8 +368,54 @@ public class WeeklyCalendarController extends BasicController implements Activat
 				pushEditEventController(ureq, kalendarEvent, kalendarWrapper);
 			} else if (event instanceof KalendarGUIAddEvent) {
 				pushAddEventController((KalendarGUIAddEvent)event, ureq);
-			} 
-		} 
+			} else if (event instanceof KalendarGUISelectEvent) {
+				KalendarGUISelectEvent selectEvent = (KalendarGUISelectEvent)event;
+				doOpenEventCallout(ureq, selectEvent.getKalendarEvent(), selectEvent.getKalendarRenderWrapper(), selectEvent.getTargetDomId());
+			} else if (event instanceof KalendarGUIMoveEvent) {
+				KalendarGUIMoveEvent moveEvent = (KalendarGUIMoveEvent)event;
+				doMove(ureq, moveEvent.getKalendarEvent(), moveEvent.getKalendarRenderWrapper(),
+						moveEvent.getDayDelta(), moveEvent.getMinuteDelta(), moveEvent.getAllDay());
+			}
+		} else if (source == subscribeButton || source == unsubscribeButton) {
+			removeAsListenerAndDispose(subscriptionController);
+			if(calendarSubscription.isSubscribed() == (source == unsubscribeButton)) {
+				subscriptionController = calendarSubscription.triggerSubscribeAction();
+			}
+			if (subscriptionController != null) {
+				// activate subscription controller
+				listenTo(subscriptionController);
+				flc.put("calsubscription", subscriptionController.getInitialComponent());
+			} else {
+				flc.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event == ComponentUtil.VALIDATE_EVENT && dirty) {
+			dirty = false;
+			fireEvent(ureq, new KalendarModifiedEvent());
+		} else if (event == ComponentUtil.VALIDATE_EVENT && weeklyCalendar.getComponent().isDirty() && modifiedCalenderDirty  ) {
+			KalendarRenderWrapper kalendarRenderWrapper = weeklyCalendar.getKalendarRenderWrapper(modifiedCalendarId);
+			kalendarRenderWrapper.reloadKalendar();	
+		} else if (source == searchLink) {
+			
+			List<KalendarRenderWrapper> allCalendarWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
+			allCalendarWrappers.addAll(importedCalendarWrappers);
+			
+			removeAsListenerAndDispose(searchController);
+			searchController = new SearchAllCalendarsController(ureq, getWindowControl(), allCalendarWrappers);
+			listenTo(searchController);
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
+			listenTo(cmc);
+			
+			cmc.activate();
+		}
+		super.event(ureq, source, event);
 	}
 
 	public void event(UserRequest ureq, Controller source, Event event) {
@@ -444,16 +427,23 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		if (source == editController) {
 			affectedCal = editController.getKalendarEvent().getCalendar();
 			cmc.deactivate();
-			weeklyCalendar.setDirty(true);
+			weeklyCalendar.getComponent().setDirty(true);
 			// do logging if affectedCal not null
 			if(affectedCal!=null) {
 			  ThreadLocalUserActivityLogger.log(getCalLoggingAction(), getClass(), LoggingResourceable.wrap(ureq.getIdentity()), LoggingResourceable.wrap(affectedCal));			
+			}
+		} else if (source == eventDetailsCtr) {
+			if(event instanceof KalendarGUIEditEvent) {
+				eventCalloutCtr.deactivate();
+
+				KalendarGUIEditEvent editEvent = (KalendarGUIEditEvent)event;
+				pushEditEventController(ureq, editEvent.getKalendarEvent(), editEvent.getKalendarRenderWrapper());
 			}
 		} else if (source == importCalendarController) {
 			cmc.deactivate();
 		} else if(source == cmc && event == CloseableModalController.CLOSE_MODAL_EVENT){
 			//DO NOT DEACTIVATE AS ALREADY CLOSED BY CloseableModalController INTERNALLY
-			weeklyCalendar.setDirty(true);
+			weeklyCalendar.getComponent().setDirty(true);
 		} else if (source == calendarConfig || source == importedCalendarConfig) {
 			if (event instanceof KalendarGUIAddEvent) {
 				pushAddEventController((KalendarGUIAddEvent)event, ureq);
@@ -462,24 +452,21 @@ public class WeeklyCalendarController extends BasicController implements Activat
 			} else if (event == Event.CHANGED_EVENT) {
 				importedCalendarWrappers = ImportCalendarManager.getImportedCalendarsForIdentity(ureq);
 				importedCalendarConfig.setCalendars(importedCalendarWrappers);
-				this.setCalendars(calendarWrappers, importedCalendarWrappers);
-				weeklyCalendar.setDirty(true);
-				vcMain.setDirty(true);
+				setCalendars(calendarWrappers, importedCalendarWrappers);
+				weeklyCalendar.getComponent().setDirty(true);
 			}
 		} else if (source == searchController) {
 			if (event instanceof GotoDateEvent) {
 				Date gotoDate = ((GotoDateEvent)event).getGotoDate();
-			  weeklyCalendar.setDate(gotoDate);
-			  setWeekYearInVelocityPage(vcMain, weeklyCalendar);
+			  weeklyCalendar.setFocusDate(gotoDate);
 			}
 			cmc.deactivate();
 		} else if (source == subscriptionController) {
 			// nothing to do here
-			mainPanel.setContent(vcMain);
-			vcMain.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
+			//TODO jquery mainPanel.setContent(vcMain);
+		//TODO jquery vcMain.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
 		} else if (source == gotoDateForm) {
-			weeklyCalendar.setDate(gotoDateForm.getGotoDate());
-			setWeekYearInVelocityPage(vcMain, weeklyCalendar);
+			weeklyCalendar.setFocusDate(gotoDateForm.getGotoDate());
 		} else if (source == dbcSequence) {
 			if(event != Event.CANCELLED_EVENT) {
 				int pos = DialogBoxUIFactory.getButtonPos(event);
@@ -507,8 +494,8 @@ public class WeeklyCalendarController extends BasicController implements Activat
 				kEvent.addRecurrenceExc(kalendarEvent.getBegin());
 				CalendarManagerFactory.getInstance().getCalendarManager().updateEventFrom(affectedCal, kEvent);
 				deleteSingleYesNoController.dispose();
-				weeklyCalendar.setDirty(true);
-				vcMain.setDirty(true);
+				weeklyCalendar.getComponent().setDirty(true);
+			//TODO jquery vcMain.setDirty(true);
 			}
 		} else if (source == deleteSequenceYesNoController) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
@@ -516,11 +503,11 @@ public class WeeklyCalendarController extends BasicController implements Activat
 				affectedCal = kalendarEvent.getCalendar();
 				CalendarManagerFactory.getInstance().getCalendarManager().removeEventFrom(affectedCal, kalendarEvent);
 				deleteSequenceYesNoController.dispose();
-				weeklyCalendar.setDirty(true);
-				vcMain.setDirty(true);
+				weeklyCalendar.getComponent().setDirty(true);
+			//TODO jquery vcMain.setDirty(true);
 			}
 		} 
-		if (weeklyCalendar.isDirty()) {
+		if (weeklyCalendar.getComponent().isDirty()) {
 			if (subsContext != null) {
 				// group or course calendar -> prepared subscription context is the right one
 				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
@@ -544,10 +531,52 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		if(dateEntry.startsWith("date")) {
 			Date gotoDate = BusinessControlFactory.getInstance().getDateFromContextEntry(entries.get(0));
 			if(gotoDate != null) {
-				weeklyCalendar.setDate(gotoDate);
-				setWeekYearInVelocityPage(vcMain, weeklyCalendar);
+				weeklyCalendar.setFocusDate(gotoDate);
 			}
 		}
+	}
+	
+	private void doOpenEventCallout(UserRequest ureq, KalendarEvent calEvent, KalendarRenderWrapper calWrapper, String targetDomId) {
+		removeAsListenerAndDispose(eventCalloutCtr);
+		removeAsListenerAndDispose(eventDetailsCtr);
+		
+		eventDetailsCtr = new CalendarDetailsController(ureq, getWindowControl(), calEvent, calWrapper);
+		listenTo(eventDetailsCtr);
+		
+		Component eventCmp = eventDetailsCtr.getInitialComponent();
+		eventCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, targetDomId,
+				"Event", true, "b_cal_event_callout");
+		listenTo(eventCalloutCtr);
+		eventCalloutCtr.activate();
+	}
+	
+	private void doMove(UserRequest ureq, KalendarEvent calEvent, KalendarRenderWrapper calWrapper, Long dayDelta, Long minuteDelta, Boolean allDay) {
+		Kalendar cal = calEvent.getCalendar();
+		calEvent.setBegin(doMove(calEvent.getBegin(), dayDelta, minuteDelta));
+		calEvent.setEnd(doMove(calEvent.getEnd(), dayDelta, minuteDelta));
+		
+		if(allDay != null && calEvent.isAllDayEvent() != allDay.booleanValue()) {
+			calEvent.setAllDayEvent(allDay.booleanValue());
+		}
+
+		CalendarManagerFactory.getInstance().getCalendarManager().updateEventFrom(cal, calEvent);
+		weeklyCalendar.getComponent().setDirty(true);
+	}
+	
+	private Date doMove(Date date, Long dayDelta, Long minuteDelta) {
+		if(date == null) {
+			return date;
+		}
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		if(dayDelta != null) {
+			cal.add(Calendar.DATE, dayDelta.intValue());
+		}
+		if(minuteDelta != null) {
+			cal.add(Calendar.MINUTE, minuteDelta.intValue());
+		}
+		return cal.getTime();
 	}
 
 	/**
@@ -587,10 +616,20 @@ public class WeeklyCalendarController extends BasicController implements Activat
 	private void pushAddEventController(KalendarGUIAddEvent addEvent, UserRequest ureq) {
 		KalendarRenderWrapper calendarWrapper = weeklyCalendar.getKalendarRenderWrapper(addEvent.getCalendarID());
 		// create new KalendarEvent
-		KalendarEvent newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", addEvent.getStartDate(), (1000 * 60 * 60 * 1));
-		if (calendarWrapper.getKalendar().getType().equals(CalendarManager.TYPE_COURSE) ||
-				calendarWrapper.getKalendar().getType().equals(CalendarManager.TYPE_GROUP))
+		Date begin = addEvent.getStartDate();
+		
+		KalendarEvent newEvent;
+		if(addEvent.getEndDate() == null) {
+			newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", begin, (1000 * 60 * 60 * 1));
+		} else {
+			newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", begin, addEvent.getEndDate());
+		}
+
+		if (calendarWrapper != null &&
+				(calendarWrapper.getKalendar().getType().equals(CalendarManager.TYPE_COURSE) ||
+				 calendarWrapper.getKalendar().getType().equals(CalendarManager.TYPE_GROUP))) {
 			newEvent.setClassification(KalendarEvent.CLASS_PUBLIC);
+		}
 		
 		newEvent.setAllDayEvent(addEvent.isAllDayEvent());
 		String lastName  = ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, getLocale());
@@ -601,9 +640,7 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		allCalendarWrappers.addAll(importedCalendarWrappers);
 		
 		removeAsListenerAndDispose(editController);
-		editController = new KalendarEntryDetailsController(
-				ureq, newEvent, calendarWrapper, allCalendarWrappers, true, caller, getWindowControl()
-		);
+		editController = new KalendarEntryDetailsController(ureq, newEvent, calendarWrapper, allCalendarWrappers, true, caller, getWindowControl());
 		listenTo(editController);
 		
 		removeAsListenerAndDispose(cmc);
@@ -646,7 +683,7 @@ public class WeeklyCalendarController extends BasicController implements Activat
 				//keeping a reference to the dirty calendar as reloading here raises an nested do in sync error. Using the component validation event to reload
 				modifiedCalendarId  = kalendarModifiedEvent.getCalendarId();
 				modifiedCalenderDirty = true;
-				weeklyCalendar.setDirty(true);
+				weeklyCalendar.getComponent().setDirty(true);
 			}
 		}
 	}

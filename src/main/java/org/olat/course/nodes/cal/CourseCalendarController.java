@@ -23,7 +23,6 @@ package org.olat.course.nodes.cal;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
@@ -90,10 +89,12 @@ public class CourseCalendarController extends DefaultController implements Clone
 		calendarController.setFocusOnEvent(eventId);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	// nothing to do
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof KalendarModifiedEvent) {
 			CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), ores, nodeEvaluation);
@@ -103,19 +104,19 @@ public class CourseCalendarController extends DefaultController implements Clone
 		}
 	}
 
+	@Override
 	protected void doDispose() {
 		calendarController.dispose();
 	}
 
+	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
 		CourseCalendars myCal = new CourseCalendars(courseKalendarWrapper, calendars);
 		CourseCalendarSubscription calSubscription = myCal.createSubscription(ureq);
 		
-		int weekOfYear = calendarController.getFocusWeekOfYear();
-		int year = calendarController.getFocusYear();
-		
+		Date focus = calendarController.getFocus();
 		CourseCalendarController ctrl = new CourseCalendarController(ureq, wControl, myCal, calSubscription, ores, nodeEvaluation);
-		ctrl.calendarController.setFocus(year, weekOfYear);
+		ctrl.calendarController.setFocus(focus);
 		return ctrl;
 	}
 }

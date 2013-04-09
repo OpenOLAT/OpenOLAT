@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
  */
 public class KalendarGUIImportEvent extends Event {
 
+	private static final long serialVersionUID = 6716347235221049088L;
 	public static final String CMD_IMPORT = "acalevent";
 	private String calendarID;
 	

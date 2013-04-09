@@ -27,6 +27,7 @@ package org.olat.commons.calendar.ui;
 
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.core.gui.UserRequest;
@@ -37,7 +38,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
@@ -45,23 +45,22 @@ import org.olat.core.util.Util;
 public class CalendarColorChooserController extends DefaultController {
 
 	private static final String SELECTED_COLOR_CSS = "o_cal_colorchooser_selected";
-	private static final String PACKAGE = Util.getPackageName(CalendarManager.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
 
 	private Translator translator;
 	private VelocityContainer colorVC;
 	private String choosenColor;
-	private HashMap colorLinks;
+	private Map<Link, String> colorLinks;
 	private Link cancelButton;
 
 	public CalendarColorChooserController(Locale locale, WindowControl wControl, String currentCssSelection) {
 		super(wControl);
-		translator = new PackageTranslator(PACKAGE, locale);
+		translator = Util.createPackageTranslator(CalendarManager.class, locale);
 		
 		colorVC = new VelocityContainer("calEdit", VELOCITY_ROOT + "/calColor.html", translator, this);
 		cancelButton = LinkFactory.createButton("cancel", colorVC, this);
 		
-		colorLinks = new HashMap();
+		colorLinks = new HashMap<Link, String>();
 		Link greenLink = LinkFactory.createCustomLink("greenLink", "selc", "", Link.NONTRANSLATED, colorVC, this);
 		if (currentCssSelection.equals("o_cal_green")){
 			greenLink.setCustomEnabledLinkCSS(SELECTED_COLOR_CSS);

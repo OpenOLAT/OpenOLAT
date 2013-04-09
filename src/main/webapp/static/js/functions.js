@@ -30,7 +30,6 @@ var BLoader = {
 	// Internal mehod to check if a JS file has already been loaded on the page
 	_isAlreadyLoadedJS: function(jsURL) {
 		var notLoaded = true;
-		console.log(jsURL);
 		// first check for scrips loaded via HTML head
 		jQuery('head script[src]').each(function(s,t) {
 			if (jQuery(t).attr('src').indexOf(jsURL) != -1) {
@@ -831,7 +830,6 @@ OPOL.getMainColumnsMaxHeight =  function(){
 function b_resizeIframeToMainMaxHeight(iframeId) {
 	// adjust the given iframe to use as much height as possible
 	// (fg)
-	alert('b_resizeIframeToMainMaxHeight');
 	var theIframe = jQuery('#' + iframeId);
 	if (theIframe != 'undefined' && theIframe != null) {
 		var colsHeight = OPOL.getMainColumnsMaxHeight();

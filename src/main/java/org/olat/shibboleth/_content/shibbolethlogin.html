@@ -166,8 +166,8 @@ wayf_additional_idps = [$additionalIDPs];
 function o_overrideShibSubmitButtonStyle() {
        jQuery( function() {              
                try {
-                       $('wayf_submit_button').addClassName('b_button').setStyle('float:left');
-                       $('user_idp').observe('change',function(){$('wayf_submit_button').addClassName('b_dirty')});
+                       jQuery('#wayf_submit_button').addClass('b_button').css('float','left');
+                       jQuery('#user_idp').on('change',function(){ jQuery('#wayf_submit_button').addClass('b_dirty')});
                } catch (e) {
                        // ignore, only style, not important
                }

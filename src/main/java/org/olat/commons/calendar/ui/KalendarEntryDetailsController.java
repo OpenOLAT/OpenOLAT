@@ -99,7 +99,7 @@ public class KalendarEntryDetailsController extends BasicController {
 		listenTo(eventForm);
 		eventVC.put("eventForm", eventForm.getInitialComponent());
 		eventVC.contextPut("isNewEvent", new Boolean(isNew));
-		isReadOnly = calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
+		isReadOnly = calendarWrapper == null ? true : calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
 		eventVC.contextPut("isReadOnly", new Boolean(isReadOnly));
 		pane.addTab(translate("tab.event"), eventVC);
 		

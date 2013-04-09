@@ -42,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -73,7 +72,6 @@ public class KalendarEntryForm extends FormBasicController {
 	private boolean readOnly, isNew;
 	private SingleSelection chooseRecurrence;
 	private DateChooser recurrenceEnd;
-	private SpacerElement spacer;
 	private List<KalendarRenderWrapper> writeableCalendars;
 	private FormLink multi;
 	private boolean isMulti;
@@ -100,7 +98,8 @@ public class KalendarEntryForm extends FormBasicController {
 		
 		this.event = event;
 		this.choosenWrapper = choosenWrapper;
-		this.readOnly = choosenWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
+		this.readOnly = choosenWrapper == null
+				? false : choosenWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
 		this.isNew = isNew;
 		this.isMulti = false;
 		
@@ -292,12 +291,14 @@ public class KalendarEntryForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		chooseCalendar = uifactory.addDropdownSingleselect("cal.form.chooseCalendar", formLayout, calendarKeys, calendarValues, null);
-		chooseCalendar.select(choosenWrapper.getKalendar().getCalendarID(), true);
+		if(choosenWrapper != null) {
+			chooseCalendar.select(choosenWrapper.getKalendar().getCalendarID(), true);
+		}
 		chooseCalendar.setVisible(isNew);
 		
-		calendarName = uifactory.addStaticTextElement("calendarname", "cal.form.calendarname", choosenWrapper.getKalendarConfig().getDisplayName(), formLayout);
+		String calName = choosenWrapper == null ? "" : choosenWrapper.getKalendarConfig().getDisplayName();
+		calendarName = uifactory.addStaticTextElement("calendarname", "cal.form.calendarname", calName, formLayout);
 		calendarName.setVisible(!isNew);
 		
 		boolean fb = readOnly && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY;

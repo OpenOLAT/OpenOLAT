@@ -134,7 +134,6 @@ public class LinkRenderer implements ComponentRenderer {
 
 		String i18n = link.getI18n();
 		String title = link.getTitle();
-		if(title != null)	title = StringEscapeUtils.escapeHtml(title).toString();
 		String customDisplayText = link.getCustomDisplayText();
 
 		// a form link can not have tooltips at the moment
@@ -174,7 +173,7 @@ public class LinkRenderer implements ComponentRenderer {
 				if (!link.isHasTooltip()) {
 					sb.append(" title=\"");
 					if (nontranslated){
-						sb.append(title).append("\"");
+						sb.append(StringEscapeUtils.escapeHtml(title)).append("\"");
 					} else {
 						sb.append(StringEscapeUtils.escapeHtml(translator.translate(title))).append("\"");
 					}
@@ -189,7 +188,7 @@ public class LinkRenderer implements ComponentRenderer {
 					}
 					text = StringEscapeUtils.escapeJavaScript(text);
 					sb.append(" title=\"\"");
-					extJsSb.append(elementId).append(".tooltip({content:function(){return \"").append(text).append("\";}});");
+					extJsSb.append(elementId).append(".tooltip({content:function(){ return \"").append(text).append("\";}});");
 					hasExtJsSb = true;
 				}
 			}

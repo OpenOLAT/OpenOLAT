@@ -334,8 +334,9 @@ public class StringHelper {
 		if(string == null || string.length() == 0) {
 			return false;
 		}
+		int stop = string.startsWith("-") ? 1 : 0;
 		char[] charArr = string.toCharArray();
-		for(int i=charArr.length; i-->0; ) {
+		for(int i=charArr.length; i-->stop; ) {
 			char ch = charArr[i];
 			if(ch < 47 || ch > 58) {
 				return false;

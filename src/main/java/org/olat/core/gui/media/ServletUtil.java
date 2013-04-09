@@ -94,7 +94,7 @@ public class ServletUtil {
 				httpResp.setDateHeader("Last-Modified", lastModified.longValue());
 			}
 
-			if (isFlashPseudoStreaming(httpReq)) {
+			if (isFlashPseudoStreaming(httpReq, mr)) {
 				httpResp.setContentType("video/x-flv");
 				pseudoStreamFlashResource(httpReq, httpResp, mr);
 			} else {
@@ -120,7 +120,12 @@ public class ServletUtil {
 		}
 	}
 	
-	private static boolean isFlashPseudoStreaming(HttpServletRequest httpReq) {
+	private static boolean isFlashPseudoStreaming(HttpServletRequest httpReq, MediaResource mr) {
+		//exclude some mappers which cannot be flash
+		if(mr instanceof JSONMediaResource) {
+			return false;
+		}
+		
 		String start = httpReq.getParameter("undefined");
 		if(StringHelper.containsNonWhitespace(start)) {
 			return true;
