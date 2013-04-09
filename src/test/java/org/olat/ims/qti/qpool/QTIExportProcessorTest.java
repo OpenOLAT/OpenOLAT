@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import junit.framework.Assert;
 
@@ -78,7 +79,7 @@ public class QTIExportProcessorTest extends OlatTestCase {
 		URL itemUrl = QTIExportProcessorTest.class.getResource("mchc_asmimr_106.zip");
 		Assert.assertNotNull(itemUrl);
 		File itemFile = new File(itemUrl.toURI());
-		QTIImportProcessor proc = new QTIImportProcessor(owner, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		dbInstance.commitAndCloseSession();

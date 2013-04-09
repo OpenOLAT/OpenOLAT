@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -78,6 +79,7 @@ class QTIImportProcessor {
 	private static final OLog log = Tracing.createLoggerFor(QTIImportProcessor.class);
 	
 	private final Identity owner;
+	private final Locale defaultLocale;
 	private final String importedFilename;
 	private final File importedFile;
 
@@ -86,10 +88,11 @@ class QTIImportProcessor {
 	private final QuestionItemDAO questionItemDao;
 	private final QEducationalContextDAO qEduContextDao;
 
-	public QTIImportProcessor(Identity owner, String importedFilename, File importedFile,
+	public QTIImportProcessor(Identity owner, Locale defaultLocale, String importedFilename, File importedFile,
 			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
 			FileStorage qpoolFileStorage) {
 		this.owner = owner;
+		this.defaultLocale = defaultLocale;
 		this.importedFilename = importedFilename;
 		this.importedFile = importedFile;
 		this.qItemTypeDao = qItemTypeDao;
@@ -164,6 +167,8 @@ class QTIImportProcessor {
 		QuestionItemImpl poolItem = questionItemDao.create(title, QTIConstants.QTI_12_FORMAT, dir, filename);
 		//description
 		poolItem.setDescription(itemInfos.getComment());
+		//language from default
+		poolItem.setLanguage(defaultLocale.getLanguage());
 		//question type first
 		processItemQuestionType(poolItem, ident, itemEl);
 		//if question type not found, can be overridden by the metadatas

@@ -136,7 +136,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		assertNotNull(itemUrl);
 		File itemFile = new File(itemUrl.toURI());
 
-		qpoolService.importItems(owner, "mchc_i_001.xml", itemFile);
+		qpoolService.importItems(owner, Locale.ENGLISH, "mchc_i_001.xml", itemFile);
 	}
 	
 	@Test
@@ -147,7 +147,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		assertNotNull(itemUrl);
 		File itemFile = new File(itemUrl.toURI());
 
-		qpoolService.importItems(owner, "mchc_asmimr_101.xml", itemFile);
+		qpoolService.importItems(owner, Locale.ENGLISH, "mchc_asmimr_101.xml", itemFile);
 	}
 	
 	

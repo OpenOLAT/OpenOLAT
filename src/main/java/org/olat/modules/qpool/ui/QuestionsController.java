@@ -79,7 +79,9 @@ public class QuestionsController extends BasicController implements StackedContr
 		mainVC.put("preview", previewCtrl.getInitialComponent());
 		
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
+		deleteItem.setEnabled(false);
 		selectItem = LinkFactory.createButton("select.item", mainVC, this);
+		selectItem.setEnabled(false);
 
 		String[] js = new String[]{"js/jquery/uilayout/jquery.layout-latest.min.js"};
 		JSAndCSSComponent jsAndCssComp = new JSAndCSSComponent("layouting", js, null);
@@ -162,6 +164,9 @@ public class QuestionsController extends BasicController implements StackedContr
 		QuestionItem item = qpoolService.loadItemById(itemView.getKey());
 		detailsCtrl.updateItem(item, itemView.isEditable());
 		previewCtrl.updateItem(ureq, item);
+		
+		selectItem.setEnabled(true);
+		deleteItem.setEnabled(true);
 	}
 	
 	private void doDelete(UserRequest ureq, QuestionItemShort item) {

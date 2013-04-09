@@ -22,6 +22,7 @@ package org.olat.ims.qti.qpool;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
@@ -88,8 +89,9 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public List<QuestionItem> importItems(Identity owner, String filename, File file) {
-		QTIImportProcessor processor = new QTIImportProcessor(owner, filename, file, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file) {
+		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale, filename, file,
+				questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
 		return processor.process();
 	}
 

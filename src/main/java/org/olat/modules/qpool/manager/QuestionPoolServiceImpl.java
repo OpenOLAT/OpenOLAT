@@ -22,6 +22,7 @@ package org.olat.modules.qpool.manager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -185,12 +186,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public List<QuestionItem> importItems(Identity owner, String filename, File file) {
+	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale,  String filename, File file) {
 		List<QuestionItem> importedItem = null;
 		List<QPoolSPI> providers = qpoolModule.getQuestionPoolProviders();
 		for(QPoolSPI provider:providers) {
 			if(provider.isCompatible(filename, file)) {
-				importedItem = provider.importItems(owner, filename, file);
+				importedItem = provider.importItems(owner, defaultLocale, filename, file);
 			}	
 		}
 		return importedItem;

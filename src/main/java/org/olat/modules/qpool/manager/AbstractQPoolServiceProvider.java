@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -57,16 +58,16 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	public abstract FileStorage getFileStorage();
 
 	@Override
-	public List<QuestionItem> importItems(Identity owner, String filename, File file) {
+	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file) {
 		List<QuestionItem> items = new ArrayList<QuestionItem>();
-		QuestionItem item = importItem(owner, filename, file);
+		QuestionItem item = importItem(owner, defaultLocale, filename, file);
 		if(item != null) {
 			items.add(item);
 		}
 		return items;
 	}
 
-	public QuestionItem importItem(Identity owner, String filename, File file) {
+	public QuestionItem importItem(Identity owner, Locale defaultLocale, String filename, File file) {
 		String dir = getFileStorage().generateDir();
 		VFSContainer itemDir = getFileStorage().getContainer(dir);
 
@@ -84,8 +85,10 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 			IOUtils.closeQuietly(in);
 			IOUtils.closeQuietly(out);
 		}
+		
+		String language = defaultLocale.getLanguage();
 		return CoreSpringFactory.getImpl(QPoolService.class)
-				.createAndPersistItem(owner, filename, getFormat(), "de", null, dir, filename, null);
+				.createAndPersistItem(owner, filename, getFormat(), language, null, dir, filename, null);
 	}
 
 	@Override

@@ -73,7 +73,7 @@ public class ImportController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String filename = fileEl.getUploadFileName();
 		File file = fileEl.getUploadFile();
-		qpoolservice.importItems(getIdentity(), filename, file);
+		qpoolservice.importItems(getIdentity(), getLocale(), filename, file);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

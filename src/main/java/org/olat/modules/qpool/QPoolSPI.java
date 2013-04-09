@@ -21,6 +21,7 @@ package org.olat.modules.qpool;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
@@ -45,7 +46,7 @@ public interface QPoolSPI {
 	
 	public boolean isCompatible(String filename, VFSLeaf file);
 	
-	public List<QuestionItem> importItems(Identity owner, String filename, File file);
+	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file);
 	
 	/**
 	 * Export the item to the Zip

@@ -21,6 +21,7 @@ package org.olat.modules.qpool;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.persistence.ResultInfos;
@@ -86,7 +87,7 @@ public interface QPoolService {
 	//import / export
 	public void exportItem(QuestionItemShort item, ZipOutputStream zout);
 	
-	public List<QuestionItem> importItems(Identity owner, String filename, File file);
+	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file);
 	
 	public VFSLeaf getRootFile(QuestionItem item);
 	
