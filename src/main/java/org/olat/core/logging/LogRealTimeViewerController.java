@@ -123,7 +123,7 @@ public class LogRealTimeViewerController extends BasicController implements JobL
 			logError("Problem when creating log viewer scheduler", e);
 		}
 		// Add one second interval to update the log view every second
-		JSAndCSSComponent jsc = new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 3000);
+		JSAndCSSComponent jsc = new JSAndCSSComponent("intervall", this.getClass(), 3000);
 		jsc.requireFullPageRefresh(); // interval not working otherwise
 		logViewerVC.put("updatecontrol", jsc);
 		// Add manual update link in case the automatic refresh does not work

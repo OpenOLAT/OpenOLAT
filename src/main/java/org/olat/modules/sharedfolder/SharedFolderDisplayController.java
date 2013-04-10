@@ -28,7 +28,6 @@ package org.olat.modules.sharedfolder;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
@@ -95,7 +94,7 @@ public class SharedFolderDisplayController extends DefaultController {
 	 * @param wControl
 	 * @param previewBackground
 	 */
-	public SharedFolderDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer sharedFolder, OLATResourceable ores, boolean previewBackground) {
+	public SharedFolderDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer sharedFolder, OLATResourceable ores) {
 		super(wControl);
 		addLoggingResourceable(LoggingResourceable.wrap(ores, OlatResourceableType.genRepoEntry));
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
@@ -118,11 +117,6 @@ public class SharedFolderDisplayController extends DefaultController {
 		}
 		vcDisplay.put("displayer", controller.getInitialComponent());
 
-		// Add html header with css definitions to this velocity container
-		if (previewBackground) {
-			JSAndCSSComponent jsAndCss = new JSAndCSSComponent("previewcss", this.getClass(), null, "olat-preview.css", true);
-			vcDisplay.put("previewcss", jsAndCss);
-		}
 
 		setInitialComponent(vcDisplay);
 	}

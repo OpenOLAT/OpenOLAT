@@ -70,7 +70,6 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	private static Map<String, String> serverconfig = null;
 	private static List<Pattern> ajaxBlacklistPatterns = new ArrayList<Pattern>();
 	private static boolean jUnitTest;
-	private static final String KEY_SERVER_MODJK_ENABLED = "server_modjk_enabled";
 	// the persited properties contain user configurable config data (overrides
 	// default values from spring config)
 	private static PersistedProperties persistedProperties;
@@ -384,17 +383,6 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 			guiThemeIdentifyer = persistedProperties.getStringPropertyValue(KEY_GUI_THEME_IDENTIFYER, false);
 		}
 	}
-
-	
-	/**
-	 * check if mod jk is enabled
-	 * @return
-	 */
-	public static boolean isModjkEnabled() {
-		return Settings.serverconfig.containsKey(KEY_SERVER_MODJK_ENABLED) 
-				 && Settings.serverconfig.get(KEY_SERVER_MODJK_ENABLED).equalsIgnoreCase("true");
-	}
-	
 	
 	public static String getURIScheme() {
 		return (isSecurePortAvailable() ? "https:" : "http:");

@@ -281,12 +281,6 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		// the js logger provides only a header element, nevertheless we need to
 		// put it into the main velocity container.
 		mainvc.put("jsLoggerC", jsLoggerC.getInitialComponent());
-
-		// put the globals path like "/olat/classpath/61x/" into the main win,
-		// used for some dynamic injected js libs like jsMath
-		String resourcePath = getWindowControl().getWindowBackOffice().getWindowManager().getMapPathFor(this.getClass());
-		mainvc.contextPut("classPathStaticBaseURI", resourcePath.substring(0, resourcePath.indexOf("org.olat")));
-
 		// put the global js translator mapper path into the main window
 		mainvc.contextPut("jsTranslationMapperPath", jsTranslationMapperPath);
 

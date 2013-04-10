@@ -49,12 +49,6 @@
 						<entry key="server_fqdn" value="${server.domainname}" />
 						<entry key="server_securePort" value="${server.port.ssl}" />
 						<entry key="server_insecurePort" value="${server.port}" />
-						<!-- Static global-mappers files (path /g/**) can be delivered directly from apache 
-				     		 olat-application must copy all needed static files from classes/core to apache
-				     		 static directory (static/g/..) . 
-				     		 Apache and mod_jk must be configurated to filter '/g/**' path -->
-						<entry key="server_modjk_enabled" value="${server.modjk.enabled}" />
-						<entry key="server_core_jar_name" value="olatcore-1.0-SNAPSHOT.jar" />
 					</map>
 				</property>			
 				<!-- true enable debug mode, not for production mode but for productive hours ;) -->

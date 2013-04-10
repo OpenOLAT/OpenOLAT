@@ -32,7 +32,6 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
-import org.olat.core.gui.media.MediaResource;
 
 /**
  * handles all windows of a user
@@ -54,23 +53,6 @@ public interface WindowManager extends Disposable {
 	 * @param enabled if true, ajax should be enabled if possible
 	 */
 	public void setAjaxWanted(UserRequest ureq, boolean enabled);
-
-	/**
-	 * creates (or gets) a path for a given class
-	 * @param baseClass
-	 * @return
-	 */
-	public String getMapPathFor(Class baseClass);
-	
-	/**
-	 * locates and returns the resource found under <package-of-baseclass>/relpath;
-	 * e.g. for baseClass org.olat.demo.MyDemo and relPath /js/myfunc.js -> org/olat/demo/_static/js/myfunc.js
-	 * 
-	 * @param baseClass the class which packages denotes the base path for the lookup
-	 * @param relPath e.g. /js/myfunc.js
-	 * @return the MediaResource which delivers the resource
-	 */
-	public MediaResource createMediaResourceFor(final Class baseClass, String relPath);
 	
 	public GlobalSettings getGlobalSettings();
 	

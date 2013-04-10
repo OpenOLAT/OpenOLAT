@@ -28,7 +28,6 @@ package org.olat.core.gui.control.generic.iframe;
 
 import java.io.File;
 
-import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -40,7 +39,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.control.generic.textmarker.TextMarkerManagerImpl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
@@ -146,11 +144,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		boolean  enableTextmarking = TextMarkerManagerImpl.getInstance().isTextmarkingEnabled(ureq, contextRecourcable);
 		// Set correct user content theme
 		String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
-		// Deliver js files via class path static dispatcher to enable browser caching
-		String staticFilesPath = ClassPathStaticDispatcher.getInstance().getMapperBasePath(this.getClass());
-		//mapping for glossar
-		String mapPathGlossar = getWindowControl().getWindowBackOffice().getWindowManager().getMapPathFor(GlossaryMarkupItemController.class);
-		
 		if (frameId == null) {
 			frameId = "ifdc" + hashCode();
 		}
@@ -163,8 +156,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		//therefore the browser can not reuse the cached elements
 		contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
 				null /*g_encoding*/, null /*jsEncoding*/, null /*contentEncoding*/,
-				frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/,
-				staticFilesPath, mapPathGlossar);
+				frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
 
 		String mapperID = VFSManager.getRealPath(rootDir);
 		if (mapperID == null) {

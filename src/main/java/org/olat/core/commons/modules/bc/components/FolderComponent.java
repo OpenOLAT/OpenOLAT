@@ -44,9 +44,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.generic.folder.FolderHelper;
-import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -460,17 +458,6 @@ public class FolderComponent extends Component {
 	
 	public VFSContainer getExternContainerForCopy() {
 		return externContainerForCopy;
-	}
-
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest, org.olat.core.gui.render.ValidationResult)
-	 */
-	public void validate(UserRequest ureq, ValidationResult vr) {
-		super.validate(ureq, vr);
-		// include needed css and js files
-		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredJsFile(FolderComponent.class, "js/folder.js");
 	}
 
 	public ComponentRenderer getHTMLRendererSingleton() {

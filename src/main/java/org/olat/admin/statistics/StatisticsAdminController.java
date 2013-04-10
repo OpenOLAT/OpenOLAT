@@ -30,7 +30,6 @@ import java.util.Date;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -46,7 +45,6 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.quartz.CronTriggerBean;
 
 /**
@@ -161,7 +159,6 @@ public class StatisticsAdminController extends BasicController {
 				} else {
 					statisticUpdateManager.updateStatistics(true, getUpdateFinishedCallback());
 					refreshUIState();
-					content.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 3000));
 					getInitialComponent().setDirty(true);
 				}
 			}
@@ -197,7 +194,6 @@ public class StatisticsAdminController extends BasicController {
 			} else {
 				statisticUpdateManager.updateStatistics(false, getUpdateFinishedCallback());
 				refreshUIState();
-				content.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 3000));
 				getInitialComponent().setDirty(true);
 			}
 		}

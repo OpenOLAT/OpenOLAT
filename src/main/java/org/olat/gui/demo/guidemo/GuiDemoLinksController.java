@@ -101,10 +101,6 @@ public class GuiDemoLinksController extends BasicController {
 		
 		buttonCloseIcon = LinkFactory.createIconClose("This is the hovertext!", mainVC, this);
 		
-		// let the scripts (.js files) and css files be included when this controller's main component is rendered
-		JSAndCSSComponent jscss = new JSAndCSSComponent("jsAndCssForDemo", this.getClass(), null, "style.css", false);
-		mainVC.put("jsAndCssForDemo", jscss); // we include it in the render tree, so that the custom js and css are included
-		
 		link = LinkFactory.createLink("link", mainVC, this);
 		linkBack = LinkFactory.createLinkBack(mainVC, this);
 		linkExtern = LinkFactory.createCustomLink("link.ext", "link.ext", "link.ext", Link.LINK, mainVC, this);	

@@ -20,7 +20,6 @@
 package org.olat.core.commons.fullWebApp;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -51,9 +50,6 @@ public class DefaultFooterController extends BasicController {
 
 		// Initialize velocity container
 		footerVC = createVelocityContainer("defaultfooter");
-
-		String ressourceMapperUri = ClassPathStaticDispatcher.getInstance().getMapperBasePath(this.getClass());
-		footerVC.contextPut("ressourceMapperUri", ressourceMapperUri);
 		footerVC.contextPut("olatversion", Settings.getFullVersionInfo() +" "+ Settings.getNodeInfo());
 
 		// Push information about AJAX mode

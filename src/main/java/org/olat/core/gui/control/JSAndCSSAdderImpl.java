@@ -63,8 +63,6 @@ import org.olat.core.util.StringHelper;
 public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 
 	private DelegatingComponent dc;
-	
-	private HashMap<String, String> keyToPath = new HashMap<String, String>(10); // keys: key of a class e.g. 'org.olat.mypackage'; values: global mappath e.g. /m/10/
 
 	private List<String> curCssList = new ArrayList<String>();
 	private List<String> prevCssList = new ArrayList<String>();
@@ -95,7 +93,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	private int refreshInterval = -1;
 	private final WindowBackOfficeImpl wboImpl;
 
-	private Map<String, Class<?>> jsPathToBaseClass = new HashMap<String, Class<?>>();
 	private Map<String,String> jsPathToJsFileName = new HashMap<String, String>();
 	private Map<String,String> jsPathToEvalBeforeAJAXAddJsCode = new HashMap<String, String>();
 	private Map<String,String> jsPathToEvalFileEncoding = new HashMap<String, String>();
@@ -127,46 +124,30 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Object,
 	 *      java.lang.String)
 	 */
+	@Override
 	public void addRequiredStaticJsFile(String jsFileName) {
-		addRequiredJsFile(null, jsFileName, ENCODING_DEFAULT, null);
+		addRequiredJsFile(jsFileName, ENCODING_DEFAULT, null);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Object,
-	 *      java.lang.String)
-	 */
-	public void addRequiredJsFile(Class<?> baseClass, String jsFileName) {
-		addRequiredJsFile(baseClass, jsFileName, ENCODING_DEFAULT, null);
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Object,
-	 *      java.lang.String, java.lang.String)
-	 */
-	public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding) {
-		addRequiredJsFile(baseClass, jsFileName, fileEncoding, null);
+	@Override
+	public void addRequiredStaticJsFile(String jsFileName, String fileEncoding, String preAJAXAddJsCode) {
+		addRequiredJsFile(jsFileName, fileEncoding, preAJAXAddJsCode);
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Class,
 	 *      java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding,
-			String AJAXAddJsCode) {
+	private void addRequiredJsFile(String jsFileName, String fileEncoding, String AJAXAddJsCode) {
 
-		String jsPath;
-		if(baseClass == null) {
-			StringOutput sb = new StringOutput(50);
-			Renderer.renderStaticURI(sb, jsFileName);
-			jsPath = sb.toString();
-		} else {
-			jsPath = getMappedPathFor(baseClass, jsFileName);
-		}
+
+		StringOutput sb = new StringOutput(50);
+		Renderer.renderStaticURI(sb, jsFileName);
+		String jsPath = sb.toString();
 
 		if (!curJsList.contains(jsPath)) {
 			//System.out.println("reqJs:"+jsPath);
 			curJsList.add(jsPath);
-			jsPathToBaseClass.put(jsPath, baseClass);
 			jsPathToJsFileName.put(jsPath, jsFileName);
 			if (StringHelper.containsNonWhitespace(AJAXAddJsCode)) {
 				jsPathToEvalBeforeAJAXAddJsCode.put(jsPath, AJAXAddJsCode);
@@ -181,24 +162,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 
 	@Override
 	public void addStaticCSSPath(String cssPath) {
-		addRequiredCSSFile(null, cssPath, false, JSAndCSSAdder.CSS_INDEX_BEFORE_THEME);
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredCSSFile(java.lang.Class, java.lang.String, boolean)
-	 */
-	@Override
-	public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove) {
-		addRequiredCSSFile(baseClass, cssFileName, forceRemove, JSAndCSSAdder.CSS_INDEX_BEFORE_THEME);
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredCSSFile(java.lang.Class, java.lang.String, boolean, int)
-	 */
-	@Override
-	public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove, Integer cssLoadIndex) {
-		String cssPath = getMappedPathFor(baseClass, cssFileName);
-		addRequiredCSSPath(cssPath, forceRemove, cssLoadIndex);
+		addRequiredCSSPath(cssPath, false, JSAndCSSAdder.CSS_INDEX_BEFORE_THEME);
 	}
 	
 	/**
@@ -315,48 +279,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		
 		return wasRawChanged || fullPageRefresh;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#getMappedPathFor(java.lang.Class, java.lang.String)
-	 */
-	public String getMappedPathFor(Class<?> baseClass, String fileName) {
-		//fxdiff make it possible to put absolute paths to js-files
-		// e.g. /olat/raw/fx-OLAT/themes/frentix/myjs.js FXOLAT-310
-		if(baseClass == null){
-			return fileName;
-		}
-		String packkey = getKey(baseClass); 
-		String mappath = keyToPath.get(packkey);
-		if (mappath == null) {
-			synchronized (keyToPath) {
-				mappath = keyToPath.get(packkey);
-				if (mappath == null) {
-					// never used before, get a path from the global mapper provider
-					mappath = wboImpl.getWinmgrImpl().getMapPathFor(baseClass);
-					keyToPath.put(packkey, mappath);
-				}				
-			}
-		}
-		if (fileName == null) {
-			return mappath;
-		} else {
-			return mappath + "/" + fileName;
-		}
-	}
-
-	/**
-	 * @param baseClass
-	 * @return
-	 */
-	private String getKey(Class<?> baseClass) {
-		String cla = baseClass.getName();
-		int ls = cla.lastIndexOf('.');
-		// post: ls != -1, since we don't use the java default package
-		String pkg = cla.substring(0, ls);
-		// using baseClass.getPackage() would add unneeded inefficient and synchronized code
-		return pkg;
-	}
-	
 
 	/**
 	 * @return

@@ -110,7 +110,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		chatContent.contextPut("isAjaxMode", Boolean.valueOf(ajaxOn));
 		
 		//	checks with the given intervall if dirty components are available to rerender
-		jsc = new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 5000);
+		jsc = new JSAndCSSComponent("intervall", this.getClass(), 5000);
 		main.put("updatecontrol", jsc);
 		
 		// configure new message sound

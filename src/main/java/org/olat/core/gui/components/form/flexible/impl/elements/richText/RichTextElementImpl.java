@@ -51,7 +51,10 @@ import org.olat.core.util.filter.FilterFactory;
 public class RichTextElementImpl extends AbstractTextElement implements
 		RichTextElement, Disposable {
 	
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(RichTextElementImpl.class);
+	protected RichTextElementComponent component;
+	private RichTextConfiguration configuration;
+	private WindowBackOffice windowBackOffice;
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement#getValue()
@@ -72,19 +75,6 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	public String getRawValue(){
 		return this.value;
 	}
-	
-	
-
-	@Override
-	public void setExtDelay(boolean extDelay) {
-		component.setExtDelay(extDelay);
-	}
-
-
-
-	protected RichTextElementComponent component;
-	private RichTextConfiguration configuration;
-	private WindowBackOffice windowBackOffice;
 	
 	/**
 	 * Constructor for specialized TextElements, i.e. IntegerElementImpl.

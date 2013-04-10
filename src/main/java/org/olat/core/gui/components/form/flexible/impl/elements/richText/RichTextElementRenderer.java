@@ -135,8 +135,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 			sb.append("<script type='text/javascript'>/* <![CDATA[ */ ");
 			// Execute code within an anonymous function (closure) to not leak
 			// variables to global scope (OLAT-5755)
-			if(teC.isExtDelay()) sb.append("setTimeout(function(){");
-			else sb.append("(function(){");
+			sb.append("(function(){");
 			// Stop existing form dirty observers first
 			sb.append("BTinyHelper.stopFormDirtyObserver('" + te.getRootForm().getDispatchFieldId() + "','" + domID + "');");
 			// Now add component dispatch URL as a tiny helper variable to open the
@@ -172,9 +171,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 			
 			sb.append("} };");
 			sb.append(checkAndLoadTinyFunctionName).append("();");
-
-			if(teC.isExtDelay()) sb.append("},500);");
-			else sb.append("})();");
+			sb.append("})();");
 			sb.append("/* ]]> */</script>");
 			// Done with loading of TinyMCE code
 		}

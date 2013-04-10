@@ -24,7 +24,6 @@
 */
 package org.olat.core.gui.control.generic.textmarker;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -83,10 +82,9 @@ public class GlossaryMarkupItemController extends BasicController {
 		// add dom id for wrapper div
 		tmContainer.contextPut("domId", domId);
 
-		glossHelpJs = new JSAndCSSComponent("glossHelpJs", this.getClass(), new String[] { "glossaryhelper.js" }, "textmarker.css", true);
+		String[] js = new String[]{"js/openolat/glossaryhelper.js", "js/openolat/glossaryhighlighter.js"};
+		glossHelpJs = new JSAndCSSComponent("glossHelpJs", js, null);
 		tmContainer.put("glossHelpJs", glossHelpJs);
-		glossHLJS = new JSAndCSSComponent("glossHLJS", this.getClass(), new String[] { "glossaryhighlighter.js" }, null, true);
-		tmContainer.put("glossHLJS", glossHLJS);
 		
 		String glossFolderString = ((LocalFolderImpl)glossaryFolder).getBasefile().toString();
 		tmContainer.contextPut("glossaryFolder", glossFolderString.replace("/", "."));

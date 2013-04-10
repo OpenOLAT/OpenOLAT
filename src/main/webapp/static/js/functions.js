@@ -836,14 +836,14 @@ function b_resizeIframeToMainMaxHeight(iframeId) {
 		
 		var potentialHeight = b_viewportHeight() - 100;// remove some padding etc.
 		var elem = jQuery('#b_header');
-		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.getHeight();
+		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.height();
 		elem = jQuery('#b_nav');
-		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.getHeight();
+		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.height();
 		elem = jQuery('#b_footer');
-		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.getHeight();
+		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.height();
 		// resize now
-		var height = (potentialHeight > colsHeight ? potentialHeight : colsHeight) + "px";
-		theIframe.setHeight(height);
+		var height = (potentialHeight > colsHeight ? potentialHeight : colsHeight);
+		theIframe.height(height);
 	}
 }
 // for gui debug mode
@@ -1077,10 +1077,133 @@ function b_table_toggleCheck(ref, checked) {
 	}
 }
 
+/*
+ * For menu tree
+ */
+function onTreeStartDrag(event, ui) {
+	jQuery(event.target).addClass('b_dd_proxy');
+}
+
+function onTreeStopDrag(event, ui) {
+	jQuery(event.target).removeClass('b_dd_proxy');
+}
+
+function onTreeDrop(event, ui) {
+	var dragEl = jQuery(ui.draggable[0]);
+	var el = jQuery(this);
+	el.css({position:'', width:''});
+	var url =  el.droppable('option','endUrl');
+	if(url.lastIndexOf('/') == (url.length - 1)) {
+		url = url.substring(0,url.length-1);
+	}
+	var dragId = dragEl.attr('id')
+	var targetId = dragId.substring(2, dragId.length);
+	url += '%3Atnidle%3A' + targetId;
+
+	var droppableId = el.attr('id');
+	if(droppableId.indexOf('ds') == 0) {
+		url += '%3Asne%3Ayes';
+	} else if(droppableId.indexOf('dt') == 0) {
+		url += '%3Asne%3Aend';
+	}
+	frames['oaa0'].location.href = url + '/';
+}
+
+function treeAcceptDrop(el) {
+	var dragEl = jQuery(el);
+	var dragElId = dragEl.attr('id');
+	if(dragElId != undefined && (dragElId.indexOf('dd') == 0 ||
+		dragElId.indexOf('ds') == 0 || dragElId.indexOf('dt') == 0 ||
+		dragElId.indexOf('da') == 0 || dragElId.indexOf('row') == 0)) {
+
+		var dropEl = jQuery(this)
+		var dropElId = dropEl.attr('id');//dropped
+		var dragNodeId = dragElId.substring(2, dragElId.length);
+		var dropId = dropElId.substring(2, dropElId.length);
+		if(dragNodeId == dropId) {
+			return false;
+		} 
+		
+		var sibling = "";
+		if(dropElId.indexOf('ds') == 0) {
+			sibling = "yes";
+		} else if(dropElId.indexOf('dt') == 0) {
+			sibling = "end";
+		}
+		
+		var dropAllowed = dropEl.data(dragNodeId + "-" + sibling);
+		if(dropAllowed === undefined) {
+			var url = dropEl.droppable('option', 'fbUrl');
+			//use prototype for the Ajax call
+			jQuery.ajax(url, { 
+				async: false,
+				data: { nidle:dragNodeId, tnidle:dropId, sne:sibling },
+				dataType: "json",
+				method:'GET',
+				success: function(data) {
+					dropAllowed = data.dropAllowed;
+				}
+	  		});
+			dropEl.data(dragNodeId + "-" + sibling, dropAllowed);
+		}
+		return dropAllowed;
+	}
+	return false;
+}
 
 /*
-* print command, prints iframes when available
-*/
+ * For checkbox
+ */
+function b_choice_toggleCheck(ref, checked) {
+	var checkboxes = document.forms[ref].elements;
+	len = checkboxes.length;
+	if (typeof(len) == 'undefined') {
+		checkboxes.checked = checked;
+	}
+	else {
+		var i;
+		for (i=0; i < len; i++) {
+			if (checkboxes[i].type == 'checkbox' && checkboxes[i].getAttribute('class') == 'b_checkbox') {
+				checkboxes[i].checked=checked;
+			}
+		}
+	}
+}
+
+/*
+ * For briefcase
+ */
+function b_briefcase_isChecked(ref, warning_text) {
+	var i;
+	var myElement = document.getElementById(ref);
+	var numselected = 0;
+	for (i=0; myElement.elements[i]; i++) {
+		if (myElement.elements[i].type == 'checkbox' && myElement.elements[i].name == 'paths' && myElement.elements[i].checked) {
+			numselected++;
+		}
+	}
+	
+	if (numselected < 1) {
+		alert(warning_text);
+		return false;
+	}
+	return true;
+}
+function b_briefcase_toggleCheck(ref, checked) {
+	var myElement = document.getElementById(ref);
+	len = myElement.elements.length;
+	var i;
+	for (i=0; i < len; i++) {
+		if (myElement.elements[i].name=='paths') {
+			myElement.elements[i].checked=checked;
+		}
+	}
+}
+
+
+/*
+ * print command, prints iframes when available
+ */
 function b_doPrint() {
 	// When we have an iframe, issue print command on iframe directly
 	var iframes =  $$('div.b_iframe_wrapper iframe');

@@ -183,7 +183,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 		pollThread.start();
 		
 		// activate polling
-		mainVc.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 3000));
+		mainVc.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), 3000));
 		
 		// add a few buttons
 		syncLong = LinkFactory.createButtonSmall("sync.long", mainVc, this);

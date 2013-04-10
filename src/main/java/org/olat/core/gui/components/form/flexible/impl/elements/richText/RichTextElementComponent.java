@@ -23,6 +23,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -32,6 +33,7 @@ import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.vfs.VFSContainer;
@@ -57,7 +59,6 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 	private RichTextElementImpl element;
 	private int cols;
 	private int rows;
-	private boolean extDelay = false;
 
 	/**
 	 * Constructor for a text area element
@@ -105,14 +106,6 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		this.rows = rows;
 	}
 
-	public boolean isExtDelay() {
-		return extDelay;
-	}
-
-	public void setExtDelay(boolean extDelay) {
-		this.extDelay = extDelay;
-	}
-
 	/**
 	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.render.ValidationResult)
@@ -122,20 +115,19 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
 
 		// Add tiny helper library
-		jsa.addRequiredJsFile(RichTextElementComponent.class,
-				"js/BTinyHelper.js", "UTF-8");
+		//jsa.addRequiredJsFile(RichTextElementComponent.class,"js/BTinyHelper.js", "UTF-8");
+		jsa.addRequiredStaticJsFile("js/tinymce/BTinyHelper.js");
 
 		// When the tiny_mce.js is inserted via AJAX, we need to setup some
 		// variables first to make it load properly:
-		StringBuffer sb = new StringBuffer();
+		StringOutput sb = new StringOutput();
 		// 1) Use tinyMCEPreInit to prevent TinyMCE to guess the script URL. The
 		// script URL is needed because TinyMCE will load CSS, plugins and other
 		// resources
-		sb.append("tinyMCEPreInit = {};");
-		sb.append("tinyMCEPreInit.suffix = '';");
-		sb.append("tinyMCEPreInit.base = '");
-		sb.append(jsa.getMappedPathFor(RichTextElementComponent.class,
-				"js/tinymce"));
+		sb.append("tinyMCEPreInit = {};")
+		  .append("tinyMCEPreInit.suffix = '';")
+		  .append("tinyMCEPreInit.base = '");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/tinymce/tinymce", false);
 		sb.append("';");
 
 		// 2) Tell TinyMCE that the page has already been loaded
@@ -146,12 +138,9 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		// Now add tiny library itself. TinyMCE files are written in iso-8859-1
 		// (important, IE panics otherwise with error 8002010)
 		if (Settings.isDebuging()) {
-			jsa.addRequiredJsFile(RichTextElementComponent.class,
-					"js/tinymce/tiny_mce_src.js", "ISO-8859-1",
-					preAJAXinsertionCode);
+			jsa.addRequiredStaticJsFile("js/tinymce/tinymce/tiny_mce_src.js", "ISO-8859-1",preAJAXinsertionCode);
 		} else {
-			jsa.addRequiredJsFile(RichTextElementComponent.class,
-					"js/tinymce/tiny_mce.js", "ISO-8859-1", preAJAXinsertionCode);
+			jsa.addRequiredStaticJsFile("js/tinymce/tinymce/tiny_mce.js", "ISO-8859-1", preAJAXinsertionCode);
 		}
 	}
 

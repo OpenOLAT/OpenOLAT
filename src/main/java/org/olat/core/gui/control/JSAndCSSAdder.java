@@ -45,6 +45,8 @@ public interface JSAndCSSAdder {
 	
 	public void addRequiredStaticJsFile(String jsFileName);
 	
+	public void addRequiredStaticJsFile(String jsFileName, String fileEncoding, String preAJAXAddJsCode);
+	
 	/**
 	 * adds a js file to be served in the html header to the list of required
 	 * js-files. e.g. addRequiredJsFile(MyController.class, "js/myscript.js")
@@ -63,7 +65,7 @@ public interface JSAndCSSAdder {
 	 * @param baseClass
 	 * @param jsFileName
 	 */
-	public void addRequiredJsFile(Class<?> baseClass, String jsFileName);
+	//public void addRequiredJsFile(String jsFileName);
 
 	/**
 	 * adds a js file to be served in the html header to the list of required
@@ -86,7 +88,7 @@ public interface JSAndCSSAdder {
 	 * @param fileEncoding the encoding of the js file or NULL to use the default
 	 *          encoding (utf-8)
 	 */
-	public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding);
+	//public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding);
 
 	/**
 	 * adds a js file to be served in the html header to the list of required
@@ -109,7 +111,7 @@ public interface JSAndCSSAdder {
 	 * @param preAJAXAddJsCode A string containing some values to be eval()-ed
 	 *          right before the script itself is eval()-ed
 	 */
-	public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding, String preAJAXAddJsCode);
+	//public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding, String preAJAXAddJsCode);
 
 	/**
 	 * 
@@ -123,7 +125,7 @@ public interface JSAndCSSAdder {
 	 * @param cssIndex position of the css in relation of the position of the
 	 *          theme. Use JSAndCSSAdder.CSS_INDEX_* variables to set this
 	 */
-	public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove, Integer cssLoadIndex);
+	//public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove, Integer cssLoadIndex);
 	
 	/**
 	 * This method will add the CSS file before the theme. use the other method to change this behaviour
@@ -135,7 +137,7 @@ public interface JSAndCSSAdder {
 	 *          the validate method does not require it anymore. (e.g. when you
 	 *          leave the course edit mode)
 	 */
-	public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove);
+	//public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove);
 
 	/**
 	 * 
@@ -211,7 +213,7 @@ public interface JSAndCSSAdder {
 	 *         a full page refresh. If fileName is null, the base path wihout
 	 *         trailing slash is returned.
 	 */
-	public String getMappedPathFor(Class<?> baseClass, String fileName);
+	//public String getMappedPathFor(Class<?> baseClass, String fileName);
 
 	
 	

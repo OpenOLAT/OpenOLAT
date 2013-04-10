@@ -52,9 +52,6 @@
 				<entry key="/raw/">
 					<ref bean="staticsrawbean" />
 				</entry>
-				<entry key="/classpath/">
-					<ref bean="classpathstaticsrawbean" />
-				</entry>
 				<entry key="/help/">
 					<ref bean="contexthelpbean" />
 				</entry>
@@ -184,25 +181,6 @@
 			<value>/raw/</value>
 		</constructor-arg>
 	</bean>
-	<bean id="classpathstaticsrawbean" 
-		depends-on="staticsrawbean"
-		class="org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher"
-		>
-		<constructor-arg index="0">
-			<!-- 
-				true: copy resources to webapp/static/classpath/ and deliver files via staticsrawbean 
-					or mod_jk if configured properly. Note: it can also make sense to set this to true
-					withoud mod_jk to reduce overhad with files delivered from the jars
-				false: don't copy files and deliver files directly from classpath (slower)
-				If unsure, use false.
-			 -->
-			<value>${server.modjk.enabled}</value>
-		</constructor-arg>
-		<constructor-arg index="1">
-			<value>/classpath/</value>
-		</constructor-arg>
-	</bean>
-	
 	
 	<bean id="contexthelpbean"
 		class="org.olat.core.commons.contextHelp.ContextHelpDispatcher"

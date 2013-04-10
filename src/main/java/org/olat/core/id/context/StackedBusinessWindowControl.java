@@ -31,7 +31,6 @@ package org.olat.core.id.context;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.info.WindowControlInfo;
 
 /**

@@ -75,7 +75,7 @@ public class CustomCSS extends LogDelegator implements Disposable {
 		this.relCssFilename = relCssFilename;
 		registerMapper(cssBaseContainer, uSess);
 		// initialize js and css component
-		jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(), null, null, false);
+		jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(), false);
 		String fulluri = mapperBaseURI + relCssFilename;
 		// load CSS after the theme
 		jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
@@ -89,7 +89,7 @@ public class CustomCSS extends LogDelegator implements Disposable {
 		registerMapper(cssBaseContainer, uSess);
 		
 		// initialize js and css component
-		jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(), null, null, false);
+		jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(), false);
 		String fulluri = mapperBaseURI + relCssFilename;
 		// load CSS after the theme
 		jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);

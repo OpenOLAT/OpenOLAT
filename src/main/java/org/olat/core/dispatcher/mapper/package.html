@@ -13,12 +13,10 @@ Brasato offers two ways to deliver files to the browser:
 <h3><a name="dispatcher">Dispatcher: static application files</h3>
 <p>
 To deliver static files that are part of the application brasato offers
-two concepts. Both are implemented using the brasato dispatcher
-interface:
+one concept:
 </p>
 <ol>
 <li>Files in webapp/static*</li>
-<li>Files in your.package._static/</li>
 </ol>
 <p>
 The first mechanism is used to embedd general framework resources, e.g.
@@ -26,57 +24,6 @@ css files, themes and basic javascript files. Those files are normally
 embedded directly in body.html. Those files are deliverd using the
 <code>StaticMediaDispatcher</code> class.
 </p>
-<p>The second mechanism is used to embedd component based resources,
-e.g. some js code, images or css classes only used by a certain
-component. The component can be part of the brasato framework, be in the
-application sourcecode or even aded to the application as a jar.
-</p>
-<p>
-Those resources are delivered using the <code>ClassPathStaticDispatcher</code>
-</p>
-<h4>Browser caches and version id</h4>
-<p>Files delivered by the the StaticMediaDispatcher or the
-ClassPathStaticDispatcher always have the same URL to make those file
-cachable by the browser. Since those files don't change between
-releases, it's entirely up to the browser how to cache them. OLAT
-implements the last-modified date to optimize browser or proxy server
-caching of those files.
-</p>
-<p>However, to force users to reload all resources after a new release,
-the path contains the application version flag. Thus, after a new
-release, all resources will be loaded from scratch by all browsers. This
-mechanismus is implemented transparently, you don't have to take care
-about it.
-</p>
-<h4>Mod_jk optimization: static delivery via apache</h4>
-Files delivered by the the StaticMediaDispatcher or the
-ClassPathStaticDispatcher can alternatively be delivered by apache when
-using mod_jk. This is strongly recommended on high traffic sites since
-apache is optimized for such tasks. To enable this features you must do
-the following steps:
-<ol>
-<li>Configure OLAT with Apache and mod_jk</li>
-<li>In olat.properties file set server.modjk.enabled=true</li>
-<li>
-Change mod_jk and httpd.conf configuration to :
-<pre>
-&lt;IfModule mod_jk.c&gt;
-  JkUnMount /olat/raw/* worker1
-&lt;/IfModule&gt;
-
-&lt;Directory "/home/cg/workspace/olat3_HEAD/webapp/static/"&gt;
-    Options         Indexes IncludesNoExec FollowSymLinks
-    AllowOverride   None
-    Order           allow,deny
-    Allow from      all
-&lt;/Directory&gt;
-Alias /olat/raw/VERSIONID "/home/cg/workspace/olat3_HEAD/webapp/static/"
-</pre>
-See olat/conf/httpd.conf for an example
-</li>
-<li>Restart OLAT (can take a while on first startup when jsmath images are deployed)</li>
-</ol>
-
 
 <h3><a name="mapper">Mapper: dynamic (content) files</h3>
 <p>

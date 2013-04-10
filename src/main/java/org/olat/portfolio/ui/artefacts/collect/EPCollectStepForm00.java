@@ -88,7 +88,6 @@ public class EPCollectStepForm00 extends StepFormBasicController {
 		title.setVisible(!simpleMode);
 		descript = uifactory.addRichTextElementForStringDataMinimalistic("description", "artefact.description", artefact.getDescription(), 7,
 				-1, false, formLayout, ureq.getUserSession(), getWindowControl());
-		descript.setExtDelay(true);
 		descript.setMaxLength(4000);
 		descript.setNotLongerThanCheck(4000, "artefact.description.too.long");
 

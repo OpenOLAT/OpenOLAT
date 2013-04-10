@@ -125,7 +125,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		mainVC.contextPut("isAjaxMode", Boolean.valueOf(ajaxOn));
 		
 		//	checks with the given intervall if dirty components are available to rerender
-		jsc = new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 2500);
+		jsc = new JSAndCSSComponent("intervall", this.getClass(), 2500);
 		mainVC.put("updatecontrol", jsc);
 
 		boolean anonym = "CourseModule".equals(ores.getResourceableTypeName());

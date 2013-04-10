@@ -135,7 +135,7 @@ public class FloatingResizableDialogController extends BasicController {
 		wrapper.contextPut("height", this.height);
 		wrapper.contextPut("offsetX", this.offsetX);
 		wrapper.contextPut("offsetY", this.offsetY);
-		wrapper.contextPut("title", StringEscapeUtils.escapeHtml(title));
+		wrapper.contextPut("title", title);
 		wrapper.contextPut("collabsibleContentPanelTitel", StringEscapeUtils.escapeHtml(collabsibleContentPanelTitel));
 		wrapper.contextPut("resizable", resizable);
 		wrapper.contextPut("constrain", constrain);

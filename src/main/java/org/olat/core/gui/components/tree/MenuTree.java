@@ -39,7 +39,6 @@ import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
@@ -114,8 +113,6 @@ public class MenuTree extends Component {
 	//fxdiff VCRP-9: drag and drop in menu tree
 	private String dragAndDropGroup;
 	private String dndFeedbackUri;
-	
-	private final JSAndCSSComponent dragAndDropCmp;
 
 	private boolean dirtyForUser = false;
 
@@ -133,8 +130,6 @@ public class MenuTree extends Component {
 	 */
 	public MenuTree(String id, String name) {
 		super(id, name);
-		//fxdiff VCRP-9: drag and drop in menu tree
-		dragAndDropCmp = new JSAndCSSComponent("jsComp", MenuTree.class, new String[]{"dd.js"}, null, false); 
 	}
 	
 	/**
@@ -306,7 +301,6 @@ public class MenuTree extends Component {
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		if(dragEnabled || dropEnabled) {
-			dragAndDropCmp.validate(ureq, vr);
 			if(dndFeedbackUri == null && treeModel instanceof DnDTreeModel) {
 				dndFeedbackUri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), new DnDFeedbackMapper(this));
 			}
@@ -351,10 +345,6 @@ public class MenuTree extends Component {
 	
 	String getDndFeedbackUri() {
 		return dndFeedbackUri;
-	}
-
-	public JSAndCSSComponent getDragAndDropCmp() {
-		return dragAndDropCmp;
 	}
 
 	/**

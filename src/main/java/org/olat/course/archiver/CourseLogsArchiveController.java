@@ -211,7 +211,7 @@ public class CourseLogsArchiveController extends BasicController {
 		myPanel.setContent(vcOngoing);
 
 		// initialize polling 
-		myPanel.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 3000));
+		myPanel.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), 3000));
 	}
 
 	protected void showExportFinished() {

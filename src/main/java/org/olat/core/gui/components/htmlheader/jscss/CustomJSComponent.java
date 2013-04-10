@@ -72,7 +72,7 @@ public class CustomJSComponent extends Component {
 			int len = jsFilePaths.length;
 			for (int i = 0; i < len; i++) {
 				String jsFileP = jsFilePaths[i];
-				jsadder.addRequiredJsFile(null, jsFileP);
+				jsadder.addRequiredStaticJsFile(jsFileP);
 			}
 		}
 	}

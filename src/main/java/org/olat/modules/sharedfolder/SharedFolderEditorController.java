@@ -36,7 +36,6 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
@@ -72,7 +71,7 @@ public class SharedFolderEditorController extends DefaultController {
 	public SharedFolderEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		super(wControl);
 		
-		translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+		translator = Util.createPackageTranslator(SharedFolderEditorController.class, ureq.getLocale());
 
 		vcEdit = new VelocityContainer("main", VELOCITY_ROOT + "/index.html", translator, this);
 		previewButton = LinkFactory.createButtonSmall("command.preview", vcEdit, this);
@@ -92,7 +91,7 @@ public class SharedFolderEditorController extends DefaultController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == previewButton) {
 			VFSContainer sharedFolderPreview = SharedFolderManager.getInstance().getNamedSharedFolder(re, false);
-			sfdCtr = new SharedFolderDisplayController(ureq, getWindowControl(), sharedFolderPreview, re, true);
+			sfdCtr = new SharedFolderDisplayController(ureq, getWindowControl(), sharedFolderPreview, re);
 			cmc = new CloseableModalController(getWindowControl(), translator.translate("close"), sfdCtr.getInitialComponent());
 			cmc.activate();
 		}

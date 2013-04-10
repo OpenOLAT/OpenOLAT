@@ -21,7 +21,8 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugin
 
 import java.util.Map;
 
-import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
+import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
+import org.olat.core.gui.render.StringOutput;
 
 /**
  * Description:<br>
@@ -45,7 +46,7 @@ import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
  */
 public abstract class TinyMCECustomPlugin {
 	// path relative to plugin editor file
-	private static final String REL_EDITOR_PATH = "/js/editor_plugin.js";
+	private static final String REL_EDITOR_PATH = "/editor_plugin.js";
 	// Optional plugin parameters
 	private Map<String, String> pluginParameters;
 
@@ -100,10 +101,9 @@ public abstract class TinyMCECustomPlugin {
 	 * @return URL where to load the plugin from
 	 */
 	public String getPluginURL() {
-		String path = ClassPathStaticDispatcher.getInstance()
-				.getMapperBasePath(this.getClass())
-				+ REL_EDITOR_PATH;
-		return path;
+		StringOutput sb = new StringOutput();
+		StaticMediaDispatcher.renderStaticURI(sb, "js/tinymce/openolat/plugins/" + getPluginName() + REL_EDITOR_PATH, true);
+		return sb.toString();
 	}
 
 	/**

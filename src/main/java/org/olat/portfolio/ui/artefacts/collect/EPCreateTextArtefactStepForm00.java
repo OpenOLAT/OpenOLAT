@@ -97,7 +97,6 @@ public class EPCreateTextArtefactStepForm00 extends StepFormBasicController {
 		content.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		content.setMandatory(true);
 		content.setNotEmptyCheck("artefact.content.not.empty");
-		content.setExtDelay(true);
 
 		if (!isUsedInStepWizzard()) {
 			// add form buttons

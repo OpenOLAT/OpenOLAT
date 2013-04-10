@@ -33,7 +33,6 @@ import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
-import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -48,7 +47,6 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindowController;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindowControllerCreator;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.intercept.InterceptHandler;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.helpers.Settings;
@@ -178,20 +176,6 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 	 */
 	public boolean isAjaxEnabled() {
 		return ajaxEnabled;
-	}
-
-	/**
-	 * @see org.olat.core.gui.WindowManager#getMapPathFor(java.lang.Class)
-	 */
-	public String getMapPathFor(final Class baseClass) {
-		return ClassPathStaticDispatcher.getInstance().getMapperBasePath(baseClass);
-	}
-	
-	/**
-	 * @see org.olat.core.gui.WindowManager#createMediaResourceFor(java.lang.Class, java.lang.String)
-	 */
-	public MediaResource createMediaResourceFor(final Class baseClass, String relPath) {
-		return ClassPathStaticDispatcher.getInstance().createClassPathStaticFileMediaResourceFor(baseClass, relPath);
 	}
 
 	/**

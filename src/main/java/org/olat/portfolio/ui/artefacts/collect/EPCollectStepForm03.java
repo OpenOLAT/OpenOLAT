@@ -140,7 +140,6 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 		String text = StringHelper.containsNonWhitespace(reflexion) ? reflexion : artefactReflexion;
 		reflexionEl = uifactory.addRichTextElementForStringDataMinimalistic("reflexion", "artefact.reflexion", text, 12, -1,
 				false, formLayout, ureq.getUserSession(), getWindowControl());
-		reflexionEl.setExtDelay(true);
 		reflexionEl.setNotLongerThanCheck(REFLEXION_MAX_SIZE, "reflexion.too.long");
 		reflexionEl.setMaxLength(REFLEXION_MAX_SIZE);
 
@@ -153,7 +152,6 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 			uifactory.addSpacerElement("reflexion-in-space", formLayout, false);
 			reflexionOrigEl = uifactory.addRichTextElementForStringDataMinimalistic("reflexion_original", "artefact.reflexion.original", artefactReflexion, 12, -1,
 					false, formLayout, ureq.getUserSession(), getWindowControl());
-			reflexionOrigEl.setExtDelay(true);
 			reflexionOrigEl.setEnabled(false);
 		}
 	}

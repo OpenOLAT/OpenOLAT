@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
-import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.defaults.dispatcher.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -245,7 +244,6 @@ public class RichTextConfiguration implements Disposable {
 	public static final String DIRECTIONALITY_VALUE_RTL = "rtl";
 	public static final String DIRECTIONALITY_VALUE_LTR = "ltr";
 	public static final String DOCUMENT_BASE_URL = "document_base_url";
-	public static final String TINY_BASE_CONTAINER_PATH = "brasato_tiny_base_container_path";
 	//
 	// Generic boolean true / false values
 	public static final String VALUE_TRUE = "true";
@@ -395,8 +393,6 @@ public class RichTextConfiguration implements Disposable {
 		// setDocType(DOCTYPE_VALUE_XHTML_1_0_TRANSITIONAL);
 		// set default plugins
 		plugins.add(SAFARI_PLUGIN);
-		// set base path to tiny resources
-		setQuotedConfigValue(TINY_BASE_CONTAINER_PATH, ClassPathStaticDispatcher.getInstance().getMapperBasePath(RichTextConfiguration.class) + "/js/tinymce/");
 		// Start observing of diry richt text element and trigger calling of setFlexiFormDirty() method
 		// This check is initialized after the editor has fully loaded
 		//addOnInitCallbackFunction(ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER + ".curry('" + rootFormDispatchId + "','" + domID + "')");

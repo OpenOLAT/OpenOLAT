@@ -208,7 +208,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 			sb.append("<script type=\"text/javascript\" src=\"").append(autcompResolver.getStaticsBaseURI()).append("/").append(ImsRepositoryResolver.QTI_FIB_AUTOCOMPLETE_JS_FILE).append("\"></script>\n");
 			// must be like <link rel="StyleSheet" href="/olat/secstatic/qti/74579818809617/_unzipped_/fibautocompl.css" type="text/css" media="screen, print">
 			sb.append("<link rel=\"StyleSheet\" href=\"").append(autcompResolver.getStaticsBaseURI()).append("/").append(ImsRepositoryResolver.QTI_FIB_AUTOCOMPLETE_CSS_FILE).append("\" type=\"text/css\" media=\"screen\" >\n");
-			JSAndCSSComponent autoCompleteJsCss = new JSAndCSSComponent("auto_complete_js_css", this.getClass(), null, null, true, sb.toString());
+			JSAndCSSComponent autoCompleteJsCss = new JSAndCSSComponent("auto_complete_js_css", this.getClass(), true, sb.toString());
 			myContent.put("autoCompleteJsCss", autoCompleteJsCss);
 		}
 		closeButton = LinkFactory.createButton("close", myContent, this);

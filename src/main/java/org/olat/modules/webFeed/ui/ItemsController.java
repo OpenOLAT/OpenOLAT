@@ -33,7 +33,6 @@ import org.olat.core.commons.controllers.navigation.NavigationEvent;
 import org.olat.core.commons.controllers.navigation.YearNavigationController;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
-import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -65,7 +64,6 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
-import org.olat.modules.webFeed.RSSFeed;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
@@ -155,10 +153,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 		vcItems = uiFactory.createItemsVelocityContainer(this);
 		vcItems.contextPut("feed", feed);
 		vcItems.contextPut("callback", callback);
-
-		String baseStaticPath = ClassPathStaticDispatcher.getInstance().getMapperBasePath(RSSFeed.class);
-		vcItems.contextPut("baseStaticPath", baseStaticPath);
-
 		vcItems.contextPut("helper", helper);
 
 		olderItemsLink = LinkFactory.createLink("feed.older.items", vcItems, this);

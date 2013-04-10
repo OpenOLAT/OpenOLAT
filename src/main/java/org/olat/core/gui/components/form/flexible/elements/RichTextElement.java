@@ -50,14 +50,4 @@ public interface RichTextElement extends TextElement {
 	 * @return
 	 */
 	public String getRawValue();
-	
-	/**
-	 * If the rich text element is shown in an ExtJS component. It need 
-	 * an extra delay to be correctly rendered (a problem appears the second time
-	 * a rich text is used in an ExtJS window). This is an hack before a better
-	 * solution.
-	 * @param extDelay
-	 */
-	public void setExtDelay(boolean extDelay);
-
 }

@@ -283,7 +283,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		main = createVelocityContainer("index");
 		JSAndCSSComponent jsAndCss;
 		// Add html header js
-		jsAndCss = new JSAndCSSComponent("qitjsandcss", this.getClass(), new String[] { "qti.js" }, null, true);
+		jsAndCss = new JSAndCSSComponent("qitjsandcss", new String[] { "js/openolat/qti.js" }, null);
 		main.put("qitjsandcss", jsAndCss);
 		
 		//

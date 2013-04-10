@@ -34,7 +34,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -69,13 +68,11 @@ import org.olat.resource.references.ReferenceManager;
  */
 public class SharedFolderHandler implements RepositoryHandler {
 
-	private static final String PACKAGE = Util.getPackageName(RepositoryManager.class);
-
 	private static final boolean LAUNCHEABLE = true;
 	private static final boolean DOWNLOADEABLE = false;
 	private static final boolean EDITABLE = true;
 	private static final boolean WIZARD_SUPPORT = false;
-	private static final List supportedTypes;
+	private static final List<String> supportedTypes;
 	
 	/**
 	 * Comment for <code>PROCESS_CREATENEW</code>
@@ -90,14 +87,14 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(1);
+		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(SharedFolderFileResource.TYPE_NAME);
 	}
 
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {
+	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
@@ -143,7 +140,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	 */
 	public MainLayoutController createLaunchController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
-		SharedFolderDisplayController sfdCtr = new SharedFolderDisplayController(ureq, wControl, sfContainer, res, false);
+		SharedFolderDisplayController sfdCtr = new SharedFolderDisplayController(ureq, wControl, sfContainer, res);
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, sfdCtr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(sfdCtr); // dispose content on layout dispose
@@ -207,7 +204,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 		ReferenceManager refM = ReferenceManager.getInstance();
 		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
 		if (referencesSummary != null) {
-			Translator translator = new PackageTranslator(PACKAGE, ureq.getLocale());
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
 			wControl.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
 			return false;
 		}

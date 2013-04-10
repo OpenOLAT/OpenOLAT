@@ -194,8 +194,7 @@ public class WikiMarkupComponent extends Component {
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredJsFile(WikiMarkupComponent.class, "js/wiki.js");
-		jsa.addRequiredCSSFile(WikiMarkupComponent.class, "css/wiki.css", true);
+		jsa.addRequiredStaticJsFile("js/openolat/wiki.js");
 	}
 
 	/**

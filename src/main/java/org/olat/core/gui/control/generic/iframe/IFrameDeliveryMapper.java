@@ -81,9 +81,6 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 	private String themeBaseUri;
 	private String customHeaderContent;
 	
-	private String staticFilesPath;
-	private String textMarkerPath;
-	
 	private transient boolean checkForInlineEvent;
 	private transient long suppressEndlessReload;
 	
@@ -93,8 +90,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 	
 	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking, boolean adjusteightAutomatically,
 			String g_encoding, String jsEncoding, String contentEncoding,
-			String frameId, String customCssURL, String themeBaseUri, String customHeaderContent,
-			String staticFilesPath, String textMarkerPath) {
+			String frameId, String customCssURL, String themeBaseUri, String customHeaderContent) {
 		
 		this.rootDir = rootDir;
 		
@@ -110,9 +106,6 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		this.customCssURL = customCssURL;
 		this.themeBaseUri = themeBaseUri;
 		this.customHeaderContent = customHeaderContent;
-		
-		this.staticFilesPath = staticFilesPath;
-		this.textMarkerPath = textMarkerPath;
 	}
 
 	public void setCheckForInlineEvent(boolean checkForInlineEvent) {
@@ -309,11 +302,11 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 			sb.append("\"></script>");
 			// Load glossary code now			
 			sb.append("\n<script type=\"text/javascript\" id=\"textmarkerLib\" src=\"");
-			sb.append(textMarkerPath) ;
-			sb.append("/js/glossaryhighlighter.js");
+		  StaticMediaDispatcher.renderStaticURI(sb, "js/openolat/glossaryhighlighter.js");
 			sb.append("\"></script>");
-			sb.append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"textmarkercss\" href=\"")
-			  .append(textMarkerPath).append("/css/textmarker.css\"");
+			sb.append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"textmarkercss\" href=\"");
+		  StaticMediaDispatcher.renderStaticURI(sb, "js/openolat/glossaryhighlighter.css");
+		  sb.append("\"");
 			if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
 			sb.append(">\n<link rel=\"stylesheet\" type=\"text/css\" id=\"jqueryiocss\" href=\"");
 		  StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/ui/jquery-ui-1.10.2.custom.min.css");
@@ -328,7 +321,9 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		sb.append("b_iframeid=\"").append(frameId).append("\";");
 		sb.append("b_isInlineUri=").append(Boolean.valueOf(addCheckForInlineEvents).toString()).append(";");
 		sb.append("\n/* ]]> */\n</script>");
-		sb.append("<script type=\"text/javascript\" src=\"").append(staticFilesPath).append("/js/iframe.js\"></script>\n");
+		sb.append("<script type=\"text/javascript\" src=\"");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/openolat/iframe.js");
+		sb.append("\"></script>\n");
 
 		// Resize frame to fit height of html page. 
 		// Do this only when there is some content available. This can be false when

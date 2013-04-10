@@ -24,7 +24,6 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
-import org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -41,7 +40,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
-import org.olat.modules.webFeed.RSSFeed;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -80,9 +78,6 @@ public class ItemController extends BasicController implements Activateable2 {
 			if (artefactLink != null) vcItem.put("artefactLink", artefactLink.getInitialComponent());
 		}
 		backLink = LinkFactory.createLinkBack(vcItem, this);
-		// Add static path for resource delivery and js player for media
-		String baseStaticPath = ClassPathStaticDispatcher.getInstance().getMapperBasePath(RSSFeed.class);
-		vcItem.contextPut("baseStaticPath", baseStaticPath);
 		// Add date component
 		if(item.getDate() != null) {
 			DateComponentFactory.createDateComponentWithYear("dateComp", item.getDate(), vcItem);

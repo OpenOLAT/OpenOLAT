@@ -194,8 +194,8 @@ public class WeeklyCalendarComponent extends Component {
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredJsFile(CalendarManager.class, "js/calendar.js");
-		jsa.addRequiredCSSFile(CalendarManager.class, "css/calendar.css", false);
+		//jsa.addRequiredJsFile(CalendarManager.class, "js/calendar.js");
+		//jsa.addRequiredCSSFile(CalendarManager.class, "css/calendar.css", false);
 	}
 
 	/**

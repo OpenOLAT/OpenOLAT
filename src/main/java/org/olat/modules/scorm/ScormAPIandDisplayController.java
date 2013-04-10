@@ -123,7 +123,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		
 		myContent = createVelocityContainer("display");
 		Locale loc = ureq.getLocale();
-		JSAndCSSComponent jsAdapter = new JSAndCSSComponent("apiadapter", this.getClass(), new String[] {"scormApiAdapter.js"}, null, true);
+		JSAndCSSComponent jsAdapter = new JSAndCSSComponent("apiadapter", new String[] {"js/openolat/scormApiAdapter.js"}, null);
 		myContent.put("apiadapter", jsAdapter);
 		
 		// init SCORM adapter

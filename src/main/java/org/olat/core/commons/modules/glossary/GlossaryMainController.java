@@ -118,10 +118,6 @@ public class GlossaryMainController extends BasicController implements Activatea
 				glistVC, this);
 		glistVC.contextPut("showAllLink", showAllLink);
 
-		// add javascript and css file
-		JSAndCSSComponent tmJs = new JSAndCSSComponent("glossaryJS", this.getClass(), null, "glossary.css", true);
-		glistVC.put("glossaryJS", tmJs);
-
 		putInitialPanel(glistVC);
 	}
 

@@ -92,7 +92,6 @@ public class UserCommentFormController extends FormBasicController {
 				"commentElem", null, "", -1, -1, false, formLayout, ureq
 						.getUserSession(), getWindowControl());
 		commentElem.setMaxLength(4000);
-		commentElem.setExtDelay(true);
 		FormLayoutContainer buttonContainer = FormLayoutContainer
 				.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add(buttonContainer);

@@ -283,7 +283,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		editContent.put("editForm", wikiEditForm.getInitialComponent());
 		
-		JSAndCSSComponent js = new JSAndCSSComponent("js", this.getClass(), new String[] { "wiki-script.js" }, null, false);
+		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/wiki.js" }, null);
 		content.put("js", js);
 		// FIXME:gs:a FileUploadCtr should accept vfsContainers instead of
 		// OLATrootfolderimpl. Refactor it!!!!!!!

@@ -19,12 +19,13 @@
  */
 package org.olat.core.extensions.action;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.olat.core.extensions.AbstractExtension;
 import org.olat.core.extensions.ExtensionElement;
-import org.olat.core.extensions.helpers.ExtensionElements;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
@@ -49,7 +50,7 @@ import org.olat.core.util.i18n.I18nManager;
  */
 public class GenericActionExtension extends AbstractExtension implements ActionExtension {
 
-	private ExtensionElements elements = new ExtensionElements();
+	private Map<String, ExtensionElement> elements = new HashMap<String, ExtensionElement>();
 	private ControllerCreator actionControllerCreator;
 	private String i18nActionKey;
 	private String i18nDescriptionKey;
@@ -74,7 +75,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	
 	public void initExtensionPoints() {
 		for (String extPoint : extensionPoints) {
-			elements.putExtensionElement(extPoint, this);
+			elements.put(extPoint, this);
 		}
 	}
 	
@@ -117,7 +118,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	}
 
 	public ExtensionElement getExtensionFor(String extensionPoint) {
-		if (isEnabled()) return elements.getExtensionElement(extensionPoint);
+		if (isEnabled()) return elements.get(extensionPoint);
 		else return null;
 	}
 
