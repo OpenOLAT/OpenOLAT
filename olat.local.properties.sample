@@ -100,9 +100,5 @@ generate.index.at.startup=false
 
 # only set this if you do not want unit tests to be performed during the build
 skip.unit.tests=true
-# set to false if you do not require special fonts
-unpack.fonts=false
 # when running in eclipse use "INFO, syslog, A1", for production use "INFO, syslog"
 log.rootCategory = INFO, syslog, A1
-# if enabled then the IM Server must be running before OLAT is started!
-instantMessaging.enable=false
