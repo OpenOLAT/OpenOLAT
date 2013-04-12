@@ -45,6 +45,7 @@ import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.wiki.WikiContainer;
 import org.olat.modules.wiki.WikiPage;
@@ -143,7 +144,7 @@ public class WikiMarkupComponent extends Component implements Disposable {
 	 */
 	public void setImageMapperUri(UserRequest ureq, final VFSContainer wikiContainer) {
 		// get a usersession-local mapper for images in this wiki
-		contentMapper = new WikiImageMapper(wikiContainer);
+		contentMapper = new VFSContainerMapper(wikiContainer);
 		String mapperPath;
 		// Register mapper as cacheable
 		String mapperID = VFSManager.getRealPath(wikiContainer);

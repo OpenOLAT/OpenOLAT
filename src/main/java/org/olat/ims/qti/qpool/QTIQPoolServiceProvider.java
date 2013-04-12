@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QPoolSPI;
@@ -127,7 +128,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		QTI12PreviewController previewCtrl = new QTI12PreviewController(ureq, wControl, item);
+		QTI12EditorController previewCtrl = new QTI12EditorController(ureq, wControl, item);
 		return previewCtrl;
 	}
 	

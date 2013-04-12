@@ -61,7 +61,7 @@ public class QTIEditorStaticsHandler implements PathHandler {
 	 */
 	public InputStream getInputStream(HttpServletRequest request, ResourceDescriptor rd) {
 		try {
-			File f = new File(QTIEditorPackage.getQTIEditorBaseDir() + rd.getRelPath());
+			File f = new File(QTIEditorPackageImpl.getQTIEditorBaseDir() + rd.getRelPath());
 			return new BufferedInputStream(new FileInputStream(f));
 		} catch (Exception e) {
 			return null;
@@ -74,7 +74,7 @@ public class QTIEditorStaticsHandler implements PathHandler {
 	public ResourceDescriptor getResourceDescriptor(HttpServletRequest request, String relPath) {
 		try {
 			ResourceDescriptor rd = new ResourceDescriptor(relPath);
-			File f = new File(QTIEditorPackage.getQTIEditorBaseDir() + relPath);
+			File f = new File(QTIEditorPackageImpl.getQTIEditorBaseDir() + relPath);
 			rd.setLastModified(f.lastModified());
 			rd.setSize(f.length());
 			String mimeType = WebappHelper.getMimeType(relPath);

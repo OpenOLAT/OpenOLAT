@@ -50,6 +50,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSManager;
 
 /**
@@ -1353,7 +1354,7 @@ public class RichTextConfiguration implements Disposable {
 	public void setDocumentMediaBase(final VFSContainer documentBaseContainer, String relFilePath, UserSession usess) {
 		linkBrowserRelativeFilePath = relFilePath;
 		// get a usersession-local mapper for the file storage (and tinymce's references to images and such)
-		contentMapper = new RichTextMediaMapper(documentBaseContainer);
+		contentMapper = new VFSContainerMapper(documentBaseContainer);
 		// Register mapper for this user. This mapper is cleaned up in the
 		// dispose method (RichTextElementImpl will clean it up)
 

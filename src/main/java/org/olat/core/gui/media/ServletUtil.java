@@ -499,7 +499,7 @@ public class ServletUtil {
 			// buffer size: assume average length of a char in bytes is max 2
 			int encLen = result.length();
 			Reader reader = result.getReader();
-			response.setContentLength(encLen);
+			//response.setContentLength(encLen);
 			
 			PrintWriter os = response.getWriter();
 			IOUtils.copy(reader, os);
@@ -531,6 +531,7 @@ public class ServletUtil {
 	public static void setJSONResourceHeaders(HttpServletResponse response) {
 		// we ignore the accept-charset from the request and always write in utf-8
 		// -> see comment below
+		//response.setCharacterEncoding("UTF-8");
 		response.setContentType("application/json;charset=utf-8");
 		// never allow to cache pages since they contain a timestamp valid only once
 		// HTTP 1.1

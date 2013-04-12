@@ -58,6 +58,7 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSManager;
 
 /**
@@ -314,7 +315,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 				final VFSContainer finalRootContainer = g_new_rootContainer;
 				
 				if (amapPath == null) {
-					Mapper mapper = new SinglePageMediaMapper(finalRootContainer);
+					Mapper mapper = new VFSContainerMapper(finalRootContainer);
 					// Register mapper as cacheable
 					String mapperID = VFSManager.getRealPath(finalRootContainer);
 					if (mapperID == null) {

@@ -64,7 +64,7 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 	private FileResource resource;
 	private Locale locale;
 	private Translator translator;
-	QTIEditorPackage tmpPackage;
+	private QTIEditorPackageImpl tmpPackage;
 	
 	/**
 	 * @param type
@@ -102,7 +102,7 @@ public class AddNewQTIDocumentController extends DefaultController implements IA
 	 */
 	public boolean transactionFinishBeforeCreate() {
 		File fTempQTI = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID() + ".zip");
-		tmpPackage = new QTIEditorPackage(DUMMY_TITLE, type, locale);
+		tmpPackage = new QTIEditorPackageImpl(DUMMY_TITLE, type, locale);
 		// we need to save the package in order to be able to create a file resource entry.
 		// package will be created again after changing title.
 		if (!tmpPackage.savePackageTo(fTempQTI)) return false;

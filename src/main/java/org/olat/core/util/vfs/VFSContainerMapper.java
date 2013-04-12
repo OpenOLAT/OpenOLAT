@@ -17,42 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.impl.elements.richText;
+package org.olat.core.util.vfs;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
+ * Simple mapper for a VFS container
  * 
- * Initial date: 22.03.2013<br>
+ * 
+ * Initial date: 12.04.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RichTextMediaMapper implements Mapper {
-
-	private VFSContainer documentBaseContainer;
+public class VFSContainerMapper  implements Mapper {
+	private VFSContainer container;
 	
-	public RichTextMediaMapper() {
-		//
+	public VFSContainerMapper() {
+		//serialization
 	}
 	
-	public RichTextMediaMapper(VFSContainer documentBaseContainer) {
-		this.documentBaseContainer = documentBaseContainer;
+	public VFSContainerMapper(VFSContainer container) {
+		this.container = container;
 	}
 	
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		VFSItem vfsItem = documentBaseContainer.resolve(relPath);
+		VFSItem vfsItem = container.resolve(relPath);
 		MediaResource mr;
-		if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) mr = new NotFoundMediaResource(relPath);
-		else mr = new VFSMediaResource((VFSLeaf) vfsItem);
+		if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+			mr = new NotFoundMediaResource(relPath);
+		} else {
+			mr = new VFSMediaResource((VFSLeaf) vfsItem);
+		}
 		return mr;
 	}
-
 }

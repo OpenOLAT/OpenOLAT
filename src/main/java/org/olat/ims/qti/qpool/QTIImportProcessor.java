@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItem;
@@ -276,7 +277,7 @@ class QTIImportProcessor {
 		//embed in <questestinterop>
 		DocumentFactory df = DocumentFactory.getInstance();
 		Document itemDoc = df.createDocument();
-		Element questestinteropEl = df.createElement("questestinterop");
+		Element questestinteropEl = df.createElement(QTIDocument.DOCUMENT_ROOT);
 		itemDoc.setRootElement(questestinteropEl);
 		Element deepClone = (Element)itemInfos.getItemEl().clone();
 		questestinteropEl.add(deepClone);

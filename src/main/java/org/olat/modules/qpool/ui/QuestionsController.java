@@ -149,6 +149,7 @@ public class QuestionsController extends BasicController implements StackedContr
 	
 	protected void doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
 		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, editable);
+		detailsCtrl.setStackedController(stackPanel);
 		listenTo(detailsCtrl);
 		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);
 		listenTo(mainCtrl);

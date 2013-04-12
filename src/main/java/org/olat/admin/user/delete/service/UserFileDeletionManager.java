@@ -42,7 +42,7 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
-import org.olat.ims.qti.editor.QTIEditorPackage;
+import org.olat.ims.qti.editor.QTIEditorPackageImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserDataDeletable;
@@ -116,7 +116,7 @@ public class UserFileDeletionManager extends BasicManager implements UserDataDel
 
 	private void deleteAllTempQtiEditorFilesOf(Identity identity) {
 		// Temp QTI-editor File path e.g. /usr/local/olatfs/olat/olatdata/tmp/qtieditor/schuessler
-		File userTempQtiEditorDir = new File(QTIEditorPackage.getQTIEditorBaseDir(),identity.getName());
+		File userTempQtiEditorDir = new File(QTIEditorPackageImpl.getQTIEditorBaseDir(),identity.getName());
 		if (userTempQtiEditorDir.exists()) {
 			FileUtils.deleteDirsAndFiles(userTempQtiEditorDir, true, true); 
 			logAudit("User-Deletion: identity=" + identity.getName() +" : QTI editor temp files deleted under dir=" + userTempQtiEditorDir.getAbsolutePath());

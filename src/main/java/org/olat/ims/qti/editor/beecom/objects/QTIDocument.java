@@ -43,8 +43,8 @@ public class QTIDocument {
 	private Assessment assessment = null; // occurs 0 or 1 time
 	private boolean survey = false;
 	
-	private static String DOCUMENT_ROOT = "questestinterop";
-	private static String DOCUMENT_DTD = "ims_qtiasiv1p2p1.dtd";
+	public static String DOCUMENT_ROOT = "questestinterop";
+	public static String DOCUMENT_DTD = "ims_qtiasiv1p2p1.dtd";
 	
 	/**
 	 * Get the structure as an XML Document.

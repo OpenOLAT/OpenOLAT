@@ -22,10 +22,7 @@ package org.olat.modules.webFeed.portfolio;
 
 import java.io.InputStream;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -33,16 +30,14 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -72,15 +67,7 @@ public class BlogArtefactDetailsController extends BasicController {
 		VFSLeaf itemXml = (VFSLeaf)artefactContainer.resolve(BlogArtefact.BLOG_FILE_NAME);
 		if(itemXml != null) {
 			
-			String mapperBase = registerMapper(ureq, new Mapper() {			
-				@SuppressWarnings("unused")
-				@Override
-				public MediaResource handle(String relPath, HttpServletRequest request) {
-					VFSItem currentItem = artefactContainer.resolve(relPath);
-					VFSMediaResource vmr = new VFSMediaResource((VFSLeaf)currentItem);
-					return vmr;
-				}
-			});
+			String mapperBase = registerMapper(ureq, new VFSContainerMapper(artefactContainer));
 
 			InputStream in = itemXml.getInputStream();
 			

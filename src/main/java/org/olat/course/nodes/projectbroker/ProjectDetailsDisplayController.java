@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
@@ -55,6 +54,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.CourseNode;
@@ -280,18 +280,9 @@ public class ProjectDetailsDisplayController extends BasicController {
 		// and can not reuse the standard briefcase way of file delivering, some
 		// very old fancy code
 		// Mapper is cleaned up automatically by basic controller
-		String baseUrl = registerMapper(ureq, new Mapper() {
-			public MediaResource handle(String relPath, HttpServletRequest request) {
-				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(ProjectBrokerManagerFactory.getProjectBrokerManager().getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
-				//ignore the relPath, we know it from the constructor of the DisplayOrDownloadComponent usin the mapper
-				VFSLeaf vfsfile = (VFSLeaf) rootFolder.resolve(project.getAttachmentFileName());
-				if (vfsfile == null) {
-					return new NotFoundMediaResource(relPath);
-				} else {
-					return new VFSMediaResource(vfsfile);
-				}
-			}
-		});
+
+		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(ProjectBrokerManagerFactory.getProjectBrokerManager().getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
+		String baseUrl = registerMapper(ureq, new VFSContainerMapper(rootFolder));
 
 		// Trigger auto-download
 		if(isLogDebugEnabled()) {

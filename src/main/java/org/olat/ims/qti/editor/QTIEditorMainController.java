@@ -87,7 +87,6 @@ import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.Item;
-import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.objects.QTIObject;
 import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.objects.Response;
@@ -189,15 +188,14 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	//
 	//public static final ReentrantReadWriteLock IS_SAVING_RWL = new ReentrantReadWriteLock();
 
-	private QTIEditorPackage qtiPackage;
+	private QTIEditorPackageImpl qtiPackage;
 
 	private VelocityContainer main, exitVC, chngMsgFormVC, restrictedEditWarningVC;
 	private ToolController mainToolC;
 	private MenuTree menuTree;
-	private Panel mainPanel, wrapperPanel;
+	private Panel mainPanel;
 	private LayoutMain3ColsController columnLayoutCtr;
 
-	private QTIDocument qtiDoc;
 	private QTIEditorTreeModel menuTreeModel;
 	private DialogBoxController deleteDialog;
 	private DialogBoxController deleteMediaDialog;
@@ -206,7 +204,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private InsertItemTreeModel insertTreeModel;
 	private GenericQtiNode insertObject;
 	private LockResult lockEntry;
-	private Controller failedMonolog, lockMonolog;
 	private boolean restrictedEdit;
 	private Map history = null;
 	private String startedWithTitle;
@@ -243,7 +240,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		}
 		this.referencees = referencees;
 		
-		qtiPackage = new QTIEditorPackage(ureq.getIdentity(), fileResource, getTranslator());
+		qtiPackage = new QTIEditorPackageImpl(ureq.getIdentity(), fileResource, getTranslator());
 
 		// try to get lock which lives longer then the browser session in case of a closing browser window
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(qtiPackage.getRepresentingResourceable(), ureq.getIdentity(), null);
@@ -252,8 +249,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			//fileResource has the RepositoryEntre.getOlatResource within, which is used in qtiPackage
 			activeSessionLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(qtiPackage.getRepresentingResourceable(), ureq.getIdentity(), null);
 			//
-			qtiDoc = qtiPackage.getQTIDocument();
-			if (qtiDoc == null) {
+			if (qtiPackage.getQTIDocument() == null) {
 				notEditable = true;				
 			} else if (qtiPackage.isResumed()) {
 				showInfo("info.resumed", null);
@@ -297,7 +293,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			Panel panel = new Panel("notEditable");
 			panel.setContent(notEditable);
 			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, panel, null);
-			wrapperPanel = putInitialPanel(columnLayoutCtr.getInitialComponent());
+			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			return;
 		}
 				
@@ -351,7 +347,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		} else {
 			columnLayoutCtr.addCssClassToMain("o_editor_qti");
 		}
-		wrapperPanel = putInitialPanel(columnLayoutCtr.getInitialComponent());
+		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		
 		if (restrictedEdit) {
 			restrictedEditWarningVC = createVelocityContainer("restrictedEditDialog");
@@ -928,7 +924,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				RepositoryEntry entry = rm.lookupRepositoryEntry(course, false);
 				String courseTitle = course.getCourseTitle();
 				SecurityGroup owners = entry.getOwnerGroup();
-				List stakeHoldersIds = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(owners);
+				List<Identity> stakeHoldersIds = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(owners);
 
 				// add stakeholders as group
 				cl = new ContactList(courseTitle);

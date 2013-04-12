@@ -23,12 +23,15 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.impl.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -53,9 +56,9 @@ import org.olat.modules.qpool.QPoolService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDetailsController extends BasicController {
+public class QuestionItemDetailsController extends BasicController implements StackedControllerAware {
 	
-	private Link deleteItem, shareItem, exportItem;
+	private Link deleteItem, shareItem, exportItem, editItem;
 
 	private Controller editCtrl;
 	private CloseableModalController cmc;
@@ -64,6 +67,7 @@ public class QuestionItemDetailsController extends BasicController {
 	private SelectBusinessGroupController selectGroupCtrl;
 	private final MetadatasController metadatasCtrl;
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
+	private StackedController stackPanel;
 
 	private final QuestionPoolModule poolModule;
 	private final QPoolService qpoolService;
@@ -98,6 +102,8 @@ public class QuestionItemDetailsController extends BasicController {
 		listenTo(commentsAndRatingCtr);
 
 		mainVC = createVelocityContainer("item_details");
+		editItem = LinkFactory.createButton("edit", mainVC, this);
+		editItem.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit");
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
 		deleteItem.setVisible(canEdit);
@@ -114,6 +120,10 @@ public class QuestionItemDetailsController extends BasicController {
 		//
 	}
 
+	@Override
+	public void setStackedController(StackedController stackPanel) {
+		this.stackPanel = stackPanel;
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -123,6 +133,8 @@ public class QuestionItemDetailsController extends BasicController {
 			doSelectGroup(ureq, metadatasCtrl.getItem());
 		} else if(source == exportItem) {
 			doExport(ureq, metadatasCtrl.getItem());
+		} else if(source == editItem) {
+			doEdit(ureq, metadatasCtrl.getItem());
 		}
 	}
 	
@@ -156,6 +168,14 @@ public class QuestionItemDetailsController extends BasicController {
 		removeAsListenerAndDispose(selectGroupCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
+	}
+	
+	private void doEdit(UserRequest ureq, QuestionItem item) {
+		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+		Controller editCtrl = spi.getEditableController(ureq, getWindowControl(), item);
+		
+		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), editCtrl);
+		stackPanel.pushController("Edition", mainCtrl);
 	}
 	
 	private void doSelectGroup(UserRequest ureq, QuestionItem item) {

@@ -26,7 +26,7 @@ import org.dom4j.Element;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -37,10 +37,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
-import org.olat.ims.qti.editor.ItemPreviewController;
+import org.olat.ims.qti.editor.ItemNodeTabbedFormController;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
+import org.olat.ims.qti.qpool.QTI12ItemEditorPackage;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -50,21 +52,20 @@ import org.olat.modules.qpool.QuestionItem;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI12PreviewController extends BasicController {
+public class QTI12EditorController extends BasicController {
 	
-	private final Panel mainPanel;
+	private final TabbedPane mainPanel;
 	private final VelocityContainer mainVC;
-	private ItemPreviewController previewCtrl;
-	private QTI12MetadataController metadataCtrl;
+	private ItemNodeTabbedFormController previewCtrl;
 	
 	private final QPoolService qpoolService;
 
-	public QTI12PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
+	public QTI12EditorController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
 		mainVC = createVelocityContainer("qti_preview");
-		mainPanel = new Panel("qti12preview");
+		mainPanel = new TabbedPane("tabbedPane", ureq.getLocale());
 		
 		VFSLeaf leaf = qpoolService.getRootFile(qitem);
 		if(leaf == null) {
@@ -75,13 +76,11 @@ public class QTI12PreviewController extends BasicController {
 				Translator translator = Util.createPackageTranslator(QTIEditorPackage.class, getLocale());
 				VFSContainer directory = qpoolService.getRootDirectory(qitem);
 				String mapperUrl = registerMapper(ureq, new VFSContainerMapper(directory));
-				previewCtrl = new ItemPreviewController(wControl, item, mapperUrl, translator);
+				QTIDocument doc = new QTIDocument();
+				QTIEditorPackage qtiPackage = new QTI12ItemEditorPackage(item, doc, mapperUrl, leaf, directory);
+				previewCtrl = new ItemNodeTabbedFormController(item, qtiPackage, ureq, getWindowControl(), translator, false);
+				previewCtrl.addTabs(mainPanel);
 				listenTo(previewCtrl);
-				mainPanel.setContent(previewCtrl.getInitialComponent());
-				
-				metadataCtrl = new QTI12MetadataController(ureq, getWindowControl(), item);
-				listenTo(metadataCtrl);
-				mainVC.put("metadatas", metadataCtrl.getInitialComponent());
 			}
 		}
 		

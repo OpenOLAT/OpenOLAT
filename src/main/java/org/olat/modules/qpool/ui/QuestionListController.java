@@ -468,6 +468,7 @@ public class QuestionListController extends FormBasicController implements Stack
 	protected void doSelect(UserRequest ureq, ItemRow row) {
 		QuestionItem item = qpoolService.loadItemById(row.getKey());
 		QuestionItemDetailsController detailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, row.isEditable());
+		detailsCtrl.setStackedController(stackPanel);
 		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), detailsCtrl);
 		stackPanel.pushController(item.getTitle(), mainCtrl);
 	}
