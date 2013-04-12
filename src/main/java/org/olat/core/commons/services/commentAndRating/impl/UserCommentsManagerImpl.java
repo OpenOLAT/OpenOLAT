@@ -25,6 +25,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -285,22 +288,37 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 	public int deleteAllComments() {
 		DB db = DBFactory.getInstance();
 		// special query when sub path is null
+		
+		List<UserCommentImpl> comments;
 		if (getOLATResourceableSubPath() == null) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("delete from ").append(UserCommentImpl.class.getName()).append(" where resName=:resName and resId=:resId and resSubPath is null");
-			return db.getCurrentEntityManager().createQuery(sb.toString())
+			sb.append("select comment from ").append(UserCommentImpl.class.getName()).append(" comment")
+			  .append(" where resName=:resName and resId=:resId and resSubPath is null")
+			  .append(" order by creationDate desc");
+			
+			comments = db.getCurrentEntityManager().createQuery(sb.toString(), UserCommentImpl.class)
 				.setParameter("resName", getOLATResourceable().getResourceableTypeName())
 				.setParameter("resId", getOLATResourceable().getResourceableId())
-				.executeUpdate();
+				.getResultList();
 		} else {
 			StringBuilder sb = new StringBuilder();
-			sb.append("delete from ").append(UserCommentImpl.class.getName()).append(" where resName=:resName and resId=:resId and resSubPath=:resSubPath");
-			return db.getCurrentEntityManager().createQuery(sb.toString())
+			sb.append("select comment from ").append(UserCommentImpl.class.getName()).append(" comment")
+			  .append(" where resName=:resName and resId=:resId and resSubPath=:resSubPath")
+			  .append(" order by creationDate desc");
+			
+			comments = db.getCurrentEntityManager().createQuery(sb.toString(), UserCommentImpl.class)
 					.setParameter("resName", getOLATResourceable().getResourceableTypeName())
 					.setParameter("resId", getOLATResourceable().getResourceableId())
 					.setParameter("resSubPath",  getOLATResourceableSubPath())
-					.executeUpdate();
+					.getResultList();
 		}
+		
+		if(comments != null && !comments.isEmpty()) {
+			for(UserCommentImpl comment:comments) {
+				db.getCurrentEntityManager().remove(comment);
+			}
+		}
+		return comments == null ? 0 : comments.size();
 	}
 
 	/**
@@ -310,11 +328,18 @@ public class UserCommentsManagerImpl extends UserCommentsManager {
 	public int deleteAllCommentsIgnoringSubPath() {
 		DB db = DBFactory.getInstance();
 		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(UserCommentImpl.class.getName()).append(" where resName=:resName and resId=:resId");
-		return db.getCurrentEntityManager().createQuery(sb.toString())
+		sb.append("select comment from ").append(UserCommentImpl.class.getName()).append(" comment")
+		  .append(" where resName=:resName and resId=:resId")
+		  .append(" order by creationDate desc");
+
+		List<UserCommentImpl> comments = db.getCurrentEntityManager().createQuery(sb.toString(), UserCommentImpl.class)
 			.setParameter("resName", getOLATResourceable().getResourceableTypeName())
 			.setParameter("resId", getOLATResourceable().getResourceableId())
-			.executeUpdate();		
+			.getResultList();
+		for(UserCommentImpl comment:comments) {
+			db.getCurrentEntityManager().remove(comment);
+		}
+		return comments.size();
 	}
 
 	

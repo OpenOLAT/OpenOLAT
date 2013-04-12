@@ -104,16 +104,25 @@ public class ChatManagerController extends BasicController {
 	protected void closeAllChats() {
 		List<Long> chatKeys = new ArrayList<Long>(chats.keySet());
 		for(Long chatKey :chatKeys) {
-			Component p = container.getComponent(chatKey.toString());
-			if(p != null) {
-				container.remove(p);
-			}
-			ChatController ctrl = chats.get(chatKey);
-			if(ctrl != null) {
-				ctrl.closeChat();
-			}
+			closeChat(chatKey);
 		}
 		chats.clear();
+	}
+	
+	protected void closeChat(OLATResourceable ores) {
+		closeChat(ores.getResourceableId());
+	}
+	
+	private void closeChat(Long chatKey) {
+		Component p = container.getComponent(chatKey.toString());
+		if(p != null) {
+			container.remove(p);
+		}
+		ChatController ctrl = chats.get(chatKey);
+		if(ctrl != null) {
+			ctrl.closeChat();
+		}
+		chats.remove(chatKey);
 	}
 	
 	public void createChat(UserRequest ureq, Buddy buddy) {	

@@ -1000,6 +1000,20 @@ public class EPFrontendManager extends BasicManager {
 	}
 	
 	/**
+	 * 
+	 * @param identity Cannot be null
+	 * @param targetOres Cannot be null
+	 * @param targetSubPath
+	 * @param targetBusinessPath
+	 * @return
+	 */
+	public List<PortfolioStructureMap> loadPortfolioStructureMaps(Identity identity,
+			OLATResourceable targetOres, String targetSubPath, String targetBusinessPath){
+		//sync the map with the template on opening it in gui, not on loading!
+		return structureManager.loadPortfolioStructuredMaps(identity, targetOres, targetSubPath, targetBusinessPath);
+	}
+	
+	/**
 	 * get the "already in use" state of a structuredMapTemplate
 	 * @param template
 	 * @param targetOres

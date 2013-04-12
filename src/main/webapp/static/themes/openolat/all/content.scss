@@ -247,24 +247,26 @@ div.b_form_auto_completer_item.b_error_icon { color: $nokcolor; font-style: ital
 
 /* ---------- smilies / emoticons in tinyMCE ------------------------ */
 /* i know, these are icons... but they must be in content.css, 'cause tinyMCE needs 'em... */
-img.b_emoticons_angel     {background : url(../../openolat/images/emoticons/smiley-angel.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_angry     {background : url(../../openolat/images/emoticons/smiley-mad.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_blushing  {background : url(../../openolat/images/emoticons/smiley-red.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_confused  {background : url(../../openolat/images/emoticons/smiley-confuse.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_cool      {background : url(../../openolat/images/emoticons/smiley-cool.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_cry       {background : url(../../openolat/images/emoticons/smiley-cry.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_devil     {background : url(../../openolat/images/emoticons/smiley-evil.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_grin      {background : url(../../openolat/images/emoticons/smiley-grin.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_kiss      {background : url(../../openolat/images/emoticons/smiley-kiss.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_ohoh      {background : url(../../openolat/images/emoticons/smiley-eek.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_sad       {background : url(../../openolat/images/emoticons/smiley-sad.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_sick      {background : url(../../openolat/images/emoticons/smiley-sad-blue.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_smile     {background : url(../../openolat/images/emoticons/smiley.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_tongue    {background : url(../../openolat/images/emoticons/smiley-razz.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_ugly      {background : url(../../openolat/images/emoticons/smiley-money.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_weird     {background : url(../../openolat/images/emoticons/smiley-nerd.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_wink      {background : url(../../openolat/images/emoticons/smiley-wink.png) no-repeat; width: 18px; height: 18px;}
-img.b_emoticons_worried   {background : url(../../openolat/images/emoticons/smiley-roll-blue.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_angel     {background : url(../../openolat/images/emoticons/smiley-angel.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_angry     {background : url(../../openolat/images/emoticons/smiley-mad.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_blushing  {background : url(../../openolat/images/emoticons/smiley-red.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_confused  {background : url(../../openolat/images/emoticons/smiley-confuse.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_cool      {background : url(../../openolat/images/emoticons/smiley-cool.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_cry       {background : url(../../openolat/images/emoticons/smiley-cry.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_devil     {background : url(../../openolat/images/emoticons/smiley-evil.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_grin      {background : url(../../openolat/images/emoticons/smiley-grin.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_kiss      {background : url(../../openolat/images/emoticons/smiley-kiss.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_ohoh      {background : url(../../openolat/images/emoticons/smiley-eek.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_sad       {background : url(../../openolat/images/emoticons/smiley-sad.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_sick      {background : url(../../openolat/images/emoticons/smiley-sad-blue.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_smile     {background : url(../../openolat/images/emoticons/smiley.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_tongue    {background : url(../../openolat/images/emoticons/smiley-razz.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_ugly      {background : url(../../openolat/images/emoticons/smiley-money.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_weird     {background : url(../../openolat/images/emoticons/smiley-nerd.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_wink      {background : url(../../openolat/images/emoticons/smiley-wink.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_worried   {background : url(../../openolat/images/emoticons/smiley-roll-blue.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_up   	  {background : url(../../openolat/images/emoticons/thumb-up.png) no-repeat; width: 16px; height: 16px;}
+img.b_emoticons_down   	  {background : url(../../openolat/images/emoticons/thumb.png) no-repeat; width: 16px; height: 16px;}
 
 /** ---------------------- EXT JS PATCHES  ------------------ **/
 /* (are needed here in content.css ,  e.g.  glossary tooltip in iframes...) */

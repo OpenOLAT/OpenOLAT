@@ -24,6 +24,13 @@ function tweak_${panelName}() {
 }
 function focus_${panelName}() {
 	try {
+		var win = Ext.getCmp('${panelName}');
+		var histEl = win.body.dom.getElementsByClassName('o_instantmessaging_chat_history');
+		if (histEl.length == 1) {
+			histEl[0].style.height=win.getSize().height-150 + 'px';
+			histEl[0].scrollTop = histEl[0].scrollHeight;
+		}
+
 		var el = document.getElementById('o_fioinput_${panelName}');
 		if(el != null) {
 			el.focus();

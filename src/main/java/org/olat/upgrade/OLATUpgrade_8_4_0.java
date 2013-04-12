@@ -19,24 +19,32 @@
  */
 package org.olat.upgrade;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.DirectoryFilter;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.ImageHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResourceManager;
 import org.olat.upgrade.model.BookmarkImpl;
+import org.olat.user.DisplayPortraitManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
- * upgrade code for OLAT 7.1.0 -> OLAT 7.1.1
- * - fixing invalid structures being built by synchronisation, see OLAT-6316 and OLAT-6306
- * - merges all yet found data to last valid node 
+ * upgrade code for OpenOLAT 8.3.x -> OpenOLAT 8.4.0
+ * - Upgrade bookmarks to new database structure
+ * - Recalculate small user avatar images to new size 
  * 
  * <P>
  * Initial Date: 24.03.2011 <br>
@@ -46,6 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 
 	private static final String TASK_BOOKMARKS = "Upgrade bookmarks";
+	private static final String TASK_AVATARS = "Upgrade avatars";
 	private static final int BATCH_SIZE = 20;
 	private static final String VERSION = "OLAT_8.4.0";
 	
@@ -59,6 +68,11 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private FolderModule folderModule; // needed to initialize FolderConfig
+	@Autowired	
+	private ImageHelper imageHelper;
+
 
 	public OLATUpgrade_8_4_0() {
 		super();
@@ -87,13 +101,14 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = upgradeBookmarks(upgradeManager, uhd);
+		allOk = (allOk && upgradeAvatars(upgradeManager, uhd));
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_8_3_0 successfully!");
+			log.audit("Finished OLATUpgrade_8_4_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_8_3_0 not finished, try to restart OpenOLAT!");
+			log.audit("OLATUpgrade_8_4_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -111,7 +126,6 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 				log.audit("Processed context: " + bookmarks.size());
 				dbInstance.intermediateCommit();
 			} while(bookmarks.size() == BATCH_SIZE);
-			
 			uhd.setBooleanDataValue(TASK_BOOKMARKS, false);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
@@ -140,4 +154,51 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 				.setMaxResults(batchSize)
 				.getResultList();
 	}
+
+	private boolean upgradeAvatars(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean success = false;
+		if (!uhd.getBooleanDataValue(TASK_AVATARS)) {
+			// commit because this task can take a while 
+			dbInstance.intermediateCommit();
+
+			long counter = 0;
+			File root = new File(FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePages());
+			if (root.exists()) {
+				File[] users = root.listFiles(new DirectoryFilter());
+				log.audit("Starting with avatar images upgrade process for " + users.length + " users");
+				for (File homepage : users) {
+					File portraitDir = new File(homepage, "portrait");
+					if (portraitDir.exists()) {
+						File[] files = portraitDir.listFiles();
+						for (File file : files) {
+							// search for large portrait file and scald down to small size, overwriting already existing files
+							if (file.getName().startsWith("portrait_big")) {
+								String extension = FileUtils.getFileSuffix(file.getName());
+								if(!StringHelper.containsNonWhitespace(extension)) {
+									extension = "png";
+								}
+								File pSmallFile = new File(portraitDir, "portrait_small" + "." + extension);
+								imageHelper.scaleImage(file, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);								
+								counter++;
+								break;
+							}
+						}
+					}
+					// else skip, no portrait, nothing to do
+					if (counter % 1000 == 0) {
+						// log something once in a while
+						log.audit("Upgrade avatar images: " + counter + " user processed so far, please wait");						
+					}
+				}
+				log.audit("Upgrade avatar images finished, updated " + counter + " avatar images");
+				success = true;
+			} else {
+				log.warn("Root folder for user homepages not found::" + root.getAbsolutePath());
+			}			
+		}
+		uhd.setBooleanDataValue(TASK_AVATARS, success);
+		upgradeManager.setUpgradesHistory(uhd, VERSION);
+		return success;
+	}
+
 }

@@ -323,8 +323,9 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 *	key="smtpUser"
 	 *	key="smtpPwd"
 	 *	key="mailSupport"
-	 *  key="mailReplyTo" - default from (reply-to)
-	 *  key="mailFrom" - real from address
+	 *  key="mailReplyTo" - default from email address (reply-to)
+	 *  key="mailFrom" - real from email address
+	 *  key="mailFromName" - plain text name for from address
 	 * @param string
 	 * @return
 	 */

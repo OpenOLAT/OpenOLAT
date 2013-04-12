@@ -798,7 +798,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 				if (hasTransaction()) {
 					TransactionStatus status = txManager.getTransaction(null);
 					txManager.rollback(status);
-					//getTransaction().rollback();
+					
+					EntityTransaction trx = getCurrentEntityManager().getTransaction();
+					if(trx != null) {
+						trx.rollback();
+					}
 				}
 			} catch (Error er) {
 				logError("Uncaught Error in DBImpl.commit.catch(Exception).", er);
@@ -823,7 +827,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 
 			TransactionStatus status = txManager.getTransaction(null);
 			txManager.rollback(status);
-			//getTransaction().rollback();
+			
+			EntityTransaction trx = getCurrentEntityManager().getTransaction();
+			if(trx != null) {
+				trx.rollback();
+			}
 
 		} catch (Exception ex) {
 			logWarn("Could not rollback transaction!",ex);

@@ -45,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.xml.XStreamHelper;
@@ -115,6 +116,7 @@ public class ChatLogHelper {
 		Workbook wb = new HSSFWorkbook();
 		String tableExportTitle = translator.translate("logChat.export.title");
 		Sheet exportSheet = wb.createSheet(tableExportTitle);
+		Formatter formatter = Formatter.getInstance(locale);
 		
 		//headers
 		Row headerRow = exportSheet.createRow(0);
@@ -129,7 +131,7 @@ public class ChatLogHelper {
 		for(InstantMessage message:messages) {
 			Row dataRow = exportSheet.createRow(count++);
 			addCell(dataRow, message.getFromNickName(), 0);
-			addCell(dataRow, message.getCreationDate(), 1);
+			addCell(dataRow, message.getCreationDate(), 1, formatter);
 			addCell(dataRow, message.getBody(), 2);
 		}
 		return wb;
@@ -141,9 +143,9 @@ public class ChatLogHelper {
 		cell.setCellValue(val);
 	}
 	
-	private void addCell(Row dataRow, Date val, int position) {
+	private void addCell(Row dataRow, Date val, int position, Formatter formatter) {
 		Cell cell = dataRow.createCell(position);
-		cell.setCellValue(val);
+		cell.setCellValue(formatter.formatDateAndTime(val));
 	}
 	
 	private void addHeader(Row headerRow, CellStyle headerCellStyle, String val, int position) {
@@ -159,6 +161,4 @@ public class ChatLogHelper {
 		cellStyle.setFont(boldFont);
 		return cellStyle;
 	}
-
-
 }

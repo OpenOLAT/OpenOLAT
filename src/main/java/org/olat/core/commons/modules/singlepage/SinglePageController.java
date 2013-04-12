@@ -26,8 +26,6 @@
 
 package org.olat.core.commons.modules.singlepage;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -49,8 +47,6 @@ import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
@@ -62,10 +58,7 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * Description:<BR>
@@ -321,7 +314,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 				final VFSContainer finalRootContainer = g_new_rootContainer;
 				
 				if (amapPath == null) {
-					Mapper mapper = createMapper(finalRootContainer);
+					Mapper mapper = new SinglePageMediaMapper(finalRootContainer);
 					// Register mapper as cacheable
 					String mapperID = VFSManager.getRealPath(finalRootContainer);
 					if (mapperID == null) {
@@ -372,19 +365,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 	
 	private void setCurURI(String uri) {
 		this.g_curURI = uri;
-	}
-	
-	private Mapper createMapper(final VFSContainer rootContainer) {
-		Mapper map = new Mapper() {
-			public MediaResource handle(String relPath,HttpServletRequest request) {
-				VFSItem currentItem = rootContainer.resolve(relPath);
-				if (currentItem == null || (currentItem instanceof VFSContainer)) {
-					return new NotFoundMediaResource(relPath);
-				}
-				return new VFSMediaResource((VFSLeaf)currentItem);
-			}
-		};
-		return map;
 	}
 	
 	

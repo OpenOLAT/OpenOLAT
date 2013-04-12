@@ -77,9 +77,9 @@ public interface MapperService {
 	 * @param mapper
 	 * @return the path e.g. /olat/c/my.mapper.path without / at the end
 	 */
-	public String register(String mapperId, Mapper mapper);
+	public String register(UserSession session, String mapperId, Mapper mapper);
 	
-	public Mapper getMapperById(String id);
+	public Mapper getMapperById(UserSession session, String id);
 	
 	public void cleanUp(String sessionId);
 

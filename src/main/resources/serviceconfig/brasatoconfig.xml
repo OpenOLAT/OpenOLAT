@@ -22,6 +22,7 @@
 						<entry key="sslEnabled" value="${smtp.sslEnabled}"/>
 						<entry key="sslCheckCertificate" value="${smtp.sslCheckCertificate}"/>
 						<entry key="mailFrom" value="${fromemail}"/>
+						<entry key="mailFromName" value="${fromname}"/>
 						<entry key="mailReplyTo" value="${adminemail}"/>
 						<entry key="mailSupport" value="${supportemail}"/>
 						<entry key="mailQuota" value="${quotaemail}"/>

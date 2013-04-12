@@ -140,10 +140,10 @@ public class ReferencableEntriesSearchController extends BasicController {
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		allEntriesLink = LinkFactory.createCustomLink(CMD_ALL_ENTRIES, CMD_ALL_ENTRIES, "referencableSearch." + CMD_ALL_ENTRIES, Link.LINK, mainVC, this);
 		allEntriesLink.setElementCssClass("o_sel_repo_popup_all_resources");
-		segmentView.addSegment(allEntriesLink, true);
+		segmentView.addSegment(allEntriesLink, false);
 		myEntriesLink = LinkFactory.createCustomLink(CMD_MY_ENTRIES, CMD_MY_ENTRIES, "referencableSearch." + CMD_MY_ENTRIES, Link.LINK, mainVC, this);
 		myEntriesLink.setElementCssClass("o_sel_repo_popup_my_resources");
-		segmentView.addSegment(myEntriesLink, false);
+		segmentView.addSegment(myEntriesLink, true);
 		searchEntriesLink = LinkFactory.createCustomLink(CMD_SEARCH_ENTRIES, CMD_SEARCH_ENTRIES, "referencableSearch." + CMD_SEARCH_ENTRIES, Link.LINK, mainVC, this);
 		searchEntriesLink.setElementCssClass("o_sel_repo_popup_search_resources");
 		segmentView.addSegment(searchEntriesLink, false);

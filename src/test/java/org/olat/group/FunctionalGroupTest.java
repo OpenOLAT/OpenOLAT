@@ -232,6 +232,10 @@ public class FunctionalGroupTest {
 		/*
 		 * verify
 		 */
+		/* WORKAROUND: reset site */
+		//TODO:JK: remove in openolat 8.0
+		Assert.assertTrue(functionalGroupsSiteUtil.openMyGroup(tutor0, groups[0].getName()));
+		
 		/* check group with tutor0  */
 		Assert.assertTrue(functionalGroupsSiteUtil.openGroupsTabActionByMenuTree(tutor0, GroupsTabAction.GROUPS));
 		

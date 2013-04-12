@@ -255,9 +255,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 		 * wiki component
 		 **************************************************************************/
 		articleContent = createVelocityContainer("article");
-		wikiArticleComp = new WikiMarkupComponent("wikiArticle", ores, 300);
-		wikiArticleComp.addListener(this);
-		wikiArticleComp.setImageMapperUri(ureq, wikiContainer);
 		articleContent.put("wikiArticle", wikiArticleComp);
 		tabs.addTab(translate("tab.article"), articleContent);
 
@@ -936,6 +933,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 	}
 
 	protected void doDispose() {
+		if(wikiMenuComp != null) wikiMenuComp.dispose();
+		if(wikiArticleComp != null) wikiArticleComp.dispose();
+		if(wikiVersionDisplayComp != null) wikiVersionDisplayComp.dispose();
+		
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass());
 		doReleaseEditLock();
 	}

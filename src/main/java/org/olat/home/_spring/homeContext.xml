@@ -86,6 +86,27 @@
 		</property>
 	</bean>
 	
+	<!--  bookmarks -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="104" />
+		<property name="enabled" value="${minimalhome.ext.bookmarks}"></property>
+		<property name="navigationKey" value="bookmarks" />
+		<property name="actionController">
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.commons.services.mark.ui.BookmarksController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="translationPackage" value="org.olat.core.commons.services.mark.ui" />
+		<property name="i18nActionKey" value="menu.bookmarks"/>
+		<property name="i18nDescriptionKey" value="menu.bookmarks.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>		
+			</list>
+		</property>
+	</bean>	
+	
 	<!--  the users personal folder -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="105" />

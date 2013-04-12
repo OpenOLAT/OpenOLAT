@@ -1,0 +1,30 @@
+var alias = null;
+
+if (document.evaluate){
+	var nth = "${nthCourseNode}";
+	var resourcesOnly = "${getResourcesOnly}";
+	
+	var selector = null;
+	
+	if(resourcesOnly){
+		selector = "(//ul[contains(@class, 'b_tree_l1')]//li[" + (nth + 1) + "])//a[" +
+			"contains(@class, 'o_cp_icon') or " +
+			"contains(@class, 'o_scorm_icon') or " +
+			"contains(@class, 'o_blog_icon') or " +
+			"contains(@class, 'o_podcast_icon') or " +
+			"contains(@class, 'o_wiki_icon') or " +
+			"contains(@class, 'o_ep_icon') or " +
+			"contains(@class, 'o_iqtest_icon') or " +
+			"contains(@class, 'o_iqself_icon') or " +
+			"contains(@class, 'o_iqsurv_icon')" +
+			"]";
+	}else{
+		selector = "(//ul[contains(@class, 'b_tree_l1')]//li)[" + (nth + 1) + "]//a";
+	}
+	
+	var iter = window.document.evaluate(selector, window.document, null, XPathResult.ANY_TYPE, null);
+	var aTag = iter.iterateNext();
+	alias = aTag.classList.toString();
+}
+
+alias;

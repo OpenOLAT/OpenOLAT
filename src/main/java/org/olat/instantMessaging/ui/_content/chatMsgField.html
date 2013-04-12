@@ -1,21 +1,42 @@
 <div class="o_instantmessaging_chat_history" id="$id">
+	#set($messageGroupCount=0)
 	#foreach($message in $chatMessages)
-		<div class="b_clearfix">
-			#if($message.first)
-				<div class="o_instantmessaging_avatar">
-					#if($message.anonym)
-						<img src='$r.staticLink("themes/openolat/images/dummy.png")' width="50" height="50"/>
-					#elseif($message.avatarKey)
-						<img src='${avatarBaseURL}/${message.avatarKey}/avatar.jpg' />
-					#else
-						<img src='$r.staticLink("themes/openolat/images/dummy.png")' width="50" height="50"/>
-					#end
+		## The first message opens a new o_instantmessaging_message_group tag and adds the users
+		## Name, his avatar icon and a list to his visiting card
+		#if($message.first)
+			#if ($messageGroupCount != 0)
+				## close last o_instantmessaging_message_group tag
 				</div>
-				<span class="o_instantmessaging_from b_float_left b_small">${message.from}</span>
-			#end
-			<p class="o_instantmessaging_body">
-			<span class="o_instantmessaging_date b_float_right b_small">${message.creationDate}</span><br/>
-			${message.body}</p>
+			#end		
+			<div class="o_instantmessaging_message_group #if ($messageGroupCount % 2 == 1) o_odd #end">
+			
+				## link to visiting card
+				#if(!$message.anonym) <a href="$r.relLink("url/Identity/${message.fromKey}")">#end
+				
+				#if($message.anonym) 
+					<div class="o_instantmessaging_avatar o_portrait_anonymous_small"></div>
+				#elseif ($message.avatarKey != ":NA:") 
+					<div class="o_instantmessaging_avatar" style="background-image : url('${avatarBaseURL}/${message.avatarKey}/avatar.jpg')"></div>
+				#else
+					<div class="o_instantmessaging_avatar o_portrait_dummy_small"></div>					 
+				#end 
+								
+				<div class="o_instantmessaging_from">${message.from}</div>				
+
+				## end link to visiting card
+				#if(!$message.anonym) </a> #end
+
+			#set($messageGroupCount=$messageGroupCount+1)
+		#end
+		## The real messages start here
+		<div class="o_instantmessaging_body b_clearfix">
+			<span class="o_instantmessaging_date b_float_right">${message.creationDate}</span>
+			${message.body}
+		</div>
+	#end
+	
+	#if ($messageGroupCount > 0)
+		## close last o_instantmessaging_message_group tag
 		</div>
 	#end
 </div>

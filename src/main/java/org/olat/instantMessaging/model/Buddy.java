@@ -102,6 +102,11 @@ public class Buddy implements OLATResourceable, Comparable<Buddy>, Serializable 
 	public Long getResourceableId() {
 		return identityKey;
 	}
+	
+	@Override
+	public Buddy clone() {
+		return new Buddy(identityKey, username, name, anonym, vip, status);
+	}
 
 	@Override
 	public int compareTo(Buddy o) {

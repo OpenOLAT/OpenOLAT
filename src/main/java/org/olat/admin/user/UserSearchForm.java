@@ -58,7 +58,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserSearchForm extends FormBasicController {
 	
-	private final boolean isAdmin, cancelButton;
+	private final boolean isAdminProps, cancelButton;
 	private FormLink searchButton;
 	
 	protected TextElement login;
@@ -71,27 +71,27 @@ public class UserSearchForm extends FormBasicController {
 	 * @param isAdmin if true, no field must be filled in at all, otherwise
 	 *          validation takes place
 	 */
-	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean cancelButton) {
+	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdminProps, boolean cancelButton) {
 		super(ureq, wControl);
 		
 		UserManager um = UserManager.getInstance();
 		Translator decoratedTranslator = um.getPropertyHandlerTranslator(this.getTranslator());
 		setTranslator(decoratedTranslator);
 		
-		this.isAdmin = isAdmin;
+		this.isAdminProps = isAdminProps;
 		this.cancelButton = cancelButton;
 	
 		initForm(ureq);
 	}
 	
-	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean cancelButton, Form rootForm) {
+	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdminProps, boolean cancelButton, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		
 		UserManager um = UserManager.getInstance();
 		Translator decoratedTranslator = um.getPropertyHandlerTranslator(this.getTranslator());
 		setTranslator(decoratedTranslator);
 		
-		this.isAdmin = isAdmin;
+		this.isAdminProps = isAdminProps;
 		this.cancelButton = cancelButton;
 	
 		initForm(ureq);
@@ -103,8 +103,11 @@ public class UserSearchForm extends FormBasicController {
 	}
 	
 	private boolean validateForm(UserRequest ureq) {
-		// override for admins
-		if (isAdmin) return true;
+		// override for sys admins
+		if (ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null
+				&& ureq.getUserSession().getRoles().isOLATAdmin()) {
+			return true;
+		}
 		
 		boolean filled = !login.isEmpty();
 		StringBuffer  full = new StringBuffer(login.getValue().trim());  
@@ -161,12 +164,10 @@ public class UserSearchForm extends FormBasicController {
 		Translator tr = Util.createPackageTranslator(
 				UserPropertyHandler.class,
 				getLocale(), 
-				getTranslator()
-		);
+				getTranslator());
 		
 		userPropertyHandlers = um.getUserPropertyHandlersFor(
-				getClass().getCanonicalName(), isAdmin
-		);
+				getClass().getCanonicalName(), isAdminProps);
 		
 		propFormItems = new HashMap<String,FormItem>();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {

@@ -263,7 +263,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		try {
 		 am.saveScoreEvaluation(this, coachingIdentity, mySelf, scoreEvaluation, userCourseEnvironment, incrementAttempts);
 		} catch(DBRuntimeException ex) {
-			throw new KnownIssueException("DBRuntimeException - Row was updated or deleted...",3570);
+			throw new KnownIssueException("DBRuntimeException - Row was updated or deleted...", 3570, ex);
 		}
 	}
 

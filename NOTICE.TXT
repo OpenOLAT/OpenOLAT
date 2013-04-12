@@ -37,7 +37,6 @@ the Creative Commons Attribution-NoDerivs 2.5 license.
 German license text  [http://creativecommons.org/licenses/by-nd/2.5/ch/]
 English license text [http://creativecommons.org/licenses/by-nd/2.5/]
 
-
 Copyright olat.org codebase 1999 - 2011:
 ======================================================================
 Björn Adelberg, Sandra Arnold, Sandra Bischof, Armin Blawitzki, Hanspeter Brun, Patrick Brunner, 
@@ -153,12 +152,20 @@ This product uses software in the public domain
 -----------------------------------------------------------------------
 This product uses software based on the General Public License (GPL)
 * Connector/J	(GNU General Public License, Version 2) [http://www.mysql.com/downloads/connector/j/]
+* EXTJS javascript framework (GNU General Public License, Version 3) [http://www.sencha.com]
 
 -----------------------------------------------------------------------
 This product uses software based on the CDDL
 * Jersey (CDDL 1.1 and GPL 2 with CPE) [http://jersey.java.net]
 * jsr311-api	(CDDL License) [http://jsr311.java.net]
 * Grizzly	(CDDL) [http://grizzly.java.net]
+
+-----------------------------------------------------------------------
+This product uses software based on Creative Commons License
+* YAML layout framework (Creative Commons Attribution 2.0 Lizenz, http://creativecommons.org/licenses/by/2.0/de) [http://www.yaml.de]
+  Please read the licensing terms of YAML if you plan to use OLAT in a commercial setup
+* Fugue Icons (Creative Commons Attribution 3.0 License, http://creativecommons.org/licenses/by/3.0/) [http://p.yusukekamiyamane.com]
+* File Type Icons (Creative Commons Attribution-ShareAlike 3.0, Hong Kong) [http://filetypeicons.com]
 
 -----------------------------------------------------------------------
 This product uses software based on specific License
@@ -172,15 +179,6 @@ This product uses software based on specific License
 * xpp3 (see src/main/webapp/WEB-INF/lib/licenses/xpp3-license.txt) [http://www.extreme.indiana.edu/xgws/xsoap/xpp]
 * asm (see src/main/webapp/WEB-INF/lib/licenses/asm-license.txt) [http://asm.ow2.org]
 * JTA (see src/main/webapp/WEB-INF/lib/licenses/jta.licence.txt) [http://www.oracle.com/technetwork/java/javaee/jta]
-
------------------------------------------------------------------------
-YAML layout framework (Creative Commons Attribution 2.0 Lizenz,
-see http://creativecommons.org/licenses/by/2.0/de) [http://www.yaml.de]
-Please read the licensing terms of YAML if you plan to use OLAT in a commercial setup.
-
------------------------------------------------------------------------
-EXTJS javascript framework [http://www.sencha.com]
-
 
 
 
